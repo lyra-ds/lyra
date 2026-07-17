@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a new capability or improvement for Lyra DS.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement. Please describe the problem first,
+        then the solution you have in mind.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve? Why does it matter?
+      placeholder: As a developer, I cannot ... because ...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the change or API you would like to see.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds or alternative approaches you have weighed.
+    validations:
+      required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Which area does this request target?
+      options:
+        - styles
+        - react
+        - docs
+        - tooling
+    validations:
+      required: true

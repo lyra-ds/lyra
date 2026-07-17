@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a defect in a Lyra DS package so we can reproduce and fix it.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in the fields below
+        so we can reproduce the problem quickly.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+      placeholder: When I do X, Y happens instead of Z.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps (or a link to a minimal reproduction) that trigger the bug.
+      placeholder: |
+        1. Import '@lyra-ds/react'
+        2. Render <Button variant="primary" />
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: false
+  - type: dropdown
+    id: package
+    attributes:
+      label: Affected package
+      description: Which package does this bug relate to?
+      options:
+        - "@lyra-ds/styles"
+        - "@lyra-ds/react"
+        - docs
+        - other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: The version of the affected package (e.g. 0.1.0).
+      placeholder: 0.1.0
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser and OS (e.g. Chrome 141 on macOS 15).
+      placeholder: Chrome 141 on Ubuntu 24.04
+    validations:
+      required: false
