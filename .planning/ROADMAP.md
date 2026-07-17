@@ -32,7 +32,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Every PR runs visible CI (lint, typecheck, test, build) via GitHub Actions, with hooks ready for publint/attw/size-limit/parity gates as packages land
   4. A written 0.x versioning policy states that 0.MINOR = breaking and that the declared API surface includes props, `.lyra-*` class names, and token names
   5. `pnpm install` and workspace-wide build/test commands succeed from a clean clone (pnpm workspaces + changesets scaffold works)
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — GitHub remote bootstrap: org (guided), repo lyra-ds/lyra, push, PR-only ruleset, GSD phase-branch flip
+- [ ] 01-02-PLAN.md — pnpm workspace scaffold, pinned toolchain, placeholder stubs, changesets lockstep config
+- [ ] 01-03-PLAN.md — Governance docs: LICENSE, CoC 3.0, SECURITY, CONTRIBUTING, VERSIONING, README EN + pt-BR
+- [ ] 01-04-PLAN.md — CI workflow (frozen lint/typecheck/test/build jobs + future-gate hooks), issue forms, PR template, CODEOWNERS
+- [ ] 01-05-PLAN.md — Integration: clean-clone proof, scaffold PR with green CI, merge, required status checks on ruleset
 
 ### Phase 2: Styles Package
 **Goal**: A dev can install `@lyra-ds/styles` alone and get the complete, pixel-faithful, themeable Lyra appearance with zero JavaScript
@@ -118,7 +125,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Monorepo Foundation & Governance | 0/TBD | Not started | - |
+| 1. Monorepo Foundation & Governance | 0/5 | Planned | - |
 | 2. Styles Package | 0/TBD | Not started | - |
 | 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
