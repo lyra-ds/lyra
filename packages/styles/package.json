@@ -1,0 +1,6 @@
+{
+  "name": "@lyra-ds/styles",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Lyra DS — tokens + component CSS, zero JS. Placeholder until Phase 2."
+}

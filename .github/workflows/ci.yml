@@ -1,0 +1,83 @@
+# CI — runs on every PR regardless of which files changed; job names are
+# required-check contexts, never rename them. The four job names below
+# (lint, typecheck, test, build) are a FROZEN CONTRACT: they become the
+# ruleset's required-status-check contexts (plan 01-05). Future quality
+# gates (publint, attw, size-limit, token/class parity, stylelint) land as
+# STEPS inside these four jobs in Phases 2-4 — never as new job names, which
+# would orphan the ruleset contract.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Read-only token at the top level; widen per-job only when Phase 7 release
+# automation needs it.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      # actionlint — checksum-verified binary (never a remote script piped into a
+      # shell). The download is tamper-evident: the release tarball is verified
+      # against the sha256 checksum literal committed below before it executes.
+      - name: actionlint (checksum-verified)
+        run: |
+          curl -sSfLO https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint_1.7.12_linux_amd64.tar.gz" | sha256sum -c -
+          tar xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
+          ./actionlint -color
+      # future hook (Phase 2): stylelint on packages/styles
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck # no-op until Phase 3 adds package scripts
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test # Vitest arrives Phase 3
+      # future hook (Phase 2, STY-06): token/class parity script
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      # future hooks (Phases 2-4, OSS-03): publint, attw --pack, size-limit

@@ -17,6 +17,7 @@ The repo becomes a credible OSS home: pnpm workspace scaffolding, governance fil
 - **D-01:** Create the GitHub org **`lyra-ds`** during Phase 1 (user creates it manually, guided step). Availability verified 2026-07-16: `lyra` and `lyra-ui` are taken on GitHub; `@lyra` npm scope is occupied (`@lyra/core` exists); `lyra-ds` is free on GitHub and `@lyra-ds/react`/`@lyra-ds/styles` are unclaimed on npm. Org handle matches the npm scope 1:1.
 - **D-02:** Repository is **`lyra-ds/lyra`** (short URL, "Lyra" is the product; the org already says "ds"). Local directory stays `lyra-ds` — only the remote name matters.
 - **D-03:** Full org branding (avatar, profile README, social preview from `handoff/assets/github/`) remains Phase 7 scope (OSS-04). Phase 1 only creates the org + repo and pushes.
+  - **D-03 partial override (2026-07-17, user-directed during execution):** The user explicitly requested the org **profile README** now. Created `lyra-ds/.github` with `profile/README.md` (handoff copy, emoji bullets stripped per Lyra voice) + `assets/lyra-mark.svg` (from `org-avatar.svg`; raw URL verified HTTP 200). **Still deferred to Phase 7:** org avatar upload and social preview. Scope of this override is the profile README only.
 
 ### Repo/governance language
 - **D-04:** Governance surface is **English**: README, CONTRIBUTING.md, CODE_OF_CONDUCT.md, issue/PR templates.
