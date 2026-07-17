@@ -103,13 +103,52 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated by roadmap) | | |
+| OSS-01 | Phase 1 | Pending |
+| OSS-02 | Phase 1 | Pending |
+| OSS-03 | Phase 1 | Pending |
+| OSS-04 | Phase 7 | Pending |
+| OSS-05 | Phase 1 | Pending |
+| STY-01 | Phase 2 | Pending |
+| STY-02 | Phase 2 | Pending |
+| STY-03 | Phase 2 | Pending |
+| STY-04 | Phase 2 | Pending |
+| STY-05 | Phase 2 | Pending |
+| STY-06 | Phase 2 | Pending |
+| STY-07 | Phase 2 | Pending |
+| RCT-01 | Phase 4 | Pending |
+| RCT-02 | Phase 4 | Pending |
+| RCT-03 | Phase 3 | Pending |
+| RCT-04 | Phase 3 | Pending |
+| RCT-05 | Phase 3 | Pending |
+| RCT-06 | Phase 4 | Pending |
+| RCT-07 | Phase 4 | Pending |
+| RCT-08 | Phase 4 | Pending |
+| RCT-09 | Phase 4 | Pending |
+| RCT-10 | Phase 4 | Pending |
+| A11Y-01 | Phase 4 | Pending |
+| A11Y-02 | Phase 4 | Pending |
+| A11Y-03 | Phase 4 | Pending |
+| A11Y-04 | Phase 4 | Pending |
+| GEN-01 | Phase 5 | Pending |
+| GEN-02 | Phase 5 | Pending |
+| DOC-01 | Phase 6 | Pending |
+| DOC-02 | Phase 6 | Pending |
+| DOC-03 | Phase 6 | Pending |
+| DOC-04 | Phase 6 | Pending |
+| DOC-05 | Phase 6 | Pending |
+| DOC-06 | Phase 6 | Pending |
+| DOC-07 | Phase 6 | Pending |
+| DOC-08 | Phase 6 | Pending |
+| DOC-09 | Phase 6 | Pending |
+| DOC-10 | Phase 6 | Pending |
+| REL-01 | Phase 7 | Pending |
+| REL-02 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 31 total
-- Mapped to phases: 0
-- Unmapped: 31 ⚠️ (pending roadmap)
+- v1 requirements: 40 total (corrected from 31 — actual REQ-ID count)
+- Mapped to phases: 40
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-16*
-*Last updated: 2026-07-16 after initial definition*
+*Last updated: 2026-07-16 after roadmap creation (traceability populated)*
