@@ -1,6 +1,6 @@
 # unmatched globs (apps/*, tools/* have no members yet) are harmless — verified with pnpm 11.13
 # apps/* arrives in Phase 6 (docs site); tools/* in Phase 5 (docgen)
 packages:
-  - "packages/*"
-  - "apps/*"
-  - "tools/*"
+  - 'packages/*'
+  - 'apps/*'
+  - 'tools/*'

@@ -1,0 +1,6 @@
+{
+  "name": "@lyra-ds/react",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Lyra DS — thin React wrappers over @lyra-ds/styles. Placeholder until Phase 3."
+}
