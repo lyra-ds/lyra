@@ -80,7 +80,7 @@ Existing infrastructure covers all phase requirements — no test framework or t
 
 ## Validation Sign-Off
 
-- [x] All tasks have `<automated>` verify or Wave 0 dependencies (13/13 tasks carry `<automated>` blocks)
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies (14/14 tasks carry `<automated>` blocks)
 - [x] Sampling continuity: no 3 consecutive tasks without automated verify (streak = 0)
 - [x] Wave 0 covers all MISSING references (none exist)
 - [x] No watch-mode flags
