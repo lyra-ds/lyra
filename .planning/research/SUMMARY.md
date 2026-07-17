@@ -107,7 +107,7 @@ Based on research, suggested phase structure (follows ARCHITECTURE.md's dependen
 
 ### Phase 6: Docs Site (bilingual)
 **Rationale:** Consumes everything — packages, docgen output, and the `ui_kits/website` design. i18n structure is an architecture decision made at framework setup, not a retrofit.
-**Delivers:** Next.js 16 + fumadocs-core headless app styled entirely with Lyra; EN (default) + pt-BR with locale fallback; getting-started, per-component MDX pages (preview + generated props + copy code), white-label guide with live multibrand demo, plain-HTML usage page, compat-shadcn page, theme switcher, basic search, `/llms.txt` served as text/plain, landing page from `ui_kits/website`.
+**Delivers:** Next.js 16 + fumadocs-core headless app styled entirely with Lyra; EN (default) + pt-BR with locale fallback; getting-started, per-component MDX pages (preview + generated props + copy code), white-label guide with live multibrand demo, plain-HTML usage page, compat-shadcn page, theme switcher, basic search, llms.txt served as text/plain at the site root, landing page from `ui_kits/website`.
 **Uses:** fumadocs-core 16 / fumadocs-mdx 15, React 19.2 in docs app (peer pins), next-intl or plain dictionaries.
 **Avoids:** Pitfall #11 (EN canonical, fallback routing), UX pitfalls (contrast guidance, per-bundler quickstarts).
 
