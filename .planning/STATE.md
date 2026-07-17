@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: monorepo-foundation-governance
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-07-17T22:06:44.244Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-07-17T23:43:45.664Z"
 last_activity: 2026-07-17
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 5
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-07-16)
 ## Current Position
 
 Phase: 01 (monorepo-foundation-governance) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-07-17 — Phase 01 execution started
 
-Progress: [██████░░░░] 60%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [██████░░░░] 60%
 | Phase 01 P02 | 15min | 2 tasks | 13 files |
 | Phase 01 P03 | ~15m | 3 tasks | 7 files |
 | Phase 01 P04 | 6min | 2 tasks | 6 files |
+| Phase 01 P05 | 76min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Roadmap]: JSDoc language decision (EN canonical) locked into Phase 3 conventions, before docgen/docs consume it
 - [Phase ?]: Plan 01-02: Node engines pinned >=24 <25 (not bare >=24) so engine-strict fails fast on untested Node majors
 - [Phase ?]: Plan 01-02: .npmrc save-exact=true added to enforce no-floating-versions for future pnpm add (belt-and-suspenders with explicit manifest pins)
+- [Phase ?]: Plan 01-05: changesets ignore private packages (privatePackages.version=false) so scaffold packages don't block the changeset gate until they go public
+- [Phase ?]: Plan 01-05: main-protection ruleset now requires build,lint,test,typecheck; every change to main rides a PR with 4 green checks (D-07). OSS-03 recorded PARTIAL (base CI only; package gates in Phases 2-4)
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-17T22:06:44.238Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-07-17T23:42:34.422Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None
