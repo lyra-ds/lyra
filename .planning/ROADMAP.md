@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. A written 0.x versioning policy states that 0.MINOR = breaking and that the declared API surface includes props, `.lyra-*` class names, and token names
   5. `pnpm install` and workspace-wide build/test commands succeed from a clean clone (pnpm workspaces + changesets scaffold works)
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 
 Plans:
 **Wave 1**
@@ -45,7 +45,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — pnpm workspace scaffold, pinned toolchain, placeholder stubs, changesets lockstep config
+- [x] 01-02-PLAN.md — pnpm workspace scaffold, pinned toolchain, placeholder stubs, changesets lockstep config
 - [ ] 01-03-PLAN.md — Governance docs: LICENSE, CoC 3.0, SECURITY, CONTRIBUTING, VERSIONING, README EN + pt-BR
 - [ ] 01-04-PLAN.md — CI workflow (frozen lint/typecheck/test/build jobs + future-gate hooks), issue forms, PR template, CODEOWNERS
 
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Monorepo Foundation & Governance | 1/5 | In Progress|  |
+| 1. Monorepo Foundation & Governance | 2/5 | In Progress|  |
 | 2. Styles Package | 0/TBD | Not started | - |
 | 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
