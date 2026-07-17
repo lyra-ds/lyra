@@ -47,13 +47,13 @@ npm i @lyra-ds/styles @lyra-ds/react
 
 ```ts
 // Import the Lyra stylesheet once, at your application root.
-import "@lyra-ds/styles";
+import '@lyra-ds/styles';
 ```
 
 ## Usage
 
 ```tsx
-import { Button } from "@lyra-ds/react";
+import { Button } from '@lyra-ds/react';
 
 export function Example() {
   return <Button variant="primary">Get started</Button>;

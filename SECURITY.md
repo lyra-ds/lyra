@@ -8,10 +8,10 @@ security vulnerability seriously.
 Lyra DS is pre-1.0. While the project is on the `0.x` line, only the latest
 published minor release of each package receives security fixes.
 
-| Version   | Supported          |
-| --------- | ------------------ |
-| latest 0.x minor | Yes         |
-| older 0.x minors | No          |
+| Version          | Supported |
+| ---------------- | --------- |
+| latest 0.x minor | Yes       |
+| older 0.x minors | No        |
 
 Once the packages are published (Phase 7), the latest `0.MINOR` release of
 `@lyra-ds/styles` and `@lyra-ds/react` is the supported line.

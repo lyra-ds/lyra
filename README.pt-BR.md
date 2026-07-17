@@ -24,10 +24,10 @@ app inteiro definindo quatro tokens.
 
 ## Pacotes
 
-| Pacote            | Descrição                        |
-| ----------------- | -------------------------------- |
+| Pacote            | Descrição                             |
+| ----------------- | ------------------------------------- |
 | `@lyra-ds/styles` | Tokens + CSS dos componentes, zero JS |
-| `@lyra-ds/react`  | Componentes para React 18+       |
+| `@lyra-ds/react`  | Componentes para React 18+            |
 
 ## Status de pré-lançamento
 
@@ -48,13 +48,13 @@ npm i @lyra-ds/styles @lyra-ds/react
 
 ```ts
 // Importe a folha de estilos do Lyra uma única vez, na raiz da aplicação.
-import "@lyra-ds/styles";
+import '@lyra-ds/styles';
 ```
 
 ## Uso
 
 ```tsx
-import { Button } from "@lyra-ds/react";
+import { Button } from '@lyra-ds/react';
 
 export function Exemplo() {
   return <Button variant="primary">Começar</Button>;

@@ -1,7 +1,7 @@
 name: Feature request
 description: Propose a new capability or improvement for Lyra DS.
-title: "[Feature]: "
-labels: ["enhancement"]
+title: '[Feature]: '
+labels: ['enhancement']
 body:
   - type: markdown
     attributes:
