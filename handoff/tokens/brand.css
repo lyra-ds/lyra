@@ -1,0 +1,40 @@
+/* Lyra DS — white-label brand contract
+   Uma aplicação re-brandiza o Lyra definindo APENAS 2–4 tokens de entrada;
+   todo o grupo accent é derivado via color-mix. Inerte sem [data-brand].
+
+   Contrato (entrada):
+     --brand            cor primária da marca (obrigatório)
+     --brand-contrast   texto sobre a marca (default: branco)
+     --brand-radius     raio padrão de controles (opcional)
+     --brand-font       família tipográfica (opcional)
+
+   Uso:
+     <html data-brand="acme"> + um CSS da marca:
+     [data-brand="acme"] { --brand: #0D9488; --brand-radius: 6px; }
+*/
+
+[data-brand] {
+  --accent:           var(--brand);
+  --accent-hover:     color-mix(in oklab, var(--brand), black 12%);
+  --accent-active:    color-mix(in oklab, var(--brand), black 22%);
+  --accent-soft:      color-mix(in oklab, var(--brand) 12%, var(--surface-card));
+  --accent-soft-text: color-mix(in oklab, var(--brand), var(--text-primary) 32%);
+  --on-accent:        var(--brand-contrast, #FFFFFF);
+  --focus-ring:       color-mix(in oklab, var(--brand) 24%, transparent);
+  --text-link:        var(--accent);
+  --border-accent:    var(--accent);
+  --radius-md:        var(--brand-radius, 10px);
+  --font-sans:        var(--brand-font, "Plus Jakarta Sans", system-ui, sans-serif);
+  --font-display:     var(--brand-font, "Plus Jakarta Sans", system-ui, sans-serif);
+}
+
+[data-theme="dark"][data-brand],
+[data-theme="dark"] [data-brand] {
+  --accent:           color-mix(in oklab, var(--brand), white 14%);
+  --accent-hover:     color-mix(in oklab, var(--brand), white 26%);
+  --accent-active:    color-mix(in oklab, var(--brand), white 38%);
+  --accent-soft:      color-mix(in oklab, var(--brand) 18%, transparent);
+  --accent-soft-text: color-mix(in oklab, var(--brand), white 45%);
+  --focus-ring:       color-mix(in oklab, var(--brand) 30%, transparent);
+  --text-link:        color-mix(in oklab, var(--brand), white 40%);
+}

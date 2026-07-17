@@ -1,0 +1,191 @@
+<!-- @dsCard group="Website" viewport="1280x760" name="Lyra Website" subtitle="Landing + docs interativos — hero, frameworks, showcase, dark mode" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lyra · Design System open source</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+  .lw-container { max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-6); }
+
+  /* header */
+  .lw-header { border-bottom: 1px solid var(--border-default); background: var(--surface-card); position: sticky; top: 0; z-index: var(--z-sticky); }
+  .lw-header__inner { display: flex; align-items: center; gap: var(--space-6); height: 60px; }
+  .lw-brand { display: flex; align-items: center; gap: var(--space-2); background: none; border: 0; cursor: pointer; padding: 0; }
+  .lw-mark { width: 24px; height: 24px; }
+  .ld-mark-dark { display: none; }
+  [data-theme="dark"] .ld-mark-light { display: none; }
+  [data-theme="dark"] .ld-mark-dark { display: inline; }
+  .lw-brand__word { font-family: var(--font-display); font-weight: var(--weight-extrabold); font-size: 18px; letter-spacing: -0.02em; color: var(--text-primary); }
+  .lw-nav { display: flex; gap: var(--space-1); margin-right: auto; }
+  .lw-nav__link {
+    font-family: var(--font-sans); font-size: var(--text-base); font-weight: var(--weight-medium);
+    color: var(--text-secondary); background: none; border: 0; cursor: pointer;
+    padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); text-decoration: none;
+    display: inline-flex; align-items: center;
+    transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  }
+  .lw-nav__link:hover { background: var(--surface-sunken); color: var(--text-primary); text-decoration: none; }
+  .lw-nav__link--active { color: var(--accent-soft-text); background: var(--accent-soft); }
+  .lw-header__actions { display: flex; align-items: center; gap: var(--space-2); }
+
+  /* hero */
+  .lw-hero { padding: var(--space-20) 0 var(--space-16); background: var(--surface-page); }
+  .lw-hero__inner { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-5); }
+  .lw-hero__title {
+    font-family: var(--font-display); font-weight: var(--weight-extrabold);
+    font-size: var(--text-5xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-display);
+    color: var(--text-primary); margin: 0;
+  }
+  .lw-hero__sub { font-size: var(--text-lg); line-height: var(--leading-relaxed); color: var(--text-secondary); max-width: 560px; margin: 0; }
+  .lw-hero__cta { display: flex; gap: var(--space-3); }
+  .lw-hero__meta { display: flex; gap: var(--space-6); color: var(--text-muted); font-size: var(--text-sm); }
+  .lw-hero__meta span { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+  /* sections */
+  .lw-section { padding: var(--space-16) 0; }
+  .lw-section--alt { background: var(--surface-card); border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); }
+  .lw-overline { font: var(--overline-font); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--accent-soft-text); }
+  .lw-h2 { font: var(--h1-font); letter-spacing: var(--tracking-heading); color: var(--text-primary); margin: var(--space-2) 0; }
+  .lw-section__sub { color: var(--text-secondary); font-size: var(--text-md); margin: 0 0 var(--space-8); max-width: 560px; }
+  .lw-section__sub code, .lw-docs__p code { font-family: var(--font-mono); font-size: 0.9em; background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius-xs); padding: 1px 5px; }
+
+  /* frameworks */
+  .lw-fw-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+  .lw-fw { display: flex; flex-direction: column; gap: var(--space-3); }
+  .lw-fw__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+  .lw-fw__name { font-weight: var(--weight-bold); color: var(--text-primary); }
+  .lw-fw__pkg { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+
+  /* showcase */
+  .lw-show__tabs { padding: var(--space-4) var(--space-6) 0; }
+  .lw-show__stage { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-8) var(--space-6); }
+  .lw-show__code {
+    margin: 0; padding: var(--space-5) var(--space-6);
+    background: var(--indigo-950); color: #C3C8E8;
+    font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1.7;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    overflow-x: auto;
+  }
+  article .lw-show__code { border-radius: var(--radius-md); }
+
+  /* docs */
+  .lw-docs { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-10); padding-top: var(--space-8); padding-bottom: var(--space-16); align-items: start; }
+  .lw-docs__side { display: flex; flex-direction: column; gap: var(--space-5); position: sticky; top: 84px; }
+  .lw-docs__group { display: flex; flex-direction: column; gap: 2px; }
+  .lw-docs__group-title { font: var(--overline-font); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-faint); padding: 0 var(--space-3) var(--space-2); }
+  .lw-docs__item {
+    text-align: left; font-family: var(--font-sans); font-size: var(--text-base); font-weight: var(--weight-medium);
+    color: var(--text-secondary); background: none; border: 0; cursor: pointer;
+    padding: 6px var(--space-3); border-radius: var(--radius-sm);
+    transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  }
+  .lyra-docs__item:hover, .lw-docs__item:hover { background: var(--surface-sunken); color: var(--text-primary); }
+  .lw-docs__item--active { background: var(--accent-soft); color: var(--accent-soft-text); font-weight: var(--weight-semibold); }
+  .lw-docs__content { display: flex; flex-direction: column; gap: var(--space-4); max-width: 680px; }
+  .lw-docs__title { font: var(--h1-font); letter-spacing: var(--tracking-heading); color: var(--text-primary); margin: 0; }
+  .lw-docs__h2 { font: var(--h2-font); font-size: var(--text-xl); color: var(--text-primary); margin: var(--space-4) 0 0; }
+  .lw-docs__p { font-size: var(--text-md); line-height: var(--leading-relaxed); color: var(--text-secondary); margin: 0; }
+  .lw-docs__foot { display: flex; justify-content: space-between; border-top: 1px solid var(--border-default); padding-top: var(--space-4); margin-top: var(--space-4); }
+
+  /* footer */
+  .lw-footer { border-top: 1px solid var(--border-default); background: var(--surface-card); }
+  .lw-footer__inner { display: flex; align-items: center; gap: var(--space-6); padding-top: var(--space-8); padding-bottom: var(--space-8); }
+  .lw-footer__note { color: var(--text-muted); font-size: var(--text-sm); margin-right: auto; }
+  .lw-footer__links { display: flex; gap: var(--space-4); }
+  .lw-footer__links a { color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+
+  /* pricing */
+  .lw-center-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-2); margin-bottom: var(--space-8); }
+  .lw-price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); max-width: 880px; margin: 0 auto; }
+  .lw-price { display: flex; flex-direction: column; gap: var(--space-3); }
+  .lw-price--featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-md); }
+  .lw-price__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+  .lw-price__name { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--text-primary); }
+  .lw-price__value { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: var(--weight-extrabold); letter-spacing: var(--tracking-heading); color: var(--text-primary); }
+  .lw-price__value span { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-muted); letter-spacing: 0; }
+  .lw-price__desc { margin: 0; color: var(--text-muted); font-size: var(--text-base); }
+  .lw-checks { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+  .lw-check { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-base); color: var(--text-secondary); }
+  .lw-check > :first-child { color: var(--success); }
+  .lw-check--muted { color: var(--text-faint); }
+  .lw-check--muted > :first-child { color: var(--text-faint); }
+  .lw-compare { max-width: 880px; margin: var(--space-8) auto 0; }
+
+  /* testimonials */
+  .lw-quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+  .lw-quote-card { margin: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+  .lw-quote-card blockquote { margin: 0; font-size: var(--text-md); line-height: var(--leading-relaxed); color: var(--text-primary); }
+  .lw-quote-card figcaption { display: flex; align-items: center; gap: var(--space-3); }
+  .lw-quote-card__name { display: block; font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-primary); }
+  .lw-quote-card__role { display: block; font-size: var(--text-xs); color: var(--text-muted); }
+
+  /* faq */
+  .lw-faq { display: grid; grid-template-columns: 320px 1fr; gap: var(--space-12); align-items: start; }
+
+  /* cta */
+  .lw-cta { background: var(--indigo-950); padding: var(--space-16) 0; }
+  .lw-cta__inner { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-5); }
+  .lw-cta__mark { width: 40px; height: 40px; }
+  .lw-cta__title {
+    font-family: var(--font-display); font-weight: var(--weight-extrabold);
+    font-size: var(--text-4xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-display);
+    color: var(--night-100); margin: 0;
+  }
+  .lw-cta .lw-cta__ghost { background: transparent; color: var(--night-100); border-color: var(--night-600); }
+  .lw-cta .lw-cta__ghost:hover { background: var(--night-800); border-color: var(--night-600); }
+
+  @media (max-width: 900px) {
+    .lw-price-grid, .lw-quotes { grid-template-columns: 1fr; }
+    .lw-faq { grid-template-columns: 1fr; gap: var(--space-6); }
+    .lw-fw-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel" src="sections.jsx"></script>
+<script type="text/babel" src="sections-marketing.jsx"></script>
+<script type="text/babel" src="docs.jsx"></script>
+<script type="text/babel">
+const LABELS_SITE = { home: "Landing", docs: "Docs" };
+const { CookieBanner } = window.LyraDesignSystem_e82d95;
+function App() {
+  const [page, setPage] = React.useState(() => localStorage.getItem("lyra-site-page") || "home");
+  const [dark, setDark] = React.useState(() => localStorage.getItem("lyra-site-theme") === "dark");
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    localStorage.setItem("lyra-site-theme", dark ? "dark" : "light");
+  }, [dark]);
+  React.useEffect(() => { localStorage.setItem("lyra-site-page", page); }, [page]);
+  return (
+    <div data-screen-label={LABELS_SITE[page]}>
+      <SiteHeader page={page} onNavigate={setPage} dark={dark} onToggleTheme={() => setDark(!dark)} />
+      {page === "home" ? (
+        <main>
+          <Hero onNavigate={setPage} />
+          <ComponentShowcase />
+          <Frameworks />
+          <PricingSection />
+          <Testimonials />
+          <FAQSection />
+          <CTASection onNavigate={setPage} />
+        </main>
+      ) : (
+        <main><DocsPage /></main>
+      )}
+      <SiteFooter />
+      <CookieBanner storageKey="lyra-site-cookies" policyHref="#" />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

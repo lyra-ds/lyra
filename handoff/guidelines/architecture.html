@@ -1,0 +1,55 @@
+<!-- @dsCard group="Guidelines" viewport="760x980" name="Arquitetura & Distribuição" subtitle="Fundamentos revisados: camadas de token, white-label, multi-stack, registry" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;padding:28px 32px;background:var(--surface-card);font:var(--body-font);color:var(--text-primary)}
+h1{font:var(--h2-font);letter-spacing:var(--tracking-heading);margin:0 0 4px}
+.sub{color:var(--text-muted);margin:0 0 20px;font-size:var(--text-sm)}
+h2{font:var(--body-strong-font);text-transform:uppercase;letter-spacing:var(--tracking-caps);font-size:var(--text-xs);color:var(--accent);margin:22px 0 8px}
+p{margin:0 0 8px;color:var(--text-secondary);text-wrap:pretty}
+code{font:var(--code-font);background:var(--surface-sunken);padding:1px 5px;border-radius:var(--radius-xs);color:var(--text-primary)}
+.tiers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0}
+.tier{border:1px solid var(--border-default);border-radius:var(--radius-md);padding:10px 12px}
+.tier b{display:block;font-size:var(--text-sm);margin-bottom:3px}
+.tier span{font-size:var(--text-xs);color:var(--text-muted)}
+ul{margin:4px 0 8px;padding-left:18px;color:var(--text-secondary)}
+li{margin-bottom:3px}
+.dec{display:flex;gap:8px;align-items:baseline;margin-bottom:6px}
+.pill{flex:none;font-size:10px;font-weight:var(--weight-bold);text-transform:uppercase;letter-spacing:var(--tracking-caps);background:var(--accent-soft);color:var(--accent-soft-text);border-radius:var(--radius-full);padding:2px 8px}
+a{color:var(--text-link)}a:hover{color:var(--accent-hover)}
+</style>
+</head>
+<body>
+<h1>Arquitetura & Distribuição</h1>
+<p class="sub">Fundamentos do Lyra como design system open source, multi-stack e white-label — revisado jul/2026.</p>
+<h2>Camadas de token</h2>
+<div class="tiers">
+<div class="tier"><b>1 · Primitivas</b><span>Escalas cruas: <code>--indigo-600</code>, <code>--space-4</code>, <code>--text-2xl</code>. Nunca usadas por componentes.</span></div>
+<div class="tier"><b>2 · Semânticas</b><span>Intenção: <code>--accent</code>, <code>--surface-card</code>, <code>--text-muted</code>. Única camada que componentes consomem. Temas e marcas trocam só esta camada.</span></div>
+<div class="tier"><b>3 · Componentes</b><span>Classes <code>.lyra-*</code> com variantes por modificador (<code>--primary</code>, <code>--sm</code>). Sem cor ou raio hardcoded.</span></div>
+</div>
+<h2>Decisões (vs. shadcn)</h2>
+<div class="dec"><span class="pill">CSS puro</span><p>Sem Tailwind no core. CSS variables + classes funcionam em React, Vue, Svelte e Web Components — a base do requisito multi-stack. Um preset Tailwind pode ser publicado depois como pacote satélite.</p></div>
+<div class="dec"><span class="pill">Naming Lyra</span><p>Mantemos a nomenclatura semântica própria (mais rica que a do shadcn) e oferecemos <code>tokens/compat-shadcn.css</code> opt-in que mapeia <code>--background</code>, <code>--primary</code>, <code>--ring</code>… para tokens Lyra — componentes do ecossistema shadcn rendam com a pele Lyra.</p></div>
+<div class="dec"><span class="pill">Zag.js</span><p>Comportamento acessível via state machines agnósticas de framework (base do Ark UI; suporta React/Vue/Svelte) em vez de Radix (React-only). O core CSS não depende disso.</p></div>
+<div class="dec"><span class="pill">LLM-first</span><p>API canônica para agentes em <code>llms.txt</code> (raiz), gerada dos <code>.d.ts</code> reais: regras de geração, tokens semânticos e props de todos os componentes. Fase 2: registry com metadados por item + MCP server para instalação via agente.</p></div>
+<h2>White-label</h2>
+<p>Contrato em <code>tokens/brand.css</code>: a marca define <code>--brand</code>, <code>--brand-contrast</code>, <code>--brand-radius</code>, <code>--brand-font</code> sob <code>[data-brand="x"]</code>; todo o grupo accent (hover, active, soft, focus-ring, link) é derivado via <code>color-mix</code>, em light e dark. Prova viva em <code>explorations/multibrand-demo.html</code>.</p>
+<h2>Distribuição — duas vias, não excludentes</h2>
+<ul>
+<li><b>npm</b>: <code>@lyra-ds/core</code> (tokens + CSS, zero JS) · <code>@lyra-ds/react</code> · depois <code>@lyra-ds/vue</code>, <code>@lyra-ds/svelte</code>, <code>@lyra-ds/wc</code> — adapters finos sobre o mesmo CSS.</li>
+<li><b>Registry estilo shadcn</b>: <code>registry.json</code> servindo os componentes React como código copiável (<code>npx shadcn add @lyra/button</code>). Ownership do código para quem prefere.</li>
+</ul>
+<p>Recomendação: lançar npm core+react primeiro; registry como segunda fase reaproveitando os mesmos fontes.</p>
+<h2>Estrutura de repositório proposta</h2>
+<ul>
+<li><code>packages/core</code> — tokens/, components/*.css, brand.css, compat-shadcn.css</li>
+<li><code>packages/react</code> — wrappers JSX (os 40 atuais)</li>
+<li><code>packages/{vue,svelte,wc}</code> — fase 2, sobre Zag.js</li>
+<li><code>apps/docs</code> — site + registry</li>
+</ul>
+</body>
+</html>

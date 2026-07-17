@@ -1,0 +1,59 @@
+<!-- @dsCard group="Components" viewport="700x360" name="Navigation" subtitle="Tabs · Breadcrumb · Pagination · Dropdown · Stepper" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-card); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { Tabs, Breadcrumb, Pagination, Dropdown, Stepper, IconButton, Icon } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  const [tab, setTab] = React.useState("geral");
+  const [pill, setPill] = React.useState("30d");
+  const [page, setPage] = React.useState(4);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <Breadcrumb items={[
+        { label: "Projetos", href: "#" },
+        { label: "Lyra DS", href: "#" },
+        { label: "Configurações" },
+      ]} />
+      <Tabs active={tab} onChange={setTab} items={[
+        { id: "geral", label: "Geral" },
+        { id: "membros", label: "Membros", count: 12 },
+        { id: "billing", label: "Cobrança" },
+        { id: "api", label: "API" },
+      ]} />
+      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <Tabs variant="pills" active={pill} onChange={setPill} items={[
+          { id: "7d", label: "7 dias" },
+          { id: "30d", label: "30 dias" },
+          { id: "12m", label: "12 meses" },
+        ]} />
+        <Pagination page={page} total={12} onChange={setPage} />
+        <Dropdown
+          align="end"
+          trigger={<IconButton label="Mais ações" variant="secondary"><Icon name="ellipsis" size={18} /></IconButton>}
+          items={[
+            { id: "edit", label: "Editar", icon: <Icon name="pencil" size={16} /> },
+            { id: "dup", label: "Duplicar", icon: <Icon name="copy" size={16} /> },
+            { type: "separator" },
+            { id: "del", label: "Remover", icon: <Icon name="trash-2" size={16} />, danger: true },
+          ]}
+        />
+      </div>
+      <Stepper steps={["Conta", "Workspace", "Confirmação"]} active={1} />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!-- @dsCard group="Components" viewport="640x500" name="Create Workspace" subtitle="CreateWorkspaceDialog — nome, slug auto-gerado e preview" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-sunken); margin: 0; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { CreateWorkspaceDialog } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  const [open, setOpen] = React.useState(true);
+  return <CreateWorkspaceDialog open={open} onClose={() => setOpen(true)} onCreate={() => {}} />;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

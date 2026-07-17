@@ -1,0 +1,101 @@
+<!-- @dsCard group="Auth" viewport="1280x760" name="Lyra Auth" subtitle="Login, cadastro em 3 etapas e recuperação de senha — fluxo interativo" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lyra · Entrar</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+  .la-app { display: grid; grid-template-columns: 440px 1fr; min-height: 100vh; }
+
+  /* brand panel */
+  .la-brand {
+    background: var(--indigo-950);
+    color: var(--night-100);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-10);
+    gap: var(--space-10);
+  }
+  .la-brand__top { display: flex; align-items: center; gap: var(--space-2); }
+  .la-brand__mark { width: 28px; height: 28px; }
+  .la-brand__word { font-family: var(--font-display); font-weight: var(--weight-extrabold); font-size: 20px; letter-spacing: -0.02em; }
+  .la-brand__headline {
+    font-family: var(--font-display); font-weight: var(--weight-extrabold);
+    font-size: var(--text-3xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-display);
+    margin: 0 0 var(--space-3);
+  }
+  .la-brand__sub { color: var(--night-300); font-size: var(--text-md); margin: 0; }
+  .la-quote {
+    margin: 0;
+    background: var(--night-800);
+    border: 1px solid var(--night-600);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+  }
+  .la-quote__text { margin: 0 0 var(--space-3); font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--night-100); }
+  .la-quote__author { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--night-300); }
+
+  /* form side */
+  .la-stage { display: flex; align-items: center; justify-content: center; padding: var(--space-10) var(--space-6); background: var(--surface-page); }
+  .la-card { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: var(--space-4); }
+  .la-card--wide { max-width: 440px; }
+  .la-card--center { align-items: center; text-align: center; }
+  .la-title { font: var(--h1-font); letter-spacing: var(--tracking-heading); color: var(--text-primary); margin: 0; }
+  .la-sub { color: var(--text-muted); font-size: var(--text-base); margin: -8px 0 0; }
+  .la-form { display: flex; flex-direction: column; gap: var(--space-4); }
+  .la-row { display: flex; gap: var(--space-2); align-items: center; }
+  .la-row--between { justify-content: space-between; }
+  .la-divider { display: flex; align-items: center; gap: var(--space-3); color: var(--text-faint); font-size: var(--text-xs); }
+  .la-divider::before, .la-divider::after { content: ""; flex: 1; height: 1px; background: var(--border-default); }
+  .la-link {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font-family: var(--font-sans); font-size: inherit; font-weight: var(--weight-semibold);
+    color: var(--text-link);
+  }
+  .la-link:hover { text-decoration: underline; }
+  .la-foot { font-size: var(--text-sm); color: var(--text-muted); text-align: center; margin: 0; }
+  .la-strength { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-muted); }
+  .la-strength .lyra-progress { flex: 1; }
+  .la-done-icon {
+    width: 56px; height: 56px; border-radius: var(--radius-full);
+    background: var(--success-soft); color: var(--success-text);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  @media (max-width: 900px) {
+    .la-app { grid-template-columns: 1fr; }
+    .la-brand { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel" src="screens.jsx"></script>
+<script type="text/babel">
+const LABELS = { login: "Login", signup: "Cadastro", forgot: "Recuperar senha", done: "Sucesso" };
+function App() {
+  const [screen, setScreen] = React.useState(() => localStorage.getItem("lyra-auth-screen") || "login");
+  React.useEffect(() => { localStorage.setItem("lyra-auth-screen", screen); }, [screen]);
+  return (
+    <div className="la-app" data-screen-label={LABELS[screen]}>
+      <BrandPanel />
+      <main className="la-stage">
+        {screen === "login" && <LoginScreen go={setScreen} />}
+        {screen === "signup" && <SignupScreen go={setScreen} />}
+        {screen === "forgot" && <ForgotScreen go={setScreen} />}
+        {screen === "done" && <DoneScreen go={setScreen} />}
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

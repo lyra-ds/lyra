@@ -1,0 +1,22 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Sombras" subtitle="Elevação sutil tintada de slate; dark mode usa bordas" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px 20px; background: var(--surface-page); }
+  .row { display: flex; gap: 18px; }
+  .card { flex: 1; height: 90px; background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius-lg); display: flex; align-items: flex-end; padding: 10px 12px; }
+  .lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="card" style="box-shadow: var(--shadow-xs)"><span class="lbl">--shadow-xs</span></div>
+  <div class="card" style="box-shadow: var(--shadow-sm)"><span class="lbl">--shadow-sm · cards</span></div>
+  <div class="card" style="box-shadow: var(--shadow-md)"><span class="lbl">--shadow-md · hover</span></div>
+  <div class="card" style="box-shadow: var(--shadow-lg)"><span class="lbl">--shadow-lg · modais</span></div>
+</div>
+</body>
+</html>

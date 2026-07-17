@@ -1,0 +1,33 @@
+<!-- @dsCard group="Colors" viewport="700x170" name="Dark · Céu noturno" subtitle="Superfícies night indigo-tintadas do tema escuro" -->
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--surface-page); }
+  .stack { display: flex; gap: 10px; }
+  .layer { flex: 1; border-radius: var(--radius-md); border: 1px solid var(--border-default); padding: 12px; display: flex; flex-direction: column; gap: 4px; height: 96px; justify-content: flex-end; }
+  .t { font-size: 11px; font-weight: var(--weight-semibold); color: var(--text-primary); }
+  .v { font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); }
+  .accent-line { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .dotsw { width: 22px; height: 22px; border-radius: var(--radius-sm); }
+  .lbl { font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); margin-right: 8px; }
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="layer" style="background:var(--surface-sunken)"><span class="t">sunken</span><span class="v">#0B0D1D</span></div>
+  <div class="layer" style="background:var(--surface-page)"><span class="t">page</span><span class="v">#0E1023</span></div>
+  <div class="layer" style="background:var(--surface-card)"><span class="t">card</span><span class="v">#121430</span></div>
+  <div class="layer" style="background:var(--surface-raised)"><span class="t">raised</span><span class="v">#1C1F42</span></div>
+</div>
+<div class="accent-line">
+  <span class="lbl">accent no dark sobe um passo →</span>
+  <div class="dotsw" style="background:var(--indigo-500)"></div>
+  <div class="dotsw" style="background:var(--indigo-400)"></div>
+  <div class="dotsw" style="background:var(--indigo-300)"></div>
+  <span class="lbl" style="margin-left:auto">texto: <span style="color:var(--text-primary)">primary</span> · <span style="color:var(--text-muted)">muted</span> · <span style="color:var(--text-link)">link</span></span>
+</div>
+</body>
+</html>

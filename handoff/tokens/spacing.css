@@ -1,0 +1,36 @@
+/* Lyra DS — spacing, radii, sizing tokens (4px grid) */
+
+:root {
+  /* ---- spacing scale ---- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---- corner radii ---- */
+  --radius-xs:  4px;   /* checkbox, tags pequenas */
+  --radius-sm:  6px;   /* badges, inputs compactos */
+  --radius-md:  10px;  /* botões, inputs — o raio padrão Lyra */
+  --radius-lg:  14px;  /* cards */
+  --radius-xl:  20px;  /* modais, painéis grandes */
+  --radius-full: 999px;
+
+  /* ---- control sizes ---- */
+  --control-sm: 32px;
+  --control-md: 40px;  /* default */
+  --control-lg: 48px;
+
+  /* ---- layout ---- */
+  --container-max: 1200px;
+  --sidebar-width: 260px;
+  --content-gutter: var(--space-6);
+}

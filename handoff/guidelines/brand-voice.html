@@ -1,0 +1,31 @@
+<!-- @dsCard group="Brand" viewport="700x200" name="Voz & Tom" subtitle="pt-BR direto e caloroso · código em inglês · sem emoji" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 18px 20px; background: var(--surface-card); display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .col h4 { font-size: 11px; font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; margin: 0 0 8px; }
+  .yes h4 { color: var(--success-text); }
+  .no h4 { color: var(--danger-text); }
+  .ex { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 6px; padding-left: 10px; border-left: 2px solid var(--border-default); }
+  .yes .ex { border-left-color: var(--success); }
+  .no .ex { border-left-color: var(--danger); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="col yes">
+  <h4>Assim</h4>
+  <p class="ex">"Crie seu primeiro projeto para começar."</p>
+  <p class="ex">"Você usou 90% das chamadas deste mês."</p>
+  <p class="ex">"Projeto criado com sucesso."</p>
+</div>
+<div class="col no">
+  <h4>Assim não</h4>
+  <p class="ex">"O usuário deverá criar um projeto." (impessoal)</p>
+  <p class="ex">"Oops!! Algo deu errado 😢" (emoji, exagero)</p>
+  <p class="ex">"OPERAÇÃO CONCLUÍDA." (caps, robótico)</p>
+</div>
+</body>
+</html>

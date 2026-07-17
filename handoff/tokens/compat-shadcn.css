@@ -1,0 +1,28 @@
+/* Lyra DS — camada de compatibilidade shadcn/ui (OPT-IN, não importada por styles.css)
+   Mapeia as variáveis semânticas do shadcn para os tokens Lyra, permitindo que
+   componentes do ecossistema shadcn (registry, blocks, v0) rendam com a pele Lyra.
+   Importe DEPOIS de styles.css apenas em apps que misturam os dois mundos.
+   Nota: shadcn v4 espera valores de cor "crus" — aqui entregamos via var(),
+   compatível com uso direto em CSS (bg-[var(--background)] ou @theme inline). */
+
+:root, [data-theme="dark"] {
+  --background:            var(--surface-page);
+  --foreground:            var(--text-primary);
+  --card:                  var(--surface-card);
+  --card-foreground:       var(--text-primary);
+  --popover:               var(--surface-raised);
+  --popover-foreground:    var(--text-primary);
+  --primary:               var(--accent);
+  --primary-foreground:    var(--on-accent);
+  --secondary:             var(--surface-sunken);
+  --secondary-foreground:  var(--text-primary);
+  --muted:                 var(--surface-sunken);
+  --muted-foreground:      var(--text-muted);
+  --accent-foreground:     var(--accent-soft-text);
+  --destructive:           var(--danger);
+  --destructive-foreground: #FFFFFF;
+  --border:                var(--border-default);
+  --input:                 var(--border-default);
+  --ring:                  var(--focus-ring);
+  --radius:                var(--radius-md);
+}

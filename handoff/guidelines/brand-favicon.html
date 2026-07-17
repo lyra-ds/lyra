@@ -1,0 +1,30 @@
+<!-- @dsCard group="Brand" viewport="560x300" name="Favicon" subtitle="Estrela Vega sobre quadrado indigo — SVG + PNG 32/180/512" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { background: var(--surface-card); margin: 0; padding: 28px; font-family: var(--font-sans); }
+  .fav-row { display: flex; align-items: flex-end; gap: 32px; }
+  .fav-item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .fav-item img { display: block; }
+  .fav-item span { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+  .fav-ctx { display: flex; align-items: center; gap: 10px; background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius-full); padding: 8px 16px 8px 10px; margin-top: 28px; width: fit-content; }
+  .fav-ctx img { width: 16px; height: 16px; }
+  .fav-ctx span { font-size: var(--text-sm); color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<div class="fav-row">
+  <div class="fav-item"><img src="../assets/favicon-512.png" width="96" height="96" alt="Favicon 512"><span>512 · PWA</span></div>
+  <div class="fav-item"><img src="../assets/favicon-180.png" width="60" height="60" alt="Favicon 180"><span>180 · apple-touch</span></div>
+  <div class="fav-item"><img src="../assets/favicon-32.png" width="32" height="32" alt="Favicon 32"><span>32</span></div>
+  <div class="fav-item"><img src="../assets/favicon.svg" width="32" height="32" alt="Favicon SVG"><span>SVG</span></div>
+</div>
+<div class="fav-ctx">
+  <img src="../assets/favicon.svg" alt="">
+  <span>Lyra · Dashboard — aba do navegador</span>
+</div>
+</body>
+</html>

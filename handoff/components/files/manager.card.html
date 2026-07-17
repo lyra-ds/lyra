@@ -1,0 +1,34 @@
+<!-- @dsCard group="Components" viewport="680x440" name="File Manager" subtitle="FileManager — busca, lista/grade, breadcrumb e ações por arquivo" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-sunken); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { FileManager } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  return (
+    <FileManager
+      path={["Meu Drive", "Projetos", "Lyra DS"]}
+      files={[
+        { id: "f1", name: "Brand", type: "folder", items: 24, updated: "há 2 dias", shared: true },
+        { id: "f2", name: "Contratos", type: "folder", items: 8, updated: "há 1 semana" },
+        { id: "a1", name: "proposta-v3.pdf", size: 1840000, updated: "ontem" },
+        { id: "a2", name: "orçamento-2026.xlsx", size: 96000, updated: "há 3 dias" },
+        { id: "a3", name: "capa-site.png", size: 2400000, updated: "há 1 semana", shared: true },
+      ]}
+    />
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

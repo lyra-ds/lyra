@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Data" subtitle="Table · Stat · EmptyState" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-page); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { Table, Stat, EmptyState, Badge, Card, Button, Icon } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <Card padded><Stat label="Downloads mensais" value="48.210" delta="12,4%" direction="up" /></Card>
+        <Card padded><Stat label="Issues abertas" value="37" delta="3 esta semana" direction="down" /></Card>
+        <Card padded><Stat label="Contribuidores" value="214" delta="estável" direction="flat" /></Card>
+      </div>
+      <Table
+        hover
+        columns={[
+          { key: "name", label: "Pacote" },
+          { key: "status", label: "Status" },
+          { key: "version", label: "Versão" },
+          { key: "updated", label: "Atualizado", align: "right" },
+        ]}
+        rows={[
+          { id: 1, name: <span className="lyra-table__primary">@lyra-ds/react</span>, status: <Badge tone="success" dot>Estável</Badge>, version: "1.0.4", updated: "há 2h" },
+          { id: 2, name: <span className="lyra-table__primary">@lyra-ds/vue</span>, status: <Badge tone="warning" dot>Beta</Badge>, version: "0.9.1", updated: "ontem" },
+          { id: 3, name: <span className="lyra-table__primary">lyra_liveview</span>, status: <Badge tone="info" dot>Em dev</Badge>, version: "0.3.0", updated: "há 4 dias" },
+        ]}
+      />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

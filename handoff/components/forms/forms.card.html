@@ -1,0 +1,68 @@
+<!-- @dsCard group="Components" viewport="700x620" name="Forms" subtitle="Input · Select · Combobox · Checkbox · Radio · Switch" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-card); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { Input, Select, Combobox, Checkbox, Radio, Switch, Icon } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <Input label="E-mail" placeholder="voce@exemplo.dev" hint="Nunca compartilharemos." />
+      <Input label="Busca" iconLeft={<Icon name="search" size={16} />} placeholder="Buscar componentes…" />
+      <Input label="Senha" type="password" defaultValue="123" error="Mínimo de 8 caracteres." />
+      <Select label="Framework" defaultValue="react">
+        <option value="react">React</option>
+        <option value="vue">Vue</option>
+        <option value="laravel">Laravel Blade</option>
+        <option value="phoenix">Phoenix LiveView</option>
+      </Select>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <Checkbox label="Aceito os termos" defaultChecked />
+        <Checkbox label="Receber novidades" />
+        <Checkbox label="Desabilitado" disabled />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", gap: 16 }}>
+          <Radio name="plan" label="Gratuito" defaultChecked />
+          <Radio name="plan" label="Pro" />
+        </div>
+        <Switch label="Notificações" defaultChecked />
+        <Switch label="Modo escuro" />
+      </div>
+      <Combobox
+        label="Responsável"
+        placeholder="Atribuir a…"
+        defaultValue="ana"
+        defaultOpen
+        options={[
+          { value: "ana", label: "Ana Souza", hint: "ana@lyra.dev" },
+          { value: "bruno", label: "Bruno Lima", hint: "bruno@lyra.dev" },
+          { value: "carla", label: "Carla Reis", hint: "carla@lyra.dev" },
+          { value: "diego", label: "Diego Alves", hint: "diego@lyra.dev" },
+        ]}
+      />
+      <Combobox
+        label="Projeto"
+        placeholder="Selecionar projeto…"
+        options={[
+          { value: "atlas", label: "Atlas" },
+          { value: "nova", label: "Nova" },
+        ]}
+      />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

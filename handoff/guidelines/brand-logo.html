@@ -1,0 +1,25 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="Logo · Lyra" subtitle="Estrela Vega de 4 pontas + wordmark em Jakarta extrabold" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--surface-card); }
+  .row { display: flex; gap: 14px; }
+  .tile { flex: 1; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; gap: 12px; height: 130px; }
+  .tile--light { background: var(--surface-page); border: 1px solid var(--border-default); }
+  .tile--dark { background: var(--indigo-950); }
+  .word { font-family: var(--font-display); font-weight: var(--weight-extrabold); font-size: 32px; letter-spacing: -0.03em; }
+  .tile--light .word { color: var(--slate-900); }
+  .tile--dark .word { color: var(--night-100); }
+  img { width: 40px; height: 40px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="tile tile--light"><img src="../assets/lyra-mark.svg" alt="Lyra"><span class="word">Lyra</span></div>
+  <div class="tile tile--dark"><img src="../assets/lyra-mark-light.svg" alt="Lyra"><span class="word">Lyra</span></div>
+</div>
+</body>
+</html>

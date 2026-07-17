@@ -1,0 +1,25 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Raios de borda" subtitle="4→20px + full — md (10px) é o raio padrão" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 18px 20px; background: var(--surface-card); }
+  .row { display: flex; gap: 14px; align-items: flex-end; }
+  .box { width: 88px; height: 72px; background: var(--accent-soft); border: 1.5px solid var(--accent); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; }
+  .lbl { font-family: var(--font-mono); font-size: 10px; color: var(--accent-soft-text); }
+  .pill { width: 88px; height: 40px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="box" style="border-radius: var(--radius-xs)"><span class="lbl">xs · 4</span></div>
+  <div class="box" style="border-radius: var(--radius-sm)"><span class="lbl">sm · 6</span></div>
+  <div class="box" style="border-radius: var(--radius-md); background: var(--accent); border-color: var(--accent);"><span class="lbl" style="color:#fff">md · 10 ★</span></div>
+  <div class="box" style="border-radius: var(--radius-lg)"><span class="lbl">lg · 14</span></div>
+  <div class="box" style="border-radius: var(--radius-xl)"><span class="lbl">xl · 20</span></div>
+  <div class="box pill" style="border-radius: var(--radius-full); align-items: center; padding-bottom: 0;"><span class="lbl">full</span></div>
+</div>
+</body>
+</html>

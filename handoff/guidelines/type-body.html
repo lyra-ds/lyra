@@ -1,0 +1,21 @@
+<!-- @dsCard group="Type" viewport="700x180" name="Body & UI" subtitle="14px padrão de UI · 16px long-form · caption e overline" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 18px 20px; background: var(--surface-card); display: flex; flex-direction: column; gap: 10px; }
+  .md { font-size: var(--text-md); line-height: var(--leading-relaxed); color: var(--text-primary); max-width: 560px; }
+  .base { font: var(--body-font); color: var(--text-secondary); max-width: 560px; }
+  .caption { font: var(--caption-font); color: var(--text-muted); }
+  .overline { font: var(--overline-font); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<span class="overline">Overline · 12 bold caps</span>
+<p class="md" style="margin:0">Long-form em 16px com leading 1.65 — usado em docs e artigos. O Lyra privilegia clareza sobre densidade.</p>
+<p class="base" style="margin:0">UI body em 14px com leading 1.5 — o tamanho padrão de interfaces: tabelas, formulários, menus e cards.</p>
+<span class="caption">Caption · 12 medium — hints, timestamps e metadados.</span>
+</body>
+</html>

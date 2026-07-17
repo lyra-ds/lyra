@@ -1,0 +1,29 @@
+/* Lyra DS — base element styles (mínimo; o grosso vem dos componentes) */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: var(--body-font);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-soft-text);
+}
+
+a {
+  color: var(--text-link);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+code, pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Components" viewport="640x470" name="Command Palette" subtitle="Busca global ⌘K — grupos, atalhos e navegação por teclado" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-sunken); margin: 0; padding: 24px; display: flex; justify-content: center; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { CommandPalette, Icon } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  return (
+    <CommandPalette
+      inline
+      groups={[
+        { label: "Ações", items: [
+          { id: "new", label: "Novo projeto", icon: <Icon name="plus" size={17} />, shortcut: "⌘ N" },
+          { id: "invite", label: "Convidar membro", icon: <Icon name="user-plus" size={17} />, hint: "Time" },
+          { id: "upload", label: "Enviar arquivo", icon: <Icon name="cloud-upload" size={17} />, shortcut: "⌘ U" },
+        ]},
+        { label: "Ir para", items: [
+          { id: "dash", label: "Dashboard", icon: <Icon name="layout-dashboard" size={17} />, shortcut: "G D" },
+          { id: "settings", label: "Configurações", icon: <Icon name="settings" size={17} />, shortcut: "G S" },
+        ]},
+      ]}
+    />
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

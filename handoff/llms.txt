@@ -1,0 +1,828 @@
+# Lyra Design System — llms.txt
+
+> Lyra é um design system open source, CSS-first e white-label. Núcleo em CSS puro
+> (custom properties + classes `.lyra-*`), wrappers React finos por cima.
+> Este arquivo é a referência canônica para agentes/LLMs gerarem UI com Lyra.
+
+## Regras para gerar código Lyra
+
+1. NUNCA hardcode cor, raio, sombra, fonte ou espaçamento — use sempre tokens semânticos.
+2. Componentes consomem APENAS a camada semântica (`--accent`, `--surface-card`, `--text-muted`…),
+   nunca primitivas (`--indigo-600`, `--slate-200`).
+3. Dark mode: automático via `[data-theme="dark"]` no `<html>` — não escreva estilos dark manuais.
+4. White-label: marcas definem `--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`
+   sob `[data-brand="x"]` (ver tokens/brand.css); todo o grupo accent é derivado via color-mix.
+5. Em HTML puro use as classes: `.lyra-btn .lyra-btn--{primary|secondary|soft|ghost|danger} .lyra-btn--{sm|md|lg}`.
+   Em React use os componentes abaixo — as classes são geradas por eles.
+6. Foco: `box-shadow: var(--shadow-focus)` em `:focus-visible`; nunca `outline` custom.
+7. Interop shadcn: importe `tokens/compat-shadcn.css` DEPOIS de styles.css (--background, --primary, --ring… mapeados).
+
+## Tokens semânticos (camada que você usa)
+
+Cores: --accent, --accent-hover, --accent-active, --accent-soft, --accent-soft-text, --on-accent, --focus-ring, --surface-page, --surface-card, --surface-raised, --surface-sunken, --surface-overlay, --text-primary, --text-secondary, --text-muted, --text-faint, --text-inverse, --text-link, --border-default, --border-strong, --border-accent, --success, --success-soft, --success-text, --warning, --warning-soft, --warning-text, --danger, --danger-soft, --danger-text, --info, --info-soft, --info-text
+
+Espaço/raio/controles:
+--space-0, --space-1, --space-2, --space-3, --space-4, --space-5, --space-6, --space-8, --space-10, --space-12, --space-16, --space-20, --space-24, --radius-xs, --radius-sm, --radius-md, --radius-lg, --radius-xl, --radius-full, --control-sm, --control-md, --control-lg, --container-max, --sidebar-width, --content-gutter
+
+Tipografia: famílias --font-{sans,display,mono}; pesos --weight-{regular..extrabold};
+tamanhos --text-{xs..6xl} (UI default 14px = --text-base);
+estilos compostos p/ shorthand font: --display-font, --h1-font, --h2-font, --h3-font, --body-font, --body-strong-font, --caption-font, --overline-font, --code-font
+
+Efeitos: --shadow-{xs,sm,md,lg,focus}; --duration-{fast,base,slow}; --ease-{out,in-out};
+z-index --z-{dropdown,sticky,overlay,dialog,toast,tooltip}.
+
+## API dos componentes React (@lyra-ds/react)
+
+## Buttons
+
+### Button
+```ts
+/**
+ * Botão padrão do Lyra DS.
+ */
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Padrão "primary" */
+  variant?: "primary" | "secondary" | "soft" | "ghost" | "danger";
+  /** Padrão "md" (40px) */
+  size?: "sm" | "md" | "lg";
+  /** Ícone à esquerda do rótulo (normalmente <Icon size={16}/>) */
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
+  /** Mostra spinner e bloqueia interação */
+  loading?: boolean;
+  /** Ocupa 100% da largura */
+  full?: boolean;
+}
+export declare function Button(props: ButtonProps): JSX.Element;
+```
+
+### IconButton
+```ts
+/**
+ * Botão quadrado só-ícone com aria-label obrigatório.
+ */
+export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Rótulo acessível (obrigatório) — vira aria-label e title */
+  label: string;
+  /** Padrão "secondary" */
+  variant?: "primary" | "secondary" | "soft" | "ghost" | "danger";
+  /** Padrão "md" (40×40) */
+  size?: "sm" | "md" | "lg";
+  /** O ícone, normalmente <Icon name="…" /> */
+  children: React.ReactNode;
+}
+export declare function IconButton(props: IconButtonProps): JSX.Element;
+```
+
+## Data
+
+### EmptyState
+```ts
+/**
+ * Estado vazio convidativo.
+ */
+export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Normalmente <Icon name="…" size={24}/> */
+  icon?: React.ReactNode;
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  /** Normalmente um <Button> */
+  action?: React.ReactNode;
+}
+export declare function EmptyState(props: EmptyStateProps): JSX.Element;
+```
+
+### Stat
+```ts
+/**
+ * Métrica numérica destacada.
+ */
+export interface StatProps extends React.HTMLAttributes<HTMLDivElement> {
+  label: React.ReactNode;
+  /** O número grande, ex. "48.210" */
+  value: React.ReactNode;
+  /** Texto da variação, ex. "12,4% vs. mês anterior" */
+  delta?: React.ReactNode;
+  /** Colore e escolhe a seta. Padrão "flat" */
+  direction?: "up" | "down" | "flat";
+}
+export declare function Stat(props: StatProps): JSX.Element;
+```
+
+### Table
+```ts
+/**
+ * Tabela de dados declarativa.
+ */
+export interface TableColumn {
+  /** Chave do valor em cada row */
+  key: string;
+  label: React.ReactNode;
+  align?: "left" | "center" | "right";
+}
+export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
+  columns: TableColumn[];
+  /** Objetos com valores ReactNode; `id` opcional como key */
+  rows: Array<Record<string, React.ReactNode>>;
+  /** Realce de linha no hover */
+  hover?: boolean;
+}
+export declare function Table(props: TableProps): JSX.Element;
+```
+
+## Display
+
+### Accordion
+```ts
+/**
+ * Lista de itens expansíveis (FAQ, detalhes).
+ */
+export interface AccordionItem {
+  id: string;
+  title: React.ReactNode;
+  content: React.ReactNode;
+}
+export interface AccordionProps extends React.HTMLAttributes<HTMLDivElement> {
+  items: AccordionItem[];
+  /** id do item aberto inicialmente */
+  defaultOpen?: string;
+  /** Permite vários abertos ao mesmo tempo. Padrão false */
+  multiple?: boolean;
+}
+export declare function Accordion(props: AccordionProps): JSX.Element;
+```
+
+### Avatar
+```ts
+/**
+ * Avatar com imagem ou iniciais.
+ */
+export interface AvatarProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** URL da imagem; sem ela, mostra iniciais de `name` */
+  src?: string;
+  /** Nome completo — gera iniciais e title */
+  name?: string;
+  /** Padrão "md" (32px) */
+  size?: "sm" | "md" | "lg" | "xl";
+  /** "square" para workspaces/organizações. Padrão "circle" */
+  shape?: "circle" | "square";
+  /** Ponto de presença */
+  status?: "online" | "busy" | "away";
+}
+export declare function Avatar(props: AvatarProps): JSX.Element;
+
+export interface AvatarGroupProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children: React.ReactNode;
+}
+export declare function AvatarGroup(props: AvatarGroupProps): JSX.Element;
+```
+
+### Badge
+```ts
+/**
+ * Badge de status com tons semânticos.
+ */
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Padrão "neutral" */
+  tone?: "neutral" | "accent" | "success" | "warning" | "danger" | "info";
+  /** Ponto de status à esquerda */
+  dot?: boolean;
+  children: React.ReactNode;
+}
+export declare function Badge(props: BadgeProps): JSX.Element;
+```
+
+### Card
+```ts
+/**
+ * Superfície padrão para agrupar conteúdo.
+ */
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Título no header (opcional) */
+  title?: React.ReactNode;
+  /** Ações alinhadas à direita do header */
+  actions?: React.ReactNode;
+  /** Conteúdo do footer (separado por borda) */
+  footer?: React.ReactNode;
+  /** Aplica padding interno. Padrão true */
+  padded?: boolean;
+  /** Hover com elevação para cards clicáveis */
+  interactive?: boolean;
+}
+export declare function Card(props: CardProps): JSX.Element;
+```
+
+### Tag
+```ts
+/**
+ * Tag neutra para rótulos e filtros.
+ */
+export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Se presente, mostra o × de remoção */
+  onRemove?: () => void;
+  children: React.ReactNode;
+}
+export declare function Tag(props: TagProps): JSX.Element;
+```
+
+## Feedback
+
+### Alert
+```ts
+/**
+ * Mensagem contextual inline.
+ */
+export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Padrão "info" */
+  tone?: "info" | "success" | "warning" | "danger";
+  /** Linha de título em negrito */
+  title?: React.ReactNode;
+  /** Normalmente <Icon name="info" size={18}/> */
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}
+export declare function Alert(props: AlertProps): JSX.Element;
+```
+
+### CookieBanner
+```ts
+/**
+ * Banner de consentimento de cookies (LGPD), com persistência embutida.
+ */
+export interface CookieBannerProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Chave do localStorage onde a escolha é salva. Padrão "lyra-cookie-consent" */
+  storageKey?: string;
+  /** Link da política de privacidade */
+  policyHref?: string;
+  /** Chamado ao aceitar todos */
+  onAccept?: () => void;
+  /** Chamado ao manter somente essenciais */
+  onEssentials?: () => void;
+  /** Texto customizado (substitui o padrão LGPD) */
+  children?: React.ReactNode;
+}
+export declare function CookieBanner(props: CookieBannerProps): JSX.Element | null;
+```
+
+### Dialog
+```ts
+/**
+ * Dialog modal controlado.
+ */
+export interface DialogProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Controla a visibilidade */
+  open: boolean;
+  /** Chamado no ×, no clique fora */
+  onClose?: () => void;
+  title: React.ReactNode;
+  /** Botões de ação (alinhados à direita) */
+  footer?: React.ReactNode;
+  children: React.ReactNode;
+}
+export declare function Dialog(props: DialogProps): JSX.Element | null;
+```
+
+### Drawer
+```ts
+/**
+ * Slide-over lateral para formulários e detalhes.
+ */
+export interface DrawerProps extends React.HTMLAttributes<HTMLDivElement> {
+  open: boolean;
+  onClose?: () => void;
+  title: React.ReactNode;
+  /** Ações fixas no rodapé */
+  footer?: React.ReactNode;
+  children: React.ReactNode;
+}
+export declare function Drawer(props: DrawerProps): JSX.Element | null;
+```
+
+### Progress
+```ts
+/**
+ * Barra de progresso 0–100.
+ */
+export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Percentual 0–100 */
+  value: number;
+  /** Cor alternativa do preenchimento */
+  tone?: "success" | "danger";
+}
+export declare function Progress(props: ProgressProps): JSX.Element;
+```
+
+### Skeleton
+```ts
+/**
+ * Placeholder de carregamento com shimmer.
+ */
+export interface SkeletonProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Padrão "100%" */
+  width?: number | string;
+  /** Padrão 14 */
+  height?: number | string;
+  /** Círculo (para avatares) — usa height como diâmetro */
+  circle?: boolean;
+}
+export declare function Skeleton(props: SkeletonProps): JSX.Element;
+```
+
+### Spinner
+```ts
+/**
+ * Spinner indeterminado.
+ */
+export interface SpinnerProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Padrão "md" (24px) */
+  size?: "sm" | "md" | "lg";
+}
+export declare function Spinner(props: SpinnerProps): JSX.Element;
+```
+
+### Toast
+```ts
+/**
+ * Notificação transitória.
+ */
+export interface ToastProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Colore o ícone. Padrão "info" */
+  tone?: "info" | "success" | "danger";
+  icon?: React.ReactNode;
+  /** Mostra o × quando presente */
+  onClose?: () => void;
+  children: React.ReactNode;
+}
+export declare function Toast(props: ToastProps): JSX.Element;
+
+export interface ToastStackProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+export declare function ToastStack(props: ToastStackProps): JSX.Element;
+```
+
+### Tooltip
+```ts
+/**
+ * Tooltip de hover/focus.
+ */
+export interface TooltipProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Texto do tooltip (uma linha curta) */
+  tip: string;
+  /** O elemento alvo */
+  children: React.ReactNode;
+}
+export declare function Tooltip(props: TooltipProps): JSX.Element;
+```
+
+## Files
+
+### FileManager
+```ts
+/**
+ * Gestor de arquivos — busca, alternância lista/grade, breadcrumb de pasta
+ * e ações por item (abrir, renomear, baixar, excluir) via Dropdown.
+ */
+export interface ManagedFile {
+  id: string;
+  name: string;
+  /** "folder" agrupa no topo e usa ícone de pasta; omita para arquivo */
+  type?: "folder";
+  /** Bytes — formatado automaticamente (KB/MB/GB) */
+  size?: number;
+  /** Nº de itens (pastas) */
+  items?: number;
+  /** Texto livre, ex. "há 2 dias" */
+  updated?: string;
+  /** Mostra indicador de compartilhamento */
+  shared?: boolean;
+}
+export interface FileManagerProps {
+  files?: ManagedFile[];
+  /** Breadcrumb da pasta atual, ex. ["Meu Drive", "Projetos"] */
+  path?: string[];
+  /** Modo controlado de exibição */
+  view?: "list" | "grid";
+  /** Padrão "list" */
+  defaultView?: "list" | "grid";
+  onViewChange?: (view: "list" | "grid") => void;
+  /** Clique no nome/card (abrir pasta ou arquivo) */
+  onOpen?: (file: ManagedFile) => void;
+  /** Clique num segmento do breadcrumb (recebe o índice) */
+  onNavigate?: (index: number) => void;
+  /** Substitui o menu de ações padrão; retorne itens de Dropdown */
+  actions?: (file: ManagedFile) => any[];
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  className?: string;
+}
+export declare function FileManager(props: FileManagerProps): JSX.Element;
+```
+
+### FileUpload
+```ts
+/**
+ * Upload múltiplo — dropzone com drag & drop, lista de arquivos com
+ * progresso individual, validação de tamanho e remoção.
+ */
+export interface FileUploadItem {
+  id: string;
+  name: string;
+  size?: number;
+  /** 0–100 */
+  progress: number;
+  status: "uploading" | "done" | "error";
+  error?: string;
+}
+export interface FileUploadProps {
+  /** Texto principal da dropzone */
+  label?: string;
+  /** Texto auxiliar (sobrepõe o gerado por accept/maxSizeMB) */
+  hint?: string;
+  /** Ex. ".pdf,.png" — passado ao input e exibido no hint */
+  accept?: string;
+  /** Arquivos acima disso entram com status "error" */
+  maxSizeMB?: number;
+  /** Padrão true */
+  multiple?: boolean;
+  /** Duração da simulação de upload em ms. Padrão 1800 */
+  uploadDuration?: number;
+  /** Itens pré-existentes (para demos/estado inicial) */
+  defaultItems?: FileUploadItem[];
+  /** Chamado com os File[] reais ao adicionar */
+  onFiles?: (files: File[]) => void;
+  /** Chamado com a lista de itens a cada mudança */
+  onChange?: (items: FileUploadItem[]) => void;
+  className?: string;
+}
+export declare function FileUpload(props: FileUploadProps): JSX.Element;
+```
+
+## Forms
+
+### Checkbox
+```ts
+/**
+ * Checkbox com rótulo embutido.
+ */
+export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Rótulo clicável à direita */
+  label?: React.ReactNode;
+}
+export declare function Checkbox(props: CheckboxProps): JSX.Element;
+```
+
+### Combobox
+```ts
+/**
+ * Select com busca — abre popover com campo de filtro e lista navegável
+ * por teclado (↑ ↓ ↵ esc). Fecha ao clicar fora ou selecionar.
+ */
+export interface ComboboxOption {
+  value: string;
+  label: string;
+  /** Ícone à esquerda da opção (ex. <Icon name="circle" size={15}/>) */
+  icon?: React.ReactNode;
+  /** Texto secundário à direita do label */
+  hint?: string;
+}
+export interface ComboboxProps {
+  /** Rótulo acima do campo */
+  label?: string;
+  /** Texto auxiliar abaixo do campo */
+  hint?: string;
+  /** Mensagem de erro — ativa o estilo de erro e substitui o hint */
+  error?: string;
+  options?: ComboboxOption[];
+  /** Valor controlado */
+  value?: string;
+  /** Valor inicial (não controlado) */
+  defaultValue?: string;
+  onChange?: (value: string, option: ComboboxOption) => void;
+  /** Padrão "Selecionar…" */
+  placeholder?: string;
+  /** Padrão "Buscar…" */
+  searchPlaceholder?: string;
+  /** Padrão "Nenhum resultado." */
+  emptyMessage?: string;
+  disabled?: boolean;
+  /** Começa aberto (útil em demos) */
+  defaultOpen?: boolean;
+  id?: string;
+  className?: string;
+}
+export declare function Combobox(props: ComboboxProps): JSX.Element;
+```
+
+### Input
+```ts
+/**
+ * Campo de texto com label, hint e erro.
+ */
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Rótulo acima do campo */
+  label?: string;
+  /** Texto auxiliar abaixo do campo */
+  hint?: string;
+  /** Mensagem de erro — ativa o estilo de erro e substitui o hint */
+  error?: string;
+  /** Padrão md (40px) */
+  size?: "sm" | "md" | "lg";
+  /** Ícone à esquerda dentro do campo (ex. <Icon name="search" size={16}/>) */
+  iconLeft?: React.ReactNode;
+}
+export declare function Input(props: InputProps): JSX.Element;
+```
+
+### Radio
+```ts
+/**
+ * Radio com rótulo embutido.
+ */
+export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Rótulo clicável à direita */
+  label?: React.ReactNode;
+  /** Agrupe radios com o mesmo name */
+  name?: string;
+}
+export declare function Radio(props: RadioProps): JSX.Element;
+```
+
+### Select
+```ts
+/**
+ * Select nativo estilizado.
+ */
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  hint?: string;
+  error?: string;
+  size?: "sm" | "md" | "lg";
+  /** <option>s */
+  children: React.ReactNode;
+}
+export declare function Select(props: SelectProps): JSX.Element;
+```
+
+### Switch
+```ts
+/**
+ * Switch liga/desliga.
+ */
+export interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Rótulo à direita do trilho */
+  label?: React.ReactNode;
+}
+export declare function Switch(props: SwitchProps): JSX.Element;
+```
+
+### Textarea
+```ts
+/**
+ * Área de texto multi-linha.
+ */
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  hint?: string;
+  error?: string;
+}
+export declare function Textarea(props: TextareaProps): JSX.Element;
+```
+
+## Icons
+
+### Icon
+```ts
+/**
+ * Ícone Lucide colorido via currentColor.
+ */
+export interface IconProps {
+  /** Nome Lucide em kebab-case, ex. "arrow-right", "search", "layout-dashboard" */
+  name: string;
+  /** Lado em px. Padrão 20 (16 para inline, 24 para destaque) */
+  size?: number;
+  /** Cor CSS; padrão currentcolor */
+  color?: string;
+  /** Rótulo acessível; sem ele o ícone é decorativo (aria-hidden) */
+  title?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+export declare function Icon(props: IconProps): JSX.Element;
+```
+
+## Navigation
+
+### Breadcrumb
+```ts
+/**
+ * Trilha de navegação hierárquica.
+ */
+export interface BreadcrumbItem {
+  label: React.ReactNode;
+  href?: string;
+}
+export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
+  /** O último item é renderizado como página atual */
+  items: BreadcrumbItem[];
+}
+export declare function Breadcrumb(props: BreadcrumbProps): JSX.Element;
+```
+
+### CommandPalette
+```ts
+/**
+ * Command palette (⌘K) — busca global de comandos em overlay, com grupos,
+ * atalhos e navegação por teclado (↑ ↓ ↵ esc).
+ */
+export interface CommandItem {
+  id: string;
+  label: string;
+  /** Ícone à esquerda (ex. <Icon name="file-plus" size={17}/>) */
+  icon?: React.ReactNode;
+  /** Texto secundário (também é considerado na busca) */
+  hint?: string;
+  /** Atalho exibido à direita, teclas separadas por espaço (ex. "⌘ N") */
+  shortcut?: string;
+  onSelect?: () => void;
+}
+export interface CommandGroup {
+  label?: string;
+  items: CommandItem[];
+}
+export interface CommandPaletteProps {
+  /** Controla a exibição do overlay */
+  open?: boolean;
+  onClose?: () => void;
+  /** Quando informado, registra o atalho global ⌘K / Ctrl+K para abrir */
+  onOpen?: () => void;
+  /** Chamado com o item escolhido (além do onSelect do item) */
+  onSelect?: (item: CommandItem) => void;
+  groups?: CommandGroup[];
+  /** Padrão "Digite um comando ou busque…" */
+  placeholder?: string;
+  emptyMessage?: string;
+  /** Tecla do atalho global (com ⌘/Ctrl). Padrão "k" */
+  hotkey?: string;
+  /** Renderiza só o painel, sem overlay — útil em demos e docs */
+  inline?: boolean;
+  className?: string;
+}
+export declare function CommandPalette(props: CommandPaletteProps): JSX.Element;
+```
+
+### CreateWorkspaceDialog
+```ts
+/**
+ * Modal de criação de workspace — nome, slug auto-gerado (editável) e
+ * preview do avatar. Use com WorkspaceSwitcher (onCreate).
+ */
+export interface CreateWorkspaceDialogProps {
+  open?: boolean;
+  onClose?: () => void;
+  /** Recebe { name, slug } ao confirmar */
+  onCreate?: (data: { name: string; slug: string }) => void;
+  /** Padrão "Criar workspace" */
+  title?: string;
+  /** Prefixo exibido antes do slug. Padrão "lyra.dev/" */
+  slugPrefix?: string;
+}
+export declare function CreateWorkspaceDialog(props: CreateWorkspaceDialogProps): JSX.Element;
+```
+
+### Dropdown
+```ts
+/**
+ * Menu dropdown de ações.
+ */
+export type DropdownItem =
+  | { id?: string; label: React.ReactNode; icon?: React.ReactNode; danger?: boolean; onSelect?: () => void }
+  | { type: "separator" }
+  | { type: "label"; label: React.ReactNode };
+
+export interface DropdownProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Elemento que abre o menu (Button, IconButton, Avatar…) */
+  trigger: React.ReactNode;
+  items: DropdownItem[];
+  /** Alinhamento do painel. Padrão "start" */
+  align?: "start" | "end";
+  /** Começa aberto (útil em demos) */
+  defaultOpen?: boolean;
+}
+export declare function Dropdown(props: DropdownProps): JSX.Element;
+```
+
+### Pagination
+```ts
+/**
+ * Paginação numérica.
+ */
+export interface PaginationProps extends React.HTMLAttributes<HTMLElement> {
+  /** Página atual (1-based) */
+  page: number;
+  /** Total de páginas */
+  total: number;
+  onChange?: (page: number) => void;
+}
+export declare function Pagination(props: PaginationProps): JSX.Element;
+```
+
+### SidebarGroup
+```ts
+/**
+ * Agrupador de itens de menu para sidebar — label de seção em caps,
+ * opcionalmente colapsável, com badge de contagem por item.
+ */
+export interface SidebarGroupItem {
+  id: string;
+  label: string;
+  /** Ícone à esquerda (ex. <Icon name="inbox" size={17}/>) */
+  icon?: React.ReactNode;
+  /** Contagem/etiqueta à direita (ex. 12, "Novo") */
+  badge?: React.ReactNode;
+  /** Marca o item como ativo (aria-current="page") */
+  active?: boolean;
+  onSelect?: () => void;
+}
+export interface SidebarGroupProps {
+  /** Label da seção (ex. "Projetos") */
+  label?: string;
+  items?: SidebarGroupItem[];
+  /** Permite recolher o grupo clicando no label */
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+  /** Chamado com (id, item) ao clicar em qualquer item */
+  onSelect?: (id: string, item: SidebarGroupItem) => void;
+  className?: string;
+  /** Conteúdo extra após os itens (ex. botão "Adicionar") */
+  children?: React.ReactNode;
+}
+export declare function SidebarGroup(props: SidebarGroupProps): JSX.Element;
+```
+
+### Stepper
+```ts
+/**
+ * Stepper de fluxo multi-etapa.
+ */
+export interface StepperProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Labels das etapas, em ordem */
+  steps: React.ReactNode[];
+  /** Índice 0-based da etapa atual */
+  active: number;
+}
+export declare function Stepper(props: StepperProps): JSX.Element;
+```
+
+### Tabs
+```ts
+/**
+ * Tabs controladas (line ou pills).
+ */
+export interface TabItem {
+  id: string;
+  label: React.ReactNode;
+  /** Contador opcional no chip */
+  count?: number;
+  icon?: React.ReactNode;
+}
+export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
+  items: TabItem[];
+  /** id da tab ativa */
+  active: string;
+  onChange?: (id: string) => void;
+  /** "line" (sublinhado, padrão) ou "pills" (segmentado) */
+  variant?: "line" | "pills";
+}
+export declare function Tabs(props: TabsProps): JSX.Element;
+```
+
+### WorkspaceSwitcher
+```ts
+/**
+ * Seletor de workspace/tenant para a sidebar ou topbar — popover com lista
+ * de workspaces (avatar, plano, membros) e ação "Criar workspace".
+ */
+export interface Workspace {
+  id: string;
+  name: string;
+  /** Ex. "Pro", "Free" — aparece sob o nome */
+  plan?: string;
+  /** Quantidade de membros — vira "N membros" no popover */
+  members?: number;
+}
+export interface WorkspaceSwitcherProps {
+  workspaces?: Workspace[];
+  /** id do workspace atual (padrão: o primeiro) */
+  current?: string;
+  onChange?: (id: string, workspace: Workspace) => void;
+  /** Se presente, mostra a ação "Criar workspace" no rodapé do popover */
+  onCreate?: () => void;
+  /** Padrão "Criar workspace" */
+  createLabel?: string;
+  /** Começa aberto (útil em demos) */
+  defaultOpen?: boolean;
+  className?: string;
+}
+export declare function WorkspaceSwitcher(props: WorkspaceSwitcherProps): JSX.Element;
+```

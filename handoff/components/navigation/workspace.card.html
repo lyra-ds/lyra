@@ -1,0 +1,56 @@
+<!-- @dsCard group="Components" viewport="680x460" name="Workspace & Sidebar" subtitle="WorkspaceSwitcher · SidebarGroup — seletor de tenant e menus agrupados" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>html, body { min-height: 100%; } body { background: var(--surface-card); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { WorkspaceSwitcher, SidebarGroup, Icon } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  const [ws, setWs] = React.useState("acme");
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "250px 250px", gap: 32, alignItems: "start" }}>
+      <WorkspaceSwitcher
+        defaultOpen
+        workspaces={[
+          { id: "acme", name: "Acme Inc", plan: "Pro", members: 12 },
+          { id: "lab", name: "Lyra Labs", plan: "Free", members: 3 },
+          { id: "novak", name: "Novak Studio", plan: "Pro", members: 7 },
+        ]}
+        current={ws}
+        onChange={setWs}
+        onCreate={() => {}}
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <SidebarGroup
+          label="Geral"
+          items={[
+            { id: "home", label: "Início", icon: <Icon name="house" size={17} />, active: true },
+            { id: "inbox", label: "Caixa de entrada", icon: <Icon name="inbox" size={17} />, badge: 12 },
+            { id: "reports", label: "Relatórios", icon: <Icon name="chart-line" size={17} /> },
+          ]}
+        />
+        <SidebarGroup
+          label="Projetos"
+          collapsible
+          items={[
+            { id: "atlas", label: "Atlas", icon: <Icon name="folder" size={17} /> },
+            { id: "nova", label: "Nova", icon: <Icon name="folder" size={17} />, badge: "Novo" },
+          ]}
+        />
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

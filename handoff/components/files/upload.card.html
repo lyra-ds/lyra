@@ -1,0 +1,33 @@
+<!-- @dsCard group="Components" viewport="620x440" name="File Upload" subtitle="FileUpload — multiupload com drag & drop e progresso por arquivo" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-card); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { FileUpload } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  return (
+    <FileUpload
+      accept=".pdf,.png,.zip"
+      maxSizeMB={25}
+      defaultItems={[
+        { id: "1", name: "contrato-assinado.pdf", size: 482000, progress: 100, status: "done" },
+        { id: "2", name: "fotos-evento.zip", size: 8200000, progress: 64, status: "uploading" },
+        { id: "3", name: "video-institucional.mov", progress: 0, status: "error", error: "Acima de 25 MB" },
+      ]}
+    />
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

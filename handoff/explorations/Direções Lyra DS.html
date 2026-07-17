@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direções · Lyra DS</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, DCPostIt } = window;
+
+/* ---------- shared building blocks ---------- */
+
+function Swatch({ c, name, hex, dark }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: 0 }}>
+      <div style={{ height: 56, borderRadius: 8, background: c, border: "1px solid rgba(0,0,0,0.06)" }}></div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</div>
+      <div style={{ fontSize: 10, color: "#94a3b8", fontFamily: "JetBrains Mono, monospace" }}>{hex}</div>
+    </div>
+  );
+}
+
+function Btn({ t, mode, variant, children, radius, font }) {
+  const dark = mode === "dark";
+  const base = {
+    fontFamily: font, fontSize: 14, fontWeight: 600, padding: "10px 18px",
+    borderRadius: radius, border: "1px solid transparent", cursor: "pointer",
+    display: "inline-flex", alignItems: "center", gap: 8, lineHeight: "20px",
+  };
+  const primary = dark ? (t.primaryD || t.primary) : t.primary;
+  const onPrimary = dark ? (t.onPrimaryD || t.onPrimary) : t.onPrimary;
+  const ghostText = dark ? (t.primaryTextD || t.primaryText || t.primaryD || t.primary) : (t.primaryText || t.primary);
+  if (variant === "primary") return <button style={{ ...base, background: primary, color: onPrimary, boxShadow: dark ? "none" : "0 1px 2px rgba(0,0,0,0.08)" }}>{children}</button>;
+  if (variant === "secondary") return <button style={{ ...base, background: dark ? t.surfaceRaisedD : "#fff", color: dark ? t.textD : t.text, border: `1px solid ${dark ? t.borderD : t.border}`, boxShadow: dark ? "none" : "0 1px 2px rgba(0,0,0,0.05)" }}>{children}</button>;
+  return <button style={{ ...base, background: "transparent", color: ghostText }}>{children}</button>;
+}
+
+function Badge({ bg, fg, children, radius }) {
+  return <span style={{ background: bg, color: fg, fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: radius, lineHeight: "18px" }}>{children}</span>;
+}
+
+function Toggle({ on, color, trackOff }) {
+  return (
+    <div style={{ width: 40, height: 22, borderRadius: 999, background: on ? color : trackOff, position: "relative", transition: "background .15s" }}>
+      <div style={{ position: "absolute", top: 2, left: on ? 20 : 2, width: 18, height: 18, borderRadius: 999, background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }}></div>
+    </div>
+  );
+}
+
+function Field({ t, mode, radius, font, label, value, focus }) {
+  const dark = mode === "dark";
+  const accent = dark ? (t.primaryD || t.primary) : t.primary;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: dark ? t.textD : t.text }}>{label}</label>
+      <div style={{
+        fontFamily: font, fontSize: 14, padding: "10px 14px", borderRadius: radius,
+        background: dark ? t.surfaceD : "#fff", color: dark ? t.textD : t.text,
+        border: focus ? `1.5px solid ${accent}` : `1px solid ${dark ? t.borderD : t.border}`,
+        boxShadow: focus ? `0 0 0 3px ${t.ring}` : "none",
+      }}>{value}</div>
+    </div>
+  );
+}
+
+function ModePanel({ t, mode, radius, font, displayFont }) {
+  const dark = mode === "dark";
+  const text = dark ? t.textD : t.text;
+  const muted = dark ? t.mutedD : t.muted;
+  const border = dark ? t.borderD : t.border;
+  const surface = dark ? t.surfaceD : t.surface;
+  const raised = dark ? t.surfaceRaisedD : "#ffffff";
+  return (
+    <div style={{ flex: 1, background: surface, borderRadius: 14, border: `1px solid ${border}`, padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontFamily: font, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: muted }}>{dark ? "Dark" : "Light"}</span>
+        <Toggle on={dark} color={dark ? (t.primaryD || t.primary) : t.primary} trackOff={border} />
+      </div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <Btn t={t} mode={mode} variant="primary" radius={radius} font={font}>Criar projeto</Btn>
+        <Btn t={t} mode={mode} variant="secondary" radius={radius} font={font}>Cancelar</Btn>
+        <Btn t={t} mode={mode} variant="ghost" radius={radius} font={font}>Saiba mais</Btn>
+      </div>
+      <Field t={t} mode={mode} radius={radius} font={font} label="E-mail" value="voce@exemplo.dev" focus={true} />
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Badge bg={t.badgeSuccessBg} fg={t.badgeSuccessFg} radius={t.badgeRadius}>Estável</Badge>
+        <Badge bg={t.badgePrimaryBg} fg={t.badgePrimaryFg} radius={t.badgeRadius}>v1.0</Badge>
+        <Badge bg={t.badgeWarnBg} fg={t.badgeWarnFg} radius={t.badgeRadius}>Beta</Badge>
+      </div>
+      <div style={{ background: raised, border: `1px solid ${border}`, borderRadius: radius + 4, padding: 18, boxShadow: dark ? "none" : t.cardShadow, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ fontFamily: font, fontSize: 13, fontWeight: 500, color: muted }}>Downloads mensais</div>
+        <div style={{ fontFamily: displayFont, fontSize: 30, fontWeight: 700, color: text, letterSpacing: "-0.02em" }}>48.210</div>
+        <div style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: t.success }}>↑ 12,4% vs. mês anterior</div>
+      </div>
+    </div>
+  );
+}
+
+function DirectionBoard({ t, star, name, desc, radius, font, displayFont, typeLabel, radiusLabel }) {
+  return (
+    <div style={{ width: "100%", height: "100%", background: "#fff", padding: 32, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 24, fontFamily: font }}>
+      {/* header */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
+        <div style={{ fontFamily: displayFont, fontSize: 28, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{star} <span style={{ color: t.primary }}>{name}</span></div>
+        <div style={{ fontSize: 14, color: "#64748b" }}>{desc}</div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 16, fontSize: 12, color: "#94a3b8", fontFamily: "JetBrains Mono, monospace" }}>
+          <span>{typeLabel}</span><span>{radiusLabel}</span>
+        </div>
+      </div>
+      {/* palette */}
+      <div style={{ display: "flex", gap: 12 }}>
+        {t.palette.map((p) => <Swatch key={p.name} c={p.c} name={p.name} hex={p.hex} />)}
+      </div>
+      {/* type specimen */}
+      <div style={{ display: "flex", gap: 24, alignItems: "center", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9", padding: "18px 0" }}>
+        <div style={{ fontFamily: displayFont, fontSize: 54, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.03em", lineHeight: 1 }}>Aa</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ fontFamily: displayFont, fontSize: 22, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>Construa interfaces que escalam</div>
+          <div style={{ fontFamily: font, fontSize: 14, color: "#475569", maxWidth: 560 }}>Componentes acessíveis e consistentes para React, Vue, Laravel e Phoenix LiveView. Open source, do jeito que deveria ser.</div>
+        </div>
+        <div style={{ marginLeft: "auto", fontFamily: "JetBrains Mono, monospace", fontSize: 13, color: t.primary, background: t.badgePrimaryBg, padding: "8px 14px", borderRadius: 8 }}>npm i @lyra-ds/react</div>
+      </div>
+      {/* light / dark panels */}
+      <div style={{ display: "flex", gap: 20, flex: 1 }}>
+        <ModePanel t={t} mode="light" radius={radius} font={font} displayFont={displayFont} />
+        <ModePanel t={t} mode="dark" radius={radius} font={font} displayFont={displayFont} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- direction themes ---------- */
+
+const jakarta = "'Plus Jakarta Sans', sans-serif";
+const manrope = "'Manrope', sans-serif";
+const grotesk = "'Space Grotesk', sans-serif";
+
+const vega = {
+  primary: "#0D9488", onPrimary: "#ffffff", ring: "rgba(13,148,136,0.18)",
+  text: "#0f172a", muted: "#64748b", border: "#e2e8f0", surface: "#f8fafc",
+  textD: "#f1f5f9", mutedD: "#94a3b8", borderD: "#2a3441", surfaceD: "#0f172a", surfaceRaisedD: "#1c2735",
+  success: "#16a34a",
+  badgeSuccessBg: "#dcfce7", badgeSuccessFg: "#15803d",
+  badgePrimaryBg: "#ccfbf1", badgePrimaryFg: "#0f766e",
+  badgeWarnBg: "#fef3c7", badgeWarnFg: "#b45309",
+  badgeRadius: 6, cardShadow: "0 1px 3px rgba(15,23,42,0.07)",
+  palette: [
+    { name: "Primary 600", c: "#0D9488", hex: "#0D9488" },
+    { name: "Primary 500", c: "#14B8A6", hex: "#14B8A6" },
+    { name: "Primary 100", c: "#CCFBF1", hex: "#CCFBF1" },
+    { name: "Slate 900", c: "#0f172a", hex: "#0F172A" },
+    { name: "Slate 500", c: "#64748b", hex: "#64748B" },
+    { name: "Slate 200", c: "#e2e8f0", hex: "#E2E8F0" },
+    { name: "Success", c: "#16a34a", hex: "#16A34A" },
+    { name: "Danger", c: "#dc2626", hex: "#DC2626" },
+  ],
+};
+
+const sheliak = {
+  primary: "#14B8A6", onPrimary: "#042f2e", ring: "rgba(20,184,166,0.22)",
+  primaryText: "#0d9488",
+  text: "#27272a", muted: "#71717a", border: "#e4e4e7", surface: "#fafaf9",
+  textD: "#fafafa", mutedD: "#a1a1aa", borderD: "#3f3f46", surfaceD: "#18181b", surfaceRaisedD: "#27272a",
+  success: "#22c55e",
+  badgeSuccessBg: "#dcfce7", badgeSuccessFg: "#16a34a",
+  badgePrimaryBg: "#99f6e4", badgePrimaryFg: "#115e59",
+  badgeWarnBg: "#fde68a", badgeWarnFg: "#92400e",
+  badgeRadius: 999, cardShadow: "0 4px 12px rgba(24,24,27,0.08)",
+  palette: [
+    { name: "Primary 500", c: "#14B8A6", hex: "#14B8A6" },
+    { name: "Primary 300", c: "#5EEAD4", hex: "#5EEAD4" },
+    { name: "Accent Violet", c: "#8B5CF6", hex: "#8B5CF6" },
+    { name: "Accent Coral", c: "#FB7185", hex: "#FB7185" },
+    { name: "Zinc 800", c: "#27272a", hex: "#27272A" },
+    { name: "Zinc 500", c: "#71717a", hex: "#71717A" },
+    { name: "Zinc 200", c: "#e4e4e7", hex: "#E4E4E7" },
+    { name: "Amber", c: "#f59e0b", hex: "#F59E0B" },
+  ],
+};
+
+const sulafat = {
+  primary: "#2DD4BF", onPrimary: "#021a17", ring: "rgba(45,212,191,0.20)",
+  primaryText: "#0d9488",
+  text: "#111827", muted: "#6b7280", border: "#e5e7eb", surface: "#f9fafb",
+  textD: "#e7ecef", mutedD: "#8b98a5", borderD: "#23303b", surfaceD: "#0b1217", surfaceRaisedD: "#141e26",
+  success: "#10b981",
+  badgeSuccessBg: "#d1fae5", badgeSuccessFg: "#047857",
+  badgePrimaryBg: "#ccfbf1", badgePrimaryFg: "#0f766e",
+  badgeWarnBg: "#fef3c7", badgeWarnFg: "#b45309",
+  badgeRadius: 4, cardShadow: "0 1px 2px rgba(17,24,39,0.06)",
+  palette: [
+    { name: "Primary 400", c: "#2DD4BF", hex: "#2DD4BF" },
+    { name: "Primary 600", c: "#0D9488", hex: "#0D9488" },
+    { name: "Ink 950", c: "#0b1217", hex: "#0B1217" },
+    { name: "Ink 800", c: "#141e26", hex: "#141E26" },
+    { name: "Gray 500", c: "#6b7280", hex: "#6B7280" },
+    { name: "Gray 200", c: "#e5e7eb", hex: "#E5E7EB" },
+    { name: "Success", c: "#10b981", hex: "#10B981" },
+    { name: "Danger", c: "#ef4444", hex: "#EF4444" },
+  ],
+};
+
+/* ---------- alternative palettes on the Vega direction ---------- */
+
+const indigoCosmic = {
+  primary: "#5B5BD6", onPrimary: "#ffffff", ring: "rgba(91,91,214,0.18)",
+  text: "#0f172a", muted: "#64748b", border: "#e2e8f0", surface: "#f8fafc",
+  textD: "#eef0fe", mutedD: "#9aa1c9", borderD: "#2c3052", surfaceD: "#121430", surfaceRaisedD: "#1c1f42",
+  success: "#16a34a",
+  badgeSuccessBg: "#dcfce7", badgeSuccessFg: "#15803d",
+  badgePrimaryBg: "#e0e1fb", badgePrimaryFg: "#4444b3",
+  badgeWarnBg: "#fef3c7", badgeWarnFg: "#b45309",
+  badgeRadius: 6, cardShadow: "0 1px 3px rgba(15,23,42,0.07)",
+  palette: [
+    { name: "Primary 600", c: "#5B5BD6", hex: "#5B5BD6" },
+    { name: "Primary 500", c: "#6E6ADE", hex: "#6E6ADE" },
+    { name: "Primary 100", c: "#E0E1FB", hex: "#E0E1FB" },
+    { name: "Night 950", c: "#121430", hex: "#121430" },
+    { name: "Slate 500", c: "#64748b", hex: "#64748B" },
+    { name: "Slate 200", c: "#e2e8f0", hex: "#E2E8F0" },
+    { name: "Success", c: "#16a34a", hex: "#16A34A" },
+    { name: "Danger", c: "#dc2626", hex: "#DC2626" },
+  ],
+};
+
+const inkMono = {
+  primary: "#18181b", onPrimary: "#ffffff", ring: "rgba(24,24,27,0.12)",
+  primaryD: "#fafafa", onPrimaryD: "#18181b", primaryTextD: "#fafafa",
+  primaryText: "#18181b",
+  text: "#18181b", muted: "#71717a", border: "#e4e4e7", surface: "#fafafa",
+  textD: "#fafafa", mutedD: "#a1a1aa", borderD: "#2e2e33", surfaceD: "#111113", surfaceRaisedD: "#1c1c1f",
+  success: "#16a34a",
+  badgeSuccessBg: "#dcfce7", badgeSuccessFg: "#15803d",
+  badgePrimaryBg: "#f4f4f5", badgePrimaryFg: "#3f3f46",
+  badgeWarnBg: "#fef3c7", badgeWarnFg: "#b45309",
+  badgeRadius: 6, cardShadow: "0 1px 3px rgba(15,23,42,0.07)",
+  palette: [
+    { name: "Ink 900", c: "#18181b", hex: "#18181B" },
+    { name: "Ink 700", c: "#3f3f46", hex: "#3F3F46" },
+    { name: "Zinc 500", c: "#71717a", hex: "#71717A" },
+    { name: "Zinc 200", c: "#e4e4e7", hex: "#E4E4E7" },
+    { name: "Zinc 50", c: "#fafafa", hex: "#FAFAFA" },
+    { name: "Accent", c: "#2DD4BF", hex: "#2DD4BF" },
+    { name: "Success", c: "#16a34a", hex: "#16A34A" },
+    { name: "Danger", c: "#dc2626", hex: "#DC2626" },
+  ],
+};
+
+const cobalt = {
+  primary: "#2563EB", onPrimary: "#ffffff", ring: "rgba(37,99,235,0.18)",
+  text: "#0f172a", muted: "#64748b", border: "#e2e8f0", surface: "#f8fafc",
+  textD: "#f1f5f9", mutedD: "#94a3b8", borderD: "#28344a", surfaceD: "#0e1626", surfaceRaisedD: "#182338",
+  success: "#16a34a",
+  badgeSuccessBg: "#dcfce7", badgeSuccessFg: "#15803d",
+  badgePrimaryBg: "#dbeafe", badgePrimaryFg: "#1d4ed8",
+  badgeWarnBg: "#fef3c7", badgeWarnFg: "#b45309",
+  badgeRadius: 6, cardShadow: "0 1px 3px rgba(15,23,42,0.07)",
+  palette: [
+    { name: "Primary 600", c: "#2563EB", hex: "#2563EB" },
+    { name: "Primary 500", c: "#3B82F6", hex: "#3B82F6" },
+    { name: "Primary 100", c: "#DBEAFE", hex: "#DBEAFE" },
+    { name: "Slate 900", c: "#0f172a", hex: "#0F172A" },
+    { name: "Slate 500", c: "#64748b", hex: "#64748B" },
+    { name: "Slate 200", c: "#e2e8f0", hex: "#E2E8F0" },
+    { name: "Success", c: "#16a34a", hex: "#16A34A" },
+    { name: "Danger", c: "#dc2626", hex: "#DC2626" },
+  ],
+};
+
+const limeInk = {
+  primary: "#A3E635", onPrimary: "#1a2e05", ring: "rgba(163,230,53,0.25)",
+  primaryText: "#4d7c0f", primaryTextD: "#BEF264",
+  text: "#1c1917", muted: "#78716c", border: "#e7e5e4", surface: "#fafaf9",
+  textD: "#f5f5f4", mutedD: "#a8a29e", borderD: "#33312e", surfaceD: "#131210", surfaceRaisedD: "#1f1d1a",
+  success: "#16a34a",
+  badgeSuccessBg: "#dcfce7", badgeSuccessFg: "#15803d",
+  badgePrimaryBg: "#ecfccb", badgePrimaryFg: "#3f6212",
+  badgeWarnBg: "#fef3c7", badgeWarnFg: "#b45309",
+  badgeRadius: 6, cardShadow: "0 1px 3px rgba(28,25,23,0.07)",
+  palette: [
+    { name: "Lime 400", c: "#A3E635", hex: "#A3E635" },
+    { name: "Lime 300", c: "#BEF264", hex: "#BEF264" },
+    { name: "Lime 700", c: "#4d7c0f", hex: "#4D7C0F" },
+    { name: "Ink 950", c: "#131210", hex: "#131210" },
+    { name: "Stone 500", c: "#78716c", hex: "#78716C" },
+    { name: "Stone 200", c: "#e7e5e4", hex: "#E7E5E4" },
+    { name: "Success", c: "#16a34a", hex: "#16A34A" },
+    { name: "Danger", c: "#dc2626", hex: "#DC2626" },
+  ],
+};
+
+/* ---------- canvas ---------- */
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="directions" title="Lyra DS · Direções visuais" subtitle="Três interpretações do mesmo sistema — teal como cor primária, light + dark. Escolha uma (ou peça uma mistura).">
+        <DCArtboard id="vega" label="A · Vega — Limpo e neutro" width={1180} height={820}>
+          <DirectionBoard t={vega} star="α" name="Vega" desc="Limpo, neutro, confiável — o padrão SaaS moderno"
+            radius={10} font={jakarta} displayFont={jakarta}
+            typeLabel="Plus Jakarta Sans" radiusLabel="radius 10px" />
+        </DCArtboard>
+        <DCArtboard id="sheliak" label="B · Sheliak — Vibrante e amigável" width={1180} height={820}>
+          <DirectionBoard t={sheliak} star="β" name="Sheliak" desc="Caloroso, arredondado, com acentos coloridos"
+            radius={14} font={manrope} displayFont={manrope}
+            typeLabel="Manrope" radiusLabel="radius 14px" />
+        </DCArtboard>
+        <DCArtboard id="sulafat" label="C · Sulafat — Técnico e editorial" width={1180} height={820}>
+          <DirectionBoard t={sulafat} star="γ" name="Sulafat" desc="Dark-first, denso, display geométrico + mono"
+            radius={8} font={jakarta} displayFont={grotesk}
+            typeLabel="Space Grotesk + Jakarta" radiusLabel="radius 8px" />
+        </DCArtboard>
+        <DCPostIt id="note">Todas usam teal como primária, como você escolheu. A diferença está em neutros, tipografia, raio e "temperatura". Diga A, B, C — ou uma mistura (ex: "A com os títulos de C").</DCPostIt>
+      </DCSection>
+      <DCSection id="palettes" title="Paletas alternativas · sobre a direção Vega" subtitle="Mesma estrutura limpa da Vega, trocando só a cor. Leitura de mercado em cada label.">
+        <DCArtboard id="pal-indigo" label="A2 · Indigo Cósmico — minha recomendação" width={1180} height={820}>
+          <DirectionBoard t={indigoCosmic} star="α" name="Vega · Indigo" desc="Conecta com a marca 'Lyra' (céu noturno) — premium, padrão dev-tools"
+            radius={10} font={jakarta} displayFont={jakarta}
+            typeLabel="Plus Jakarta Sans" radiusLabel="radius 10px" />
+        </DCArtboard>
+        <DCArtboard id="pal-ink" label="A3 · Ink Monocromático — o look 'shadcn', neutro máximo" width={1180} height={820}>
+          <DirectionBoard t={inkMono} star="α" name="Vega · Ink" desc="Primária quase-preta, teal só como acento — tendência atual em libs de componentes"
+            radius={10} font={jakarta} displayFont={jakarta}
+            typeLabel="Plus Jakarta Sans" radiusLabel="radius 10px" />
+        </DCArtboard>
+        <DCArtboard id="pal-cobalt" label="A4 · Cobalto — clássico, máxima confiança" width={1180} height={820}>
+          <DirectionBoard t={cobalt} star="α" name="Vega · Cobalto" desc="Azul corporativo-moderno; seguro para adoção ampla, porém menos distintivo"
+            radius={10} font={jakarta} displayFont={jakarta}
+            typeLabel="Plus Jakarta Sans" radiusLabel="radius 10px" />
+        </DCArtboard>
+        <DCArtboard id="pal-lime" label="A5 · Lime sobre Ink — ousado, marca forte" width={1180} height={820}>
+          <DirectionBoard t={limeInk} star="α" name="Vega · Lime" desc="Acento vívido sobre neutros quentes — memorável, mas exige disciplina no uso"
+            radius={10} font={jakarta} displayFont={jakarta}
+            typeLabel="Plus Jakarta Sans" radiusLabel="radius 10px" />
+        </DCArtboard>
+        <DCPostIt id="note-pal">Minha visão: A2 (Indigo Cósmico) tem a melhor história de marca — Lyra é uma constelação, e o indigo noturno + dark mode azulado contam isso. A3 (Ink) é o mais alinhado com a estética 2026 de libs open source, mas menos "dono de uma cor". O teal original continua válido se quiser diferenciação cromática.</DCPostIt>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
