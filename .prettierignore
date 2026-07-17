@@ -1,0 +1,11 @@
+# Read-only design handoff prototype bundle — never formatted
+handoff/
+# GSD-generated planning + agent docs — formatting them would break required CI checks on planning PRs
+.planning/
+.claude/
+# Generated / non-source files
+pnpm-lock.yaml
+CHANGELOG.md
+.changeset/*.md
+node_modules/
+dist/
