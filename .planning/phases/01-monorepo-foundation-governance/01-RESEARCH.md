@@ -516,14 +516,16 @@ The pt-BR mirror translates this file 1:1 and links back ("English"). Only READM
 | A5 | changesets applies plain semver (major on 0.1.0 → 1.0.0); no built-in 0.x mode | Pitfall 7 | Low — policy is convention-enforced either way |
 | A6 | GitHub private vulnerability reporting is enableable on free org public repos (for SECURITY.md) | Structure | Low — SECURITY.md can point to an email instead |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should the scaffold PR (Pattern 3 step 5) also carry `.planning/` history reconciliation?**
+1. **Should the scaffold PR (Pattern 3 step 5) also carry `.planning/` history reconciliation?** *(RESOLVED — one scaffold PR)*
    - What we know: existing `main` history (planning docs) pushes cleanly before protection.
    - What's unclear: whether the planner wants Phase-1 execution commits split into multiple PRs (scaffold PR + governance PR) or one.
    - Recommendation: one scaffold PR is fine — reviewability matters less than an exercised PR flow; planner's call on granularity.
+   - **Decision adopted by plans:** one single scaffold PR carrying all Phase-1 file work, implemented in plan 01-05 (the whole-tree scaffold PR that exercises the CI + protection flow).
 
-2. **CODEOWNERS now or later?** Single maintainer makes it near-decorative. Recommendation: include `* @franciscpd` (cheap, enables `require_code_owner_review` later without a new file).
+2. **CODEOWNERS now or later?** *(RESOLVED — now)* Single maintainer makes it near-decorative. Recommendation: include `* @franciscpd` (cheap, enables `require_code_owner_review` later without a new file).
+   - **Decision adopted by plans:** included as `* @franciscpd`, implemented in plan 01-04.
 
 ## Environment Availability
 
