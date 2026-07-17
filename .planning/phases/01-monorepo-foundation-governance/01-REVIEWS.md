@@ -1,27 +1,24 @@
 ---
 phase: 1
 reviewers: [codex]
-reviewed_at: 2026-07-17T00:12:46-03:00
+reviewed_at: 2026-07-17T08:20:40-03:00
+review_round: 2
 plans_reviewed: [01-01-PLAN.md, 01-02-PLAN.md, 01-03-PLAN.md, 01-04-PLAN.md, 01-05-PLAN.md]
 ---
 
-# Cross-AI Plan Review — Phase 1
+# Cross-AI Plan Review — Phase 1 (Round 2)
+
+> Round 1 (2026-07-17, Codex) found 3 HIGH cross-plan blockers; all were incorporated via the reviews-mode replan (commit d818111) and verified by the plan checker. This round reviews the revised plans. **Round-1 findings are historical — the actionable findings are the ones below.**
 
 ## Codex Review
 
-# Cross-AI plan review — Phase 1
+# Cross-AI Plan Review — Phase 1, round 2
 
 ## Overall assessment
 
-The architecture and sequencing are thoughtful, especially the two-step ruleset bootstrap, fixed Changesets group, and real-PR integration proof. However, the phase is **not ready to execute unchanged**. Three cross-plan blockers stand out:
+The replan materially resolves the first-round blockers: OSS-03 is explicitly partial, the validation contract maps all 13 tasks, state is synchronized, CI dependencies are hardened, and clean-clone verification includes typecheck. The plans are close to executable, but four operational gaps remain: incomplete Code of Conduct placeholder detection, undeclared `pnpm dlx` execution, an unsafe ruleset update recipe, and a disclosure scan that excludes `.planning/`.
 
-- OSS-03 requires publint, attw, size-limit, and parity checks, while these plans add only comments for future implementation.
-- The official phase validation file is still an untouched template.
-- GSD state and the working tree are not synchronized with the five completed plans.
-
-Overall risk: **HIGH until these traceability and readiness issues are corrected; MEDIUM afterward.**
-
-An independent Claude CLI review was attempted, but the local CLI could not connect to its API (`ENOTIMP`). The review below is therefore source-grounded but not a multi-reviewer consensus.
+**Overall risk: MEDIUM.** No remaining HIGH-severity blocker, but the MEDIUM findings should be corrected before execution.
 
 ---
 
@@ -29,29 +26,29 @@ An independent Claude CLI review was attempted, but the local CLI could not conn
 
 ### Summary
 
-The bootstrap order is sound: publish the existing history, protect `main` without checks, then create the phase branch and change GSD’s branching mode. This directly reconciles D-07/D-08 with the current configuration. The immediate problem is that the clean-tree precondition already fails.
+The bootstrap sequence is sound and correctly reconciles protected `main` with GSD’s current branch configuration. The disclosure audit is a good addition, but one exclusion weakens its core guarantee.
 
 ### Strengths
 
-- The plan correctly identifies the current state: `branching_strategy` is still `"none"` while the phase branch template already exists in [config.json](/home/franciscpd/Projects/lyra-ds/.planning/config.json:14).
-- Creating the ruleset before scaffold work, but delaying required checks until CI has reported, is a sensible bootstrap sequence. GitHub confirms rulesets are available for public repositories on GitHub Free.
-- The plan preserves the user’s scope decision: Phase 1 creates the organization and repository, while branding remains deferred as specified in [01-CONTEXT.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-CONTEXT.md:19).
+- The ordering is load-bearing and correct: publish the existing history, create protection without checks, then switch from the current `"none"` strategy to the configured phase branch template. See [01-01-PLAN.md:128](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:128) and the actual current setting in [config.json:14](/home/franciscpd/Projects/lyra-ds/.planning/config.json:14).
+- The legal identity and contact are now explicitly user-confirmed and passed through `01-01-SUMMARY.md`, avoiding inference from Git metadata. See [01-01-PLAN.md:103](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:103).
+- Private vulnerability reporting is enabled and verified before SECURITY.md publishes its advisory URL. See [01-01-PLAN.md:137](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:137).
+- The branch-content assertion is now path-based and allows only the intended config change outside phase metadata. See [01-01-PLAN.md:174](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:174).
 
 ### Concerns
 
-- **HIGH — The current working tree fails Task 2’s precondition.** Task 2 requires `git status --porcelain` to be empty at [01-01-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:114), but `01-PATTERNS.md` is currently untracked. Execution will stop unless that artifact is committed or explicitly handled first.
-- **MEDIUM — Publishing the entire history lacks a disclosure scan.** The plan recognizes that local history becomes public at [01-01-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:164), but its threat register addresses branch tampering, not secrets, private data, or unwanted historical assets.
-- **LOW — One acceptance criterion is ambiguous.** “Exactly the config-flip commit” conflicts with “except this plan’s metadata commits” at [01-01-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:152).
+- **MEDIUM — The secret scan excludes a directory that will be made public.** The plan publishes `.planning/` as part of the full history but excludes it from secret-pattern scanning. See [01-01-PLAN.md:133](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:133) and [01-01-PLAN.md:135](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:135). Running the same detector against the current history without that exclusion produces no matches, so the claimed self-match problem does not currently occur.
+- **LOW — The org description is declared complete but never verified.** Task 1 instructs the user to set it, while acceptance checks only the org login and legal/contact decisions. See [01-01-PLAN.md:100](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:100) and [01-01-PLAN.md:107](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-01-PLAN.md:107).
 
 ### Suggestions
 
-- Commit or intentionally discard the untracked pattern map before Task 2, then record the expected clean SHA.
-- Add a pre-publication audit: tracked sensitive filenames, secret-pattern scan across history, and confirmation that all committed handoff assets are intended to be public.
-- Replace the ambiguous commit-count assertion with a path-based check: only `.planning/config.json` may differ from `main` after Task 3.
+- Scan `.planning/` too. If a real false positive appears, suppress that exact path or fingerprint instead of excluding the whole directory.
+- Add `gh api orgs/lyra-ds --jq .description` and compare it with the intended short description.
+- Prefer `gitleaks` when available, with the regex scan retained as a fallback rather than an equivalent substitute.
 
 ### Risk assessment
 
-**MEDIUM.** The architecture is good, but the present working-tree state blocks execution and the first public push deserves a disclosure gate.
+**LOW–MEDIUM.** The platform sequencing is strong; the main risk is incomplete pre-publication coverage.
 
 ---
 
@@ -59,32 +56,27 @@ The bootstrap order is sound: publish the existing history, protect `main` witho
 
 ### Summary
 
-This is a careful scaffold plan with strong package-boundary discipline. The placeholder packages correctly allow the fixed Changesets group to exist before production package code. Its main weaknesses are incomplete verification and overstating what no-op CI scripts prove.
+This is the strongest plan in the set. The placeholder manifests, lockstep Changesets configuration, exact dependency pins, and scoped validation all align with the repository architecture.
 
 ### Strengths
 
-- The workspace globs match the future architecture and Phase 1 integration decision in [01-CONTEXT.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-CONTEXT.md:69).
-- The placeholder manifests avoid prematurely defining exports, `files`, or `sideEffects`, while still supporting lockstep versioning.
-- Exact dependency pins and a committed lockfile are appropriate supply-chain controls.
-- The plan correctly keeps React independent of styles; that separation is central to the architecture in [ARCHITECTURE.md](/home/franciscpd/Projects/lyra-ds/.planning/research/ARCHITECTURE.md:48).
+- The placeholders remain deliberately minimal while unblocking Changesets validation. Their exact four-key shape is enforced in the automated check. See [01-02-PLAN.md:179](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:179) and [01-02-PLAN.md:185](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:185).
+- Lockstep versioning implements D-06 directly and is appropriate for the shared class-name contract. See [01-02-PLAN.md:180](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:180) and the architectural boundary in [ARCHITECTURE.md:48](/home/franciscpd/Projects/lyra-ds/.planning/research/ARCHITECTURE.md:48).
+- The revised text now accurately calls typecheck/test/build “reserved CI contexts,” not meaningful validation gates. See [01-02-PLAN.md:28](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:28).
+- Task 3 verification now matches the promised action, including typecheck and scoped Prettier. See [01-02-PLAN.md:182](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:182).
 
 ### Concerns
 
-- **MEDIUM — Verification does not execute everything the task promises.** Task 3 says it will run typecheck and scoped Prettier at [01-02-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:175), but its automated verification omits both at [01-02-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:178).
-- **MEDIUM — The scripts are status-check placeholders, not functional gates.** The plan explicitly makes typecheck/test/build no-ops at [01-02-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:28). That is acceptable for Phase 1’s roadmap wording, but it should not be treated as satisfying the full OSS-03 requirement.
-- **LOW — Node is not actually pinned.** `"engines": {"node": ">=24"}` allows future major versions, while the plan repeatedly describes a pinned Node 24 toolchain. Use `24.x` or `>=24 <25` if Node 24 is truly the supported line.
-- **LOW — The package legitimacy checkpoint is disproportionate.** The research already identifies canonical repositories, exact versions, and a committed lockfile. A blocking manual review of four established packages adds friction without a clearly defined additional decision.
+- **LOW — The pinned pnpm runtime is not actually asserted.** The manifest will declare `pnpm@11.13.1`, but verification checks TypeScript and manifest strings without checking the executing pnpm version. See [01-02-PLAN.md:146](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:146) and [01-02-PLAN.md:156](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-02-PLAN.md:156). The workspace currently runs pnpm 11.13.0 before the scaffold is created.
 
 ### Suggestions
 
-- Make Task 3 verification exactly match its action: add `pnpm run typecheck` and the scoped Prettier command.
-- Describe empty recursive scripts as “reserved CI contexts” rather than working validation.
-- Narrow the Node engine if Node 24 compatibility is a real constraint.
-- Convert the legitimacy checkpoint into a recorded automated provenance check, or explain which concrete uncertainty requires human judgment.
+- Add `pnpm --version | grep -qx '11.13.1'` after the package-manager field exists.
+- Preserve the current explicit distinction between green reserved contexts and real package gates.
 
 ### Risk assessment
 
-**MEDIUM.** The scaffold design is strong; verification and requirement semantics need tightening.
+**LOW.** The remaining issue is verification precision, not architecture.
 
 ---
 
@@ -92,32 +84,29 @@ This is a careful scaffold plan with strong package-boundary discipline. The pla
 
 ### Summary
 
-The governance scope is comprehensive and well aligned with OSS-01, OSS-02, and OSS-05. The pre-release warning and bilingual README boundaries are particularly good. The security channel and legal attribution need explicit confirmation.
+The governance scope and cross-plan dependencies are well designed, but the revised “no placeholders” verification still misses the placeholders actually used by Contributor Covenant 3.0.
 
 ### Strengths
 
-- README content is grounded in the supplied organization copy, including the canonical four-token and adapter story in [org-profile.md](/home/franciscpd/Projects/lyra-ds/handoff/assets/github/org-profile.md:24).
-- The pre-release warning prevents unpublished npm instructions from being presented as currently usable.
-- The versioning policy recognizes the real public contract: props, classes, tokens, and export paths, consistent with [PITFALLS.md](/home/franciscpd/Projects/lyra-ds/.planning/research/PITFALLS.md:200).
-- Only the README is translated, matching D-04/D-05 in [01-CONTEXT.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-CONTEXT.md:21).
+- README content is grounded in the canonical handoff pitch and four-token story. See [org-profile.md:24](/home/franciscpd/Projects/lyra-ds/handoff/assets/github/org-profile.md:24) and [01-03-PLAN.md:171](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:171).
+- The pre-release warning prevents unpublished package instructions from being presented as currently usable. See [01-03-PLAN.md:176](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:176).
+- VERSIONING.md covers the broad public API while avoiding a premature promise of per-component deep exports. See [01-03-PLAN.md:147](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:147).
+- The README-only translation boundary matches the explicit user decision. See [01-CONTEXT.md:21](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-CONTEXT.md:21).
 
 ### Concerns
 
-- **MEDIUM — Private vulnerability reporting is never enabled.** The plan publishes an `/security/advisories/new` reporting path at [01-03-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:112), but no plan enables the repository feature. GitHub states that private reports work only after the repository owner explicitly enables private vulnerability reporting. The email fallback prevents total failure, but the primary path may be unusable. [GitHub documentation](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository)
-- **MEDIUM — Legal attribution is hardcoded without a recorded decision.** The copyright holder at [01-03-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:110) is not specified in CONTEXT.md and differs from the name currently used in Git commits. Legal identity should not be inferred.
-- **LOW — “Verbatim” is weakly verified.** The checks prove that characteristic strings and contact details exist, but do not establish that MIT or Contributor Covenant 3.0 is complete and unmodified.
-- **LOW — “Component entry points” may prematurely become public API.** The architecture currently guarantees a barrel export at [ARCHITECTURE.md](/home/franciscpd/Projects/lyra-ds/.planning/research/ARCHITECTURE.md:85); deep component exports have not yet been finalized.
+- **MEDIUM — The CoC verifier misses real Contributor Covenant placeholders.** The plan rejects only `[INSERT|year|fullname|email]`, but the official 3.0 template uses `[NOTE: ...]` placeholders for reporting and enforcement customization. See [01-03-PLAN.md:126](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:126). The official template explicitly instructs adopters to search for `[NOTE`. [Contributor Covenant 3.0](https://www.contributor-covenant.org/version/3/0/code_of_conduct/)
+- **LOW — The MIT comparison does not normalize the permitted copyright substitution.** The plan allows the copyright line to differ but compares both files from line two onward, which can still include that line. See [01-03-PLAN.md:120](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:120) and [01-03-PLAN.md:129](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-03-PLAN.md:129).
 
 ### Suggestions
 
-- Add private vulnerability reporting enablement and verification to Plan 01-01 or 01-05.
-- Ask the user to confirm the legal copyright holder and public enforcement contact.
-- Pin canonical governance sources and validate their full text, not just selected substrings.
-- Phrase export paths generically until Phase 3 defines the React exports map.
+- Reject every remaining `\[NOTE` in CODE_OF_CONDUCT.md and explicitly define the solo maintainer’s reporting and enforcement role.
+- Describe the CoC as “canonical template with filled project-specific sections,” not strictly “verbatim.”
+- Compare MIT text beginning at “Permission is hereby granted,” or normalize the copyright line before diffing.
 
 ### Risk assessment
 
-**MEDIUM.** Governance coverage is excellent, but the security-reporting channel and legal identity should not be assumed.
+**MEDIUM.** Without the placeholder fix, OSS-02 can pass verification while shipping an unfinished Code of Conduct.
 
 ---
 
@@ -125,32 +114,30 @@ The governance scope is comprehensive and well aligned with OSS-01, OSS-02, and 
 
 ### Summary
 
-The workflow structure is clear and robust against docs-only PR deadlocks. Stable job names and read-only permissions are good design decisions. This plan contains the most important requirement and supply-chain gaps.
+The CI hardening is substantially improved and OSS-03 traceability is now honest. The remaining weakness is Task 2: its validation both introduces an undeclared package execution and proves only YAML syntax, not valid GitHub issue forms.
 
 ### Strengths
 
-- Unconditional PR execution correctly supports GSD planning-only PRs.
-- Stable `lint`, `typecheck`, `test`, and `build` job names match GitHub’s required-check naming mechanism; GitHub documents workflow check names as the job name.
-- Top-level `contents: read` and avoidance of the privileged PR trigger reduce exposure to untrusted forks.
-- Issue forms, disabled blank issues, CODEOWNERS, and the pre-1.0 changeset reminder form a coherent contributor surface.
+- OSS-03 is consistently recorded as partial across the plan and requirement. See [01-04-PLAN.md:71](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:71) and [REQUIREMENTS.md:14](/home/franciscpd/Projects/lyra-ds/.planning/REQUIREMENTS.md:14).
+- Every action is required to use an immutable commit SHA, and actionlint is checksum-verified before execution. See [01-04-PLAN.md:116](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:116).
+- Unconditional PR triggers correctly prevent planning-only PRs from being stranded without required checks. See [01-04-PLAN.md:113](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:113).
+- The workflow keeps a read-only token and avoids attacker-controlled event interpolation. See [01-04-PLAN.md:114](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:114).
 
 ### Concerns
 
-- **HIGH — OSS-03 is not actually satisfied.** The canonical requirement says every PR runs publint/attw, size-limit, and parity scripts in [REQUIREMENTS.md](/home/franciscpd/Projects/lyra-ds/.planning/REQUIREMENTS.md:14). Plan 01-04 explicitly implements those as comments only at [01-04-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:107). The roadmap silently weakens this to “hooks ready” in [ROADMAP.md](/home/franciscpd/Projects/lyra-ds/.planning/ROADMAP.md:35).
-- **HIGH — The actionlint installer is mutable remote code executed on every PR.** The plan uses `curl ... raw.githubusercontent.com/.../v1.7.12 | bash` at [01-04-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:106). A version tag is movable, and the script is executed without a committed checksum. GitHub states that a full commit SHA is the only immutable action reference. [GitHub secure-use guidance](https://docs.github.com/en/actions/reference/security/secure-use)
-- **MEDIUM — First-party actions remain on mutable major tags.** `actions/checkout@v7` and `actions/setup-node@v7` are trusted publishers, but this is inconsistent with the plan’s explicit supply-chain-hardening posture.
-- **LOW — Issue-form parsing is not in the automated verifier.** The acceptance criteria require YAML parsing at [01-04-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:144), while the automated command only checks file presence and strings.
+- **MEDIUM — `pnpm dlx` contradicts the plan’s supply-chain statement.** Task 2 downloads and executes `js-yaml@4.1.0` three times, while the threat model states that this plan performs no new installs and relies on the four-package checkpoint from Plan 01-02. See [01-04-PLAN.md:154](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:154) and [01-04-PLAN.md:182](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:182).
+- **MEDIUM — YAML parsing does not establish a valid GitHub issue form.** GitHub requires specific top-level and body schemas; syntactically valid YAML can still be rejected or not displayed. The current verifier only parses and greps a few strings. See [01-04-PLAN.md:147](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:147) and [GitHub’s issue-form schema](https://docs.github.com/en/enterprise-cloud%40latest/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms).
+- **LOW — “Exactly four jobs” is not fully asserted.** The grep proves the four expected keys exist but would not reject a fifth job. It also does not automate the required trailing version-comment check. See [01-04-PLAN.md:123](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-04-PLAN.md:123).
 
 ### Suggestions
 
-- Either split OSS-03 into “base CI infrastructure” and later package-specific gates, or leave OSS-03 pending until Phases 2–4 activate every required gate.
-- Pin every action to a full commit SHA.
-- Replace `curl | bash` with a release artifact whose checksum is committed and verified, or pin the installer source to a commit and verify the downloaded binary.
-- Put an actual YAML parser or GitHub issue-form validation into the task verifier.
+- Use the already-installed Ruby/Psych parser, or add a YAML/schema validator as an exact-pinned locked devDependency covered by Plan 01-02’s supply-chain gate.
+- Validate issue forms against the GitHub schema, then add a post-merge UI check that both forms appear under “New issue.”
+- Parse workflow job keys structurally and assert the exact set `build,lint,test,typecheck`.
 
 ### Risk assessment
 
-**HIGH.** The workflow shape is good, but it presently claims a requirement it does not meet and introduces an avoidable mutable-code execution path.
+**MEDIUM.** CI itself is robust; template validation and dependency provenance need correction.
 
 ---
 
@@ -158,63 +145,60 @@ The workflow structure is clear and robust against docs-only PR deadlocks. Stabl
 
 ### Summary
 
-This is a strong end-to-end integration plan: it tests a clean clone, exercises CI on a real PR, uses a merge commit so later phase artifacts remain manageable, and only then activates required checks. Its completion claim is currently invalid because OSS-03 and phase validation remain incomplete.
+The real-PR proof, merge-commit strategy, and clean-clone gate are strong. The ruleset mutation recipe and recovery-file ownership remain underspecified.
 
 ### Strengths
 
-- The clean-clone test validates committed state rather than relying on the working directory.
-- A real PR and four observed checks provide better evidence than merely linting the workflow locally.
-- Merge-commit reasoning is correct: it keeps the first branch history ancestral to `main`, avoiding the duplicate-diff problem that squash merging would create for the subsequent phase-doc PR.
-- Required check contexts exactly match the four job names, consistent with GitHub’s ruleset behavior.
+- The clean-clone gate now executes install, build, test, typecheck, and Changesets validation from committed state. See [01-05-PLAN.md:108](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:108).
+- The plan requires a real PR with four green checks before merging. See [01-05-PLAN.md:129](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:129).
+- Merge-commit use preserves the phase branch’s ancestry for the later summary/verification PR. See [01-05-PLAN.md:132](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:132).
+- Ruleset selection is now by exact name, and OSS-03 remains explicitly partial. See [01-05-PLAN.md:155](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:155) and [01-05-PLAN.md:198](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:198).
 
 ### Concerns
 
-- **HIGH — It declares OSS-03 “fully TRUE” despite missing gates.** The completion claim appears at [01-05-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:174), while publint, attw, size-limit, and parity remain comments.
-- **HIGH — The official validation contract is still a template.** [01-VALIDATION.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-VALIDATION.md:22) contains framework placeholders, its task map is empty at [01-VALIDATION.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-VALIDATION.md:41), and `nyquist_compliant` remains false at [01-VALIDATION.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-VALIDATION.md:7).
-- **MEDIUM — Repo-wide formatting exceeds declared file ownership.** The plan lists seven potentially modified files at [01-05-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:7), but `pnpm run format` at [01-05-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:84) can rewrite package manifests, issue forms, Changesets config, and other Wave 2 files.
-- **MEDIUM — Clean-clone verification omits typecheck.** The action includes typecheck at [01-05-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:85), but the automated clean-clone command omits it at [01-05-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:89).
-- **LOW — Ruleset selection is positional.** `.[0].id` at [01-05-PLAN.md](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:132) should select the `main-protection` ruleset by name.
+- **MEDIUM — “GET, modify, PUT it back” is not a safe API recipe.** A GitHub ruleset GET response includes read-only fields such as `id`, `source`, `_links`, and timestamps, while the update endpoint accepts a defined request schema. See [01-05-PLAN.md:156](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:156) and [GitHub’s ruleset API](https://docs.github.com/en/rest/repos/rules?apiVersion=2026-03-10). Blindly returning the GET object is likely to produce a 422.
+- **MEDIUM — The lockfile recovery path exceeds declared ownership.** If the clone fails, Task 1 instructs the executor to update and commit `pnpm-lock.yaml`, but that path is absent from both the task’s `<files>` and the plan frontmatter. See [01-05-PLAN.md:7](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:7), [01-05-PLAN.md:98](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:98), and [01-05-PLAN.md:108](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:108).
+- **LOW — PR-check verification relies on human-formatted CLI text.** The grep at [01-05-PLAN.md:136](/home/franciscpd/Projects/lyra-ds/.planning/phases/01-monorepo-foundation-governance/01-05-PLAN.md:136) is more brittle than `gh pr checks --json name,bucket`.
 
 ### Suggestions
 
-- Do not close OSS-03 here unless its wording is split or revised.
-- Complete and validate `01-VALIDATION.md` before execution.
-- Format only files reported by `prettier --check`, or expand `files_modified` to cover every possible output.
-- Add typecheck to the clean-clone command.
-- Select and verify the ruleset by exact name before mutation.
+- Construct the ruleset update body explicitly with only `name`, `target`, `enforcement`, `bypass_actors`, `conditions`, and `rules`; append the required-check rule with `jq`.
+- Add `pnpm-lock.yaml` to frontmatter/task ownership or treat an out-of-sync lockfile as a return to Plan 01-02 rather than an inline repair.
+- Verify checks structurally using JSON and assert the exact `{name, bucket: "pass"}` set.
 
 ### Risk assessment
 
-**HIGH.** The integration mechanism is solid, but requirement closure and validation evidence are presently unsound.
+**MEDIUM.** The end-to-end strategy is strong, but the privileged ruleset update should be deterministic before execution.
 
 ---
 
-## Required revisions before execution
+## Priority revisions
 
-1. Reconcile OSS-03 between REQUIREMENTS, ROADMAP, and Plans 01-04/01-05.
-2. Fill and approve `01-VALIDATION.md`.
-3. Synchronize `STATE.md`, which still reports zero plans at [STATE.md](/home/franciscpd/Projects/lyra-ds/.planning/STATE.md:15), and commit the untracked pattern map.
-4. Add a pre-publication history/secret disclosure audit.
-5. Enable private vulnerability reporting or remove the unusable advisory URL.
-6. Replace mutable action references and `curl | bash`.
-7. Align automated verification commands with every promised task action.
+1. Detect and remove all Contributor Covenant `[NOTE` placeholders.
+2. Remove `.planning/` from the disclosure-scan exclusion.
+3. Replace the Plan 01-04 `pnpm dlx` verifier and validate the GitHub issue-form schema.
+4. Define an explicit, schema-safe ruleset PUT payload.
+5. Reconcile Plan 01-05 lockfile recovery with declared file ownership.
+
+With those changes, the phase risk drops to **LOW** and the plans should achieve all five Phase 1 success criteria while correctly leaving OSS-03 partial until Phases 2–4.
 ---
 
 ## Consensus Summary
 
-Single-reviewer run (Codex only) — no cross-reviewer consensus is possible; all findings below carry one reviewer's weight. The review is source-grounded (findings cite `file:line` evidence from the actual repo and plans). Note: the reviewer's aside about attempting a Claude CLI review is incidental — this run only requested Codex.
+Single-reviewer run (Codex only) — no cross-reviewer consensus is possible. The review is source-grounded (`file:line` citations against the actual repo). Convergence signal is clear: zero HIGH findings remain (round 1 had three), and the reviewer states risk drops to LOW once the five priority revisions land.
 
 ### Agreed Strengths
-N/A (single reviewer). Codex's standout strengths: two-step ruleset bootstrap sequencing (protection before checks, checks after first CI run), fixed changesets group with placeholder stubs, real-PR integration proof with merge-commit reasoning, and read-only CI permissions with stable job names.
+N/A (single reviewer). Codex confirms the round-1 incorporations are real: honest OSS-03 partial tracking, SHA-pinned + checksum-verified CI, user-confirmed legal identity, enabled private vulnerability reporting, path-based branch assertions, and a complete clean-clone gate.
 
 ### Agreed Concerns
-N/A (single reviewer). Codex's highest-severity findings, in priority order:
+N/A (single reviewer). Current actionable findings (all MEDIUM or LOW):
 
-1. **HIGH — OSS-03 traceability conflict**: REQUIREMENTS.md says every PR runs publint/attw/size-limit/parity, but plans 01-04/01-05 implement those as comments only and 01-05 declares OSS-03 "fully TRUE". Reconcile the requirement wording (split into "base CI infrastructure" now + package gates later) or leave OSS-03 pending.
-2. **HIGH — Supply-chain gaps in CI**: `curl | bash` actionlint installer from a mutable version tag on every PR; first-party actions on mutable major tags instead of commit SHAs.
-3. **HIGH — Execution readiness**: 01-VALIDATION.md is an unfilled template claimed as the validation contract; STATE.md/working tree not synchronized (untracked 01-PATTERNS.md would fail plan 01-01 Task 2's clean-tree precondition).
-4. **MEDIUM — Security/legal assumptions**: private vulnerability reporting is referenced but never enabled; LICENSE copyright holder hardcoded without a recorded user decision; no pre-publication secret/history disclosure audit before the first public push.
-5. **MEDIUM — Verify-command drift**: several tasks promise actions (typecheck, scoped prettier) their automated verification never runs; repo-wide `pnpm run format` in 01-05 exceeds declared files_modified.
+1. **MEDIUM — CoC placeholder detection incomplete (01-03)**: verifier rejects `[INSERT|year|fullname|email]` but Contributor Covenant 3.0 uses `[NOTE: ...]` placeholders — an unfinished CoC could pass. Reject `\[NOTE` too.
+2. **MEDIUM — Disclosure scan excludes `.planning/` (01-01)**: the directory is published with the history but excluded from the secret scan; reviewer verified scanning it currently produces no matches, so the exclusion is unnecessary.
+3. **MEDIUM — Undeclared `pnpm dlx js-yaml` execution (01-04)**: contradicts the plan's own no-new-installs threat-model statement; also YAML parsing alone doesn't prove valid GitHub issue forms.
+4. **MEDIUM — Unsafe ruleset update recipe (01-05)**: GET→modify→PUT returns read-only fields (`id`, `_links`, timestamps) likely producing a 422; construct an explicit request body with only the schema's writable fields.
+5. **MEDIUM — Lockfile recovery exceeds ownership (01-05)**: failure path commits `pnpm-lock.yaml` which is absent from `<files>`/frontmatter.
+6. **LOW** — pnpm version not asserted (01-02); org description never verified (01-01); MIT diff doesn't normalize the copyright line (01-03); "exactly four jobs" not fully asserted + version-comment check not automated (01-04); PR-check grep brittle vs `gh pr checks --json` (01-05).
 
 ### Divergent Views
 N/A (single reviewer).
