@@ -9,8 +9,8 @@ Requirements for initial release (v0.1.0). Each maps to roadmap phases.
 
 ### Fundação do monorepo e governança (OSS)
 
-- [ ] **OSS-01**: Dev encontra no repo um README com pitch (CSS-first, white-label em 4 tokens, roadmap de adapters/registry), instalação e snippet mínimo
-- [ ] **OSS-02**: Repo tem MIT LICENSE, CONTRIBUTING.md, Code of Conduct e templates de issue/PR
+- [x] **OSS-01**: Dev encontra no repo um README com pitch (CSS-first, white-label em 4 tokens, roadmap de adapters/registry), instalação e snippet mínimo
+- [x] **OSS-02**: Repo tem MIT LICENSE, CONTRIBUTING.md, Code of Conduct e templates de issue/PR
 - [x] **OSS-03**: Todo PR roda CI visível (lint, typecheck, testes, build, publint/attw, size-limit, scripts de paridade)
   - *Split de entrega (reconciliação da revisão cross-AI, 2026-07-17):* a Fase 1 entrega a **base de CI** — lint/typecheck/test/build visíveis em todo PR, required checks no ruleset e hooks comentados; os gates de pacote (publint/attw, size-limit, paridade) só podem rodar quando os pacotes existirem e **ativam nas Fases 2–4** como steps dentro dos mesmos jobs. OSS-03 só é marcado completo quando todos os gates estiverem ativos.
 - [ ] **OSS-04**: Org GitHub `lyra-ds` configurada com avatar, profile README e social preview (assets de `handoff/assets/github/`)
@@ -104,8 +104,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OSS-01 | Phase 1 | Pending |
-| OSS-02 | Phase 1 | Pending |
+| OSS-01 | Phase 1 | Complete |
+| OSS-02 | Phase 1 | Complete |
 | OSS-03 | Phase 1 (base CI) + Phases 2–4 (gates de pacote) | Complete |
 | OSS-04 | Phase 7 | Pending |
 | OSS-05 | Phase 1 | Complete |
