@@ -46,8 +46,13 @@
 
   <!-- DIRECT-mask chevron probe: .lyra-acc__chevron (display.css) carries the data: SVG mask on the
        ELEMENT itself, so computed mask-image can be read off it (NOT .lyra-select-wrap::after, a
-       pseudo-element). Used to prove the mask data: URI actually DECODES. -->
+       pseudo-element). Used to prove the DOWN-chevron mask data: URI actually DECODES. -->
   <div class="lyra-acc__chevron" data-probe="chevron"></div>
+
+  <!-- DIRECT-mask separator probe: .lyra-breadcrumb__sep (navigation.css) carries the RIGHT-chevron
+       data: SVG mask on the element itself — a DISTINCT payload from the down chevron above, so it
+       must be decode-proven independently (WR-03). -->
+  <div class="lyra-breadcrumb__sep" data-probe="chevron-nav"></div>
 
   <!-- Long-text backstop: fixed-width container + a real truncating lyra label
        (.lyra-cmdk__item-label = flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis).

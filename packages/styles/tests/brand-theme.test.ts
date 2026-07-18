@@ -181,32 +181,47 @@ describe('STY-04 — acme brand color-mix accent group', () => {
 
 // --- chevron mask DECODE proof --------------------------------------------------------------------
 
-describe('chevron mask data: URI decodes (direct-mask element)', () => {
-  it('computed mask-image data: URL loads into an Image and decodes with positive intrinsic size', async () => {
-    setPermutation('light', 'none');
-    const el = probe('chevron');
-    const cs = getComputedStyle(el);
-    const raw = cs.maskImage !== 'none' && cs.maskImage ? cs.maskImage : cs.webkitMaskImage;
-    expect(raw).toBeTruthy();
-    // Extract the data: URL from url(...) — the mask SVG has no ')' so a greedy match is safe.
-    const m = raw.match(/url\((['"]?)(.*)\1\)/s);
-    expect(m, `no url() in computed mask-image: ${raw}`).toBeTruthy();
-    // getComputedStyle wraps the url in "..." and CSS-escapes the SVG's inner double quotes as \".
-    // Undo that escaping (\" -> ", \\ -> \) or the extracted markup is malformed XML.
-    const src = m![2].replace(/\\(.)/g, '$1');
-    expect(src.startsWith('data:image/svg+xml')).toBe(true);
+// All three rewritten unpkg->data: chevron masks resolve to one of two distinct SVG payloads:
+// the DOWN chevron (forms + display, path `m6 9 6 6 6-6`) and the RIGHT chevron (navigation,
+// path `m9 18 6-6-6-6`). Both are decode-proven here via a direct-mask element (WR-03): the
+// down chevron off .lyra-acc__chevron (display.css) and the right chevron off
+// .lyra-breadcrumb__sep (navigation.css). Each asserts the payload decodes into a real image
+// AND carries the expected path, so a truncated, malformed, or SWAPPED mask fails.
+const CHEVRON_MASKS = [
+  { probe: 'chevron', label: 'down (.lyra-acc__chevron)', path: 'm6 9 6 6 6-6' },
+  { probe: 'chevron-nav', label: 'right (.lyra-breadcrumb__sep)', path: 'm9 18 6-6-6-6' },
+] as const;
 
-    // The mask uses the `;utf8,<raw svg>` form, which Image.decode() will not accept directly.
-    // Re-encode the SVG payload into a canonical, decodable data: URI. A truncated/malformed
-    // payload (e.g. a `#`-truncated stroke) still fails decode() or yields zero intrinsic size.
-    const payload = src.slice(src.indexOf(',') + 1);
-    expect(payload).toContain('<svg');
-    const img = new Image();
-    img.src = `data:image/svg+xml,${encodeURIComponent(payload)}`;
-    await img.decode();
-    expect(img.naturalWidth).toBeGreaterThan(0);
-    expect(img.naturalHeight).toBeGreaterThan(0);
-  });
+describe('chevron mask data: URI decodes (direct-mask element)', () => {
+  for (const { probe: probeName, label, path } of CHEVRON_MASKS) {
+    it(`${label}: computed mask-image data: URL decodes with positive intrinsic size`, async () => {
+      setPermutation('light', 'none');
+      const el = probe(probeName);
+      const cs = getComputedStyle(el);
+      const raw = cs.maskImage !== 'none' && cs.maskImage ? cs.maskImage : cs.webkitMaskImage;
+      expect(raw).toBeTruthy();
+      // Extract the data: URL from url(...) — the mask SVG has no ')' so a greedy match is safe.
+      const m = raw.match(/url\((['"]?)(.*)\1\)/s);
+      expect(m, `no url() in computed mask-image: ${raw}`).toBeTruthy();
+      // getComputedStyle wraps the url in "..." and CSS-escapes the SVG's inner double quotes as \".
+      // Undo that escaping (\" -> ", \\ -> \) or the extracted markup is malformed XML.
+      const src = m![2].replace(/\\(.)/g, '$1');
+      expect(src.startsWith('data:image/svg+xml')).toBe(true);
+
+      // The mask uses the `;utf8,<raw svg>` form, which Image.decode() will not accept directly.
+      // Re-encode the SVG payload into a canonical, decodable data: URI. A truncated/malformed
+      // payload (e.g. a `#`-truncated stroke) still fails decode() or yields zero intrinsic size.
+      const payload = src.slice(src.indexOf(',') + 1);
+      expect(payload).toContain('<svg');
+      // Assert the EXPECTED chevron direction — catches a forms/navigation mask swap.
+      expect(payload, `wrong chevron path for ${label}`).toContain(path);
+      const img = new Image();
+      img.src = `data:image/svg+xml,${encodeURIComponent(payload)}`;
+      await img.decode();
+      expect(img.naturalWidth).toBeGreaterThan(0);
+      expect(img.naturalHeight).toBeGreaterThan(0);
+    });
+  }
 });
 
 // --- long-text backstop (single concrete probe; broader overflow deferred to Phase 3) -------------

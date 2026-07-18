@@ -64,10 +64,18 @@ const EXPECTED_CLASSES = 248;
 // Intentional-divergence allowlist: the unpkg.com chevron mask URLs rewritten to
 // local data: URIs (forms/display/navigation). fonts.css's dropped Google-Fonts
 // @import is handled by excluding fonts.css from the diff entirely (0 tokens).
-const MASK_DIVERGENCE_FILES = new Set([
-  'components/forms/forms.css',
-  'components/display/display.css',
-  'components/navigation/navigation.css',
+//
+// The allowlist pins the EXACT canonical data: payload per file (down-chevron for
+// forms + display, right-chevron for navigation), so a truncated, malformed, or
+// swapped chevron SVG fails parity instead of being waved through as "any data:
+// SVG" (WR-03). The Browser Mode suite additionally decode-proves both distinct
+// payloads (.lyra-acc__chevron = down, .lyra-breadcrumb__sep = right).
+const CHEVRON_DOWN_MASK = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>') no-repeat center / 100%`;
+const CHEVRON_RIGHT_MASK = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>') no-repeat center / 100%`;
+const MASK_DIVERGENCE = new Map([
+  ['components/forms/forms.css', { icon: 'chevron-down', payload: CHEVRON_DOWN_MASK }],
+  ['components/display/display.css', { icon: 'chevron-down', payload: CHEVRON_DOWN_MASK }],
+  ['components/navigation/navigation.css', { icon: 'chevron-right', payload: CHEVRON_RIGHT_MASK }],
 ]);
 
 const errors = [];
@@ -332,15 +340,14 @@ function tokenCheck() {
 // ---------------------------------------------------------------------------
 
 function isAllowedDivergence(relPath, hd, pd) {
-  if (
-    MASK_DIVERGENCE_FILES.has(relPath) &&
+  const expected = MASK_DIVERGENCE.get(relPath);
+  return (
+    expected !== undefined &&
     (hd.prop === 'mask' || hd.prop === '-webkit-mask') &&
-    /unpkg\.com\/lucide-static/.test(hd.val) &&
-    /url\(\s*['"]?data:image\/svg\+xml/.test(pd.val)
-  ) {
-    return true;
-  }
-  return false;
+    hd.val.includes('unpkg.com/lucide-static') &&
+    hd.val.includes(`icons/${expected.icon}.svg`) &&
+    pd.val === expected.payload // EXACT canonical data: payload — no truncation/swap
+  );
 }
 
 function diffFile(relPath) {
