@@ -2,8 +2,18 @@
 /**
  * @lyra-ds/styles — STY-06 parity validator (zero-dependency Node, ESM).
  *
- * Proves the packaged CSS under packages/styles/** stayed a FAITHFUL copy of the
- * canonical design handoff under handoff/**. Three guarantees:
+ * Proves the packaged CSS under packages/styles/** stayed a faithful copy of the
+ * canonical design handoff under handoff/** at the DECLARATION level. This is a
+ * whitespace- and comment-INSENSITIVE parity check, NOT a byte-for-byte one:
+ * whitespace runs are collapsed (normalizeWs) and comments are stripped before
+ * comparison, because the package intentionally rewrites the handoff's header and
+ * section comments (Portuguese dev notes -> English MIT-tagged headers). What IS
+ * asserted exactly: every token value, every declaration value, and each
+ * declaration's file + at-rule-ancestry + selector + property placement and order
+ * (plus the class inventory and the no-CDN url()/@import guard). A maintainer must
+ * therefore NOT read "faithful copy" as license to reflow a token value's internal
+ * whitespace on the assumption bytes are checked — they are not; only the parsed
+ * declaration is. Four guarantees:
  *
  *   (A) Token check .......... 209 `--custom-property` declarations across the six
  *                              canonical token files (base+brand+colors+effects+
