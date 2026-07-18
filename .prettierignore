@@ -3,6 +3,10 @@ handoff/
 # GSD-generated planning + agent docs — formatting them would break required CI checks on planning PRs
 .planning/
 .claude/
+# Handoff-verbatim CSS — stylelint owns CSS formatting, not prettier (locked decision: byte-faithful fidelity)
+packages/styles/**/*.css
+# Parser edge-case fixtures — intentional CSS formatting must be preserved for the parity self-check
+tools/parity/fixtures/
 # Generated / non-source files
 pnpm-lock.yaml
 CHANGELOG.md

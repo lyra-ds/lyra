@@ -184,7 +184,9 @@ function fixtureSelfCheck() {
     },
     {
       file: 'nested-container.css',
-      expect: [{ path: ['@container (max-width: 460px)', '.lyra-y'], prop: 'display', val: 'grid' }],
+      expect: [
+        { path: ['@container (max-width: 460px)', '.lyra-y'], prop: 'display', val: 'grid' },
+      ],
     },
     {
       file: 'keyframes.css',
@@ -280,7 +282,9 @@ function tokenCheck() {
   }
   for (const name of pMap.keys()) {
     if (!hMap.has(name)) {
-      fail(`Token ${name}: present in package but not in canonical handoff — handoff/ is canonical`);
+      fail(
+        `Token ${name}: present in package but not in canonical handoff — handoff/ is canonical`,
+      );
     }
   }
   return handoff.length;
@@ -316,11 +320,15 @@ function diffFile(relPath) {
     const hd = h[k];
     const pd = p[k];
     if (!hd) {
-      fail(`Extra declaration ${relPath} #${k}: package has [${describe(pd)}] with no handoff counterpart — handoff/ is canonical`);
+      fail(
+        `Extra declaration ${relPath} #${k}: package has [${describe(pd)}] with no handoff counterpart — handoff/ is canonical`,
+      );
       continue;
     }
     if (!pd) {
-      fail(`Dropped declaration ${relPath} #${k}: handoff has [${describe(hd)}] absent from package — handoff/ is canonical`);
+      fail(
+        `Dropped declaration ${relPath} #${k}: handoff has [${describe(hd)}] absent from package — handoff/ is canonical`,
+      );
       continue;
     }
     if (keyOf(hd) !== keyOf(pd)) {
@@ -341,7 +349,12 @@ function placementCheck() {
   const rels = [];
   for (const f of TOKEN_FILES) rels.push(`tokens/${f}.css`);
   for (const abs of listCss(join(HANDOFF, 'components'))) {
-    rels.push(abs.slice(HANDOFF.length + 1).split(/[\\/]/).join('/'));
+    rels.push(
+      abs
+        .slice(HANDOFF.length + 1)
+        .split(/[\\/]/)
+        .join('/'),
+    );
   }
   for (const rel of rels) diffFile(rel);
 }
@@ -371,7 +384,8 @@ function classCheck() {
     if (!pkg.has(c)) fail(`Class ${c}: missing from package components — handoff/ is canonical`);
   }
   for (const c of pkg) {
-    if (!handoff.has(c)) fail(`Class ${c}: present in package but not in canonical handoff — handoff/ is canonical`);
+    if (!handoff.has(c))
+      fail(`Class ${c}: present in package but not in canonical handoff — handoff/ is canonical`);
   }
   return handoff.size;
 }
@@ -439,16 +453,23 @@ function extractUrls(css) {
 function urlGuard() {
   const schemeRe = /^([a-zA-Z][a-zA-Z0-9+.-]*):/;
   for (const abs of listCss(PKG)) {
-    const rel = abs.slice(PKG.length + 1).split(/[\\/]/).join('/');
+    const rel = abs
+      .slice(PKG.length + 1)
+      .split(/[\\/]/)
+      .join('/');
     for (const target of extractUrls(read(abs))) {
       if (target.startsWith('data:')) continue; // allowed inline data URI
       if (target.startsWith('//')) {
-        fail(`External url() ${rel}: protocol-relative "url(${target})" is forbidden (no runtime CDN) — use data: or a relative path`);
+        fail(
+          `External url() ${rel}: protocol-relative "url(${target})" is forbidden (no runtime CDN) — use data: or a relative path`,
+        );
         continue;
       }
       const m = schemeRe.exec(target);
       if (m && m[1].toLowerCase() !== 'data') {
-        fail(`External url() ${rel}: absolute-scheme "url(${target})" is forbidden (no runtime CDN) — use data: or a relative path`);
+        fail(
+          `External url() ${rel}: absolute-scheme "url(${target})" is forbidden (no runtime CDN) — use data: or a relative path`,
+        );
         continue;
       }
       // otherwise: relative path — allowed
@@ -467,7 +488,9 @@ const classCount = classCheck();
 urlGuard();
 
 if (errors.length) {
-  console.error(`parity FAILED (${errors.length} issue${errors.length === 1 ? '' : 's'}) — handoff/ is canonical:\n`);
+  console.error(
+    `parity FAILED (${errors.length} issue${errors.length === 1 ? '' : 's'}) — handoff/ is canonical:\n`,
+  );
   for (const e of errors) console.error(`  ✗ ${e}`);
   process.exit(1);
 }

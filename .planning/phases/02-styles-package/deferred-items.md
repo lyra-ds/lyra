@@ -2,7 +2,13 @@
 
 Out-of-scope discoveries logged during execution (not fixed in the discovering plan).
 
-## Pre-existing: root `prettier --check .` (`lint` CI job) is red
+## [RESOLVED] Pre-existing: root `prettier --check .` (`lint` CI job) was red
+
+**Resolved** at end of phase-02 execution (orchestrator hygiene commit): added `packages/styles/**/*.css` and `tools/parity/fixtures/` to `.prettierignore` (aligns with the locked "CSS stays handoff-verbatim; stylelint gates CSS" decision) and prettier-formatted the one real source file `tools/parity/parity.mjs` (logic unchanged; parity still green). `prettier --check .` now passes on the full tree.
+
+---
+
+### Original report
 
 - **Discovered during:** plan 02-06 (CI integration), Task 1.
 - **Symptom:** `pnpm run lint` (`prettier --check .`) exits non-zero with 18 warnings.
