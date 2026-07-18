@@ -1,0 +1,10 @@
+/* pack-smoke consumer entry — exercises three resolution paths against the
+   installed @lyra-ds/styles tarball:
+     1. the root "." export        -> @lyra-ds/styles
+     2. the literal "./styles.css" export
+     3. a "./tokens/*" wildcard subpath
+   A real Vite build must resolve and bundle all three; the smoke test then
+   asserts a .lyra-* class AND a token survive into the emitted CSS. */
+@import '@lyra-ds/styles';
+@import '@lyra-ds/styles/styles.css';
+@import '@lyra-ds/styles/tokens/brand.css';
