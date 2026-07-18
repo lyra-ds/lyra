@@ -66,7 +66,27 @@ Plans:
   4. `compat-shadcn.css` applies only when imported explicitly — it stays outside the default entry
   5. CI parity script proves 209/209 handoff tokens present with identical values, and publint passes with `"sideEffects": ["**/*.css"]` protecting CSS from consumer tree-shaking
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Token CSS layer: copy 7 handoff token files (dark theming, brand color-mix, fonts no-CDN stub)
+- [ ] 02-02-PLAN.md — Component CSS layer: copy 7 aggregate component files (248 `.lyra-*` classes)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 02-03-PLAN.md — Entry, compat subpath, package.json (exports/sideEffects/files), README brand+fonts docs
+- [ ] 02-04-PLAN.md — Parity script (209 tokens / 248 classes) + stylelint config + devDep legitimacy checkpoint
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 02-05-PLAN.md — Vitest Browser Mode harness + acme brand/theme fixture test (STY-03/STY-04, light+dark)
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [ ] 02-06-PLAN.md — CI gate integration: wire stylelint/parity/publint/vitest into the four frozen jobs; prove green
+
 **UI hint**: yes
 **Research**: Standard patterns (copy-verify, bespoke parity script) — skip research-phase
 
@@ -156,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
-| 2. Styles Package | 0/TBD | Not started | - |
+| 2. Styles Package | 0/6 | Planned | - |
 | 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
 | 5. Docgen & llms.txt | 0/TBD | Not started | - |
