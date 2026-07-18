@@ -51,8 +51,13 @@ const REPO = join(__dirname, '..', '..');
 const STYLES = join(REPO, 'packages', 'styles');
 const FIXTURE_SRC = join(__dirname, 'fixture');
 
+// `tmp` is created further below; `die` cleans it up before exiting because
+// process.exit() terminates immediately and SKIPS the finally block, so without
+// this every failed run leaks a lyra-pack-smoke-* dir in the OS temp dir (IN-01).
+let tmp;
 const die = (msg) => {
   console.error(`pack-smoke FAILED: ${msg}`);
+  if (tmp) rmSync(tmp, { recursive: true, force: true });
   process.exit(1);
 };
 
@@ -78,7 +83,7 @@ const FORBIDDEN = [
   'package/node_modules/',
 ];
 
-const tmp = mkdtempSync(join(tmpdir(), 'lyra-pack-smoke-'));
+tmp = mkdtempSync(join(tmpdir(), 'lyra-pack-smoke-'));
 let ok = true;
 try {
   // -- 1. pack ---------------------------------------------------------------
