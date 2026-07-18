@@ -1,259 +1,226 @@
 ---
 phase: 2
 reviewers: [codex]
-reviewed_at: 2026-07-18T03:24:13Z
-review_round: 2
+reviewed_at: 2026-07-18T12:11:02Z
+review_round: 3
 plans_reviewed: [02-01-PLAN.md, 02-02-PLAN.md, 02-03-PLAN.md, 02-04-PLAN.md, 02-05-PLAN.md, 02-06-PLAN.md]
 ---
 
-# Cross-AI Plan Review — Phase 2 (Round 2, re-review after incorporating Round 1)
+# Cross-AI Plan Review — Phase 2 (Round 3)
 
-> Reviewed by **Codex** (codex-cli 0.144.4, source-grounded). Round-1 review is preserved in git (commit `2ecb3ce`). This round verifies the Round-1 fixes held and hunts for regressions the revisions introduced. Single external reviewer (Claude skipped for independence).
+> Reviewed by **Codex** (codex-cli 0.144.4, source-grounded). Rounds 1–2 preserved in git (`2ecb3ce`, `b75c762`). Codex's overall verdict: the Round-2 corrections genuinely hold and **no additional release-critical regression** was found; two narrow MEDIUM gaps remain. Single external reviewer (Claude skipped for independence).
 
-## Prior-findings status (Round 1 → now)
+## Round-2 fixes — all confirmed HOLDING (source-verified by Codex)
 
-| Round-1 finding | Status this round |
-|---|---|
-| CDN chevron masks (HIGH) | **Partially fixed** — all 3 masks rewritten to inline `data:` URIs, but the proposed `stroke="#000"` encoding is malformed (`#` truncates the SVG in a URL). |
-| Missing `./styles.css` export (HIGH) | **Resolved** — 02-03 adds `"./styles.css"`; wildcard does not collide. |
-| Browser Mode dependency + CI ordering (HIGH) | **Resolved** — 02-05 depends on 02-04; 02-06 installs Chromium before root `test`. |
-| color-mix computed values (HIGH) | **Mechanism resolved** — probes bind vars to real longhands; formula-direction assertions still weak. |
-| Weak multiset parity / stylelint pin (MED) | **Partially resolved** — placement-aware key + pinned stylelint; parser contract + at-rule ancestry still incomplete. |
-| Packed-artifact smoke test (MED) | **Partially fixed** — installs a tarball but never imports CSS through a bundler. |
+`stroke="black"` chevron data URIs (correct Lucide geometry) · AvatarGroup/ToastStack as real 40-barrel exports · real Vite packed-consumer build asserting class+token in emitted CSS · placement-aware parity (tokenizer + at-rule ancestry + `url(//…)` guard) · concrete Browser Mode fixture loading + ordered color-mix assertions · Browser Mode in 02-06 verify · `publint@0.3.21`/`vite@8.1.5` exact pins. Plans 02-01, 02-03, 02-04, 02-06 rated **LOW risk / execution-ready**.
 
-## Codex Review (Round 2)
+## Codex Review (Round 3)
 
-# Phase 2 re-review — verdict: **not execution-ready**
-
-The revision fixes several prior blockers, but introduces/retains a few release-relevant gaps. The biggest are the malformed proposed SVG data URIs, an incorrect resolution of the 40-component inventory, and a pack smoke test that never performs a consumer CSS import.
-
-## Prior findings status
-
-| Prior finding | Status |
-|---|---|
-| CDN chevron masks | **Partially fixed.** All six source mask declarations are accounted for, but the proposed `#000` data-URI encoding is invalid. |
-| `./styles.css` export | **Resolved.** Plan 03 explicitly adds it. |
-| Chromium ordering/dependency | **Resolved.** Plan 05 depends on 02-04; Plan 06 inserts browser install before root tests. |
-| `color-mix()` computed values | **Mechanism resolved.** Probes bind vars to longhands; formula assertions still need tightening. |
-| Placement-aware parity/stylelint/pinned executables | **Partially resolved.** Better parity design and pinned stylelint; parser coverage and publint pin remain incomplete. |
-| Packed artifact smoke test | **Partially fixed.** It installs a tarball, but does not actually load CSS through a consumer bundler. |
+# Phase 2 Plan Review — Round 3
 
 ## 02-01 — Token layer
 
 ### Summary
 
-The dark-theme and brand copy plan is source-aligned: the canonical brand derivations are in [brand.css:16](/home/franciscpd/Projects/lyra-ds/handoff/tokens/brand.css:16), and the plan correctly removes the Google Fonts CDN import from [fonts.css:5](/home/franciscpd/Projects/lyra-ds/handoff/tokens/fonts.css:5).
+The Round-2 comment-policy fix holds for token files. The plan now strips every inherited comment, leaves one English banner, and checks for additional comments and non-ASCII content.
 
 ### Strengths
 
-- Preserves the required dark overrides and brand derivations.
-- Correctly treats `fonts.css` as the intentional no-CDN divergence.
-- The source count supports the 209-token target.
+- The policy is explicit and mechanically checked in [02-01-PLAN.md:71](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-01-PLAN.md:71).
+- `brand.css` preserves the canonical light and dark derivations from [brand.css:16](/home/franciscpd/Projects/lyra-ds/handoff/tokens/brand.css:16).
+- The no-CDN `fonts.css` divergence is deliberate and verified.
+- Source recount confirms exactly 209 token declarations when comments are excluded: brand 19, colors 109, effects 20, spacing 25, typography 36.
 
 ### Concerns
 
-- **MEDIUM — Comment policy remains internally contradictory.** Plan 01 says to retain structural comments ([02-01-PLAN.md:71](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-01-PLAN.md:71)), but retained “structural” comments contain Portuguese prose, e.g. [spacing.css:20](/home/franciscpd/Projects/lyra-ds/handoff/tokens/spacing.css:20) and [effects.css:4](/home/franciscpd/Projects/lyra-ds/handoff/tokens/effects.css:4). This conflicts with the stated EN-banner-only outcome.
+None.
 
 ### Suggestions
 
-- Strip all inherited comments, leaving only the new EN header; or explicitly translate every retained comment and test for that policy.
-- Document actual `@fontsource` CSS import paths/weights in the README, not only package names. The removed CDN request loads Plus Jakarta Sans 400–800 and JetBrains Mono 400–600 ([fonts.css:5](/home/franciscpd/Projects/lyra-ds/handoff/tokens/fonts.css:5)).
+None required.
 
 ### Risk
 
-**MEDIUM** — values and theme behavior are sound; shipped-source policy is not.
+**LOW** — execution-ready.
+
+---
 
 ## 02-02 — Component CSS layer
 
 ### Summary
 
-The CDN inventory is correctly identified: the only external component CSS URLs are the two masks each in [forms.css:73](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/forms.css:73), [display.css:162](/home/franciscpd/Projects/lyra-ds/handoff/components/display/display.css:162), and [navigation.css:81](/home/franciscpd/Projects/lyra-ds/handoff/components/navigation/navigation.css:81).
+The substantive Round-2 fixes hold against source:
+
+- Chevron-down and chevron-right use the correct Lucide path geometry.
+- The required stroke is `stroke="black"`, never an unencoded hex.
+- AvatarGroup and ToastStack are explicitly preserved as real Phase-3 exports.
 
 ### Strengths
 
-- Replaces both `mask` and `-webkit-mask` for all three icons.
-- The `url(...https...)` guard will not false-match the existing data-URI namespace at [forms.css:204](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/forms.css:204).
-- Correctly preserves the seven aggregate category files and 248-class target.
+- The plan correctly follows the working keyword-color precedent at [forms.css:204](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/forms.css:204).
+- Chevron-down geometry `m6 9 6 6 6-6` and chevron-right geometry `m9 18 6-6-6-6` are correct.
+- Both mask declarations are replaced for all three affected selectors at [02-02-PLAN.md:70](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:70) and [02-02-PLAN.md:91](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:91).
+- AvatarGroup and ToastStack are now correctly described as public exports. Their contracts exist at [Avatar.d.ts:18](/home/franciscpd/Projects/lyra-ds/handoff/components/display/Avatar.d.ts:18) and [Toast.d.ts:14](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Toast.d.ts:14), matching the 40-component inventory at [README.md:58](/home/franciscpd/Projects/lyra-ds/handoff/design_handoff_lyra_lib/README.md:58).
+- The source still yields exactly 248 unique `.lyra-*` classes.
 
 ### Concerns
 
-- **HIGH — The proposed `#000` SVG data URI is malformed.** Plans require raw `stroke="#000"` inside `data:image/svg+xml` ([02-02-PLAN.md:69](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:69)). In a URL, `#` begins a fragment, truncating the SVG payload. The existing source data URI uses `stroke="white"` instead ([forms.css:204](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/forms.css:204)). Encode it as `%23000` or use `stroke="black"`; add a browser assertion that the mask renders.
-
-- **HIGH — The 38-vs-40 “resolution” is false.** The plan says AvatarGroup and ToastStack have no standalone contracts and should not become exports ([02-02-PLAN.md:88](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:88)). They do have implementations and prop contracts: [Avatar.jsx:25](/home/franciscpd/Projects/lyra-ds/handoff/components/display/Avatar.jsx:25), [Avatar.d.ts:18](/home/franciscpd/Projects/lyra-ds/handoff/components/display/Avatar.d.ts:18), [Toast.jsx:24](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Toast.jsx:24), and [Toast.d.ts:14](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Toast.d.ts:14). The conversion specification also requires a barrel of all 40 components ([README.md:50](/home/franciscpd/Projects/lyra-ds/handoff/design_handoff_lyra_lib/README.md:50)). This would silently reduce the React public API to 38.
-
-- **MEDIUM — “Never hard-coded values” contradicts the canonical CSS.** The plan asserts this at [02-02-PLAN.md:20](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:20), while the source deliberately contains literals such as `#fff` in [buttons.css:54](/home/franciscpd/Projects/lyra-ds/handoff/components/buttons/buttons.css:54) and [forms.css:227](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/forms.css:227). Its later copy instruction is correct; the must-have should be corrected.
-
-- **MEDIUM — Animation constraint remains unresolved.** The plan copies [feedback.css:119](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/feedback.css:119), which animates opacity, while the project locks entrance keyframes to transform-only ([PROJECT.md:51](/home/franciscpd/Projects/lyra-ds/.planning/PROJECT.md:51)). The plan needs an explicit decision on whether fidelity or that animation rule wins.
+- **MEDIUM — The component comment policy remains inconsistent with the token policy.** The plan still says “keep structural grouping labels” at [02-02-PLAN.md:70](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:70) and [02-02-PLAN.md:91](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-02-PLAN.md:91), with no comment-count or non-ASCII check. This retains content such as `/* command palette (⌘K) */` at [navigation.css:154](/home/franciscpd/Projects/lyra-ds/handoff/components/navigation/navigation.css:154), contradicting the stated shipped-CSS outcome of one English banner and no additional non-ASCII content.
 
 ### Suggestions
 
-- Use `stroke="black"` or percent-encode `#`, then add a computed-mask/browser rendering probe.
-- Restore AvatarGroup and ToastStack as separate Phase 4 exports, even if they share source files with Avatar and Toast.
-- Change the token-indirection requirement to preserve existing literals and `var()` references exactly.
-- Resolve the fade-keyframe contradiction before copying feedback/navigation CSS.
+Apply the same enforceable rule as 02-01 to all seven component files:
+
+- Strip all inherited comments.
+- Require exactly one banner comment per file.
+- Run the same `tail -n +2 … grep -P '[^\x00-\x7F]'` check.
 
 ### Risk
 
-**HIGH** — the data URI can make three visible controls lose their chevrons, and the stated component inventory would break the 40-export commitment.
+**MEDIUM** — functional CSS and the 40-component contract are sound; the documented source policy is not consistently executable.
+
+---
 
 ## 02-03 — Entry, exports, manifest, README
 
 ### Summary
 
-The public export fix is genuine: Plan 03 specifies both `"."` and `"./styles.css"` ([02-03-PLAN.md:87](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-03-PLAN.md:87)), matching the project requirement ([PROJECT.md:19](/home/franciscpd/Projects/lyra-ds/.planning/PROJECT.md:19)). The 14 imports also match [handoff/styles.css](/home/franciscpd/Projects/lyra-ds/handoff/styles.css:1).
+The export and documentation fixes hold.
 
 ### Strengths
 
+- Both `.` and `./styles.css` resolve to `./styles.css`.
+- `./tokens/*` and `./compat-shadcn.css` are explicit; no component subpaths are introduced.
+- Compat remains outside the 14-import entry.
 - `sideEffects: ["**/*.css"]` is specified exactly.
-- Compat remains outside the entry.
-- The wildcard does not collide with `./styles.css` or `./compat-shadcn.css`.
+- Font documentation now includes the packages and explicit weight imports.
+- The 14-entry order matches [handoff/styles.css:1](/home/franciscpd/Projects/lyra-ds/handoff/styles.css:1).
 
 ### Concerns
 
-- **MEDIUM — The plan claims root-import coverage but only the later smoke test resolves `@lyra-ds/styles/styles.css`, not `@lyra-ds/styles`.** The root export is the main STY-01 consumer path. `publint` validates metadata, but it does not prove a real CSS tool accepts and follows the root CSS export.
-
-- **LOW — Font docs are insufficient for a consumer to load the fonts.** The plan asks only for a peer-install note ([02-03-PLAN.md:87](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-03-PLAN.md:87)); package installation alone does not load font CSS.
+None.
 
 ### Suggestions
 
-- Add a consumer CSS fixture that imports both `@lyra-ds/styles` and `@lyra-ds/styles/styles.css`.
-- Include explicit install commands and the needed `@fontsource/*/<weight>.css` imports.
+None required.
 
 ### Risk
 
-**MEDIUM** — the manifest is correct on paper, but the main entry is not yet exercised as a consumer would use it.
+**LOW** — execution-ready.
+
+---
 
 ## 02-04 — Parity validator and stylelint
 
 ### Summary
 
-This is materially improved: placement-aware comparison, exact stylelint pins, and a no-CDN guard directly address prior weaknesses.
+The Round-2 parity fixes are now adequately specified.
 
 ### Strengths
 
-- The 209 declaration count is correct.
-- The 248 class inventory is correct.
-- `stylelint@17.14.0` and `stylelint-config-standard@40.0.0` are now explicitly pinned.
-- The regex correctly avoids treating `xmlns="http://www.w3.org/2000/svg"` inside a `data:` URI as a network fetch.
+- The parser must be a character-level tokenizer/state machine rather than regex or `split(';')`.
+- At-rule ancestry, selector placement, property occurrence, and rule order are included at [02-04-PLAN.md:84](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-04-PLAN.md:84).
+- Fixtures cover `@media`, `@container`, keyframes, and a quoted data URI containing a semicolon.
+- The URL policy rejects protocol-relative and non-HTTP absolute schemes while allowing `data:` and relative paths.
+- Exact source counts—209 declarations and 248 unique classes—are correct.
+- Tool versions are exact, including `publint@0.3.21` and `vite@8.1.5`; registry queries confirmed the proposed versions exist.
 
 ### Concerns
 
-- **MEDIUM — The proposed parity key still misses CSS structure that affects the cascade.** `file + selector + property + occurrence` ([02-04-PLAN.md:80](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-04-PLAN.md:80)) does not include at-rule ancestry or rule order. Moving a rule under `@media`/`@container`, or reordering equal-specificity rules, can change behavior while preserving that key. The source has `@media` ([feedback.css:195](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/feedback.css:195)) and `@container` ([files.css:188](/home/franciscpd/Projects/lyra-ds/handoff/components/files/files.css:188)) blocks.
+None blocking.
 
-- **MEDIUM — A zero-dependency parser needs an explicit parsing contract.** The CSS contains nested at-rules and quoted data URIs with semicolons ([forms.css:204](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/forms.css:204)). A naïve regex/split parser will misparse them. The plan should require a tokenizer/state machine and fixtures covering those exact constructs.
-
-- **LOW — The fonts allowlist is inconsistent with the stated comparison scope.** The placement diff excludes `fonts.css`, so its removed `@import` cannot be an exception within that diff.
-
-- **LOW — The URL guard misses protocol-relative and escaped URLs.** `url(//cdn…)` remains a runtime fetch but does not match the stated `https?://` pattern.
+The fonts `@import` allowlist entry is redundant because the declaration comparison excludes `fonts.css`, but it is harmless.
 
 ### Suggestions
 
-- Compare normalized rule order and include full at-rule ancestry in the key, or compare an AST-like serialized rule structure.
-- Add parser fixtures from the actual `@container`, `@media`, keyframe, and data-URI cases.
-- Disallow URL schemes except relative and `data:`, including `//`.
+Implement mask divergence entries as exact expected source→candidate replacements rather than broad property exemptions. This is defensive hardening, not a readiness blocker.
 
 ### Risk
 
-**MEDIUM** — substantially better, but it overstates its ability to guarantee cascade fidelity.
+**LOW** — execution-ready.
+
+---
 
 ## 02-05 — Browser Mode tests
 
 ### Summary
 
-The two core previous test fixes are present: the dependency now includes 02-04 ([02-05-PLAN.md:6](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-05-PLAN.md:6)), and probes apply derived values to real longhands ([02-05-PLAN.md:87](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-05-PLAN.md:87)). That is the right Browser Mode model; Vitest requires an enabled browser provider and instance. [Vitest docs](https://vitest.dev/config/browser/enabled)
+Fixture loading and ordered color-mix assertions are now concrete, but the proposed chevron “render” assertion does not prove that the SVG decoded or produced visible mask pixels.
 
 ### Strengths
 
-- Correctly avoids reading unresolved custom-property token streams.
-- Covers light/dark default and Acme permutations.
-- Chromium is an appropriate real-CSS environment.
+- The fixture must use either `testerHtmlPath` or explicit DOM/CSS injection at [02-05-PLAN.md:64](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-05-PLAN.md:64).
+- Tests bind custom properties to real longhands, avoiding unresolved `color-mix()` token streams.
+- Ordered darkening/lightening assertions correspond to the formulas at [brand.css:18](/home/franciscpd/Projects/lyra-ds/handoff/tokens/brand.css:18) and [brand.css:33](/home/franciscpd/Projects/lyra-ds/handoff/tokens/brand.css:33).
+- Broader overflow claims are honestly deferred.
 
 ### Concerns
 
-- **MEDIUM — The fixture loading mechanism is underspecified.** A standalone HTML file is not automatically loaded by a Browser Mode test. The plan needs to require either `browser.testerHtmlPath` in the config or explicit fixture/body injection; “load the fixture in the chromium page” is not an implementation mechanism.
-
-- **MEDIUM — Assertions may not prove each formula.** “Teal family” and “expected channel direction” can pass if several derivations collapse to `var(--brand)`. Require each light derived value to differ from raw Acme in the expected darkening/mixing direction, and each dark derived value to be lighter than raw Acme according to the specified formulas at [brand.css:18](/home/franciscpd/Projects/lyra-ds/handoff/tokens/brand.css:18) and [brand.css:33](/home/franciscpd/Projects/lyra-ds/handoff/tokens/brand.css:33).
-
-- **MEDIUM — Overflow is claimed but not tested.** The plan implements one long-text assertion ([02-05-PLAN.md:85](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-05-PLAN.md:85)); it does not test the separately claimed nav/feedback/data/files overflow cases.
+- **MEDIUM — The chevron assertion cannot guarantee that a blank or malformed SVG fails.** At [02-05-PLAN.md:92](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-05-PLAN.md:92), the test only checks that computed `mask-image` is non-empty and the element has a non-zero box. Browsers can preserve a syntactically present `url(...)` in computed style even when the referenced SVG fails to decode. The box size comes from CSS and is independent of whether the mask contains visible pixels. Therefore the claim at [02-05-PLAN.md:103](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-05-PLAN.md:103) that a malformed/truncated URI necessarily fails is not established.
 
 ### Suggestions
 
-- Specify `testerHtmlPath` or test-side DOM setup and CSS import mechanics.
-- Assert ordered brightness/channel relationships for every derived token, not only “not indigo.”
-- Add defined scroll/clip checks, or remove the broader overflow success claim.
+After extracting the computed data URL, create an `Image`, await `image.decode()`, and assert positive intrinsic dimensions. For true rendered-pixel coverage, add a screenshot/pixel assertion for the masked probe.
+
+Also select a direct-mask element such as `.lyra-breadcrumb__sep` or `.lyra-acc__chevron`; the forms mask lives on `.lyra-select-wrap::after`, not `.lyra-select`.
 
 ### Risk
 
-**MEDIUM** — the longhand technique is correct, but execution details and assertion strength need tightening.
+**MEDIUM** — theme and brand verification are strong, but the promised regression test for blank chevrons is not yet real.
 
-## 02-06 — CI and packed-artifact smoke test
+---
+
+## 02-06 — CI and packed artifact
 
 ### Summary
 
-The CI ordering fix is real: the existing root test command is at [ci.yml:69](/home/franciscpd/Projects/lyra-ds/.github/workflows/ci.yml:69), and Plan 06 explicitly requires Chromium installation before it ([02-06-PLAN.md:63](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-06-PLAN.md:63)). `pnpm exec` also replaces floating `dlx`/`npx`.
+The Round-2 packaging and CI fixes hold.
 
 ### Strengths
 
-- Preserves the four required job names.
-- Correctly puts stylelint/parity/publint in existing jobs.
-- Adds a tarball-install step, which is a meaningful improvement over workspace-only checks.
+- The packed-artifact test now requires an actual Vite consumer build at [02-06-PLAN.md:85](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-06-PLAN.md:85).
+- It imports all three required surfaces: root package, literal `./styles.css`, and a token subpath.
+- It inspects emitted CSS for both a `.lyra-*` class and a token.
+- Chromium installation precedes the recursive root test at [02-06-PLAN.md:65](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-06-PLAN.md:65), matching the current CI position of the test command at [ci.yml:69](/home/franciscpd/Projects/lyra-ds/.github/workflows/ci.yml:69).
+- The automated verification now includes Browser Mode at [02-06-PLAN.md:87](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-06-PLAN.md:87).
+- Publint and Vite are exact pins.
+- All gates remain steps within the four frozen jobs.
 
 ### Concerns
 
-- **HIGH — The smoke test does not actually import or bundle CSS.** It only uses `require.resolve`/`import.meta.resolve` or a filesystem check ([02-06-PLAN.md:83](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-06-PLAN.md:83)). Node resolves a `.css` target without loading it, so this cannot prove the root CSS export, nested `@import`s, or consumer-bundler compatibility. The project research explicitly calls for verifying bundlers accept the CSS root export ([PITFALLS.md:43](/home/franciscpd/Projects/lyra-ds/.planning/research/PITFALLS.md:43)).
-
-- **MEDIUM — The automated verify command omits Browser Mode.** The task says to run it, but the actual `<verify>` command stops after publint, parity, stylelint, and pack-smoke ([02-06-PLAN.md:85](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-06-PLAN.md:85)). It therefore cannot substantiate the following acceptance criterion requiring the Browser Mode test.
-
-- **LOW — `publint` is not version-pinned in the plan.** The checkpoint approves “latest stable” ([02-04-PLAN.md:67](/home/franciscpd/Projects/lyra-ds/.planning/phases/02-styles-package/02-04-PLAN.md:67)); `save-exact` only pins whatever happens to be latest at execution time.
+None.
 
 ### Suggestions
 
-- Make the temporary fixture a real Vite consumer build that imports:
-  - `@import "@lyra-ds/styles";`
-  - `@import "@lyra-ds/styles/styles.css";`
-  - a token subpath.
-  
-  Then assert the emitted CSS contains a known class and token. This tests the packed artifact, root export, literal export, and relative imports.
-
-- Add Chromium installation plus `pnpm --filter @lyra-ds/styles run test` to the automated verification command.
-- Name an exact publint version before the approval checkpoint.
+Ensure the fixture’s Vite config explicitly sets `build.rollupOptions.input` to `entry.css`; otherwise bare `vite build` defaults to looking for an HTML entry. The current action implies this through the “minimal Vite config,” so this is implementation clarification rather than a plan blocker.
 
 ### Risk
 
-**HIGH** — this plan claims consumer import safety without performing a consumer CSS import.
+**LOW** — execution-ready.
 
-## Overall recommendation
+---
 
-Do not execute yet. Resolve these before proceeding:
+# Overall verdict: **NOT EXECUTION-READY**
 
-1. Fix the chevron data URI encoding and add a render check.
-2. Correct AvatarGroup/ToastStack: they are real standalone exports, not CSS-only compositions.
-3. Replace comment-retention ambiguity with an enforceable EN-only policy.
-4. Strengthen parity to preserve at-rule context and order.
-5. Make pack smoke run an actual consumer CSS build, including the root `@lyra-ds/styles` path.
-6. Specify Browser Mode fixture loading and make its formula assertions/overflow coverage real.
+The major Round-2 corrections genuinely hold: valid `stroke="black"` data URIs, correct 40-export treatment, real Vite packed-consumer build, placement-aware parity, concrete Browser Mode loading, Browser Mode in verification, and exact tool pins.
+
+Two actionable gaps remain:
+
+1. The component CSS still lacks the enforceable strip-all-but-banner policy already applied to tokens.
+2. The chevron test claims to detect blank/malformed SVGs but only checks computed URL presence and element dimensions, neither of which proves successful decoding or visible mask output.
+
+These are narrow fixes. Once the component comment checks are aligned with 02-01 and the mask test verifies decode/render output, the plans should be execution-ready; I found no additional release-critical regression.
 ---
 
 ## Consensus Summary (single reviewer — Codex)
 
-**Verdict: NOT execution-ready.** Round 1's four release-critical findings are structurally resolved, but the re-review caught three new HIGH issues — two of them regressions introduced by the Round-1 revisions — plus several MEDIUM refinements.
+**Verdict: two narrow MEDIUM gaps remain; no release-critical regressions.** The three review rounds have converged — Codex explicitly confirms all Round-1 and Round-2 fixes hold against source and found nothing release-critical new.
 
-### Highest-Priority (HIGH — orchestrator verified against source)
+### Remaining actionable gaps (both MEDIUM, both orchestrator-verified against source)
 
-1. **Malformed `#000` data URI (02-02) — REGRESSION, CONFIRMED.** The Round-1 fix specifies `stroke="#000"` inside an unencoded `data:image/svg+xml;utf8,` URI; `#` begins a URL fragment and truncates the SVG (the three chevrons would render blank). The working source precedent (`forms.css:204`) uses `stroke="white"`. **Fix:** use `stroke="black"` (keyword) or percent-encode as `%23000`, and add a browser render/computed-mask assertion so a blank glyph fails the test.
-2. **AvatarGroup/ToastStack are real exports (02-02) — CONFIRMED.** `handoff/design_handoff_lyra_lib/README.md:50-63` lists 40 components incl. AvatarGroup + ToastStack and mandates a 40-export barrel. Round-1 documented them as "compound, no standalone contract needed," which risks Phase 3 shipping a 38-export API. Their CSS (`.lyra-avatar-group`, `.lyra-toast-stack`) IS covered here — only the inventory *note* is wrong. **Fix:** correct the 02-02 note to "part of the 40-component public API; CSS covered here; Phase 3 must still export both."
-3. **Pack smoke test never imports CSS (02-06) — CONFIRMED.** `require.resolve`/`import.meta.resolve` resolve a `.css` path without loading or bundling it, so the test cannot prove the root `@lyra-ds/styles` CSS export, nested `@import`s, or bundler compatibility (PITFALLS.md:43 explicitly calls for this). **Fix:** make the fixture a real Vite consumer build importing `@lyra-ds/styles`, `@lyra-ds/styles/styles.css`, and a token subpath, then assert the emitted CSS contains a known class + token.
+1. **Component comment policy not enforceable like the token policy (02-02).** 02-01 strips all inherited comments (one EN banner, non-ASCII check); 02-02 still says "keep thin structural grouping labels" with no comment-count/non-ASCII check. VERIFIED: 8 component comment lines carry non-ASCII — `navigation.css:154` `/* command palette (⌘K) */`, plus em-dashes and pt-BR prose (`files.css:1` "upload múltiplo"). As written, these ship in the English-only component CSS. **Fix:** apply the identical strip-all-but-EN-banner rule + `tail -n +2 … grep -P '[^\x00-\x7F]'` check to all 7 component files in 02-02.
 
-### Secondary (MEDIUM)
+2. **Chevron render assertion doesn't prove the SVG decoded (02-05).** Checking computed `mask-image` is non-empty + a non-zero box does NOT prove the data URI decoded to visible pixels (the box size is pure CSS; a broken `url(...)` can still appear in computed style). **Fix:** extract the computed data URL, `new Image()` + `await image.decode()`, assert positive intrinsic dimensions (optionally a screenshot/pixel assertion). ALSO a factual correction VERIFIED against source: the forms chevron mask lives on **`.lyra-select-wrap::after`** (`forms.css:66`), NOT `.lyra-select` — the test must target the pseudo-element (or use a direct-mask element like `.lyra-breadcrumb__sep` / `.lyra-acc__chevron`).
 
-- **Comment policy still ambiguous (02-01):** "retain structural comments" keeps pt-BR prose (`spacing.css:20`, `effects.css:4`) — contradicts the EN-only outcome. Pick strip-all-but-banner OR translate-and-test.
-- **Parity misses at-rule ancestry + rule order (02-04):** `file+selector+property+occurrence` doesn't catch a decl moved under `@media`/`@container` (source has both). Include at-rule ancestry / serialized rule structure; specify a real tokenizer (not regex/split) with fixtures for the data-URI-with-semicolons and nested at-rule cases.
-- **Browser Mode fixture loading underspecified (02-05):** a standalone HTML file isn't auto-loaded — require `testerHtmlPath` or explicit DOM/CSS injection; strengthen formula assertions (ordered darkening/lightening direction per `brand.css:18`/`:33`), and either test the claimed nav/feedback/data/files overflow cases or drop the overflow claim.
-- **02-06 `<verify>` omits Browser Mode** despite the acceptance criterion requiring it; **`publint` not version-pinned** (checkpoint approves "latest stable").
-
-### New potential constraint conflict (MEDIUM — worth a decision)
-
-- **Opacity animation vs transform-only lock (02-02):** `feedback.css:119` animates `opacity`, but PROJECT.md/CLAUDE.md lock entrance keyframes to transform-only. Copy-verify fidelity and the animation rule collide — needs an explicit decision (this is a keyframe already in the handoff source, so likely "fidelity wins / rule applies to new keyframes only," but it must be recorded).
-
-### Net assessment
-Round 1 genuinely de-risked the packaging surface (export map, tree-shaking, CI ordering). Round 2 shows the icon-CDN fix needs an encoding correction, the component inventory note is wrong, and the two "proof" gates (pack smoke, Browser Mode in CI verify) don't yet exercise what they claim. A second `--reviews` pass targeting items 1–3 (HIGH) is recommended before execution.
+### Assessment
+Convergence reached. Both remaining items are refinements, not blockers: (1) is a genuine shipped-CSS consistency bug (non-ASCII/pt-BR leaking into component CSS) that's trivially fixed by extending the token rule; (2) hardens a regression test so a blank chevron actually fails, plus a real selector correction. One final `--reviews` pass closing these two makes the phase fully execution-ready — a Round 4 is not expected to surface anything further.
