@@ -1,0 +1,68 @@
+/* @lyra-ds/styles — button component styles · MIT */
+
+.lyra-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  text-decoration: none;
+}
+.lyra-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.lyra-btn:active:not(:disabled) { transform: translateY(0.5px); }
+.lyra-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.lyra-btn--sm { height: var(--control-sm); padding: 0 var(--space-3); font-size: var(--text-sm); border-radius: var(--radius-sm); }
+.lyra-btn--md { height: var(--control-md); padding: 0 var(--space-4); }
+.lyra-btn--lg { height: var(--control-lg); padding: 0 var(--space-5); font-size: var(--text-md); }
+.lyra-btn--full { width: 100%; }
+
+.lyra-btn--primary { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-xs); }
+.lyra-btn--primary:hover:not(:disabled) { background: var(--accent-hover); }
+.lyra-btn--primary:active:not(:disabled) { background: var(--accent-active); }
+
+.lyra-btn--secondary {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-xs);
+}
+.lyra-btn--secondary:hover:not(:disabled) { background: var(--surface-sunken); border-color: var(--border-strong); }
+
+.lyra-btn--soft { background: var(--accent-soft); color: var(--accent-soft-text); }
+.lyra-btn--soft:hover:not(:disabled) { background: color-mix(in oklab, var(--accent-soft), var(--accent) 14%); }
+
+.lyra-btn--ghost { background: transparent; color: var(--text-secondary); }
+.lyra-btn--ghost:hover:not(:disabled) { background: var(--surface-sunken); color: var(--text-primary); }
+
+.lyra-btn--danger { background: var(--danger); color: #fff; }
+.lyra-btn--danger:hover:not(:disabled) { background: color-mix(in oklab, var(--danger), black 12%); }
+
+.lyra-btn--icon { padding: 0; }
+.lyra-btn--icon.lyra-btn--sm { width: var(--control-sm); }
+.lyra-btn--icon.lyra-btn--md { width: var(--control-md); }
+.lyra-btn--icon.lyra-btn--lg { width: var(--control-lg); }
+
+.lyra-btn--loading { pointer-events: none; }
+.lyra-btn__spinner {
+  width: 14px; height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: lyra-spin 0.7s linear infinite;
+}
+@keyframes lyra-spin { to { transform: rotate(360deg); } }
