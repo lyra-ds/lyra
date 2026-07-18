@@ -66,7 +66,7 @@ Plans:
   4. `compat-shadcn.css` applies only when imported explicitly — it stays outside the default entry
   5. CI parity script proves 209/209 handoff tokens present with identical values, and publint passes with `"sideEffects": ["**/*.css"]` protecting CSS from consumer tree-shaking
 
-**Plans**: 4/6 plans executed
+**Plans**: 5/6 plans executed
 
 Plans:
 **Wave 1**
@@ -81,7 +81,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 02-05-PLAN.md — Vitest Browser Mode harness + acme brand/theme fixture test (STY-03/STY-04, light+dark)
+- [x] 02-05-PLAN.md — Vitest Browser Mode harness + acme brand/theme fixture test (STY-03/STY-04, light+dark)
 
 **Wave 4** *(blocked on Wave 3)*
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
-| 2. Styles Package | 4/6 | In Progress|  |
+| 2. Styles Package | 5/6 | In Progress|  |
 | 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
 | 5. Docgen & llms.txt | 0/TBD | Not started | - |
