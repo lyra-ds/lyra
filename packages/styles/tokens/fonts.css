@@ -1,0 +1,15 @@
+/* @lyra-ds/styles — font peer-install note (no runtime CDN) · MIT */
+
+/*
+  Fonts are NOT bundled and are NOT loaded from a runtime CDN. Install them
+  as peer dependencies and import the weights you need from your own app:
+
+    npm install @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono
+
+    import "@fontsource/plus-jakarta-sans/400.css";
+    import "@fontsource/plus-jakarta-sans/600.css";
+    import "@fontsource/jetbrains-mono/400.css";
+
+  Plus Jakarta Sans backs --font-sans / --font-display; JetBrains Mono backs
+  --font-mono. See typography.css for the token wiring.
+*/

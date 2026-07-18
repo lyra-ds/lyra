@@ -1,0 +1,6 @@
+/* Tokenizer self-check (IN-02): an UNQUOTED url() whose target contains
+   interior ; { } : must be treated as opaque and must NOT mis-segment the
+   declaration. Mirrors the quoted data: URI fixture but drops the quotes. */
+.lyra-u {
+  background: url(data:image/svg+xml;utf8,<svg><path d="M0;0{1}2:3"/></svg>) no-repeat;
+}

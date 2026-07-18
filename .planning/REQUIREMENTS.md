@@ -11,20 +11,20 @@ Requirements for initial release (v0.1.0). Each maps to roadmap phases.
 
 - [x] **OSS-01**: Dev encontra no repo um README com pitch (CSS-first, white-label em 4 tokens, roadmap de adapters/registry), instalação e snippet mínimo
 - [x] **OSS-02**: Repo tem MIT LICENSE, CONTRIBUTING.md, Code of Conduct e templates de issue/PR
-- [ ] **OSS-03**: Todo PR roda CI visível (lint, typecheck, testes, build, publint/attw, size-limit, scripts de paridade)
+- [x] **OSS-03**: Todo PR roda CI visível (lint, typecheck, testes, build, publint/attw, size-limit, scripts de paridade)
   - *Split de entrega (reconciliação da revisão cross-AI, 2026-07-17):* a Fase 1 entrega a **base de CI** — lint/typecheck/test/build visíveis em todo PR, required checks no ruleset e hooks comentados; os gates de pacote (publint/attw, size-limit, paridade) só podem rodar quando os pacotes existirem e **ativam nas Fases 2–4** como steps dentro dos mesmos jobs. OSS-03 só é marcado completo quando todos os gates estiverem ativos.
 - [ ] **OSS-04**: Org GitHub `lyra-ds` configurada com avatar, profile README e social preview (assets de `handoff/assets/github/`)
 - [x] **OSS-05**: Política de versionamento 0.x documentada: 0.MINOR = breaking, e a API declarada inclui props, classes `.lyra-*` e nomes de tokens
 
 ### Pacote de estilos (`@lyra-ds/styles`)
 
-- [ ] **STY-01**: Dev instala `@lyra-ds/styles` e importa um único entry (`styles.css`) para obter todos os tokens + estilos dos 40 componentes
-- [ ] **STY-02**: Dev importa arquivos de tokens individualmente via subpath exports `./tokens/*`
-- [ ] **STY-03**: Dev alterna light/dark apenas com `data-theme="dark"` no `<html>`, sem rebuild
-- [ ] **STY-04**: Dev cria uma marca definindo 4 tokens (`--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`) sob `[data-brand]`, com hover/active/soft/focus-ring derivados via `color-mix` em light e dark
-- [ ] **STY-05**: Dev opta pela interop shadcn importando `compat-shadcn.css` separadamente (fica fora do entry padrão)
-- [ ] **STY-06**: Script de paridade no CI garante 100% dos tokens do handoff presentes com valores idênticos
-- [ ] **STY-07**: Pacote publica com `"sideEffects": ["**/*.css"]` e exports map válido (publint verde) — CSS nunca é descartado por tree-shaking do consumidor
+- [x] **STY-01**: Dev instala `@lyra-ds/styles` e importa um único entry (`styles.css`) para obter todos os tokens + estilos dos 40 componentes
+- [x] **STY-02**: Dev importa arquivos de tokens individualmente via subpath exports `./tokens/*`
+- [x] **STY-03**: Dev alterna light/dark apenas com `data-theme="dark"` no `<html>`, sem rebuild
+- [x] **STY-04**: Dev cria uma marca definindo 4 tokens (`--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`) sob `[data-brand]`, com hover/active/soft/focus-ring derivados via `color-mix` em light e dark
+- [x] **STY-05**: Dev opta pela interop shadcn importando `compat-shadcn.css` separadamente (fica fora do entry padrão)
+- [x] **STY-06**: Script de paridade no CI garante 100% dos tokens do handoff presentes com valores idênticos
+- [x] **STY-07**: Pacote publica com `"sideEffects": ["**/*.css"]` e exports map válido (publint verde) — CSS nunca é descartado por tree-shaking do consumidor
 
 ### Pacote React (`@lyra-ds/react`)
 
@@ -109,13 +109,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OSS-03 | Phase 1 (base CI) + Phases 2–4 (gates de pacote) | Partial (base CI; gates Phases 2–4) |
 | OSS-04 | Phase 7 | Pending |
 | OSS-05 | Phase 1 | Complete |
-| STY-01 | Phase 2 | Pending |
-| STY-02 | Phase 2 | Pending |
-| STY-03 | Phase 2 | Pending |
-| STY-04 | Phase 2 | Pending |
-| STY-05 | Phase 2 | Pending |
-| STY-06 | Phase 2 | Pending |
-| STY-07 | Phase 2 | Pending |
+| STY-01 | Phase 2 | Complete |
+| STY-02 | Phase 2 | Complete |
+| STY-03 | Phase 2 | Complete |
+| STY-04 | Phase 2 | Complete |
+| STY-05 | Phase 2 | Complete |
+| STY-06 | Phase 2 | Complete |
+| STY-07 | Phase 2 | Complete |
 | RCT-01 | Phase 4 | Pending |
 | RCT-02 | Phase 4 | Pending |
 | RCT-03 | Phase 3 | Pending |

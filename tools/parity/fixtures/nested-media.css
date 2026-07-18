@@ -1,0 +1,6 @@
+/* fixture: a declaration nested inside an @media block (at-rule ancestry) */
+@media (min-width: 640px) {
+  .lyra-x {
+    color: red;
+  }
+}

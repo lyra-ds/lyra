@@ -1,0 +1,31 @@
+/* @lyra-ds/styles — shadcn/ui compatibility layer (OPT-IN, never imported by styles.css) · MIT */
+
+/*
+  Maps shadcn/ui semantic variables onto Lyra tokens so components from the
+  shadcn ecosystem (registry, blocks, v0) render with the Lyra skin. Import it
+  AFTER styles.css, only in apps that mix both worlds. shadcn v4 expects "raw"
+  color values — here they are delivered via var(), compatible with direct CSS
+  usage (bg-[var(--background)] or @theme inline).
+*/
+
+:root, [data-theme="dark"] {
+  --background:            var(--surface-page);
+  --foreground:            var(--text-primary);
+  --card:                  var(--surface-card);
+  --card-foreground:       var(--text-primary);
+  --popover:               var(--surface-raised);
+  --popover-foreground:    var(--text-primary);
+  --primary:               var(--accent);
+  --primary-foreground:    var(--on-accent);
+  --secondary:             var(--surface-sunken);
+  --secondary-foreground:  var(--text-primary);
+  --muted:                 var(--surface-sunken);
+  --muted-foreground:      var(--text-muted);
+  --accent-foreground:     var(--accent-soft-text);
+  --destructive:           var(--danger);
+  --destructive-foreground: #FFFFFF;
+  --border:                var(--border-default);
+  --input:                 var(--border-default);
+  --ring:                  var(--focus-ring);
+  --radius:                var(--radius-md);
+}

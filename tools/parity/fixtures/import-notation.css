@@ -1,0 +1,11 @@
+/* Self-check fixture for the @import scheme guard (WR-01).
+   External @imports appear in BOTH string and url() notation, plus a
+   protocol-relative form — the guard must flag all three. The relative and
+   data: forms must be extracted but NOT flagged. A commented-out @import must
+   be ignored entirely (proves comment stripping). */
+@import "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans";
+@import url("http://cdn.example.com/x.css");
+@import url(//cdn.example.com/y.css);
+@import "./local.css";
+@import url('data:text/css,.lyra-x{color:red}');
+/* @import "https://commented-out.example.com/should-be-ignored.css"; */

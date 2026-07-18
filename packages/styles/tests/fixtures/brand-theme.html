@@ -1,0 +1,70 @@
+<!--
+  brand-theme fixture — injected as a document.body fragment by brand-theme.test.ts.
+  The entry stylesheet (@lyra-ds/styles → styles.css, with its full @import graph incl.
+  tokens/brand.css color-mix derivation) is loaded by the test via `import "../styles.css"`;
+  this fixture supplies ONLY the probe DOM.
+
+  WHY probe elements (not getPropertyValue): reading getComputedStyle(el).getPropertyValue('--accent-hover')
+  returns the UNRESOLVED `color-mix(...)` token stream and cannot prove derivation. Each probe below
+  binds one derived custom property to a REAL longhand (background-color / color / border-color /
+  box-shadow) so the browser actually resolves color-mix() to channels; the test reads that longhand.
+
+  The acme brand value (--brand: #0D9488) is supplied here for [data-brand="acme"]; brand.css's
+  [data-brand] rules derive the accent group from it. The test toggles data-theme / data-brand on
+  #lyra-fixture-root across the four permutations.
+-->
+<style>
+  /* Consumer-supplied white-label brand seed (saturated acme teal). */
+  #lyra-fixture-root[data-brand='acme'] {
+    --brand: #0d9488;
+  }
+  .probe {
+    display: block;
+    width: 24px;
+    height: 24px;
+    box-sizing: border-box;
+  }
+</style>
+
+<div id="lyra-fixture-root">
+  <!-- One probe per derived var, each binding the var to a real longhand property. -->
+  <div class="probe" data-probe="accent" style="background-color: var(--accent)"></div>
+  <div class="probe" data-probe="accent-hover" style="background-color: var(--accent-hover)"></div>
+  <div
+    class="probe"
+    data-probe="accent-active"
+    style="background-color: var(--accent-active)"
+  ></div>
+  <div class="probe" data-probe="accent-soft" style="background-color: var(--accent-soft)"></div>
+  <div class="probe" data-probe="accent-soft-text" style="color: var(--accent-soft-text)"></div>
+  <div class="probe" data-probe="focus-ring" style="border: 3px solid var(--focus-ring)"></div>
+  <div
+    class="probe"
+    data-probe="accent-active-shadow"
+    style="box-shadow: 0 0 0 3px var(--accent-active)"
+  ></div>
+
+  <!-- DIRECT-mask chevron probe: .lyra-acc__chevron (display.css) carries the data: SVG mask on the
+       ELEMENT itself, so computed mask-image can be read off it (NOT .lyra-select-wrap::after, a
+       pseudo-element). Used to prove the DOWN-chevron mask data: URI actually DECODES. -->
+  <div class="lyra-acc__chevron" data-probe="chevron"></div>
+
+  <!-- DIRECT-mask separator probe: .lyra-breadcrumb__sep (navigation.css) carries the RIGHT-chevron
+       data: SVG mask on the element itself — a DISTINCT payload from the down chevron above, so it
+       must be decode-proven independently (WR-03). -->
+  <div class="lyra-breadcrumb__sep" data-probe="chevron-nav"></div>
+
+  <!-- Long-text backstop: fixed-width container + a real truncating lyra label
+       (.lyra-cmdk__item-label = flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis).
+       Overlong text must truncate inside the box without expanding the container. -->
+  <div
+    class="lyra-longtext-box"
+    data-probe="longtext-box"
+    style="width: 120px; display: flex; overflow: hidden"
+  >
+    <span class="lyra-cmdk__item-label" data-probe="longtext-label"
+      >This is an intentionally very very very long label that must truncate inside its fixed-width
+      box</span
+    >
+  </div>
+</div>

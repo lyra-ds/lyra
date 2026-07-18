@@ -42,7 +42,8 @@ jobs:
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint_1.7.12_linux_amd64.tar.gz" | sha256sum -c -
           tar xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
           ./actionlint -color
-      # future hook (Phase 2): stylelint on packages/styles
+      # Phase 2: stylelint on packages/styles (@lyra-ds/styles' only static CSS gate)
+      - run: pnpm --filter @lyra-ds/styles run lint:css
 
   typecheck:
     runs-on: ubuntu-latest
@@ -66,8 +67,14 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run test # Vitest arrives Phase 3
-      # future hook (Phase 2, STY-06): token/class parity script
+      # Chromium MUST be installed BEFORE `pnpm run test`: the root test script is
+      # `pnpm -r --if-present run test`, which now recurses into packages/styles'
+      # Browser Mode suite (STY-03/STY-04). A fresh runner has no browser, so this
+      # install has to precede the test step or CI fails deterministically.
+      - run: pnpm exec playwright install chromium --with-deps
+      - run: pnpm run test # recurses into @lyra-ds/styles Browser Mode suite (Phase 2)
+      # Phase 2, STY-06: token/class parity script (fails on any handoff drift)
+      - run: pnpm run parity
 
   build:
     runs-on: ubuntu-latest
@@ -80,4 +87,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      # future hooks (Phases 2-4, OSS-03): publint, attw --pack, size-limit
+      # Phase 2, STY-07: publint validates the exports map (incl. ./styles.css) and
+      # that sideEffects: ["**/*.css"] protects the CSS from consumer tree-shaking.
+      # Invoked via the pinned lockfile devDep (pnpm exec), never floating dlx/npx.
+      - run: pnpm exec publint packages/styles
+      # Phase 2, STY-01/STY-02: packed-artifact smoke test — pnpm pack, install into a
+      # throwaway fixture, real vite@8.1.5 consumer build, assert a .lyra-* class + a token.
+      - run: node tools/pack-smoke/pack-smoke.mjs
+      # future hooks (Phases 3-4, OSS-03): attw --pack, size-limit

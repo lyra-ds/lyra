@@ -1,0 +1,25 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "selector-class-pattern": [
+      "^lyra-[a-z0-9_-]+$",
+      {
+        "message": "Component classes must use the .lyra-* namespace (lowercase, BEM __element / --modifier allowed)"
+      }
+    ],
+    "import-notation": "string",
+    "media-feature-range-notation": "prefix",
+    "color-hex-length": null,
+    "color-function-notation": null,
+    "color-function-alias-notation": null,
+    "alpha-value-notation": null,
+    "value-keyword-case": null,
+    "property-no-vendor-prefix": null,
+    "selector-not-notation": null,
+    "no-descending-specificity": null,
+    "declaration-block-single-line-max-declarations": null,
+    "rule-empty-line-before": null,
+    "at-rule-empty-line-before": null,
+    "custom-property-empty-line-before": null
+  }
+}

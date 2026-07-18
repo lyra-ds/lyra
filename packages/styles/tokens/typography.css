@@ -1,0 +1,45 @@
+/* @lyra-ds/styles — typography tokens · MIT */
+
+:root {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  38px;
+  --text-5xl:  48px;
+  --text-6xl:  60px;
+
+  --leading-tight:  1.15;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --tracking-display: -0.03em;
+  --tracking-heading: -0.02em;
+  --tracking-normal: 0;
+  --tracking-caps: 0.08em;
+
+  --display-font: var(--weight-extrabold) var(--text-5xl) / var(--leading-tight) var(--font-display);
+  --h1-font: var(--weight-bold) var(--text-3xl) / var(--leading-snug) var(--font-display);
+  --h2-font: var(--weight-bold) var(--text-2xl) / var(--leading-snug) var(--font-display);
+  --h3-font: var(--weight-semibold) var(--text-xl) / var(--leading-snug) var(--font-sans);
+  --body-font: var(--weight-regular) var(--text-base) / var(--leading-normal) var(--font-sans);
+  --body-strong-font: var(--weight-semibold) var(--text-base) / var(--leading-normal) var(--font-sans);
+  --caption-font: var(--weight-medium) var(--text-xs) / var(--leading-normal) var(--font-sans);
+  --overline-font: var(--weight-bold) var(--text-xs) / var(--leading-normal) var(--font-sans);
+  --code-font: var(--weight-regular) var(--text-sm) / var(--leading-normal) var(--font-mono);
+}
