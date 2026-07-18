@@ -18,7 +18,8 @@
     "tokens",
     "components",
     "compat-shadcn.css",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "lint:css": "stylelint \"**/*.css\"",

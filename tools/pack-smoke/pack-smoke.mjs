@@ -68,12 +68,16 @@ const run = (cmd, args, opts = {}) => {
 };
 
 // Files that MUST ship (matched as a prefix under the tarball's `package/` root).
+// LICENSE is asserted explicitly: it is now a committed file in the package (not
+// merely copied from the workspace root by pnpm), so an MIT package can never ship
+// without its license text regardless of which packer is used (IN-03).
 const REQUIRED = [
   'package/styles.css',
   'package/tokens/',
   'package/components/',
   'package/compat-shadcn.css',
   'package/README.md',
+  'package/LICENSE',
 ];
 // Dev-only surface that MUST NOT leak into the published tarball.
 const FORBIDDEN = [
