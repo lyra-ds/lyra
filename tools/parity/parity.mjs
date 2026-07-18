@@ -27,7 +27,13 @@
  *   (D) External-URL guard ... every `url()` in the shipped package CSS targets a
  *                              `data:` URI or a relative path — any absolute scheme
  *                              (http:, https:, other scheme:) or protocol-relative
- *                              `url(//cdn…)` fails (no-runtime-CDN constraint).
+ *                              `url(//cdn…)` fails (no-runtime-CDN constraint). The
+ *                              SAME scheme check is applied to every `@import`
+ *                              target in BOTH string (`@import "https://…"`) and
+ *                              url() notation — a string-form CDN import carries no
+ *                              url() token, and stylelint pins
+ *                              import-notation:"string", so that is the single most
+ *                              likely way a runtime CDN dependency re-enters.
  *
  * The parser is a real tokenizer / brace-depth state machine (NOT split(';') or a
  * flat regex): it tracks string state so quoted `data:` URIs with interior `;`/`{`/`}`
@@ -227,6 +233,37 @@ function fixtureSelfCheck() {
         );
       }
     }
+  }
+}
+
+/**
+ * Self-check for the @import scheme guard (WR-01): proves the guard catches an
+ * external import written in STRING notation (the form url() cannot see), plus
+ * url() and protocol-relative forms, while leaving relative + data: imports and
+ * commented-out imports untouched. Meta-test — asserts detection, does not scan
+ * the real package.
+ */
+function importSelfCheck() {
+  const targets = extractImports(read(join(FIXTURES, 'import-notation.css')));
+  const external = targets.filter(isExternalTarget);
+  const expectedExternal = [
+    'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans',
+    'http://cdn.example.com/x.css',
+    '//cdn.example.com/y.css',
+  ];
+  const ok =
+    external.length === expectedExternal.length &&
+    expectedExternal.every((t, k) => external[k] === t);
+  if (!ok) {
+    fail(
+      `Import guard self-check: expected external=[${expectedExternal.join(', ')}] got=[${external.join(', ')}]`,
+    );
+  }
+  if (!targets.includes('./local.css')) {
+    fail('Import guard self-check: relative @import "./local.css" was not extracted');
+  }
+  if (!targets.some((t) => t.startsWith('data:'))) {
+    fail('Import guard self-check: data: @import was not extracted');
   }
 }
 
@@ -477,15 +514,59 @@ function urlGuard() {
   }
 }
 
+const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+/** True when a url()/@import target is an external CDN reference (not data:, not relative). */
+function isExternalTarget(target) {
+  if (target.startsWith('data:')) return false; // inline data URI — allowed
+  if (target.startsWith('//')) return true; // protocol-relative — external
+  const m = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(target);
+  return Boolean(m) && m[1].toLowerCase() !== 'data'; // absolute non-data scheme — external
+}
+
+/**
+ * Extract every `@import` target — string ('/") OR url() notation — from a
+ * stylesheet, ignoring commented-out imports. The url() guard only sees `url(`
+ * tokens, so a string-form CDN import (`@import "https://…";`) slips past it
+ * (WR-01). stylelint pins import-notation:"string", making that the likely vector.
+ */
+function extractImports(css) {
+  const targets = [];
+  for (const m of stripComments(css).matchAll(/@import\s+(?:url\(\s*)?(['"]?)([^'")]+)\1/gi)) {
+    const t = m[2].trim();
+    if (t) targets.push(t);
+  }
+  return targets;
+}
+
+/** @import scheme guard: no external (CDN) imports in the shipped package CSS. */
+function importGuard() {
+  for (const abs of listCss(PKG)) {
+    const rel = abs
+      .slice(PKG.length + 1)
+      .split(/[\\/]/)
+      .join('/');
+    for (const target of extractImports(read(abs))) {
+      if (isExternalTarget(target)) {
+        fail(
+          `External @import ${rel}: "${target}" is forbidden (no runtime CDN) — use a relative path or a peer-installed font package`,
+        );
+      }
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
 
 fixtureSelfCheck();
+importSelfCheck();
 const tokenCount = tokenCheck();
 placementCheck();
 const classCount = classCheck();
 urlGuard();
+importGuard();
 
 if (errors.length) {
   console.error(
@@ -496,6 +577,6 @@ if (errors.length) {
 }
 
 console.log(
-  `parity OK: ${tokenCount} tokens, ${classCount} classes, placement + at-rule ancestry + no-CDN verified`,
+  `parity OK: ${tokenCount} tokens, ${classCount} classes, placement + at-rule ancestry + no-CDN (url() + @import) verified`,
 );
 process.exit(0);
