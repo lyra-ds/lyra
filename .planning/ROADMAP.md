@@ -66,7 +66,7 @@ Plans:
   4. `compat-shadcn.css` applies only when imported explicitly — it stays outside the default entry
   5. CI parity script proves 209/209 handoff tokens present with identical values, and publint passes with `"sideEffects": ["**/*.css"]` protecting CSS from consumer tree-shaking
 
-**Plans**: 3/6 plans executed
+**Plans**: 4/6 plans executed
 
 Plans:
 **Wave 1**
@@ -77,7 +77,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1)*
 
 - [x] 02-03-PLAN.md — Entry, compat subpath, package.json (exports/sideEffects/files), README brand+fonts docs
-- [ ] 02-04-PLAN.md — Parity script (209 tokens / 248 classes) + stylelint config + devDep legitimacy checkpoint
+- [x] 02-04-PLAN.md — Parity script (209 tokens / 248 classes) + stylelint config + devDep legitimacy checkpoint
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
-| 2. Styles Package | 3/6 | In Progress|  |
+| 2. Styles Package | 4/6 | In Progress|  |
 | 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
 | 5. Docgen & llms.txt | 0/TBD | Not started | - |

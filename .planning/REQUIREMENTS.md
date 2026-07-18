@@ -23,7 +23,7 @@ Requirements for initial release (v0.1.0). Each maps to roadmap phases.
 - [x] **STY-03**: Dev alterna light/dark apenas com `data-theme="dark"` no `<html>`, sem rebuild
 - [x] **STY-04**: Dev cria uma marca definindo 4 tokens (`--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`) sob `[data-brand]`, com hover/active/soft/focus-ring derivados via `color-mix` em light e dark
 - [x] **STY-05**: Dev opta pela interop shadcn importando `compat-shadcn.css` separadamente (fica fora do entry padrão)
-- [ ] **STY-06**: Script de paridade no CI garante 100% dos tokens do handoff presentes com valores idênticos
+- [x] **STY-06**: Script de paridade no CI garante 100% dos tokens do handoff presentes com valores idênticos
 - [x] **STY-07**: Pacote publica com `"sideEffects": ["**/*.css"]` e exports map válido (publint verde) — CSS nunca é descartado por tree-shaking do consumidor
 
 ### Pacote React (`@lyra-ds/react`)
@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STY-03 | Phase 2 | Complete |
 | STY-04 | Phase 2 | Complete |
 | STY-05 | Phase 2 | Complete |
-| STY-06 | Phase 2 | Pending |
+| STY-06 | Phase 2 | Complete |
 | STY-07 | Phase 2 | Complete |
 | RCT-01 | Phase 4 | Pending |
 | RCT-02 | Phase 4 | Pending |
