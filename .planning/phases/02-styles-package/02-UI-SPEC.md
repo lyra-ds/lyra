@@ -1,10 +1,11 @@
 ---
 phase: 2
 slug: styles-package
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-17
+reviewed_at: 2026-07-17
 ---
 
 # Phase 2 — UI Design Contract
@@ -154,9 +155,9 @@ This package ships **no runtime UI copy** (zero components rendered here — onl
 
 ## UI Considerations
 
-> Shape-rooted UI *state* coverage. This is a CSS-token/class package, not a stateful UI. "States" here map to the DS's **theme/brand permutation surface** — the axes that must be visually verified in Browser Mode because they are the package's real behavioral contract.
+> Shape-rooted UI *state* coverage. This is a CSS-token/class package, not a stateful UI. "States" here map to the DS's **theme/brand permutation surface** and the **CSS-owned layout-robustness** of the component classes — the axes that must be visually verified in Browser Mode because they are the package's real behavioral contract. Runtime *data* states (empty/loading/error/…) are **not** this phase's contract: the CSS package renders no data — those states are owned by the React components in Phase 3/4.
 
-Applicable state considerations resolved: 3 covered, 1 backstop, 0 unresolved
+**Post-verification probe:** 30 applicable considerations surfaced across the 8 component/permutation surfaces. Resolution (per user decision, 2026-07-17): runtime data-states → **dismissed** (deferred to Phase 3/4); CSS layout-robustness (long-text/overflow) → **backstop**. Net resolved: 3 covered, 3 backstop, 0 unresolved; 24 dismissed as out-of-phase.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
@@ -164,6 +165,9 @@ Applicable state considerations resolved: 3 covered, 1 backstop, 0 unresolved
 | brand-permutation (default vs `[data-brand]`, ×light/dark) | accent group | ✅ covered | `acme` teal fixture asserts `color-mix`-derived `hover/active/soft/focus-ring` in light AND dark (STY-04, D-04) |
 | parity (token values + class-name inventory) | 209 tokens + `.lyra-*` set | ✅ covered | CI parity script compares package values-for-value against canonical `handoff/tokens/` and inventories `.lyra-*` names against `handoff/components/**` (STY-06, D-05/D-06) |
 | import-safety (tree-shaking drop / entry order / opt-in isolation) | `sideEffects`, exports map, compat subpath | 🧪 backstop | `sideEffects: ["**/*.css"]` + publint-green exports map guard against consumers' bundlers dropping CSS; `compat-shadcn.css` proven to stay OUT of the default entry (STY-05/STY-07). Verify via publint + an import-order/opt-in assertion; no explicit evidence → insufficient_spec → human_needed |
+| long-text robustness (truncation/wrap) | button, form label/input, nav/tab, feedback, data cells, file rows | 🧪 backstop | Pure-CSS behavior (`text-overflow`/`white-space`/`word-break`). Browser Mode visual test: overlong labels/values in each component category truncate or wrap gracefully without breaking layout. No explicit per-component spec yet → insufficient_spec → human_needed |
+| overflow robustness (scroll/clip) | nav, feedback, data tables, file lists, brand surfaces | 🧪 backstop | Pure-CSS behavior (`overflow`/scroll containers). Browser Mode visual test: content exceeding its container scrolls or clips per the handoff CSS (e.g. data tables scroll) rather than overflowing the page. No explicit per-component spec yet → insufficient_spec → human_needed |
+| runtime data-states (empty / loading / error / partial / populated / zero-one-many) | forms, nav, data tables, file inputs | ⛔ dismissed | Out of phase by nature: `@lyra-ds/styles` ships only static style primitives and renders no data. What shows on empty/loading/error/partial/etc. is decided by the **React components in Phase 3/4** (and the consumer's own rendering), not by this CSS package. Any state-specific *classes* the components need (e.g. a skeleton/empty style) are authored when those components land. |
 
 ---
 
@@ -182,11 +186,11 @@ No shadcn registry is used (shadcn not initialized; Tailwind/shadcn-as-framework
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved
