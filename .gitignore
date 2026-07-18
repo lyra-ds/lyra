@@ -3,3 +3,7 @@ node_modules/
 dist/
 *.tsbuildinfo
 .env*
+
+# Vitest Browser Mode generated artifacts (failure screenshots / attachments)
+**/__screenshots__/
+**/.vitest-attachments/
