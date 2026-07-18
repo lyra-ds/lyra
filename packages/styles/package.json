@@ -1,6 +1,30 @@
 {
   "name": "@lyra-ds/styles",
   "version": "0.0.0",
-  "private": true,
-  "description": "Lyra DS — tokens + component CSS, zero JS. Placeholder until Phase 2."
+  "description": "Lyra DS — CSS-first design tokens + component styles (209 tokens, 40 components), zero JS.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./styles.css",
+    "./styles.css": "./styles.css",
+    "./tokens/*": "./tokens/*",
+    "./compat-shadcn.css": "./compat-shadcn.css"
+  },
+  "files": [
+    "styles.css",
+    "tokens",
+    "components",
+    "compat-shadcn.css",
+    "README.md"
+  ],
+  "scripts": {
+    "lint:css": "stylelint \"**/*.css\"",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
