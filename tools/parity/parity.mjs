@@ -44,6 +44,11 @@
  *                              url() token, and stylelint pins
  *                              import-notation:"string", so that is the single most
  *                              likely way a runtime CDN dependency re-enters.
+ *   (E) Entry cascade order .. styles.css (the aggregate entry, not part of the
+ *                              handoff) imports the seven token layers before the
+ *                              seven component layers, in the documented order, so a
+ *                              mis-ordered token layer cannot silently break the
+ *                              cascade the whole package depends on.
  *
  * The parser is a real tokenizer / brace-depth state machine (NOT split(';') or a
  * flat regex): it tracks string state so quoted `data:` URIs with interior `;`/`{`/`}`
@@ -606,6 +611,41 @@ function extractImports(css) {
   return targets;
 }
 
+// (E) styles.css cascade order — the seven token layers must be imported before
+// the seven component layers, in the documented order. styles.css is not part of
+// the handoff and is otherwise unchecked; a mis-ordered token layer would silently
+// break the cascade the whole package depends on (IN-04).
+const STYLES_ENTRY_ORDER = [
+  './tokens/fonts.css',
+  './tokens/colors.css',
+  './tokens/typography.css',
+  './tokens/spacing.css',
+  './tokens/effects.css',
+  './tokens/brand.css',
+  './tokens/base.css',
+  './components/buttons/buttons.css',
+  './components/forms/forms.css',
+  './components/display/display.css',
+  './components/navigation/navigation.css',
+  './components/feedback/feedback.css',
+  './components/files/files.css',
+  './components/data/data.css',
+];
+
+/** Assert styles.css imports the token layers before the component layers, in order. */
+function stylesEntryOrderCheck() {
+  const imports = extractImports(read(join(PKG, 'styles.css')));
+  if (
+    imports.length !== STYLES_ENTRY_ORDER.length ||
+    STYLES_ENTRY_ORDER.some((rel, k) => imports[k] !== rel)
+  ) {
+    fail(
+      `styles.css @import order drift: the 7 token layers must precede the 7 component ` +
+        `layers in the documented cascade order.\n      expected: ${STYLES_ENTRY_ORDER.join(', ')}\n      actual:   ${imports.join(', ')}`,
+    );
+  }
+}
+
 /** @import scheme guard: no external (CDN) imports in the shipped package CSS. */
 function importGuard() {
   for (const abs of listCss(PKG)) {
@@ -634,6 +674,7 @@ placementCheck();
 const classCount = classCheck();
 urlGuard();
 importGuard();
+stylesEntryOrderCheck();
 
 if (errors.length) {
   console.error(
