@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r --if-present run typecheck",
     "test": "pnpm -r --if-present run test",
     "build": "pnpm -r --if-present run build",
+    "parity": "node tools/parity/parity.mjs",
     "changeset": "changeset"
   },
   "devDependencies": {

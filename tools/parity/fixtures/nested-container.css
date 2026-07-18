@@ -1,0 +1,6 @@
+/* fixture: a declaration nested inside an @container block (at-rule ancestry) */
+@container (max-width: 460px) {
+  .lyra-y {
+    display: grid;
+  }
+}
