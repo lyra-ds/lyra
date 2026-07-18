@@ -47,10 +47,11 @@
  *
  * The parser is a real tokenizer / brace-depth state machine (NOT split(';') or a
  * flat regex): it tracks string state so quoted `data:` URIs with interior `;`/`{`/`}`
- * are opaque, strips comments, and maintains the ordered stack of enclosing at-rule /
- * selector blocks. Parser fixtures under tools/parity/fixtures/ exercise a nested
- * @media, a nested @container, a @keyframes block, and a quoted data: URI with an
- * interior `;`; a self-check runs before the parity checks.
+ * are opaque, treats url() (quoted OR unquoted) as an opaque token, strips comments,
+ * and maintains the ordered stack of enclosing at-rule / selector blocks. Parser
+ * fixtures under tools/parity/fixtures/ exercise a nested @media, a nested @container,
+ * a @keyframes block, a quoted data: URI with an interior `;`, and an unquoted url()
+ * with interior `;`/`{`/`}`/`:`; a self-check runs before the parity checks.
  *
  * On any drift: prints a message naming the drifted token/class/declaration (and points
  * at handoff/ as canonical) and exits non-zero. On full pass:
@@ -131,6 +132,44 @@ function parse(css) {
       i += 2;
       while (i < n && !(css[i] === '*' && css[i + 1] === '/')) i++;
       i += 2;
+      continue;
+    }
+    // url(...) token — consumed opaquely (mirrors extractUrls), so an UNQUOTED
+    // url() whose target contains an interior ;/{/}/: does not mis-segment the
+    // declaration (IN-02). Quoted url()s are also covered by the string branch
+    // below; handling them here too keeps parse() consistent with the url() guard.
+    if ((c === 'u' || c === 'U') && /^url\(/i.test(css.slice(i, i + 4))) {
+      buf += css.slice(i, i + 4); // "url("
+      i += 4;
+      while (i < n && /\s/.test(css[i])) {
+        buf += css[i];
+        i++;
+      } // leading whitespace
+      if (css[i] === '"' || css[i] === "'") {
+        const q = css[i];
+        buf += css[i];
+        i++;
+        while (i < n) {
+          const d = css[i];
+          if (d === '\\' && i + 1 < n) {
+            buf += d + css[i + 1];
+            i += 2;
+            continue;
+          }
+          buf += d;
+          i++;
+          if (d === q) break;
+        }
+      } else {
+        while (i < n && css[i] !== ')') {
+          buf += css[i];
+          i++;
+        } // unquoted target — opaque up to ')'
+      }
+      if (i < n && css[i] === ')') {
+        buf += css[i];
+        i++;
+      } // closing ')'
       continue;
     }
     // string (opaque)
@@ -227,6 +266,17 @@ function fixtureSelfCheck() {
           path: ['.lyra-z'],
           prop: 'mask',
           val: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><path d="m6 9 6 6 6-6"/></svg>') no-repeat center / 100%`,
+        },
+      ],
+    },
+    {
+      file: 'unquoted-url.css',
+      // the interior ;/{/}/: inside the UNQUOTED url() must NOT segment the declaration
+      expect: [
+        {
+          path: ['.lyra-u'],
+          prop: 'background',
+          val: `url(data:image/svg+xml;utf8,<svg><path d="M0;0{1}2:3"/></svg>) no-repeat`,
         },
       ],
     },
