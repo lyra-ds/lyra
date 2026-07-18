@@ -13,7 +13,7 @@ Convert the frozen design handoff (209 tokens, 40 components, `.d.ts` contracts)
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Monorepo Foundation & Governance** - pnpm workspace, CI, governance files, and versioning policy that everything else builds on
+- [x] **Phase 1: Monorepo Foundation & Governance** - pnpm workspace, CI, governance files, and versioning policy that everything else builds on (completed 2026-07-17)
 - [ ] **Phase 2: Styles Package** - `@lyra-ds/styles` with 209/209 token parity, theming, white-label contract, and safe packaging metadata
 - [ ] **Phase 3: React Infrastructure & Pilot Components** - Build/test/CI machinery plus Button, Input, Dialog, and Icon to lock conventions before batch work
 - [ ] **Phase 4: Component Batch Conversion & A11y** - All 40 components with class parity, APG-compliant keyboard behavior, SSR safety, and axe-clean output
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Monorepo Foundation & Governance | 5/5 | In Progress|  |
+| 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
 | 2. Styles Package | 0/TBD | Not started | - |
 | 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
