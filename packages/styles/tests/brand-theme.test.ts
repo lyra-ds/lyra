@@ -48,9 +48,22 @@ function luminance(c: RGB): number {
  * Teal-family discriminator: green is (approximately) the dominant channel.
  * Acme teal (#0D9488, g=148 max) passes; indigo fallbacks (#5B5BD6, blue max) FAIL — so this
  * catches a silently-removed brand.css derivation that would leave the default indigo accents.
+ *
+ * The alpha + near-black floors are load-bearing (WR-02): without them the predicate returns
+ * true for {0,0,0} and transparent-black — exactly what the accent-soft, accent-soft-text and
+ * focus-ring longhands compute to when their custom properties fail to resolve (unset ->
+ * initial -> transparent, or an invalid `border-color` -> currentColor -> black). Those floors
+ * make an unresolved value FAIL, so the soft/focus-ring assertions can no longer pass vacuously.
+ * The green-dominance test itself stays loose (`g + 2 >= max`) on purpose: the real derived
+ * teals include heavily white-mixed, near-desaturated values (e.g. light accent-soft
+ * {231,242,240}, dark accent-active {127,188,180}) where g exceeds b by only ~2, and those are
+ * legitimate — only the black/transparent unresolved case must be rejected.
  */
 function isTealFamily(c: RGB): boolean {
-  return c.g >= c.b - 2 && c.g >= c.r - 2;
+  if (c.a < 0.02) return false; // unresolved var -> transparent
+  const max = Math.max(c.r, c.g, c.b);
+  if (max < 20) return false; // unset longhand -> near-black
+  return c.g + 2 >= max; // green (co-)dominant; indigo (blue-dominant) fails
 }
 
 const RAW_ACME = parseHex('#0D9488'); // consumer brand seed, unmixed
