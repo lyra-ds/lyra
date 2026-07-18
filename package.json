@@ -12,6 +12,7 @@
     "test": "pnpm -r --if-present run test",
     "build": "pnpm -r --if-present run build",
     "parity": "node tools/parity/parity.mjs",
+    "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "changeset": "changeset"
   },
   "devDependencies": {
@@ -20,9 +21,11 @@
     "@vitest/browser-playwright": "4.1.10",
     "playwright": "1.61.1",
     "prettier": "3.9.5",
+    "publint": "0.3.21",
     "stylelint": "17.14.0",
     "stylelint-config-standard": "40.0.0",
     "typescript": "5.9.3",
+    "vite": "8.1.5",
     "vitest": "4.1.10"
   }
 }
