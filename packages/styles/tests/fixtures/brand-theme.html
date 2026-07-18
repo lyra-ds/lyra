@@ -15,8 +15,8 @@
 -->
 <style>
   /* Consumer-supplied white-label brand seed (saturated acme teal). */
-  #lyra-fixture-root[data-brand="acme"] {
-    --brand: #0D9488;
+  #lyra-fixture-root[data-brand='acme'] {
+    --brand: #0d9488;
   }
   .probe {
     display: block;
@@ -28,13 +28,21 @@
 
 <div id="lyra-fixture-root">
   <!-- One probe per derived var, each binding the var to a real longhand property. -->
-  <div class="probe" data-probe="accent" style="background-color: var(--accent);"></div>
-  <div class="probe" data-probe="accent-hover" style="background-color: var(--accent-hover);"></div>
-  <div class="probe" data-probe="accent-active" style="background-color: var(--accent-active);"></div>
-  <div class="probe" data-probe="accent-soft" style="background-color: var(--accent-soft);"></div>
-  <div class="probe" data-probe="accent-soft-text" style="color: var(--accent-soft-text);"></div>
-  <div class="probe" data-probe="focus-ring" style="border: 3px solid var(--focus-ring);"></div>
-  <div class="probe" data-probe="accent-active-shadow" style="box-shadow: 0 0 0 3px var(--accent-active);"></div>
+  <div class="probe" data-probe="accent" style="background-color: var(--accent)"></div>
+  <div class="probe" data-probe="accent-hover" style="background-color: var(--accent-hover)"></div>
+  <div
+    class="probe"
+    data-probe="accent-active"
+    style="background-color: var(--accent-active)"
+  ></div>
+  <div class="probe" data-probe="accent-soft" style="background-color: var(--accent-soft)"></div>
+  <div class="probe" data-probe="accent-soft-text" style="color: var(--accent-soft-text)"></div>
+  <div class="probe" data-probe="focus-ring" style="border: 3px solid var(--focus-ring)"></div>
+  <div
+    class="probe"
+    data-probe="accent-active-shadow"
+    style="box-shadow: 0 0 0 3px var(--accent-active)"
+  ></div>
 
   <!-- DIRECT-mask chevron probe: .lyra-acc__chevron (display.css) carries the data: SVG mask on the
        ELEMENT itself, so computed mask-image can be read off it (NOT .lyra-select-wrap::after, a
@@ -47,10 +55,11 @@
   <div
     class="lyra-longtext-box"
     data-probe="longtext-box"
-    style="width: 120px; display: flex; overflow: hidden;"
+    style="width: 120px; display: flex; overflow: hidden"
   >
     <span class="lyra-cmdk__item-label" data-probe="longtext-label"
-      >This is an intentionally very very very long label that must truncate inside its fixed-width box</span
+      >This is an intentionally very very very long label that must truncate inside its fixed-width
+      box</span
     >
   </div>
 </div>

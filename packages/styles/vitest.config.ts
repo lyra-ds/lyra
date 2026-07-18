@@ -1,5 +1,5 @@
-import { defineConfig } from "vitest/config";
-import { playwright } from "@vitest/browser-playwright";
+import { defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
 
 // Browser Mode (chromium via @vitest/browser-playwright) is REQUIRED for @lyra-ds/styles:
 // jsdom applies zero CSS, so `color-mix()` and the [data-theme]/[data-brand] custom-property
@@ -21,12 +21,12 @@ import { playwright } from "@vitest/browser-playwright";
 // step that triggers Browser Mode. CI wires this ahead of the root test command in plan 02-06.
 export default defineConfig({
   test: {
-    include: ["tests/**/*.test.ts"],
+    include: ['tests/**/*.test.ts'],
     browser: {
       enabled: true,
       provider: playwright(),
       headless: true,
-      instances: [{ browser: "chromium" }],
+      instances: [{ browser: 'chromium' }],
     },
   },
 });
