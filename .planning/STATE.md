@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: react-infrastructure-pilot-components
 status: executing
-stopped_at: Completed 03-06-PLAN.md
-last_updated: "2026-07-19T22:43:37.184Z"
+stopped_at: Completed 03-07-PLAN.md
+last_updated: "2026-07-19T23:35:54.309Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-07-16)
 ## Current Position
 
 Phase: 03 (react-infrastructure-pilot-components) — EXECUTING
-Plan: 7 of 9
+Plan: 8 of 9
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 03 execution started
 
-Progress: [█████████░] 85%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Progress: [█████████░] 85%
 | Phase 03 P04 | 37min | 2 tasks | 7 files |
 | Phase 03 P05 | 62min | 2 tasks | 10 files |
 | Phase 03 P06 | 20min | 2 tasks | 4 files |
+| Phase 03 P07 | 25min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 03-05: frozen dark primary/danger AA contrast (4.39:1, indigo-500+white) logged to deferred-items.md — NOT fixed (locked Phase-2 tokens); smoke axe allows only that specific finding
 - [Phase ?]: Input D-14 locked by composition: public onChange stays native ChangeEventHandler; useControllableState composed internally (no onValueChange prop)
 - [Phase ?]: Input id = id prop ?? useId(); prototype's label-derived slug dropped (documented deviation — duplicate-id bug for same-labeled inputs)
+- [Phase ?]: Dialog: inner Portal-child panel owns all DOM-dependent effects (initial focus + trap) so they never race the portal mount (Pitfall 8); outer forwardRef owns useId/usePresence/useScrollLock/restore
+- [Phase ?]: Dialog focus restore keys on the controlled open prop flipping false (not on onClose request); opener captured in the panel mount effect before focus moves; panel tabIndex -1 unconditional (D-20 fallback + zero-candidate trap target)
+- [Phase ?]: Dialog close glyph is a self-contained inline svg (no Icon import) so importing Dialog pulls no lucide-react; × renders only with onClose; jsx-a11y line-disabled with justification for the backdrop click + panel Esc keydown
 
 ### Pending Todos
 
@@ -140,6 +144,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T22:42:50.122Z
-Stopped at: Completed 03-06-PLAN.md
+Last session: 2026-07-19T23:25:30.422Z
+Stopped at: Completed 03-07-PLAN.md
 Resume file: None
