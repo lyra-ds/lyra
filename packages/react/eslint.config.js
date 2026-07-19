@@ -30,4 +30,14 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // RCT-03 bans CSS imports in SHIPPED source. Browser-mode tests are the deliberate exception:
+    // they import the @lyra-ds/styles entry CSS IN THE TEST (never in src that ships) so chromium
+    // renders real styles for axe color-contrast. Test files are not published (the `files`
+    // allowlist is `dist` only), so the sideEffects:false drop hazard does not apply to them.
+    files: ['src/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
 );

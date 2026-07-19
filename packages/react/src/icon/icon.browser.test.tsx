@@ -74,11 +74,17 @@ describe('Icon — resolution', () => {
     expect(svg.querySelector('circle')).not.toBeNull();
   });
 
-  it('size + color pass through to the svg', async () => {
+  it('size + color pass through to the svg (lucide maps color → stroke)', async () => {
     const { container } = await render(<Icon name="check" size={32} color="rgb(255, 0, 0)" />);
     const svg = container.querySelector('svg.lyra-icon')! as SVGSVGElement;
     expect(svg.getAttribute('width')).toBe('32');
-    expect(getComputedStyle(svg).color).toBe('rgb(255, 0, 0)');
+    expect(svg.getAttribute('stroke')).toBe('rgb(255, 0, 0)');
+  });
+
+  it('default color inherits currentColor (D-06) — no explicit stroke override', async () => {
+    const { container } = await render(<Icon name="check" />);
+    const svg = container.querySelector('svg.lyra-icon')!;
+    expect(svg.getAttribute('stroke')).toBe('currentColor');
   });
 
   it('consumer className appends after .lyra-icon (D-09)', async () => {
