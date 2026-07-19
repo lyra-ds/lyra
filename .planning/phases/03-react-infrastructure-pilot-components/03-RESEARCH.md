@@ -640,17 +640,19 @@ test('Dialog renders to string without touching DOM at module scope', () => {
 | A5 | `usePresence` timeout fallback of ~250 ms (vs 180 ms `--duration-base`) is the right guard shape `[ASSUMED — standard practice]` | Pattern 7 | Tune the constant; test-observable |
 | A6 | lucide-react pin at execution = 1.25.0 (UI-SPEC text says 1.24.0; both are 1.x post-brand-removal; verification ran against 1.25.0) `[ASSUMED choice — needs a one-line confirmation]` | Standard Stack | None functionally; keep save-exact pin consistent with UI-SPEC or update UI-SPEC line |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Where do the react vitest projects live — package-level config vs root config?**
+All four questions were resolved during planning; the adopting plan is annotated on each.
+
+1. **Where do the react vitest projects live — package-level config vs root config?** *(RESOLVED — adopted by plan 03-01: `packages/react/vitest.config.ts` with browser + ssr projects, per the recommendation.)*
    - What we know: CONTEXT "Integration Points" says "Root `vitest.config` gains projects… alongside the styles project," but no root config exists today; styles ships its own config and the root `test` script recurses (`pnpm -r --if-present run test`), which CI depends on.
    - What's unclear: whether that sentence is a binding decision or a sketch.
    - Recommendation: `packages/react/vitest.config.ts` with `test.projects` (browser + ssr) and a package `test` script — zero disruption to the shipped Phase 2 harness and the frozen CI step. Falls under Claude's discretion ("follow Phase 2's Browser Mode patterns").
-2. **ESLint adoption now vs a zero-dep grep gate for the CSS-import ban.**
+2. **ESLint adoption now vs a zero-dep grep gate for the CSS-import ban.** *(RESOLVED — adopted by plan 03-01: ESLint flat config + install per the recommendation; the CI lint step is wired by plan 03-08.)*
    - What we know: STACK.md recommends ESLint 10 flat config + jsx-a11y for the react package; the repo currently lints with prettier+stylelint only; the phase needs at minimum a machine-checked "zero CSS imports" rule.
    - Recommendation: adopt ESLint now (flat config scoped to packages/react) — it also delivers jsx-a11y and hooks rules the Phase 4 batch conversion will lean on; keep a one-line grep in the lint job only if the planner wants redundancy.
-3. **React 18 compatibility testing.** peerDeps say `>=18 <20` but everything runs on 19.2. A CI matrix leg on React 18 is cheap insurance but grows CI time; PITFALLS.md suggests it. Recommendation: defer to Phase 4/7 (note it in CONVENTIONS.md as a pre-publish check) — the pilots use only 18-safe APIs (`forwardRef`, `useId`, `createPortal`).
-4. **Does the styles-side work (`.lyra-dialog--closing`, overlay counterpart, `.lyra-dialog__close`) ship as a normal Phase 3 plan touching `packages/styles` + `tools/parity` allowlist?** Research answer: yes — D-18/D-19 place the CSS in `@lyra-ds/styles` with the parity script gaining an explicitly enumerated `ADDITIVE_EXTENSIONS` list (visible, auditable). The planner should make this its own task with the parity run as verification.
+3. **React 18 compatibility testing.** *(RESOLVED — adopted by plan 03-08: deferred per the recommendation, recorded as a pre-publish note in CONVENTIONS.md.)* peerDeps say `>=18 <20` but everything runs on 19.2. A CI matrix leg on React 18 is cheap insurance but grows CI time; PITFALLS.md suggests it. Recommendation: defer to Phase 4/7 (note it in CONVENTIONS.md as a pre-publish check) — the pilots use only 18-safe APIs (`forwardRef`, `useId`, `createPortal`).
+4. **Does the styles-side work (`.lyra-dialog--closing`, overlay counterpart, `.lyra-dialog__close`) ship as a normal Phase 3 plan touching `packages/styles` + `tools/parity` allowlist?** *(RESOLVED — adopted by plan 03-02: additive feedback.css classes + parity `ADDITIVE_EXTENSIONS` allowlist as its own verified task.)* Research answer: yes — D-18/D-19 place the CSS in `@lyra-ds/styles` with the parity script gaining an explicitly enumerated `ADDITIVE_EXTENSIONS` list (visible, auditable). The planner should make this its own task with the parity run as verification.
 
 ## Environment Availability
 
