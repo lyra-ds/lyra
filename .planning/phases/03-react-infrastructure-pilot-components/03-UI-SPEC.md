@@ -1,10 +1,11 @@
 ---
 phase: 3
 slug: react-infrastructure-pilot-components
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-18
+reviewed_at: 2026-07-18
 ---
 
 # Phase 3 — UI Design Contract
@@ -127,6 +128,7 @@ All JSDoc on the pilot components: canonical English (translated from pt-BR hand
 ### Button (simple pilot)
 - States styled by CSS (must all be emitted correctly): default, `:hover`, `:active` (0.5px translateY), `:focus-visible` (`--shadow-focus` ring), `:disabled` (opacity .5), `--loading`
 - Variant map: `variant` → `.lyra-btn--{primary|secondary|soft|ghost|danger}` (default primary); `size` → `--{sm|md|lg}` (default md); `full` → `--full`; icon-only → `--icon`
+- Accessible name: icon-only Buttons (`--icon`) REQUIRE `aria-label` — fixtures must demonstrate it, and `packages/react/CONVENTIONS.md` must state it as a conversion-checklist rule (axe suite enforces at runtime)
 - `iconLeft`/`iconRight` render at 16px inside the 8px-gap flex row
 
 ### Input (form/controlled pilot)
@@ -150,20 +152,58 @@ All JSDoc on the pilot components: canonical English (translated from pt-BR hand
 
 ## UI Considerations
 
-> Shape-rooted UI state coverage for the four pilots. Copy lives in `## Copywriting Contract`; rows reference it. Verification vehicles: the pilot test template (smoke + keyboard + axe + `renderToString`, D-25/D-26) in light AND dark themes.
+> Shape-rooted UI state coverage for the four pilots, resolved via the ui-consideration-probe engine (post-verification, 2026-07-18). Elements probed: E1 Button, E2 Input, E3 Dialog, E4 Icon. Copy lives in `## Copywriting Contract`; rows reference it. Verification vehicles: the pilot test template (smoke + keyboard + axe + `renderToString`, D-25/D-26) in light AND dark themes.
 
-Applicable state considerations resolved: 7 covered, 2 backstop, 0 unresolved
+Probe coverage: 22 applicable — **12 covered, 5 backstop, 5 dismissed (with reason), 0 unresolved**
+
+### E1 — Button
+
+| Category | Status | Resolution / Reason |
+|----------|--------|---------------------|
+| empty | ✅ covered | Button never has a data-empty state; label is consumer `children`. The no-text case is the `--icon` variant, which REQUIRES `aria-label` (see Button interaction contract) |
+| loading | ✅ covered | `loading` renders `.lyra-btn--loading` + `.lyra-btn__spinner`, keeps label visible (no layout shift), sets `aria-busy`, blocks interaction (Copywriting: Loading state row) |
+| error | ⊘ dismissed | frozen CSS defines no Button error state; submit-failure feedback is consumer app logic — `variant="danger"` is style-only (Copywriting: Destructive confirmation row) |
+| populated | ✅ covered | happy path = verb+noun label fixtures (Copywriting Contract); all 5 variants × 3 sizes rendered in smoke tests, light + dark |
+| partial | ✅ covered | `iconLeft`/`iconRight` independently omittable; no empty nodes emitted for absent props |
+| overflow | 🧪 backstop | { statement: "~120-char label fixture documents nowrap truncation at container edge (frozen `white-space: nowrap`)", verification: backstop } |
+| long-text | 🧪 backstop | { statement: "same held-out ~120-char label fixture in the Button pilot suite", verification: backstop } |
+
+### E2 — Input
+
+| Category | Status | Resolution / Reason |
+|----------|--------|---------------------|
+| empty | ✅ covered | unfilled input = native empty value/placeholder; optional label/hint/icon absent → no empty wrapper nodes in the DOM |
+| loading | ⊘ dismissed | frozen CSS defines no Input loading state; async-validation spinners are consumer-composed, out of pilot scope |
+| error | ✅ covered | `error` prop swaps hint → `.lyra-hint--error`, adds `.lyra-input--error`, wires `aria-invalid` + `aria-describedby` (Copywriting: Error state row) |
+| populated | ✅ covered | controlled AND uncontrolled value paths both rendered in the pilot test template (`useControllableState`, D-14) |
+| partial | ✅ covered | each optional prop (label, hint, icon) independently omittable; DOM contains no empty wrapper nodes for absent props |
+| overflow | ✅ covered | long values use the native single-line horizontal scroll of `<input>`; frozen CSS does not alter it |
+| long-text | 🧪 backstop | { statement: "~120-char label + hint fixture: both wrap at 1.5 line-height without overlapping the control", verification: backstop } |
+
+### E3 — Dialog
+
+| Category | Status | Resolution / Reason |
+|----------|--------|---------------------|
+| overflow | 🧪 backstop | { statement: "browser-mode test renders body content taller than viewport; panel stays within `max-width: 440px` + overlay `--space-6` padding, page behind is scroll-locked", verification: backstop } |
+| long-text | 🧪 backstop | { statement: "long-title fixture: title wraps within the header while `.lyra-dialog__close` keeps its 28px hit area", verification: backstop } |
+| empty *(beyond-taxonomy, kept)* | ✅ covered | `open=false` renders `null` (after exit transition per D-17); omitted `footer` omits `.lyra-dialog__footer` entirely — no empty chrome |
+
+### E4 — Icon
+
+| Category | Status | Resolution / Reason |
+|----------|--------|---------------------|
+| empty | ✅ covered | unknown `name` → dev-only `console.warn` + render `null`; silent null in production — never breaks consumer UI (Copywriting: Icon warning row) |
+| loading | ⊘ dismissed | icons are statically imported ESM from local `lucide-react` — no async fetch exists, so no loading state is possible (RCT-05 no-CDN) |
+| error | ✅ covered | the only failure mode is unknown `name`, handled by the dev-warn + `null` contract (D-05) |
+| populated | ✅ covered | all 54 registry icons rendered in the registry smoke fixture at default 20px, light + dark |
+| overflow | ⊘ dismissed | fixed-size svg glyph (16/20/24px) with no flowing content — cannot overflow its box |
+| long-text | ⊘ dismissed | renders no visual text; `title` prop becomes the accessible name only (`<title>` element, not layout text) |
+
+### Cross-cutting (beyond-taxonomy, kept)
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| loading | Button | ✅ covered | `loading` renders `.lyra-btn--loading` + `.lyra-btn__spinner`, keeps label visible, sets `aria-busy`, blocks interaction (Copywriting: Loading state row) |
-| error | Input | ✅ covered | `error` prop swaps hint → `.lyra-hint--error`, adds `.lyra-input--error`, wires `aria-invalid`/`aria-describedby` (Copywriting: Error state row) |
-| empty | Icon (unknown `name`) | ✅ covered | dev-only `console.warn` + render `null`; silent null in production — never breaks consumer UI (Copywriting: Icon warning row) |
-| empty | Dialog (`open=false` / no `footer`) | ✅ covered | `open=false` renders `null` (after exit transition per D-17); omitted `footer` omits `.lyra-dialog__footer` entirely — no empty chrome |
-| partial | Input (label/hint/icon optional) | ✅ covered | each optional prop independently omittable; DOM contains no empty wrapper nodes for absent props |
-| overflow | Dialog (long body content) | 🧪 backstop | browser-mode test renders body content taller than viewport; panel stays within `max-width: 440px` + overlay `--space-6` padding, page behind is scroll-locked — visual/UI-state test in the Dialog pilot suite |
-| long-text | Button label / Input label + hint | 🧪 backstop | fixture with a ~120-char label: Button is `white-space: nowrap` by frozen CSS (fixture documents truncation behavior at container edge); field label/hint wrap at 1.5 line-height without overlapping the control — held-out visual check in pilot suites |
-| zero-one-many | — | ✅ covered | not applicable — no list-rendering components among the pilots (first list components arrive in Phase 4) |
+| zero-one-many | — | ⊘ dismissed | no list-rendering components among the pilots (first list components arrive in Phase 4) |
 | focus/keyboard | Dialog, Button, Input | ✅ covered | focus-visible ring on all pilots; Dialog trap + Esc + restore covered by the keyboard test template (D-25), real browser events in chromium |
 
 All state coverage runs twice — light and `[data-theme="dark"]` — per the Phase 2 Browser Mode pattern, with axe-core on each rendered fixture.
@@ -182,11 +222,11 @@ All state coverage runs twice — light and `[data-theme="dark"]` — per the Ph
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: FLAG (accepted — icon-only Button accessible-name contract added to the Button interaction contract above)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (documented locked-constraint deviation: 5 frozen sizes / 4 frozen weights — handoff fidelity lock, zero new decisions)
+- [x] Dimension 5 Spacing: PASS (documented locked-constraint deviation: frozen 12/20px tokens; all values ×4)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** APPROVED — gsd-ui-checker, 2026-07-18
