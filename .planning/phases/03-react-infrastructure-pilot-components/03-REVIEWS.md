@@ -1,8 +1,9 @@
 ---
 phase: 3
 reviewers: [codex]
-reviewed_at: 2026-07-19T03:50:00Z
-rounds: 2
+reviewed_at: 2026-07-19T04:00:00Z
+rounds: 3
+verdict: READY-TO-EXECUTE
 plans_reviewed: [03-01-PLAN.md, 03-02-PLAN.md, 03-03-PLAN.md, 03-04-PLAN.md, 03-05-PLAN.md, 03-06-PLAN.md, 03-07-PLAN.md, 03-08-PLAN.md, 03-09-PLAN.md]
 ---
 
@@ -355,7 +356,7 @@ The phase design is fundamentally good, but four blockers should be resolved bef
 After those changes, plus adding a changeset and pinning the smoke-fixture dependencies, the phase should drop to **MEDIUM/LOW** implementation risk.
 ---
 
-## Codex Review (Round 2 — current)
+## Codex Review (Round 2 — historical; all findings incorporated in commits 91d4f6d/8877734, verified by round 3 below)
 
 # Cross-AI Plan Review — Round 2
 
@@ -413,19 +414,35 @@ The four original blockers are substantively addressed, and the revised decompos
 
 ---
 
+## Codex Review (Round 3 — current, final)
+
+# Round-2 Fix Verification
+
+- **FIXED — impossible Vite Dialog-exclusion assertion:** the scan is now JavaScript-only, while CSS is checked separately for the expected full stylesheet content ([03-09-PLAN.md:90](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-09-PLAN.md:90), [03-09-PLAN.md:99](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-09-PLAN.md:99)). This matches the source: the aggregate stylesheet imports feedback CSS ([styles.css:14](/home/franciscpd/Projects/lyra-ds/packages/styles/styles.css:14)), which contains `.lyra-dialog-overlay` ([feedback.css:66](/home/franciscpd/Projects/lyra-ds/packages/styles/components/feedback/feedback.css:66)).
+- **FIXED — SVG-namespace CDN-scan false positive:** both dist and fixture scans use the same semantic rule, reject CDN hosts/other URLs, and allow only `http://www.w3.org/` and `https://react.dev/`; the fixture additionally proves both allowed literals are present yet pass ([03-08-PLAN.md:27](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-08-PLAN.md:27), [03-09-PLAN.md:90](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-09-PLAN.md:90), [03-09-PLAN.md:100](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-09-PLAN.md:100)). This is semantically correct: SVG namespace URLs are identifiers, not fetches ([W3C SVGWG explanation](https://github.com/w3c/svgwg/issues/738)).
+- **FIXED — zero-focusable focus-trap escape:** the shared hook explicitly prevents both Tab directions and refocuses the panel when no candidates exist; it also routes Tab correctly when the panel itself is focused ([03-04-PLAN.md:27](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-04-PLAN.md:27), [03-04-PLAN.md:128](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-04-PLAN.md:128)). Dialog makes the panel unconditionally focusable and tests both cases ([03-07-PLAN.md:98](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-07-PLAN.md:98), [03-07-PLAN.md:141](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-07-PLAN.md:141)). The valid no-close state is grounded in the optional `onClose` handoff contract ([Dialog.d.ts:4](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Dialog.d.ts:4)).
+- **FIXED — missing custom-container test:** a dedicated fixture now verifies mount location, initial focus, container-scoped axe, and teardown ([03-07-PLAN.md:24](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-07-PLAN.md:24), [03-07-PLAN.md:130](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-07-PLAN.md:130), [03-07-PLAN.md:141](/home/franciscpd/Projects/lyra-ds/.planning/phases/03-react-infrastructure-pilot-components/03-07-PLAN.md:141)).
+
+# New Concerns
+
+None. I found no new regression or execution-impacting ambiguity in the revised plans.
+
+# Risk Assessment
+
+**MEDIUM implementation risk** due to the inherent packaging/overlay/scratch-app complexity, but no remaining plan blocker.
+
+**READY-TO-EXECUTE: yes.**
+
+---
+
 ## Consensus Summary
 
-Single-reviewer run (Codex, 2 rounds, source-grounded). Round 2 verdict: all round-1 blockers FIXED (two PARTIALLY FIXED items are documented deferrals — provenance to Phase 7 — or superseded by a round-2 finding). READY-TO-EXECUTE: no, pending 3 new HIGH findings.
+Single-reviewer convergence run (Codex, 3 rounds, source-grounded). Round 3 verdict: **READY-TO-EXECUTE: yes** — all round-2 findings FIXED with file:line evidence, zero new concerns. Residual MEDIUM implementation risk is inherent packaging/overlay/scratch-app complexity, not a plan defect.
 
-### Current Actionable Findings (Round 2)
-1. **HIGH (03-09):** The Vite fixture imports the full `@lyra-ds/styles` entry (which contains `.lyra-dialog-overlay` in its CSS), so the "assert lyra-dialog-overlay absent in all emitted assets" tree-shake check always fails. Scope the scan to JavaScript assets only (or drop the global styles import from the isolation fixture).
-2. **HIGH (03-08/03-09):** The protocol-wide `https?://` CDN scan deterministically rejects Lucide's baked-in SVG namespace attribute `xmlns: "http://www.w3.org/2000/svg"`. Needs a semantic rule: reject external fetch/import URLs + known CDN hosts, allowlist the W3C namespace URI.
-3. **HIGH (03-04/03-07):** Zero-focusable Dialog (plain text children, no onClose — valid per handoff Dialog.d.ts) lets Tab escape to the background. Specify trap behavior for zero tabbables (prevent Tab/Shift+Tab, refocus panel) and panel-focused-with-tabbables (Tab → first, Shift+Tab → last); add the browser test case.
-4. **MEDIUM (03-07):** Custom `container` prop has no dedicated behavioral test — add a fixture proving mount location, initial focus, axe scope, and teardown with a custom container.
+### Convergence trail
+- Round 1: 4 HIGH blockers (icon inventory, usePresence API, TS prop conflicts, fixture reproducibility) → fixed in commits 647817a/d18fd40 (icon inventory further corrected 68→70 by the plan checker)
+- Round 2: 3 HIGH + 1 MEDIUM (impossible Vite Dialog scan, SVG-namespace CDN false positive, zero-focusable trap escape, missing container test) → fixed in commits 91d4f6d/8877734 (react.dev allowlist added by the plan checker)
+- Round 3: no findings; ready to execute
 
-### Agreed Strengths
-- All four round-1 blockers substantively addressed; "the revised decomposition is much stronger"
-- Fix quality independently confirmed with file:line evidence per finding
-
-### Divergent Views
-None — single reviewer.
+### Current Actionable Findings
+None.
