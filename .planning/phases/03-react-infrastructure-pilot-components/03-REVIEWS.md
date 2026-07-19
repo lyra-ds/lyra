@@ -1,13 +1,14 @@
 ---
 phase: 3
 reviewers: [codex]
-reviewed_at: 2026-07-19T02:50:00Z
+reviewed_at: 2026-07-19T03:50:00Z
+rounds: 2
 plans_reviewed: [03-01-PLAN.md, 03-02-PLAN.md, 03-03-PLAN.md, 03-04-PLAN.md, 03-05-PLAN.md, 03-06-PLAN.md, 03-07-PLAN.md, 03-08-PLAN.md, 03-09-PLAN.md]
 ---
 
 # Cross-AI Plan Review — Phase 3
 
-## Codex Review
+## Codex Review (Round 1 — historical; all findings incorporated in commits 647817a/d18fd40, verified by round 2 below)
 
 # Cross-AI Plan Review — Phase 3
 
@@ -354,24 +355,77 @@ The phase design is fundamentally good, but four blockers should be resolved bef
 After those changes, plus adding a changeset and pinning the smoke-fixture dependencies, the phase should drop to **MEDIUM/LOW** implementation risk.
 ---
 
+## Codex Review (Round 2 — current)
+
+# Cross-AI Plan Review — Round 2
+
+## Round-1 Fix Verification
+
+- **FIXED — build-red window:** Plan 03-01 now creates buildable placeholders and requires the five-entry tsup build to pass from Wave 1 onward (`03-01-PLAN.md:34-35`, `149-165`).
+
+- **FIXED — missing changeset:** Plan 03-08 adds a minor changeset; this matches the published-package policy in [`CONTRIBUTING.md`](/home/franciscpd/Projects/lyra-ds/CONTRIBUTING.md:37) and the fixed lockstep group in [`.changeset/config.json`](/home/franciscpd/Projects/lyra-ds/.changeset/config.json:5) (`03-08-PLAN.md:140-152`).
+
+- **PARTIALLY FIXED — registry provenance:** exact pins, a human checkpoint, and CI drift/import validation are now specified (`03-01-PLAN.md:88-107`, `03-03-PLAN.md:99-111`); the machine-verifiable provenance record remains intentionally deferred to Phase 7.
+
+- **FIXED — Dialog close CSS:** the revised CSS includes `:focus-visible`, a non-shrinking `flex: 0 0 28px`, and deterministic exit keyframes (`03-02-PLAN.md:73-85`). This corrects the original source situation: `.lyra-tag__remove` has only hover styling and is 14px ([`display.css`](/home/franciscpd/Projects/lyra-ds/packages/styles/components/display/display.css:76)).
+
+- **FIXED — incomplete icon inventory:** Plan 03-03 replaces the literal-only scan with four passes, includes `.ts`/`.d.ts`, detects unresolved dynamics, validates Lucide exports, and self-tests extraction (`03-03-PLAN.md:92-111`). The cited dynamic sources and JSDoc examples do exist: array-driven icons ([`icons.card.html`](/home/franciscpd/Projects/lyra-ds/handoff/components/icons/icons.card.html:22)), file resolvers ([`FileUpload.jsx`](/home/franciscpd/Projects/lyra-ds/handoff/components/files/FileUpload.jsx:11), [`FileManager.jsx`](/home/franciscpd/Projects/lyra-ds/handoff/components/files/FileManager.jsx:13)), and `circle`/`file-plus` examples ([`Combobox.d.ts`](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/Combobox.d.ts:8), [`CommandPalette.d.ts`](/home/franciscpd/Projects/lyra-ds/handoff/components/navigation/CommandPalette.d.ts:8)).
+
+- **FIXED — `usePresence` cannot observe animation completion:** it now returns a caller-attached `onAnimationEnd`, filters bubbled events, has a timeout fallback, and tests reopen behavior (`03-04-PLAN.md:120-139`).
+
+- **FIXED — focusable filtering and nested scroll locks:** Plan 03-04 now filters hidden/inert/invisible targets and requires additive padding plus a module-level lock count (`03-04-PLAN.md:125-129`).
+
+- **FIXED — Icon extension and production-warning evidence:** `.lyra-icon` is explicitly documented as an API extension, and production stripping is assigned to the packed Vite proof (`03-05-PLAN.md:136-140`).
+
+- **FIXED — Input type and event-contract blockers:** `Omit<..., 'size'>`, native `onChange` forwarding, `aria-describedby` merging, and `useId` IDs are explicitly specified (`03-06-PLAN.md:87-102`). This correctly repairs the conflict in the handoff declaration ([`Input.d.ts`](/home/franciscpd/Projects/lyra-ds/handoff/components/forms/Input.d.ts:5)).
+
+- **FIXED — Dialog type, portal-focus, axe/theme, and conditional-close issues:** `title` is omitted before redefinition; focus effects are inside the portaled subtree; tests target `document.body` with theme on `<html>`; and the × button remains conditional on `onClose` (`03-07-PLAN.md:94-109`, `125-143`). This preserves the handoff’s conditional close button ([`Dialog.jsx`](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Dialog.jsx:16)).
+
+- **PARTIALLY FIXED — broad CDN detection:** the check was correctly broadened beyond `unpkg.com` (`03-08-PLAN.md:142-150`), but the “any `https?://`” rule introduces a deterministic false positive below.
+
+- **FIXED — smoke fixture completeness and CJS coverage:** Vite now pins React, types, Vite, and plugin; the smoke plan executes root and subpath `require()`; and Next is no longer presented as direct SSR proof (`03-09-PLAN.md:88-100`, `115-129`).
+
+## New Concerns
+
+- **HIGH — Vite’s Dialog-exclusion assertion is impossible as written.** The Vite fixture imports the all-components `@lyra-ds/styles` entry (`03-09-PLAN.md:88`), while that entry imports `feedback.css` ([`styles.css`](/home/franciscpd/Projects/lyra-ds/packages/styles/styles.css:14)), which contains `.lyra-dialog-overlay` ([`feedback.css`](/home/franciscpd/Projects/lyra-ds/packages/styles/components/feedback/feedback.css:66)). Therefore the planned “walk all emitted assets and assert `lyra-dialog-overlay` absent” check (`03-09-PLAN.md:90`, `99`) will always fail because it sees the CSS asset.
+
+- **HIGH — focus trapping still fails for a valid zero-focusable Dialog.** The plan focuses the panel with `tabIndex={-1}` as fallback (`03-07-PLAN.md:96`), but the trap specification only wraps a filtered list of tabbables (`03-04-PLAN.md:125`). A Dialog may legitimately have plain-text children and no `onClose`, because `onClose` is optional in the handoff ([`Dialog.d.ts`](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Dialog.d.ts:4)) and the close button is conditional ([`Dialog.jsx`](/home/franciscpd/Projects/lyra-ds/handoff/components/feedback/Dialog.jsx:16)). In that state, Tab can escape to the background. The plan needs an explicit zero-candidate and panel-focused case.
+
+- **HIGH — protocol-wide CDN scans will reject Lucide’s SVG namespace, not a CDN.** Plan 03-09 deliberately bundles Lucide by rendering `Icon` (`03-09-PLAN.md:88-90`) and then rejects every `https?://` literal (`03-09-PLAN.md:90`, `99`). Lucide’s runtime default SVG attributes include `xmlns: "http://www.w3.org/2000/svg"` (locally cached `lucide-react` source, line 9). This is a namespace URI, not a network dependency, but it will fail the asserted scan. The same overly broad policy is requested for dist in Plan 03-08 (`03-08-PLAN.md:142`).
+
+- **MEDIUM — the custom Portal container has no explicit behavioral test.** The implementation accepts `container` (`03-07-PLAN.md:94`), but the tests only say to scan a custom container “when [a] fixture is under test” (`03-07-PLAN.md:135`); they do not require a fixture proving mount location, initial focus, and cleanup with that container.
+
+## Suggestions
+
+1. In the Vite smoke test, inspect **JavaScript assets only** for Dialog’s unique runtime marker, or avoid importing the global styles entry in the isolation fixture. Keep CSS validation separate.
+
+2. Specify focus-trap behavior for no tabbables: prevent Tab/Shift+Tab and refocus the panel. Also handle the panel itself being focused while tabbables exist: Tab → first, Shift+Tab → last. Add this to the Dialog browser suite.
+
+3. Replace “any protocol URL” with a semantic rule: reject external fetch/import URLs and known CDN hosts, while allowing the SVG namespace `http://www.w3.org/2000/svg`. Apply the same allowlist in the packed-fixture scan.
+
+4. Add a custom-container Dialog test that verifies portal placement, focus initialization, axe scope, and teardown.
+
+## Risk Assessment
+
+**HIGH — READY-TO-EXECUTE: no.**
+
+The four original blockers are substantively addressed, and the revised decomposition is much stronger. However, two planned CI assertions are deterministically unsatisfiable, and the overlay template still permits focus escape in a valid Dialog state. Fix those before execution; the phase should then be **MEDIUM** risk.
+
+---
+
 ## Consensus Summary
 
-Single-reviewer run (Codex only) — no cross-reviewer consensus is possible; the findings below are Codex's verdict, source-grounded with file:line evidence against the actual repo (handoff sources, Phase 2 tooling, CI workflow).
+Single-reviewer run (Codex, 2 rounds, source-grounded). Round 2 verdict: all round-1 blockers FIXED (two PARTIALLY FIXED items are documented deferrals — provenance to Phase 7 — or superseded by a round-2 finding). READY-TO-EXECUTE: no, pending 3 new HIGH findings.
+
+### Current Actionable Findings (Round 2)
+1. **HIGH (03-09):** The Vite fixture imports the full `@lyra-ds/styles` entry (which contains `.lyra-dialog-overlay` in its CSS), so the "assert lyra-dialog-overlay absent in all emitted assets" tree-shake check always fails. Scope the scan to JavaScript assets only (or drop the global styles import from the isolation fixture).
+2. **HIGH (03-08/03-09):** The protocol-wide `https?://` CDN scan deterministically rejects Lucide's baked-in SVG namespace attribute `xmlns: "http://www.w3.org/2000/svg"`. Needs a semantic rule: reject external fetch/import URLs + known CDN hosts, allowlist the W3C namespace URI.
+3. **HIGH (03-04/03-07):** Zero-focusable Dialog (plain text children, no onClose — valid per handoff Dialog.d.ts) lets Tab escape to the background. Specify trap behavior for zero tabbables (prevent Tab/Shift+Tab, refocus panel) and panel-focused-with-tabbables (Tab → first, Shift+Tab → last); add the browser test case.
+4. **MEDIUM (03-07):** Custom `container` prop has no dedicated behavioral test — add a fixture proving mount location, initial focus, axe scope, and teardown with a custom container.
 
 ### Agreed Strengths
-(single reviewer — Codex's headline strengths)
-- Phase decomposition, packaging/CI/SSR/a11y/supply-chain coverage rated "unusually strong"
-- Generated-and-committed icon registry with `--check` drift mode called an excellent drift-control mechanism
-- Real tarball install into isolated Vite/Next consumers directly addresses a common packaging blind spot
-- Additive-only CSS + exact-name parity allowlist materially safer than weakening parity globally
-
-### Agreed Concerns
-(single reviewer — Codex's blocking findings, highest priority)
-1. **HIGH (03-03, 03-05, 03-08):** The literal `<Icon name="…">` regex yields 50 unique names, not 54; dynamic icon sources (icons.card.html names array, FileUpload/FileManager resolver functions, conditional props in sections.jsx) push the true union closer to ~68. The exact-count assertion fails as written and RCT-05's "Phase 4 never hits a missing icon" claim is not established.
-2. **HIGH (03-04, 03-07):** `usePresence(open) → { mounted, closing }` has no panel ref or completion callback, so it cannot listen for animationend/transitionend "on the panel node" as required. Dialog initial focus also races the deferred Portal mount.
-3. **HIGH (03-06, 03-07):** Prop-interface conflicts with inherited native attributes — Input redefines `size` without `Omit`, Dialog redefines `title` without `Omit` — will fail strict TypeScript; `useControllableState`'s value-callback `onChange` conflates with the native ChangeEventHandler contract.
-4. **HIGH (03-09):** Vite smoke fixture lacks pinned `react`/`react-dom`/`@types/*` deps; install is not reproducible. No CJS consumer actually executes `require()`.
-Also MEDIUM: missing changeset (CONTRIBUTING.md requires one), `.lyra-dialog__close` lacks focus-visible styling and can shrink under long titles, CDN scan limited to unpkg.com, axe/theme tests may miss the body-level portal, intentionally-red build across waves 1–2.
+- All four round-1 blockers substantively addressed; "the revised decomposition is much stronger"
+- Fix quality independently confirmed with file:line evidence per finding
 
 ### Divergent Views
 None — single reviewer.
