@@ -5,8 +5,8 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: react-infrastructure-pilot-components
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-07-19T14:20:43.262Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-07-19T14:26:59.459Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 03 execution started
 progress:
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-16)
 ## Current Position
 
 Phase: 03 (react-infrastructure-pilot-components) — EXECUTING
-Plan: 2 of 9
+Plan: 3 of 9
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 03 execution started
 
@@ -70,6 +70,7 @@ Progress: [██████░░░░] 60%
 | Phase 02 P05 | 7min | 2 tasks | 6 files |
 | Phase 02 P06 | 20min | 2 tasks | 8 files |
 | Phase 03 P01 | 13min | 2 tasks | 15 files |
+| Phase 03 P02 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 03-01: RSC 'use client' directive emitted via tsup onSuccess post-write step — tsup 8.5.1 routes output through Rollup which strips directive prologues from banner/esbuildOptions/renderChunk/source alike; deterministic prepend is the only reliable mechanism
 - [Phase ?]: Plan 03-01: onlyBuiltDependencies:[] in pnpm-workspace.yaml — no dependency runs install/postinstall scripts; esbuild binary ships via optional deps so its build script is unnecessary
 - [Phase ?]: Plan 03-01: @lyra-ds/react exports-map subpath keys == tsup entry keys == dist basenames (D-13); lucide-react 1.25.0 is the sole runtime dep (D-11)
+- [Phase ?]: Plan 03-02: additive Dialog CSS appended at EOF of feedback.css (never mid-file) so the parity diff stays index-aligned — extras land past handoff length as skippable no-counterpart records
+- [Phase ?]: Plan 03-02: parity ADDITIVE_EXTENSIONS is exact-name enumeration (classes + keyframes, no wildcards) wired into classCheck + diffFile; EXPECTED_CLASSES 248 / EXPECTED_TOKENS 209 unchanged (handoff-side counts); negative-proof green (D-18/D-19, T-03-03)
 
 ### Pending Todos
 
@@ -125,6 +128,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T14:20:02.654Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-07-19T14:26:59.454Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
