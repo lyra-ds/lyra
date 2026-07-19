@@ -94,6 +94,42 @@ const MASK_DIVERGENCE = new Map([
   ['components/navigation/navigation.css', { icon: 'chevron-right', payload: CHEVRON_RIGHT_MASK }],
 ]);
 
+// Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
+// close-button visuals live in the CSS package but have NO handoff counterpart, because
+// the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
+// distinct exit keyframes (D-17/D-18). Parity stays a hard gate under the invariant
+// handoff ⊆ package: every handoff declaration still matches EXACTLY, and each package
+// addition must be enumerated here BY EXACT NAME (no prefixes/wildcards) — any
+// un-enumerated class or keyframe still FAILS parity (T-03-03: allowlist scope creep).
+// Two check sites consume this: classCheck() (package-class-not-in-handoff branch) and
+// diffFile() (extra-declaration branch). EXPECTED_CLASSES (248) is a handoff-side count
+// and stays untouched by these package-only additions.
+const ADDITIVE_EXTENSIONS = {
+  file: 'components/feedback/feedback.css',
+  classes: ['lyra-dialog__close', 'lyra-dialog--closing', 'lyra-dialog-overlay--closing'],
+  keyframes: ['lyra-pop-out', 'lyra-fade-out'],
+};
+
+// Package class-selectors (with leading dot) permitted to exist without a handoff peer.
+const ADDITIVE_CLASS_SELECTORS = new Set(ADDITIVE_EXTENSIONS.classes.map((c) => `.${c}`));
+
+/**
+ * True when an EXTRA package declaration (one with no handoff counterpart in the
+ * index-aligned diff) belongs to a documented additive extension — i.e. its outermost
+ * enclosing block is an allowlisted @keyframes name OR a selector whose .lyra-* class
+ * chain exact-matches an allowlisted class name. Exact-name match only: a future
+ * un-enumerated addition (e.g. a stray .lyra-zzz rule) is NOT rooted in the allowlist
+ * and still fails.
+ */
+function isAdditiveExtension(relPath, decl) {
+  if (relPath !== ADDITIVE_EXTENSIONS.file) return false;
+  const root = decl.blockPath[0] || '';
+  const kf = /^@keyframes\s+([a-zA-Z0-9_-]+)/.exec(root);
+  if (kf) return ADDITIVE_EXTENSIONS.keyframes.includes(kf[1]);
+  const classTokens = [...root.matchAll(/\.(lyra-[a-zA-Z0-9_-]+)/g)].map((m) => m[1]);
+  return classTokens.some((t) => ADDITIVE_EXTENSIONS.classes.includes(t));
+}
+
 const errors = [];
 const fail = (msg) => errors.push(msg);
 
@@ -429,6 +465,7 @@ function diffFile(relPath) {
     const hd = h[k];
     const pd = p[k];
     if (!hd) {
+      if (isAdditiveExtension(relPath, pd)) continue; // documented additive extension (D-18/D-19)
       fail(
         `Extra declaration ${relPath} #${k}: package has [${describe(pd)}] with no handoff counterpart — handoff/ is canonical`,
       );
@@ -493,6 +530,7 @@ function classCheck() {
     if (!pkg.has(c)) fail(`Class ${c}: missing from package components — handoff/ is canonical`);
   }
   for (const c of pkg) {
+    if (ADDITIVE_CLASS_SELECTORS.has(c)) continue; // documented additive extension (D-18/D-19)
     if (!handoff.has(c))
       fail(`Class ${c}: present in package but not in canonical handoff — handoff/ is canonical`);
   }
