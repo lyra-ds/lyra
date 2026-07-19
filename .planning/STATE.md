@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 3
-current_phase_name: React Infrastructure & Pilot Components
-status: "Phase 02 shipped — PR #2"
-stopped_at: Phase 3 replanned with Codex review incorporated; plans verified, ready to execute
-last_updated: "2026-07-19T03:30:40.592Z"
-last_activity: 2026-07-18
-last_activity_desc: Phase 3 planning complete
+current_phase: 03
+current_phase_name: react-infrastructure-pilot-components
+status: executing
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-07-19T14:20:43.262Z"
+last_activity: 2026-07-19
+last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 20
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-16)
 
 **Core value:** Qualquer desenvolvedor consegue instalar `@lyra-ds/styles` + `@lyra-ds/react` e ter uma UI pixel-perfect, tematizável (light/dark + white-label em 4 tokens), com o mesmo CSS core reutilizável em outros frameworks.
-**Current focus:** Phase 02 — styles-package
+**Current focus:** Phase 03 — react-infrastructure-pilot-components
 
 ## Current Position
 
-Phase: 3 — React Infrastructure & Pilot Components
-Plan: Not started
-Status: Phase 02 shipped — PR #2
-Last activity: 2026-07-18 — Phase 3 planning complete
+Phase: 03 (react-infrastructure-pilot-components) — EXECUTING
+Plan: 2 of 9
+Status: Ready to execute
+Last activity: 2026-07-19 — Phase 03 execution started
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [██████████] 100%
 | Phase 02 P04 | 35min | 3 tasks | 8 files |
 | Phase 02 P05 | 7min | 2 tasks | 6 files |
 | Phase 02 P06 | 20min | 2 tasks | 8 files |
+| Phase 03 P01 | 13min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 02-05: chevron data: mask DECODE proof via new Image()+decode() on direct-mask .lyra-acc__chevron; Vitest __screenshots__/.vitest-attachments gitignored
 - [Phase ?]: Plan 02-06: Phase-2 quality gates wired as STEPS in the four frozen CI jobs (never new jobs); tools via pnpm exec (publint@0.3.21, vite@8.1.5 pinned), chromium install ordered before root test
 - [Phase ?]: Plan 02-06: packed-artifact smoke test bundles the pnpm-packed tarball through a real vite@8.1.5 consumer build (root + ./styles.css + ./tokens/* imports), asserting .lyra-btn + --accent in emitted CSS (STY-01/STY-02)
+- [Phase ?]: Plan 03-01: RSC 'use client' directive emitted via tsup onSuccess post-write step — tsup 8.5.1 routes output through Rollup which strips directive prologues from banner/esbuildOptions/renderChunk/source alike; deterministic prepend is the only reliable mechanism
+- [Phase ?]: Plan 03-01: onlyBuiltDependencies:[] in pnpm-workspace.yaml — no dependency runs install/postinstall scripts; esbuild binary ships via optional deps so its build script is unnecessary
+- [Phase ?]: Plan 03-01: @lyra-ds/react exports-map subpath keys == tsup entry keys == dist basenames (D-13); lucide-react 1.25.0 is the sole runtime dep (D-11)
 
 ### Pending Todos
 
@@ -121,6 +125,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T03:30:40.587Z
-Stopped at: Phase 3 replanned with Codex review incorporated; plans verified, ready to execute
-Resume file: .planning/phases/03-react-infrastructure-pilot-components/03-01-PLAN.md
+Last session: 2026-07-19T14:20:02.654Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
