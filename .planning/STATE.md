@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: react-infrastructure-pilot-components
 status: executing
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-07-19T16:33:12.254Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-07-19T22:14:01.595Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 20
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-07-16)
 ## Current Position
 
 Phase: 03 (react-infrastructure-pilot-components) — EXECUTING
-Plan: 5 of 9
+Plan: 6 of 9
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 03 execution started
 
-Progress: [████████░░] 75%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [████████░░] 75%
 | Phase 03 P02 | 6min | 2 tasks | 2 files |
 | Phase 03 P03 | 15min | 2 tasks | 4 files |
 | Phase 03 P04 | 37min | 2 tasks | 7 files |
+| Phase 03 P05 | 62min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Prettier-ignore the generated icon-registry.ts + fixtures — --check owns their byte-exact format (D-02); prettier --write would break the drift guard
 - [Phase ?]: Portal SSR guard uses useSyncExternalStore (not useState+useEffect) to satisfy react-hooks/set-state-in-effect (03-04)
 - [Phase ?]: internal/ utilities live in src/internal/, excluded from exports map — private, consumed by pilots via relative imports (03-04)
+- [Phase ?]: Plan 03-05: Button/Icon pilots lock the SIMPLE + REGISTRY conversion recipes; two reusable Phase-4 test templates (smoke matrix light/dark + axe per fixture, renderToString)
+- [Phase ?]: Plan 03-05: eslint carve-out — test files (src/**/*.test.{ts,tsx}) exempt from the RCT-03 CSS-import ban so browser tests import @lyra-ds/styles in-test; shipped source stays banned
+- [Phase ?]: Plan 03-05: frozen dark primary/danger AA contrast (4.39:1, indigo-500+white) logged to deferred-items.md — NOT fixed (locked Phase-2 tokens); smoke axe allows only that specific finding
 
 ### Pending Todos
 
@@ -133,6 +137,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T16:33:12.249Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-07-19T22:12:55.311Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None

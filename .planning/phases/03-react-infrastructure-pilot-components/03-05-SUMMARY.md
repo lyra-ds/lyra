@@ -164,3 +164,7 @@ _The eslint carve-out and deferred-items log ride in the `72669b8` / `f3fff3f` t
 
 ## User Setup Required
 None - no external service configuration required.
+
+## Self-Check: PASSED
+
+All 8 created files verified on disk; all 5 commits (`e36b0a1`, `f3fff3f`, `b0f4fc8`, `72669b8`, `e022369`) present in git history.
