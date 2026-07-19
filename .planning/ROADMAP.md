@@ -102,7 +102,7 @@ Plans:
   3. Icon renders Lucide from a local dependency via a curated registry (no CDN), and a size-limit CI gate proves the ~1,400-icon set is not bundled
   4. Shared `internal/` utilities exist (focus trap, portal, controllable state, SSR guards) alongside a conventions note and test template (smoke + keyboard + axe + `renderToString`) that Phase 4 will reuse, with JSDoc language decided (EN canonical)
 
-**Plans**: 3/9 plans executed
+**Plans**: 4/9 plans executed
 
 Plans:
 **Wave 1**
@@ -113,7 +113,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 03-04-PLAN.md — internal/ utilities: cx, useControllableState, Portal (SSR guard), useFocusTrap, usePresence, useScrollLock
+- [x] 03-04-PLAN.md — internal/ utilities: cx, useControllableState, Portal (SSR guard), useFocusTrap, usePresence, useScrollLock
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -203,7 +203,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
 | 2. Styles Package | 6/6 | Complete    | 2026-07-18 |
-| 3. React Infrastructure & Pilot Components | 3/9 | In Progress|  |
+| 3. React Infrastructure & Pilot Components | 4/9 | In Progress|  |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
 | 5. Docgen & llms.txt | 0/TBD | Not started | - |
 | 6. Docs Site (Bilingual) | 0/TBD | Not started | - |

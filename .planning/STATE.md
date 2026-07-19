@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: react-infrastructure-pilot-components
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-07-19T15:13:15.321Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-07-19T16:33:12.254Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 20
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-07-16)
 ## Current Position
 
 Phase: 03 (react-infrastructure-pilot-components) — EXECUTING
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 03 execution started
 
-Progress: [███████░░░] 70%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Progress: [███████░░░] 70%
 | Phase 03 P01 | 13min | 2 tasks | 15 files |
 | Phase 03 P02 | 6min | 2 tasks | 2 files |
 | Phase 03 P03 | 15min | 2 tasks | 4 files |
+| Phase 03 P04 | 37min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 03-02: additive Dialog CSS appended at EOF of feedback.css (never mid-file) so the parity diff stays index-aligned — extras land past handoff length as skippable no-counterpart records
 - [Phase ?]: Plan 03-02: parity ADDITIVE_EXTENSIONS is exact-name enumeration (classes + keyframes, no wildcards) wired into classCheck + diffFile; EXPECTED_CLASSES 248 / EXPECTED_TOKENS 209 unchanged (handoff-side counts); negative-proof green (D-18/D-19, T-03-03)
 - [Phase ?]: Prettier-ignore the generated icon-registry.ts + fixtures — --check owns their byte-exact format (D-02); prettier --write would break the drift guard
+- [Phase ?]: Portal SSR guard uses useSyncExternalStore (not useState+useEffect) to satisfy react-hooks/set-state-in-effect (03-04)
+- [Phase ?]: internal/ utilities live in src/internal/, excluded from exports map — private, consumed by pilots via relative imports (03-04)
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T15:13:15.316Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-07-19T16:33:12.249Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
