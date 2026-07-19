@@ -25,7 +25,7 @@ reviewed_at: 2026-07-18
 | Tool | none — shadcn/Tailwind locked out by project constraint; the design system is `@lyra-ds/styles` itself (source: PROJECT.md constraints, Phase 2 output) |
 | Preset | not applicable |
 | Component library | none — hand-written thin wrappers over `.lyra-*` CSS (Radix/Ark explicitly rejected; source: STACK.md "What NOT to Use") |
-| Icon library | lucide-react 1.24.0, curated 54-icon registry generated from handoff scan, committed + CI-drift-guarded (D-01/D-02); escape hatch `icon` prop (D-03); no CDN (RCT-05) |
+| Icon library | lucide-react 1.24.0, curated 54-icon registry generated from handoff scan, committed + CI-drift-guarded (D-01/D-02); escape hatch `icon` prop (D-03); no CDN (RCT-05) — *superseded by plan 03-03: lucide-react 1.25.0, 70-icon registry (69 lucide + vendored github)* |
 | Font | Plus Jakarta Sans (`--font-sans`/`--font-display`) + JetBrains Mono (`--font-mono`), consumed as peer `@fontsource/*` — never bundled (PROJECT.md constraint) |
 
 **Design-token source of truth:** `packages/styles/tokens/*.css` (209 tokens, parity-locked to `handoff/tokens/` by the Phase 2 CI script). The react package references NONE of these directly — it only emits class names.
@@ -145,7 +145,7 @@ All JSDoc on the pilot components: canonical English (translated from pt-BR hand
 
 ### Icon (registry pilot)
 - Inline `<svg>` via lucide-react with class `.lyra-icon`, `currentColor` default, `size` default 20 (D-06 — the prototype's `<span>`+mask is dropped, visual output identical)
-- `name` typed as the 54-name literal union `IconName` (D-04); unknown at runtime → dev warn + `null` (D-05)
+- `name` typed as the 54-name literal union `IconName` (D-04); unknown at runtime → dev warn + `null` (D-05) — *superseded by plan 03-03: the union is the 70-name canonical inventory*
 - `title` prop → accessible label; absent → `aria-hidden="true"` (handoff contract)
 
 ---
@@ -195,7 +195,7 @@ Probe coverage: 22 applicable — **12 covered, 5 backstop, 5 dismissed (with re
 | empty | ✅ covered | unknown `name` → dev-only `console.warn` + render `null`; silent null in production — never breaks consumer UI (Copywriting: Icon warning row) |
 | loading | ⊘ dismissed | icons are statically imported ESM from local `lucide-react` — no async fetch exists, so no loading state is possible (RCT-05 no-CDN) |
 | error | ✅ covered | the only failure mode is unknown `name`, handled by the dev-warn + `null` contract (D-05) |
-| populated | ✅ covered | all 54 registry icons rendered in the registry smoke fixture at default 20px, light + dark |
+| populated | ✅ covered | all 54 registry icons rendered in the registry smoke fixture at default 20px, light + dark — *superseded by plan 03-03: 70 registry icons* |
 | overflow | ⊘ dismissed | fixed-size svg glyph (16/20/24px) with no flowing content — cannot overflow its box |
 | long-text | ⊘ dismissed | renders no visual text; `title` prop becomes the accessible name only (`<title>` element, not layout text) |
 
@@ -216,7 +216,7 @@ All state coverage runs twice — light and `[data-theme="dark"]` — per the Ph
 |----------|-------------|-------------|
 | shadcn official | none — shadcn not used in this project | not applicable |
 | third-party shadcn registries | none | not applicable |
-| Lucide icon registry (internal, D-01/D-02) | 54 icons statically imported from local `lucide-react` 1.24.0 dependency | CI drift guard: generated `icon-registry.ts` must match the handoff scan; size-limit gate proves the ~1,400-icon set is NOT bundled (RCT-05) — no network/CDN fetch anywhere (verified constraint, 2026-07-18) |
+| Lucide icon registry (internal, D-01/D-02) | 54 icons statically imported from local `lucide-react` 1.24.0 dependency | CI drift guard: generated `icon-registry.ts` must match the handoff scan; size-limit gate proves the ~1,400-icon set is NOT bundled (RCT-05) — no network/CDN fetch anywhere (verified constraint, 2026-07-18) — *superseded by plan 03-03: 70 icons (69 lucide-react 1.25.0 imports + vendored github)* |
 
 ---
 

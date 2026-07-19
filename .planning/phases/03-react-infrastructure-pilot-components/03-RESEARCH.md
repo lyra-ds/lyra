@@ -4,6 +4,8 @@
 **Domain:** React component-library packaging (tsup dual ESM+CJS), curated icon registry (lucide-react 1.x), Vitest 4 multi-project testing, npm package-quality gates (publint/attw/size-limit)
 **Confidence:** HIGH
 
+> **SUPERSESSION NOTE (plan revision, 2026-07-19):** Icon counts in this document (54 icons; 53 lucide + vendored `github`; "56 raw vs 54 scoped") are superseded by plan 03-03's canonical **70-name** inventory: **69** lucide-react **1.25.0** imports + vendored `github`. The extras (`circle`, `file-plus`) come from JSDoc usage examples in the handoff `.d.ts` contracts (Combobox.d.ts, CommandPalette.d.ts), included per the Option B decision recorded in plan 03-03. Additionally, the dist no-CDN scan is **protocol-based** (fails on any `https?://` literal plus `lucide-static`), not unpkg-only — per plan 03-08.
+
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
 
@@ -67,7 +69,7 @@
 |----|-------------|------------------|
 | RCT-03 | Importing one component doesn't pull the others (one file per component, `sideEffects: false`, zero CSS imports in the react package — CI-verified rule) | Per-component tsup entries + subpath exports map (Pattern 1/2); `sideEffects: false` safe because CSS lives only in `@lyra-ds/styles` (Pitfall 1 of PITFALLS.md, re-verified); size-limit `import: "{ Button }"` entry proves isolation; ESLint `no-restricted-imports` + CI grep bans CSS imports |
 | RCT-04 | Dual ESM+CJS build with types (tsup) validated by publint + attw and tested in scratch Vite and Next.js apps | tsup 8.5.1 config verified (Pattern 1); split-types exports map avoiding FalseCJS/FalseESM (Pattern 2); attw 0.18.5 `--pack` usage + problem kinds verified via Context7; committed fixture mechanics extend the shipped `tools/pack-smoke` pattern (Pattern 6) |
-| RCT-05 | Icon renders Lucide from a local dependency via curated registry (no CDN), size-limit CI gate proves ~1,400-icon set not bundled | lucide-react 1.25.0 verified by real local install: 53/54 handoff icons exist as PascalCase named exports; **`Github` was removed in lucide 1.0** → vendor it via `createLucideIcon` with ISC path data from lucide-static 0.469.0 (Pattern 3, Pitfall 1); size-limit `{ Icon }` entry must NOT ignore `lucide-react` (Pattern 4) |
+| RCT-05 | Icon renders Lucide from a local dependency via curated registry (no CDN), size-limit CI gate proves ~1,400-icon set not bundled | lucide-react 1.25.0 verified by real local install: 53/54 handoff icons exist as PascalCase named exports; **`Github` was removed in lucide 1.0** → vendor it via `createLucideIcon` with ISC path data from lucide-static 0.469.0 (Pattern 3, Pitfall 1); size-limit `{ Icon }` entry must NOT ignore `lucide-react` (Pattern 4) — *counts superseded by plan 03-03: 70 icons = 69 lucide-react 1.25.0 imports (Circle/FilePlus verified present) + vendored github* |
 </phase_requirements>
 
 ## Project Constraints (from CLAUDE.md)
@@ -485,6 +487,7 @@ The shipped `tools/pack-smoke/pack-smoke.mjs` pattern (pack → verify tarball f
    exports map with moduleResolution: bundler)
 5. vite build → assert emitted JS contains the Button class emission and does NOT contain
    a known non-imported component's marker (isolation spot-check) and no `unpkg.com` string
+   (superseded by plan 03-08: the scan is protocol-based — any `https?://` literal + `lucide-static` — not unpkg-only)
 6. same for next-app: App Router page (server component) importing Button/Input/Icon +
    a client boundary exercising Dialog; `next build` prerenders the page — this executes
    renderToString in anger AND fails if 'use client' is missing from dist
@@ -533,12 +536,14 @@ Both fixtures are committed with pinned-version package.json files (reproducible
 ## Common Pitfalls
 
 ### Pitfall 1: `github` icon does not exist in lucide-react 1.x
+*(counts below superseded by plan 03-03: 70-name inventory, 69 lucide + 1 vendored)*
 **What goes wrong:** The registry generator maps `github` → `Github` and the build fails with a missing export (or worse, TS resolves `Github` to `undefined` in loose setups and Icon renders null in production).
 **Why it happens:** lucide 1.0 (June 2026) removed all brand icons under legal pressure; the handoff was authored against lucide-static 0.469.0 which still had them. `[VERIFIED: local install of lucide-react@1.25.0 — `Github` absent, 53/54 present]`
 **How to avoid:** Vendor the icon inside the generated registry via `createLucideIcon('github', iconNode)` with the ISC path data from lucide-static@0.469.0 (embedded in the generator, see Pattern 3).
 **Warning signs:** TS error `Module '"lucide-react"' has no exported member 'Github'`; registry smoke fixture rendering 53 icons instead of 54.
 
 ### Pitfall 2: Naive handoff icon scan produces 56 names, not 54
+*(counts superseded by plan 03-03: the four-pass scan over .jsx/.html/.tsx/.ts yields the canonical 70-name inventory; the false-positive lesson — `viewport`/`plan` from unscoped grep — remains valid)*
 **What goes wrong:** The registry generator greps `name="([a-z0-9-]+)"` and picks up `<meta name="viewport">` and a form input `name="plan"` — two phantom "icons" that then fail against lucide.
 **How to avoid:** Scope the scan to `<Icon name="…"` occurrences. `[VERIFIED: repo grep — 56 raw vs 54 scoped]`
 **Warning signs:** Registry count ≠ 54; generator emitting `Viewport`/`Plan` imports.
