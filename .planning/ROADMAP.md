@@ -102,7 +102,32 @@ Plans:
   3. Icon renders Lucide from a local dependency via a curated registry (no CDN), and a size-limit CI gate proves the ~1,400-icon set is not bundled
   4. Shared `internal/` utilities exist (focus trap, portal, controllable state, SSR guards) alongside a conventions note and test template (smoke + keyboard + axe + `renderToString`) that Phase 4 will reuse, with JSDoc language decided (EN canonical)
 
-**Plans**: TBD
+**Plans**: 9 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — React package scaffold: legitimacy checkpoint, pinned installs, exports map, tsup/vitest/eslint configs
+- [ ] 03-02-PLAN.md — Styles additive dialog CSS (.lyra-dialog__close, exit animations) + parity ADDITIVE_EXTENSIONS allowlist
+- [ ] 03-03-PLAN.md — Icon registry generator (54-icon scoped scan, vendored github) + committed icon-registry.ts with --check drift gate
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 03-04-PLAN.md — internal/ utilities: cx, useControllableState, Portal (SSR guard), useFocusTrap, usePresence, useScrollLock
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 03-05-PLAN.md — Button + Icon pilots with browser (smoke/axe light+dark) + SSR test templates
+- [ ] 03-06-PLAN.md — Input pilot: controlled/uncontrolled contract + a11y wiring + tests
+- [ ] 03-07-PLAN.md — Dialog pilot: portal/trap/presence/scroll-lock + keyboard/focus/axe/SSR overlay suite
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [ ] 03-08-PLAN.md — Barrel + build/publint/attw green, calibrated size-limit budgets, CONVENTIONS.md, CI gate steps
+
+**Wave 5** *(blocked on Wave 4)*
+
+- [ ] 03-09-PLAN.md — Scratch-app smoke: committed Vite + Next.js fixtures, tarball install/build proofs, final CI step
 **UI hint**: yes
 
 ### Phase 4: Component Batch Conversion & A11y
