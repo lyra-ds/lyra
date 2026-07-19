@@ -4,3 +4,8 @@ packages:
   - 'packages/*'
   - 'apps/*'
   - 'tools/*'
+# No dependency is permitted to run install/postinstall build scripts. esbuild (pulled in by
+# tsup) ships its platform binary via optionalDependencies (@esbuild/*), so its build script is
+# unnecessary — the dual-format build is verified green with scripts ignored. Keeping this empty
+# is the supply-chain default for the phase (belt-and-suspenders with --frozen-lockfile in CI).
+onlyBuiltDependencies: []
