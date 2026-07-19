@@ -32,7 +32,7 @@ Requirements for initial release (v0.1.0). Each maps to roadmap phases.
 - [ ] **RCT-02**: Cada componente emite exatamente as classes `.lyra-*` do handoff (asserções de paridade nos testes) — são a API pública compartilhada
 - [x] **RCT-03**: Importar um componente não puxa os demais (um arquivo por componente, `sideEffects: false`, zero imports de CSS no pacote — regra verificada no CI)
 - [x] **RCT-04**: Build dual ESM+CJS com types (tsup) validado por publint + attw e testado em apps scratch Vite e Next.js
-- [ ] **RCT-05**: Icon renderiza Lucide de dependência local (sem CDN) com registry curado — sem embarcar os ~1.400 ícones (gate de size-limit no CI)
+- [x] **RCT-05**: Icon renderiza Lucide de dependência local (sem CDN) com registry curado — sem embarcar os ~1.400 ícones (gate de size-limit no CI)
 - [ ] **RCT-06**: Dialog, Drawer, CommandPalette e Toast renderizam via portal em `document.body` com guarda SSR
 - [ ] **RCT-07**: Os 40 componentes renderizam via `renderToString` sem crash (SSR-safe: sem `document`/`window`/`localStorage` em escopo de módulo)
 - [ ] **RCT-08**: FileUpload expõe API real (`onFiles(files)` + `items`/`onChange` controlados); simulação de progresso vira modo demo opcional
@@ -120,7 +120,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RCT-02 | Phase 4 | Pending |
 | RCT-03 | Phase 3 | Complete |
 | RCT-04 | Phase 3 | Complete |
-| RCT-05 | Phase 3 | Pending |
+| RCT-05 | Phase 3 | Complete |
 | RCT-06 | Phase 4 | Pending |
 | RCT-07 | Phase 4 | Pending |
 | RCT-08 | Phase 4 | Pending |
