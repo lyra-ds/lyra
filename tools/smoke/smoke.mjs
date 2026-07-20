@@ -30,6 +30,10 @@
  *       assets, plus two positive "present-yet-passing" allowlist assertions.
  *   7. CJS `require()` consumer proof — the root barrel + the ./icon subpath resolve and
  *      export real React components (dual-runtime data point, not metadata-tool approval).
+ *   8. Next.js App Router fixture: a server page importing Button/Input/Icon + a client
+ *      boundary exercising Dialog completes `next build` — proving exports-map resolution
+ *      under Next's bundler AND that the dist "use client" directive marks the components
+ *      as client boundaries; the prerendered output contains the Button class emission.
  *
  * Exits non-zero with a clear message on any failure. On install/build failure the
  * captured stdout/stderr is PRINTED BEFORE the temp dir is removed, so failures stay
@@ -60,6 +64,7 @@ const REPO = join(__dirname, '..', '..');
 const REACT_PKG = join(REPO, 'packages', 'react');
 const STYLES_PKG = join(REPO, 'packages', 'styles');
 const VITE_FIXTURE_SRC = join(__dirname, 'vite-app');
+const NEXT_FIXTURE_SRC = join(__dirname, 'next-app');
 
 // --- emission markers -------------------------------------------------------
 const BUTTON_MARKER = 'lyra-btn'; // Button class emission
@@ -274,6 +279,43 @@ let ok = true;
         '@lyra-ds/styles tarballs; tsc --noEmit clean; production vite build tree-shakes to ' +
         'Button+Input+Icon (Dialog excluded); Icon dev-warning stripped; CSS ships full; ' +
         'semantic CDN scan clean with both allowlisted literals present; CJS require() proof green.',
+    );
+
+    // ========================================================================
+    // NEXT.JS FIXTURE (App Router: server page + client-boundary Dialog)
+    // ========================================================================
+    // Proves exports-map resolution under Next's bundler AND that the dist "use client"
+    // directive is honored — a server page importing the hook-using Lyra components compiles
+    // without the client-hook-in-server-component error precisely because the directive marks
+    // them as client boundaries. NOT the direct renderToString proof (that is the pilots' ssr
+    // vitest projects, D-26); here `next build` succeeding + the Button class in the
+    // prerendered output is the client-boundary + package-resolution evidence.
+    const nextDir = installFixture('next-app', NEXT_FIXTURE_SRC, [reactTgz, stylesTgz]);
+    const nextBuild = run(bin(nextDir, 'next'), ['build'], {
+      cwd: nextDir,
+      // CI=1 keeps next build non-interactive and telemetry off in the sandbox.
+      env: { ...process.env, CI: '1', NEXT_TELEMETRY_DISABLED: '1' },
+    });
+    if (nextBuild.status !== 0) {
+      die(`next build exited ${nextBuild.status}\n${nextBuild.stdout}\n${nextBuild.stderr}`);
+    }
+
+    // Assert the Button class emission is in the prerendered server output. Next writes
+    // prerendered HTML + the RSC payload under .next/server/app — walk it and require the
+    // marker in at least one emitted text asset.
+    const nextServerApp = join(nextDir, '.next', 'server', 'app');
+    if (!existsSync(nextServerApp)) die('next build produced no .next/server/app output');
+    const prerendered = walkAssets(nextServerApp, ['.html', '.rsc', '.js', '.body'])
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n');
+    if (!prerendered.includes(BUTTON_MARKER)) {
+      die(`next prerendered output missing the Button marker "${BUTTON_MARKER}"`);
+    }
+
+    console.log(
+      'smoke OK (next): App Router server page + client-boundary Dialog built from the packed ' +
+        'tarball; exports-map resolution + "use client" directive honored; prerendered output ' +
+        `contains the "${BUTTON_MARKER}" class emission.`,
     );
   } catch (err) {
     ok = false;
