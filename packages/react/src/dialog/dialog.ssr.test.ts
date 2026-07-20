@@ -36,7 +36,12 @@ describe('Dialog — SSR', () => {
   it('does not throw when rendered with a container prop server-side', () => {
     expect(() =>
       renderToString(
-        createElement(Dialog, { open: true, title: 'Guarded', container: undefined, children: 'x' }),
+        createElement(Dialog, {
+          open: true,
+          title: 'Guarded',
+          container: undefined,
+          children: 'x',
+        }),
       ),
     ).not.toThrow();
   });

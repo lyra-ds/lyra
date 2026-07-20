@@ -63,9 +63,9 @@ export function useFocusTrap(panelRef: RefObject<HTMLElement | null>, active: bo
       const node = panelRef.current;
       if (!node) return;
 
-      const candidates = Array.from(
-        node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter(isTabbable);
+      const candidates = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+        isTabbable,
+      );
 
       // Zero tabbable candidates: contain focus on the panel itself.
       if (candidates.length === 0) {

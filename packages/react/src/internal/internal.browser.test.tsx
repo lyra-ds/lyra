@@ -43,7 +43,10 @@ function PresenceHarness({ open, animate }: PresenceHarnessProps) {
       className={animate && closing ? 'presence-panel--closing' : undefined}
       onAnimationEnd={onAnimationEnd}
     >
-      <span data-testid="child" className={animate && closing ? 'presence-child--closing' : undefined}>
+      <span
+        data-testid="child"
+        className={animate && closing ? 'presence-child--closing' : undefined}
+      >
         child
       </span>
       panel body
@@ -61,10 +64,9 @@ describe('usePresence', () => {
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
     // After the panel animation ends, onAnimationEnd finalizes the unmount.
-    await vi.waitFor(
-      () => expect(container.querySelector('[data-testid="panel"]')).toBeNull(),
-      { timeout: 1000 },
-    );
+    await vi.waitFor(() => expect(container.querySelector('[data-testid="panel"]')).toBeNull(), {
+      timeout: 1000,
+    });
   });
 
   it('ignores a bubbled child animation end (does not unmount early)', async () => {
@@ -77,10 +79,9 @@ describe('usePresence', () => {
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
     // The panel's own animation still finalizes the unmount eventually.
-    await vi.waitFor(
-      () => expect(container.querySelector('[data-testid="panel"]')).toBeNull(),
-      { timeout: 1000 },
-    );
+    await vi.waitFor(() => expect(container.querySelector('[data-testid="panel"]')).toBeNull(), {
+      timeout: 1000,
+    });
   });
 
   it('falls back to the timeout when animations do not run', async () => {
@@ -89,10 +90,9 @@ describe('usePresence', () => {
     await rerender(<PresenceHarness open={false} animate={false} />);
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
-    await vi.waitFor(
-      () => expect(container.querySelector('[data-testid="panel"]')).toBeNull(),
-      { timeout: 1000 },
-    );
+    await vi.waitFor(() => expect(container.querySelector('[data-testid="panel"]')).toBeNull(), {
+      timeout: 1000,
+    });
   });
 
   it('cancels the close when reopened mid-animation', async () => {
@@ -142,7 +142,6 @@ describe('useScrollLock', () => {
   });
 });
 
-
 // --- useControllableState ------------------------------------------------------------------
 
 describe('useControllableState', () => {
@@ -171,9 +170,7 @@ describe('useControllableState', () => {
 
   it('is controlled iff value is defined; the setter always calls onChange', async () => {
     const onChange = vi.fn();
-    const { result } = await renderHook(() =>
-      useControllableState<number>({ value: 5, onChange }),
-    );
+    const { result } = await renderHook(() => useControllableState<number>({ value: 5, onChange }));
     const [value, setValue] = result.current;
     expect(value).toBe(5);
 

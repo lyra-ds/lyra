@@ -414,7 +414,11 @@ describe('Dialog — custom container', () => {
 describe('Dialog — layout backstops', () => {
   it('a body taller than the viewport keeps the panel within 440px and the page scroll-locked', async () => {
     await openHarness({
-      children: <div data-testid="tall" style={{ height: 3000 }}>Tall content</div>,
+      children: (
+        <div data-testid="tall" style={{ height: 3000 }}>
+          Tall content
+        </div>
+      ),
     });
     expect(panel()!.getBoundingClientRect().width).toBeLessThanOrEqual(440);
     expect(document.body.style.overflow).toBe('hidden');

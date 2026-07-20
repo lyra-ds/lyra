@@ -88,9 +88,7 @@ describe('Input — class emission', () => {
 describe('Input — controlled/uncontrolled (D-14)', () => {
   it('uncontrolled: typing updates the DOM value and fires a real ChangeEvent', async () => {
     const onChange = vi.fn();
-    const screen = await render(
-      <Input aria-label="Free" defaultValue="" onChange={onChange} />,
-    );
+    const screen = await render(<Input aria-label="Free" defaultValue="" onChange={onChange} />);
     const input = screen.container.querySelector('input')!;
     await screen.getByRole('textbox').fill('hello');
 
@@ -104,9 +102,7 @@ describe('Input — controlled/uncontrolled (D-14)', () => {
 
   it('controlled (fixed value): typing fires onChange but the DOM value snaps back', async () => {
     const onChange = vi.fn();
-    const screen = await render(
-      <Input aria-label="Locked" value="locked" onChange={onChange} />,
-    );
+    const screen = await render(<Input aria-label="Locked" value="locked" onChange={onChange} />);
     const input = screen.container.querySelector('input')!;
     await screen.getByRole('textbox').fill('typed');
 
