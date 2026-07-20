@@ -34,7 +34,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * <Button variant="soft" iconLeft={<Icon name="plus" size={16} />}>Add</Button>
  * <Button variant="danger" loading>Deleting…</Button>
  */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+export const Button = /*#__PURE__*/ forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = 'primary',
     size = 'md',

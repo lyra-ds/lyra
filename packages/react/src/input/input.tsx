@@ -47,7 +47,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
  * <Input label="Search" iconLeft={<Icon name="search" size={16} />} placeholder="Search…" />
  * <Input label="Password" type="password" error="At least 8 characters." />
  */
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+export const Input = /*#__PURE__*/ forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     label,
     hint,

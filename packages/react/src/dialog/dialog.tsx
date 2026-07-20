@@ -212,7 +212,7 @@ function DialogPanel({
  *   This action cannot be undone.
  * </Dialog>
  */
-export const Dialog = forwardRef<HTMLDivElement, DialogProps>(function Dialog(
+export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(function Dialog(
   {
     open,
     onClose,

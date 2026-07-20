@@ -49,7 +49,7 @@ export interface IconProps {
  * <Icon name="settings" title="Settings" />   // role="img", aria-label="Settings"
  * <Icon icon={SomeLucideIcon} />              // escape hatch for a non-registry glyph
  */
-export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
+export const Icon = /*#__PURE__*/ forwardRef<SVGSVGElement, IconProps>(function Icon(
   { name, icon, size = 20, color, title, className, style },
   ref,
 ) {
