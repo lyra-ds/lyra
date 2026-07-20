@@ -102,7 +102,7 @@ Plans:
   3. Icon renders Lucide from a local dependency via a curated registry (no CDN), and a size-limit CI gate proves the ~1,400-icon set is not bundled
   4. Shared `internal/` utilities exist (focus trap, portal, controllable state, SSR guards) alongside a conventions note and test template (smoke + keyboard + axe + `renderToString`) that Phase 4 will reuse, with JSDoc language decided (EN canonical)
 
-**Plans**: 8/9 plans executed
+**Plans**: 9/9 plans executed
 
 Plans:
 **Wave 1**
@@ -127,7 +127,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4)*
 
-- [ ] 03-09-PLAN.md — Scratch-app smoke: committed Vite + Next.js fixtures, tarball install/build proofs, final CI step
+- [x] 03-09-PLAN.md — Scratch-app smoke: committed Vite + Next.js fixtures, tarball install/build proofs, final CI step
 
 **UI hint**: yes
 
@@ -203,7 +203,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
 | 2. Styles Package | 6/6 | Complete    | 2026-07-18 |
-| 3. React Infrastructure & Pilot Components | 8/9 | In Progress|  |
+| 3. React Infrastructure & Pilot Components | 9/9 | In Progress|  |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
 | 5. Docgen & llms.txt | 0/TBD | Not started | - |
 | 6. Docs Site (Bilingual) | 0/TBD | Not started | - |
