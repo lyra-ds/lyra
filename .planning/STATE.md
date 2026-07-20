@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: react-infrastructure-pilot-components
 status: executing
-stopped_at: Completed 03-07-PLAN.md
-last_updated: "2026-07-19T23:35:54.309Z"
+stopped_at: Completed 03-08-PLAN.md
+last_updated: "2026-07-20T02:02:25.710Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-07-16)
 ## Current Position
 
 Phase: 03 (react-infrastructure-pilot-components) — EXECUTING
-Plan: 8 of 9
+Plan: 9 of 9
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 03 execution started
 
-Progress: [█████████░] 90%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [█████████░] 90%
 | Phase 03 P05 | 62min | 2 tasks | 10 files |
 | Phase 03 P06 | 20min | 2 tasks | 4 files |
 | Phase 03 P07 | 25min | 2 tasks | 4 files |
+| Phase 03 P08 | 30min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Dialog: inner Portal-child panel owns all DOM-dependent effects (initial focus + trap) so they never race the portal mount (Pitfall 8); outer forwardRef owns useId/usePresence/useScrollLock/restore
 - [Phase ?]: Dialog focus restore keys on the controlled open prop flipping false (not on onClose request); opener captured in the panel mount effect before focus moves; panel tabIndex -1 unconditional (D-20 fallback + zero-candidate trap target)
 - [Phase ?]: Dialog close glyph is a self-contained inline svg (no Icon import) so importing Dialog pulls no lucide-react; × renders only with onClose; jsx-a11y line-disabled with justification for the backdrop click + panel Esc keydown
+- [Phase ?]: 03-08: attw runs on --profile node16 in CI (node10-only flags legacy subpath resolution; node16+bundler green)
+- [Phase ?]: 03-08: size-limit budgets Button 300 B / Icon 7.5 kB, lucide-react measured (never ignored) as the RCT-03/RCT-05 machine proof
+- [Phase ?]: 03-08: semantic no-CDN dist scan (host+lucide-static+URL allowlist) factored into a shared script for byte-identical reuse in 03-09
 
 ### Pending Todos
 
@@ -144,6 +148,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T23:25:30.422Z
-Stopped at: Completed 03-07-PLAN.md
+Last session: 2026-07-20T01:51:02.520Z
+Stopped at: Completed 03-08-PLAN.md
 Resume file: None
