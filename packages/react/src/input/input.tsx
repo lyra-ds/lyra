@@ -104,7 +104,12 @@ export const Input = /*#__PURE__*/ forwardRef<HTMLInputElement, InputProps>(func
   }, [isControlled, onChange]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    setInputValue(event.target.value);
+    // Only advance internal state when it is actually read (controlled composition). In the
+    // uncontrolled branch the DOM is bound to `defaultValue`, so `inputValue` is never read —
+    // calling the setter there writes dead state and forces a redundant render per keystroke (WR-04).
+    if (isControlled) {
+      setInputValue(event.target.value);
+    }
     onChange?.(event);
   };
 
