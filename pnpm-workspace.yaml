@@ -9,3 +9,9 @@ packages:
 # unnecessary — the dual-format build is verified green with scripts ignored. Keeping this empty
 # is the supply-chain default for the phase (belt-and-suspenders with --frozen-lockfile in CI).
 onlyBuiltDependencies: []
+# esbuild's ignored build is intentional (see above). pnpm 10+ exits 1 on an *unacknowledged*
+# ignored build script (ERR_PNPM_IGNORED_BUILDS), which fails `pnpm install --frozen-lockfile` in
+# CI. Listing esbuild here acknowledges the deliberate omission so install exits 0 WITHOUT running
+# any postinstall — esbuild still resolves its binary from the @esbuild/* optional dependency.
+ignoredBuiltDependencies:
+  - esbuild
