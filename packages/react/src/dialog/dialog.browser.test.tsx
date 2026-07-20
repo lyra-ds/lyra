@@ -55,6 +55,16 @@ const closeBtn = (root: ParentNode = document): HTMLButtonElement | null =>
   root.querySelector('.lyra-dialog__close');
 
 /**
+ * Fire a real backdrop dismiss: a mousedown and a click both originating on the overlay (WR-02).
+ * A bare `.click()` no longer closes — the dialog now requires the pointer press to have started
+ * on the backdrop, so tests must simulate the full press→release gesture.
+ */
+function backdropDismiss(el: HTMLElement): void {
+  el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+}
+
+/**
  * Controlled harness with a real trigger button (so focus-restore is observable) plus a
  * background focusable that the trap must never reach.
  */
@@ -297,16 +307,16 @@ describe('Dialog — close paths', () => {
     expect(panel()).not.toBeNull();
   });
 
-  it('overlay backdrop click closes and restores focus to the trigger', async () => {
+  it('overlay backdrop press+release closes and restores focus to the trigger', async () => {
     const { trigger } = await openHarness();
-    overlay()!.click(); // native click → target === overlay (identity) → close
+    backdropDismiss(overlay()!); // press AND release on the overlay (identity) → close
     await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('overlay click with closeOnOverlayClick=false does NOT close', async () => {
+  it('overlay dismiss with closeOnOverlayClick=false does NOT close', async () => {
     await openHarness({ closeOnOverlayClick: false });
-    overlay()!.click();
+    backdropDismiss(overlay()!);
     await new Promise((r) => setTimeout(r, 60));
     expect(panel()).not.toBeNull();
   });
@@ -314,6 +324,16 @@ describe('Dialog — close paths', () => {
   it('a click INSIDE the panel never closes', async () => {
     await openHarness();
     panel()!.click(); // target === panel !== overlay currentTarget
+    await new Promise((r) => setTimeout(r, 60));
+    expect(panel()).not.toBeNull();
+  });
+
+  it('a drag that STARTS on the panel and releases on the backdrop does NOT close (WR-02)', async () => {
+    await openHarness();
+    // Press originates inside the panel (e.g. selecting body text); the click bubbles to the
+    // overlay on release. Because the press did not start on the backdrop, the dialog must stay.
+    panel()!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    overlay()!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await new Promise((r) => setTimeout(r, 60));
     expect(panel()).not.toBeNull();
   });
@@ -345,7 +365,7 @@ describe('Dialog — close paths', () => {
 describe('Dialog — presence', () => {
   it('stays mounted with .lyra-dialog--closing + lyra-pop-out, then unmounts within 500ms', async () => {
     await openHarness();
-    overlay()!.click();
+    backdropDismiss(overlay()!);
 
     // Immediately after close: still mounted, closing class + the 03-02 exit keyframe applied.
     await vi.waitFor(() => expect(panel()?.classList.contains('lyra-dialog--closing')).toBe(true));

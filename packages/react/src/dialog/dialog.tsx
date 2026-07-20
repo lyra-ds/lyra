@@ -118,6 +118,12 @@ function DialogPanel({
   // The zero-candidate branch of the trap keeps focus on the panel (tabIndex -1, below).
   useFocusTrap(panelRef, true);
 
+  // WR-02: records whether the pointer press ORIGINATED on the backdrop. A `click` fires on the
+  // nearest common ancestor of its mousedown+mouseup targets, so a drag that starts inside the
+  // panel (e.g. selecting body text) and releases over the backdrop would otherwise satisfy
+  // `event.target === event.currentTarget` and dismiss the dialog — discarding in-progress input.
+  const downOnOverlay = useRef(false);
+
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
 
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
@@ -139,8 +145,12 @@ function DialogPanel({
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
       className={cx('lyra-dialog-overlay', closing && 'lyra-dialog-overlay--closing')}
+      onMouseDown={(event) => {
+        downOnOverlay.current = event.target === event.currentTarget;
+      }}
       onClick={(event) => {
-        if (closeOnOverlayClick && event.target === event.currentTarget) {
+        // Dismiss only when BOTH endpoints of the interaction were the backdrop itself (WR-02).
+        if (closeOnOverlayClick && downOnOverlay.current && event.target === event.currentTarget) {
           onClose?.();
         }
       }}
