@@ -287,6 +287,31 @@ describe('Dialog — initial focus', () => {
       await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
     }
   });
+
+  it('reopening DURING the exit window re-enters focus and keeps restore working (WR-03)', async () => {
+    const { rerender, container } = await render(<ControlledDeep open={false} />);
+    const trigger = container.querySelector<HTMLButtonElement>('[data-testid="trigger"]')!;
+    const deep = (): HTMLElement => panel()!.querySelector<HTMLElement>('[data-testid="deep"]')!;
+
+    trigger.focus(); // opener at open time
+    await rerender(<ControlledDeep open />);
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
+    await vi.waitFor(() => expect(document.activeElement).toBe(deep()));
+
+    // Request close (panel enters its exit animation but usePresence keeps it mounted), then
+    // reopen immediately — WITHIN the presence window, so it is the SAME DialogPanel instance.
+    await rerender(<ControlledDeep open={false} />);
+    await rerender(<ControlledDeep open />);
+
+    // Regression (WR-03): focus must return INTO the panel. Before the fix the mount-only focus
+    // effect never re-ran for the reused instance and focus stranded on the trigger.
+    await vi.waitFor(() => expect(document.activeElement).toBe(deep()));
+
+    // The opener was re-captured, so a subsequent real close still restores focus to the trigger.
+    await rerender(<ControlledDeep open={false} />);
+    await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+    expect(document.activeElement).toBe(trigger);
+  });
 });
 
 // --- Close paths + opt-out flags + focus restore ---------------------------------------------

@@ -72,6 +72,8 @@ interface DialogPanelProps {
   onClose?: () => void;
   closeOnEsc: boolean;
   closeOnOverlayClick: boolean;
+  /** The live `open` prop — drives the initial-focus transition (WR-03), not component mount. */
+  open: boolean;
   closing: boolean;
   onAnimationEnd: PresenceState['onAnimationEnd'];
   /** Records the element focused at open time, so focus can be restored on close (D-20). */
@@ -96,6 +98,7 @@ function DialogPanel({
   onClose,
   closeOnEsc,
   closeOnOverlayClick,
+  open,
   closing,
   onAnimationEnd,
   captureOpener,
@@ -104,15 +107,20 @@ function DialogPanel({
   rest,
 }: DialogPanelProps): ReactNode {
   // Initial focus (D-20): first focusable in the panel, else the panel itself via tabIndex -1.
-  // Runs on mount — panelRef.current is guaranteed set because this component lives inside the
-  // portal subtree. The opener is captured BEFORE focus moves so restore has the right target.
+  // Keyed on the `open` TRANSITION, not component mount (WR-03). usePresence keeps DialogPanel
+  // mounted through the exit animation, so a close→reopen within that window reuses the SAME
+  // instance — a mount-only effect would never re-run and focus would strand on the trigger.
+  // Keying on `open` re-enters focus on every false→true flip. panelRef.current is guaranteed set
+  // here because this component lives inside the portal subtree. The opener is captured BEFORE
+  // focus moves so restore has the right target.
   useEffect(() => {
+    if (!open) return;
     const panel = panelRef.current;
     if (!panel) return;
     captureOpener(document.activeElement);
     const focusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
     (focusable ?? panel).focus();
-  }, [panelRef, captureOpener]);
+  }, [open, panelRef, captureOpener]);
 
   // Trap Tab/Shift+Tab inside the panel (Pitfall 8 — the ref points into the portal subtree).
   // The zero-candidate branch of the trap keeps focus on the panel (tabIndex -1, below).
@@ -293,6 +301,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
         onClose={onClose}
         closeOnEsc={closeOnEsc}
         closeOnOverlayClick={closeOnOverlayClick}
+        open={open}
         closing={closing}
         onAnimationEnd={onAnimationEnd}
         captureOpener={captureOpener}
