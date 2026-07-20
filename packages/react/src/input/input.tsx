@@ -1,7 +1,13 @@
-import { forwardRef, useId } from 'react';
+import { forwardRef, useEffect, useId } from 'react';
 import type { ChangeEvent, InputHTMLAttributes, ReactNode } from 'react';
 import { cx } from '../internal/cx';
 import { useControllableState } from '../internal/use-controllable-state';
+
+// Module-scoped ambient for the dev-only warning below. `@lyra-ds/react` is a browser package
+// with no `@types/node`; declaring `process` narrowly here keeps typecheck strict without
+// pulling Node globals into the package. tsup/esbuild statically replaces `process.env.NODE_ENV`
+// at build, so the warning is dropped from production output.
+declare const process: { env: { NODE_ENV?: string } };
 
 /**
  * Props for {@link Input}.
@@ -83,6 +89,19 @@ export const Input = /*#__PURE__*/ forwardRef<HTMLInputElement, InputProps>(func
   const describedBy = hasMessage
     ? [ariaDescribedBy, messageId].filter(Boolean).join(' ')
     : ariaDescribedBy;
+
+  // Dev-only guard (WR-01): a controlled field (`value` set) with no `onChange` can never
+  // update. React's own "value without onChange" warning is suppressed here because the internal
+  // `handleChange` is ALWAYS attached, so the mistake would surface as a silently frozen input
+  // with zero diagnostic. Re-surface the lost signal. Effect-scoped (fires on the offending
+  // prop shape, not every render) and SSR-safe; stripped from production by the NODE_ENV replace.
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && isControlled && onChange === undefined) {
+      console.warn(
+        '[lyra] Input: `value` was provided without `onChange`. The field will not update — pass `onChange` for a controlled field, or use `defaultValue` for an uncontrolled one.',
+      );
+    }
+  }, [isControlled, onChange]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setInputValue(event.target.value);

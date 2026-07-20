@@ -124,6 +124,31 @@ describe('Input — controlled/uncontrolled (D-14)', () => {
     await screen.getByRole('textbox').fill('world');
     await expect.poll(() => input.value).toBe('world');
   });
+
+  it('controlled WITHOUT onChange: re-surfaces the lost React signal as a dev warning (WR-01)', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      // React normally warns "value without onChange", but the internal handleChange is always
+      // attached and suppresses it — so Input must emit its own diagnostic instead.
+      await render(<Input aria-label="Frozen" value="locked" />);
+      await vi.waitFor(() =>
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('was provided without')),
+      );
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('controlled WITH onChange: emits no missing-handler warning', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      await render(<Input aria-label="Fine" value="ok" onChange={() => {}} />);
+      await new Promise((r) => setTimeout(r, 30));
+      expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('was provided without'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
 });
 
 // --- Error a11y wiring: class swap + aria-invalid + aria-describedby (merge) ------------------
