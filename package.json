@@ -13,6 +13,7 @@
     "build": "pnpm -r --if-present run build",
     "parity": "node tools/parity/parity.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
+    "smoke": "node tools/smoke/smoke.mjs",
     "changeset": "changeset"
   },
   "devDependencies": {

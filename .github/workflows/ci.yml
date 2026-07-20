@@ -126,3 +126,9 @@ jobs:
       # literal. The CDN-host list + allowlist prefixes live in the script and are shared
       # byte-identically with the 03-09 scratch-fixture scan (see its SYNC POINTER comment).
       - run: node tools/dist-scan/no-cdn-scan.mjs packages/react/dist
+      # Phase 3, RCT-04 (D-27): the FINAL Phase 3 gate — packs @lyra-ds/react + @lyra-ds/styles,
+      # npm-installs the tarballs into the committed Vite + Next.js scratch fixtures in an OS
+      # temp dir, typechecks + builds both, runs a CJS require() consumer proof, and asserts the
+      # end-to-end RCT-03/RCT-04 proofs (subpath + barrel resolution, tree-shaken isolation,
+      # Next client-boundary + package resolution, production NODE_ENV strip, no CDN references).
+      - run: node tools/smoke/smoke.mjs
