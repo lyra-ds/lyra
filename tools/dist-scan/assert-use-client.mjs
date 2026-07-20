@@ -26,6 +26,16 @@ try {
   process.exit(2);
 }
 
+// A positive assertion that passes on an EMPTY set gives false confidence exactly when the build
+// silently produced nothing (broken/empty build, wrong path, or outputs moved into subdirectories
+// this non-recursive scan misses). Fail loudly instead — mirrors smoke.mjs's zero-asset guard.
+if (files.length === 0) {
+  console.error(
+    `assert-use-client: no .js/.cjs files found in "${dir}" — nothing to assert (build produced no output?)`,
+  );
+  process.exit(1);
+}
+
 const missing = files.filter((f) => !DIRECTIVE.test(readFileSync(join(dir, f), 'utf8')));
 
 if (missing.length > 0) {
