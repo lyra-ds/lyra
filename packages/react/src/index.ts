@@ -1,6 +1,19 @@
-// Public barrel for @lyra-ds/react.
+// Public barrel for @lyra-ds/react — the root import surface (D-13).
 //
-// SCAFFOLD (Phase 3, plan 03-01): this stub exists so tsc/tsup have a root entry from wave 1.
-// It is finalized in plan 03-08 as components land — named exports only (D-12); no default
-// exports anywhere in the package. The empty `export {}` keeps this a module with no surface.
-export {};
+// Named exports only (D-12): every binding below is a named re-export, matching the
+// handoff `export declare function` contracts. Each component and its Props type is
+// re-exported from its per-folder entry (the same entries the `./button`, `./input`,
+// `./dialog`, `./icon` subpaths expose), so `@lyra-ds/react` and `@lyra-ds/react/button`
+// resolve to identical implementations. `IconName` (the curated-registry literal union,
+// D-04) is re-exported alongside Icon so consumers can type icon names off the root.
+export { Button } from './button';
+export type { ButtonProps } from './button';
+
+export { Input } from './input';
+export type { InputProps } from './input';
+
+export { Dialog } from './dialog';
+export type { DialogProps } from './dialog';
+
+export { Icon } from './icon';
+export type { IconProps, IconName } from './icon';
