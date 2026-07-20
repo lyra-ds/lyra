@@ -84,5 +84,21 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "size-limit": [
+    {
+      "name": "import { Button } from '@lyra-ds/react/button'",
+      "path": "dist/button.js",
+      "import": "{ Button }",
+      "ignore": ["react", "react-dom"],
+      "limit": "300 B"
+    },
+    {
+      "name": "import { Icon } from '@lyra-ds/react/icon' (70-icon registry, lucide measured)",
+      "path": "dist/icon.js",
+      "import": "{ Icon }",
+      "ignore": ["react", "react-dom"],
+      "limit": "7.5 kB"
+    }
+  ]
 }
