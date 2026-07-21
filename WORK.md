@@ -5,7 +5,6 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-
 ## Next
 
 - [ ] Fase 4 — Component Batch Conversion & A11y (`.batuta/plan-04-component-batch-conversion-a11y.md`; pesquisa APG antes de delegar)
