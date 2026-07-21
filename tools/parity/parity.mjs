@@ -117,6 +117,10 @@ const ADDITIVE_EXTENSIONS = {
     classes: ['lyra-card__actions'],
     keyframes: [],
   },
+  'components/navigation/navigation.css': {
+    classes: ['lyra-dropdown__trigger'],
+    keyframes: [],
+  },
 };
 
 // Package class-selectors (with leading dot) permitted to exist without a handoff peer,

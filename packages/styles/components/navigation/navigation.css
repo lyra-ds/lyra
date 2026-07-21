@@ -466,3 +466,5 @@
 }
 .lyra-page--active:hover:not(:disabled) { background: var(--accent-hover); color: var(--on-accent); }
 .lyra-page--gap { cursor: default; color: var(--text-faint); }
+
+.lyra-dropdown__trigger { display: inline-flex; }

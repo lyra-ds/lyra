@@ -70,3 +70,7 @@ export { Tooltip } from './tooltip';
 export type { TooltipProps } from './tooltip';
 export { Select } from './select';
 export type { SelectProps } from './select';
+export { Dropdown } from './dropdown';
+export type { DropdownItem, DropdownProps } from './dropdown';
+export { Combobox } from './combobox';
+export type { ComboboxOption, ComboboxProps } from './combobox';

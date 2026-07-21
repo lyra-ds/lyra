@@ -289,6 +289,26 @@
         "default": "./dist/select.cjs"
       }
     },
+    "./dropdown": {
+      "import": {
+        "types": "./dist/dropdown.d.ts",
+        "default": "./dist/dropdown.js"
+      },
+      "require": {
+        "types": "./dist/dropdown.d.cts",
+        "default": "./dist/dropdown.cjs"
+      }
+    },
+    "./combobox": {
+      "import": {
+        "types": "./dist/combobox.d.ts",
+        "default": "./dist/combobox.js"
+      },
+      "require": {
+        "types": "./dist/combobox.d.cts",
+        "default": "./dist/combobox.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -565,6 +585,26 @@
         "react-dom"
       ],
       "limit": "1.5 kB"
+    },
+    {
+      "name": "import { Dropdown } from '@lyra-ds/react/dropdown'",
+      "path": "dist/dropdown.js",
+      "import": "{ Dropdown }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "Combobox (curated icon registry)",
+      "path": "dist/combobox.js",
+      "import": "{ Combobox }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "8 kB"
     }
   ]
 }

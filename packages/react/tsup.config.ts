@@ -69,6 +69,8 @@ export default defineConfig({
     pagination: 'src/pagination/index.ts',
     tooltip: 'src/tooltip/index.ts',
     select: 'src/select/index.ts',
+    dropdown: 'src/dropdown/index.ts',
+    combobox: 'src/combobox/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
