@@ -173,6 +173,20 @@ the handoff prototype. They are conventions, not accidents — preserve them.
   `useControllableState` internally — it never passes the event handler as the
   hook's value callback. Follow this for every native-event-shaped contract.
 
+- **Handoff inline layout styles → a `.lyra-*` class (CSS-first promotion).** Some
+  handoff prototypes carry appearance/layout decisions as inline `style={{…}}`
+  (e.g. Card's actions wrapper `display:flex; gap`). CSS-first forbids appearance
+  in the React layer, so the conversion **promotes** that inline style to a real
+  `.lyra-*` class in `@lyra-ds/styles` and emits the class instead — exactly as
+  D-19 did for the Dialog close button. Add the class to its component CSS file
+  and enumerate it in `tools/parity/parity.mjs` `ADDITIVE_EXTENSIONS` (keyed by
+  file) so parity accepts a package class with no handoff peer. The Card
+  `.lyra-card__actions` class is the reference. **Apply this when converting
+  Toast (`display:inline-flex` icon) and Dropdown (`display:inline-flex` trigger)
+  in later batches — do not port their inline styles.** The ONLY inline `style`
+  that stays is a genuinely dynamic runtime value (Progress/FileUpload bar
+  `width: ${n}%`, Skeleton prop-driven size), never a static layout decision.
+
 ---
 
 ## Accessibility & security rules

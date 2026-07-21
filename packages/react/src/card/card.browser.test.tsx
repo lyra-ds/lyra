@@ -10,11 +10,18 @@ describe('Card', () => {
       document.documentElement.toggleAttribute('data-theme', theme === 'dark');
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const { container } = await render(
-        <Card title="Title" footer="Footer" interactive>
+        <Card
+          title="Title"
+          actions={<button type="button">Act</button>}
+          footer="Footer"
+          interactive
+        >
           Body
         </Card>,
       );
       expect(container.querySelector('div')!.className).toBe('lyra-card lyra-card--interactive');
+      // Actions are grouped by the .lyra-card__actions class, not an inline flex style.
+      expect(container.querySelector('.lyra-card__actions')).not.toBeNull();
       expect(error).not.toHaveBeenCalled();
       expect((await axe.run(container)).violations).toEqual([]);
       error.mockRestore();

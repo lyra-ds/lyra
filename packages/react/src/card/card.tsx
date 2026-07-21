@@ -39,7 +39,7 @@ export const Card = /*#__PURE__*/ forwardRef<HTMLDivElement, CardProps>(function
       {title && (
         <div className="lyra-card__header">
           <h3 className="lyra-card__title">{title}</h3>
-          {actions && <div style={{ display: 'flex', gap: 'var(--space-2)' }}>{actions}</div>}
+          {actions && <div className="lyra-card__actions">{actions}</div>}
         </div>
       )}
       <div className={padded ? 'lyra-card__body' : undefined}>{children}</div>
