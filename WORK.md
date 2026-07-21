@@ -14,6 +14,8 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Done
 
+- [x] Fase 4 / Lote A — 12 componentes estáticos → codex (`gpt-5.6-terra`, reasoning high; 1 correção do maestro: prettier no root lint), commit 11376ee, 2026-07-20
+- [x] Fase 4 — pesquisa WAI-ARIA APG (gate dos lotes C/D) → agente de research (background), relatório em `.batuta/research-apg-focus-models.md`, 2026-07-20
 - [x] Fase 1 — Monorepo Foundation & Governance (5 planos) → GSD/claude (importado), merged PR #1, 2026-07-17
 - [x] Fase 2 — Styles Package, 209/209 tokens + 248 classes (6 planos) → GSD/claude (importado), merged PR #2 (df75f9a), 2026-07-18
 - [x] Fase 3 — React Infrastructure & Pilot Components (9 planos) → GSD/claude (importado), merged PR #3 (cff0234), 2026-07-20
