@@ -59,6 +59,126 @@
         "default": "./dist/icon.cjs"
       }
     },
+    "./icon-button": {
+      "import": {
+        "types": "./dist/icon-button.d.ts",
+        "default": "./dist/icon-button.js"
+      },
+      "require": {
+        "types": "./dist/icon-button.d.cts",
+        "default": "./dist/icon-button.cjs"
+      }
+    },
+    "./badge": {
+      "import": {
+        "types": "./dist/badge.d.ts",
+        "default": "./dist/badge.js"
+      },
+      "require": {
+        "types": "./dist/badge.d.cts",
+        "default": "./dist/badge.cjs"
+      }
+    },
+    "./tag": {
+      "import": {
+        "types": "./dist/tag.d.ts",
+        "default": "./dist/tag.js"
+      },
+      "require": {
+        "types": "./dist/tag.d.cts",
+        "default": "./dist/tag.cjs"
+      }
+    },
+    "./card": {
+      "import": {
+        "types": "./dist/card.d.ts",
+        "default": "./dist/card.js"
+      },
+      "require": {
+        "types": "./dist/card.d.cts",
+        "default": "./dist/card.cjs"
+      }
+    },
+    "./avatar": {
+      "import": {
+        "types": "./dist/avatar.d.ts",
+        "default": "./dist/avatar.js"
+      },
+      "require": {
+        "types": "./dist/avatar.d.cts",
+        "default": "./dist/avatar.cjs"
+      }
+    },
+    "./alert": {
+      "import": {
+        "types": "./dist/alert.d.ts",
+        "default": "./dist/alert.js"
+      },
+      "require": {
+        "types": "./dist/alert.d.cts",
+        "default": "./dist/alert.cjs"
+      }
+    },
+    "./spinner": {
+      "import": {
+        "types": "./dist/spinner.d.ts",
+        "default": "./dist/spinner.js"
+      },
+      "require": {
+        "types": "./dist/spinner.d.cts",
+        "default": "./dist/spinner.cjs"
+      }
+    },
+    "./skeleton": {
+      "import": {
+        "types": "./dist/skeleton.d.ts",
+        "default": "./dist/skeleton.js"
+      },
+      "require": {
+        "types": "./dist/skeleton.d.cts",
+        "default": "./dist/skeleton.cjs"
+      }
+    },
+    "./progress": {
+      "import": {
+        "types": "./dist/progress.d.ts",
+        "default": "./dist/progress.js"
+      },
+      "require": {
+        "types": "./dist/progress.d.cts",
+        "default": "./dist/progress.cjs"
+      }
+    },
+    "./stat": {
+      "import": {
+        "types": "./dist/stat.d.ts",
+        "default": "./dist/stat.js"
+      },
+      "require": {
+        "types": "./dist/stat.d.cts",
+        "default": "./dist/stat.cjs"
+      }
+    },
+    "./empty-state": {
+      "import": {
+        "types": "./dist/empty-state.d.ts",
+        "default": "./dist/empty-state.js"
+      },
+      "require": {
+        "types": "./dist/empty-state.d.cts",
+        "default": "./dist/empty-state.cjs"
+      }
+    },
+    "./breadcrumb": {
+      "import": {
+        "types": "./dist/breadcrumb.d.ts",
+        "default": "./dist/breadcrumb.js"
+      },
+      "require": {
+        "types": "./dist/breadcrumb.d.cts",
+        "default": "./dist/breadcrumb.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -105,6 +225,126 @@
         "react-dom"
       ],
       "limit": "7.5 kB"
+    },
+    {
+      "name": "import { IconButton } from '@lyra-ds/react/icon-button'",
+      "path": "dist/icon-button.js",
+      "import": "{ IconButton }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "400 B"
+    },
+    {
+      "name": "import { Badge } from '@lyra-ds/react/badge'",
+      "path": "dist/badge.js",
+      "import": "{ Badge }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "400 B"
+    },
+    {
+      "name": "Tag (curated icon registry)",
+      "path": "dist/tag.js",
+      "import": "{ Tag }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "8 kB"
+    },
+    {
+      "name": "import { Card } from '@lyra-ds/react/card'",
+      "path": "dist/card.js",
+      "import": "{ Card }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Avatar } from '@lyra-ds/react/avatar'",
+      "path": "dist/avatar.js",
+      "import": "{ Avatar }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Alert } from '@lyra-ds/react/alert'",
+      "path": "dist/alert.js",
+      "import": "{ Alert }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Spinner } from '@lyra-ds/react/spinner'",
+      "path": "dist/spinner.js",
+      "import": "{ Spinner }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "400 B"
+    },
+    {
+      "name": "import { Skeleton } from '@lyra-ds/react/skeleton'",
+      "path": "dist/skeleton.js",
+      "import": "{ Skeleton }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Progress } from '@lyra-ds/react/progress'",
+      "path": "dist/progress.js",
+      "import": "{ Progress }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Stat } from '@lyra-ds/react/stat'",
+      "path": "dist/stat.js",
+      "import": "{ Stat }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { EmptyState } from '@lyra-ds/react/empty-state'",
+      "path": "dist/empty-state.js",
+      "import": "{ EmptyState }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Breadcrumb } from '@lyra-ds/react/breadcrumb'",
+      "path": "dist/breadcrumb.js",
+      "import": "{ Breadcrumb }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
     }
   ]
 }
