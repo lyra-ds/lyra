@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Monorepo Foundation & Governance** - pnpm workspace, CI, governance files, and versioning policy that everything else builds on (completed 2026-07-17)
 - [x] **Phase 2: Styles Package** - `@lyra-ds/styles` with 209/209 token parity, theming, white-label contract, and safe packaging metadata (completed 2026-07-18)
-- [ ] **Phase 3: React Infrastructure & Pilot Components** - Build/test/CI machinery plus Button, Input, Dialog, and Icon to lock conventions before batch work
+- [x] **Phase 3: React Infrastructure & Pilot Components** - Build/test/CI machinery plus Button, Input, Dialog, and Icon to lock conventions before batch work (completed 2026-07-20)
 - [ ] **Phase 4: Component Batch Conversion & A11y** - All 40 components with class parity, APG-compliant keyboard behavior, SSR safety, and axe-clean output
 - [ ] **Phase 5: Docgen & llms.txt** - One parse of the `.d.ts` contracts feeds prop tables and `llms.txt` — no hand-maintained API docs
 - [ ] **Phase 6: Docs Site (Bilingual)** - EN + pt-BR site dogfooding Lyra with live previews, white-label demo, and Vercel deploys
@@ -102,7 +102,33 @@ Plans:
   3. Icon renders Lucide from a local dependency via a curated registry (no CDN), and a size-limit CI gate proves the ~1,400-icon set is not bundled
   4. Shared `internal/` utilities exist (focus trap, portal, controllable state, SSR guards) alongside a conventions note and test template (smoke + keyboard + axe + `renderToString`) that Phase 4 will reuse, with JSDoc language decided (EN canonical)
 
-**Plans**: TBD
+**Plans**: 9/9 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 03-01-PLAN.md — React package scaffold: legitimacy checkpoint, pinned installs, exports map, tsup/vitest/eslint configs
+- [x] 03-02-PLAN.md — Styles additive dialog CSS (.lyra-dialog__close, exit animations) + parity ADDITIVE_EXTENSIONS allowlist
+- [x] 03-03-PLAN.md — Icon registry generator (54-icon scoped scan, vendored github) + committed icon-registry.ts with --check drift gate
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [x] 03-04-PLAN.md — internal/ utilities: cx, useControllableState, Portal (SSR guard), useFocusTrap, usePresence, useScrollLock
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [x] 03-05-PLAN.md — Button + Icon pilots with browser (smoke/axe light+dark) + SSR test templates
+- [x] 03-06-PLAN.md — Input pilot: controlled/uncontrolled contract + a11y wiring + tests
+- [x] 03-07-PLAN.md — Dialog pilot: portal/trap/presence/scroll-lock + keyboard/focus/axe/SSR overlay suite
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [x] 03-08-PLAN.md — Barrel + build/publint/attw green, calibrated size-limit budgets, CONVENTIONS.md, CI gate steps
+
+**Wave 5** *(blocked on Wave 4)*
+
+- [x] 03-09-PLAN.md — Scratch-app smoke: committed Vite + Next.js fixtures, tarball install/build proofs, final CI step
+
 **UI hint**: yes
 
 ### Phase 4: Component Batch Conversion & A11y
@@ -177,7 +203,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Monorepo Foundation & Governance | 5/5 | Complete    | 2026-07-17 |
 | 2. Styles Package | 6/6 | Complete    | 2026-07-18 |
-| 3. React Infrastructure & Pilot Components | 0/TBD | Not started | - |
+| 3. React Infrastructure & Pilot Components | 9/9 | Complete    | 2026-07-20 |
 | 4. Component Batch Conversion & A11y | 0/TBD | Not started | - |
 | 5. Docgen & llms.txt | 0/TBD | Not started | - |
 | 6. Docs Site (Bilingual) | 0/TBD | Not started | - |

@@ -4,3 +4,14 @@ packages:
   - 'packages/*'
   - 'apps/*'
   - 'tools/*'
+# Build-script policy. pnpm 10+ blocks dependency install/postinstall scripts by default; `allowBuilds`
+# (pnpm 10.26+, the successor to onlyBuiltDependencies/ignoredBuiltDependencies) is an explicit
+# per-package decision map. An *undeclared* ignored build makes `pnpm install --frozen-lockfile`
+# fail in CI with ERR_PNPM_IGNORED_BUILDS, so every buildable dep must get an explicit true/false.
+#
+# esbuild: false — its postinstall is deliberately NOT run. esbuild (pulled in by tsup/vite/vitest)
+# resolves its platform binary from the @esbuild/* optionalDependencies, so the build script is
+# unnecessary; the dual-format build is verified green with it ignored. Declaring it false keeps the
+# "no build scripts run" supply-chain posture while satisfying pnpm's explicit-decision requirement.
+allowBuilds:
+  esbuild: false

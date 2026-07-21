@@ -44,6 +44,10 @@ jobs:
           ./actionlint -color
       # Phase 2: stylelint on packages/styles (@lyra-ds/styles' only static CSS gate)
       - run: pnpm --filter @lyra-ds/styles run lint:css
+      # Phase 3, RCT-03: @lyra-ds/react eslint (jsx-a11y + react-hooks + the
+      # no-restricted-imports CSS-import ban — the machine-checked "zero CSS imports
+      # in react src" rule; sideEffects:false would silently drop any stray CSS import).
+      - run: pnpm --filter @lyra-ds/react run lint
 
   typecheck:
     runs-on: ubuntu-latest
@@ -55,7 +59,10 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run typecheck # no-op until Phase 3 adds package scripts
+      # Phase 3 delivered the first package typecheck: this now recurses into
+      # @lyra-ds/react (tsc --noEmit) — RCT-04's types half. No yml change was needed
+      # (the recursion reserved here since Phase 1 picked up the new package script).
+      - run: pnpm run typecheck
 
   test:
     runs-on: ubuntu-latest
@@ -75,6 +82,9 @@ jobs:
       - run: pnpm run test # recurses into @lyra-ds/styles Browser Mode suite (Phase 2)
       # Phase 2, STY-06: token/class parity script (fails on any handoff drift)
       - run: pnpm run parity
+      # Phase 3, RCT-05: icon-registry drift guard (D-02) — regenerates in-memory and
+      # byte-diffs against the committed registry, failing if it drifts from the handoff scan.
+      - run: node tools/icon-registry/generate.mjs --check
 
   build:
     runs-on: ubuntu-latest
@@ -94,4 +104,31 @@ jobs:
       # Phase 2, STY-01/STY-02: packed-artifact smoke test — pnpm pack, install into a
       # throwaway fixture, real vite@8.1.5 consumer build, assert a .lyra-* class + a token.
       - run: node tools/pack-smoke/pack-smoke.mjs
-      # future hooks (Phases 3-4, OSS-03): attw --pack, size-limit
+      # Phase 3 gates for @lyra-ds/react — all run against the dist emitted by the
+      # recursive `pnpm run build` above.
+      # Phase 3, RCT-04: exports-map lint for the react package (dual ESM+CJS map).
+      - run: pnpm exec publint packages/react
+      # Phase 3, RCT-04: type-resolution check. --profile node16 because node10 (legacy
+      # moduleResolution) cannot resolve the per-component exports-map subpaths — it is the
+      # ONLY column that flags (node16 + bundler are green). RESEARCH A3; the default-profile
+      # node10-only failure is recorded in 03-08-SUMMARY.md. node16 is the correct target for a
+      # 2026 library and the fallback masks no other problem kind.
+      - run: pnpm --filter @lyra-ds/react exec attw --pack . --profile node16
+      # Phase 3, RCT-03 + RCT-05: per-minimal-import bundle budgets. Button proves isolation
+      # (pulls zero lucide code); Icon proves registry containment (70 icons, not the ~1,400
+      # set). lucide-react is deliberately NOT in either entry's ignore list.
+      - run: pnpm --filter @lyra-ds/react exec size-limit
+      # Phase 3 (Pitfall 3 suspenders): assert the RSC "use client" directive survived to
+      # every dist .js/.cjs (belt = the tsup onSuccess prepend).
+      - run: node tools/dist-scan/assert-use-client.mjs packages/react/dist
+      # Phase 3, RCT-05 (threat T-03-16): semantic no-CDN scan over dist .js/.cjs/.d.ts —
+      # fails on any known CDN host, on lucide-static, and on any non-allowlisted https?://
+      # literal. The CDN-host list + allowlist prefixes live in the script and are shared
+      # byte-identically with the 03-09 scratch-fixture scan (see its SYNC POINTER comment).
+      - run: node tools/dist-scan/no-cdn-scan.mjs packages/react/dist
+      # Phase 3, RCT-04 (D-27): the FINAL Phase 3 gate — packs @lyra-ds/react + @lyra-ds/styles,
+      # npm-installs the tarballs into the committed Vite + Next.js scratch fixtures in an OS
+      # temp dir, typechecks + builds both, runs a CJS require() consumer proof, and asserts the
+      # end-to-end RCT-03/RCT-04 proofs (subpath + barrel resolution, tree-shaken isolation,
+      # Next client-boundary + package resolution, production NODE_ENV strip, no CDN references).
+      - run: node tools/smoke/smoke.mjs

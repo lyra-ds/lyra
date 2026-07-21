@@ -53,6 +53,14 @@ before choosing a bump type.
 The two packages are versioned in lockstep (see
 [VERSIONING.md](./VERSIONING.md)).
 
+## React component conventions
+
+When adding or converting a component in `@lyra-ds/react`, follow the conversion
+recipe in [`packages/react/CONVENTIONS.md`](./packages/react/CONVENTIONS.md) — the
+actionable checklist (read the `.d.ts` → `forwardRef` → `cx` + merge →
+rest-spread → JSDoc → test matrix → gates), the locked-decision table, and the map
+from component type to the pilot test suite you copy.
+
 ## Locked decisions
 
 These architectural decisions are **settled**. Please do not open PRs or issues to

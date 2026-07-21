@@ -277,3 +277,32 @@
 .lyra-spinner--sm { width: 16px; height: 16px; }
 .lyra-spinner--md { width: 24px; height: 24px; }
 .lyra-spinner--lg { width: 36px; height: 36px; border-width: 3px; }
+
+.lyra-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.lyra-dialog__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-dialog__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.lyra-dialog--closing {
+  animation: lyra-pop-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-dialog-overlay--closing {
+  animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
+}
+@keyframes lyra-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes lyra-pop-out {
+  from { transform: scale(1) translateY(0); opacity: 1; }
+  to { transform: scale(0.97) translateY(4px); opacity: 0; }
+}
