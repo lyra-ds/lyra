@@ -16,7 +16,11 @@ confirmados pelo usuário. Nota: `opencode` vive em `~/.opencode/bin` — se
 
 | Role     | Examples                                     | Executor                                                                   | Cost |
 | -------- | -------------------------------------------- | -------------------------------------------------------------------------- | ---- |
-| Research | map sweep, contexto de brief, "onde vive X?" | opencode + `opencode/deepseek-v4-flash-free` (read-only por brief + guard) | free |
+| Research | map sweep, contexto de brief, "onde vive X?" | opencode + `opencode/deepseek-v4-flash` (read-only por brief + guard) | cents (API) |
+
+Nota (2026-07-21): lane de Research migrada de `deepseek-v4-flash-free` para a
+versão paga — o tier free travou duas vezes (map sweep do onboarding e scout do
+Lote C, ambos mortos sem output).
 
 ## Rules
 
