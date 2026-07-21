@@ -166,3 +166,9 @@
   color: var(--text-secondary);
   max-width: 64ch;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): groups Card header actions as one
+   flex item. Replaces the handoff prototype's inline `style={{display:flex;gap}}` so
+   appearance stays CSS-first. Appended at end of file to preserve parity's positional
+   alignment, matching the Dialog additive extensions in feedback.css (D-18/D-19). */
+.lyra-card__actions { display: flex; gap: var(--space-2); }

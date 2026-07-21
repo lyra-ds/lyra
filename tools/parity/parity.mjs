@@ -104,30 +104,45 @@ const MASK_DIVERGENCE = new Map([
 // Two check sites consume this: classCheck() (package-class-not-in-handoff branch) and
 // diffFile() (extra-declaration branch). EXPECTED_CLASSES (248) is a handoff-side count
 // and stays untouched by these package-only additions.
+// Keyed by the styles file the extension lives in, so more than one component file
+// can carry documented package-only declarations (D-18 Dialog animation, D-19 Dialog
+// close button, and the Card actions-group class that replaces the handoff prototype's
+// inline flex style — same CSS-first promotion pattern).
 const ADDITIVE_EXTENSIONS = {
-  file: 'components/feedback/feedback.css',
-  classes: ['lyra-dialog__close', 'lyra-dialog--closing', 'lyra-dialog-overlay--closing'],
-  keyframes: ['lyra-pop-out', 'lyra-fade-out'],
+  'components/feedback/feedback.css': {
+    classes: ['lyra-dialog__close', 'lyra-dialog--closing', 'lyra-dialog-overlay--closing'],
+    keyframes: ['lyra-pop-out', 'lyra-fade-out'],
+  },
+  'components/display/display.css': {
+    classes: ['lyra-card__actions'],
+    keyframes: [],
+  },
 };
 
-// Package class-selectors (with leading dot) permitted to exist without a handoff peer.
-const ADDITIVE_CLASS_SELECTORS = new Set(ADDITIVE_EXTENSIONS.classes.map((c) => `.${c}`));
+// Package class-selectors (with leading dot) permitted to exist without a handoff peer,
+// flattened across every additive-extension file.
+const ADDITIVE_CLASS_SELECTORS = new Set(
+  Object.values(ADDITIVE_EXTENSIONS)
+    .flatMap((ext) => ext.classes)
+    .map((c) => `.${c}`),
+);
 
 /**
  * True when an EXTRA package declaration (one with no handoff counterpart in the
- * index-aligned diff) belongs to a documented additive extension — i.e. its outermost
- * enclosing block is an allowlisted @keyframes name OR a selector whose .lyra-* class
- * chain exact-matches an allowlisted class name. Exact-name match only: a future
- * un-enumerated addition (e.g. a stray .lyra-zzz rule) is NOT rooted in the allowlist
- * and still fails.
+ * index-aligned diff) belongs to a documented additive extension — i.e. its file is
+ * allowlisted AND its outermost enclosing block is an allowlisted @keyframes name OR a
+ * selector whose .lyra-* class chain exact-matches an allowlisted class name. Exact-name
+ * match only: a future un-enumerated addition (e.g. a stray .lyra-zzz rule) is NOT rooted
+ * in the allowlist and still fails.
  */
 function isAdditiveExtension(relPath, decl) {
-  if (relPath !== ADDITIVE_EXTENSIONS.file) return false;
+  const ext = ADDITIVE_EXTENSIONS[relPath];
+  if (!ext) return false;
   const root = decl.blockPath[0] || '';
   const kf = /^@keyframes\s+([a-zA-Z0-9_-]+)/.exec(root);
-  if (kf) return ADDITIVE_EXTENSIONS.keyframes.includes(kf[1]);
+  if (kf) return ext.keyframes.includes(kf[1]);
   const classTokens = [...root.matchAll(/\.(lyra-[a-zA-Z0-9_-]+)/g)].map((m) => m[1]);
-  return classTokens.some((t) => ADDITIVE_EXTENSIONS.classes.includes(t));
+  return classTokens.some((t) => ext.classes.includes(t));
 }
 
 const errors = [];

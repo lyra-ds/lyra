@@ -14,6 +14,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Done
 
+- [x] Readequação CSS-first do Card — inline `style={{display:flex;gap}}` das ações → classe `.lyra-card__actions` (styles + parity generalizado p/ additive multi-arquivo); regra documentada em `CONVENTIONS.md` p/ Toast/Dropdown dos Lotes C/D. Maestro (crítico), sem mudança visual. 2026-07-21
 - [x] Fase 4 / Lote B — 5 componentes de formulário (Textarea, Checkbox, Radio, Switch, FileUpload) → codex (`gpt-5.6-terra`, reasoning high; 1 correção do maestro: `role="img"` no `.lyra-upload__check` do FileUpload, que derrubava o axe em light/dark). Todos os gates verdes, 232 testes. 21/40 componentes. 2026-07-21
 - [x] Fase 4 / Lote A — 12 componentes estáticos → codex (`gpt-5.6-terra`, reasoning high; 1 correção do maestro: prettier no root lint), commit 11376ee, 2026-07-20
 - [x] Fase 4 — pesquisa WAI-ARIA APG (gate dos lotes C/D) → agente de research (background), relatório em `.batuta/research-apg-focus-models.md`, 2026-07-20
