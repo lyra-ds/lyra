@@ -39,6 +39,56 @@
         "default": "./dist/input.cjs"
       }
     },
+    "./textarea": {
+      "import": {
+        "types": "./dist/textarea.d.ts",
+        "default": "./dist/textarea.js"
+      },
+      "require": {
+        "types": "./dist/textarea.d.cts",
+        "default": "./dist/textarea.cjs"
+      }
+    },
+    "./checkbox": {
+      "import": {
+        "types": "./dist/checkbox.d.ts",
+        "default": "./dist/checkbox.js"
+      },
+      "require": {
+        "types": "./dist/checkbox.d.cts",
+        "default": "./dist/checkbox.cjs"
+      }
+    },
+    "./radio": {
+      "import": {
+        "types": "./dist/radio.d.ts",
+        "default": "./dist/radio.js"
+      },
+      "require": {
+        "types": "./dist/radio.d.cts",
+        "default": "./dist/radio.cjs"
+      }
+    },
+    "./switch": {
+      "import": {
+        "types": "./dist/switch.d.ts",
+        "default": "./dist/switch.js"
+      },
+      "require": {
+        "types": "./dist/switch.d.cts",
+        "default": "./dist/switch.cjs"
+      }
+    },
+    "./file-upload": {
+      "import": {
+        "types": "./dist/file-upload.d.ts",
+        "default": "./dist/file-upload.js"
+      },
+      "require": {
+        "types": "./dist/file-upload.d.cts",
+        "default": "./dist/file-upload.cjs"
+      }
+    },
     "./dialog": {
       "import": {
         "types": "./dist/dialog.d.ts",
@@ -235,6 +285,56 @@
         "react-dom"
       ],
       "limit": "400 B"
+    },
+    {
+      "name": "import { Textarea } from '@lyra-ds/react/textarea'",
+      "path": "dist/textarea.js",
+      "import": "{ Textarea }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "600 B"
+    },
+    {
+      "name": "import { Checkbox } from '@lyra-ds/react/checkbox'",
+      "path": "dist/checkbox.js",
+      "import": "{ Checkbox }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Radio } from '@lyra-ds/react/radio'",
+      "path": "dist/radio.js",
+      "import": "{ Radio }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { Switch } from '@lyra-ds/react/switch'",
+      "path": "dist/switch.js",
+      "import": "{ Switch }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { FileUpload } from '@lyra-ds/react/file-upload'",
+      "path": "dist/file-upload.js",
+      "import": "{ FileUpload }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "8 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",
