@@ -4,14 +4,14 @@ packages:
   - 'packages/*'
   - 'apps/*'
   - 'tools/*'
-# No dependency is permitted to run install/postinstall build scripts. esbuild (pulled in by
-# tsup) ships its platform binary via optionalDependencies (@esbuild/*), so its build script is
-# unnecessary — the dual-format build is verified green with scripts ignored. Keeping this empty
-# is the supply-chain default for the phase (belt-and-suspenders with --frozen-lockfile in CI).
-onlyBuiltDependencies: []
-# esbuild's ignored build is intentional (see above). pnpm 10+ exits 1 on an *unacknowledged*
-# ignored build script (ERR_PNPM_IGNORED_BUILDS), which fails `pnpm install --frozen-lockfile` in
-# CI. Listing esbuild here acknowledges the deliberate omission so install exits 0 WITHOUT running
-# any postinstall — esbuild still resolves its binary from the @esbuild/* optional dependency.
-ignoredBuiltDependencies:
-  - esbuild
+# Build-script policy. pnpm 10+ blocks dependency install/postinstall scripts by default; `allowBuilds`
+# (pnpm 10.26+, the successor to onlyBuiltDependencies/ignoredBuiltDependencies) is an explicit
+# per-package decision map. An *undeclared* ignored build makes `pnpm install --frozen-lockfile`
+# fail in CI with ERR_PNPM_IGNORED_BUILDS, so every buildable dep must get an explicit true/false.
+#
+# esbuild: false — its postinstall is deliberately NOT run. esbuild (pulled in by tsup/vite/vitest)
+# resolves its platform binary from the @esbuild/* optionalDependencies, so the build script is
+# unnecessary; the dual-format build is verified green with it ignored. Declaring it false keeps the
+# "no build scripts run" supply-chain posture while satisfying pnpm's explicit-decision requirement.
+allowBuilds:
+  esbuild: false
