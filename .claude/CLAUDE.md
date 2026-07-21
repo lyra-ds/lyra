@@ -1,4 +1,3 @@
-<!-- GSD:project-start source:PROJECT.md -->
 
 ## Project
 
@@ -21,9 +20,7 @@ Lyra DS é um design system open source, CSS-first e white-label para produtos S
 - **Licença**: MIT, com CONTRIBUTING.md e Code of Conduct desde o início.
 - **Infra**: GitHub org `lyra-ds` (criação manual pelo usuário, guiada), npm org `lyra-ds`, docs na Vercel.
 
-<!-- GSD:project-end -->
 
-<!-- GSD:stack-start source:research/STACK.md -->
 
 ## Technology Stack
 
@@ -176,48 +173,17 @@ Lyra DS é um design system open source, CSS-first e white-label para produtos S
 - https://github.com/gfazioli/next-app-fumadocs-template — proof of fumadocs-core headless with a non-Tailwind design system (Mantine). **LOW (single community source, but directly demonstrative)**
 - https://www.pkgpulse.com/guides/fumadocs-vs-nextra-v4-vs-starlight-documentation-sites-2026, https://docsio.co/blog/fumadocs, https://docsio.co/blog/starlight-docs — framework comparison context. **LOW (blog tier)**
 
-<!-- GSD:stack-end -->
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 
 ## Conventions
 
 Conventions not yet established. Will populate as patterns emerge during development.
-<!-- GSD:conventions-end -->
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
 
 ## Architecture
 
 Architecture not yet mapped. Follow existing patterns found in the codebase.
-<!-- GSD:architecture-end -->
 
-<!-- GSD:skills-start source:skills/ -->
+## Workflow
 
-## Project Skills
-
-No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, or `.codex/skills/` with a `SKILL.md` index file.
-<!-- GSD:skills-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-
-- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd-debug` for investigation and bug fixing
-- `/gsd-execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
-<!-- GSD:profile-start -->
-
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
+Este projeto é conduzido pelo Batuta (`/batuta`): roteamento de tarefas em `.batuta/routing.md`, perfil e mapa do projeto em `.batuta/profile.md`, planos das fases restantes em `.batuta/plan-*.md`, log de trabalho em `WORK.md`. O diretório `.planning/` é arquivo histórico do antigo fluxo GSD (requisitos, research e decision-logs das fases 1–3) — somente leitura.
