@@ -42,7 +42,9 @@ describe('Dropdown', () => {
         expect(container.querySelector('.lyra-menu__label')!.className).toBe('lyra-menu__label');
         expect(container.querySelector('.lyra-menu__sep')!.className).toBe('lyra-menu__sep');
         expect(errorSpy).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast')).toEqual([]);
+        expect(
+          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
+        ).toEqual([]);
       } finally {
         errorSpy.mockRestore();
       }
@@ -76,7 +78,10 @@ describe('Dropdown', () => {
   it('selects commands, restores trigger focus, and lets Tab leave the menu', async () => {
     const onSelect = vi.fn();
     const { container } = await render(
-      <><Dropdown trigger="Actions" items={[{ id: 'edit', label: 'Edit', onSelect }]} /><button type="button">After</button></>,
+      <>
+        <Dropdown trigger="Actions" items={[{ id: 'edit', label: 'Edit', onSelect }]} />
+        <button type="button">After</button>
+      </>,
     );
     const trigger = container.querySelector<HTMLElement>('[role=button]')!;
     await userEvent.click(trigger);

@@ -1,2 +1,11 @@
-import { describe, expect, it } from 'vitest'; import { createElement } from 'react'; import { renderToString } from 'react-dom/server'; import { Stepper } from './index';
-describe('Stepper — SSR', () => { it('renders completed and current states', () => { const html = renderToString(createElement(Stepper, { steps: ['One', 'Two'], active: 1 })); expect(html).toContain('lyra-step--done'); expect(html).toContain('aria-current="step"'); }); });
+import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToString } from 'react-dom/server';
+import { Stepper } from './index';
+describe('Stepper — SSR', () => {
+  it('renders completed and current states', () => {
+    const html = renderToString(createElement(Stepper, { steps: ['One', 'Two'], active: 1 }));
+    expect(html).toContain('lyra-step--done');
+    expect(html).toContain('aria-current="step"');
+  });
+});

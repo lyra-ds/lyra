@@ -37,7 +37,9 @@ export const Select = /*#__PURE__*/ forwardRef<HTMLSelectElement, SelectProps>(f
   ref,
 ) {
   const isControlled = value !== undefined;
-  const [selectValue, setSelectValue] = useControllableState<SelectHTMLAttributes<HTMLSelectElement>['value']>({
+  const [selectValue, setSelectValue] = useControllableState<
+    SelectHTMLAttributes<HTMLSelectElement>['value']
+  >({
     value,
     defaultValue,
   });

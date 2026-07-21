@@ -23,52 +23,51 @@ export interface AccordionProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /** An uncontrolled disclosure list whose headers remain in the normal Tab order. */
-export const Accordion = /*#__PURE__*/ forwardRef<HTMLDivElement, AccordionProps>(function Accordion(
-  { items, defaultOpen, multiple = false, id, className, ...rest },
-  ref,
-) {
-  const [openItems, setOpenItems] = useState<Set<string>>(
-    () => new Set(defaultOpen === undefined ? [] : [defaultOpen]),
-  );
-  const generatedId = useId();
-  const accordionId = id ?? generatedId;
+export const Accordion = /*#__PURE__*/ forwardRef<HTMLDivElement, AccordionProps>(
+  function Accordion({ items, defaultOpen, multiple = false, id, className, ...rest }, ref) {
+    const [openItems, setOpenItems] = useState<Set<string>>(
+      () => new Set(defaultOpen === undefined ? [] : [defaultOpen]),
+    );
+    const generatedId = useId();
+    const accordionId = id ?? generatedId;
 
-  const toggle = (itemId: string): void => {
-    setOpenItems((previous) => {
-      const next = new Set(multiple ? previous : []);
-      if (previous.has(itemId)) next.delete(itemId);
-      else next.add(itemId);
-      return next;
-    });
-  };
+    const toggle = (itemId: string): void => {
+      setOpenItems((previous) => {
+        const next = new Set(multiple ? previous : []);
+        if (previous.has(itemId)) next.delete(itemId);
+        else next.add(itemId);
+        return next;
+      });
+    };
 
-  return (
-    <div {...rest} ref={ref} id={accordionId} className={cx('lyra-accordion', className)}>
-      {items.map((item, index) => {
-        const open = openItems.has(item.id);
-        const triggerId = `${accordionId}-trigger-${index}`;
-        const panelId = `${accordionId}-panel-${index}`;
-        return (
-          <div key={item.id} className={cx('lyra-acc__item', open && 'lyra-acc__item--open')}>
-            <button
-              id={triggerId}
-              type="button"
-              className="lyra-acc__trigger"
-              aria-expanded={open}
-              aria-controls={panelId}
-              onClick={() => toggle(item.id)}
-            >
-              {item.title}
-              <span className="lyra-acc__chevron" aria-hidden="true" />
-            </button>
-            {open && (
-              <div id={panelId} className="lyra-acc__panel" aria-labelledby={triggerId}>
-                {item.content}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-});
+    return (
+      <div {...rest} ref={ref} id={accordionId} className={cx('lyra-accordion', className)}>
+        {items.map((item, index) => {
+          const open = openItems.has(item.id);
+          const triggerId = `${accordionId}-trigger-${index}`;
+          const panelId = `${accordionId}-panel-${index}`;
+          return (
+            <div key={item.id} className={cx('lyra-acc__item', open && 'lyra-acc__item--open')}>
+              <button
+                id={triggerId}
+                type="button"
+                className="lyra-acc__trigger"
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => toggle(item.id)}
+              >
+                {item.title}
+                <span className="lyra-acc__chevron" aria-hidden="true" />
+              </button>
+              {open && (
+                <div id={panelId} className="lyra-acc__panel" aria-labelledby={triggerId}>
+                  {item.content}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  },
+);

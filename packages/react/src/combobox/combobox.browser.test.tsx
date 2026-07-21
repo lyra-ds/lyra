@@ -30,15 +30,25 @@ describe('Combobox', () => {
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       try {
         const { container } = await render(
-          <Combobox label="Country" hint="Required" options={options} defaultOpen defaultValue="br" />,
+          <Combobox
+            label="Country"
+            hint="Required"
+            options={options}
+            defaultOpen
+            defaultValue="br"
+          />,
         );
         expect(container.querySelector('.lyra-field')!.className).toBe('lyra-field');
         expect(container.querySelector('.lyra-combobox')!.className).toBe('lyra-combobox');
-        expect(container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!.className).toBe(
-          'lyra-input lyra-combobox__trigger',
+        expect(
+          container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!.className,
+        ).toBe('lyra-input lyra-combobox__trigger');
+        expect(container.querySelector('.lyra-combobox__pop')!.className).toBe(
+          'lyra-combobox__pop',
         );
-        expect(container.querySelector('.lyra-combobox__pop')!.className).toBe('lyra-combobox__pop');
-        expect(container.querySelector('.lyra-combobox__search')!.className).toBe('lyra-combobox__search');
+        expect(container.querySelector('.lyra-combobox__search')!.className).toBe(
+          'lyra-combobox__search',
+        );
         expect(container.querySelector('[role=listbox]')!.className).toBe('lyra-combobox__list');
         expect(container.querySelector('[role=option]')!.className).toBe(
           'lyra-combobox__option lyra-combobox__option--active',
@@ -50,7 +60,9 @@ describe('Combobox', () => {
           'lyra-combobox__option-hint',
         );
         expect(errorSpy).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast')).toEqual([]);
+        expect(
+          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
+        ).toEqual([]);
       } finally {
         errorSpy.mockRestore();
       }
@@ -59,12 +71,16 @@ describe('Combobox', () => {
 
   it('maintains aria-activedescendant while filtering and navigating, then picks an uncontrolled value', async () => {
     const onChange = vi.fn();
-    const { container } = await render(<Combobox label="Country" options={options} onChange={onChange} />);
+    const { container } = await render(
+      <Combobox label="Country" options={options} onChange={onChange} />,
+    );
     const trigger = container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!;
     await userEvent.click(trigger);
     const search = container.querySelector<HTMLInputElement>('[role=combobox]')!;
     expect(document.activeElement).toBe(search);
-    expect(search.getAttribute('aria-activedescendant')).toBe(container.querySelectorAll('[role=option]')[0].id);
+    expect(search.getAttribute('aria-activedescendant')).toBe(
+      container.querySelectorAll('[role=option]')[0].id,
+    );
     await userEvent.fill(search, 'j');
     const japan = container.querySelector<HTMLButtonElement>('[role=option]')!;
     expect(search.getAttribute('aria-activedescendant')).toBe(japan.id);
@@ -80,7 +96,14 @@ describe('Combobox', () => {
   it('clamps arrow navigation, restores the trigger on Escape, and supports controlled values', async () => {
     function Harness(): React.JSX.Element {
       const [value, setValue] = useState('br');
-      return <Combobox label="Country" options={options} value={value} onChange={(next) => setValue(next)} />;
+      return (
+        <Combobox
+          label="Country"
+          options={options}
+          value={value}
+          onChange={(next) => setValue(next)}
+        />
+      );
     }
     const { container } = await render(<Harness />);
     const trigger = container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!;
@@ -105,6 +128,8 @@ describe('Combobox', () => {
     const search = container.querySelector<HTMLInputElement>('[role=combobox]')!;
     await userEvent.fill(search, 'not-found');
     expect(search.hasAttribute('aria-activedescendant')).toBe(false);
-    expect(container.querySelector('.lyra-combobox__empty')!.className).toBe('lyra-combobox__empty');
+    expect(container.querySelector('.lyra-combobox__empty')!.className).toBe(
+      'lyra-combobox__empty',
+    );
   });
 });

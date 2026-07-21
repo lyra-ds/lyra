@@ -24,57 +24,56 @@ function visiblePages(page: number, total: number): Array<number | '…'> {
 }
 
 /** Numeric page navigation. Each enabled page button remains in the normal Tab order. */
-export const Pagination = /*#__PURE__*/ forwardRef<HTMLElement, PaginationProps>(function Pagination(
-  { page, total, onChange, className, 'aria-label': ariaLabel, ...rest },
-  ref,
-) {
-  const goTo = (nextPage: number): void => {
-    if (nextPage >= 1 && nextPage <= total) onChange?.(nextPage);
-  };
-  const pages = visiblePages(page, total);
+export const Pagination = /*#__PURE__*/ forwardRef<HTMLElement, PaginationProps>(
+  function Pagination({ page, total, onChange, className, 'aria-label': ariaLabel, ...rest }, ref) {
+    const goTo = (nextPage: number): void => {
+      if (nextPage >= 1 && nextPage <= total) onChange?.(nextPage);
+    };
+    const pages = visiblePages(page, total);
 
-  return (
-    <nav
-      {...rest}
-      ref={ref}
-      className={cx('lyra-pagination', className)}
-      aria-label={ariaLabel ?? 'Pagination'}
-    >
-      <button
-        type="button"
-        className="lyra-page"
-        disabled={page <= 1}
-        onClick={() => goTo(page - 1)}
-        aria-label="Previous page"
+    return (
+      <nav
+        {...rest}
+        ref={ref}
+        className={cx('lyra-pagination', className)}
+        aria-label={ariaLabel ?? 'Pagination'}
       >
-        ‹
-      </button>
-      {pages.map((item, index) =>
-        item === '…' ? (
-          <span key={`gap-${index}`} className="lyra-page lyra-page--gap" aria-hidden="true">
-            …
-          </span>
-        ) : (
-          <button
-            key={item}
-            type="button"
-            className={cx('lyra-page', item === page && 'lyra-page--active')}
-            aria-current={item === page ? 'page' : undefined}
-            onClick={() => goTo(item)}
-          >
-            {item}
-          </button>
-        ),
-      )}
-      <button
-        type="button"
-        className="lyra-page"
-        disabled={page >= total}
-        onClick={() => goTo(page + 1)}
-        aria-label="Next page"
-      >
-        ›
-      </button>
-    </nav>
-  );
-});
+        <button
+          type="button"
+          className="lyra-page"
+          disabled={page <= 1}
+          onClick={() => goTo(page - 1)}
+          aria-label="Previous page"
+        >
+          ‹
+        </button>
+        {pages.map((item, index) =>
+          item === '…' ? (
+            <span key={`gap-${index}`} className="lyra-page lyra-page--gap" aria-hidden="true">
+              …
+            </span>
+          ) : (
+            <button
+              key={item}
+              type="button"
+              className={cx('lyra-page', item === page && 'lyra-page--active')}
+              aria-current={item === page ? 'page' : undefined}
+              onClick={() => goTo(item)}
+            >
+              {item}
+            </button>
+          ),
+        )}
+        <button
+          type="button"
+          className="lyra-page"
+          disabled={page >= total}
+          onClick={() => goTo(page + 1)}
+          aria-label="Next page"
+        >
+          ›
+        </button>
+      </nav>
+    );
+  },
+);

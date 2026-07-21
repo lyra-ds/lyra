@@ -38,7 +38,10 @@ export const Tabs = /*#__PURE__*/ forwardRef<HTMLDivElement, TabsProps>(function
 ) {
   const generatedId = useId();
   const tabsId = id ?? generatedId;
-  const activeIndex = Math.max(0, items.findIndex((item) => item.id === active));
+  const activeIndex = Math.max(
+    0,
+    items.findIndex((item) => item.id === active),
+  );
 
   const tabId = (index: number): string => `${tabsId}-tab-${index}`;
   const panelId = (index: number): string => `${tabsId}-panel-${index}`;
@@ -61,32 +64,32 @@ export const Tabs = /*#__PURE__*/ forwardRef<HTMLDivElement, TabsProps>(function
   return (
     <Fragment>
       <div
-      {...rest}
-      ref={ref}
-      id={tabsId}
-      className={cx('lyra-tabs', variant === 'pills' && 'lyra-tabs--pills', className)}
-      role="tablist"
-    >
+        {...rest}
+        ref={ref}
+        id={tabsId}
+        className={cx('lyra-tabs', variant === 'pills' && 'lyra-tabs--pills', className)}
+        role="tablist"
+      >
         {items.map((item, index) => {
-        const selected = index === activeIndex;
-        return (
-          <button
-            key={item.id}
-            id={tabId(index)}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            aria-controls={panelId(index)}
-            tabIndex={selected ? 0 : -1}
-            className={cx('lyra-tab', selected && 'lyra-tab--active')}
-            onClick={() => onChange?.(item.id)}
-            onKeyDown={(event) => handleKeyDown(event, index)}
-          >
-            {item.icon}
-            {item.label}
-            {item.count != null && <span className="lyra-tab__count">{item.count}</span>}
-          </button>
-        );
+          const selected = index === activeIndex;
+          return (
+            <button
+              key={item.id}
+              id={tabId(index)}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-controls={panelId(index)}
+              tabIndex={selected ? 0 : -1}
+              className={cx('lyra-tab', selected && 'lyra-tab--active')}
+              onClick={() => onChange?.(item.id)}
+              onKeyDown={(event) => handleKeyDown(event, index)}
+            >
+              {item.icon}
+              {item.label}
+              {item.count != null && <span className="lyra-tab__count">{item.count}</span>}
+            </button>
+          );
         })}
       </div>
       {items.map((item, index) => (

@@ -14,8 +14,8 @@ confirmados pelo usuário. Nota: `opencode` vive em `~/.opencode/bin` — se
 
 ## Support lanes
 
-| Role     | Examples                                     | Executor                                                                   | Cost |
-| -------- | -------------------------------------------- | -------------------------------------------------------------------------- | ---- |
+| Role     | Examples                                     | Executor                                                              | Cost        |
+| -------- | -------------------------------------------- | --------------------------------------------------------------------- | ----------- |
 | Research | map sweep, contexto de brief, "onde vive X?" | opencode + `opencode/deepseek-v4-flash` (read-only por brief + guard) | cents (API) |
 
 Nota (2026-07-21): lane de Research migrada de `deepseek-v4-flash-free` para a

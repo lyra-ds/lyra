@@ -40,16 +40,7 @@ export interface DropdownProps extends HTMLAttributes<HTMLSpanElement> {
  * and is the focus-restoration target for every menu-owned close path.
  */
 export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>(function Dropdown(
-  {
-    trigger,
-    items,
-    align = 'start',
-    defaultOpen = false,
-    id,
-    className,
-    onKeyDown,
-    ...rest
-  },
+  { trigger, items, align = 'start', defaultOpen = false, id, className, onKeyDown, ...rest },
   ref,
 ) {
   const generatedId = useId();
@@ -175,13 +166,22 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
         {trigger}
       </span>
       {open && (
-        <div ref={menuRef} id={menuId} className={cx('lyra-menu', `lyra-menu--${align}`)} role="menu">
+        <div
+          ref={menuRef}
+          id={menuId}
+          className={cx('lyra-menu', `lyra-menu--${align}`)}
+          role="menu"
+        >
           {items.map((item, index) => {
             if ('type' in item && item.type === 'separator') {
               return <hr key={`separator-${index}`} className="lyra-menu__sep" />;
             }
             if ('type' in item && item.type === 'label') {
-              return <span key={`label-${index}`} className="lyra-menu__label">{item.label}</span>;
+              return (
+                <span key={`label-${index}`} className="lyra-menu__label">
+                  {item.label}
+                </span>
+              );
             }
             return (
               <button

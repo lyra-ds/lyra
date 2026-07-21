@@ -1,2 +1,13 @@
-import { describe, expect, it } from 'vitest'; import { createElement } from 'react'; import { renderToString } from 'react-dom/server'; import { Tabs } from './index';
-describe('Tabs — SSR', () => { it('renders tab and panel wiring', () => { const html = renderToString(createElement(Tabs, { items: [{ id: 'one', label: 'One' }], active: 'one' })); expect(html).toContain('lyra-tabs'); expect(html).toContain('role="tabpanel"'); }); });
+import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToString } from 'react-dom/server';
+import { Tabs } from './index';
+describe('Tabs — SSR', () => {
+  it('renders tab and panel wiring', () => {
+    const html = renderToString(
+      createElement(Tabs, { items: [{ id: 'one', label: 'One' }], active: 'one' }),
+    );
+    expect(html).toContain('lyra-tabs');
+    expect(html).toContain('role="tabpanel"');
+  });
+});

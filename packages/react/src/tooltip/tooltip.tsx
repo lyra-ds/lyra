@@ -46,33 +46,34 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
     : undefined;
   const target = child
     ? cloneElement(child, {
-        'aria-describedby': [child.props['aria-describedby'], tooltipId]
-          .filter(Boolean)
-          .join(' '),
+        'aria-describedby': [child.props['aria-describedby'], tooltipId].filter(Boolean).join(' '),
         onFocus: (event: FocusEvent<HTMLElement>) => {
-          const childHandler = child.props.onFocus as ((event: FocusEvent<HTMLElement>) => void) | undefined;
+          const childHandler = child.props.onFocus as
+            ((event: FocusEvent<HTMLElement>) => void) | undefined;
           childHandler?.(event);
           show();
         },
         onBlur: (event: FocusEvent<HTMLElement>) => {
-          const childHandler = child.props.onBlur as ((event: FocusEvent<HTMLElement>) => void) | undefined;
+          const childHandler = child.props.onBlur as
+            ((event: FocusEvent<HTMLElement>) => void) | undefined;
           childHandler?.(event);
           hide();
         },
         onMouseEnter: (event: MouseEvent<HTMLElement>) => {
-          const childHandler = child.props.onMouseEnter as ((event: MouseEvent<HTMLElement>) => void) | undefined;
+          const childHandler = child.props.onMouseEnter as
+            ((event: MouseEvent<HTMLElement>) => void) | undefined;
           childHandler?.(event);
           show();
         },
         onMouseLeave: (event: MouseEvent<HTMLElement>) => {
-          const childHandler = child.props.onMouseLeave as ((event: MouseEvent<HTMLElement>) => void) | undefined;
+          const childHandler = child.props.onMouseLeave as
+            ((event: MouseEvent<HTMLElement>) => void) | undefined;
           childHandler?.(event);
           hide();
         },
         onKeyDown: (event: ReactKeyboardEvent<HTMLElement>) => {
           const childHandler = child.props.onKeyDown as
-            | ((event: ReactKeyboardEvent<HTMLElement>) => void)
-            | undefined;
+            ((event: ReactKeyboardEvent<HTMLElement>) => void) | undefined;
           childHandler?.(event);
           if (!event.defaultPrevented) handleKeyDown(event);
         },
