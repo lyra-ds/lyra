@@ -57,3 +57,16 @@ export { EmptyState } from './empty-state';
 export type { EmptyStateProps } from './empty-state';
 export { Breadcrumb } from './breadcrumb';
 export type { BreadcrumbItem, BreadcrumbProps } from './breadcrumb';
+
+export { Tabs } from './tabs';
+export type { TabItem, TabsProps } from './tabs';
+export { Accordion } from './accordion';
+export type { AccordionItem, AccordionProps } from './accordion';
+export { Stepper } from './stepper';
+export type { StepperProps } from './stepper';
+export { Pagination } from './pagination';
+export type { PaginationProps } from './pagination';
+export { Tooltip } from './tooltip';
+export type { TooltipProps } from './tooltip';
+export { Select } from './select';
+export type { SelectProps } from './select';

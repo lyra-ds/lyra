@@ -1,0 +1,2 @@
+import { describe, expect, it } from 'vitest'; import { createElement } from 'react'; import { renderToString } from 'react-dom/server'; import { Select } from './index';
+describe('Select — SSR', () => { it('renders label and native select', () => { const html = renderToString(createElement(Select, { label: 'Country', children: createElement('option', { value: 'br' }, 'Brazil') })); expect(html).toContain('lyra-select-wrap'); expect(html).toContain('<select'); }); });

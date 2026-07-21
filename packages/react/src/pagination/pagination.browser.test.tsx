@@ -1,0 +1,9 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render } from 'vitest-browser-react';
+import axe from 'axe-core';
+import '@lyra-ds/styles/styles.css';
+import { Pagination } from './index';
+const themes = ['light', 'dark'] as const;
+function setTheme(theme: (typeof themes)[number]): void { if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); }
+afterEach(async () => { await cleanup(); setTheme('light'); });
+describe('Pagination', () => { for (const theme of themes) it(`renders normal page buttons and is axe clean in ${theme}`, async () => { setTheme(theme); const onChange = vi.fn(); const spy = vi.spyOn(console, 'error').mockImplementation(() => {}); try { const { container } = await render(<Pagination page={5} total={10} onChange={onChange} />); expect(container.querySelector('nav')!.className).toBe('lyra-pagination'); expect(container.querySelector('.lyra-page--active')!.className).toBe('lyra-page lyra-page--active'); expect(container.querySelector('.lyra-page--gap')!.className).toBe('lyra-page lyra-page--gap'); const buttons = container.querySelectorAll<HTMLButtonElement>('button'); expect([...buttons].every((button) => button.tabIndex === 0 || button.disabled)).toBe(true); buttons[2].click(); expect(onChange).toHaveBeenCalledWith(4); expect(spy).not.toHaveBeenCalled(); expect((await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast')).toEqual([]); } finally { spy.mockRestore(); } }); });

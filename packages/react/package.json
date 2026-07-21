@@ -229,6 +229,66 @@
         "default": "./dist/breadcrumb.cjs"
       }
     },
+    "./tabs": {
+      "import": {
+        "types": "./dist/tabs.d.ts",
+        "default": "./dist/tabs.js"
+      },
+      "require": {
+        "types": "./dist/tabs.d.cts",
+        "default": "./dist/tabs.cjs"
+      }
+    },
+    "./accordion": {
+      "import": {
+        "types": "./dist/accordion.d.ts",
+        "default": "./dist/accordion.js"
+      },
+      "require": {
+        "types": "./dist/accordion.d.cts",
+        "default": "./dist/accordion.cjs"
+      }
+    },
+    "./stepper": {
+      "import": {
+        "types": "./dist/stepper.d.ts",
+        "default": "./dist/stepper.js"
+      },
+      "require": {
+        "types": "./dist/stepper.d.cts",
+        "default": "./dist/stepper.cjs"
+      }
+    },
+    "./pagination": {
+      "import": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
+      },
+      "require": {
+        "types": "./dist/pagination.d.cts",
+        "default": "./dist/pagination.cjs"
+      }
+    },
+    "./tooltip": {
+      "import": {
+        "types": "./dist/tooltip.d.ts",
+        "default": "./dist/tooltip.js"
+      },
+      "require": {
+        "types": "./dist/tooltip.d.cts",
+        "default": "./dist/tooltip.cjs"
+      }
+    },
+    "./select": {
+      "import": {
+        "types": "./dist/select.d.ts",
+        "default": "./dist/select.js"
+      },
+      "require": {
+        "types": "./dist/select.d.cts",
+        "default": "./dist/select.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -445,6 +505,66 @@
         "react-dom"
       ],
       "limit": "500 B"
+    },
+    {
+      "name": "import { Tabs } from '@lyra-ds/react/tabs'",
+      "path": "dist/tabs.js",
+      "import": "{ Tabs }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1.5 kB"
+    },
+    {
+      "name": "import { Accordion } from '@lyra-ds/react/accordion'",
+      "path": "dist/accordion.js",
+      "import": "{ Accordion }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { Stepper } from '@lyra-ds/react/stepper'",
+      "path": "dist/stepper.js",
+      "import": "{ Stepper }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { Pagination } from '@lyra-ds/react/pagination'",
+      "path": "dist/pagination.js",
+      "import": "{ Pagination }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { Tooltip } from '@lyra-ds/react/tooltip'",
+      "path": "dist/tooltip.js",
+      "import": "{ Tooltip }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1.5 kB"
+    },
+    {
+      "name": "import { Select } from '@lyra-ds/react/select'",
+      "path": "dist/select.js",
+      "import": "{ Select }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1.5 kB"
     }
   ]
 }
