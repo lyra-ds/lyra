@@ -12,6 +12,21 @@ export type { ButtonProps } from './button';
 export { Input } from './input';
 export type { InputProps } from './input';
 
+export { Textarea } from './textarea';
+export type { TextareaProps } from './textarea';
+
+export { Checkbox } from './checkbox';
+export type { CheckboxProps } from './checkbox';
+
+export { Radio } from './radio';
+export type { RadioProps } from './radio';
+
+export { Switch } from './switch';
+export type { SwitchProps } from './switch';
+
+export { FileUpload } from './file-upload';
+export type { FileUploadItem, FileUploadProps } from './file-upload';
+
 export { Dialog } from './dialog';
 export type { DialogProps } from './dialog';
 
