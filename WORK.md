@@ -5,6 +5,9 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] Fase 6 / 6b — 40 páginas de componente bilíngues seguindo o padrão validado no 6a; showcase p/ impeccable
+- [ ] Fase 6 / 6c — guias (getting-started, white-label, HTML-puro, compat-shadcn) + landing adaptada de `handoff/ui_kits/website`; deploy Cloudflare Pages (manual)
+
 ## Next
 
 - [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`) — rodar impeccable numa interface/showcase com todos os componentes aqui; consumir `tools/docgen/output/props.json` (prop tables) e copiar `llms.txt` para `apps/docs/public/`
@@ -12,6 +15,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Done
 
+- [x] **Fase 6 / 6a — Docs site scaffold + spike de-risk** — `apps/docs` Next.js 16.2.10 + fumadocs-core headless, i18n EN/pt-BR por `generateStaticParams` (sem middleware), static export p/ Cloudflare Pages, estilizado 100% Lyra. Página do Dialog prova o padrão: preview vivo + prop table gerada do `props.json` + código copiável. `next build` verde: `out/` com os 4 caminhos (en, pt-BR, en/dialog, pt-BR/dialog) + `/llms.txt`. Stack Next+fumadocs CONFIRMADA pelo usuário; deploy mudado p/ Cloudflare. → codex (`gpt-5.6-terra`, reasoning high) escreveu o scaffold; maestro fez install+build+verificação (sandbox do codex sem rede) e corrigиu 3 itens: path do import props.json (`../` a mais), tipo do mapa MDX (`ComponentType<any>`), e allowBuilds (@parcel/watcher, @swc/core, sharp → false). 2026-07-23
 - [x] **Fase 5 — Docgen & llms.txt** — `tools/docgen/generate.mjs` (zero-dep, TS compiler API) extrai a API dos 40 componentes dos `dist/*.d.ts` e emite `tools/docgen/output/{llms.txt,props.json}` (local neutro; Fase 6 copia p/ apps/docs). Header (regras+tokens) verbatim do handoff; API gerada da fonte (JSDoc inglês). Gate de drift `--check` no job build do CI (padrão do icon-registry). → codex (`gpt-5.6-terra`, reasoning high, foreground). Sem changeset (tooling). Gates verdes. 2026-07-23 à fidelidade do handoff — wrapper inteiro virou `<label>` (linha toda clicável, associação implícita), removidos `useId`/`htmlFor`; `id` do consumidor flui via `...rest`. Testes de clique (texto + wrapper) adicionados. → codex (`gpt-5.6-terra`, reasoning high, foreground). 332 testes, gates verdes. Resolve a deviação anotada do Lote B. 2026-07-23
 
 - [x] **Fase 4 COMPLETA (40/40 componentes)** — todos os 40 componentes do handoff convertidos para `@lyra-ds/react` (React acessível + SSR-safe, classes `.lyra-*` verbatim). 324 testes. Lotes A–D mergeados/prontos. 2026-07-23

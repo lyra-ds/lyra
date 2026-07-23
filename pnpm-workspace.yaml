@@ -13,5 +13,12 @@ packages:
 # resolves its platform binary from the @esbuild/* optionalDependencies, so the build script is
 # unnecessary; the dual-format build is verified green with it ignored. Declaring it false keeps the
 # "no build scripts run" supply-chain posture while satisfying pnpm's explicit-decision requirement.
+# @parcel/watcher, @swc/core, sharp (pulled in by next/fumadocs in apps/docs): each resolves its
+# native binary from platform-specific optionalDependencies, so the install/postinstall build
+# script is unnecessary — same posture as esbuild. Verified: `next build` (static export) is green
+# with all three ignored. Flip to true only if a future platform lacks a prebuilt binary.
 allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
   esbuild: false
+  sharp: false

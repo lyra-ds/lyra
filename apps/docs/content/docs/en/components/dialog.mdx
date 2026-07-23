@@ -1,0 +1,38 @@
+---
+title: Dialog
+description: A controlled modal dialog with focus management and accessible close paths.
+---
+
+# Dialog
+
+Dialog is a controlled modal with portal rendering, focus trapping, scroll locking, and accessible
+escape routes built in.
+
+## Live preview
+
+<DialogPreview />
+
+## Props
+
+<PropTable name="Dialog" />
+
+## Usage
+
+<CodeBlock>{`'use client';
+
+import { Button, Dialog } from '@lyra-ds/react';
+import { useState } from 'react';
+
+export function Example() {
+  const [open, setOpen] = useState(false);
+
+return (
+
+<>
+<Button onClick={() => setOpen(true)}>Open dialog</Button>
+<Dialog open={open} onClose={() => setOpen(false)} title="Delete project">
+This action cannot be undone.
+</Dialog>
+</>
+);
+}`}</CodeBlock>
