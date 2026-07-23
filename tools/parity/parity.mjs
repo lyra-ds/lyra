@@ -115,6 +115,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-dialog--closing',
       'lyra-dialog-overlay--closing',
       'lyra-toast__icon',
+      'lyra-drawer__close',
     ],
     keyframes: ['lyra-pop-out', 'lyra-fade-out'],
   },

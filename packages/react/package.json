@@ -99,6 +99,36 @@
         "default": "./dist/dialog.cjs"
       }
     },
+    "./drawer": {
+      "import": {
+        "types": "./dist/drawer.d.ts",
+        "default": "./dist/drawer.js"
+      },
+      "require": {
+        "types": "./dist/drawer.d.cts",
+        "default": "./dist/drawer.cjs"
+      }
+    },
+    "./create-workspace-dialog": {
+      "import": {
+        "types": "./dist/create-workspace-dialog.d.ts",
+        "default": "./dist/create-workspace-dialog.js"
+      },
+      "require": {
+        "types": "./dist/create-workspace-dialog.d.cts",
+        "default": "./dist/create-workspace-dialog.cjs"
+      }
+    },
+    "./workspace-switcher": {
+      "import": {
+        "types": "./dist/workspace-switcher.d.ts",
+        "default": "./dist/workspace-switcher.js"
+      },
+      "require": {
+        "types": "./dist/workspace-switcher.d.cts",
+        "default": "./dist/workspace-switcher.cjs"
+      }
+    },
     "./icon": {
       "import": {
         "types": "./dist/icon.d.ts",
@@ -376,6 +406,36 @@
     "access": "public"
   },
   "size-limit": [
+    {
+      "name": "import { Drawer } from '@lyra-ds/react/drawer'",
+      "path": "dist/drawer.js",
+      "import": "{ Drawer }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { CreateWorkspaceDialog } from '@lyra-ds/react/create-workspace-dialog'",
+      "path": "dist/create-workspace-dialog.js",
+      "import": "{ CreateWorkspaceDialog }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "3 kB"
+    },
+    {
+      "name": "WorkspaceSwitcher (curated icon registry)",
+      "path": "dist/workspace-switcher.js",
+      "import": "{ WorkspaceSwitcher }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "8 kB"
+    },
     {
       "name": "import { Button } from '@lyra-ds/react/button'",
       "path": "dist/button.js",

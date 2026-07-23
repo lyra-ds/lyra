@@ -30,6 +30,15 @@ export type { FileUploadItem, FileUploadProps } from './file-upload';
 export { Dialog } from './dialog';
 export type { DialogProps } from './dialog';
 
+export { Drawer } from './drawer';
+export type { DrawerProps } from './drawer';
+
+export { CreateWorkspaceDialog } from './create-workspace-dialog';
+export type { CreateWorkspaceDialogProps } from './create-workspace-dialog';
+
+export { WorkspaceSwitcher } from './workspace-switcher';
+export type { Workspace, WorkspaceSwitcherProps } from './workspace-switcher';
+
 export { Icon } from './icon';
 export type { IconProps, IconName } from './icon';
 
