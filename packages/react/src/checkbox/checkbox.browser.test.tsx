@@ -23,6 +23,9 @@ describe('Checkbox', () => {
       try {
         const { container } = await render(<Checkbox label="Accept terms" />);
         expect(container.querySelector('input')!.className).toBe('lyra-checkbox');
+        const wrapper = container.querySelector('label')!;
+        expect(wrapper.className).toBe('lyra-check-row');
+        expect(wrapper.querySelector('span')!.textContent).toBe('Accept terms');
         expect(errorSpy).not.toHaveBeenCalled();
         expect((await axe.run(container)).violations).toEqual([]);
       } finally {
@@ -39,5 +42,24 @@ describe('Checkbox', () => {
     await userEvent.keyboard(' ');
     expect(input.checked).toBe(true);
     expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it('renders a bare input without a label and forwards an id', async () => {
+    const screen = await render(<Checkbox id="terms" />);
+    const input = screen.container.firstElementChild! as HTMLInputElement;
+
+    expect(input.tagName).toBe('INPUT');
+    expect(input.id).toBe('terms');
+  });
+
+  it.each(['label text', 'wrapper'] as const)('toggles when its %s is clicked', async (target) => {
+    const screen = await render(<Checkbox label="Accept terms" />);
+    const input = screen.container.querySelector('input')! as HTMLInputElement;
+    const wrapper = screen.container.querySelector('label')!;
+    const clickTarget = target === 'label text' ? wrapper.querySelector('span')! : wrapper;
+
+    await userEvent.click(clickTarget);
+
+    expect(input.checked).toBe(true);
   });
 });

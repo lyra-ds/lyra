@@ -22,9 +22,13 @@ describe('Switch', () => {
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       try {
         const { container } = await render(<Switch label="Email alerts" />);
-        expect(container.querySelector('.lyra-switch')!.className).toBe('lyra-switch');
+        const wrapper = container.querySelector('label.lyra-switch')!;
+        expect(wrapper.className).toBe('lyra-switch');
         expect(container.querySelector('.lyra-switch__track')!.className).toBe(
           'lyra-switch__track',
+        );
+        expect(wrapper.querySelector('span:not(.lyra-switch__track)')!.textContent).toBe(
+          'Email alerts',
         );
         expect(errorSpy).not.toHaveBeenCalled();
         expect((await axe.run(container)).violations).toEqual([]);
@@ -42,5 +46,17 @@ describe('Switch', () => {
     await userEvent.keyboard(' ');
     expect(input.checked).toBe(true);
     expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it.each(['label text', 'wrapper'] as const)('toggles when its %s is clicked', async (target) => {
+    const screen = await render(<Switch label="Email alerts" />);
+    const input = screen.container.querySelector('input')! as HTMLInputElement;
+    const wrapper = screen.container.querySelector('label.lyra-switch')!;
+    const clickTarget =
+      target === 'label text' ? wrapper.querySelector('span:not(.lyra-switch__track)')! : wrapper;
+
+    await userEvent.click(clickTarget);
+
+    expect(input.checked).toBe(true);
   });
 });
