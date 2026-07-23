@@ -8,5 +8,5 @@ export default async function DocsIndex({ params }: { params: Promise<{ lang: st
   if (!isLocale(lang)) return null;
   setRequestLocale(lang);
 
-  return <DocumentContent locale={lang} page="index" />;
+  return <DocumentContent locale={lang} />;
 }

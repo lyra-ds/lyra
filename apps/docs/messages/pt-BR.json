@@ -5,5 +5,13 @@
   "openDialog": "Abrir diálogo",
   "close": "Fechar",
   "copy": "Copiar código",
-  "copied": "Copiado"
+  "copied": "Copiado",
+  "components": "Componentes",
+  "componentsIntro": "Todos os componentes documentados, ao vivo e interativos.",
+  "groupDisplay": "Exibição",
+  "groupForm": "Formulário",
+  "groupNavigation": "Navegação",
+  "groupFeedback": "Feedback",
+  "groupOverlay": "Sobreposição",
+  "groupLayout": "Layout"
 }

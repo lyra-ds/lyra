@@ -20,12 +20,17 @@ export async function SiteChrome({ locale }: { locale: Locale }) {
         padding: 'var(--space-3) var(--space-6)',
       }}
     >
-      <Link
-        href={`/${locale}`}
-        style={{ color: 'var(--text-primary)', fontWeight: 'var(--weight-bold)' }}
-      >
-        {t('siteName')}
-      </Link>
+      <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--space-4)' }}>
+        <Link
+          href={`/${locale}`}
+          style={{ color: 'var(--text-primary)', fontWeight: 'var(--weight-bold)' }}
+        >
+          {t('siteName')}
+        </Link>
+        <Link href={`/${locale}/components`} style={{ color: 'var(--text-muted)' }}>
+          {t('components')}
+        </Link>
+      </div>
       <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--space-1)' }}>
         <LocaleSwitcher locale={locale} label={t('language')} />
         <ThemeToggle label={t('theme')} />
