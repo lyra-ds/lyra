@@ -174,6 +174,10 @@
 .lw-docs__content a {
   color: var(--accent-soft-text);
   font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.lw-docs__content a:hover {
+  text-decoration: underline;
 }
 .lw-docs__content strong {
   color: var(--text-primary);

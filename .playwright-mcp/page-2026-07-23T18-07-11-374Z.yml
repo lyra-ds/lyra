@@ -1,0 +1,104 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e95] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=f8e96]
+    - generic [ref=f8e100]:
+      - button "Open issues overlay" [ref=f8e101]:
+        - generic [ref=f8e102]:
+          - generic [ref=f8e103]: "2"
+          - generic [ref=f8e104]: "3"
+        - generic [ref=f8e105]:
+          - text: Issue
+          - generic [ref=f8e106]: s
+      - button "Collapse issues badge" [ref=f8e107]
+  - alert [ref=f8e204]
+  - banner [ref=f8e205]:
+    - generic [ref=f8e206]:
+      - link "Lyra" [ref=f8e207] [cursor=pointer]:
+        - /url: /pt-BR
+      - navigation [ref=f8e209]:
+        - link "Documentação" [ref=f8e210] [cursor=pointer]:
+          - /url: /pt-BR
+        - link "Componentes" [ref=f8e211] [cursor=pointer]:
+          - /url: /pt-BR/components
+      - generic [ref=f8e212]:
+        - button "Alternar tema de cores" [ref=f8e213] [cursor=pointer]
+        - button "English" [ref=f8e220] [cursor=pointer]
+        - link [ref=f8e221] [cursor=pointer]:
+          - /url: https://github.com/lyra-ds
+        - button "Começar" [ref=f8e225] [cursor=pointer]
+  - generic [ref=f8e229]:
+    - complementary [ref=f8e230]:
+      - generic [ref=f8e231]:
+        - generic [ref=f8e232]: Introdução
+        - link "Primeiros passos" [ref=f8e233] [cursor=pointer]:
+          - /url: /pt-BR
+        - link "Componentes" [ref=f8e234] [cursor=pointer]:
+          - /url: /pt-BR/components
+      - generic [ref=f8e235]:
+        - generic [ref=f8e236]: Exibição
+        - link "Badge" [ref=f8e237] [cursor=pointer]:
+          - /url: /pt-BR/components/badge
+        - link "Button" [ref=f8e238] [cursor=pointer]:
+          - /url: /pt-BR/components/button
+      - generic [ref=f8e239]:
+        - generic [ref=f8e240]: Formulário
+        - link "Input" [ref=f8e241] [cursor=pointer]:
+          - /url: /pt-BR/components/input
+      - generic [ref=f8e242]:
+        - generic [ref=f8e243]: Sobreposição
+        - link "Dialog" [ref=f8e244] [cursor=pointer]:
+          - /url: /pt-BR/components/dialog
+    - article [ref=f8e245]:
+      - generic [ref=f8e246]:
+        - heading "Componentes que escalam do protótipo à produção" [level=1] [ref=f8e247]
+        - paragraph [ref=f8e248]:
+          - paragraph [ref=f8e249]:
+            - text: Lyra é um design system CSS-first e white-label. Toda a aparência vive em classes
+            - code [ref=f8e250]: .lyra-*
+            - text: com temas claro e escuro, então o mesmo core funciona em vários frameworks — este site é feito com os próprios componentes que documenta.
+        - generic [ref=f8e251]:
+          - link [ref=f8e252] [cursor=pointer]:
+            - /url: /pt-BR/components
+            - paragraph [ref=f8e253]: Ver componentes
+          - link [ref=f8e254] [cursor=pointer]:
+            - /url: /pt-BR/components/button
+            - paragraph [ref=f8e255]: Começar
+      - heading "Instalação" [level=2] [ref=f8e256]
+      - paragraph [ref=f8e257]: Instale o pacote React e os estilos, e importe o CSS uma única vez na raiz do app.
+      - generic [ref=f8e258]:
+        - generic [ref=f8e259]:
+          - generic [ref=f8e260]: TSX
+          - button "Copiar código" [ref=f8e261] [cursor=pointer]
+        - code [ref=f8e264]: npm i @lyra-ds/react @lyra-ds/styles
+      - generic [ref=f8e265]:
+        - generic [ref=f8e266]:
+          - generic [ref=f8e267]: TSX
+          - button "Copiar código" [ref=f8e268] [cursor=pointer]
+        - code [ref=f8e271]: // entrada do app (main.tsx / layout.tsx) import '@lyra-ds/styles/styles.css';
+      - heading "Seu primeiro componente" [level=2] [ref=f8e272]
+      - generic [ref=f8e273]:
+        - generic [ref=f8e274]:
+          - generic [ref=f8e275]: TSX
+          - button "Copiar código" [ref=f8e276] [cursor=pointer]
+        - code [ref=f8e279]: "import { Button } from '@lyra-ds/react'; export function App() { return <Button>Olá, Lyra</Button>; }"
+      - heading "Tema escuro" [level=2] [ref=f8e280]
+      - paragraph [ref=f8e281]:
+        - text: Adicione
+        - code [ref=f8e282]: data-theme="dark"
+        - text: ao elemento
+        - code [ref=f8e283]: <html>
+        - text: . Todos os tokens semânticos respondem automaticamente — sem trabalho por componente.
+      - generic [ref=f8e284]:
+        - generic [ref=f8e285]:
+          - generic [ref=f8e286]: TSX
+          - button "Copiar código" [ref=f8e287] [cursor=pointer]
+        - code [ref=f8e290]: <html data-theme="dark">
+  - contentinfo [ref=f8e291]:
+    - generic [ref=f8e292]:
+      - generic [ref=f8e293]: Lyra
+      - generic [ref=f8e295]: Open source sob licença MIT. Feito pela comunidade, para a comunidade.
+      - generic [ref=f8e296]:
+        - link "GitHub" [ref=f8e297] [cursor=pointer]:
+          - /url: https://github.com/lyra-ds
+        - link "npm" [ref=f8e298] [cursor=pointer]:
+          - /url: https://www.npmjs.com/org/lyra-ds
