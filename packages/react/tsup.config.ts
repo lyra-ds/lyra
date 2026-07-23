@@ -49,6 +49,7 @@ export default defineConfig({
     radio: 'src/radio/index.ts',
     switch: 'src/switch/index.ts',
     'file-upload': 'src/file-upload/index.ts',
+    'file-manager': 'src/file-manager/index.ts',
     dialog: 'src/dialog/index.ts',
     drawer: 'src/drawer/index.ts',
     'create-workspace-dialog': 'src/create-workspace-dialog/index.ts',

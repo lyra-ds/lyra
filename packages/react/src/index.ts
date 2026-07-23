@@ -26,6 +26,8 @@ export type { SwitchProps } from './switch';
 
 export { FileUpload } from './file-upload';
 export type { FileUploadItem, FileUploadProps } from './file-upload';
+export { FileManager } from './file-manager';
+export type { FileManagerProps, ManagedFile } from './file-manager';
 
 export { Dialog } from './dialog';
 export type { DialogProps } from './dialog';

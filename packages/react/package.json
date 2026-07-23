@@ -89,6 +89,16 @@
         "default": "./dist/file-upload.cjs"
       }
     },
+    "./file-manager": {
+      "import": {
+        "types": "./dist/file-manager.d.ts",
+        "default": "./dist/file-manager.js"
+      },
+      "require": {
+        "types": "./dist/file-manager.d.cts",
+        "default": "./dist/file-manager.cjs"
+      }
+    },
     "./dialog": {
       "import": {
         "types": "./dist/dialog.d.ts",
@@ -525,6 +535,16 @@
         "react-dom"
       ],
       "limit": "8 kB"
+    },
+    {
+      "name": "import { FileManager } from '@lyra-ds/react/file-manager'",
+      "path": "dist/file-manager.js",
+      "import": "{ FileManager }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "9 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",

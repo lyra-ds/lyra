@@ -7,7 +7,10 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Next
 
-- [ ] Fase 4 / Lote D — 9 componentes restantes (Table, SidebarGroup, Toast, CookieBanner, Drawer, CreateWorkspaceDialog, WorkspaceSwitcher, CommandPalette, FileManager); inventário + plano de sub-lotes/roteamento em `.batuta/plan-04-lote-d.md`. Fecha a Fase 4 (40/40).
+- [ ] Alinhar Checkbox/Radio/Switch à fidelidade do handoff — wrapper `<label>` de linha inteira (decisão do usuário, 2026-07-21). (obs: esta linha já existe abaixo; consolidar)
+- [ ] Fase 5 — Docgen & llms.txt (`.batuta/plan-05-docgen-llms.md`)
+- [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`)
+- [ ] Fase 7 — Release Pipeline & Launch (`.batuta/plan-07-release-pipeline-launch.md`)
 - [ ] Alinhar Checkbox/Radio/Switch à fidelidade do handoff — wrapper `<label>` de linha inteira (`.lyra-check-row` / `.lyra-switch`) em vez de `<span>` + `htmlFor` só no texto (decisão do usuário, 2026-07-21)
 - [ ] Fase 4 — Component Batch Conversion & A11y (`.batuta/plan-04-component-batch-conversion-a11y.md`; pesquisa APG antes de delegar)
 - [ ] Fase 5 — Docgen & llms.txt (`.batuta/plan-05-docgen-llms.md`)
@@ -16,6 +19,8 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Done
 
+- [x] **Fase 4 COMPLETA (40/40 componentes)** — todos os 40 componentes do handoff convertidos para `@lyra-ds/react` (React acessível + SSR-safe, classes `.lyra-*` verbatim). 324 testes. Lotes A–D mergeados/prontos. 2026-07-23
+- [x] Fase 4 / Lote D3 — CommandPalette (⌘K overlay + combobox activedescendant + hotkey global + inline) e FileManager (busca + toggle list/grid controlled/uncontrolled + breadcrumb + ações por item via Dropdown composto) → codex (`gpt-5.6-terra`, reasoning high, solo cada, foreground). FileManager: `.lyra-fm__more` como span (Dropdown já provê o wrapper interativo, evita nested-interactive no axe). 324 testes, gates verdes. 40/40 componentes. 2026-07-23
 - [x] Fase 4 / Lote D2 — 3 overlays/compostos (Drawer overlay com portal+focus trap+scroll lock+Esc+restauração; CreateWorkspaceDialog compondo Dialog+Input+Button+Avatar com slugify e `useId`; WorkspaceSwitcher popover listbox compondo Avatar+Icon com teclado do modelo Dropdown) → codex (`gpt-5.6-terra`, reasoning high; run em foreground após ambiente matar 2 tentativas em background). Promoveu close do Drawer → `.lyra-drawer__close`. 303 testes, gates verdes. 36/40 componentes. 2026-07-23
 - [x] Fase 4 / Lote D1 — 4 presentacionais (Table, SidebarGroup, Toast+ToastStack, CookieBanner) → codex (`gpt-5.6-terra`, reasoning high). Maestro alinhou 2 testes (Table, SidebarGroup) à convenção de filtrar `color-contrast` do axe — texto muted de tokens travados da Fase 2 (`--text-muted` no `<th>` 4.34:1, `--text-faint` no label do SidebarGroup 2.45:1), não corrigível na camada React (13 componentes-pares já filtram). Promoveu ícone do Toast → `.lyra-toast__icon` (feedback.css + parity). CookieBanner com guard SSR (localStorage só em effect, `null` até confirmar). 33/40 componentes. 2026-07-22
 - [x] Fase 4 / Lote C2 — 2 widgets de teclado (Dropdown menu-button com foco real + restauração ao trigger; Combobox APG com `aria-activedescendant`, reset no filtro, controlled/uncontrolled) → codex (`gpt-5.6-terra`, reasoning high; rodada limpa, sem retry). Promoveu `inline-flex` do trigger → `.lyra-dropdown__trigger` (navigation.css + parity ADDITIVE_EXTENSIONS). 265 testes, todos gates verdes. 29/40 componentes. 2026-07-21
