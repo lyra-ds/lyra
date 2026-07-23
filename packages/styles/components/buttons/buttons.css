@@ -66,3 +66,7 @@
   animation: lyra-spin 0.7s linear infinite;
 }
 @keyframes lyra-spin { to { transform: rotate(360deg); } }
+
+/* Correctness: button-styled links (Button asChild / <a class="lyra-btn">) must never underline —
+   Lyra base `a:hover` underline would otherwise win over the button. */
+.lyra-btn:hover { text-decoration: none; }

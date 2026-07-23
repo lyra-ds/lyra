@@ -1,3 +1,4 @@
+import { Button } from '@lyra-ds/react';
 import type { ComponentType } from 'react';
 import EnIndex from '@/content/docs/en/index.mdx';
 import PtBrIndex from '@/content/docs/pt-BR/index.mdx';
@@ -17,5 +18,5 @@ const content: Record<
 export function DocumentContent({ locale }: { locale: Locale }) {
   const Content = content[locale];
 
-  return <Content components={{ PropTable, pre: Pre }} />;
+  return <Content components={{ Button, PropTable, pre: Pre }} />;
 }
