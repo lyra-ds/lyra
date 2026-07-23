@@ -7,17 +7,13 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Next
 
-- [ ] Alinhar Checkbox/Radio/Switch à fidelidade do handoff — wrapper `<label>` de linha inteira (decisão do usuário, 2026-07-21). (obs: esta linha já existe abaixo; consolidar)
 - [ ] Fase 5 — Docgen & llms.txt (`.batuta/plan-05-docgen-llms.md`)
-- [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`)
-- [ ] Fase 7 — Release Pipeline & Launch (`.batuta/plan-07-release-pipeline-launch.md`)
-- [ ] Alinhar Checkbox/Radio/Switch à fidelidade do handoff — wrapper `<label>` de linha inteira (`.lyra-check-row` / `.lyra-switch`) em vez de `<span>` + `htmlFor` só no texto (decisão do usuário, 2026-07-21)
-- [ ] Fase 4 — Component Batch Conversion & A11y (`.batuta/plan-04-component-batch-conversion-a11y.md`; pesquisa APG antes de delegar)
-- [ ] Fase 5 — Docgen & llms.txt (`.batuta/plan-05-docgen-llms.md`)
-- [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`)
+- [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`) — rodar impeccable numa interface/showcase com todos os componentes aqui
 - [ ] Fase 7 — Release Pipeline & Launch (`.batuta/plan-07-release-pipeline-launch.md`)
 
 ## Done
+
+- [x] Alinhamento Checkbox/Radio/Switch à fidelidade do handoff — wrapper inteiro virou `<label>` (linha toda clicável, associação implícita), removidos `useId`/`htmlFor`; `id` do consumidor flui via `...rest`. Testes de clique (texto + wrapper) adicionados. → codex (`gpt-5.6-terra`, reasoning high, foreground). 332 testes, gates verdes. Resolve a deviação anotada do Lote B. 2026-07-23
 
 - [x] **Fase 4 COMPLETA (40/40 componentes)** — todos os 40 componentes do handoff convertidos para `@lyra-ds/react` (React acessível + SSR-safe, classes `.lyra-*` verbatim). 324 testes. Lotes A–D mergeados/prontos. 2026-07-23
 - [x] Fase 4 / Lote D3 — CommandPalette (⌘K overlay + combobox activedescendant + hotkey global + inline) e FileManager (busca + toggle list/grid controlled/uncontrolled + breadcrumb + ações por item via Dropdown composto) → codex (`gpt-5.6-terra`, reasoning high, solo cada, foreground). FileManager: `.lyra-fm__more` como span (Dropdown já provê o wrapper interativo, evita nested-interactive no axe). 324 testes, gates verdes. 40/40 componentes. 2026-07-23

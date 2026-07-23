@@ -23,6 +23,9 @@ describe('Radio', () => {
       try {
         const { container } = await render(<Radio label="Email" name="contact" />);
         expect(container.querySelector('input')!.className).toBe('lyra-radio');
+        const wrapper = container.querySelector('label')!;
+        expect(wrapper.className).toBe('lyra-check-row');
+        expect(wrapper.querySelector('span')!.textContent).toBe('Email');
         expect(errorSpy).not.toHaveBeenCalled();
         expect((await axe.run(container)).violations).toEqual([]);
       } finally {
@@ -39,5 +42,24 @@ describe('Radio', () => {
     await userEvent.keyboard(' ');
     expect(input.checked).toBe(true);
     expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it('renders a bare input without a label and forwards an id', async () => {
+    const screen = await render(<Radio id="email" name="contact" />);
+    const input = screen.container.firstElementChild! as HTMLInputElement;
+
+    expect(input.tagName).toBe('INPUT');
+    expect(input.id).toBe('email');
+  });
+
+  it.each(['label text', 'wrapper'] as const)('toggles when its %s is clicked', async (target) => {
+    const screen = await render(<Radio label="Email" name="contact" />);
+    const input = screen.container.querySelector('input')! as HTMLInputElement;
+    const wrapper = screen.container.querySelector('label')!;
+    const clickTarget = target === 'label text' ? wrapper.querySelector('span')! : wrapper;
+
+    await userEvent.click(clickTarget);
+
+    expect(input.checked).toBe(true);
   });
 });
