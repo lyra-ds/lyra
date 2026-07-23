@@ -1,13 +1,45 @@
 ---
 title: Lyra DS documentation
-description: A CSS-first component system for thoughtful product interfaces.
+description: A CSS-first, white-label component system for thoughtful product interfaces.
 ---
 
-# Lyra DS
+<div className="lw-hero">
+  <h1 className="lw-hero__title">Components that scale from prototype to production</h1>
+  <p className="lw-hero__sub">
+    Lyra is a CSS-first, white-label design system. The whole look lives in <code>.lyra-*</code>
+    classes with light and dark themes, so the same core works across frameworks — this site is
+    built with the very components it documents.
+  </p>
+  <div className="lw-hero__cta">
+    <a className="lyra-btn lyra-btn--primary lyra-btn--lg" href="/en/components">
+      Browse components
+    </a>
+    <a className="lyra-btn lyra-btn--secondary lyra-btn--lg" href="/en/components/button">
+      Get started
+    </a>
+  </div>
+</div>
 
-Welcome to the Lyra Design System documentation. This static site is built with the same styles
-and React components it documents.
+## Installation
 
-<a className="lyra-btn lyra-btn--primary lyra-btn--md" href="/en/components/dialog">
-  Explore Dialog
-</a>
+Install the React package and the styles, then import the stylesheet once at your app root.
+
+<CodeBlock>{`npm i @lyra-ds/react @lyra-ds/styles`}</CodeBlock>
+
+<CodeBlock>{`// app entry (main.tsx / layout.tsx)
+import '@lyra-ds/styles/styles.css';`}</CodeBlock>
+
+## Your first component
+
+<CodeBlock>{`import { Button } from '@lyra-ds/react';
+
+export function App() {
+  return <Button>Hello Lyra</Button>;
+}`}</CodeBlock>
+
+## Dark theme
+
+Add <code>data-theme="dark"</code> to your `<html>` element. Every semantic token responds
+automatically — no per-component work.
+
+<CodeBlock>{`<html data-theme="dark">`}</CodeBlock>

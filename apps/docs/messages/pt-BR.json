@@ -17,5 +17,10 @@
   "demoEmail": "E-mail",
   "demoEmailHint": "Nunca compartilhamos.",
   "demoSearch": "Buscar",
-  "demoSearchPlaceholder": "Buscar…"
+  "demoSearchPlaceholder": "Buscar…",
+  "navDocs": "Documentação",
+  "introduction": "Introdução",
+  "gettingStarted": "Primeiros passos",
+  "getStarted": "Começar",
+  "footerNote": "Open source sob licença MIT. Feito pela comunidade, para a comunidade."
 }

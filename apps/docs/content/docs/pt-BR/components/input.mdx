@@ -26,16 +26,17 @@ import { useState } from 'react';
 export function Exemplo() {
   const [email, setEmail] = useState('');
 
-  return (
-    <>
-      <Input
-        label="E-mail"
-        placeholder="voce@exemplo.dev"
-        hint="Nunca compartilhamos."
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-      />
-      <Input label="Buscar" iconLeft={<Icon name="search" size={16} />} placeholder="Buscar…" />
-    </>
-  );
+return (
+
+<>
+<Input
+label="E-mail"
+placeholder="voce@exemplo.dev"
+hint="Nunca compartilhamos."
+value={email}
+onChange={(event) => setEmail(event.target.value)}
+/>
+<Input label="Buscar" iconLeft={<Icon name="search" size={16} />} placeholder="Buscar…" />
+</>
+);
 }`}</CodeBlock>

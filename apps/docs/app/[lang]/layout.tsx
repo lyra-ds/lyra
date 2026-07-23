@@ -2,8 +2,10 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { DocsSidebar } from '@/components/docs-sidebar';
 import { HtmlLang } from '@/components/html-lang';
-import { SiteChrome } from '@/components/site-chrome';
+import { SiteFooter } from '@/components/site-footer';
+import { SiteHeader } from '@/components/site-header';
 import { isLocale, locales } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -29,16 +31,12 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider locale={lang} messages={messages}>
       <HtmlLang locale={lang} />
-      <SiteChrome locale={lang} />
-      <main
-        style={{
-          margin: '0 auto',
-          maxWidth: '72rem',
-          padding: 'var(--space-8) var(--space-6)',
-        }}
-      >
-        {children}
-      </main>
+      <SiteHeader locale={lang} />
+      <div className="lw-container lw-docs">
+        <DocsSidebar locale={lang} />
+        <article className="lw-docs__content">{children}</article>
+      </div>
+      <SiteFooter />
     </NextIntlClientProvider>
   );
 }
