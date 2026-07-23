@@ -78,6 +78,7 @@ export default defineConfig({
     'sidebar-group': 'src/sidebar-group/index.ts',
     toast: 'src/toast/index.ts',
     'cookie-banner': 'src/cookie-banner/index.ts',
+    'command-palette': 'src/command-palette/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,

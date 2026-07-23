@@ -92,3 +92,6 @@ export { Toast, ToastStack } from './toast';
 export type { ToastProps, ToastStackProps } from './toast';
 export { CookieBanner } from './cookie-banner';
 export type { CookieBannerProps } from './cookie-banner';
+
+export { CommandPalette } from './command-palette';
+export type { CommandGroup, CommandItem, CommandPaletteProps } from './command-palette';

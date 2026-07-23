@@ -379,6 +379,16 @@
         "default": "./dist/cookie-banner.cjs"
       }
     },
+    "./command-palette": {
+      "import": {
+        "types": "./dist/command-palette.d.ts",
+        "default": "./dist/command-palette.js"
+      },
+      "require": {
+        "types": "./dist/command-palette.d.cts",
+        "default": "./dist/command-palette.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -745,6 +755,17 @@
         "react-dom"
       ],
       "limit": "1.5 kB"
+    },
+    {
+      "name": "CommandPalette (curated icon registry + portal)",
+      "path": "dist/command-palette.js",
+      "import": "{ CommandPalette }",
+      "ignore": [
+        "react",
+        "react-dom",
+        "react-dom/client"
+      ],
+      "limit": "9 kB"
     }
   ]
 }
