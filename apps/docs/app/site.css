@@ -451,10 +451,13 @@
   margin: 0;
 }
 .lw-hero__sub {
+  max-width: 560px;
+}
+/* MDX wraps the subtitle text in a <p>; a <p className> here would nest <p> in <p> */
+.lw-hero__sub p {
   font-size: var(--text-lg);
   line-height: var(--leading-relaxed);
   color: var(--text-secondary);
-  max-width: 560px;
   margin: 0;
 }
 .lw-hero__cta {

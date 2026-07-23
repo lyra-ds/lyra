@@ -1,8 +1,8 @@
-import { Button } from '@lyra-ds/react';
 import type { ComponentType } from 'react';
 import EnIndex from '@/content/docs/en/index.mdx';
 import PtBrIndex from '@/content/docs/pt-BR/index.mdx';
 import type { Locale } from '@/lib/i18n';
+import { HeroActions } from './hero-actions';
 import { Pre } from './pre';
 import { PropTable } from './prop-table';
 
@@ -18,5 +18,9 @@ const content: Record<
 export function DocumentContent({ locale }: { locale: Locale }) {
   const Content = content[locale];
 
-  return <Content components={{ Button, PropTable, pre: Pre }} />;
+  return (
+    <Content
+      components={{ HeroActions: () => <HeroActions locale={locale} />, PropTable, pre: Pre }}
+    />
+  );
 }

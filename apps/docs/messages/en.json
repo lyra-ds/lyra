@@ -33,5 +33,6 @@
   "onThisPage": "On this page",
   "languageLabel": "Language",
   "search": "Search…",
-  "searchEmpty": "No results for"
+  "searchEmpty": "No results for",
+  "heroBrowse": "Browse components"
 }
