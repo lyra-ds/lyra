@@ -3,6 +3,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 .env*
+apps/docs/.next/
+apps/docs/.source/
+apps/docs/out/
+apps/docs/public/llms.txt
 
 # Vitest Browser Mode generated artifacts (failure screenshots / attachments)
 **/__screenshots__/

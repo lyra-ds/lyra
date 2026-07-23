@@ -1,0 +1,38 @@
+---
+title: Dialog
+description: Um diálogo modal controlado com foco gerenciado e caminhos de fechamento acessíveis.
+---
+
+# Dialog
+
+Dialog é um modal controlado com portal, retenção de foco, bloqueio de rolagem e caminhos de
+fechamento acessíveis.
+
+## Prévia ao vivo
+
+<DialogPreview />
+
+## Props
+
+<PropTable name="Dialog" />
+
+## Uso
+
+<CodeBlock>{`'use client';
+
+import { Button, Dialog } from '@lyra-ds/react';
+import { useState } from 'react';
+
+export function Exemplo() {
+  const [open, setOpen] = useState(false);
+
+return (
+
+<>
+<Button onClick={() => setOpen(true)}>Abrir diálogo</Button>
+<Dialog open={open} onClose={() => setOpen(false)} title="Excluir projeto">
+Esta ação não pode ser desfeita.
+</Dialog>
+</>
+);
+}`}</CodeBlock>

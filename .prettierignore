@@ -20,3 +20,10 @@ CHANGELOG.md
 .changeset/*.md
 node_modules/
 dist/
+apps/docs/.next/
+apps/docs/.source/
+apps/docs/out/
+apps/docs/public/llms.txt
+
+# Next.js generated ambient types
+apps/docs/next-env.d.ts
