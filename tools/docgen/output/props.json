@@ -1,0 +1,1424 @@
+[
+  {
+    "name": "Button",
+    "category": "Buttons",
+    "extends": "ButtonHTMLAttributes<HTMLButtonElement>",
+    "description": "Props for {@link Button}. Extends the native `<button>` attributes, so every DOM\nprop (`type`, `onClick`, `form`, `aria-*`, …) passes straight through onto the root.",
+    "signature": "export declare function Button(props: ButtonProps): JSX.Element;",
+    "props": [
+      {
+        "name": "variant",
+        "type": "'primary' | 'secondary' | 'soft' | 'ghost' | 'danger'",
+        "optional": true,
+        "description": "Visual variant. Default `\"primary\"`. Use `primary` for the single main action per view."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "optional": true,
+        "description": "Control height. Default `\"md\"` (sm 32px · md 40px · lg 48px)."
+      },
+      {
+        "name": "iconLeft",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Icon rendered before the label (usually `<Icon size={16} />`)."
+      },
+      {
+        "name": "iconRight",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Icon rendered after the label."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "optional": true,
+        "description": "Show the spinner and block interaction. The label stays visible (no layout shift)."
+      },
+      {
+        "name": "full",
+        "type": "boolean",
+        "optional": true,
+        "description": "Stretch to 100% of the container width."
+      }
+    ]
+  },
+  {
+    "name": "IconButton",
+    "category": "Buttons",
+    "extends": "ButtonHTMLAttributes<HTMLButtonElement>",
+    "description": "Props for {@link IconButton}.",
+    "signature": "export declare function IconButton(props: IconButtonProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": false,
+        "description": "Required accessible label, used for both `aria-label` and the native tooltip."
+      },
+      {
+        "name": "variant",
+        "type": "'primary' | 'secondary' | 'soft' | 'ghost' | 'danger'",
+        "optional": true,
+        "description": "Visual variant. Default `\"secondary\"`."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "optional": true,
+        "description": "Control size. Default `\"md\"` (40 × 40px)."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Icon content, normally an `<Icon />`."
+      }
+    ]
+  },
+  {
+    "name": "EmptyState",
+    "category": "Data",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
+    "description": "Props for {@link EmptyState}.",
+    "signature": "export declare function EmptyState(props: EmptyStateProps): JSX.Element;",
+    "props": [
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional illustrative icon content, normally an `<Icon size={24} />`."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Required empty-state heading."
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional explanatory text."
+      },
+      {
+        "name": "action",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional action, normally a `<Button>`."
+      }
+    ]
+  },
+  {
+    "name": "Stat",
+    "category": "Data",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Stat}.",
+    "signature": "export declare function Stat(props: StatProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Label describing the metric."
+      },
+      {
+        "name": "value",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Prominent metric value."
+      },
+      {
+        "name": "delta",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional change text."
+      },
+      {
+        "name": "direction",
+        "type": "'up' | 'down' | 'flat'",
+        "optional": true,
+        "description": "Change direction and color. Default `\"flat\"`."
+      }
+    ]
+  },
+  {
+    "name": "Table",
+    "category": "Data",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Table}.",
+    "signature": "export declare function Table(props: TableProps): JSX.Element;",
+    "props": [
+      {
+        "name": "columns",
+        "type": "TableColumn[]",
+        "optional": false,
+        "description": "Columns rendered in the supplied order."
+      },
+      {
+        "name": "rows",
+        "type": "Array<Record<string, ReactNode>>",
+        "optional": false,
+        "description": "Row records whose values may be any renderable React node."
+      },
+      {
+        "name": "hover",
+        "type": "boolean",
+        "optional": true,
+        "description": "Highlight rows on hover."
+      }
+    ]
+  },
+  {
+    "name": "Accordion",
+    "category": "Display",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Accordion}.",
+    "signature": "export declare function Accordion(props: AccordionProps): JSX.Element;",
+    "props": [
+      {
+        "name": "items",
+        "type": "AccordionItem[]",
+        "optional": false,
+        "description": "Items rendered in their supplied order."
+      },
+      {
+        "name": "defaultOpen",
+        "type": "string",
+        "optional": true,
+        "description": "Id of the item initially open."
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether more than one item may be open at once. Defaults to `false`."
+      }
+    ]
+  },
+  {
+    "name": "Avatar",
+    "category": "Display",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Avatar}.",
+    "signature": "export declare function Avatar(props: AvatarProps): JSX.Element;",
+    "props": [
+      {
+        "name": "src",
+        "type": "string",
+        "optional": true,
+        "description": "Image URL. When absent, initials are derived from `name`."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "Full name, used for initials and the native tooltip."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg' | 'xl'",
+        "optional": true,
+        "description": "Avatar size. Default `\"md\"` (32px)."
+      },
+      {
+        "name": "shape",
+        "type": "'circle' | 'square'",
+        "optional": true,
+        "description": "Avatar shape. Default `\"circle\"`; use `\"square\"` for organizations."
+      },
+      {
+        "name": "status",
+        "type": "'online' | 'busy' | 'away'",
+        "optional": true,
+        "description": "Optional presence status."
+      }
+    ]
+  },
+  {
+    "name": "AvatarGroup",
+    "category": "Display",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link AvatarGroup}.",
+    "signature": "export declare function AvatarGroup(props: AvatarGroupProps): JSX.Element;",
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Avatar elements displayed as an overlapping group."
+      }
+    ]
+  },
+  {
+    "name": "Badge",
+    "category": "Display",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Badge}.",
+    "signature": "export declare function Badge(props: BadgeProps): JSX.Element;",
+    "props": [
+      {
+        "name": "tone",
+        "type": "'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info'",
+        "optional": true,
+        "description": "Semantic color tone. Default `\"neutral\"`."
+      },
+      {
+        "name": "dot",
+        "type": "boolean",
+        "optional": true,
+        "description": "Show a status dot before the content."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Badge content."
+      }
+    ]
+  },
+  {
+    "name": "Card",
+    "category": "Display",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
+    "description": "Props for {@link Card}.",
+    "signature": "export declare function Card(props: CardProps): JSX.Element;",
+    "props": [
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional heading rendered in the card header."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Actions aligned at the end of the card header."
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Content rendered in the bordered footer."
+      },
+      {
+        "name": "padded",
+        "type": "boolean",
+        "optional": true,
+        "description": "Apply internal padding. Default `true`."
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "optional": true,
+        "description": "Add hover elevation for clickable cards."
+      }
+    ]
+  },
+  {
+    "name": "Tag",
+    "category": "Display",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Tag}.",
+    "signature": "export declare function Tag(props: TagProps): JSX.Element;",
+    "props": [
+      {
+        "name": "onRemove",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the optional remove button is clicked."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Tag content."
+      }
+    ]
+  },
+  {
+    "name": "Alert",
+    "category": "Feedback",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
+    "description": "Props for {@link Alert}.",
+    "signature": "export declare function Alert(props: AlertProps): JSX.Element;",
+    "props": [
+      {
+        "name": "tone",
+        "type": "'info' | 'success' | 'warning' | 'danger'",
+        "optional": true,
+        "description": "Semantic tone. Default `\"info\"`."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional bold title line."
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional icon content, normally an `<Icon size={18} />`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Alert body content."
+      }
+    ]
+  },
+  {
+    "name": "CookieBanner",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link CookieBanner}.",
+    "signature": "export declare function CookieBanner(props: CookieBannerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "storageKey",
+        "type": "string",
+        "optional": true,
+        "description": "Browser storage key used to persist the visitor's choice."
+      },
+      {
+        "name": "policyHref",
+        "type": "string",
+        "optional": true,
+        "description": "Optional URL for the privacy policy linked from the default copy."
+      },
+      {
+        "name": "onAccept",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called after the visitor accepts all cookies."
+      },
+      {
+        "name": "onEssentials",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called after the visitor keeps only essential cookies."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Custom banner copy that replaces the default LGPD notice."
+      }
+    ]
+  },
+  {
+    "name": "Dialog",
+    "category": "Feedback",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
+    "description": "Props for {@link Dialog}.\n\nExtends the native `<div>` attributes so DOM props (`id`, `data-*`, `aria-*`, `onKeyDown`,\n…) pass through onto the panel element. The native `title` attribute (a `string`) is\n`Omit`-ted first so the Lyra `title` can be redefined as `ReactNode` — without the `Omit`\nthe interface fails strict typecheck (native `HTMLAttributes.title` is a string attribute).",
+    "signature": "export declare function Dialog(props: DialogProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": false,
+        "description": "Controls visibility. `true` mounts the overlay + panel; `false` plays the exit then unmounts."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called by every close path (Esc, overlay click, the × button). The × renders only when this is provided."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Heading rendered in the panel header and wired as the accessible name via `aria-labelledby`."
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Action buttons rendered in the footer. Omitted → no `.lyra-dialog__footer` chrome."
+      },
+      {
+        "name": "closeOnEsc",
+        "type": "boolean",
+        "optional": true,
+        "description": "Close on the Escape key. Default `true`."
+      },
+      {
+        "name": "closeOnOverlayClick",
+        "type": "boolean",
+        "optional": true,
+        "description": "Close on a click on the overlay backdrop (never on panel content). Default `true`."
+      },
+      {
+        "name": "container",
+        "type": "HTMLElement",
+        "optional": true,
+        "description": "Portal host. Defaults to `document.body`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Body content."
+      }
+    ]
+  },
+  {
+    "name": "Drawer",
+    "category": "Feedback",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
+    "description": "Props for {@link Drawer}.",
+    "signature": "export declare function Drawer(props: DrawerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": false,
+        "description": "Controls visibility. `true` mounts the portaled overlay and drawer panel."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the user dismisses the drawer with Escape, the backdrop, or the close button."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Heading rendered in the drawer header and used as its accessible name."
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Fixed actions rendered in the footer. Omit to remove the footer chrome."
+      },
+      {
+        "name": "container",
+        "type": "HTMLElement",
+        "optional": true,
+        "description": "Portal host. Defaults to `document.body`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Drawer body content."
+      }
+    ]
+  },
+  {
+    "name": "Progress",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Progress}.",
+    "signature": "export declare function Progress(props: ProgressProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "number",
+        "optional": false,
+        "description": "Progress percentage from 0 to 100."
+      },
+      {
+        "name": "tone",
+        "type": "'success' | 'danger'",
+        "optional": true,
+        "description": "Optional alternative fill color."
+      }
+    ]
+  },
+  {
+    "name": "Skeleton",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Skeleton}.",
+    "signature": "export declare function Skeleton(props: SkeletonProps): JSX.Element;",
+    "props": [
+      {
+        "name": "width",
+        "type": "number | string",
+        "optional": true,
+        "description": "Placeholder width. Default `\"100%\"`."
+      },
+      {
+        "name": "height",
+        "type": "number | string",
+        "optional": true,
+        "description": "Placeholder height. Default `14`."
+      },
+      {
+        "name": "circle",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render a circle using `height` as its diameter."
+      }
+    ]
+  },
+  {
+    "name": "Spinner",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Spinner}.",
+    "signature": "export declare function Spinner(props: SpinnerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "optional": true,
+        "description": "Spinner size. Default `\"md\"` (24px)."
+      }
+    ]
+  },
+  {
+    "name": "Toast",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Toast}.",
+    "signature": "export declare function Toast(props: ToastProps): JSX.Element;",
+    "props": [
+      {
+        "name": "tone",
+        "type": "'info' | 'success' | 'danger'",
+        "optional": true,
+        "description": "Icon color tone. Default `\"info\"`."
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional icon displayed before the message."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the optional close button is activated."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Toast message content."
+      }
+    ]
+  },
+  {
+    "name": "ToastStack",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link ToastStack}.",
+    "signature": "export declare function ToastStack(props: ToastStackProps): JSX.Element;",
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Toasts or other feedback content to stack."
+      }
+    ]
+  },
+  {
+    "name": "Tooltip",
+    "category": "Feedback",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Tooltip}.",
+    "signature": "export declare function Tooltip(props: TooltipProps): JSX.Element;",
+    "props": [
+      {
+        "name": "tip",
+        "type": "string",
+        "optional": false,
+        "description": "Short, non-interactive text shown for the target."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "The target element. Pass one focusable React element for full keyboard support."
+      }
+    ]
+  },
+  {
+    "name": "FileManager",
+    "category": "Files",
+    "extends": "",
+    "description": "Props for {@link FileManager}.",
+    "signature": "export declare function FileManager(props: FileManagerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "files",
+        "type": "ManagedFile[]",
+        "optional": true,
+        "description": "Files and folders to display."
+      },
+      {
+        "name": "path",
+        "type": "string[]",
+        "optional": true,
+        "description": "Breadcrumb segments for the current folder."
+      },
+      {
+        "name": "view",
+        "type": "'list' | 'grid'",
+        "optional": true,
+        "description": "Controlled display mode."
+      },
+      {
+        "name": "defaultView",
+        "type": "'list' | 'grid'",
+        "optional": true,
+        "description": "Initial display mode when uncontrolled. Default: `\"list\"`."
+      },
+      {
+        "name": "onViewChange",
+        "type": "(view: 'list' | 'grid') => void",
+        "optional": true,
+        "description": "Called after the display mode changes."
+      },
+      {
+        "name": "onOpen",
+        "type": "(file: ManagedFile) => void",
+        "optional": true,
+        "description": "Called when a file name or grid card is opened."
+      },
+      {
+        "name": "onNavigate",
+        "type": "(index: number) => void",
+        "optional": true,
+        "description": "Called with the selected breadcrumb segment index."
+      },
+      {
+        "name": "actions",
+        "type": "(file: ManagedFile) => DropdownItem[]",
+        "optional": true,
+        "description": "Builds the action menu for an item, replacing the default commands."
+      },
+      {
+        "name": "searchPlaceholder",
+        "type": "string",
+        "optional": true,
+        "description": "Placeholder shown in the file search field."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Message shown when no files match the search."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Class appended after the public `.lyra-fm` class."
+      }
+    ]
+  },
+  {
+    "name": "FileUpload",
+    "category": "Files",
+    "extends": "",
+    "description": "Props for {@link FileUpload}.",
+    "signature": "export declare function FileUpload(props: FileUploadProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Primary dropzone text."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text, overriding the generated accept/size description."
+      },
+      {
+        "name": "accept",
+        "type": "string",
+        "optional": true,
+        "description": "Accepted file types, forwarded to the hidden file input and shown in the helper text."
+      },
+      {
+        "name": "maxSizeMB",
+        "type": "number",
+        "optional": true,
+        "description": "Files larger than this many megabytes are added as error items."
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether more than one file can be added. Default `true`."
+      },
+      {
+        "name": "uploadDuration",
+        "type": "number",
+        "optional": true,
+        "description": "Simulated upload duration in milliseconds. Default `1800`."
+      },
+      {
+        "name": "defaultItems",
+        "type": "FileUploadItem[]",
+        "optional": true,
+        "description": "Items used to seed the uncontrolled list."
+      },
+      {
+        "name": "onFiles",
+        "type": "(files: File[]) => void",
+        "optional": true,
+        "description": "Called with the real browser `File` objects whenever files are added."
+      },
+      {
+        "name": "onChange",
+        "type": "(items: FileUploadItem[]) => void",
+        "optional": true,
+        "description": "Called whenever the internal item list changes."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Class appended after the public `.lyra-upload` class."
+      }
+    ]
+  },
+  {
+    "name": "Checkbox",
+    "category": "Forms",
+    "extends": "InputHTMLAttributes<HTMLInputElement>",
+    "description": "Props for {@link Checkbox}.",
+    "signature": "export declare function Checkbox(props: CheckboxProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Clickable label rendered beside the checkbox."
+      }
+    ]
+  },
+  {
+    "name": "Combobox",
+    "category": "Forms",
+    "extends": "",
+    "description": "Props for {@link Combobox}.",
+    "signature": "export declare function Combobox(props: ComboboxProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the control."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the control."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that replaces `hint` and enables error styling."
+      },
+      {
+        "name": "options",
+        "type": "ComboboxOption[]",
+        "optional": true,
+        "description": "Available options."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "optional": true,
+        "description": "Selected value in controlled mode."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial selected value in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: string, option: ComboboxOption) => void",
+        "optional": true,
+        "description": "Called with the selected value and option."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no option is selected. Default: `\"Select…\"`."
+      },
+      {
+        "name": "searchPlaceholder",
+        "type": "string",
+        "optional": true,
+        "description": "Search input placeholder. Default: `\"Search…\"`."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Text shown when filtering finds no options. Default: `\"No results.\"`."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the trigger."
+      },
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the popup starts open. Useful for demos."
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "optional": true,
+        "description": "Id for the trigger. A stable id is generated when omitted."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Additional class name appended to `.lyra-combobox`."
+      }
+    ]
+  },
+  {
+    "name": "Input",
+    "category": "Forms",
+    "extends": "Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>",
+    "description": "Props for {@link Input}.\n\nExtends the native `<input>` attributes so every DOM prop (`type`, `placeholder`,\n`value`, `defaultValue`, `onChange`, `disabled`, `aria-*`, …) passes straight through\nonto the `<input>` element. The native numeric `size` attribute is `Omit`-ted first so\nthe Lyra control-height `size` (`'sm' | 'md' | 'lg'`) can be redefined without colliding\nwith the native `size?: number` under strict TypeScript.",
+    "signature": "export declare function Input(props: InputProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the field, wired to the input via `htmlFor`."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the field. Replaced by `error` when that is set."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message — enables the error styling (`.lyra-input--error` + `.lyra-hint--error`), sets `aria-invalid`, and replaces `hint`."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "optional": true,
+        "description": "Control height. Default `\"md\"` (sm 32px · md 40px · lg 48px)."
+      },
+      {
+        "name": "iconLeft",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Icon rendered inside the field, on the left (e.g. `<Icon name=\"search\" size={16} />`)."
+      }
+    ]
+  },
+  {
+    "name": "Radio",
+    "category": "Forms",
+    "extends": "InputHTMLAttributes<HTMLInputElement>",
+    "description": "Props for {@link Radio}.",
+    "signature": "export declare function Radio(props: RadioProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Clickable label rendered beside the radio button."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "Group radio buttons by giving them the same name."
+      }
+    ]
+  },
+  {
+    "name": "Select",
+    "category": "Forms",
+    "extends": "Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'>",
+    "description": "Props for {@link Select}.",
+    "signature": "export declare function Select(props: SelectProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the select and associated through `htmlFor`."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the select. Replaced by `error` when provided."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that enables error styling and `aria-invalid`."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "optional": true,
+        "description": "Control height. Default `\"md\"`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Native `<option>` or `<optgroup>` children."
+      }
+    ]
+  },
+  {
+    "name": "Switch",
+    "category": "Forms",
+    "extends": "InputHTMLAttributes<HTMLInputElement>",
+    "description": "Props for {@link Switch}.",
+    "signature": "export declare function Switch(props: SwitchProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Label rendered beside the switch track."
+      }
+    ]
+  },
+  {
+    "name": "Textarea",
+    "category": "Forms",
+    "extends": "TextareaHTMLAttributes<HTMLTextAreaElement>",
+    "description": "Props for {@link Textarea}.",
+    "signature": "export declare function Textarea(props: TextareaProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the textarea and associated with it."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the textarea. Replaced by `error` when present."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that enables error styling and `aria-invalid`."
+      }
+    ]
+  },
+  {
+    "name": "Icon",
+    "category": "Icons",
+    "extends": "",
+    "description": "Props for {@link Icon}. A `name` from the curated registry is the common path; the `icon`\nescape hatch (D-03) accepts any lucide-react component for glyphs outside the registry.",
+    "signature": "export declare function Icon(props: IconProps): JSX.Element;",
+    "props": [
+      {
+        "name": "name",
+        "type": "IconName",
+        "optional": true,
+        "description": "Curated registry key in kebab-case, e.g. `\"arrow-right\"`, `\"search\"`, `\"layout-dashboard\"`."
+      },
+      {
+        "name": "icon",
+        "type": "LucideIcon",
+        "optional": true,
+        "description": "Escape hatch (D-03): a lucide-react component. Wins over `name` when both are given."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "optional": true,
+        "description": "Side length in px. Default `20` (16 inline, 24 for emphasis)."
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "optional": true,
+        "description": "CSS color. Defaults to `currentColor` (lucide's native default — D-06)."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible label. With it the icon is `role=\"img\"`; without it the icon is decorative."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "style",
+        "type": "CSSProperties",
+        "optional": true,
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Breadcrumb",
+    "category": "Navigation",
+    "extends": "HTMLAttributes<HTMLElement>",
+    "description": "Props for {@link Breadcrumb}.",
+    "signature": "export declare function Breadcrumb(props: BreadcrumbProps): JSX.Element;",
+    "props": [
+      {
+        "name": "items",
+        "type": "BreadcrumbItem[]",
+        "optional": false,
+        "description": "Navigation items; the final item is rendered as the current page."
+      }
+    ]
+  },
+  {
+    "name": "CommandPalette",
+    "category": "Navigation",
+    "extends": "",
+    "description": "Props for {@link CommandPalette}.",
+    "signature": "export declare function CommandPalette(props: CommandPaletteProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": true,
+        "description": "Controls visibility of the modal overlay. Ignored in inline mode."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the palette is dismissed or an item is selected."
+      },
+      {
+        "name": "onOpen",
+        "type": "() => void",
+        "optional": true,
+        "description": "Enables the global Command/Ctrl+hotkey listener and is called to open the palette."
+      },
+      {
+        "name": "onSelect",
+        "type": "(item: CommandItem) => void",
+        "optional": true,
+        "description": "Called with the chosen item after its own `onSelect` callback."
+      },
+      {
+        "name": "groups",
+        "type": "CommandGroup[]",
+        "optional": true,
+        "description": "Command groups to filter and render."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Search field placeholder. Default: `\"Digite um comando ou busque…\"`."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Text shown before the current query when no commands match. Default: `\"Nenhum resultado para\"`."
+      },
+      {
+        "name": "hotkey",
+        "type": "string",
+        "optional": true,
+        "description": "Key used with Command/Ctrl for the global shortcut. Default: `\"k\"`."
+      },
+      {
+        "name": "inline",
+        "type": "boolean",
+        "optional": true,
+        "description": "Renders the panel without an overlay, portal, focus trap, or scroll lock."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Additional class name appended to `.lyra-cmdk`."
+      }
+    ]
+  },
+  {
+    "name": "CreateWorkspaceDialog",
+    "category": "Navigation",
+    "extends": "",
+    "description": "Props for {@link CreateWorkspaceDialog}.",
+    "signature": "export declare function CreateWorkspaceDialog(props: CreateWorkspaceDialogProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": true,
+        "description": "Controls visibility. Default `false`."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the dialog is dismissed or creation succeeds."
+      },
+      {
+        "name": "onCreate",
+        "type": "(data: {\n        name: string;\n        slug: string;\n    }) => void",
+        "optional": true,
+        "description": "Receives the trimmed workspace name and its URL-safe slug after submission."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "optional": true,
+        "description": "Dialog heading. Default `\"Create workspace\"`."
+      },
+      {
+        "name": "slugPrefix",
+        "type": "string",
+        "optional": true,
+        "description": "Text rendered before the editable slug. Default `\"lyra.dev/\"`."
+      }
+    ]
+  },
+  {
+    "name": "Dropdown",
+    "category": "Navigation",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Dropdown}.",
+    "signature": "export declare function Dropdown(props: DropdownProps): JSX.Element;",
+    "props": [
+      {
+        "name": "trigger",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Element that opens the action menu, such as a Button, IconButton, or Avatar."
+      },
+      {
+        "name": "items",
+        "type": "DropdownItem[]",
+        "optional": false,
+        "description": "Commands, separators, and labels rendered by the menu."
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'end'",
+        "optional": true,
+        "description": "Popup alignment. Default: `\"start\"`."
+      },
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the menu starts open. Useful for demos."
+      }
+    ]
+  },
+  {
+    "name": "Pagination",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'onChange'>",
+    "description": "Props for {@link Pagination}.",
+    "signature": "export declare function Pagination(props: PaginationProps): JSX.Element;",
+    "props": [
+      {
+        "name": "page",
+        "type": "number",
+        "optional": false,
+        "description": "Current one-based page."
+      },
+      {
+        "name": "total",
+        "type": "number",
+        "optional": false,
+        "description": "Total number of pages."
+      },
+      {
+        "name": "onChange",
+        "type": "(page: number) => void",
+        "optional": true,
+        "description": "Called with the requested one-based page."
+      }
+    ]
+  },
+  {
+    "name": "SidebarGroup",
+    "category": "Navigation",
+    "extends": "",
+    "description": "Props for {@link SidebarGroup}.",
+    "signature": "export declare function SidebarGroup(props: SidebarGroupProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Section label, rendered in uppercase by the styles package."
+      },
+      {
+        "name": "items",
+        "type": "SidebarGroupItem[]",
+        "optional": true,
+        "description": "Items rendered in the supplied order."
+      },
+      {
+        "name": "collapsible",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the section label can collapse the item list."
+      },
+      {
+        "name": "defaultCollapsed",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether a collapsible group is initially collapsed."
+      },
+      {
+        "name": "onSelect",
+        "type": "(id: string, item: SidebarGroupItem) => void",
+        "optional": true,
+        "description": "Called with the selected item's id and full item record."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Additional class names appended after Lyra classes."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Extra content rendered after the group items."
+      }
+    ]
+  },
+  {
+    "name": "Stepper",
+    "category": "Navigation",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Stepper}.",
+    "signature": "export declare function Stepper(props: StepperProps): JSX.Element;",
+    "props": [
+      {
+        "name": "steps",
+        "type": "ReactNode[]",
+        "optional": false,
+        "description": "Step labels, in order."
+      },
+      {
+        "name": "active",
+        "type": "number",
+        "optional": false,
+        "description": "Zero-based index of the current step."
+      }
+    ]
+  },
+  {
+    "name": "Tabs",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "description": "Props for {@link Tabs}.",
+    "signature": "export declare function Tabs(props: TabsProps): JSX.Element;",
+    "props": [
+      {
+        "name": "items",
+        "type": "TabItem[]",
+        "optional": false,
+        "description": "Tabs rendered by the control, in keyboard-navigation order."
+      },
+      {
+        "name": "active",
+        "type": "string",
+        "optional": false,
+        "description": "Id of the active tab. Tabs are controlled; update this value in `onChange`."
+      },
+      {
+        "name": "onChange",
+        "type": "(id: string) => void",
+        "optional": true,
+        "description": "Called with a tab id after a click or keyboard navigation activates it."
+      },
+      {
+        "name": "variant",
+        "type": "'line' | 'pills'",
+        "optional": true,
+        "description": "Visual treatment: underline tabs (`\"line\"`) or segmented tabs (`\"pills\"`)."
+      }
+    ]
+  },
+  {
+    "name": "WorkspaceSwitcher",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "description": "Props for {@link WorkspaceSwitcher}.",
+    "signature": "export declare function WorkspaceSwitcher(props: WorkspaceSwitcherProps): JSX.Element;",
+    "props": [
+      {
+        "name": "workspaces",
+        "type": "Workspace[]",
+        "optional": true,
+        "description": "Workspaces available for selection."
+      },
+      {
+        "name": "current",
+        "type": "string",
+        "optional": true,
+        "description": "Identifier of the current workspace. Defaults to the first workspace."
+      },
+      {
+        "name": "onChange",
+        "type": "(id: string, workspace: Workspace) => void",
+        "optional": true,
+        "description": "Called when a workspace is selected."
+      },
+      {
+        "name": "onCreate",
+        "type": "() => void",
+        "optional": true,
+        "description": "When present, shows a create-workspace action in the popover."
+      },
+      {
+        "name": "createLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Create-action label. Default `\"Create workspace\"`."
+      },
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the popover starts open. Useful for demos."
+      }
+    ]
+  }
+]

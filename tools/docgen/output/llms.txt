@@ -1,0 +1,746 @@
+# Lyra Design System — llms.txt
+
+> Lyra é um design system open source, CSS-first e white-label. Núcleo em CSS puro
+> (custom properties + classes `.lyra-*`), wrappers React finos por cima.
+> Este arquivo é a referência canônica para agentes/LLMs gerarem UI com Lyra.
+
+## Regras para gerar código Lyra
+
+1. NUNCA hardcode cor, raio, sombra, fonte ou espaçamento — use sempre tokens semânticos.
+2. Componentes consomem APENAS a camada semântica (`--accent`, `--surface-card`, `--text-muted`…),
+   nunca primitivas (`--indigo-600`, `--slate-200`).
+3. Dark mode: automático via `[data-theme="dark"]` no `<html>` — não escreva estilos dark manuais.
+4. White-label: marcas definem `--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`
+   sob `[data-brand="x"]` (ver tokens/brand.css); todo o grupo accent é derivado via color-mix.
+5. Em HTML puro use as classes: `.lyra-btn .lyra-btn--{primary|secondary|soft|ghost|danger} .lyra-btn--{sm|md|lg}`.
+   Em React use os componentes abaixo — as classes são geradas por eles.
+6. Foco: `box-shadow: var(--shadow-focus)` em `:focus-visible`; nunca `outline` custom.
+7. Interop shadcn: importe `tokens/compat-shadcn.css` DEPOIS de styles.css (--background, --primary, --ring… mapeados).
+
+## Tokens semânticos (camada que você usa)
+
+Cores: --accent, --accent-hover, --accent-active, --accent-soft, --accent-soft-text, --on-accent, --focus-ring, --surface-page, --surface-card, --surface-raised, --surface-sunken, --surface-overlay, --text-primary, --text-secondary, --text-muted, --text-faint, --text-inverse, --text-link, --border-default, --border-strong, --border-accent, --success, --success-soft, --success-text, --warning, --warning-soft, --warning-text, --danger, --danger-soft, --danger-text, --info, --info-soft, --info-text
+
+Espaço/raio/controles:
+--space-0, --space-1, --space-2, --space-3, --space-4, --space-5, --space-6, --space-8, --space-10, --space-12, --space-16, --space-20, --space-24, --radius-xs, --radius-sm, --radius-md, --radius-lg, --radius-xl, --radius-full, --control-sm, --control-md, --control-lg, --container-max, --sidebar-width, --content-gutter
+
+Tipografia: famílias --font-{sans,display,mono}; pesos --weight-{regular..extrabold};
+tamanhos --text-{xs..6xl} (UI default 14px = --text-base);
+estilos compostos p/ shorthand font: --display-font, --h1-font, --h2-font, --h3-font, --body-font, --body-strong-font, --caption-font, --overline-font, --code-font
+
+Efeitos: --shadow-{xs,sm,md,lg,focus}; --duration-{fast,base,slow}; --ease-{out,in-out};
+z-index --z-{dropdown,sticky,overlay,dialog,toast,tooltip}.
+
+## API dos componentes React (@lyra-ds/react)
+
+## Buttons
+
+### Button
+```ts
+/**
+ * Props for {@link Button}. Extends the native `<button>` attributes, so every DOM
+ * prop (`type`, `onClick`, `form`, `aria-*`, …) passes straight through onto the root.
+*/
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Visual variant. Default `"primary"`. Use `primary` for the single main action per view. */
+  variant?: 'primary' | 'secondary' | 'soft' | 'ghost' | 'danger';
+  /** Control height. Default `"md"` (sm 32px · md 40px · lg 48px). */
+  size?: 'sm' | 'md' | 'lg';
+  /** Icon rendered before the label (usually `<Icon size={16} />`). */
+  iconLeft?: ReactNode;
+  /** Icon rendered after the label. */
+  iconRight?: ReactNode;
+  /** Show the spinner and block interaction. The label stays visible (no layout shift). */
+  loading?: boolean;
+  /** Stretch to 100% of the container width. */
+  full?: boolean;
+}
+export declare function Button(props: ButtonProps): JSX.Element;
+```
+
+### IconButton
+```ts
+/** Props for {@link IconButton}. */
+export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Required accessible label, used for both `aria-label` and the native tooltip. */
+  label: string;
+  /** Visual variant. Default `"secondary"`. */
+  variant?: 'primary' | 'secondary' | 'soft' | 'ghost' | 'danger';
+  /** Control size. Default `"md"` (40 × 40px). */
+  size?: 'sm' | 'md' | 'lg';
+  /** Icon content, normally an `<Icon />`. */
+  children: ReactNode;
+}
+export declare function IconButton(props: IconButtonProps): JSX.Element;
+```
+
+## Data
+
+### EmptyState
+```ts
+/** Props for {@link EmptyState}. */
+export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Optional illustrative icon content, normally an `<Icon size={24} />`. */
+  icon?: ReactNode;
+  /** Required empty-state heading. */
+  title: ReactNode;
+  /** Optional explanatory text. */
+  description?: ReactNode;
+  /** Optional action, normally a `<Button>`. */
+  action?: ReactNode;
+}
+export declare function EmptyState(props: EmptyStateProps): JSX.Element;
+```
+
+### Stat
+```ts
+/** Props for {@link Stat}. */
+export interface StatProps extends HTMLAttributes<HTMLDivElement> {
+  /** Label describing the metric. */
+  label: ReactNode;
+  /** Prominent metric value. */
+  value: ReactNode;
+  /** Optional change text. */
+  delta?: ReactNode;
+  /** Change direction and color. Default `"flat"`. */
+  direction?: 'up' | 'down' | 'flat';
+}
+export declare function Stat(props: StatProps): JSX.Element;
+```
+
+### Table
+```ts
+/** Props for {@link Table}. */
+export interface TableProps extends HTMLAttributes<HTMLDivElement> {
+  /** Columns rendered in the supplied order. */
+  columns: TableColumn[];
+  /** Row records whose values may be any renderable React node. */
+  rows: Array<Record<string, ReactNode>>;
+  /** Highlight rows on hover. */
+  hover?: boolean;
+}
+export declare function Table(props: TableProps): JSX.Element;
+```
+
+## Display
+
+### Accordion
+```ts
+/** Props for {@link Accordion}. */
+export interface AccordionProps extends HTMLAttributes<HTMLDivElement> {
+  /** Items rendered in their supplied order. */
+  items: AccordionItem[];
+  /** Id of the item initially open. */
+  defaultOpen?: string;
+  /** Whether more than one item may be open at once. Defaults to `false`. */
+  multiple?: boolean;
+}
+export declare function Accordion(props: AccordionProps): JSX.Element;
+```
+
+### Avatar
+```ts
+/** Props for {@link Avatar}. */
+export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Image URL. When absent, initials are derived from `name`. */
+  src?: string;
+  /** Full name, used for initials and the native tooltip. */
+  name?: string;
+  /** Avatar size. Default `"md"` (32px). */
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Avatar shape. Default `"circle"`; use `"square"` for organizations. */
+  shape?: 'circle' | 'square';
+  /** Optional presence status. */
+  status?: 'online' | 'busy' | 'away';
+}
+export declare function Avatar(props: AvatarProps): JSX.Element;
+```
+
+### AvatarGroup
+```ts
+/** Props for {@link AvatarGroup}. */
+export interface AvatarGroupProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Avatar elements displayed as an overlapping group. */
+  children: ReactNode;
+}
+export declare function AvatarGroup(props: AvatarGroupProps): JSX.Element;
+```
+
+### Badge
+```ts
+/** Props for {@link Badge}. */
+export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Semantic color tone. Default `"neutral"`. */
+  tone?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
+  /** Show a status dot before the content. */
+  dot?: boolean;
+  /** Badge content. */
+  children: ReactNode;
+}
+export declare function Badge(props: BadgeProps): JSX.Element;
+```
+
+### Card
+```ts
+/** Props for {@link Card}. */
+export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Optional heading rendered in the card header. */
+  title?: ReactNode;
+  /** Actions aligned at the end of the card header. */
+  actions?: ReactNode;
+  /** Content rendered in the bordered footer. */
+  footer?: ReactNode;
+  /** Apply internal padding. Default `true`. */
+  padded?: boolean;
+  /** Add hover elevation for clickable cards. */
+  interactive?: boolean;
+}
+export declare function Card(props: CardProps): JSX.Element;
+```
+
+### Tag
+```ts
+/** Props for {@link Tag}. */
+export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Called when the optional remove button is clicked. */
+  onRemove?: () => void;
+  /** Tag content. */
+  children: ReactNode;
+}
+export declare function Tag(props: TagProps): JSX.Element;
+```
+
+## Feedback
+
+### Alert
+```ts
+/** Props for {@link Alert}. */
+export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Semantic tone. Default `"info"`. */
+  tone?: 'info' | 'success' | 'warning' | 'danger';
+  /** Optional bold title line. */
+  title?: ReactNode;
+  /** Optional icon content, normally an `<Icon size={18} />`. */
+  icon?: ReactNode;
+  /** Alert body content. */
+  children: ReactNode;
+}
+export declare function Alert(props: AlertProps): JSX.Element;
+```
+
+### CookieBanner
+```ts
+/** Props for {@link CookieBanner}. */
+export interface CookieBannerProps extends HTMLAttributes<HTMLDivElement> {
+  /** Browser storage key used to persist the visitor's choice. */
+  storageKey?: string;
+  /** Optional URL for the privacy policy linked from the default copy. */
+  policyHref?: string;
+  /** Called after the visitor accepts all cookies. */
+  onAccept?: () => void;
+  /** Called after the visitor keeps only essential cookies. */
+  onEssentials?: () => void;
+  /** Custom banner copy that replaces the default LGPD notice. */
+  children?: ReactNode;
+}
+export declare function CookieBanner(props: CookieBannerProps): JSX.Element;
+```
+
+### Dialog
+```ts
+/**
+ * Props for {@link Dialog}.
+ *
+ * Extends the native `<div>` attributes so DOM props (`id`, `data-*`, `aria-*`, `onKeyDown`,
+ * …) pass through onto the panel element. The native `title` attribute (a `string`) is
+ * `Omit`-ted first so the Lyra `title` can be redefined as `ReactNode` — without the `Omit`
+ * the interface fails strict typecheck (native `HTMLAttributes.title` is a string attribute).
+*/
+export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Controls visibility. `true` mounts the overlay + panel; `false` plays the exit then unmounts. */
+  open: boolean;
+  /** Called by every close path (Esc, overlay click, the × button). The × renders only when this is provided. */
+  onClose?: () => void;
+  /** Heading rendered in the panel header and wired as the accessible name via `aria-labelledby`. */
+  title: ReactNode;
+  /** Action buttons rendered in the footer. Omitted → no `.lyra-dialog__footer` chrome. */
+  footer?: ReactNode;
+  /** Close on the Escape key. Default `true`. */
+  closeOnEsc?: boolean;
+  /** Close on a click on the overlay backdrop (never on panel content). Default `true`. */
+  closeOnOverlayClick?: boolean;
+  /** Portal host. Defaults to `document.body`. */
+  container?: HTMLElement;
+  /** Body content. */
+  children: ReactNode;
+}
+export declare function Dialog(props: DialogProps): JSX.Element;
+```
+
+### Drawer
+```ts
+/** Props for {@link Drawer}. */
+export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Controls visibility. `true` mounts the portaled overlay and drawer panel. */
+  open: boolean;
+  /** Called when the user dismisses the drawer with Escape, the backdrop, or the close button. */
+  onClose?: () => void;
+  /** Heading rendered in the drawer header and used as its accessible name. */
+  title: ReactNode;
+  /** Fixed actions rendered in the footer. Omit to remove the footer chrome. */
+  footer?: ReactNode;
+  /** Portal host. Defaults to `document.body`. */
+  container?: HTMLElement;
+  /** Drawer body content. */
+  children: ReactNode;
+}
+export declare function Drawer(props: DrawerProps): JSX.Element;
+```
+
+### Progress
+```ts
+/** Props for {@link Progress}. */
+export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
+  /** Progress percentage from 0 to 100. */
+  value: number;
+  /** Optional alternative fill color. */
+  tone?: 'success' | 'danger';
+}
+export declare function Progress(props: ProgressProps): JSX.Element;
+```
+
+### Skeleton
+```ts
+/** Props for {@link Skeleton}. */
+export interface SkeletonProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Placeholder width. Default `"100%"`. */
+  width?: number | string;
+  /** Placeholder height. Default `14`. */
+  height?: number | string;
+  /** Render a circle using `height` as its diameter. */
+  circle?: boolean;
+}
+export declare function Skeleton(props: SkeletonProps): JSX.Element;
+```
+
+### Spinner
+```ts
+/** Props for {@link Spinner}. */
+export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Spinner size. Default `"md"` (24px). */
+  size?: 'sm' | 'md' | 'lg';
+}
+export declare function Spinner(props: SpinnerProps): JSX.Element;
+```
+
+### Toast
+```ts
+/** Props for {@link Toast}. */
+export interface ToastProps extends HTMLAttributes<HTMLDivElement> {
+  /** Icon color tone. Default `"info"`. */
+  tone?: 'info' | 'success' | 'danger';
+  /** Optional icon displayed before the message. */
+  icon?: ReactNode;
+  /** Called when the optional close button is activated. */
+  onClose?: () => void;
+  /** Toast message content. */
+  children: ReactNode;
+}
+export declare function Toast(props: ToastProps): JSX.Element;
+```
+
+### ToastStack
+```ts
+/** Props for {@link ToastStack}. */
+export interface ToastStackProps extends HTMLAttributes<HTMLDivElement> {
+  /** Toasts or other feedback content to stack. */
+  children: ReactNode;
+}
+export declare function ToastStack(props: ToastStackProps): JSX.Element;
+```
+
+### Tooltip
+```ts
+/** Props for {@link Tooltip}. */
+export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Short, non-interactive text shown for the target. */
+  tip: string;
+  /** The target element. Pass one focusable React element for full keyboard support. */
+  children: ReactNode;
+}
+export declare function Tooltip(props: TooltipProps): JSX.Element;
+```
+
+## Files
+
+### FileManager
+```ts
+/** Props for {@link FileManager}. */
+export interface FileManagerProps {
+  /** Files and folders to display. */
+  files?: ManagedFile[];
+  /** Breadcrumb segments for the current folder. */
+  path?: string[];
+  /** Controlled display mode. */
+  view?: 'list' | 'grid';
+  /** Initial display mode when uncontrolled. Default: `"list"`. */
+  defaultView?: 'list' | 'grid';
+  /** Called after the display mode changes. */
+  onViewChange?: (view: 'list' | 'grid') => void;
+  /** Called when a file name or grid card is opened. */
+  onOpen?: (file: ManagedFile) => void;
+  /** Called with the selected breadcrumb segment index. */
+  onNavigate?: (index: number) => void;
+  /** Builds the action menu for an item, replacing the default commands. */
+  actions?: (file: ManagedFile) => DropdownItem[];
+  /** Placeholder shown in the file search field. */
+  searchPlaceholder?: string;
+  /** Message shown when no files match the search. */
+  emptyMessage?: string;
+  /** Class appended after the public `.lyra-fm` class. */
+  className?: string;
+}
+export declare function FileManager(props: FileManagerProps): JSX.Element;
+```
+
+### FileUpload
+```ts
+/** Props for {@link FileUpload}. */
+export interface FileUploadProps {
+  /** Primary dropzone text. */
+  label?: string;
+  /** Helper text, overriding the generated accept/size description. */
+  hint?: string;
+  /** Accepted file types, forwarded to the hidden file input and shown in the helper text. */
+  accept?: string;
+  /** Files larger than this many megabytes are added as error items. */
+  maxSizeMB?: number;
+  /** Whether more than one file can be added. Default `true`. */
+  multiple?: boolean;
+  /** Simulated upload duration in milliseconds. Default `1800`. */
+  uploadDuration?: number;
+  /** Items used to seed the uncontrolled list. */
+  defaultItems?: FileUploadItem[];
+  /** Called with the real browser `File` objects whenever files are added. */
+  onFiles?: (files: File[]) => void;
+  /** Called whenever the internal item list changes. */
+  onChange?: (items: FileUploadItem[]) => void;
+  /** Class appended after the public `.lyra-upload` class. */
+  className?: string;
+}
+export declare function FileUpload(props: FileUploadProps): JSX.Element;
+```
+
+## Forms
+
+### Checkbox
+```ts
+/** Props for {@link Checkbox}. */
+export interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
+  /** Clickable label rendered beside the checkbox. */
+  label?: ReactNode;
+}
+export declare function Checkbox(props: CheckboxProps): JSX.Element;
+```
+
+### Combobox
+```ts
+/** Props for {@link Combobox}. */
+export interface ComboboxProps {
+  /** Label rendered above the control. */
+  label?: string;
+  /** Helper text rendered below the control. */
+  hint?: string;
+  /** Error message that replaces `hint` and enables error styling. */
+  error?: string;
+  /** Available options. */
+  options?: ComboboxOption[];
+  /** Selected value in controlled mode. */
+  value?: string;
+  /** Initial selected value in uncontrolled mode. */
+  defaultValue?: string;
+  /** Called with the selected value and option. */
+  onChange?: (value: string, option: ComboboxOption) => void;
+  /** Trigger text when no option is selected. Default: `"Select…"`. */
+  placeholder?: string;
+  /** Search input placeholder. Default: `"Search…"`. */
+  searchPlaceholder?: string;
+  /** Text shown when filtering finds no options. Default: `"No results."`. */
+  emptyMessage?: string;
+  /** Disables the trigger. */
+  disabled?: boolean;
+  /** Whether the popup starts open. Useful for demos. */
+  defaultOpen?: boolean;
+  /** Id for the trigger. A stable id is generated when omitted. */
+  id?: string;
+  /** Additional class name appended to `.lyra-combobox`. */
+  className?: string;
+}
+export declare function Combobox(props: ComboboxProps): JSX.Element;
+```
+
+### Input
+```ts
+/**
+ * Props for {@link Input}.
+ *
+ * Extends the native `<input>` attributes so every DOM prop (`type`, `placeholder`,
+ * `value`, `defaultValue`, `onChange`, `disabled`, `aria-*`, …) passes straight through
+ * onto the `<input>` element. The native numeric `size` attribute is `Omit`-ted first so
+ * the Lyra control-height `size` (`'sm' | 'md' | 'lg'`) can be redefined without colliding
+ * with the native `size?: number` under strict TypeScript.
+*/
+export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+  /** Label rendered above the field, wired to the input via `htmlFor`. */
+  label?: string;
+  /** Helper text rendered below the field. Replaced by `error` when that is set. */
+  hint?: string;
+  /** Error message — enables the error styling (`.lyra-input--error` + `.lyra-hint--error`), sets `aria-invalid`, and replaces `hint`. */
+  error?: string;
+  /** Control height. Default `"md"` (sm 32px · md 40px · lg 48px). */
+  size?: 'sm' | 'md' | 'lg';
+  /** Icon rendered inside the field, on the left (e.g. `<Icon name="search" size={16} />`). */
+  iconLeft?: ReactNode;
+}
+export declare function Input(props: InputProps): JSX.Element;
+```
+
+### Radio
+```ts
+/** Props for {@link Radio}. */
+export interface RadioProps extends InputHTMLAttributes<HTMLInputElement> {
+  /** Clickable label rendered beside the radio button. */
+  label?: ReactNode;
+  /** Group radio buttons by giving them the same name. */
+  name?: string;
+}
+export declare function Radio(props: RadioProps): JSX.Element;
+```
+
+### Select
+```ts
+/** Props for {@link Select}. */
+export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
+  /** Label rendered above the select and associated through `htmlFor`. */
+  label?: string;
+  /** Helper text rendered below the select. Replaced by `error` when provided. */
+  hint?: string;
+  /** Error message that enables error styling and `aria-invalid`. */
+  error?: string;
+  /** Control height. Default `"md"`. */
+  size?: 'sm' | 'md' | 'lg';
+  /** Native `<option>` or `<optgroup>` children. */
+  children: ReactNode;
+}
+export declare function Select(props: SelectProps): JSX.Element;
+```
+
+### Switch
+```ts
+/** Props for {@link Switch}. */
+export interface SwitchProps extends InputHTMLAttributes<HTMLInputElement> {
+  /** Label rendered beside the switch track. */
+  label?: ReactNode;
+}
+export declare function Switch(props: SwitchProps): JSX.Element;
+```
+
+### Textarea
+```ts
+/** Props for {@link Textarea}. */
+export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  /** Label rendered above the textarea and associated with it. */
+  label?: string;
+  /** Helper text rendered below the textarea. Replaced by `error` when present. */
+  hint?: string;
+  /** Error message that enables error styling and `aria-invalid`. */
+  error?: string;
+}
+export declare function Textarea(props: TextareaProps): JSX.Element;
+```
+
+## Icons
+
+### Icon
+```ts
+/**
+ * Props for {@link Icon}. A `name` from the curated registry is the common path; the `icon`
+ * escape hatch (D-03) accepts any lucide-react component for glyphs outside the registry.
+*/
+export interface IconProps {
+  /** Curated registry key in kebab-case, e.g. `"arrow-right"`, `"search"`, `"layout-dashboard"`. */
+  name?: IconName;
+  /** Escape hatch (D-03): a lucide-react component. Wins over `name` when both are given. */
+  icon?: LucideIcon;
+  /** Side length in px. Default `20` (16 inline, 24 for emphasis). */
+  size?: number;
+  /** CSS color. Defaults to `currentColor` (lucide's native default — D-06). */
+  color?: string;
+  /** Accessible label. With it the icon is `role="img"`; without it the icon is decorative. */
+  title?: string;
+  className?: string;
+  style?: CSSProperties;
+}
+export declare function Icon(props: IconProps): JSX.Element;
+```
+
+## Navigation
+
+### Breadcrumb
+```ts
+/** Props for {@link Breadcrumb}. */
+export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
+  /** Navigation items; the final item is rendered as the current page. */
+  items: BreadcrumbItem[];
+}
+export declare function Breadcrumb(props: BreadcrumbProps): JSX.Element;
+```
+
+### CommandPalette
+```ts
+/** Props for {@link CommandPalette}. */
+export interface CommandPaletteProps {
+  /** Controls visibility of the modal overlay. Ignored in inline mode. */
+  open?: boolean;
+  /** Called when the palette is dismissed or an item is selected. */
+  onClose?: () => void;
+  /** Enables the global Command/Ctrl+hotkey listener and is called to open the palette. */
+  onOpen?: () => void;
+  /** Called with the chosen item after its own `onSelect` callback. */
+  onSelect?: (item: CommandItem) => void;
+  /** Command groups to filter and render. */
+  groups?: CommandGroup[];
+  /** Search field placeholder. Default: `"Digite um comando ou busque…"`. */
+  placeholder?: string;
+  /** Text shown before the current query when no commands match. Default: `"Nenhum resultado para"`. */
+  emptyMessage?: string;
+  /** Key used with Command/Ctrl for the global shortcut. Default: `"k"`. */
+  hotkey?: string;
+  /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
+  inline?: boolean;
+  /** Additional class name appended to `.lyra-cmdk`. */
+  className?: string;
+}
+export declare function CommandPalette(props: CommandPaletteProps): JSX.Element;
+```
+
+### CreateWorkspaceDialog
+```ts
+/** Props for {@link CreateWorkspaceDialog}. */
+export interface CreateWorkspaceDialogProps {
+  /** Controls visibility. Default `false`. */
+  open?: boolean;
+  /** Called when the dialog is dismissed or creation succeeds. */
+  onClose?: () => void;
+  /** Receives the trimmed workspace name and its URL-safe slug after submission. */
+  onCreate?: (data: {
+        name: string;
+        slug: string;
+    }) => void;
+  /** Dialog heading. Default `"Create workspace"`. */
+  title?: string;
+  /** Text rendered before the editable slug. Default `"lyra.dev/"`. */
+  slugPrefix?: string;
+}
+export declare function CreateWorkspaceDialog(props: CreateWorkspaceDialogProps): JSX.Element;
+```
+
+### Dropdown
+```ts
+/** Props for {@link Dropdown}. */
+export interface DropdownProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Element that opens the action menu, such as a Button, IconButton, or Avatar. */
+  trigger: ReactNode;
+  /** Commands, separators, and labels rendered by the menu. */
+  items: DropdownItem[];
+  /** Popup alignment. Default: `"start"`. */
+  align?: 'start' | 'end';
+  /** Whether the menu starts open. Useful for demos. */
+  defaultOpen?: boolean;
+}
+export declare function Dropdown(props: DropdownProps): JSX.Element;
+```
+
+### Pagination
+```ts
+/** Props for {@link Pagination}. */
+export interface PaginationProps extends Omit<HTMLAttributes<HTMLElement>, 'onChange'> {
+  /** Current one-based page. */
+  page: number;
+  /** Total number of pages. */
+  total: number;
+  /** Called with the requested one-based page. */
+  onChange?: (page: number) => void;
+}
+export declare function Pagination(props: PaginationProps): JSX.Element;
+```
+
+### SidebarGroup
+```ts
+/** Props for {@link SidebarGroup}. */
+export interface SidebarGroupProps {
+  /** Section label, rendered in uppercase by the styles package. */
+  label?: string;
+  /** Items rendered in the supplied order. */
+  items?: SidebarGroupItem[];
+  /** Whether the section label can collapse the item list. */
+  collapsible?: boolean;
+  /** Whether a collapsible group is initially collapsed. */
+  defaultCollapsed?: boolean;
+  /** Called with the selected item's id and full item record. */
+  onSelect?: (id: string, item: SidebarGroupItem) => void;
+  /** Additional class names appended after Lyra classes. */
+  className?: string;
+  /** Extra content rendered after the group items. */
+  children?: ReactNode;
+}
+export declare function SidebarGroup(props: SidebarGroupProps): JSX.Element;
+```
+
+### Stepper
+```ts
+/** Props for {@link Stepper}. */
+export interface StepperProps extends HTMLAttributes<HTMLDivElement> {
+  /** Step labels, in order. */
+  steps: ReactNode[];
+  /** Zero-based index of the current step. */
+  active: number;
+}
+export declare function Stepper(props: StepperProps): JSX.Element;
+```
+
+### Tabs
+```ts
+/** Props for {@link Tabs}. */
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /** Tabs rendered by the control, in keyboard-navigation order. */
+  items: TabItem[];
+  /** Id of the active tab. Tabs are controlled; update this value in `onChange`. */
+  active: string;
+  /** Called with a tab id after a click or keyboard navigation activates it. */
+  onChange?: (id: string) => void;
+  /** Visual treatment: underline tabs (`"line"`) or segmented tabs (`"pills"`). */
+  variant?: 'line' | 'pills';
+}
+export declare function Tabs(props: TabsProps): JSX.Element;
+```
+
+### WorkspaceSwitcher
+```ts
+/** Props for {@link WorkspaceSwitcher}. */
+export interface WorkspaceSwitcherProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /** Workspaces available for selection. */
+  workspaces?: Workspace[];
+  /** Identifier of the current workspace. Defaults to the first workspace. */
+  current?: string;
+  /** Called when a workspace is selected. */
+  onChange?: (id: string, workspace: Workspace) => void;
+  /** When present, shows a create-workspace action in the popover. */
+  onCreate?: () => void;
+  /** Create-action label. Default `"Create workspace"`. */
+  createLabel?: string;
+  /** Whether the popover starts open. Useful for demos. */
+  defaultOpen?: boolean;
+}
+export declare function WorkspaceSwitcher(props: WorkspaceSwitcherProps): JSX.Element;
+```

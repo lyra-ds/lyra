@@ -12,6 +12,8 @@ tools/icon-registry/fixtures/
 # GENERATED registry — its byte-exact format is owned by `generate.mjs --check`; prettier --write
 # would strip identifier-safe key quotes and permanently break the drift guard (D-02)
 packages/react/src/icon/icon-registry.ts
+# Generated llms reference — its byte-exact format is owned by docgen --check.
+tools/docgen/output/llms.txt
 # Generated / non-source files
 pnpm-lock.yaml
 CHANGELOG.md

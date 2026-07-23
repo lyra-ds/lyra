@@ -7,13 +7,12 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## Next
 
-- [ ] Fase 5 — Docgen & llms.txt (`.batuta/plan-05-docgen-llms.md`)
-- [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`) — rodar impeccable numa interface/showcase com todos os componentes aqui
+- [ ] Fase 6 — Docs Site bilíngue (`.batuta/plan-06-docs-site-bilingue.md`) — rodar impeccable numa interface/showcase com todos os componentes aqui; consumir `tools/docgen/output/props.json` (prop tables) e copiar `llms.txt` para `apps/docs/public/`
 - [ ] Fase 7 — Release Pipeline & Launch (`.batuta/plan-07-release-pipeline-launch.md`)
 
 ## Done
 
-- [x] Alinhamento Checkbox/Radio/Switch à fidelidade do handoff — wrapper inteiro virou `<label>` (linha toda clicável, associação implícita), removidos `useId`/`htmlFor`; `id` do consumidor flui via `...rest`. Testes de clique (texto + wrapper) adicionados. → codex (`gpt-5.6-terra`, reasoning high, foreground). 332 testes, gates verdes. Resolve a deviação anotada do Lote B. 2026-07-23
+- [x] **Fase 5 — Docgen & llms.txt** — `tools/docgen/generate.mjs` (zero-dep, TS compiler API) extrai a API dos 40 componentes dos `dist/*.d.ts` e emite `tools/docgen/output/{llms.txt,props.json}` (local neutro; Fase 6 copia p/ apps/docs). Header (regras+tokens) verbatim do handoff; API gerada da fonte (JSDoc inglês). Gate de drift `--check` no job build do CI (padrão do icon-registry). → codex (`gpt-5.6-terra`, reasoning high, foreground). Sem changeset (tooling). Gates verdes. 2026-07-23 à fidelidade do handoff — wrapper inteiro virou `<label>` (linha toda clicável, associação implícita), removidos `useId`/`htmlFor`; `id` do consumidor flui via `...rest`. Testes de clique (texto + wrapper) adicionados. → codex (`gpt-5.6-terra`, reasoning high, foreground). 332 testes, gates verdes. Resolve a deviação anotada do Lote B. 2026-07-23
 
 - [x] **Fase 4 COMPLETA (40/40 componentes)** — todos os 40 componentes do handoff convertidos para `@lyra-ds/react` (React acessível + SSR-safe, classes `.lyra-*` verbatim). 324 testes. Lotes A–D mergeados/prontos. 2026-07-23
 - [x] Fase 4 / Lote D3 — CommandPalette (⌘K overlay + combobox activedescendant + hotkey global + inline) e FileManager (busca + toggle list/grid controlled/uncontrolled + breadcrumb + ações por item via Dropdown composto) → codex (`gpt-5.6-terra`, reasoning high, solo cada, foreground). FileManager: `.lyra-fm__more` como span (Dropdown já provê o wrapper interativo, evita nested-interactive no axe). 324 testes, gates verdes. 40/40 componentes. 2026-07-23
