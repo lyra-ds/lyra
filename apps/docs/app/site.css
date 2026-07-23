@@ -99,6 +99,50 @@
   text-decoration: none;
 }
 
+/* header search trigger (opens the ⌘K command palette) */
+.lw-search {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 200px;
+  padding: 6px var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lw-search:hover {
+  border-color: var(--border-strong, var(--text-faint));
+  color: var(--text-secondary);
+}
+.lw-search__label {
+  margin-right: auto;
+}
+.lw-search__kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  padding: 0 5px;
+}
+@media (max-width: 720px) {
+  .lw-search {
+    min-width: 0;
+  }
+  .lw-search__label,
+  .lw-search__kbd {
+    display: none;
+  }
+}
+
 /* segmented language toggle */
 .lw-locale {
   display: inline-flex;

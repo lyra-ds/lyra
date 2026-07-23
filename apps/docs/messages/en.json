@@ -31,5 +31,7 @@
   "optional": "Optional",
   "github": "GitHub repository",
   "onThisPage": "On this page",
-  "languageLabel": "Language"
+  "languageLabel": "Language",
+  "search": "Search…",
+  "searchEmpty": "No results for"
 }

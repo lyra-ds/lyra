@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
+import { CommandMenu } from './command-menu';
 import { LocaleSwitcher } from './locale-switcher';
 import { ThemeToggle } from './theme-toggle';
 
@@ -55,6 +56,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           </Link>
         </nav>
         <div className="lw-header__actions">
+          <CommandMenu locale={locale} />
           <ThemeToggle label={t('theme')} />
           <LocaleSwitcher locale={locale} label={t('languageLabel')} />
           <a
