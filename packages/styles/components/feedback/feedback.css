@@ -325,3 +325,12 @@
 }
 .lyra-drawer__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
 .lyra-drawer__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): make the Dialog close control meet
+   the 44px WCAG target size while negative margins preserve the original header geometry. */
+.lyra-dialog__close {
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  margin: -8px;
+}

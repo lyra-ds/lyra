@@ -469,16 +469,16 @@ describe('Dialog — layout backstops', () => {
     expect(document.body.style.overflow).toBe('hidden');
   });
 
-  it('a long title wraps in the header while the × keeps its 28px hit area', async () => {
+  it('a long title wraps in the header while the × keeps its 44px touch target', async () => {
     await openHarness({ title: LONG_TITLE });
-    const btn = closeBtn()!;
-    const rect = btn.getBoundingClientRect();
-    // The 03-02 `flex: 0 0 28px` keeps the box ~28px (sub-pixel rounding in headless chromium)
-    // — it must NOT collapse under the wrapping long title.
-    expect(rect.width).toBeGreaterThan(26);
-    expect(rect.width).toBeLessThanOrEqual(29);
-    expect(rect.height).toBeGreaterThan(26);
-    expect(rect.height).toBeLessThanOrEqual(29);
+    // The additive a11y extension reserves a WCAG-sized target without letting the long title
+    // collapse it. Measure inside waitFor so the entrance transform (scale) has settled — a
+    // mid-animation rect reports the scaled-down box.
+    await vi.waitFor(() => {
+      const rect = closeBtn()!.getBoundingClientRect();
+      expect(rect.width).toBeGreaterThanOrEqual(44);
+      expect(rect.height).toBeGreaterThanOrEqual(44);
+    });
     expect(panel()!.querySelector('.lyra-dialog__title')!.textContent).toBe(LONG_TITLE);
   });
 });
