@@ -59,9 +59,14 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Phase 6a: apps/docs typechecks against @lyra-ds/react's BUILT dist types (it consumes
+      # the published package, not its source), so react must be built before the recursive
+      # typecheck resolves its `@lyra-ds/react` imports. tsup build is fast; no dist ⇒ TS2307.
+      - run: pnpm --filter @lyra-ds/react run build
       # Phase 3 delivered the first package typecheck: this now recurses into
       # @lyra-ds/react (tsc --noEmit) — RCT-04's types half. No yml change was needed
       # (the recursion reserved here since Phase 1 picked up the new package script).
+      # Phase 6a: the recursion now also covers apps/docs (tsc --noEmit).
       - run: pnpm run typecheck
 
   test:
