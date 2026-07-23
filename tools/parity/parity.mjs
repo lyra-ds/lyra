@@ -110,7 +110,12 @@ const MASK_DIVERGENCE = new Map([
 // inline flex style — same CSS-first promotion pattern).
 const ADDITIVE_EXTENSIONS = {
   'components/feedback/feedback.css': {
-    classes: ['lyra-dialog__close', 'lyra-dialog--closing', 'lyra-dialog-overlay--closing'],
+    classes: [
+      'lyra-dialog__close',
+      'lyra-dialog--closing',
+      'lyra-dialog-overlay--closing',
+      'lyra-toast__icon',
+    ],
     keyframes: ['lyra-pop-out', 'lyra-fade-out'],
   },
   'components/display/display.css': {

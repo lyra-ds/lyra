@@ -74,3 +74,12 @@ export { Dropdown } from './dropdown';
 export type { DropdownItem, DropdownProps } from './dropdown';
 export { Combobox } from './combobox';
 export type { ComboboxOption, ComboboxProps } from './combobox';
+
+export { Table } from './table';
+export type { TableColumn, TableProps } from './table';
+export { SidebarGroup } from './sidebar-group';
+export type { SidebarGroupItem, SidebarGroupProps } from './sidebar-group';
+export { Toast, ToastStack } from './toast';
+export type { ToastProps, ToastStackProps } from './toast';
+export { CookieBanner } from './cookie-banner';
+export type { CookieBannerProps } from './cookie-banner';

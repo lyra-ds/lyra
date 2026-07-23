@@ -309,6 +309,46 @@
         "default": "./dist/combobox.cjs"
       }
     },
+    "./table": {
+      "import": {
+        "types": "./dist/table.d.ts",
+        "default": "./dist/table.js"
+      },
+      "require": {
+        "types": "./dist/table.d.cts",
+        "default": "./dist/table.cjs"
+      }
+    },
+    "./sidebar-group": {
+      "import": {
+        "types": "./dist/sidebar-group.d.ts",
+        "default": "./dist/sidebar-group.js"
+      },
+      "require": {
+        "types": "./dist/sidebar-group.d.cts",
+        "default": "./dist/sidebar-group.cjs"
+      }
+    },
+    "./toast": {
+      "import": {
+        "types": "./dist/toast.d.ts",
+        "default": "./dist/toast.js"
+      },
+      "require": {
+        "types": "./dist/toast.d.cts",
+        "default": "./dist/toast.cjs"
+      }
+    },
+    "./cookie-banner": {
+      "import": {
+        "types": "./dist/cookie-banner.d.ts",
+        "default": "./dist/cookie-banner.js"
+      },
+      "require": {
+        "types": "./dist/cookie-banner.d.cts",
+        "default": "./dist/cookie-banner.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -605,6 +645,46 @@
         "react-dom"
       ],
       "limit": "8 kB"
+    },
+    {
+      "name": "import { Table } from '@lyra-ds/react/table'",
+      "path": "dist/table.js",
+      "import": "{ Table }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "700 B"
+    },
+    {
+      "name": "import { SidebarGroup } from '@lyra-ds/react/sidebar-group'",
+      "path": "dist/sidebar-group.js",
+      "import": "{ SidebarGroup }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "900 B"
+    },
+    {
+      "name": "import { Toast } from '@lyra-ds/react/toast'",
+      "path": "dist/toast.js",
+      "import": "{ Toast }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "700 B"
+    },
+    {
+      "name": "import { CookieBanner } from '@lyra-ds/react/cookie-banner'",
+      "path": "dist/cookie-banner.js",
+      "import": "{ CookieBanner }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1.5 kB"
     }
   ]
 }

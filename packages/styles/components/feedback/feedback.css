@@ -306,3 +306,5 @@
   from { transform: scale(1) translateY(0); opacity: 1; }
   to { transform: scale(0.97) translateY(4px); opacity: 0; }
 }
+
+.lyra-toast__icon { display: inline-flex; }
