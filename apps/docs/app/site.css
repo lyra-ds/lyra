@@ -94,7 +94,7 @@
 /* docs shell */
 .lw-docs {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 220px minmax(0, 1fr) 200px;
   gap: var(--space-10);
   padding-top: var(--space-8);
   padding-bottom: var(--space-16);
@@ -164,6 +164,63 @@
   font-size: var(--text-xl);
   color: var(--text-primary);
   margin: var(--space-4) 0 0;
+}
+.lw-docs__content h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin: var(--space-3) 0 0;
+}
+/* offset anchored headings below the sticky header */
+.lw-docs__content :is(h1, h2, h3) {
+  scroll-margin-top: 80px;
+}
+
+/* on-this-page rail */
+.lw-toc {
+  position: sticky;
+  top: 84px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.lw-toc__title {
+  font: var(--overline-font);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.lw-toc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 1px solid var(--border-default);
+}
+.lw-toc__list li[data-level='3'] {
+  padding-left: var(--space-4);
+}
+.lw-toc__link {
+  display: block;
+  padding: 2px var(--space-3);
+  margin-left: -1px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 1px solid transparent;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.lw-toc__link:hover {
+  color: var(--text-primary);
+}
+.lw-toc__link--active {
+  color: var(--accent-soft-text);
+  font-weight: var(--weight-semibold);
+  border-left-color: var(--accent);
 }
 .lw-docs__content p {
   font-size: var(--text-md);
@@ -324,6 +381,15 @@
   flex-wrap: wrap;
 }
 
+/* drop the on-this-page rail first, then the sidebar */
+@media (max-width: 1100px) {
+  .lw-docs {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .lw-toc {
+    display: none;
+  }
+}
 @media (max-width: 900px) {
   .lw-docs {
     grid-template-columns: 1fr;

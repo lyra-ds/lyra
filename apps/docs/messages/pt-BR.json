@@ -29,5 +29,6 @@
   "demoDelete": "Excluir projeto",
   "required": "Obrigatória",
   "optional": "Opcional",
-  "github": "Repositório no GitHub"
+  "github": "Repositório no GitHub",
+  "onThisPage": "Nesta página"
 }

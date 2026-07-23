@@ -29,5 +29,6 @@
   "demoDelete": "Delete project",
   "required": "Required",
   "optional": "Optional",
-  "github": "GitHub repository"
+  "github": "GitHub repository",
+  "onThisPage": "On this page"
 }

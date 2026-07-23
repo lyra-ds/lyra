@@ -6,6 +6,7 @@ import { DocsSidebar } from '@/components/docs-sidebar';
 import { HtmlLang } from '@/components/html-lang';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
+import { TableOfContents } from '@/components/toc';
 import { isLocale, locales } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -35,6 +36,7 @@ export default async function LocaleLayout({
       <div className="lw-container lw-docs">
         <DocsSidebar locale={lang} />
         <article className="lw-docs__content">{children}</article>
+        <TableOfContents />
       </div>
       <SiteFooter />
     </NextIntlClientProvider>
