@@ -10,18 +10,25 @@ export function DialogPreview() {
 
   return (
     <div className="lyra-card lyra-card--padded">
-      <Button onClick={() => setOpen(true)}>{t('openDialog')}</Button>
+      <Button variant="danger" onClick={() => setOpen(true)}>
+        {t('demoDelete')}
+      </Button>
       <Dialog
         footer={
-          <Button variant="secondary" onClick={() => setOpen(false)}>
-            {t('close')}
-          </Button>
+          <>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              {t('cancel')}
+            </Button>
+            <Button variant="danger" onClick={() => setOpen(false)}>
+              {t('demoDelete')}
+            </Button>
+          </>
         }
         onClose={() => setOpen(false)}
         open={open}
-        title="Delete project"
+        title={t('demoDeleteTitle')}
       >
-        This interactive preview uses the production Lyra Dialog component.
+        {t('demoDeleteBody')}
       </Dialog>
     </div>
   );

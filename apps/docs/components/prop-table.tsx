@@ -39,7 +39,13 @@ export function PropTable({ name }: { name: string }) {
               <td>
                 <code>{prop.type}</code>
               </td>
-              <td>{prop.optional ? 'No' : 'Yes'}</td>
+              <td>
+                {prop.optional ? (
+                  <span style={{ color: 'var(--text-faint)' }}>—</span>
+                ) : (
+                  <span className="lyra-badge lyra-badge--warning">Required</span>
+                )}
+              </td>
               <td>{prop.description}</td>
             </tr>
           ))}

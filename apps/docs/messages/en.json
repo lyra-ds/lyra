@@ -22,5 +22,12 @@
   "introduction": "Introduction",
   "gettingStarted": "Getting started",
   "getStarted": "Get started",
-  "footerNote": "Open source under the MIT license. Built by the community, for the community."
+  "footerNote": "Open source under the MIT license. Built by the community, for the community.",
+  "cancel": "Cancel",
+  "demoDeleteTitle": "Delete project",
+  "demoDeleteBody": "Deleting “Acme website” removes all its pages and members. This can’t be undone.",
+  "demoDelete": "Delete project",
+  "required": "Required",
+  "optional": "Optional",
+  "github": "GitHub repository"
 }

@@ -35,6 +35,14 @@ export function SiteFooter() {
           <a href="https://www.npmjs.com/org/lyra-ds" target="_blank" rel="noreferrer">
             npm
           </a>
+          <a
+            href="https://github.com/lyra-ds/lyra-ds/blob/main/CONTRIBUTING.md"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Contributing
+          </a>
+          <a href="/llms.txt">llms.txt</a>
         </div>
       </div>
     </footer>

@@ -62,6 +62,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             href="https://github.com/lyra-ds"
             target="_blank"
             rel="noreferrer"
+            aria-label={t('github')}
+            title={t('github')}
           >
             <Icon name="github" size={18} />
           </a>

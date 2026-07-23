@@ -171,6 +171,13 @@
   color: var(--text-secondary);
   margin: 0;
 }
+/* Guard: MDX may wrap a button/link label in <p>; keep it on the control's color */
+.lw-docs__content .lyra-btn p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
 .lw-docs__content a:not(.lyra-btn) {
   color: var(--accent-soft-text);
   font-weight: var(--weight-medium);

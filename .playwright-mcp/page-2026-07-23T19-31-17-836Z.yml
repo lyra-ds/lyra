@@ -1,0 +1,94 @@
+- generic [active] [ref=f25e1]:
+  - banner [ref=f25e2]:
+    - generic [ref=f25e3]:
+      - link "Lyra" [ref=f25e4] [cursor=pointer]:
+        - /url: /en
+      - navigation [ref=f25e6]:
+        - link "Docs" [ref=f25e7] [cursor=pointer]:
+          - /url: /en
+        - link "Components" [ref=f25e8] [cursor=pointer]:
+          - /url: /en/components
+      - generic [ref=f25e9]:
+        - button "Toggle color theme" [ref=f25e10] [cursor=pointer]
+        - button "Português (Brasil)" [ref=f25e13] [cursor=pointer]
+        - link [ref=f25e14] [cursor=pointer]:
+          - /url: https://github.com/lyra-ds
+        - button "Get started" [ref=f25e18] [cursor=pointer]
+  - generic [ref=f25e22]:
+    - complementary [ref=f25e23]:
+      - generic [ref=f25e24]:
+        - generic [ref=f25e25]: Introduction
+        - link "Getting started" [ref=f25e26] [cursor=pointer]:
+          - /url: /en
+        - link "Components" [ref=f25e27] [cursor=pointer]:
+          - /url: /en/components
+      - generic [ref=f25e28]:
+        - generic [ref=f25e29]: Display
+        - link "Badge" [ref=f25e30] [cursor=pointer]:
+          - /url: /en/components/badge
+        - link "Button" [ref=f25e31] [cursor=pointer]:
+          - /url: /en/components/button
+      - generic [ref=f25e32]:
+        - generic [ref=f25e33]: Form
+        - link "Input" [ref=f25e34] [cursor=pointer]:
+          - /url: /en/components/input
+      - generic [ref=f25e35]:
+        - generic [ref=f25e36]: Overlay
+        - link "Dialog" [ref=f25e37] [cursor=pointer]:
+          - /url: /en/components/dialog
+    - article [ref=f25e38]:
+      - generic [ref=f25e39]:
+        - heading "Components that scale from prototype to production" [level=1] [ref=f25e40]
+        - paragraph
+        - paragraph [ref=f25e41]:
+          - text: Lyra is a CSS-first, white-label design system. The whole look lives in
+          - code [ref=f25e42]: .lyra-*
+          - text: classes with light and dark themes, so the same core works across frameworks — this site is built with the very components it documents.
+        - paragraph
+        - generic [ref=f25e43]:
+          - link [ref=f25e44] [cursor=pointer]:
+            - /url: /en/components
+            - paragraph [ref=f25e45]: Browse components
+          - link [ref=f25e46] [cursor=pointer]:
+            - /url: /en/components/button
+            - paragraph [ref=f25e47]: Get started
+      - heading "Installation" [level=2] [ref=f25e48]
+      - paragraph [ref=f25e49]: Install the React package and the styles, then import the stylesheet once at your app root.
+      - generic [ref=f25e50]:
+        - button "Copy code" [ref=f25e52] [cursor=pointer]
+        - code [ref=f25e54]:
+          - generic [ref=f25e55]: npm i @lyra-ds/react @lyra-ds/styles
+      - generic [ref=f25e56]:
+        - button "Copy code" [ref=f25e58] [cursor=pointer]
+        - code [ref=f25e60]:
+          - generic [ref=f25e61]: // app entry (main.tsx / layout.tsx)
+          - generic [ref=f25e62]: import '@lyra-ds/styles/styles.css';
+      - heading "Your first component" [level=2] [ref=f25e63]
+      - generic [ref=f25e64]:
+        - button "Copy code" [ref=f25e66] [cursor=pointer]
+        - code [ref=f25e68]:
+          - generic [ref=f25e69]: "import { Button } from '@lyra-ds/react';"
+          - generic [ref=f25e71]: "export function App() {"
+          - generic [ref=f25e72]: return <Button>Hello Lyra</Button>;
+          - generic [ref=f25e73]: "}"
+      - heading "Dark theme" [level=2] [ref=f25e74]
+      - paragraph [ref=f25e75]:
+        - text: Add
+        - code [ref=f25e76]: data-theme="dark"
+        - text: to your
+        - code [ref=f25e77]: <html>
+        - text: element. Every semantic token responds automatically — no per-component work.
+      - generic [ref=f25e78]:
+        - button "Copy code" [ref=f25e80] [cursor=pointer]
+        - code [ref=f25e82]:
+          - generic [ref=f25e83]: <html data-theme="dark"></html>
+  - contentinfo [ref=f25e84]:
+    - generic [ref=f25e85]:
+      - generic [ref=f25e86]: Lyra
+      - generic [ref=f25e88]: Open source under the MIT license. Built by the community, for the community.
+      - generic [ref=f25e89]:
+        - link "GitHub" [ref=f25e90] [cursor=pointer]:
+          - /url: https://github.com/lyra-ds
+        - link "npm" [ref=f25e91] [cursor=pointer]:
+          - /url: https://www.npmjs.com/org/lyra-ds
+  - button "Open Next.js Dev Tools" [ref=f25e97] [cursor=pointer]

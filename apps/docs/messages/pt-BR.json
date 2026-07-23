@@ -22,5 +22,12 @@
   "introduction": "Introdução",
   "gettingStarted": "Primeiros passos",
   "getStarted": "Começar",
-  "footerNote": "Open source sob licença MIT. Feito pela comunidade, para a comunidade."
+  "footerNote": "Open source sob licença MIT. Feito pela comunidade, para a comunidade.",
+  "cancel": "Cancelar",
+  "demoDeleteTitle": "Excluir projeto",
+  "demoDeleteBody": "Excluir o “site Acme” remove todas as suas páginas e membros. Isso não pode ser desfeito.",
+  "demoDelete": "Excluir projeto",
+  "required": "Obrigatória",
+  "optional": "Opcional",
+  "github": "Repositório no GitHub"
 }
