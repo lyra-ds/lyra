@@ -1,0 +1,31 @@
+---
+title: Badge
+description: Um rótulo de status compacto com tons semânticos e um ponto de status opcional.
+---
+
+# Badge
+
+Badge é um rótulo pequeno e presentacional para status, contagens e metadados. Escolha um `tone`
+semântico para a cor carregar significado e use `dot` como indicador de status imediato.
+
+## Prévia ao vivo
+
+<Preview />
+
+## Props
+
+<PropTable name="Badge" />
+
+## Uso
+
+<CodeBlock>{`import { Badge } from '@lyra-ds/react';
+
+export function Exemplo() {
+  return (
+    <>
+      <Badge tone="success" dot>Ativo</Badge>
+      <Badge tone="warning">Pendente</Badge>
+      <Badge tone="danger">Falhou</Badge>
+    </>
+  );
+}`}</CodeBlock>

@@ -1,0 +1,31 @@
+---
+title: Badge
+description: A compact status label with semantic tones and an optional status dot.
+---
+
+# Badge
+
+Badge is a small, presentational label for statuses, counts and metadata. Pick a semantic `tone`
+so the color carries meaning, and add `dot` for an at-a-glance status indicator.
+
+## Live preview
+
+<Preview />
+
+## Props
+
+<PropTable name="Badge" />
+
+## Usage
+
+<CodeBlock>{`import { Badge } from '@lyra-ds/react';
+
+export function Example() {
+  return (
+    <>
+      <Badge tone="success" dot>Active</Badge>
+      <Badge tone="warning">Pending</Badge>
+      <Badge tone="danger">Failed</Badge>
+    </>
+  );
+}`}</CodeBlock>

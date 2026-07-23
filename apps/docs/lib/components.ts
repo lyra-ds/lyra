@@ -16,7 +16,12 @@ export type ComponentEntry = {
   group: ComponentGroup;
 };
 
-export const components: ComponentEntry[] = [{ slug: 'dialog', name: 'Dialog', group: 'overlay' }];
+export const components: ComponentEntry[] = [
+  { slug: 'badge', name: 'Badge', group: 'display' },
+  { slug: 'button', name: 'Button', group: 'display' },
+  { slug: 'input', name: 'Input', group: 'form' },
+  { slug: 'dialog', name: 'Dialog', group: 'overlay' },
+];
 
 export const componentSlugs = components.map((entry) => entry.slug);
 

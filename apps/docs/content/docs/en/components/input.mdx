@@ -1,0 +1,41 @@
+---
+title: Input
+description: A labelled text field with hint and error states, sizes, and inline icons.
+---
+
+# Input
+
+Input wraps the native `<input>`, so every DOM attribute (`type`, `placeholder`, `value`,
+`onChange`, `disabled`, `aria-*`) passes straight through. It is **controlled iff `value` is set**.
+Add a `label` (wired via `htmlFor`), a `hint`, or an `error` that swaps in error styling and
+`aria-invalid`.
+
+## Live preview
+
+<Preview />
+
+## Props
+
+<PropTable name="Input" />
+
+## Usage
+
+<CodeBlock>{`import { Icon, Input } from '@lyra-ds/react';
+import { useState } from 'react';
+
+export function Example() {
+  const [email, setEmail] = useState('');
+
+  return (
+    <>
+      <Input
+        label="Email"
+        placeholder="you@example.dev"
+        hint="We never share it."
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+      <Input label="Search" iconLeft={<Icon name="search" size={16} />} placeholder="Search…" />
+    </>
+  );
+}`}</CodeBlock>

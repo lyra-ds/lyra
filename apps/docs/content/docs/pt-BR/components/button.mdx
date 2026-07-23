@@ -1,0 +1,34 @@
+---
+title: Button
+description: O gatilho de ação principal, com cinco variantes, três tamanhos, ícones e estado de carregamento.
+---
+
+# Button
+
+Button dispara ações. Use exatamente um botão `primary` por tela para a ação principal e recorra a
+`secondary`, `soft`, `ghost` ou `danger` para sinalizar a intenção. Ícones, modo `full` (largura
+total) e um estado `loading` que mantém o rótulo no lugar (sem deslocamento de layout) já vêm
+embutidos.
+
+## Prévia ao vivo
+
+<Preview />
+
+## Props
+
+<PropTable name="Button" />
+
+## Uso
+
+<CodeBlock>{`import { Button, Icon } from '@lyra-ds/react';
+
+export function Exemplo() {
+  return (
+    <>
+      <Button onClick={() => salvar()}>Salvar alterações</Button>
+      <Button variant="secondary">Cancelar</Button>
+      <Button iconLeft={<Icon name="plus" size={16} />}>Novo projeto</Button>
+      <Button loading>Salvando…</Button>
+    </>
+  );
+}`}</CodeBlock>

@@ -13,5 +13,9 @@
   "groupNavigation": "Navegação",
   "groupFeedback": "Feedback",
   "groupOverlay": "Sobreposição",
-  "groupLayout": "Layout"
+  "groupLayout": "Layout",
+  "demoEmail": "E-mail",
+  "demoEmailHint": "Nunca compartilhamos.",
+  "demoSearch": "Buscar",
+  "demoSearchPlaceholder": "Buscar…"
 }

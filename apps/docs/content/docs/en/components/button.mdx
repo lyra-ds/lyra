@@ -1,0 +1,33 @@
+---
+title: Button
+description: The primary action trigger, with five variants, three sizes, icons and a loading state.
+---
+
+# Button
+
+Button triggers actions. Use exactly one `primary` button per view for the main action, and reach
+for `secondary`, `soft`, `ghost` or `danger` to signal intent. Icons, a `full`-width mode and a
+`loading` state that keeps the label in place (no layout shift) are all built in.
+
+## Live preview
+
+<Preview />
+
+## Props
+
+<PropTable name="Button" />
+
+## Usage
+
+<CodeBlock>{`import { Button, Icon } from '@lyra-ds/react';
+
+export function Example() {
+  return (
+    <>
+      <Button onClick={() => save()}>Save changes</Button>
+      <Button variant="secondary">Cancel</Button>
+      <Button iconLeft={<Icon name="plus" size={16} />}>New project</Button>
+      <Button loading>Saving…</Button>
+    </>
+  );
+}`}</CodeBlock>
