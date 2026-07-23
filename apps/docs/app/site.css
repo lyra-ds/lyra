@@ -220,21 +220,31 @@
   font-size: var(--text-sm);
   line-height: 1.7;
   overflow-x: auto;
+  background-color: var(--surface-sunken);
 }
-/* Shiki dual theme: light vars by default, dark vars under [data-theme=dark] */
+/* Shiki dual theme (Lyra palette): light vars by default, dark under [data-theme=dark] */
 .lw-code__pre,
 .lw-code__pre span {
   color: var(--shiki-light);
-}
-.lw-code__pre {
-  background-color: var(--shiki-light-bg);
 }
 [data-theme='dark'] .lw-code__pre,
 [data-theme='dark'] .lw-code__pre span {
   color: var(--shiki-dark);
 }
-[data-theme='dark'] .lw-code__pre {
-  background-color: var(--shiki-dark-bg);
+/* line numbers */
+.lw-code__pre code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+.lw-code__pre .line::before {
+  content: counter(step);
+  counter-increment: step;
+  display: inline-block;
+  width: 1.25rem;
+  margin-right: var(--space-4);
+  text-align: right;
+  color: var(--text-faint);
+  user-select: none;
 }
 .lw-docs__content strong {
   color: var(--text-primary);

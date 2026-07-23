@@ -1,0 +1,497 @@
+[     659ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[     708ms] [LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[   27011ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[   27901ms] [LOG] [Fast Refresh] done in 989ms @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[   27968ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[   28012ms] [ERROR] ./apps/docs/components/previews/badge.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Badge } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const tones = ['neutral', 'accent', 'success', 'warning', 'danger', 'info'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/badge.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28013ms] [ERROR] ./apps/docs/components/previews/button.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const variants = ['primary', 'secondary', 'soft', 'ghost', 'danger'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/button.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28013ms] [ERROR] ./apps/docs/components/previews/dialog.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Dialog } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/dialog.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28013ms] [ERROR] ./apps/docs/components/previews/input.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon, Input } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/input.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28013ms] [ERROR] ./apps/docs/components/site-header.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import Link from 'next/link';
+  6 | import { usePathname, useRouter } from 'next/navigation';
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/site-header.tsx
+    ./apps/docs/app/[lang]/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28014ms] [ERROR] ./apps/docs/components/theme-toggle.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | /** Reads the theme applied by the pre-paint script, then toggles + persists it. */
+
+Import traces:
+  Client Component Browser:
+    ./apps/docs/components/theme-toggle.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/docs/components/theme-toggle.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28167ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[   28177ms] [ERROR] ./apps/docs/components/previews/badge.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Badge } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const tones = ['neutral', 'accent', 'success', 'warning', 'danger', 'info'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/badge.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28178ms] [ERROR] ./apps/docs/components/previews/button.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const variants = ['primary', 'secondary', 'soft', 'ghost', 'danger'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/button.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28178ms] [ERROR] ./apps/docs/components/previews/dialog.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Dialog } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/dialog.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28178ms] [ERROR] ./apps/docs/components/previews/input.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon, Input } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/input.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28178ms] [ERROR] ./apps/docs/components/site-header.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import Link from 'next/link';
+  6 | import { usePathname, useRouter } from 'next/navigation';
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/site-header.tsx
+    ./apps/docs/app/[lang]/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28178ms] [ERROR] ./apps/docs/components/theme-toggle.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | /** Reads the theme applied by the pre-paint script, then toggles + persists it. */
+
+Import traces:
+  Client Component Browser:
+    ./apps/docs/components/theme-toggle.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/docs/components/theme-toggle.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:3318
+[   28179ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3000/en/components/button?_rsc=X9jztSKzfm6HD3ai:0
+[   28205ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3000/en/components/button?_rsc=X9jztSKzfm6HD3ai:0
+[   28213ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3000/en/components/button?_rsc=X9jztSKzfm6HD3ai:0
+[   28236ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3000/en/components/button?_rsc=X9jztSKzfm6HD3ai:0
+[   28245ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3000/en/components/button:0
+[   28317ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/02ca_react-dom_0ntjfa7._.js:15305
+[   28366ms] Error: ./apps/docs/components/previews/badge.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Badge } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const tones = ['neutral', 'accent', 'success', 'warning', 'danger', 'info'] as const;
+  6 |
+
+
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/badge.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./apps/docs/components/previews/badge.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at Object.getCompilationErrors (file:///home/franciscpd/Projects/lyra-ds/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/server/dev/hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file:///home/franciscpd/Projects/lyra-ds/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/server/lib/dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file:///home/franciscpd/Projects/lyra-ds/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/server/dev/next-dev-server.js:720:42)
+    at DevServer.findPageComponents (file:///home/franciscpd/Projects/lyra-ds/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/server/dev/next-dev-server.js:690:43)
+    at async DevServer.renderErrorToResponseImpl (file:///home/franciscpd/Projects/lyra-ds/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/server/base-server.js:1753:26)
+[   28367ms] [LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1226
+[   28370ms] [ERROR] ./apps/docs/components/previews/badge.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Badge } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const tones = ['neutral', 'accent', 'success', 'warning', 'danger', 'info'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/badge.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28370ms] [ERROR] ./apps/docs/components/previews/button.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const variants = ['primary', 'secondary', 'soft', 'ghost', 'danger'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/button.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28370ms] [ERROR] ./apps/docs/components/previews/dialog.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Dialog } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/dialog.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28370ms] [ERROR] ./apps/docs/components/previews/input.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon, Input } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/input.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28370ms] [ERROR] ./apps/docs/components/site-header.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import Link from 'next/link';
+  6 | import { usePathname, useRouter } from 'next/navigation';
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/site-header.tsx
+    ./apps/docs/app/[lang]/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28370ms] [ERROR] ./apps/docs/components/theme-toggle.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | /** Reads the theme applied by the pre-paint script, then toggles + persists it. */
+
+Import traces:
+  Client Component Browser:
+    ./apps/docs/components/theme-toggle.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/docs/components/theme-toggle.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28409ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3000/favicon.ico:0
+[   28425ms] [ERROR] ./apps/docs/components/previews/badge.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Badge } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const tones = ['neutral', 'accent', 'success', 'warning', 'danger', 'info'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/badge.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28425ms] [ERROR] ./apps/docs/components/previews/button.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const variants = ['primary', 'secondary', 'soft', 'ghost', 'danger'] as const;
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/button.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28425ms] [ERROR] ./apps/docs/components/previews/dialog.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Dialog } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/dialog.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28425ms] [ERROR] ./apps/docs/components/previews/input.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon, Input } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import { useState } from 'react';
+  6 |
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/previews/input.tsx
+    ./apps/docs/components/previews/index.ts
+    ./apps/docs/components/component-page.tsx
+    ./apps/docs/app/[lang]/components/[slug]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28425ms] [ERROR] ./apps/docs/components/site-header.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Button, Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useTranslations } from 'next-intl';
+  5 | import Link from 'next/link';
+  6 | import { usePathname, useRouter } from 'next/navigation';
+
+Import trace:
+  Server Component:
+    ./apps/docs/components/site-header.tsx
+    ./apps/docs/app/[lang]/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28425ms] [ERROR] ./apps/docs/components/theme-toggle.tsx:3:1
+Module not found: Can't resolve '@lyra-ds/react'
+  1 | 'use client';
+  2 |
+> 3 | import { Icon } from '@lyra-ds/react';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | /** Reads the theme applied by the pre-paint script, then toggles + persists it. */
+
+Import traces:
+  Client Component Browser:
+    ./apps/docs/components/theme-toggle.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Client Component Browser]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/docs/components/theme-toggle.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Client Component SSR]
+    ./apps/docs/components/site-header.tsx [Server Component]
+    ./apps/docs/app/[lang]/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1945
+[   28549ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1226
+[   28681ms] [LOG] [Fast Refresh] done in 135ms @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_00mhofs._.js:1226
+[   28780ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[   28789ms] [LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[  106655ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477
+[  106805ms] [LOG] [Fast Refresh] done in 249ms @ http://127.0.0.1:3000/_next/static/chunks/0g7g_next_dist_0sw6wv_._.js:2477

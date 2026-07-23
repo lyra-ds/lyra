@@ -1,0 +1,145 @@
+- generic [active] [ref=f18e1]:
+  - banner [ref=f18e2]:
+    - generic [ref=f18e3]:
+      - link "Lyra" [ref=f18e4] [cursor=pointer]:
+        - /url: /en
+      - navigation [ref=f18e6]:
+        - link "Docs" [ref=f18e7] [cursor=pointer]:
+          - /url: /en
+        - link "Components" [ref=f18e8] [cursor=pointer]:
+          - /url: /en/components
+      - generic [ref=f18e9]:
+        - button "Toggle color theme" [ref=f18e10] [cursor=pointer]
+        - button "Português (Brasil)" [ref=f18e13] [cursor=pointer]
+        - link [ref=f18e14] [cursor=pointer]:
+          - /url: https://github.com/lyra-ds
+        - button "Get started" [ref=f18e18] [cursor=pointer]
+  - generic [ref=f18e22]:
+    - complementary [ref=f18e23]:
+      - generic [ref=f18e24]:
+        - generic [ref=f18e25]: Introduction
+        - link "Getting started" [ref=f18e26] [cursor=pointer]:
+          - /url: /en
+        - link "Components" [ref=f18e27] [cursor=pointer]:
+          - /url: /en/components
+      - generic [ref=f18e28]:
+        - generic [ref=f18e29]: Display
+        - link "Badge" [ref=f18e30] [cursor=pointer]:
+          - /url: /en/components/badge
+        - link "Button" [ref=f18e31] [cursor=pointer]:
+          - /url: /en/components/button
+      - generic [ref=f18e32]:
+        - generic [ref=f18e33]: Form
+        - link "Input" [ref=f18e34] [cursor=pointer]:
+          - /url: /en/components/input
+      - generic [ref=f18e35]:
+        - generic [ref=f18e36]: Overlay
+        - link "Dialog" [ref=f18e37] [cursor=pointer]:
+          - /url: /en/components/dialog
+    - article [ref=f18e38]:
+      - heading "Button" [level=1] [ref=f18e39]
+      - paragraph [ref=f18e40]:
+        - text: Button triggers actions. Use exactly one
+        - code [ref=f18e41]: primary
+        - text: button per view for the main action, and reach for
+        - code [ref=f18e42]: secondary
+        - text: ","
+        - code [ref=f18e43]: soft
+        - text: ","
+        - code [ref=f18e44]: ghost
+        - text: or
+        - code [ref=f18e45]: danger
+        - text: to signal intent. Icons, a
+        - code [ref=f18e46]: full
+        - text: "-width mode and a"
+        - code [ref=f18e47]: loading
+        - text: state that keeps the label in place (no layout shift) are all built in.
+      - heading "Live preview" [level=2] [ref=f18e48]
+      - generic [ref=f18e49]:
+        - generic [ref=f18e50]:
+          - button "primary" [ref=f18e51] [cursor=pointer]
+          - button "secondary" [ref=f18e53] [cursor=pointer]
+          - button "soft" [ref=f18e55] [cursor=pointer]
+          - button "ghost" [ref=f18e57] [cursor=pointer]
+          - button "danger" [ref=f18e59] [cursor=pointer]
+        - generic [ref=f18e61]:
+          - button "sm" [ref=f18e62] [cursor=pointer]
+          - button "md" [ref=f18e64] [cursor=pointer]
+          - button "lg" [ref=f18e66] [cursor=pointer]
+          - button "With icon" [ref=f18e68] [cursor=pointer]
+          - button "Loading" [disabled]
+      - heading "Props" [level=2] [ref=f18e71]
+      - table [ref=f18e73]:
+        - rowgroup [ref=f18e74]:
+          - row [ref=f18e75]:
+            - columnheader "Name" [ref=f18e76]
+            - columnheader "Type" [ref=f18e77]
+            - columnheader "Required" [ref=f18e78]
+            - columnheader "Description" [ref=f18e79]
+        - rowgroup [ref=f18e80]:
+          - row [ref=f18e81]:
+            - cell [ref=f18e82]:
+              - code [ref=f18e83]: variant
+            - cell [ref=f18e84]:
+              - code [ref=f18e85]: "'primary' | 'secondary' | 'soft' | 'ghost' | 'danger'"
+            - cell "No" [ref=f18e86]
+            - 'cell "Visual variant. Default `\"primary\"`. Use `primary` for the single main action per view." [ref=f18e87]'
+          - row [ref=f18e88]:
+            - cell [ref=f18e89]:
+              - code [ref=f18e90]: size
+            - cell [ref=f18e91]:
+              - code [ref=f18e92]: "'sm' | 'md' | 'lg'"
+            - cell "No" [ref=f18e93]
+            - 'cell "Control height. Default `\"md\"` (sm 32px · md 40px · lg 48px)." [ref=f18e94]'
+          - row [ref=f18e95]:
+            - cell [ref=f18e96]:
+              - code [ref=f18e97]: iconLeft
+            - cell [ref=f18e98]:
+              - code [ref=f18e99]: ReactNode
+            - cell "No" [ref=f18e100]
+            - 'cell "Icon rendered before the label (usually `<Icon size={16} />`)." [ref=f18e101]'
+          - row [ref=f18e102]:
+            - cell [ref=f18e103]:
+              - code [ref=f18e104]: iconRight
+            - cell [ref=f18e105]:
+              - code [ref=f18e106]: ReactNode
+            - cell "No" [ref=f18e107]
+            - cell "Icon rendered after the label." [ref=f18e108]
+          - row [ref=f18e109]:
+            - cell [ref=f18e110]:
+              - code [ref=f18e111]: loading
+            - cell [ref=f18e112]:
+              - code [ref=f18e113]: boolean
+            - cell "No" [ref=f18e114]
+            - cell "Show the spinner and block interaction. The label stays visible (no layout shift)." [ref=f18e115]
+          - row [ref=f18e116]:
+            - cell [ref=f18e117]:
+              - code [ref=f18e118]: full
+            - cell [ref=f18e119]:
+              - code [ref=f18e120]: boolean
+            - cell "No" [ref=f18e121]
+            - cell "Stretch to 100% of the container width." [ref=f18e122]
+      - heading "Usage" [level=2] [ref=f18e123]
+      - generic [ref=f18e124]:
+        - button "Copy code" [ref=f18e126] [cursor=pointer]
+        - code [ref=f18e128]:
+          - generic [ref=f18e129]: "import { Button, Icon } from '@lyra-ds/react';"
+          - generic [ref=f18e131]: "export function Example() {"
+          - generic [ref=f18e132]: return (
+          - generic [ref=f18e133]: <>
+          - generic [ref=f18e134]: "<Button onClick={() => save()}>Save changes</Button>"
+          - generic [ref=f18e135]: <Button variant="secondary">Cancel</Button>
+          - generic [ref=f18e136]: "<Button iconLeft={<Icon name=\"plus\" size={16} />}>New project</Button>"
+          - generic [ref=f18e137]: <Button loading>Saving…</Button>
+          - generic [ref=f18e138]: </>
+          - generic [ref=f18e139]: );
+          - generic [ref=f18e140]: "}"
+  - contentinfo [ref=f18e141]:
+    - generic [ref=f18e142]:
+      - generic [ref=f18e143]: Lyra
+      - generic [ref=f18e145]: Open source under the MIT license. Built by the community, for the community.
+      - generic [ref=f18e146]:
+        - link "GitHub" [ref=f18e147] [cursor=pointer]:
+          - /url: https://github.com/lyra-ds
+        - link "npm" [ref=f18e148] [cursor=pointer]:
+          - /url: https://www.npmjs.com/org/lyra-ds
