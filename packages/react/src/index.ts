@@ -26,9 +26,20 @@ export type { SwitchProps } from './switch';
 
 export { FileUpload } from './file-upload';
 export type { FileUploadItem, FileUploadProps } from './file-upload';
+export { FileManager } from './file-manager';
+export type { FileManagerProps, ManagedFile } from './file-manager';
 
 export { Dialog } from './dialog';
 export type { DialogProps } from './dialog';
+
+export { Drawer } from './drawer';
+export type { DrawerProps } from './drawer';
+
+export { CreateWorkspaceDialog } from './create-workspace-dialog';
+export type { CreateWorkspaceDialogProps } from './create-workspace-dialog';
+
+export { WorkspaceSwitcher } from './workspace-switcher';
+export type { Workspace, WorkspaceSwitcherProps } from './workspace-switcher';
 
 export { Icon } from './icon';
 export type { IconProps, IconName } from './icon';
@@ -74,3 +85,15 @@ export { Dropdown } from './dropdown';
 export type { DropdownItem, DropdownProps } from './dropdown';
 export { Combobox } from './combobox';
 export type { ComboboxOption, ComboboxProps } from './combobox';
+
+export { Table } from './table';
+export type { TableColumn, TableProps } from './table';
+export { SidebarGroup } from './sidebar-group';
+export type { SidebarGroupItem, SidebarGroupProps } from './sidebar-group';
+export { Toast, ToastStack } from './toast';
+export type { ToastProps, ToastStackProps } from './toast';
+export { CookieBanner } from './cookie-banner';
+export type { CookieBannerProps } from './cookie-banner';
+
+export { CommandPalette } from './command-palette';
+export type { CommandGroup, CommandItem, CommandPaletteProps } from './command-palette';

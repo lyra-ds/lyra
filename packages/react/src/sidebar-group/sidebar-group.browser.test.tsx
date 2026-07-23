@@ -1,0 +1,74 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render } from 'vitest-browser-react';
+import { userEvent } from 'vitest/browser';
+import axe from 'axe-core';
+import '@lyra-ds/styles/styles.css';
+import { SidebarGroup } from './index';
+
+const items = [
+  { id: 'inbox', label: 'Inbox', icon: <span aria-hidden="true">I</span>, badge: 2, active: true },
+  { id: 'archive', label: 'Archive' },
+];
+
+function setTheme(theme: 'light' | 'dark'): void {
+  document.documentElement.toggleAttribute('data-theme', theme === 'dark');
+}
+
+afterEach(async () => {
+  await cleanup();
+  setTheme('light');
+});
+
+describe('SidebarGroup', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    it(`emits disclosure classes and is axe clean in ${theme}`, async () => {
+      setTheme(theme);
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      try {
+        const { container } = await render(
+          <SidebarGroup label="Projects" items={items} collapsible />,
+        );
+        expect(container.querySelector('.lyra-sbgroup')!.className).toBe('lyra-sbgroup');
+        expect(container.querySelector('.lyra-sbgroup__label')!.className).toBe(
+          'lyra-sbgroup__label lyra-sbgroup__label--btn',
+        );
+        expect(container.querySelector('.lyra-sbgroup__item')!.className).toBe(
+          'lyra-sbgroup__item lyra-sbgroup__item--active',
+        );
+        expect(container.querySelector('.lyra-sbgroup__item')!.getAttribute('aria-current')).toBe(
+          'page',
+        );
+        expect(error).not.toHaveBeenCalled();
+        expect(
+          (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),
+        ).toEqual([]);
+      } finally {
+        error.mockRestore();
+      }
+    });
+  }
+
+  it('toggles with Space and Enter and calls item and group callbacks', async () => {
+    const itemSelect = vi.fn();
+    const groupSelect = vi.fn();
+    const interactiveItems = [{ ...items[0], onSelect: itemSelect }, items[1]];
+    const { container } = await render(
+      <SidebarGroup label="Projects" items={interactiveItems} collapsible onSelect={groupSelect} />,
+    );
+    const label = container.querySelector<HTMLButtonElement>('.lyra-sbgroup__label--btn')!;
+    label.focus();
+    await userEvent.keyboard(' ');
+    expect(label.getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelector('.lyra-sbgroup__items')).toBeNull();
+    await userEvent.keyboard('{Enter}');
+    expect(label.getAttribute('aria-expanded')).toBe('true');
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-sbgroup__item')!);
+    expect(itemSelect).toHaveBeenCalledOnce();
+    expect(groupSelect).toHaveBeenCalledWith('inbox', interactiveItems[0]);
+  });
+
+  it('renders a non-collapsible label as a plain div', async () => {
+    const { container } = await render(<SidebarGroup label="Projects" items={items} />);
+    expect(container.querySelector('.lyra-sbgroup__label')!.tagName).toBe('DIV');
+  });
+});

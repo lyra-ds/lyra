@@ -306,3 +306,22 @@
   from { transform: scale(1) translateY(0); opacity: 1; }
   to { transform: scale(0.97) translateY(4px); opacity: 0; }
 }
+
+.lyra-toast__icon { display: inline-flex; }
+
+.lyra-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.lyra-drawer__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-drawer__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
