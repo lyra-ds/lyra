@@ -18,14 +18,18 @@ so the color carries meaning, and add `dot` for an at-a-glance status indicator.
 
 ## Usage
 
-<CodeBlock>{`import { Badge } from '@lyra-ds/react';
+```tsx
+import { Badge } from '@lyra-ds/react';
 
 export function Example() {
   return (
     <>
-      <Badge tone="success" dot>Active</Badge>
+      <Badge tone="success" dot>
+        Active
+      </Badge>
       <Badge tone="warning">Pending</Badge>
       <Badge tone="danger">Failed</Badge>
     </>
   );
-}`}</CodeBlock>
+}
+```

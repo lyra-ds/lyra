@@ -18,14 +18,18 @@ semântico para a cor carregar significado e use `dot` como indicador de status 
 
 ## Uso
 
-<CodeBlock>{`import { Badge } from '@lyra-ds/react';
+```tsx
+import { Badge } from '@lyra-ds/react';
 
 export function Exemplo() {
   return (
     <>
-      <Badge tone="success" dot>Ativo</Badge>
+      <Badge tone="success" dot>
+        Ativo
+      </Badge>
       <Badge tone="warning">Pendente</Badge>
       <Badge tone="danger">Falhou</Badge>
     </>
   );
-}`}</CodeBlock>
+}
+```

@@ -18,7 +18,8 @@ escape routes built in.
 
 ## Usage
 
-<CodeBlock>{`'use client';
+```tsx
+'use client';
 
 import { Button, Dialog } from '@lyra-ds/react';
 import { useState } from 'react';
@@ -26,13 +27,13 @@ import { useState } from 'react';
 export function Example() {
   const [open, setOpen] = useState(false);
 
-return (
-
-<>
-<Button onClick={() => setOpen(true)}>Open dialog</Button>
-<Dialog open={open} onClose={() => setOpen(false)} title="Delete project">
-This action cannot be undone.
-</Dialog>
-</>
-);
-}`}</CodeBlock>
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open dialog</Button>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Delete project">
+        This action cannot be undone.
+      </Dialog>
+    </>
+  );
+}
+```

@@ -24,22 +24,30 @@ description: Um design system white-label e CSS-first para interfaces de produto
 
 Instale o pacote React e os estilos, e importe o CSS uma única vez na raiz do app.
 
-<CodeBlock>{`npm i @lyra-ds/react @lyra-ds/styles`}</CodeBlock>
+```bash
+npm i @lyra-ds/react @lyra-ds/styles
+```
 
-<CodeBlock>{`// entrada do app (main.tsx / layout.tsx)
-import '@lyra-ds/styles/styles.css';`}</CodeBlock>
+```tsx
+// entrada do app (main.tsx / layout.tsx)
+import '@lyra-ds/styles/styles.css';
+```
 
 ## Seu primeiro componente
 
-<CodeBlock>{`import { Button } from '@lyra-ds/react';
+```tsx
+import { Button } from '@lyra-ds/react';
 
 export function App() {
   return <Button>Olá, Lyra</Button>;
-}`}</CodeBlock>
+}
+```
 
 ## Tema escuro
 
 Adicione <code>data-theme="dark"</code> ao elemento `<html>`. Todos os tokens semânticos respondem
 automaticamente — sem trabalho por componente.
 
-<CodeBlock>{`<html data-theme="dark">`}</CodeBlock>
+```html
+<html data-theme="dark"></html>
+```

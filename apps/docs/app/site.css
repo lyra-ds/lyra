@@ -171,13 +171,70 @@
   color: var(--text-secondary);
   margin: 0;
 }
-.lw-docs__content a {
+.lw-docs__content a:not(.lyra-btn) {
   color: var(--accent-soft-text);
   font-weight: var(--weight-medium);
   text-decoration: none;
 }
-.lw-docs__content a:hover {
+.lw-docs__content a:not(.lyra-btn):hover {
   text-decoration: underline;
+}
+
+/* code panel (Shiki) — card chrome + dual-theme token colors via CSS vars */
+.lw-code {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.lw-code__bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-default);
+}
+.lw-code__copy {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lw-code__copy:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+.lw-code__pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  overflow-x: auto;
+}
+/* Shiki dual theme: light vars by default, dark vars under [data-theme=dark] */
+.lw-code__pre,
+.lw-code__pre span {
+  color: var(--shiki-light);
+}
+.lw-code__pre {
+  background-color: var(--shiki-light-bg);
+}
+[data-theme='dark'] .lw-code__pre,
+[data-theme='dark'] .lw-code__pre span {
+  color: var(--shiki-dark);
+}
+[data-theme='dark'] .lw-code__pre {
+  background-color: var(--shiki-dark-bg);
 }
 .lw-docs__content strong {
   color: var(--text-primary);

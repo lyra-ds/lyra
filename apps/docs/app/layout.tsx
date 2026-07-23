@@ -12,8 +12,9 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.svg' },
 };
 
-// Applies the persisted theme before first paint (no flash, survives reload).
-const themeScript = `(function(){try{var t=localStorage.getItem('lyra-docs-theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light';}catch(e){}})();`;
+// Applies the theme before first paint (no flash): saved preference if any,
+// otherwise the device's prefers-color-scheme.
+const themeScript = `(function(){try{var s=localStorage.getItem('lyra-docs-theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.dataset.theme=(s||(d?'dark':'light'));}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

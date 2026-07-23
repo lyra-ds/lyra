@@ -18,7 +18,8 @@ fechamento acessíveis.
 
 ## Uso
 
-<CodeBlock>{`'use client';
+```tsx
+'use client';
 
 import { Button, Dialog } from '@lyra-ds/react';
 import { useState } from 'react';
@@ -26,13 +27,13 @@ import { useState } from 'react';
 export function Exemplo() {
   const [open, setOpen] = useState(false);
 
-return (
-
-<>
-<Button onClick={() => setOpen(true)}>Abrir diálogo</Button>
-<Dialog open={open} onClose={() => setOpen(false)} title="Excluir projeto">
-Esta ação não pode ser desfeita.
-</Dialog>
-</>
-);
-}`}</CodeBlock>
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Abrir diálogo</Button>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Excluir projeto">
+        Esta ação não pode ser desfeita.
+      </Dialog>
+    </>
+  );
+}
+```

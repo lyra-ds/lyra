@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import EnIndex from '@/content/docs/en/index.mdx';
 import PtBrIndex from '@/content/docs/pt-BR/index.mdx';
 import type { Locale } from '@/lib/i18n';
-import { CodeBlock } from './code-block';
+import { Pre } from './pre';
 import { PropTable } from './prop-table';
 
 const content: Record<
@@ -17,5 +17,5 @@ const content: Record<
 export function DocumentContent({ locale }: { locale: Locale }) {
   const Content = content[locale];
 
-  return <Content components={{ CodeBlock, PropTable }} />;
+  return <Content components={{ PropTable, pre: Pre }} />;
 }

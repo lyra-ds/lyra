@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import type { Locale } from '@/lib/i18n';
-import { CodeBlock } from './code-block';
+import { Pre } from './pre';
 import { previews } from './previews';
 import { PropTable } from './prop-table';
 
@@ -18,5 +18,5 @@ export async function ComponentPage({ locale, slug }: { locale: Locale; slug: st
   const MDX = mod.default;
   const Preview = previews[slug];
 
-  return <MDX components={{ CodeBlock, Preview, PropTable }} />;
+  return <MDX components={{ Preview, PropTable, pre: Pre }} />;
 }
