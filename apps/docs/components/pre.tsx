@@ -13,6 +13,8 @@ export function Pre({ children, className, ...props }: ComponentPropsWithoutRef<
   const [copied, setCopied] = useState(false);
   const t = useTranslations();
 
+  const lang = (props as Record<string, unknown>)['data-language'];
+
   async function copy() {
     const text = ref.current?.textContent ?? '';
     try {
@@ -27,6 +29,7 @@ export function Pre({ children, className, ...props }: ComponentPropsWithoutRef<
   return (
     <div className="lw-code">
       <div className="lw-code__bar">
+        {typeof lang === 'string' ? <span className="lw-code__lang">{lang}</span> : <span />}
         <button type="button" className="lw-code__copy" onClick={copy}>
           {copied ? t('copied') : t('copy')}
         </button>

@@ -56,7 +56,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         </nav>
         <div className="lw-header__actions">
           <ThemeToggle label={t('theme')} />
-          <LocaleSwitcher locale={locale} label={t('language')} />
+          <LocaleSwitcher locale={locale} label={t('languageLabel')} />
           <a
             className="lw-nav__link"
             href="https://github.com/lyra-ds"
