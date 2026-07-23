@@ -11,3 +11,6 @@ apps/docs/public/llms.txt
 # Vitest Browser Mode generated artifacts (failure screenshots / attachments)
 **/__screenshots__/
 **/.vitest-attachments/
+
+# Playwright MCP screenshots/artifacts
+.playwright-mcp/
