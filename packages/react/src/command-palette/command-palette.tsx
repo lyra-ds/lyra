@@ -14,6 +14,7 @@ import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useScrollLock } from '../internal/use-scroll-lock';
 
 /** A command available from {@link CommandPalette}. */
@@ -42,7 +43,7 @@ export interface CommandGroup {
 
 /** Props for {@link CommandPalette}. */
 export interface CommandPaletteProps {
-  /** Controls visibility of the modal overlay. Ignored in inline mode. */
+  /** Controls modal visibility. On close, the overlay and panel remain mounted for their exit motion. Ignored in inline mode. */
   open?: boolean;
   /** Called when the palette is dismissed or an item is selected. */
   onClose?: () => void;
@@ -90,10 +91,13 @@ interface CommandPalettePanelProps {
   emptyMessage: string;
   className?: string;
   modal: boolean;
+  open: boolean;
+  closing: boolean;
   onQueryChange: (query: string) => void;
   onActiveIndexChange: (index: number) => void;
   onPick: (item: CommandItem) => void;
   onClose?: () => void;
+  onAnimationEnd: PresenceState['onAnimationEnd'];
   onReady: () => void;
   captureOpener?: (element: Element | null) => void;
 }
@@ -117,10 +121,13 @@ function CommandPalettePanel({
   emptyMessage,
   className,
   modal,
+  open,
+  closing,
   onQueryChange,
   onActiveIndexChange,
   onPick,
   onClose,
+  onAnimationEnd,
   onReady,
   captureOpener,
 }: CommandPalettePanelProps): ReactNode {
@@ -130,14 +137,15 @@ function CommandPalettePanel({
   const activeOptionId = activeItem ? `${idBase}-option-${activeItem.index}` : undefined;
 
   useEffect(() => {
+    if (modal && !open) return;
     if (modal) captureOpener?.(document.activeElement);
     onReady();
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
     return () => cancelAnimationFrame(frame);
-  }, [captureOpener, inputRef, modal, onReady]);
+  }, [captureOpener, inputRef, modal, onReady, open]);
 
-  useFocusTrap(panelRef, modal);
-  useScrollLock(modal);
+  useFocusTrap(panelRef, modal && open);
+  useScrollLock(modal && open);
 
   // Focus never leaves the input in this model, so the active option needs manual scrolling.
   useEffect(() => {
@@ -172,10 +180,11 @@ function CommandPalettePanel({
   return (
     <div
       ref={attachPanel}
-      className={cx('lyra-cmdk', className)}
+      className={cx('lyra-cmdk', closing && 'lyra-cmdk--closing', className)}
       role={modal ? 'dialog' : undefined}
       aria-modal={modal || undefined}
       aria-label={modal ? 'Paleta de comandos' : undefined}
+      onAnimationEnd={onAnimationEnd}
     >
       <div className="lyra-cmdk__search">
         <Icon name="search" size={17} color="var(--text-faint)" />
@@ -265,8 +274,9 @@ function CommandPalettePanel({
 
 /**
  * A Command/Ctrl+K command palette with grouped filtering and APG `aria-activedescendant`
- * navigation. Overlay mode is portaled, scroll-locked, focus-trapped, and restores focus to
- * its opener; `inline` renders just the panel for documentation and embedded demos.
+ * navigation. Overlay mode is portaled, scroll-locked, focus-trapped, kept mounted through its
+ * exit motion, and restores focus to its opener; `inline` renders just the panel for
+ * documentation and embedded demos.
  */
 export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPaletteProps>(
   function CommandPalette(
@@ -292,6 +302,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
     const openerRef = useRef<Element | null>(null);
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
+    const { mounted, closing, onAnimationEnd } = usePresence(open);
 
     const flatItems: IndexedCommandItem[] = [];
     const normalizedQuery = query.toLocaleLowerCase();
@@ -383,24 +394,27 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
         emptyMessage={emptyMessage}
         className={className}
         modal={!inline}
+        open={inline || open}
+        closing={!inline && closing}
         onQueryChange={handleQueryChange}
         onActiveIndexChange={setActiveIndex}
         onPick={pick}
         onClose={onClose}
+        onAnimationEnd={onAnimationEnd}
         onReady={resetAndFocus}
         captureOpener={inline ? undefined : captureOpener}
       />
     );
 
     if (inline) return panel;
-    if (!open) return null;
+    if (!mounted) return null;
 
     return (
       <Portal>
         {/* Backdrop click is pointer-only convenience; Escape on the combobox is the keyboard path. */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
         <div
-          className="lyra-cmdk-overlay"
+          className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
           onClick={(event) => {
             if (event.target === event.currentTarget) onClose?.();
           }}

@@ -169,7 +169,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: lyra-pop-in var(--duration-fast) var(--ease-out);
+  animation: lyra-overlay-in var(--duration-slow) var(--ease-out);
 }
 .lyra-cmdk__search {
   display: flex;
@@ -468,3 +468,20 @@
 .lyra-page--gap { cursor: default; color: var(--text-faint); }
 
 .lyra-dropdown__trigger { display: inline-flex; }
+
+/* Additive CommandPalette exit-motion extension (parity ADDITIVE_EXTENSIONS). */
+.lyra-cmdk--closing {
+  animation: lyra-overlay-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-cmdk-overlay--closing {
+  animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyra-cmdk-overlay,
+  .lyra-cmdk,
+  .lyra-cmdk-overlay--closing,
+  .lyra-cmdk--closing {
+    animation: none;
+  }
+}

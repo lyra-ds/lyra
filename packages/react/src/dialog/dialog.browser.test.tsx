@@ -6,7 +6,7 @@
 //
 // The @lyra-ds/styles entry CSS is imported IN THIS TEST (never in src, RCT-03). Vite resolves
 // its @import graph and injects it as a <style> — this is the fixture stylesheet, and it carries
-// the .lyra-dialog--closing / lyra-pop-out exit keyframe the presence assertions read.
+// the .lyra-dialog--closing / lyra-overlay-out exit keyframe the presence assertions read.
 //
 // Dialog renders through a Portal into document.body, so the assertions query document.* (NOT
 // the render container) and axe.run targets document.body — the tree the portal actually lands
@@ -388,7 +388,7 @@ describe('Dialog — close paths', () => {
 // --- Presence: closing class + exit keyframe, then unmount within the wedge guard -------------
 
 describe('Dialog — presence', () => {
-  it('stays mounted with .lyra-dialog--closing + lyra-pop-out, then unmounts within 500ms', async () => {
+  it('stays mounted with .lyra-dialog--closing + lyra-overlay-out, then unmounts within 500ms', async () => {
     await openHarness();
     backdropDismiss(overlay()!);
 
@@ -396,7 +396,7 @@ describe('Dialog — presence', () => {
     await vi.waitFor(() => expect(panel()?.classList.contains('lyra-dialog--closing')).toBe(true));
     const closingPanel = panel()!;
     expect(overlay()!.classList.contains('lyra-dialog-overlay--closing')).toBe(true);
-    expect(getComputedStyle(closingPanel).animationName).toBe('lyra-pop-out');
+    expect(getComputedStyle(closingPanel).animationName).toBe('lyra-overlay-out');
 
     // Wedge guard (Pitfall 7): the panel's own animationend (or the timeout) finalizes unmount.
     await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
@@ -465,7 +465,9 @@ describe('Dialog — layout backstops', () => {
         </div>
       ),
     });
-    expect(panel()!.getBoundingClientRect().width).toBeLessThanOrEqual(440);
+    await vi.waitFor(() => {
+      expect(panel()!.getBoundingClientRect().width).toBeLessThanOrEqual(440);
+    });
     expect(document.body.style.overflow).toBe('hidden');
   });
 

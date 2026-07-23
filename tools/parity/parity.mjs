@@ -94,6 +94,27 @@ const MASK_DIVERGENCE = new Map([
   ['components/navigation/navigation.css', { icon: 'chevron-right', payload: CHEVRON_RIGHT_MASK }],
 ]);
 
+// Approved large-overlay entrance refinements. The handoff's shared `lyra-pop-in` remains
+// canonical for smaller surfaces; only Dialog and CommandPalette opt into the dedicated motion.
+const OVERLAY_ENTRANCE_DIVERGENCE = new Map([
+  [
+    'components/feedback/feedback.css',
+    {
+      selector: '.lyra-dialog',
+      handoff: 'lyra-pop-in var(--duration-base) var(--ease-out)',
+      package: 'lyra-overlay-in var(--duration-slow) var(--ease-out)',
+    },
+  ],
+  [
+    'components/navigation/navigation.css',
+    {
+      selector: '.lyra-cmdk',
+      handoff: 'lyra-pop-in var(--duration-fast) var(--ease-out)',
+      package: 'lyra-overlay-in var(--duration-slow) var(--ease-out)',
+    },
+  ],
+]);
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -108,23 +129,39 @@ const MASK_DIVERGENCE = new Map([
 // can carry documented package-only declarations (D-18 Dialog animation, D-19 Dialog
 // close button, and the Card actions-group class that replaces the handoff prototype's
 // inline flex style — same CSS-first promotion pattern).
+// Existing Dialog/CommandPalette class names appear here only to scope their additive
+// reduced-motion declarations; the approved baseline animation-value changes stay pinned above.
 const ADDITIVE_EXTENSIONS = {
   'components/feedback/feedback.css': {
     classes: [
       'lyra-dialog__close',
+      'lyra-dialog',
+      'lyra-dialog-overlay',
       'lyra-dialog--closing',
       'lyra-dialog-overlay--closing',
       'lyra-toast__icon',
       'lyra-drawer__close',
     ],
-    keyframes: ['lyra-pop-out', 'lyra-fade-out'],
+    keyframes: ['lyra-fade-out', 'lyra-overlay-in', 'lyra-overlay-out'],
   },
   'components/display/display.css': {
     classes: ['lyra-card__actions'],
     keyframes: [],
   },
   'components/navigation/navigation.css': {
-    classes: ['lyra-dropdown__trigger'],
+    classes: [
+      'lyra-dropdown__trigger',
+      'lyra-cmdk',
+      'lyra-cmdk-overlay',
+      'lyra-cmdk--closing',
+      'lyra-cmdk-overlay--closing',
+    ],
+    keyframes: [],
+  },
+  'components/buttons/buttons.css': {
+    // `.lyra-btn:hover { text-decoration: none }` — button-styled links must not
+    // inherit Lyra's base `a:hover` underline. Correctness extension, no handoff peer.
+    classes: ['lyra-btn'],
     keyframes: [],
   },
 };
@@ -140,10 +177,10 @@ const ADDITIVE_CLASS_SELECTORS = new Set(
 /**
  * True when an EXTRA package declaration (one with no handoff counterpart in the
  * index-aligned diff) belongs to a documented additive extension — i.e. its file is
- * allowlisted AND its outermost enclosing block is an allowlisted @keyframes name OR a
- * selector whose .lyra-* class chain exact-matches an allowlisted class name. Exact-name
- * match only: a future un-enumerated addition (e.g. a stray .lyra-zzz rule) is NOT rooted
- * in the allowlist and still fails.
+ * allowlisted AND its outermost enclosing block is an allowlisted @keyframes name OR a selector
+ * in its block path whose .lyra-* class chain exact-matches an allowlisted class name. Exact-name
+ * match only: a future un-enumerated addition (e.g. a stray .lyra-zzz rule) is not rooted in the
+ * allowlist and still fails.
  */
 function isAdditiveExtension(relPath, decl) {
   const ext = ADDITIVE_EXTENSIONS[relPath];
@@ -151,7 +188,9 @@ function isAdditiveExtension(relPath, decl) {
   const root = decl.blockPath[0] || '';
   const kf = /^@keyframes\s+([a-zA-Z0-9_-]+)/.exec(root);
   if (kf) return ext.keyframes.includes(kf[1]);
-  const classTokens = [...root.matchAll(/\.(lyra-[a-zA-Z0-9_-]+)/g)].map((m) => m[1]);
+  const classTokens = [...decl.blockPath.join(' ').matchAll(/\.(lyra-[a-zA-Z0-9_-]+)/g)].map(
+    (m) => m[1],
+  );
   return classTokens.some((t) => ext.classes.includes(t));
 }
 
@@ -467,12 +506,21 @@ function tokenCheck() {
 
 function isAllowedDivergence(relPath, hd, pd) {
   const expected = MASK_DIVERGENCE.get(relPath);
-  return (
+  const allowsMaskDivergence =
     expected !== undefined &&
     (hd.prop === 'mask' || hd.prop === '-webkit-mask') &&
     hd.val.includes('unpkg.com/lucide-static') &&
     hd.val.includes(`icons/${expected.icon}.svg`) &&
-    pd.val === expected.payload // EXACT canonical data: payload — no truncation/swap
+    pd.val === expected.payload; // EXACT canonical data: payload — no truncation/swap
+  if (allowsMaskDivergence) return true;
+
+  const overlay = OVERLAY_ENTRANCE_DIVERGENCE.get(relPath);
+  return (
+    overlay !== undefined &&
+    hd.prop === 'animation' &&
+    hd.blockPath.at(-1) === overlay.selector &&
+    hd.val === overlay.handoff &&
+    pd.val === overlay.package
   );
 }
 

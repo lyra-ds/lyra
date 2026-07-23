@@ -84,7 +84,7 @@
   width: 100%;
   max-width: 440px;
   z-index: var(--z-dialog);
-  animation: lyra-pop-in var(--duration-base) var(--ease-out);
+  animation: lyra-overlay-in var(--duration-slow) var(--ease-out);
 }
 .lyra-dialog__header {
   display: flex;
@@ -295,16 +295,22 @@
 .lyra-dialog__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
 .lyra-dialog__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
 
+/* Additive overlay-motion extension (parity ADDITIVE_EXTENSIONS): large overlay panels use
+   dedicated entrance and exit keyframes without altering the shared lyra-pop-in animation. */
 .lyra-dialog--closing {
-  animation: lyra-pop-out var(--duration-base) var(--ease-out) forwards;
+  animation: lyra-overlay-out var(--duration-base) var(--ease-out) forwards;
 }
 .lyra-dialog-overlay--closing {
   animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
 }
 @keyframes lyra-fade-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes lyra-pop-out {
-  from { transform: scale(1) translateY(0); opacity: 1; }
-  to { transform: scale(0.97) translateY(4px); opacity: 0; }
+@keyframes lyra-overlay-in {
+  from { transform: scale(0.95) translateY(8px); }
+  to { transform: scale(1) translateY(0); }
+}
+@keyframes lyra-overlay-out {
+  from { transform: scale(1) translateY(0); }
+  to { transform: scale(0.95) translateY(8px); }
 }
 
 .lyra-toast__icon { display: inline-flex; }
@@ -333,4 +339,13 @@
   min-height: 44px;
   flex: 0 0 44px;
   margin: -8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyra-dialog-overlay,
+  .lyra-dialog,
+  .lyra-dialog-overlay--closing,
+  .lyra-dialog--closing {
+    animation: none;
+  }
 }

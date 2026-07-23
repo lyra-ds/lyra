@@ -187,6 +187,28 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  it('stays mounted with closing motion until its panel animation ends', async () => {
+    const { rerender } = await render(<CommandPalette open groups={groups} />);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+
+    await rerender(<CommandPalette open={false} groups={groups} />);
+    await vi.waitFor(() => {
+      expect(document.querySelector('.lyra-cmdk')?.classList.contains('lyra-cmdk--closing')).toBe(
+        true,
+      );
+    });
+    const closingPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+    expect(
+      document
+        .querySelector('.lyra-cmdk-overlay')
+        ?.classList.contains('lyra-cmdk-overlay--closing'),
+    ).toBe(true);
+    expect(getComputedStyle(closingPanel).animationName).toBe('lyra-overlay-out');
+
+    closingPanel.dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
+  });
+
   it('toggles through the global Command/Ctrl+K listener only when onOpen is provided', async () => {
     const onOpen = vi.fn();
     const onClose = vi.fn();
