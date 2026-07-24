@@ -2,7 +2,7 @@ import { Card } from '@lyra-ds/react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { components, type ComponentGroup } from '@/lib/components';
+import { components, groupLabelKey, groupOrder } from '@/lib/components';
 import { isLocale, locales } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -10,24 +10,6 @@ export function generateStaticParams() {
 }
 
 export const dynamicParams = false;
-
-const groupOrder: ComponentGroup[] = [
-  'display',
-  'form',
-  'navigation',
-  'feedback',
-  'overlay',
-  'layout',
-];
-
-const groupLabelKey: Record<ComponentGroup, string> = {
-  display: 'groupDisplay',
-  form: 'groupForm',
-  navigation: 'groupNavigation',
-  feedback: 'groupFeedback',
-  overlay: 'groupOverlay',
-  layout: 'groupLayout',
-};
 
 export default async function ComponentsIndex({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

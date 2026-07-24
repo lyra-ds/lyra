@@ -3,26 +3,8 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { components, type ComponentGroup } from '@/lib/components';
+import { components, groupLabelKey, groupOrder } from '@/lib/components';
 import type { Locale } from '@/lib/i18n';
-
-const groupOrder: ComponentGroup[] = [
-  'display',
-  'form',
-  'navigation',
-  'feedback',
-  'overlay',
-  'layout',
-];
-
-const groupLabelKey: Record<ComponentGroup, string> = {
-  display: 'groupDisplay',
-  form: 'groupForm',
-  navigation: 'groupNavigation',
-  feedback: 'groupFeedback',
-  overlay: 'groupOverlay',
-  layout: 'groupLayout',
-};
 
 function itemClass(active: boolean) {
   return ['lw-docs__item', active && 'lw-docs__item--active'].filter(Boolean).join(' ');

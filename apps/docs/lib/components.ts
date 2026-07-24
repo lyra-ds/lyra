@@ -7,7 +7,13 @@
  * route, static params, prop table and nav all derive from this manifest — no
  * central switch to edit.
  */
-export type ComponentGroup = 'display' | 'form' | 'navigation' | 'feedback' | 'overlay' | 'layout';
+/**
+ * Reader-facing taxonomy for the sidebar and the component index. Coarser than the
+ * handoff's own categories on purpose: `action` keeps Button/IconButton out of
+ * `display`, and `data` collects the components that render records.
+ */
+export type ComponentGroup =
+  'action' | 'display' | 'data' | 'form' | 'navigation' | 'feedback' | 'overlay';
 
 export type ComponentEntry = {
   /** Kebab-case slug — matches the MDX filename and the example registry key. */
@@ -18,11 +24,33 @@ export type ComponentEntry = {
 };
 
 export const components: ComponentEntry[] = [
+  { slug: 'button', name: 'Button', group: 'action' },
   { slug: 'badge', name: 'Badge', group: 'display' },
-  { slug: 'button', name: 'Button', group: 'display' },
   { slug: 'input', name: 'Input', group: 'form' },
   { slug: 'dialog', name: 'Dialog', group: 'overlay' },
 ];
+
+/** Group order used by the sidebar, the index page and the ⌘K palette alike. */
+export const groupOrder: ComponentGroup[] = [
+  'action',
+  'form',
+  'display',
+  'data',
+  'navigation',
+  'feedback',
+  'overlay',
+];
+
+/** Group → next-intl message key. Kept here so the three navs cannot drift apart. */
+export const groupLabelKey: Record<ComponentGroup, string> = {
+  action: 'groupAction',
+  form: 'groupForm',
+  display: 'groupDisplay',
+  data: 'groupData',
+  navigation: 'groupNavigation',
+  feedback: 'groupFeedback',
+  overlay: 'groupOverlay',
+};
 
 export const componentSlugs = components.map((entry) => entry.slug);
 

@@ -13,7 +13,6 @@
   "groupNavigation": "Navigation",
   "groupFeedback": "Feedback",
   "groupOverlay": "Overlay",
-  "groupLayout": "Layout",
   "demoEmail": "Email",
   "demoEmailHint": "We never share it.",
   "demoSearch": "Search",
@@ -39,5 +38,7 @@
   "searchHintClose": "close",
   "heroBrowse": "Browse components",
   "showCode": "Show code",
-  "hideCode": "Hide code"
+  "hideCode": "Hide code",
+  "groupAction": "Actions",
+  "groupData": "Data"
 }

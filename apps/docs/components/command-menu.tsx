@@ -4,26 +4,8 @@ import { CommandPalette, Icon, type CommandGroup } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { components, type ComponentGroup } from '@/lib/components';
+import { components, groupLabelKey, groupOrder } from '@/lib/components';
 import type { Locale } from '@/lib/i18n';
-
-const groupOrder: ComponentGroup[] = [
-  'display',
-  'form',
-  'navigation',
-  'feedback',
-  'overlay',
-  'layout',
-];
-
-const groupLabelKey: Record<ComponentGroup, string> = {
-  display: 'groupDisplay',
-  form: 'groupForm',
-  navigation: 'groupNavigation',
-  feedback: 'groupFeedback',
-  overlay: 'groupOverlay',
-  layout: 'groupLayout',
-};
 
 /**
  * ⌘K command palette + a visible header search trigger, both driving the Lyra
