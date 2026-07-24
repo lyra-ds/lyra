@@ -34,5 +34,8 @@
   "languageLabel": "Idioma",
   "search": "Buscar…",
   "searchEmpty": "Nenhum resultado para",
+  "searchHintNavigate": "navegar",
+  "searchHintSelect": "selecionar",
+  "searchHintClose": "fechar",
   "heroBrowse": "Ver componentes"
 }

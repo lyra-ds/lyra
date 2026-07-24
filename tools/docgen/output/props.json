@@ -1156,13 +1156,19 @@
         "name": "placeholder",
         "type": "string",
         "optional": true,
-        "description": "Search field placeholder. Default: `\"Digite um comando ou busque…\"`."
+        "description": "Search field placeholder. Default: `\"Type a command or search…\"`."
       },
       {
         "name": "emptyMessage",
         "type": "string",
         "optional": true,
-        "description": "Text shown before the current query when no commands match. Default: `\"Nenhum resultado para\"`."
+        "description": "Text shown before the current query when no commands match. Default: `\"No results for\"`."
+      },
+      {
+        "name": "hints",
+        "type": "CommandPaletteHints",
+        "optional": true,
+        "description": "Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work."
       },
       {
         "name": "hotkey",

@@ -77,6 +77,11 @@ export function CommandMenu({ locale }: { locale: Locale }) {
         groups={groups}
         placeholder={t('search')}
         emptyMessage={t('searchEmpty')}
+        hints={{
+          navigate: t('searchHintNavigate'),
+          select: t('searchHintSelect'),
+          close: t('searchHintClose'),
+        }}
       />
     </>
   );

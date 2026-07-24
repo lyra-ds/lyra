@@ -239,4 +239,21 @@ describe('CommandPalette', () => {
     );
     expect(closeOnly).not.toHaveBeenCalled();
   });
+
+  it('renders English hints by default and merges partial overrides', async () => {
+    const { container } = await render(<CommandPalette inline groups={groups} />);
+    expect(container.querySelector('.lyra-cmdk__footer')!.textContent).toContain('navigate');
+    expect(container.querySelector('.lyra-cmdk__footer')!.textContent).toContain('select');
+    expect(container.querySelector('.lyra-cmdk__footer')!.textContent).toContain('close');
+
+    await cleanup();
+    const { container: translated } = await render(
+      <CommandPalette inline groups={groups} hints={{ navigate: 'navegar' }} />,
+    );
+    const footer = translated.querySelector('.lyra-cmdk__footer')!.textContent;
+    // A partial override keeps the untouched hints on their defaults.
+    expect(footer).toContain('navegar');
+    expect(footer).toContain('select');
+    expect(footer).toContain('close');
+  });
 });

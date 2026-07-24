@@ -618,10 +618,12 @@ export interface CommandPaletteProps {
   onSelect?: (item: CommandItem) => void;
   /** Command groups to filter and render. */
   groups?: CommandGroup[];
-  /** Search field placeholder. Default: `"Digite um comando ou busque…"`. */
+  /** Search field placeholder. Default: `"Type a command or search…"`. */
   placeholder?: string;
-  /** Text shown before the current query when no commands match. Default: `"Nenhum resultado para"`. */
+  /** Text shown before the current query when no commands match. Default: `"No results for"`. */
   emptyMessage?: string;
+  /** Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work. */
+  hints?: CommandPaletteHints;
   /** Key used with Command/Ctrl for the global shortcut. Default: `"k"`. */
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */

@@ -41,6 +41,16 @@ export interface CommandGroup {
   items: CommandItem[];
 }
 
+/** Labels for the keyboard hints in {@link CommandPalette}'s footer. */
+export interface CommandPaletteHints {
+  /** Label after the ↑↓ keys. Default `"navigate"`. */
+  navigate?: string;
+  /** Label after the ↵ key. Default `"select"`. */
+  select?: string;
+  /** Label after the esc key. Default `"close"`. */
+  close?: string;
+}
+
 /** Props for {@link CommandPalette}. */
 export interface CommandPaletteProps {
   /** Controls modal visibility. On close, the overlay and panel remain mounted for their exit motion. Ignored in inline mode. */
@@ -53,10 +63,12 @@ export interface CommandPaletteProps {
   onSelect?: (item: CommandItem) => void;
   /** Command groups to filter and render. */
   groups?: CommandGroup[];
-  /** Search field placeholder. Default: `"Digite um comando ou busque…"`. */
+  /** Search field placeholder. Default: `"Type a command or search…"`. */
   placeholder?: string;
-  /** Text shown before the current query when no commands match. Default: `"Nenhum resultado para"`. */
+  /** Text shown before the current query when no commands match. Default: `"No results for"`. */
   emptyMessage?: string;
+  /** Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work. */
+  hints?: CommandPaletteHints;
   /** Key used with Command/Ctrl for the global shortcut. Default: `"k"`. */
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
@@ -64,6 +76,12 @@ export interface CommandPaletteProps {
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
 }
+
+const DEFAULT_HINTS: Required<CommandPaletteHints> = {
+  navigate: 'navigate',
+  select: 'select',
+  close: 'close',
+};
 
 interface IndexedCommandItem {
   item: CommandItem;
@@ -89,6 +107,7 @@ interface CommandPalettePanelProps {
   query: string;
   placeholder: string;
   emptyMessage: string;
+  hints: Required<CommandPaletteHints>;
   className?: string;
   modal: boolean;
   open: boolean;
@@ -119,6 +138,7 @@ function CommandPalettePanel({
   query,
   placeholder,
   emptyMessage,
+  hints,
   className,
   modal,
   open,
@@ -259,13 +279,13 @@ function CommandPalettePanel({
       <div className="lyra-cmdk__footer">
         <span>
           <kbd className="lyra-kbd">↑</kbd>
-          <kbd className="lyra-kbd">↓</kbd> navegar
+          <kbd className="lyra-kbd">↓</kbd> {hints.navigate}
         </span>
         <span>
-          <kbd className="lyra-kbd">↵</kbd> selecionar
+          <kbd className="lyra-kbd">↵</kbd> {hints.select}
         </span>
         <span>
-          <kbd className="lyra-kbd">esc</kbd> fechar
+          <kbd className="lyra-kbd">esc</kbd> {hints.close}
         </span>
       </div>
     </div>
@@ -286,8 +306,9 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
       onOpen,
       onSelect,
       groups = [],
-      placeholder = 'Digite um comando ou busque…',
-      emptyMessage = 'Nenhum resultado para',
+      placeholder = 'Type a command or search…',
+      emptyMessage = 'No results for',
+      hints,
       hotkey = 'k',
       inline = false,
       className,
@@ -392,6 +413,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
         query={query}
         placeholder={placeholder}
         emptyMessage={emptyMessage}
+        hints={{ ...DEFAULT_HINTS, ...hints }}
         className={className}
         modal={!inline}
         open={inline || open}
