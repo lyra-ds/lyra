@@ -1,37 +1,37 @@
 # Lyra Design System — llms.txt
 
-> Lyra é um design system open source, CSS-first e white-label. Núcleo em CSS puro
-> (custom properties + classes `.lyra-*`), wrappers React finos por cima.
-> Este arquivo é a referência canônica para agentes/LLMs gerarem UI com Lyra.
+> Lyra is an open source, CSS-first, white-label design system. A pure CSS core
+> (custom properties + `.lyra-*` classes) with thin React wrappers on top.
+> This file is the canonical reference for agents/LLMs generating UI with Lyra.
 
-## Regras para gerar código Lyra
+## Rules for generating Lyra code
 
-1. NUNCA hardcode cor, raio, sombra, fonte ou espaçamento — use sempre tokens semânticos.
-2. Componentes consomem APENAS a camada semântica (`--accent`, `--surface-card`, `--text-muted`…),
-   nunca primitivas (`--indigo-600`, `--slate-200`).
-3. Dark mode: automático via `[data-theme="dark"]` no `<html>` — não escreva estilos dark manuais.
-4. White-label: marcas definem `--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`
-   sob `[data-brand="x"]` (ver tokens/brand.css); todo o grupo accent é derivado via color-mix.
-5. Em HTML puro use as classes: `.lyra-btn .lyra-btn--{primary|secondary|soft|ghost|danger} .lyra-btn--{sm|md|lg}`.
-   Em React use os componentes abaixo — as classes são geradas por eles.
-6. Foco: `box-shadow: var(--shadow-focus)` em `:focus-visible`; nunca `outline` custom.
-7. Interop shadcn: importe `tokens/compat-shadcn.css` DEPOIS de styles.css (--background, --primary, --ring… mapeados).
+1. NEVER hardcode a color, radius, shadow, font or spacing value — always use semantic tokens.
+2. Components consume ONLY the semantic layer (`--accent`, `--surface-card`, `--text-muted`…),
+   never the primitives (`--indigo-600`, `--slate-200`).
+3. Dark mode: automatic via `[data-theme="dark"]` on `<html>` — do not write manual dark styles.
+4. White-label: brands define `--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`
+   under `[data-brand="x"]` (see tokens/brand.css); the whole accent group is derived via color-mix.
+5. In plain HTML use the classes: `.lyra-btn .lyra-btn--{primary|secondary|soft|ghost|danger} .lyra-btn--{sm|md|lg}`.
+   In React use the components below — they emit the classes for you.
+6. Focus: `box-shadow: var(--shadow-focus)` on `:focus-visible`; never a custom `outline`.
+7. shadcn interop: import `tokens/compat-shadcn.css` AFTER styles.css (--background, --primary, --ring… are mapped).
 
-## Tokens semânticos (camada que você usa)
+## Semantic tokens (the layer you use)
 
-Cores: --accent, --accent-hover, --accent-active, --accent-soft, --accent-soft-text, --on-accent, --focus-ring, --surface-page, --surface-card, --surface-raised, --surface-sunken, --surface-overlay, --text-primary, --text-secondary, --text-muted, --text-faint, --text-inverse, --text-link, --border-default, --border-strong, --border-accent, --success, --success-soft, --success-text, --warning, --warning-soft, --warning-text, --danger, --danger-soft, --danger-text, --info, --info-soft, --info-text
+Colors: --accent, --accent-hover, --accent-active, --accent-soft, --accent-soft-text, --on-accent, --focus-ring, --surface-page, --surface-card, --surface-raised, --surface-sunken, --surface-overlay, --text-primary, --text-secondary, --text-muted, --text-faint, --text-inverse, --text-link, --border-default, --border-strong, --border-accent, --success, --success-soft, --success-text, --warning, --warning-soft, --warning-text, --danger, --danger-soft, --danger-text, --info, --info-soft, --info-text
 
-Espaço/raio/controles:
+Spacing/radius/controls:
 --space-0, --space-1, --space-2, --space-3, --space-4, --space-5, --space-6, --space-8, --space-10, --space-12, --space-16, --space-20, --space-24, --radius-xs, --radius-sm, --radius-md, --radius-lg, --radius-xl, --radius-full, --control-sm, --control-md, --control-lg, --container-max, --sidebar-width, --content-gutter
 
-Tipografia: famílias --font-{sans,display,mono}; pesos --weight-{regular..extrabold};
-tamanhos --text-{xs..6xl} (UI default 14px = --text-base);
-estilos compostos p/ shorthand font: --display-font, --h1-font, --h2-font, --h3-font, --body-font, --body-strong-font, --caption-font, --overline-font, --code-font
+Typography: families --font-{sans,display,mono}; weights --weight-{regular..extrabold};
+sizes --text-{xs..6xl} (UI default 14px = --text-base);
+composed styles for the `font` shorthand: --display-font, --h1-font, --h2-font, --h3-font, --body-font, --body-strong-font, --caption-font, --overline-font, --code-font
 
-Efeitos: --shadow-{xs,sm,md,lg,focus}; --duration-{fast,base,slow}; --ease-{out,in-out};
+Effects: --shadow-{xs,sm,md,lg,focus}; --duration-{fast,base,slow}; --ease-{out,in-out};
 z-index --z-{dropdown,sticky,overlay,dialog,toast,tooltip}.
 
-## API dos componentes React (@lyra-ds/react)
+## React component API (@lyra-ds/react)
 
 ## Buttons
 
@@ -54,6 +54,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   /** Stretch to 100% of the container width. */
   full?: boolean;
+  /** Render the single child element instead of a `<button>`, keeping Lyra button styling — use for links: `<Button asChild><a href>…</a></Button>`. */
+  asChild?: boolean;
 }
 export declare function Button(props: ButtonProps): JSX.Element;
 ```
@@ -194,6 +196,12 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
   padded?: boolean;
   /** Add hover elevation for clickable cards. */
   interactive?: boolean;
+  /**
+   * Render the single child element instead of a `<div>`, keeping Lyra card styling — use for
+   * fully clickable cards: `<Card asChild interactive><a href>…</a></Card>`. Only supported for
+   * the plain surface (no `title`, no `footer`), so the child stays the one rendered element.
+  */
+  asChild?: boolean;
 }
 export declare function Card(props: CardProps): JSX.Element;
 ```
@@ -600,7 +608,7 @@ export declare function Breadcrumb(props: BreadcrumbProps): JSX.Element;
 ```ts
 /** Props for {@link CommandPalette}. */
 export interface CommandPaletteProps {
-  /** Controls visibility of the modal overlay. Ignored in inline mode. */
+  /** Controls modal visibility. On close, the overlay and panel remain mounted for their exit motion. Ignored in inline mode. */
   open?: boolean;
   /** Called when the palette is dismissed or an item is selected. */
   onClose?: () => void;

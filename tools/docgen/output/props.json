@@ -41,6 +41,12 @@
         "type": "boolean",
         "optional": true,
         "description": "Stretch to 100% of the container width."
+      },
+      {
+        "name": "asChild",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render the single child element instead of a `<button>`, keeping Lyra button styling — use for links: `<Button asChild><a href>…</a></Button>`."
       }
     ]
   },
@@ -314,6 +320,12 @@
         "type": "boolean",
         "optional": true,
         "description": "Add hover elevation for clickable cards."
+      },
+      {
+        "name": "asChild",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render the single child element instead of a `<div>`, keeping Lyra card styling — use for\nfully clickable cards: `<Card asChild interactive><a href>…</a></Card>`. Only supported for\nthe plain surface (no `title`, no `footer`), so the child stays the one rendered element."
       }
     ]
   },
@@ -1114,7 +1126,7 @@
         "name": "open",
         "type": "boolean",
         "optional": true,
-        "description": "Controls visibility of the modal overlay. Ignored in inline mode."
+        "description": "Controls modal visibility. On close, the overlay and panel remain mounted for their exit motion. Ignored in inline mode."
       },
       {
         "name": "onClose",
