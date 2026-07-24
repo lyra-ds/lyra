@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon, Input } from '@lyra-ds/react';
+import { Card, Icon, Input } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -9,10 +9,7 @@ export function InputPreview() {
   const [value, setValue] = useState('');
 
   return (
-    <div
-      className="lyra-card lyra-card--padded"
-      style={{ display: 'grid', gap: 'var(--space-4)', maxWidth: '24rem' }}
-    >
+    <Card className="lw-preview__form">
       <Input
         label={t('demoEmail')}
         placeholder="you@example.dev"
@@ -25,6 +22,6 @@ export function InputPreview() {
         placeholder={t('demoSearchPlaceholder')}
         iconLeft={<Icon name="search" size={16} />}
       />
-    </div>
+    </Card>
   );
 }

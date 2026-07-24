@@ -1,6 +1,7 @@
-import { forwardRef } from 'react';
-import type { HTMLAttributes, ReactNode } from 'react';
+import { Children, forwardRef, isValidElement } from 'react';
+import type { ForwardedRef, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../internal/cx';
+import { Slot } from '../internal/slot';
 
 /** Props for {@link Card}. */
 export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -14,11 +15,27 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'>
   padded?: boolean;
   /** Add hover elevation for clickable cards. */
   interactive?: boolean;
+  /**
+   * Render the single child element instead of a `<div>`, keeping Lyra card styling — use for
+   * fully clickable cards: `<Card asChild interactive><a href>…</a></Card>`. Only supported for
+   * the plain surface (no `title`, no `footer`), so the child stays the one rendered element.
+   */
+  asChild?: boolean;
 }
 
 /** A standard surface for grouping content. */
 export const Card = /*#__PURE__*/ forwardRef<HTMLDivElement, CardProps>(function Card(
-  { title, actions, footer, padded = true, interactive = false, className, children, ...rest },
+  {
+    title,
+    actions,
+    footer,
+    padded = true,
+    interactive = false,
+    asChild = false,
+    className,
+    children,
+    ...rest
+  },
   ref,
 ) {
   const cls = cx(
@@ -27,6 +44,20 @@ export const Card = /*#__PURE__*/ forwardRef<HTMLDivElement, CardProps>(function
     !title && !footer && padded && 'lyra-card--padded',
     className,
   );
+  if (asChild) {
+    if (title || footer) {
+      throw new Error('Card with asChild does not support the title or footer props.');
+    }
+    const child = Children.only(children);
+    if (!isValidElement(child)) {
+      throw new Error('Card with asChild expects exactly one React element child.');
+    }
+    return (
+      <Slot {...rest} ref={ref as ForwardedRef<HTMLElement>} className={cls}>
+        {child}
+      </Slot>
+    );
+  }
   if (!title && !footer) {
     return (
       <div {...rest} ref={ref} className={cls}>

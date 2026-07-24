@@ -466,6 +466,52 @@
   flex-wrap: wrap;
 }
 
+/* live previews — the surface is a Lyra <Card>; these classes only lay the demo out */
+.lw-preview__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.lw-preview__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.lw-preview__form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 24rem;
+}
+
+/* generated prop tables — the table itself is the Lyra <Table> */
+.lw-prop-table__optional {
+  color: var(--text-faint);
+}
+
+/* component index — prefixed with .lw-docs__content to outrank the prose defaults above */
+.lw-docs__content p.lw-index__intro {
+  color: var(--text-muted);
+}
+.lw-index__group {
+  margin-top: var(--space-6);
+}
+.lw-index__grid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* the card surface is the affordance — no link color, no hover underline */
+.lw-docs__content a.lw-index__card,
+.lw-docs__content a.lw-index__card:hover {
+  display: block;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
 /* drop the on-this-page rail first, then the sidebar */
 @media (max-width: 1100px) {
   .lw-docs {

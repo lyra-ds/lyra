@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Dialog } from '@lyra-ds/react';
+import { Button, Card, Dialog } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -9,7 +9,7 @@ export function DialogPreview() {
   const t = useTranslations();
 
   return (
-    <div className="lyra-card lyra-card--padded">
+    <Card>
       <Button variant="danger" onClick={() => setOpen(true)}>
         {t('demoDelete')}
       </Button>
@@ -30,6 +30,6 @@ export function DialogPreview() {
       >
         {t('demoDeleteBody')}
       </Dialog>
-    </div>
+    </Card>
   );
 }

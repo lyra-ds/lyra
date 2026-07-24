@@ -48,6 +48,17 @@ sendo referência de leitura); o usuário arquiva quando quiser.
   registry gerado (prettier-ignored, gate --check de drift).
 - JSDoc canônico em inglês; convenções de conversão em
   `packages/react/CONVENTIONS.md`.
+- **Dogfooding do site de docs (jul/2026):** `apps/docs` usa o próprio DS, não
+  reimplementa. Onde existe componente em `@lyra-ds/react`, use o componente —
+  nunca a classe `.lyra-*` crua (ex.: `<Table>`, `<Card>`, `<Badge>`, e
+  `<Button asChild>` para links com cara de botão). Classes `.lw-*` no
+  `apps/docs/app/site.css` são só para o **layout do site de docs**
+  (header/sidebar/grid/TOC/painel de código/busca/toggle/previews), que o DS não
+  provê. Layout de preview também vai para `.lw-*`, nunca `style={{}}` inline.
+  Se o componente do DS não cobrir o caso, **estenda o DS** (com changeset e
+  teste), como foi feito com `Button asChild` e `Card asChild`. Cuidado de
+  especificidade: `.lw-docs__content a:not(.lyra-btn)` e `.lw-docs__content p`
+  ganham de uma classe `.lw-*` solta — prefixe quando precisar sobrescrever.
 
 ## Project map
 

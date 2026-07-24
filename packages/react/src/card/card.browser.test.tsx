@@ -26,4 +26,20 @@ describe('Card', () => {
       expect((await axe.run(container)).violations).toEqual([]);
       error.mockRestore();
     });
+
+  it('asChild renders the child element carrying the card classes', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { container } = await render(
+      <Card asChild interactive>
+        <a href="/components/card">Card</a>
+      </Card>,
+    );
+    const anchor = container.querySelector('a')!;
+    expect(container.querySelector('div')).toBeNull();
+    expect(anchor.className).toBe('lyra-card lyra-card--interactive lyra-card--padded');
+    expect(anchor.getAttribute('href')).toBe('/components/card');
+    expect(error).not.toHaveBeenCalled();
+    expect((await axe.run(container)).violations).toEqual([]);
+    error.mockRestore();
+  });
 });

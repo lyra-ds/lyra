@@ -1,3 +1,4 @@
+import { Card } from '@lyra-ds/react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -38,33 +39,22 @@ export default async function ComponentsIndex({ params }: { params: Promise<{ la
   return (
     <div>
       <h1>{t('components')}</h1>
-      <p style={{ color: 'var(--text-muted)' }}>{t('componentsIntro')}</p>
+      <p className="lw-index__intro">{t('componentsIntro')}</p>
       {groupOrder.map((group) => {
         const items = components.filter((entry) => entry.group === group);
         if (items.length === 0) return null;
 
         return (
-          <section key={group} style={{ marginTop: 'var(--space-6)' }}>
+          <section key={group} className="lw-index__group">
             <h2>{t(groupLabelKey[group])}</h2>
-            <ul
-              style={{
-                display: 'grid',
-                gap: 'var(--space-2)',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(12rem, 1fr))',
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-              }}
-            >
+            <ul className="lw-index__grid">
               {items.map((entry) => (
                 <li key={entry.slug}>
-                  <Link
-                    className="lyra-card lyra-card--padded"
-                    href={`/${lang}/components/${entry.slug}`}
-                    style={{ color: 'var(--text-primary)', display: 'block' }}
-                  >
-                    {entry.name}
-                  </Link>
+                  <Card asChild interactive>
+                    <Link className="lw-index__card" href={`/${lang}/components/${entry.slug}`}>
+                      {entry.name}
+                    </Link>
+                  </Card>
                 </li>
               ))}
             </ul>

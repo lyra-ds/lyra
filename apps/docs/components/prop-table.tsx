@@ -1,3 +1,4 @@
+import { Badge, Table } from '@lyra-ds/react';
 import props from '../../../tools/docgen/output/props.json';
 
 type Prop = {
@@ -20,37 +21,24 @@ export function PropTable({ name }: { name: string }) {
   }
 
   return (
-    <div className="lyra-table-wrap">
-      <table className="lyra-table">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Type</th>
-            <th scope="col">Required</th>
-            <th scope="col">Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {component.props.map((prop) => (
-            <tr key={prop.name}>
-              <td className="lyra-table__primary">
-                <code>{prop.name}</code>
-              </td>
-              <td>
-                <code>{prop.type}</code>
-              </td>
-              <td>
-                {prop.optional ? (
-                  <span style={{ color: 'var(--text-faint)' }}>—</span>
-                ) : (
-                  <span className="lyra-badge lyra-badge--warning">Required</span>
-                )}
-              </td>
-              <td>{prop.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      columns={[
+        { key: 'name', label: 'Name' },
+        { key: 'type', label: 'Type' },
+        { key: 'required', label: 'Required' },
+        { key: 'description', label: 'Description' },
+      ]}
+      rows={component.props.map((prop) => ({
+        description: prop.description,
+        id: prop.name,
+        name: <code>{prop.name}</code>,
+        required: prop.optional ? (
+          <span className="lw-prop-table__optional">—</span>
+        ) : (
+          <Badge tone="warning">Required</Badge>
+        ),
+        type: <code>{prop.type}</code>,
+      }))}
+    />
   );
 }
