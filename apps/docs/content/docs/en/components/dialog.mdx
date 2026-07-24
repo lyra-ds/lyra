@@ -8,32 +8,60 @@ description: A controlled modal dialog with focus management and accessible clos
 Dialog is a controlled modal with portal rendering, focus trapping, scroll locking, and accessible
 escape routes built in.
 
-## Live preview
+## Examples
 
-<Preview />
+<Example id="basic" title="Confirming a destructive action">
+  The footer is where actions belong — the cancel path first, the destructive one last.
+</Example>
+
+<Example id="dismissal" title="Blocking accidental dismissal">
+  Turn off `closeOnEsc` and `closeOnOverlayClick` only when losing the dialog would lose work or
+  skip a decision. Never remove every close path: the × renders whenever `onClose` is set.
+</Example>
+
+## When to use
+
+Use a Dialog for a short, focused decision that must be resolved before the user moves on:
+confirming a deletion, naming a new resource, reviewing terms.
+
+Reach for something else when:
+
+- **The content is long or the task is a side journey** — use a Drawer, which slides in without
+  claiming the whole screen.
+- **You only need to report the outcome of something** — use a Toast (transient) or an Alert
+  (persistent, inline).
+- **The panel is anchored to a control and holds choices** — use a Dropdown.
+
+## Accessibility
+
+- The panel is `role="dialog"` with `aria-modal`, named by `title` via `aria-labelledby`.
+- Focus moves into the panel on open, is trapped while open, and returns to the element that
+  opened it on close.
+- Every close path calls `onClose`: the × button, Escape, and a backdrop click. The × renders
+  only when `onClose` is provided, so a dialog is never left without a visible way out.
+- Page scroll is locked while the dialog is open, and the panel is portaled to `document.body`
+  so it escapes any `overflow: hidden` ancestor.
 
 ## Props
 
 <PropTable name="Dialog" />
 
-## Usage
+## Plain HTML
 
-```tsx
-'use client';
+Without React, compose the same classes — you own the open/close state, focus and Escape:
 
-import { Button, Dialog } from '@lyra-ds/react';
-import { useState } from 'react';
-
-export function Example() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <Button onClick={() => setOpen(true)}>Open dialog</Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Delete project">
-        This action cannot be undone.
-      </Dialog>
-    </>
-  );
-}
+```html
+<div class="lyra-dialog-overlay">
+  <div class="lyra-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <div class="lyra-dialog__header">
+      <h2 class="lyra-dialog__title" id="dialog-title">Delete project</h2>
+      <button class="lyra-dialog__close" aria-label="Close">✕</button>
+    </div>
+    <div class="lyra-dialog__body">This action cannot be undone.</div>
+    <div class="lyra-dialog__footer">
+      <button class="lyra-btn lyra-btn--ghost lyra-btn--md">Cancel</button>
+      <button class="lyra-btn lyra-btn--danger lyra-btn--md">Delete</button>
+    </div>
+  </div>
+</div>
 ```

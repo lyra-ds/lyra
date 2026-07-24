@@ -1,35 +1,33 @@
 'use client';
 
-import { Button, Card, Dialog } from '@lyra-ds/react';
-import { useTranslations } from 'next-intl';
+import { Button, Dialog } from '@lyra-ds/react';
 import { useState } from 'react';
 
-export function DialogPreview() {
+export function DialogBasic() {
   const [open, setOpen] = useState(false);
-  const t = useTranslations();
 
   return (
-    <Card>
+    <>
       <Button variant="danger" onClick={() => setOpen(true)}>
-        {t('demoDelete')}
+        Delete project
       </Button>
       <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Delete project"
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)}>
-              {t('cancel')}
+              Cancel
             </Button>
             <Button variant="danger" onClick={() => setOpen(false)}>
-              {t('demoDelete')}
+              Delete
             </Button>
           </>
         }
-        onClose={() => setOpen(false)}
-        open={open}
-        title={t('demoDeleteTitle')}
       >
-        {t('demoDeleteBody')}
+        This permanently removes the project and every deployment attached to it.
       </Dialog>
-    </Card>
+    </>
   );
 }

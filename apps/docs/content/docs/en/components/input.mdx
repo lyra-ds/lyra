@@ -10,34 +10,64 @@ Input wraps the native `<input>`, so every DOM attribute (`type`, `placeholder`,
 Add a `label` (wired via `htmlFor`), a `hint`, or an `error` that swaps in error styling and
 `aria-invalid`.
 
-## Live preview
+## Examples
 
-<Preview />
+<Example id="basic" title="Label and hint">
+  A `label` is not optional in practice: a placeholder disappears the moment someone types, taking
+  the only description of the field with it.
+</Example>
+
+<Example id="sizes-and-icon" title="Sizes and inline icon">
+  Heights match Button (sm 32px, md 40px, lg 48px), so fields and actions line up on the same row.
+  `iconLeft` sits inside the field and is decorative — it never replaces the label.
+</Example>
+
+<Example id="error" title="Error and disabled">
+  `error` replaces `hint`, so a field shows one message at a time and the layout never jumps between
+  states.
+</Example>
+
+## When to use
+
+Use an Input for a single line of free-form text or a native typed value (`email`, `password`,
+`number`, `date` — set `type` and the platform keyboard and validation follow).
+
+Reach for something else when:
+
+- **The answer is more than a line** — use a Textarea.
+- **The answer comes from a known list** — use Select for a short list, Combobox when it is long
+  enough to need filtering.
+- **It is a yes/no** — use Checkbox or Switch.
+- **It is a file** — use FileUpload.
+
+## Accessibility
+
+- The `label` is wired to the control with `htmlFor`/`id`, so clicking it focuses the field and
+  screen readers announce the name. An Input without a `label` needs an `aria-label` from you.
+- `error` sets `aria-invalid` and is referenced by the field, so the message is announced rather
+  than being colour-only feedback.
+- `hint` and `error` share one slot and one id: only one is rendered at a time, so there is never
+  a stale description pointing at the field.
+- Focus is the `--shadow-focus` ring; the error state changes the border, never the focus ring.
 
 ## Props
 
 <PropTable name="Input" />
 
-## Usage
+## Plain HTML
 
-```tsx
-import { Icon, Input } from '@lyra-ds/react';
-import { useState } from 'react';
+The field wrapper carries the layout; the icon variant needs the extra `lyra-input-wrap`:
 
-export function Example() {
-  const [email, setEmail] = useState('');
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="email">Work email</label>
+  <input class="lyra-input" id="email" type="email" placeholder="you@example.dev" />
+  <span class="lyra-hint">We only use it for deploy notifications.</span>
+</div>
 
-  return (
-    <>
-      <Input
-        label="Email"
-        placeholder="you@example.dev"
-        hint="We never share it."
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-      />
-      <Input label="Search" iconLeft={<Icon name="search" size={16} />} placeholder="Search…" />
-    </>
-  );
-}
+<div class="lyra-field">
+  <label class="lyra-label" for="slug">Workspace slug</label>
+  <input class="lyra-input lyra-input--error" id="slug" aria-invalid="true" value="my workspace" />
+  <span class="lyra-hint lyra-hint--error">Use lowercase and dashes.</span>
+</div>
 ```

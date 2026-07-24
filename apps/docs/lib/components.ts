@@ -2,14 +2,15 @@
  * Single source of truth for the documented components.
  *
  * Adding a component page is additive: append one entry here, drop a
- * `content/docs/{en,pt-BR}/components/<slug>.mdx` pair, and register a preview
- * in `components/previews`. The route, static params, prop table and nav all
- * derive from this manifest — no central switch to edit.
+ * `content/docs/{en,pt-BR}/components/<slug>.mdx` pair, and add example files
+ * under `components/examples/<slug>/` registered in `components/examples`. The
+ * route, static params, prop table and nav all derive from this manifest — no
+ * central switch to edit.
  */
 export type ComponentGroup = 'display' | 'form' | 'navigation' | 'feedback' | 'overlay' | 'layout';
 
 export type ComponentEntry = {
-  /** Kebab-case slug — matches the MDX filename and the preview registry key. */
+  /** Kebab-case slug — matches the MDX filename and the example registry key. */
   slug: string;
   /** PascalCase name — matches the entry in `tools/docgen/output/props.json`. */
   name: string;

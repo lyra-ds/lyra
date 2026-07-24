@@ -466,22 +466,48 @@
   flex-wrap: wrap;
 }
 
-/* live previews — the surface is a Lyra <Card>; these classes only lay the demo out */
-.lw-preview__row {
+/* documented examples: title, prose, live stage, source behind a toggle */
+.lw-example {
+  margin: var(--space-6) 0;
+}
+.lw-example__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+/* the stage arranges the demo so example files stay copy-pasteable (no docs-only classes) */
+.lw-example__stage {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.lw-example__toggle {
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  cursor: pointer;
 }
-.lw-preview__stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+.lw-example__toggle:hover {
+  color: var(--text-primary);
 }
-.lw-preview__form {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 24rem;
+.lw-example__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.lw-example__code {
+  margin-top: var(--space-2);
 }
 
 /* generated prop tables — the table itself is the Lyra <Table> */

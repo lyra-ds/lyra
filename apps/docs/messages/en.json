@@ -37,5 +37,7 @@
   "searchHintNavigate": "navigate",
   "searchHintSelect": "select",
   "searchHintClose": "close",
-  "heroBrowse": "Browse components"
+  "heroBrowse": "Browse components",
+  "showCode": "Show code",
+  "hideCode": "Hide code"
 }

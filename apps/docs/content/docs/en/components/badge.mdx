@@ -8,28 +8,49 @@ description: A compact status label with semantic tones and an optional status d
 Badge is a small, presentational label for statuses, counts and metadata. Pick a semantic `tone`
 so the color carries meaning, and add `dot` for an at-a-glance status indicator.
 
-## Live preview
+## Examples
 
-<Preview />
+<Example id="tones" title="Tones">
+  Each tone maps to a semantic token pair, so badges stay legible in light and dark without any
+  per-theme styling of your own.
+</Example>
+
+<Example id="dot" title="Status dot">
+  `dot` prefixes a small filled circle. Keep the label — the dot repeats the meaning of the tone, it
+  never replaces the word.
+</Example>
+
+## When to use
+
+Use a Badge to label the state of the thing next to it: a deployment status, a plan tier, an
+item count.
+
+Reach for something else when:
+
+- **The label is a user-managed keyword** (topics, categories, filters) — use a Tag, which is
+  built for sets and can be removable.
+- **The message needs a sentence and a place of its own** — use an Alert.
+- **You are reporting the result of an action that just happened** — use a Toast.
+
+## Accessibility
+
+- Badge renders a plain `<span>` with no ARIA role: it is read as part of the surrounding
+  content, which is what you want for a label attached to a nearby element.
+- The `dot` is `aria-hidden` — it is decorative, and the tone it echoes is already carried by
+  the text. That is why the label must not be dropped.
+- Tone alone is never the message. "Failed" must say _Failed_; a red badge with only a number
+  fails for anyone who cannot distinguish the hue.
 
 ## Props
 
 <PropTable name="Badge" />
 
-## Usage
+## Plain HTML
 
-```tsx
-import { Badge } from '@lyra-ds/react';
-
-export function Example() {
-  return (
-    <>
-      <Badge tone="success" dot>
-        Active
-      </Badge>
-      <Badge tone="warning">Pending</Badge>
-      <Badge tone="danger">Failed</Badge>
-    </>
-  );
-}
+```html
+<span class="lyra-badge lyra-badge--success">
+  <span class="lyra-badge__dot" aria-hidden="true"></span>
+  Operational
+</span>
+<span class="lyra-badge lyra-badge--warning">Degraded</span>
 ```
