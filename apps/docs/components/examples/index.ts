@@ -9,6 +9,7 @@ import { DialogBasic } from './dialog/basic';
 import { DialogDismissal } from './dialog/dismissal';
 import { InputBasic } from './input/basic';
 import { InputError } from './input/error';
+import { InputInAForm } from './input/in-a-form';
 import { InputSizesAndIcon } from './input/sizes-and-icon';
 
 /**
@@ -40,6 +41,7 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     basic: InputBasic,
     'sizes-and-icon': InputSizesAndIcon,
     error: InputError,
+    'in-a-form': InputInAForm,
   },
   dialog: {
     basic: DialogBasic,
