@@ -1,0 +1,67 @@
+---
+title: IconButton
+description: Uma ação quadrada só de ícone, com variantes e tamanhos de Button e rótulo acessível obrigatório.
+---
+
+# IconButton
+
+IconButton serve para uma ação familiar quando um rótulo visível deixaria uma barra compacta mais difícil de ler.
+Seu `label` obrigatório nomeia a ação para tecnologia assistiva e fornece o tooltip nativo; ele não é decoração.
+
+## Exemplos
+
+<Example id="variants" title="Variantes de ação">
+  Combine a variante com a intenção, não com o glifo. Uma ação destrutiva de lixeira merece
+  `danger`; um menu de mais opções costuma merecer `ghost`, pois não deve superar a tarefa
+  principal.
+</Example>
+
+<Example id="sizes-and-disabled" title="Tamanhos e ações indisponíveis">
+  Escolha um tamanho por linha de controles: sm tem 32px, md 40px e lg 48px. Botões desabilitados
+  perdem foco, então explique a condição indisponível em texto próximo quando ela não estiver
+  evidente.
+</Example>
+
+## Quando usar
+
+Use IconButton para uma ação imediata e familiar em uma barra densa ou junto ao objeto que ela afeta.
+
+Prefira outro componente quando:
+
+- **A ação precisa de palavras visíveis para ser entendida** — use Button.
+- **O controle navega para outra localização** — use um link semântico, opcionalmente estilizado com Button.
+- **O glifo relata status em vez de disparar ação** — use Badge ou texto.
+
+## Acessibilidade
+
+- IconButton renderiza um `<button>` nativo e aplica `label` tanto em `aria-label` quanto no `title` nativo.
+  Escreva o rótulo como ação, como “Excluir projeto”, e não como nome do ícone “Lixeira”.
+- A ativação por teclado de botão nativo usa Enter/Espaço. `disabled` o remove do foco e bloqueia a ativação.
+- O Icon filho normalmente é decorativo; não dê a ele `title` que duplique o rótulo do botão.
+- O foco usa o anel compartilhado `--shadow-focus`. Preserve foco visível ao adicionar estilos próprios.
+
+## Props
+
+<PropTable name="IconButton" />
+
+## HTML puro
+
+Use `aria-label` e `title` juntos, como faz o componente React; o SVG continua decorativo:
+
+```html
+<button
+  class="lyra-btn lyra-btn--icon lyra-btn--secondary lyra-btn--md"
+  aria-label="Abrir configurações"
+  title="Abrir configurações"
+>
+  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"></svg>
+</button>
+
+<button
+  class="lyra-btn lyra-btn--icon lyra-btn--danger lyra-btn--sm"
+  aria-label="Excluir projeto"
+  title="Excluir projeto"
+>
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"></svg>
+</button>
+```

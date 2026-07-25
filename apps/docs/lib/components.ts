@@ -35,6 +35,13 @@ export const components: ComponentEntry[] = [
   { slug: 'select', name: 'Select', group: 'form' },
   { slug: 'combobox', name: 'Combobox', group: 'form' },
   { slug: 'file-upload', name: 'FileUpload', group: 'form' },
+  { slug: 'avatar', name: 'Avatar', group: 'display' },
+  { slug: 'card', name: 'Card', group: 'display' },
+  { slug: 'tag', name: 'Tag', group: 'display' },
+  { slug: 'icon', name: 'Icon', group: 'display' },
+  { slug: 'skeleton', name: 'Skeleton', group: 'display' },
+  { slug: 'accordion', name: 'Accordion', group: 'display' },
+  { slug: 'icon-button', name: 'IconButton', group: 'action' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */

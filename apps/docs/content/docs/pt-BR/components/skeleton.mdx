@@ -1,0 +1,60 @@
+---
+title: Skeleton
+description: Um placeholder com shimmer no formato do conteúdo que carrega, preservando o layout final.
+---
+
+# Skeleton
+
+Skeleton ocupa o espaço que o conteúdo real terá enquanto carrega. Combine forma e comprimento das linhas
+finais para a página não saltar; use Spinner quando não houver layout significativo a reservar.
+
+## Exemplos
+
+<Example id="content-shape" title="Estado de carregamento de perfil">
+  Um círculo e barras de texto desiguais mostram o que virá preservando a altura final da linha.
+  Repetir barras genéricas de largura total torna o conteúdo em carregamento menos previsível.
+</Example>
+
+<Example id="card" title="Estado de carregamento de card">
+  Use as mesmas proporções de mídia e texto do card carregado. Skeleton é uma prévia estrutural
+  temporária, não decoração adicionada depois que o layout já está definido.
+</Example>
+
+## Quando usar
+
+Use Skeleton quando a página conhece a forma do conteúdo que ainda está carregando.
+
+Prefira outro componente quando:
+
+- **A espera não tem forma final de conteúdo para preservar** — use Spinner.
+- **A operação tem progresso mensurável** — use Progress.
+- **Um resultado falhou ou precisa de explicação** — use Alert ou um estado vazio explícito.
+
+## Acessibilidade
+
+- Skeleton é `aria-hidden="true"`, então nunca anuncia uma barra de carregamento sem significado a leitores de tela.
+- Coloque o estado de carregamento na região ao redor quando isso importar, como `aria-busy="true"` no
+  contêiner e uma mensagem de status próxima quando a espera não estiver óbvia.
+- O shimmer respeita `prefers-reduced-motion` parando a animação. Não adicione outra animação que devolva
+  movimento a quem optou por reduzi-lo.
+- Skeleton é um `<span>` sem interação por teclado ou comportamento de foco.
+
+## Props
+
+<PropTable name="Skeleton" />
+
+## HTML puro
+
+Use a altura de um círculo como seu diâmetro; dê às barras larguras parecidas com o conteúdo substituído:
+
+```html
+<div aria-busy="true">
+  <span
+    class="lyra-skeleton lyra-skeleton--circle"
+    style="width: 40px; height: 40px"
+    aria-hidden="true"
+  ></span>
+  <span class="lyra-skeleton" style="width: 55%; height: 14px" aria-hidden="true"></span>
+  <span class="lyra-skeleton" style="width: 85%; height: 12px" aria-hidden="true"></span>
+</div>
+```

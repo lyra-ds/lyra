@@ -1,0 +1,72 @@
+---
+title: Accordion
+description: Uma lista de seções expansíveis não controlada, orientada por dados de itens, com uma ou várias seções abertas.
+---
+
+# Accordion
+
+Accordion revela detalhes de apoio sem fazer cada resposta disputar espaço. Forneça `items` na ordem de leitura,
+e então escolha se seções `multiple` abertas ajudam a comparação ou criam ruído desnecessário.
+
+## Exemplos
+
+<Example id="basic" title="Uma resposta por vez">
+  Por padrão, nenhum item fica aberto. Defina `defaultOpen` pelo `id` estável para escolher um item
+  inicialmente aberto; no modo único padrão, apenas um item pode ficar aberto por vez.
+</Example>
+
+<Example id="multiple" title="Seções independentes">
+  Defina `multiple` apenas quando for razoável que a pessoa mantenha duas respostas abertas, como ao
+  comparar configurações. Para uma FAQ curta, um item aberto facilita encontrar a resposta atual de
+  novo.
+</Example>
+
+## Quando usar
+
+Use Accordion para detalhes opcionais com rótulos claros que podem ser revelados de forma independente.
+
+Prefira outro componente quando:
+
+- **Toda seção precisa ser lida em sequência** — use títulos e seções simples.
+- **O conteúdo é navegação entre visualizações pares** — use Tabs.
+- **Um registro precisa de fronteira, resumo e ações** — use Card.
+
+## Acessibilidade
+
+- O título de cada item é um botão nativo de gatilho, então entra na ordem normal de Tab e aceita ativação
+  por Enter/Espaço.
+- Ao receber foco pelo teclado, `.lyra-acc__trigger:focus-visible` exibe o anel compartilhado
+  `box-shadow: var(--shadow-focus)`. Consumidores devem preservá-lo ou fornecer um indicador de foco visível equivalente.
+- O gatilho expõe `aria-expanded` e `aria-controls`; um painel aberto é rotulado por esse gatilho
+  por meio de `aria-labelledby`.
+- O componente é não controlado após montar. `defaultOpen` escolhe apenas o item inicial; mudá-lo depois
+  não força painéis a abrir ou fechar.
+- Use valores únicos e estáveis em `id`. Eles identificam o estado de cada item; repeti-los pode fazer itens
+  distintos abrirem ou fecharem juntos.
+
+## Props
+
+<PropTable name="Accordion" />
+
+## HTML puro
+
+Mantenha o botão nativo e seu estado expandido sincronizados com o painel que ele controla:
+
+```html
+<div class="lyra-accordion">
+  <div class="lyra-acc__item lyra-acc__item--open">
+    <button
+      id="billing-trigger"
+      class="lyra-acc__trigger"
+      type="button"
+      aria-expanded="true"
+      aria-controls="billing-panel"
+    >
+      Quando serei cobrado?<span class="lyra-acc__chevron" aria-hidden="true"></span>
+    </button>
+    <div class="lyra-acc__panel" id="billing-panel" aria-labelledby="billing-trigger">
+      Você é cobrado no primeiro dia de cada ciclo.
+    </div>
+  </div>
+</div>
+```

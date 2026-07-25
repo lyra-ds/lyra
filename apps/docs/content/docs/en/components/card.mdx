@@ -1,0 +1,77 @@
+---
+title: Card
+description: A bordered surface for related content, with optional header actions, footer and linked state.
+---
+
+# Card
+
+Card groups information that should be read and acted on as one unit. Add a border only when that
+boundary earns its place; use `asChild` when the whole plain surface must be one real link.
+
+## Examples
+
+<Example id="structured" title="Header, actions and footer">
+  A title establishes one scan target, actions stay at its edge, and the footer holds the next step.
+  Do not make a card do this much work if a heading and paragraph already explain the relationship.
+</Example>
+
+<Example id="plain" title="A simple surface">
+  The default padding is for one self-contained block. Set `padded={false}` only when the child owns
+  its spacing, such as a table or media area that must meet the border.
+</Example>
+
+<Example id="as-link" title="A fully clickable link">
+  `asChild` keeps the child anchor as the one rendered element, so native link behaviour still
+  works. It only supports a plain Card: `title` and `footer` would create extra elements and
+  therefore throw.
+</Example>
+
+## When to use
+
+Use a Card for a coherent record, summary or option with content that needs a shared boundary and
+possibly one next action.
+
+Reach for something else when:
+
+- **A heading and its content already belong to the page flow** — use a plain section.
+- **The information is a short status or count beside another element** — use Badge.
+- **The unit expands and collapses in place** — use Accordion.
+- **The visual treatment exists only to trigger an action** — use Button or IconButton.
+
+## Accessibility
+
+- Card renders a non-semantic `<div>` by default. Its optional `title` is an `<h3>`; keep heading
+  levels meaningful in the page outline.
+- `interactive` adds hover elevation and a pointer cursor, not keyboard interaction. Use `asChild`
+  with an anchor for navigation, or put an actual Button inside for an action.
+- With `asChild`, provide exactly one semantic child. An anchor needs a real `href` to enter keyboard
+  focus order and support standard link commands.
+- Do not nest interactive elements inside a fully clickable card link; split competing actions into
+  a structured Card with buttons in `actions` or `footer`.
+
+## Props
+
+<PropTable name="Card" />
+
+## Plain HTML
+
+Use the body class only when the header or footer is present; plain padded cards use `lyra-card--padded`:
+
+```html
+<article class="lyra-card">
+  <header class="lyra-card__header">
+    <h3 class="lyra-card__title">Production deployment</h3>
+    <div class="lyra-card__actions">
+      <button class="lyra-btn lyra-btn--ghost lyra-btn--sm">View logs</button>
+    </div>
+  </header>
+  <div class="lyra-card__body">Version 2.4.0 is waiting for approval.</div>
+  <footer class="lyra-card__footer">
+    <button class="lyra-btn lyra-btn--primary lyra-btn--sm">Review</button>
+  </footer>
+</article>
+
+<a class="lyra-card lyra-card--padded lyra-card--interactive" href="/deployments/2-4-0"
+  >Read deployment</a
+>
+```

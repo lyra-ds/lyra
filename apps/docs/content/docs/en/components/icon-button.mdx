@@ -1,0 +1,65 @@
+---
+title: IconButton
+description: A square icon-only action with Button variants, sizes and a required accessible label.
+---
+
+# IconButton
+
+IconButton is for a familiar action when a visible label would make a compact toolbar harder to scan.
+Its required `label` names the action for assistive technology and supplies the native tooltip; it is not decoration.
+
+## Examples
+
+<Example id="variants" title="Action variants">
+  Match variant to intent, not the glyph. A destructive trash action earns `danger`; a more-options
+  menu usually earns `ghost` because it should not outrank the primary task.
+</Example>
+
+<Example id="sizes-and-disabled" title="Sizes and unavailable actions">
+  Choose one size per control row: sm is 32px, md is 40px and lg is 48px. Disabled buttons lose
+  focus, so explain the unavailable condition in nearby text when it is not evident.
+</Example>
+
+## When to use
+
+Use IconButton for an immediate, familiar action in a dense toolbar or beside the object it affects.
+
+Reach for something else when:
+
+- **The action needs visible wording to be understood** — use Button.
+- **The control navigates to another location** — use a semantic link, optionally styled with Button.
+- **The glyph reports a status rather than triggering an action** — use Badge or text.
+
+## Accessibility
+
+- IconButton renders a native `<button>` and applies `label` to both `aria-label` and its native `title`.
+  Write the label as an action, such as “Delete project”, rather than the icon name “Trash”.
+- Native button keyboard activation uses Enter/Space. `disabled` removes it from focus and blocks activation.
+- The child Icon is normally decorative; do not give it a `title` that duplicates the button label.
+- Focus uses the shared `--shadow-focus` ring. Keep visible focus intact when adding custom styles.
+
+## Props
+
+<PropTable name="IconButton" />
+
+## Plain HTML
+
+Use `aria-label` and `title` together, as the React component does; the SVG remains decorative:
+
+```html
+<button
+  class="lyra-btn lyra-btn--icon lyra-btn--secondary lyra-btn--md"
+  aria-label="Open settings"
+  title="Open settings"
+>
+  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"></svg>
+</button>
+
+<button
+  class="lyra-btn lyra-btn--icon lyra-btn--danger lyra-btn--sm"
+  aria-label="Delete project"
+  title="Delete project"
+>
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"></svg>
+</button>
+```

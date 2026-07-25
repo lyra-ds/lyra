@@ -1,0 +1,70 @@
+---
+title: Accordion
+description: An uncontrolled disclosure list driven by item data, with one or many sections open.
+---
+
+# Accordion
+
+Accordion reveals supporting detail without making every answer compete for space. Supply the `items` array
+in reading order, then choose whether `multiple` open sections help comparison or create unnecessary noise.
+
+## Examples
+
+<Example id="basic" title="One answer at a time">
+  By default, no item is open. Set `defaultOpen` to the stable item `id` to choose an initially open
+  item; in default single mode, only one item can be open at a time.
+</Example>
+
+<Example id="multiple" title="Independent sections">
+  Set `multiple` only when people reasonably need two answers open together, such as settings they
+  compare. For a short FAQ, one open item makes the current answer easier to find again.
+</Example>
+
+## When to use
+
+Use Accordion for optional detail with clear labels that people can reveal independently.
+
+Reach for something else when:
+
+- **Every section needs to be read in sequence** — use plain headings and sections.
+- **The content is navigation between peer views** — use Tabs.
+- **A record needs a boundary, summary and actions** — use Card.
+
+## Accessibility
+
+- Each item's title is a native trigger button, so it enters normal Tab order and supports Enter/Space activation.
+- When focused with a keyboard, `.lyra-acc__trigger:focus-visible` displays the shared
+  `box-shadow: var(--shadow-focus)` ring. Consumers must preserve it or provide an equivalent visible focus indicator.
+- The trigger exposes `aria-expanded` and `aria-controls`; an open panel is labelled by that trigger
+  through `aria-labelledby`.
+- The component is uncontrolled after mount. `defaultOpen` chooses only the initial item; changing it
+  later does not force panels open or closed.
+- Use unique, stable item `id` values. They identify each item's state; duplicates can make separate items
+  open or close together.
+
+## Props
+
+<PropTable name="Accordion" />
+
+## Plain HTML
+
+Keep the native button and its expanded state in sync with the panel it controls:
+
+```html
+<div class="lyra-accordion">
+  <div class="lyra-acc__item lyra-acc__item--open">
+    <button
+      id="billing-trigger"
+      class="lyra-acc__trigger"
+      type="button"
+      aria-expanded="true"
+      aria-controls="billing-panel"
+    >
+      When will I be charged?<span class="lyra-acc__chevron" aria-hidden="true"></span>
+    </button>
+    <div class="lyra-acc__panel" id="billing-panel" aria-labelledby="billing-trigger">
+      You are charged on the first day of each billing cycle.
+    </div>
+  </div>
+</div>
+```

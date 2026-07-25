@@ -25,6 +25,22 @@ import { ComboboxBasic } from './combobox/basic';
 import { ComboboxControlled } from './combobox/controlled';
 import { FileUploadDefaultItems } from './file-upload/default-items';
 import { FileUploadOnFiles } from './file-upload/on-files';
+import { AvatarInitialsAndStatus } from './avatar/initials-and-status';
+import { AvatarSizesAndShapes } from './avatar/sizes-and-shapes';
+import { AvatarImage } from './avatar/image';
+import { CardStructured } from './card/structured';
+import { CardPlain } from './card/plain';
+import { CardAsLink } from './card/as-link';
+import { TagBasic } from './tag/basic';
+import { TagRemovable } from './tag/removable';
+import { IconRegistry } from './icon/registry';
+import { IconSizeAndLabel } from './icon/size-and-label';
+import { SkeletonContentShape } from './skeleton/content-shape';
+import { SkeletonCard } from './skeleton/card';
+import { AccordionBasic } from './accordion/basic';
+import { AccordionMultiple } from './accordion/multiple';
+import { IconButtonVariants } from './icon-button/variants';
+import { IconButtonSizesAndDisabled } from './icon-button/sizes-and-disabled';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -88,5 +104,35 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'file-upload': {
     'default-items': FileUploadDefaultItems,
     'on-files': FileUploadOnFiles,
+  },
+  avatar: {
+    'initials-and-status': AvatarInitialsAndStatus,
+    'sizes-and-shapes': AvatarSizesAndShapes,
+    image: AvatarImage,
+  },
+  card: {
+    structured: CardStructured,
+    plain: CardPlain,
+    'as-link': CardAsLink,
+  },
+  tag: {
+    basic: TagBasic,
+    removable: TagRemovable,
+  },
+  icon: {
+    registry: IconRegistry,
+    'size-and-label': IconSizeAndLabel,
+  },
+  skeleton: {
+    'content-shape': SkeletonContentShape,
+    card: SkeletonCard,
+  },
+  accordion: {
+    basic: AccordionBasic,
+    multiple: AccordionMultiple,
+  },
+  'icon-button': {
+    variants: IconButtonVariants,
+    'sizes-and-disabled': IconButtonSizesAndDisabled,
   },
 };
