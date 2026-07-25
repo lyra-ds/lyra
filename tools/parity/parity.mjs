@@ -142,10 +142,16 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-toast__icon',
       'lyra-drawer__close',
     ],
-    keyframes: ['lyra-fade-out', 'lyra-overlay-in', 'lyra-overlay-out'],
+    keyframes: ['lyra-fade-out', 'lyra-overlay-in', 'lyra-overlay-out', 'lyra-pop-in-up'],
   },
   'components/display/display.css': {
     classes: ['lyra-card__actions'],
+    keyframes: [],
+  },
+  'components/forms/forms.css': {
+    // Popup flip modifier: the handoff recipe only opens downward, which forces a page scroll
+    // when the trigger sits near the bottom of the viewport.
+    classes: ['lyra-combobox__pop--up'],
     keyframes: [],
   },
   'components/navigation/navigation.css': {
@@ -155,6 +161,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-cmdk-overlay',
       'lyra-cmdk--closing',
       'lyra-cmdk-overlay--closing',
+      'lyra-menu--up',
+      'lyra-wssw__pop--up',
     ],
     keyframes: [],
   },

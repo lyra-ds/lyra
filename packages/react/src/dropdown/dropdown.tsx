@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../internal/cx';
+import { useFlipPlacement } from '../internal/use-flip-placement';
 
 /** A command, separator, or non-interactive label rendered in a {@link Dropdown}. */
 export type DropdownItem =
@@ -51,6 +52,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
   const rootRef = useRef<HTMLSpanElement>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const placement = useFlipPlacement(open, triggerRef, menuRef);
 
   const commandItems = (): HTMLElement[] =>
     Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
@@ -75,7 +77,8 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
     const commands = commandItems();
     if (commands.length === 0) return;
     const index = pendingFocus < 0 ? commands.length - 1 : pendingFocus;
-    commands[Math.min(index, commands.length - 1)]?.focus();
+    // preventScroll: the menu is already placed to fit; focusing an item must not scroll the page.
+    commands[Math.min(index, commands.length - 1)]?.focus({ preventScroll: true });
     setPendingFocus(null);
   }, [open, pendingFocus]);
 
@@ -169,7 +172,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
         <div
           ref={menuRef}
           id={menuId}
-          className={cx('lyra-menu', `lyra-menu--${align}`)}
+          className={cx('lyra-menu', `lyra-menu--${align}`, placement === 'up' && 'lyra-menu--up')}
           role="menu"
         >
           {items.map((item, index) => {

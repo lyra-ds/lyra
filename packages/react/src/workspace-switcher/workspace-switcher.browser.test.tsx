@@ -86,4 +86,32 @@ describe('WorkspaceSwitcher', () => {
     expect(onCreate).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(trigger);
   });
+
+  it('flips the popover above the trigger instead of scrolling the page when there is no room below', async () => {
+    const { container } = await render(
+      <>
+        <div style={{ height: 'calc(100vh - 80px)' }} />
+        <WorkspaceSwitcher workspaces={workspaces} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+    const scrollBefore = window.scrollY;
+    await userEvent.click(trigger);
+    expect(container.querySelector('.lyra-wssw__pop')!.className).toContain('lyra-wssw__pop--up');
+    expect(window.scrollY).toBe(scrollBefore);
+  });
+
+  it('keeps the popover below the trigger when it fits', async () => {
+    const { container } = await render(
+      <>
+        <WorkspaceSwitcher workspaces={workspaces} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!);
+    expect(container.querySelector('.lyra-wssw__pop')!.className).not.toContain(
+      'lyra-wssw__pop--up',
+    );
+  });
 });

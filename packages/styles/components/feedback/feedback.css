@@ -349,3 +349,10 @@
     animation: none;
   }
 }
+
+/* Entrance for popups that flipped above their anchor: same motion as lyra-pop-in, mirrored so the
+   popup still rises toward the trigger. Transform only, per the animation constraint. */
+@keyframes lyra-pop-in-up {
+  from { transform: scale(0.97) translateY(-4px); }
+  to { transform: scale(1) translateY(0); }
+}

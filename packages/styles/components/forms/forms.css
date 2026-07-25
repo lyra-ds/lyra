@@ -225,3 +225,8 @@
 .lyra-switch input:checked + .lyra-switch__track { background: var(--accent); }
 .lyra-switch input:checked + .lyra-switch__track::after { left: 20px; }
 .lyra-switch input:disabled + .lyra-switch__track { opacity: 0.5; }
+.lyra-combobox__pop--up {
+  top: auto;
+  bottom: calc(100% + 6px);
+  animation-name: lyra-pop-in-up;
+}

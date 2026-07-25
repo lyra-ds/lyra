@@ -97,4 +97,30 @@ describe('Dropdown', () => {
     expect(container.querySelector('[role=menu]')).toBeNull();
     expect(document.activeElement).not.toBe(reopened);
   });
+
+  it('flips the menu above the trigger instead of scrolling the page when there is no room below', async () => {
+    const { container } = await render(
+      <>
+        <div style={{ height: 'calc(100vh - 80px)' }} />
+        <Dropdown trigger="Actions" items={items} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    const trigger = container.querySelector<HTMLElement>('[role=button]')!;
+    const scrollBefore = window.scrollY;
+    await userEvent.click(trigger);
+    expect(container.querySelector('[role=menu]')!.className).toContain('lyra-menu--up');
+    expect(window.scrollY).toBe(scrollBefore);
+  });
+
+  it('keeps the menu below the trigger when it fits', async () => {
+    const { container } = await render(
+      <>
+        <Dropdown trigger="Actions" items={items} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    await userEvent.click(container.querySelector<HTMLElement>('[role=button]')!);
+    expect(container.querySelector('[role=menu]')!.className).not.toContain('lyra-menu--up');
+  });
 });

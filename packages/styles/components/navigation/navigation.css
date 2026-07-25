@@ -485,3 +485,10 @@
     animation: none;
   }
 }
+
+.lyra-menu--up,
+.lyra-wssw__pop--up {
+  top: auto;
+  bottom: calc(100% + 6px);
+  animation-name: lyra-pop-in-up;
+}

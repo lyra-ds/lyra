@@ -132,4 +132,34 @@ describe('Combobox', () => {
       'lyra-combobox__empty',
     );
   });
+
+  it('opens downward when the popup fits below the trigger', async () => {
+    const { container } = await render(
+      <>
+        <Combobox options={options} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!);
+    expect(container.querySelector('.lyra-combobox__pop')!.className).not.toContain(
+      'lyra-combobox__pop--up',
+    );
+  });
+
+  it('flips above the trigger instead of scrolling the page when there is no room below', async () => {
+    const { container } = await render(
+      <>
+        <div style={{ height: 'calc(100vh - 80px)' }} />
+        <Combobox options={options} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!;
+    const scrollBefore = window.scrollY;
+    await userEvent.click(trigger);
+    expect(container.querySelector('.lyra-combobox__pop')!.className).toContain(
+      'lyra-combobox__pop--up',
+    );
+    expect(window.scrollY).toBe(scrollBefore);
+  });
 });
