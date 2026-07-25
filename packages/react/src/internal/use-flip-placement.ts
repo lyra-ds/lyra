@@ -44,17 +44,29 @@ export function useFlipPlacement(
       if (!anchor || !pop) return;
       const rect = anchor.getBoundingClientRect();
       const height = pop.offsetHeight;
-      const roomBelow = window.innerHeight - rect.bottom - GAP;
-      const roomAbove = rect.top - GAP;
+      // getBoundingClientRect is relative to the layout viewport, which on iOS Safari extends
+      // behind the dynamic toolbar and ignores pinch zoom. Measure against the visual viewport
+      // instead, or the popup "fits" below while being off-screen for the reader.
+      const vv = window.visualViewport;
+      const top = vv ? vv.offsetTop : 0;
+      const bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+      const roomBelow = bottom - rect.bottom - GAP;
+      const roomAbove = rect.top - top - GAP;
       setPlacement(height <= roomBelow || roomAbove <= roomBelow ? 'down' : 'up');
     };
 
     measure();
     window.addEventListener('scroll', measure, { capture: true, passive: true });
     window.addEventListener('resize', measure);
+    // The visual viewport changes without a window resize: toolbar collapse, pinch zoom, and the
+    // on-screen keyboard opening under a focused search input.
+    window.visualViewport?.addEventListener('resize', measure);
+    window.visualViewport?.addEventListener('scroll', measure);
     return () => {
       window.removeEventListener('scroll', measure, { capture: true });
       window.removeEventListener('resize', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+      window.visualViewport?.removeEventListener('scroll', measure);
     };
   }, [open, anchorRef, popRef]);
 
