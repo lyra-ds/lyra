@@ -1,0 +1,60 @@
+---
+title: Radio
+description: Native radio buttons for a small, visible set where one option must be chosen.
+---
+
+# Radio
+
+Radio presents a small set of mutually exclusive options. Put every option in the same `name` group
+so the browser enforces one selection, then order the choices by the decision people can make fastest.
+
+## Examples
+
+<Example id="basic" title="One choice from a visible set">
+  A single `defaultChecked` option gives the group a safe starting point. The shared `name` is what
+  makes the inputs a group; matching labels alone do not.
+</Example>
+
+<Example id="disabled" title="An unavailable option">
+  Keep a disabled option visible only when its absence would make the choice confusing. Explain what
+  makes it unavailable in nearby text rather than relying on reduced contrast.
+</Example>
+
+## When to use
+
+Use Radio when a person must choose exactly one option and the complete, short list deserves to stay visible.
+
+Reach for something else when:
+
+- **There are many options or the list saves space when collapsed** — use Select, especially when one option is always chosen.
+- **The list is long enough to filter** — use Combobox rather than forcing arrowing through every option.
+- **Several choices can be true together** — use Checkbox, because each choice is independent.
+
+## Accessibility
+
+- Renders native `<input type="radio">` controls. Give a group the same `name` so browser arrow-key navigation and mutual exclusion work.
+- With `label`, the component wraps input and text in a `<label>`, making the complete row clickable.
+- There is no generated `id` or `htmlFor`; consumer `id` passes through when another element needs to refer to the input.
+- The focus-visible ring is `--shadow-focus`. Use a visible group heading or a `<fieldset>`/`<legend>` to explain the decision.
+
+## Props
+
+<PropTable name="Radio" />
+
+## Plain HTML
+
+Use a shared `name` for the group and wrap each native input in its label:
+
+```html
+<fieldset>
+  <legend>Choose a plan</legend>
+  <label class="lyra-check-row">
+    <input class="lyra-radio" type="radio" name="plan" value="starter" checked />
+    <span>Starter</span>
+  </label>
+  <label class="lyra-check-row">
+    <input class="lyra-radio" type="radio" name="plan" value="team" />
+    <span>Team</span>
+  </label>
+</fieldset>
+```

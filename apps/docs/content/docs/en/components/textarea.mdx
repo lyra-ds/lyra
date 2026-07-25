@@ -1,0 +1,68 @@
+---
+title: Textarea
+description: A labelled multiline field with hint and error states, built on the native textarea.
+---
+
+# Textarea
+
+Textarea wraps the native `<textarea>` for answers that need more than one line. Decide the expected
+amount of detail up front: `rows` sets the starting height, while people can resize the field vertically.
+
+## Examples
+
+<Example id="basic" title="Label and hint">
+  A placeholder disappears as soon as someone types. Keep the question in a `label` and use `hint`
+  for guidance that remains available while they answer.
+</Example>
+
+<Example id="error-and-rows" title="Error, rows and disabled">
+  `error` replaces `hint` and adds `aria-invalid`, so there is one message to read rather than two
+  competing ones. Use `rows` for the expected first answer, not as a hard limit.
+</Example>
+
+## When to use
+
+Use a Textarea for free-form notes, descriptions and messages where a single line would hide the
+shape of the answer.
+
+Reach for something else when:
+
+- **The answer is a short value** — use Input so the compact field and native input type fit it.
+- **The answer must come from a known list** — use Select or Combobox instead of asking people to
+  reconstruct an option in prose.
+- **The answer is a file** — use FileUpload, which makes the browser file picker and upload state clear.
+
+## Accessibility
+
+- A supplied `label` is connected with `htmlFor` and a generated or consumer `id`. Without one, provide
+  an accessible name such as `aria-label`.
+- `hint` or `error` is connected through `aria-describedby`; `error` replaces `hint` and sets
+  `aria-invalid`.
+- It is a native `<textarea>`, so typing, multiline editing and form submission keep browser behavior.
+- The focus ring is `--shadow-focus`; error styling changes the border and focus shadow, not the label alone.
+
+## Props
+
+<PropTable name="Textarea" />
+
+## Plain HTML
+
+Use the shared field, label and hint classes around a native textarea:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="summary">Project summary</label>
+  <textarea class="lyra-input lyra-textarea" id="summary" rows="4"></textarea>
+  <span class="lyra-hint">Visible to everyone in the workspace.</span>
+</div>
+
+<div class="lyra-field">
+  <label class="lyra-label" for="notes">Release notes</label>
+  <textarea
+    class="lyra-input lyra-textarea lyra-input--error"
+    id="notes"
+    aria-invalid="true"
+  ></textarea>
+  <span class="lyra-hint lyra-hint--error">Add more detail before publishing.</span>
+</div>
+```

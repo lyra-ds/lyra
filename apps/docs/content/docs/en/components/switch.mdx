@@ -1,0 +1,60 @@
+---
+title: Switch
+description: An accessible on/off control for settings that take effect as soon as they change.
+---
+
+# Switch
+
+Switch is an on/off setting that reads as immediately applied. Use it when the consequence of toggling
+is clear and reversible; use a form checkbox when several edits wait for a later Save action.
+
+## Examples
+
+<Example id="basic" title="Immediate settings">
+  Write the label as the state someone is enabling, not as a vague question. The control exposes a
+  native checked value, so an uncontrolled `defaultChecked` example still responds to clicks.
+</Example>
+
+<Example id="disabled" title="Managed and unavailable settings">
+  Disabled switches communicate that a setting cannot be changed here. Say who manages it or what
+  condition unlocks it, since the disabled control itself cannot take focus.
+</Example>
+
+## When to use
+
+Use a Switch for a standalone preference that is applied when it changes and can be turned back off.
+
+Reach for something else when:
+
+- **Several form choices are saved together** — use Checkbox so the staged submit model is clear.
+- **The choice is one of multiple named modes** — use Radio for a short visible set, or Select for a compact list.
+- **The change is destructive or needs confirmation** — use a Button that can open a confirmation step.
+
+## Accessibility
+
+- Renders a native checkbox input with `role="switch"`, so assistive technology announces an on/off state.
+- The input, track and optional text are inside a `<label>`, making the entire row clickable.
+- There is no generated `id` or `htmlFor`; consumer `id` flows through to the hidden native input when it is needed.
+- Space toggles the focused input. The visible track receives its `--shadow-focus` ring from the focused input.
+
+## Props
+
+<PropTable name="Switch" />
+
+## Plain HTML
+
+Keep the native checkbox in the label; the track is decorative and stays hidden from assistive technology:
+
+```html
+<label class="lyra-switch">
+  <input type="checkbox" role="switch" checked />
+  <span class="lyra-switch__track" aria-hidden="true"></span>
+  <span>Enable desktop notifications</span>
+</label>
+
+<label class="lyra-switch">
+  <input type="checkbox" role="switch" disabled />
+  <span class="lyra-switch__track" aria-hidden="true"></span>
+  <span>Managed by your organisation</span>
+</label>
+```

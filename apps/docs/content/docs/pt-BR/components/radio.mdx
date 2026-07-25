@@ -1,0 +1,60 @@
+---
+title: Radio
+description: Botões de rádio nativos para uma lista pequena e visível em que uma opção deve ser escolhida.
+---
+
+# Radio
+
+Radio apresenta um conjunto pequeno de opções mutuamente exclusivas. Coloque todas no mesmo grupo
+`name` para o navegador impor uma seleção e ordene as escolhas pela decisão mais rápida de tomar.
+
+## Exemplos
+
+<Example id="basic" title="Uma escolha em conjunto visível">
+  Uma única opção com `defaultChecked` dá ao grupo um ponto inicial seguro. O `name` compartilhado é
+  o que agrupa os inputs; rótulos parecidos não bastam.
+</Example>
+
+<Example id="disabled" title="Uma opção indisponível">
+  Mantenha uma opção desabilitada visível só quando sua ausência tornaria a decisão confusa.
+  Explique por que ela não está disponível em texto próximo, em vez de depender de baixo contraste.
+</Example>
+
+## Quando usar
+
+Use Radio quando a pessoa precisa escolher exatamente uma opção e a lista completa, curta, merece ficar visível.
+
+Prefira outro componente quando:
+
+- **Há muitas opções ou a lista economiza espaço fechada** — use Select, especialmente quando uma opção sempre precisa estar escolhida.
+- **A lista é longa a ponto de precisar de filtro** — use Combobox, em vez de obrigar a navegar por todas as opções.
+- **Várias escolhas podem ser verdadeiras ao mesmo tempo** — use Checkbox, pois cada escolha é independente.
+
+## Acessibilidade
+
+- Renderiza controles `<input type="radio">` nativos. Dê o mesmo `name` ao grupo para navegação por setas e exclusão mútua do navegador.
+- Com `label`, o componente envolve input e texto em um `<label>`, deixando a linha inteira clicável.
+- Não há `id` gerado nem `htmlFor`; o `id` do consumidor passa adiante quando outro elemento precisa referenciar o input.
+- O anel em foco visível é `--shadow-focus`. Use um título de grupo visível ou `<fieldset>`/`<legend>` para explicar a decisão.
+
+## Props
+
+<PropTable name="Radio" />
+
+## HTML puro
+
+Use um `name` compartilhado no grupo e envolva cada input nativo em seu label:
+
+```html
+<fieldset>
+  <legend>Escolha um plano</legend>
+  <label class="lyra-check-row">
+    <input class="lyra-radio" type="radio" name="plan" value="starter" checked />
+    <span>Inicial</span>
+  </label>
+  <label class="lyra-check-row">
+    <input class="lyra-radio" type="radio" name="plan" value="team" />
+    <span>Time</span>
+  </label>
+</fieldset>
+```

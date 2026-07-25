@@ -11,6 +11,20 @@ import { InputBasic } from './input/basic';
 import { InputError } from './input/error';
 import { InputInAForm } from './input/in-a-form';
 import { InputSizesAndIcon } from './input/sizes-and-icon';
+import { TextareaBasic } from './textarea/basic';
+import { TextareaErrorAndRows } from './textarea/error-and-rows';
+import { CheckboxBasic } from './checkbox/basic';
+import { CheckboxStates } from './checkbox/states';
+import { RadioBasic } from './radio/basic';
+import { RadioDisabled } from './radio/disabled';
+import { SwitchBasic } from './switch/basic';
+import { SwitchDisabled } from './switch/disabled';
+import { SelectBasic } from './select/basic';
+import { SelectSizesAndError } from './select/sizes-and-error';
+import { ComboboxBasic } from './combobox/basic';
+import { ComboboxControlled } from './combobox/controlled';
+import { FileUploadDefaultItems } from './file-upload/default-items';
+import { FileUploadOnFiles } from './file-upload/on-files';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -46,5 +60,33 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   dialog: {
     basic: DialogBasic,
     dismissal: DialogDismissal,
+  },
+  textarea: {
+    basic: TextareaBasic,
+    'error-and-rows': TextareaErrorAndRows,
+  },
+  checkbox: {
+    basic: CheckboxBasic,
+    states: CheckboxStates,
+  },
+  radio: {
+    basic: RadioBasic,
+    disabled: RadioDisabled,
+  },
+  switch: {
+    basic: SwitchBasic,
+    disabled: SwitchDisabled,
+  },
+  select: {
+    basic: SelectBasic,
+    'sizes-and-error': SelectSizesAndError,
+  },
+  combobox: {
+    basic: ComboboxBasic,
+    controlled: ComboboxControlled,
+  },
+  'file-upload': {
+    'default-items': FileUploadDefaultItems,
+    'on-files': FileUploadOnFiles,
   },
 };

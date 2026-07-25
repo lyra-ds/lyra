@@ -28,6 +28,13 @@ export const components: ComponentEntry[] = [
   { slug: 'badge', name: 'Badge', group: 'display' },
   { slug: 'input', name: 'Input', group: 'form' },
   { slug: 'dialog', name: 'Dialog', group: 'overlay' },
+  { slug: 'textarea', name: 'Textarea', group: 'form' },
+  { slug: 'checkbox', name: 'Checkbox', group: 'form' },
+  { slug: 'radio', name: 'Radio', group: 'form' },
+  { slug: 'switch', name: 'Switch', group: 'form' },
+  { slug: 'select', name: 'Select', group: 'form' },
+  { slug: 'combobox', name: 'Combobox', group: 'form' },
+  { slug: 'file-upload', name: 'FileUpload', group: 'form' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */

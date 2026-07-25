@@ -1,0 +1,60 @@
+---
+title: Switch
+description: Um controle acessível de ligado/desligado para configurações que têm efeito assim que mudam.
+---
+
+# Switch
+
+Switch é uma configuração ligada/desligada que comunica efeito imediato. Use-o quando a consequência
+da alteração for clara e reversível; use o Checkbox de formulário quando várias edições aguardarem Salvar.
+
+## Exemplos
+
+<Example id="basic" title="Configurações imediatas">
+  Escreva o rótulo como o estado que a pessoa está habilitando, não como uma pergunta vaga. O
+  controle expõe um valor marcado nativo, então `defaultChecked` ainda responde a cliques.
+</Example>
+
+<Example id="disabled" title="Configurações gerenciadas e indisponíveis">
+  Switches desabilitados informam que uma configuração não pode mudar aqui. Diga quem a gerencia ou
+  qual condição a libera, já que o controle desabilitado não pode receber foco.
+</Example>
+
+## Quando usar
+
+Use Switch para uma preferência isolada aplicada quando muda e que pode ser desligada novamente.
+
+Prefira outro componente quando:
+
+- **Várias escolhas do formulário são salvas juntas** — use Checkbox para deixar claro o modelo de envio posterior.
+- **A escolha é um entre vários modos nomeados** — use Radio em um conjunto curto visível, ou Select em uma lista compacta.
+- **A mudança é destrutiva ou precisa de confirmação** — use Button, que pode abrir uma etapa de confirmação.
+
+## Acessibilidade
+
+- Renderiza um checkbox nativo com `role="switch"`, então tecnologias assistivas anunciam estado ligado/desligado.
+- Input, trilho e texto opcional ficam dentro de um `<label>`, deixando a linha inteira clicável.
+- Não há `id` gerado nem `htmlFor`; o `id` do consumidor chega ao input nativo oculto quando necessário.
+- Espaço alterna o input focado. O trilho visível recebe seu anel `--shadow-focus` do input em foco.
+
+## Props
+
+<PropTable name="Switch" />
+
+## HTML puro
+
+Mantenha o checkbox nativo no label; o trilho é decorativo e fica oculto para tecnologias assistivas:
+
+```html
+<label class="lyra-switch">
+  <input type="checkbox" role="switch" checked />
+  <span class="lyra-switch__track" aria-hidden="true"></span>
+  <span>Ativar notificações no computador</span>
+</label>
+
+<label class="lyra-switch">
+  <input type="checkbox" role="switch" disabled />
+  <span class="lyra-switch__track" aria-hidden="true"></span>
+  <span>Gerenciado pela sua organização</span>
+</label>
+```
