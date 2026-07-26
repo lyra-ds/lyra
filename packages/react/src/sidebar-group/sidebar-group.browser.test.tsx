@@ -64,6 +64,25 @@ describe('SidebarGroup', () => {
     });
   }
 
+  it('draws a real chevron that rotates with the collapsed state', async () => {
+    const { container } = await render(
+      <SidebarGroup label="Workspace" collapsible items={[{ id: 'home', label: 'Home' }]} />,
+    );
+    const chev = container.querySelector<HTMLElement>('.lyra-sbgroup__chev')!;
+    // Regression: converting the handoff's <Icon> to a bare span left a 0x0 element, so a
+    // collapsible group had no visible affordance at all.
+    expect(chev.tagName.toLowerCase()).toBe('svg');
+    expect(chev.getBoundingClientRect().width).toBeGreaterThan(0);
+    expect(chev.getAttribute('aria-hidden')).toBe('true');
+    expect(getComputedStyle(chev).transform).toBe('none');
+
+    await userEvent.click(container.querySelector<HTMLElement>('.lyra-sbgroup__label--btn')!);
+    expect(container.querySelector('.lyra-sbgroup')!.className).toContain(
+      'lyra-sbgroup--collapsed',
+    );
+    expect(getComputedStyle(chev).transform).not.toBe('none');
+  });
+
   it('toggles with Space and Enter and calls item and group callbacks', async () => {
     const itemSelect = vi.fn();
     const groupSelect = vi.fn();

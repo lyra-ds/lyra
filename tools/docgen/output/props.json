@@ -1246,7 +1246,7 @@
         "name": "trigger",
         "type": "ReactNode",
         "optional": false,
-        "description": "Element that opens the action menu, such as a Button, IconButton, or Avatar."
+        "description": "Content that opens the action menu — a Button, IconButton, Avatar, icon or plain text.\nWhen it is an element, it receives the trigger semantics itself (role, tab stop, and the\nmenu ARIA) instead of being wrapped, so one control is one tab stop."
       },
       {
         "name": "items",

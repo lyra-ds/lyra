@@ -665,7 +665,11 @@ export declare function CreateWorkspaceDialog(props: CreateWorkspaceDialogProps)
 ```ts
 /** Props for {@link Dropdown}. */
 export interface DropdownProps extends HTMLAttributes<HTMLSpanElement> {
-  /** Element that opens the action menu, such as a Button, IconButton, or Avatar. */
+  /**
+   * Content that opens the action menu — a Button, IconButton, Avatar, icon or plain text.
+   * When it is an element, it receives the trigger semantics itself (role, tab stop, and the
+   * menu ARIA) instead of being wrapped, so one control is one tab stop.
+  */
   trigger: ReactNode;
   /** Commands, separators, and labels rendered by the menu. */
   items: DropdownItem[];

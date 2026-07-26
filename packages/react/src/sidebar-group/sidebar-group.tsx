@@ -1,6 +1,7 @@
 import { forwardRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { cx } from '../internal/cx';
+import { Icon } from '../icon';
 
 /** An item rendered by {@link SidebarGroup}. */
 export interface SidebarGroupItem {
@@ -71,7 +72,13 @@ export const SidebarGroup = /*#__PURE__*/ forwardRef<HTMLDivElement, SidebarGrou
               onClick={() => setCollapsed((previous) => !previous)}
             >
               <span>{label}</span>
-              <span className="lyra-sbgroup__chev" aria-hidden="true" />
+              {/*
+                The handoff draws this chevron with an Icon; the class only supplies the rotation.
+                Converting it to a bare span left a 0x0 element, so a collapsible group had no
+                visible affordance and no indication of its state. Icon is aria-hidden without a
+                title, which is what this needs: the button's `aria-expanded` already announces it.
+              */}
+              <Icon name="chevron-down" size={13} className="lyra-sbgroup__chev" />
             </button>
           ) : (
             <div className="lyra-sbgroup__label">{label}</div>

@@ -50,7 +50,13 @@ describe('FileManager', () => {
         expect(container.querySelector('.lyra-fm__shared')!.className).toBe('lyra-fm__shared');
         expect(container.querySelector('.lyra-fm__cell')!.className).toBe('lyra-fm__cell');
         expect(container.querySelector('.lyra-fm__actions')!.className).toBe('lyra-fm__actions');
-        expect(container.querySelector('.lyra-fm__more')!.className).toBe('lyra-fm__more');
+        // Dropdown merges its trigger semantics onto this span instead of wrapping it, so the
+        // action affordance is one element and one tab stop rather than two nested ones.
+        const more = container.querySelector<HTMLElement>('.lyra-fm__more')!;
+        expect(more.className).toBe('lyra-dropdown__trigger lyra-fm__more');
+        expect(more.getAttribute('role')).toBe('button');
+        expect(more.getAttribute('aria-haspopup')).toBe('menu');
+        expect(more.getAttribute('aria-label')).toBe('Actions for Projects');
         expect(errorSpy).not.toHaveBeenCalled();
         expect(
           (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),

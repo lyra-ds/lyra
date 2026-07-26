@@ -561,3 +561,20 @@
 .lyra-sbgroup__label--btn:hover {
   color: var(--text-primary);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the palette's group headings and item hints were
+   `--text-faint` — 2.56:1 on the card and 2.34:1 on a highlighted row in light, 3.92:1 and 4.2:1 in
+   dark. The heading names the group a command belongs to and the hint is the text that disambiguates
+   two similarly-named commands, so neither is decoration. Both take `--text-secondary`, matching the
+   repair applied to the table, file-list, tab and sidebar headings. */
+.lyra-cmdk__group-label,
+.lyra-cmdk__item-hint {
+  color: var(--text-secondary);
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the keyboard chip is `--text-muted` on
+   `--surface-sunken` — 4.34:1 at 11px, the fifth appearance of that pair and the same repair. A key
+   cap that a person has to squint at defeats the point of showing the shortcut. */
+.lyra-kbd {
+  color: var(--text-secondary);
+}

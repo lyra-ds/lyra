@@ -169,6 +169,9 @@ const ADDITIVE_EXTENSIONS = {
     classes: [
       'lyra-dropdown__trigger',
       'lyra-cmdk',
+      'lyra-kbd',
+      'lyra-cmdk__group-label',
+      'lyra-cmdk__item-hint',
       'lyra-cmdk-overlay',
       'lyra-cmdk--closing',
       'lyra-cmdk-overlay--closing',
