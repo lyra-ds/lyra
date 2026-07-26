@@ -1,0 +1,57 @@
+---
+title: Stat
+description: A compact metric with an optional directional change indicator for summaries and dashboards.
+---
+
+# Stat
+
+Stat presents one metric and its recent movement. Use it for a number that needs a trend; use Badge
+when the question is the current status of a nearby thing, not a measured change.
+
+## Examples
+
+<Example id="metrics-grid" title="Metrics that scan together" layout="block">
+  Put related stats in a grid you own. Keep the same comparison period in each `delta`, or a row of
+  seemingly comparable values will quietly mean different things.
+</Example>
+
+<Example id="directions" title="Direction and delta">
+  `direction` supplies the arrow and its color, so pass `delta="12%"`, not a hand-written arrow. It
+  follows the direction you pass, not the sign in the text; for churn or latency, pass `down` for a
+  falling number and make the good-or-bad meaning clear in nearby copy.
+</Example>
+
+## When to use
+
+Use Stat for a prominent numeric result whose change over a known period helps someone decide what to do.
+
+Reach for something else when:
+
+- **You are marking a current state** — use Badge, which labels a status rather than a trend.
+- **People need to compare many records and fields** — use Table.
+- **The number is still loading** — use Skeleton shaped like the final metric until the value exists.
+
+## Accessibility
+
+- Stat renders a plain `<div>` containing label and value `<span>` elements. It has no `<dl>`
+  semantics, so a screen reader reads the label and then the value in that order.
+- The optional delta follows the value and includes a visible arrow. Keep the change text meaningful;
+  color and arrow direction should confirm it, not carry the entire message.
+- Stat has no interactive element or focus behaviour. Place it next to the heading or region that
+  explains the metric and its reporting period.
+
+## Props
+
+<PropTable name="Stat" />
+
+## Plain HTML
+
+The delta carries both its direction class and the arrow as visible text:
+
+```html
+<div class="lyra-stat">
+  <span class="lyra-stat__label">Monthly revenue</span>
+  <span class="lyra-stat__value">$48,240</span>
+  <span class="lyra-stat__delta lyra-stat__delta--up">↑ 12%</span>
+</div>
+```

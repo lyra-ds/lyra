@@ -42,6 +42,10 @@ export const components: ComponentEntry[] = [
   { slug: 'skeleton', name: 'Skeleton', group: 'display' },
   { slug: 'accordion', name: 'Accordion', group: 'display' },
   { slug: 'icon-button', name: 'IconButton', group: 'action' },
+  { slug: 'table', name: 'Table', group: 'data' },
+  { slug: 'stat', name: 'Stat', group: 'data' },
+  { slug: 'empty-state', name: 'EmptyState', group: 'data' },
+  { slug: 'file-manager', name: 'FileManager', group: 'data' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */

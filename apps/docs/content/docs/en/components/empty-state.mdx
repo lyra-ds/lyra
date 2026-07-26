@@ -1,0 +1,62 @@
+---
+title: EmptyState
+description: A focused message for an expected empty result, with optional context and a next action.
+---
+
+# EmptyState
+
+EmptyState explains an expected absence and, when useful, gives people a safe next step. Decide
+whether nothing exists yet, nothing matches a search, or something failed; only the last case needs Alert.
+
+## Examples
+
+<Example id="no-projects" title="No records yet" layout="block">
+  An action is useful when it creates the missing thing. Make it a link when it navigates, so the
+  next step keeps normal link behaviour instead of pretending to be an in-place action.
+</Example>
+
+<Example id="no-results" title="No matching result" layout="block">
+  A search with no match is expected, not an error. Say how someone can broaden the result before
+  offering a reset or another action.
+</Example>
+
+## When to use
+
+Use EmptyState when an expected collection, search or view has no content to render.
+
+Reach for something else when:
+
+- **Content is still on its way** — use Skeleton to preserve the shape while it loads.
+- **The result failed or needs remediation** — use Alert, which gives an error its own message and
+  appropriate urgency.
+- **There are records to compare** — use Table, and reserve EmptyState for its zero-record state.
+
+## Accessibility
+
+- The title renders as a fixed `<h3>`. Place EmptyState where that heading level is correct in the
+  surrounding page outline; it cannot be changed with a prop.
+- Its icon is consumer content. Treat it as decorative when the title already names the state, or
+  give meaningful icon content its own accessible name.
+- `title` is heading content, not the HTML tooltip attribute. Use `aria-label` or another supported
+  native attribute when the wrapping `<div>` needs an accessible name.
+- The optional action keeps its own semantics and keyboard model. A Button or link must still have a
+  clear name that says what happens next.
+
+## Props
+
+<PropTable name="EmptyState" />
+
+## Plain HTML
+
+Keep the title as a heading and use the action wrapper only when an action follows:
+
+```html
+<div class="lyra-empty">
+  <div class="lyra-empty__icon" aria-hidden="true">+</div>
+  <h3 class="lyra-empty__title">No projects yet</h3>
+  <p class="lyra-empty__desc">Create a project to start planning work.</p>
+  <div class="lyra-empty__action">
+    <a class="lyra-btn lyra-btn--primary lyra-btn--md" href="/projects/new">Create project</a>
+  </div>
+</div>
+```

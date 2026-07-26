@@ -1,0 +1,63 @@
+---
+title: EmptyState
+description: Uma mensagem focada para um resultado vazio esperado, com contexto e próxima ação opcionais.
+---
+
+# EmptyState
+
+EmptyState explica uma ausência esperada e, quando fizer sentido, dá uma próxima ação segura. Decida
+se ainda não existe nada, se uma busca não encontrou nada ou se algo falhou; só o último caso precisa de Alert.
+
+## Exemplos
+
+<Example id="no-projects" title="Ainda não há registros" layout="block">
+  Uma ação ajuda quando cria o que está faltando. Faça dela um link quando ela navegar, para que o
+  próximo passo mantenha o comportamento normal de link em vez de fingir ser uma ação na própria
+  tela.
+</Example>
+
+<Example id="no-results" title="Nenhum resultado correspondente" layout="block">
+  Uma busca sem correspondência é esperada, não um erro. Diga como a pessoa pode ampliar o resultado
+  antes de oferecer uma limpeza de filtros ou outra ação.
+</Example>
+
+## Quando usar
+
+Use EmptyState quando uma coleção, busca ou visualização esperada não tiver conteúdo para renderizar.
+
+Prefira outro componente quando:
+
+- **O conteúdo ainda está a caminho** — use Skeleton para preservar a forma enquanto ele carrega.
+- **O resultado falhou ou precisa de correção** — use Alert, que dá ao erro uma mensagem própria e
+  urgência apropriada.
+- **Há registros para comparar** — use Table e reserve EmptyState para o estado de zero registros.
+
+## Acessibilidade
+
+- O título renderiza como um `<h3>` fixo. Coloque EmptyState onde esse nível de cabeçalho estiver
+  correto no contorno da página; ele não pode ser alterado por prop.
+- Seu ícone é conteúdo do consumidor. Trate-o como decorativo quando o título já nomear o estado ou
+  dê ao conteúdo significativo do ícone seu próprio nome acessível.
+- `title` é conteúdo de cabeçalho, não o atributo HTML de tooltip. Use `aria-label` ou outro atributo
+  nativo compatível quando a `<div>` externa precisar de um nome acessível.
+- A ação opcional preserva sua própria semântica e modelo de teclado. Um Button ou link ainda precisa
+  de um nome claro que diga o que acontecerá depois.
+
+## Props
+
+<PropTable name="EmptyState" />
+
+## HTML puro
+
+Mantenha o título como cabeçalho e use o wrapper de ação apenas quando houver uma ação depois:
+
+```html
+<div class="lyra-empty">
+  <div class="lyra-empty__icon" aria-hidden="true">+</div>
+  <h3 class="lyra-empty__title">Ainda não há projetos</h3>
+  <p class="lyra-empty__desc">Crie um projeto para começar a planejar o trabalho.</p>
+  <div class="lyra-empty__action">
+    <a class="lyra-btn lyra-btn--primary lyra-btn--md" href="/projects/new">Criar projeto</a>
+  </div>
+</div>
+```

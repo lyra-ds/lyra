@@ -59,6 +59,14 @@ sendo referência de leitura); o usuário arquiva quando quiser.
   teste), como foi feito com `Button asChild` e `Card asChild`. Cuidado de
   especificidade: `.lw-docs__content a:not(.lyra-btn)` e `.lw-docs__content p`
   ganham de uma classe `.lw-*` solta — prefixe quando precisar sobrescrever.
+- **Impeccable por componente (regra do usuário, 2026-07-25):** todo componente
+  que criarmos passa pelo skill `impeccable` na sua página de demonstração, não
+  só uma vez sobre um showcase. Roda no ciclo do Batuta **depois da verificação
+  do lote e antes do commit**. Motivo: a primeira rodada (score 14/20) achou o
+  que gate verde e relatório de executor não pegam — scroll horizontal em 375px,
+  sidebar sticky sem `max-height`, 39 alvos de toque abaixo de 44px, `<main>`
+  ausente e o palco achatando componente de bloco. Achado de cromo do site vira
+  correção no `apps/docs`; achado de componente vira lote/issue no DS.
 
 ## Project map
 

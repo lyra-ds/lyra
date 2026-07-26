@@ -1,0 +1,70 @@
+---
+title: Table
+description: A declarative data table for comparable records, with aligned columns and optional row hover.
+---
+
+# Table
+
+Table renders records you define as rows and columns. Choose it when comparison matters; choose
+FileManager when the records are files and need browsing, search, view switching and item actions.
+
+## Examples
+
+<Example id="basic" title="Records with status" layout="plain">
+  Give columns stable keys and pass React nodes as cell values. A Badge belongs in a status cell
+  because it marks the state of that row without turning the table into a custom layout.
+</Example>
+
+<Example id="alignment" title="Aligned values" layout="plain">
+  Numbers scan better when they share an edge. Set `align="right"` on the column instead of styling
+  every cell; Table applies that alignment to the heading and its cells together.
+</Example>
+
+## When to use
+
+Use Table when people need to compare the same fields across a bounded set of records.
+
+Reach for something else when:
+
+- **The records are files people need to browse or act on** — use FileManager, with built-in search,
+  view selection and per-item menus.
+- **The main information is a single metric and its change** — use Stat.
+- **There are no records to show** — use EmptyState instead of an empty table body.
+
+## Accessibility
+
+- Table emits real `<table>`, `<thead>`, `<tbody>`, `<th>` and `<td>` elements, so row and column
+  structure is available to assistive technology.
+- It does not render a `<caption>` or add `scope` to its headings. Provide surrounding context and
+  use a native table when your relationships need more explicit table semantics.
+- `hover` is visual feedback only. Do not make a row's purpose depend on hover; expose its action
+  through a visible control when it can be operated.
+- The first cell is styled as the primary value, but it stays a data cell. Put the identifying value
+  first rather than treating that styling as a row heading.
+
+## Props
+
+<PropTable name="Table" />
+
+## Plain HTML
+
+Use the wrapper for the surface and place the primary record value in the first cell:
+
+```html
+<div class="lyra-table-wrap">
+  <table class="lyra-table lyra-table--hover">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th style="text-align: right">Revenue</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="lyra-table__primary">Atlas</td>
+        <td style="text-align: right">$38,240</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+```

@@ -1,0 +1,84 @@
+---
+title: FileManager
+description: A searchable file browser with folders, list or grid views, breadcrumbs and item menus.
+---
+
+# FileManager
+
+FileManager is a ready-made browser for files and folders. Choose whether the surrounding page owns
+the display mode; use Table instead when rows are data you define rather than files with browser behaviour.
+
+## Examples
+
+<Example id="browse" title="Browse a folder" layout="plain">
+  Folders sort before documents, and `path` supplies the breadcrumb segments. `onOpen` receives the
+  selected file; `onNavigate` receives the segment index, so your page owns the actual navigation.
+</Example>
+
+<Example id="controlled-view" title="Controlled view" layout="plain">
+  Set `view` with `onViewChange` when another control or saved preference owns the display mode. Use
+  `defaultView` when FileManager may manage that choice itself.
+</Example>
+
+<Example id="custom-actions" title="Replacing item actions" layout="plain">
+  `actions` replaces the complete default menu; it does not append commands. Return every action the
+  person needs, including a destructive one when that workflow still needs deletion.
+</Example>
+
+## When to use
+
+Use FileManager when people need to find, open and organise files inside a folder hierarchy.
+
+Reach for something else when:
+
+- **You define arbitrary records and columns** — use Table, which leaves row structure and actions to
+  your application.
+- **People only need to attach files to a form** — use FileUpload.
+- **There are no files because the feature is not set up yet** — use EmptyState outside the browser
+  when its specific empty search message would be misleading.
+
+## Accessibility
+
+- The view controls are a `role="group"` named "View mode". Each button has an accessible name and
+  `aria-pressed`, so its current list or grid state is announced.
+- The breadcrumb is a `<nav aria-label="Current folder">`; each action trigger is named "Actions for
+  &lt;name&gt;". The current breadcrumb segment is disabled rather than a navigation target.
+- The search input has a placeholder but **no accessible name**. This is a component gap consumers
+  must account for; a surrounding heading does not turn the placeholder into a field label.
+- The component's built-in labels are hard-coded English. Localise `searchPlaceholder` and
+  `emptyMessage`, and account for the remaining built-in control labels in a localized application.
+
+## Props
+
+<PropTable name="FileManager" />
+
+## Plain HTML
+
+The component supplies interaction; this markup is the corresponding static list structure:
+
+```html
+<div class="lyra-fm">
+  <div class="lyra-fm__toolbar">
+    <div class="lyra-fm__search"><input placeholder="Search files…" /></div>
+    <div class="lyra-fm__views" role="group" aria-label="View mode">
+      <button class="lyra-fm__view lyra-fm__view--on" aria-label="List view" aria-pressed="true">
+        List
+      </button>
+      <button class="lyra-fm__view" aria-label="Grid view" aria-pressed="false">Grid</button>
+    </div>
+  </div>
+  <ul class="lyra-fm__list">
+    <li class="lyra-fm__row">
+      <button class="lyra-fm__name" type="button">
+        <span class="lyra-fm__icon lyra-fm__icon--folder">Folder</span>
+        <span class="lyra-fm__label">Brand assets</span>
+      </button>
+      <span class="lyra-fm__cell">12 items</span>
+      <span class="lyra-fm__cell">Today</span>
+      <span class="lyra-fm__actions"
+        ><button class="lyra-fm__more" aria-label="Actions for Brand assets">•••</button></span
+      >
+    </li>
+  </ul>
+</div>
+```

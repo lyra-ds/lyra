@@ -41,6 +41,15 @@ import { AccordionBasic } from './accordion/basic';
 import { AccordionMultiple } from './accordion/multiple';
 import { IconButtonVariants } from './icon-button/variants';
 import { IconButtonSizesAndDisabled } from './icon-button/sizes-and-disabled';
+import { TableBasic } from './table/basic';
+import { TableAlignment } from './table/alignment';
+import { StatMetricsGrid } from './stat/metrics-grid';
+import { StatDirections } from './stat/directions';
+import { EmptyStateNoProjects } from './empty-state/no-projects';
+import { EmptyStateNoResults } from './empty-state/no-results';
+import { FileManagerBrowse } from './file-manager/browse';
+import { FileManagerControlledView } from './file-manager/controlled-view';
+import { FileManagerCustomActions } from './file-manager/custom-actions';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -134,5 +143,22 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'icon-button': {
     variants: IconButtonVariants,
     'sizes-and-disabled': IconButtonSizesAndDisabled,
+  },
+  table: {
+    basic: TableBasic,
+    alignment: TableAlignment,
+  },
+  stat: {
+    'metrics-grid': StatMetricsGrid,
+    directions: StatDirections,
+  },
+  'empty-state': {
+    'no-projects': EmptyStateNoProjects,
+    'no-results': EmptyStateNoResults,
+  },
+  'file-manager': {
+    browse: FileManagerBrowse,
+    'controlled-view': FileManagerControlledView,
+    'custom-actions': FileManagerCustomActions,
   },
 };
