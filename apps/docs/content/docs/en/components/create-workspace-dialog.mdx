@@ -1,0 +1,95 @@
+---
+title: CreateWorkspaceDialog
+description: An opinionated workspace-creation flow with a generated slug and live avatar preview.
+---
+
+# CreateWorkspaceDialog
+
+CreateWorkspaceDialog is an opinionated Dialog for naming a workspace and choosing its URL. Use it
+when that standard flow fits; compose Dialog, Input, Avatar and Button yourself when it does not.
+
+## Examples
+
+<Example id="basic" title="Create a workspace">
+  The slug follows the name until someone edits the slug. After that first edit it stays
+  independent, so an intentional URL is never overwritten by a later name change.
+</Example>
+
+<Example id="custom-copy" title="A product-specific URL">
+  `title` and `slugPrefix` change the product language around the same workflow. They do not change
+  what is submitted: `onCreate` still receives the trimmed name and URL-safe slug.
+</Example>
+
+## When to use
+
+Use CreateWorkspaceDialog when a product needs the supplied workspace name, slug and initials preview
+with the supplied interaction rules.
+
+Reach for something else when:
+
+- **The creation flow needs different fields, validation or actions** — compose Dialog, Input, Avatar
+  and Button yourself instead of bending this opinionated component.
+- **The person needs to choose the current workspace** — use WorkspaceSwitcher. Its `onCreate` is the
+  natural place to open this dialog in a product.
+- **The decision blocks another short task but is not workspace creation** — use Dialog directly.
+
+## Accessibility
+
+- It renders a Dialog, so the panel is `role="dialog"` with `aria-modal="true"` and an accessible
+  name from `title`. Focus enters and is trapped in the modal; page scroll is locked.
+- The workspace name and URL fields have visible labels. The avatar preview is derived from the name's
+  initials and updates as the person types; it does not replace the written field labels.
+- Create is disabled until `name` has non-whitespace content. Submission trims the name before it
+  reaches `onCreate`.
+- `slugify` lowercases, removes accents, collapses non-alphanumerics to hyphens and trims edge
+  hyphens: `Ação Global` becomes `acao-global`.
+- Every closed-to-open transition resets the name, slug and "touched" state. Provide `onClose` and
+  change `open` in response so Escape, the close button and Cancel can actually dismiss the dialog.
+
+## Props
+
+<PropTable name="CreateWorkspaceDialog" />
+
+## Plain HTML
+
+This component composes Dialog, Avatar, Input and Button. Without React, the same classes supply the
+appearance; the name-to-slug rule, reset behavior, focus and closing behavior are yours to implement:
+
+```html
+<div class="lyra-dialog-overlay">
+  <div class="lyra-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-title">
+    <div class="lyra-dialog__header">
+      <h2 class="lyra-dialog__title" id="workspace-title">Create workspace</h2>
+      <button class="lyra-dialog__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="lyra-dialog__body">
+      <div class="lyra-wscreate">
+        <div class="lyra-wscreate__preview">
+          <span class="lyra-avatar lyra-avatar--lg lyra-avatar--square" title="Acme Inc">
+            <span aria-hidden="true">AI</span>
+          </span>
+          <span class="lyra-wscreate__preview-hint">The avatar uses the name initials.</span>
+        </div>
+        <div class="lyra-field">
+          <label class="lyra-label" for="workspace-name">Workspace name</label>
+          <input class="lyra-input" id="workspace-name" value="Acme Inc" />
+        </div>
+        <div class="lyra-field">
+          <label class="lyra-label" for="workspace-slug">URL</label>
+          <span class="lyra-wscreate__slug">
+            <span class="lyra-wscreate__slug-prefix">lyra.dev/</span>
+            <input class="lyra-wscreate__slug-input" id="workspace-slug" value="acme-inc" />
+          </span>
+          <span class="lyra-hint">Lowercase letters, numbers, and hyphens.</span>
+        </div>
+      </div>
+    </div>
+    <div class="lyra-dialog__footer">
+      <button class="lyra-btn lyra-btn--ghost lyra-btn--md" type="button">Cancel</button>
+      <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button">
+        Create workspace
+      </button>
+    </div>
+  </div>
+</div>
+```

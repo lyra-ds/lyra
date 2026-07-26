@@ -78,6 +78,11 @@ import { TooltipButton } from './tooltip/button';
 import { TooltipIconButton } from './tooltip/icon-button';
 import { CookieBannerDefaultCopy } from './cookie-banner/default-copy';
 import { CookieBannerCustomCopy } from './cookie-banner/custom-copy';
+import { DrawerBasic } from './drawer/basic';
+import { DrawerWithoutFooter } from './drawer/without-footer';
+import { CreateWorkspaceDialogBasic } from './create-workspace-dialog/basic';
+import { CreateWorkspaceDialogCustomCopy } from './create-workspace-dialog/custom-copy';
+import { AvatarGroupPeople } from './avatar/group';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -146,6 +151,7 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     'initials-and-status': AvatarInitialsAndStatus,
     'sizes-and-shapes': AvatarSizesAndShapes,
     image: AvatarImage,
+    group: AvatarGroupPeople,
   },
   card: {
     structured: CardStructured,
@@ -244,5 +250,13 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'cookie-banner': {
     'default-copy': CookieBannerDefaultCopy,
     'custom-copy': CookieBannerCustomCopy,
+  },
+  drawer: {
+    basic: DrawerBasic,
+    'without-footer': DrawerWithoutFooter,
+  },
+  'create-workspace-dialog': {
+    basic: CreateWorkspaceDialogBasic,
+    'custom-copy': CreateWorkspaceDialogCustomCopy,
   },
 };

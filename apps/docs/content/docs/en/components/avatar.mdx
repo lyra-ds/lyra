@@ -25,6 +25,16 @@ otherwise `name` produces a predictable initials fallback, and `square` distingu
   if that source is later removed.
 </Example>
 
+## AvatarGroup
+
+<Example id="group" title="People in one row">
+  AvatarGroup overlaps a set of people in one row. It has no maximum or "+3 more" behavior, so
+  decide the visible set in your application rather than expecting it to manage overflow.
+</Example>
+
+AvatarGroup has no accessible name of its own. A group of avatars without nearby names says nothing
+to a screen reader, so label the surrounding region or list the people's names.
+
 ## When to use
 
 Use an Avatar beside a name, owner or participant list when recognising who is involved changes the

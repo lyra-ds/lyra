@@ -1,0 +1,71 @@
+---
+title: Drawer
+description: Um painel lateral controlado para tarefas curtas, mantendo a página atual visível atrás dele.
+---
+
+# Drawer
+
+Drawer é um painel lateral controlado que entra pela direita. Escolha-o para um trabalho que fica
+ao lado da página; escolha Dialog quando a decisão precisar bloquear a página até ser resolvida.
+
+## Exemplos
+
+<Example id="basic" title="Detalhes com ação fixa">
+  Coloque no `footer` a ação que conclui a tarefa lateral. O painel mantém a página atrás dele,
+  então a pessoa preserva seu contexto enquanto revisa ou altera algo pequeno.
+</Example>
+
+<Example id="without-footer" title="Detalhes somente leitura">
+  Omita `footer` quando não houver ação para fixar. Isso remove inteiramente o chrome do rodapé, em
+  vez de deixar um divisor vazio no fim do painel.
+</Example>
+
+## Quando usar
+
+Use Drawer para detalhes ou uma tarefa curta que se beneficia de manter a página visível: inspecionar
+um registro de atividade, editar poucos campos ou revisar contexto antes de uma ação.
+
+Prefira outro componente quando:
+
+- **Uma decisão precisa interromper o progresso** — use Dialog, um modal central que deixa explícita
+  a escolha bloqueante.
+- **A tarefa precisa de destino próprio, histórico ou URL compartilhável** — use uma rota. Um drawer
+  mantém a página atual atrás dele; uma página inteira não.
+- **A mensagem só confirma algo que já aconteceu** — use Toast ou Alert inline.
+
+## Acessibilidade
+
+- O painel é `role="dialog"` com `aria-modal="true"`, nomeado pelo `title` via
+  `aria-labelledby`. `title` é o cabeçalho, não o atributo de tooltip HTML nativo.
+- Na abertura, o foco entra no painel e fica retido nele. No fechamento, volta ao elemento que o
+  abriu; a rolagem do corpo fica bloqueada enquanto ele está aberto.
+- Escape, o botão de fechar e um clique no backdrop chamam `onClose`. O backdrop é uma conveniência
+  apenas para ponteiro; quem usa teclado fecha com Escape ou com o botão de fechar.
+- O nome acessível do botão de fechar é a string em inglês "Close", fixada no componente. Não há prop
+  para traduzi-la, uma limitação para produtos localizados.
+- Por padrão, o componente é portado para `document.body`. Passe `container` apenas quando a aplicação
+  precisar de outro host de portal.
+
+## Props
+
+<PropTable name="Drawer" />
+
+## HTML puro
+
+Sem React, componha as mesmas classes — estado de abertura, retenção de foco, bloqueio de rolagem e
+o caminho de Escape ficam com você:
+
+```html
+<div class="lyra-drawer-overlay">
+  <div class="lyra-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div class="lyra-drawer__header">
+      <h2 class="lyra-drawer__title" id="drawer-title">Detalhes do projeto</h2>
+      <button class="lyra-drawer__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="lyra-drawer__body">Revise o último deploy antes de continuar.</div>
+    <div class="lyra-drawer__footer">
+      <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button">Concluir</button>
+    </div>
+  </div>
+</div>
+```

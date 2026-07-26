@@ -60,6 +60,8 @@ export const components: ComponentEntry[] = [
   { slug: 'spinner', name: 'Spinner', group: 'feedback' },
   { slug: 'tooltip', name: 'Tooltip', group: 'feedback' },
   { slug: 'cookie-banner', name: 'CookieBanner', group: 'feedback' },
+  { slug: 'drawer', name: 'Drawer', group: 'overlay' },
+  { slug: 'create-workspace-dialog', name: 'CreateWorkspaceDialog', group: 'overlay' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */
