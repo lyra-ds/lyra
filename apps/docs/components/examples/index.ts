@@ -50,6 +50,14 @@ import { EmptyStateNoResults } from './empty-state/no-results';
 import { FileManagerBrowse } from './file-manager/browse';
 import { FileManagerControlledView } from './file-manager/controlled-view';
 import { FileManagerCustomActions } from './file-manager/custom-actions';
+import { BreadcrumbBasic } from './breadcrumb/basic';
+import { BreadcrumbPartialTrail } from './breadcrumb/partial-trail';
+import { TabsLine } from './tabs/line';
+import { TabsPillsAndCounts } from './tabs/pills-and-counts';
+import { PaginationPages } from './pagination/pages';
+import { PaginationBoundary } from './pagination/boundary';
+import { StepperCurrentStep } from './stepper/current-step';
+import { StepperStart } from './stepper/start';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -160,5 +168,21 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     browse: FileManagerBrowse,
     'controlled-view': FileManagerControlledView,
     'custom-actions': FileManagerCustomActions,
+  },
+  breadcrumb: {
+    basic: BreadcrumbBasic,
+    'partial-trail': BreadcrumbPartialTrail,
+  },
+  tabs: {
+    line: TabsLine,
+    'pills-and-counts': TabsPillsAndCounts,
+  },
+  pagination: {
+    pages: PaginationPages,
+    boundary: PaginationBoundary,
+  },
+  stepper: {
+    'current-step': StepperCurrentStep,
+    start: StepperStart,
   },
 };

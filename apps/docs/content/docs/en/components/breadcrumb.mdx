@@ -1,0 +1,60 @@
+---
+title: Breadcrumb
+description: A flat page-location trail whose final item is always the current page, never a link.
+---
+
+# Breadcrumb
+
+Breadcrumb shows where the current page sits in the site. Supply the page trail, then decide whether
+the surrounding navigation needs a page-level location or FileManager's folder-level path bar.
+
+## Examples
+
+<Example id="basic" title="Page location" layout="block">
+  The final item is always the current page, even if it has an `href`. Give every earlier item a
+  real destination so the trail remains useful to people moving back through the site.
+</Example>
+
+<Example id="partial-trail" title="Partial data" layout="block">
+  A non-final item without `href` becomes an anchor to `#`. Treat that fallback as a data bug, not a
+  harmless placeholder: it looks navigable but does not move someone to a useful page.
+</Example>
+
+## When to use
+
+Use Breadcrumb for a page's position in a site hierarchy, especially when the current location has
+more than one meaningful parent.
+
+Reach for something else when:
+
+- **People are browsing folders inside FileManager** — use FileManager's path and `onNavigate`; it
+  models the current folder, not the page's place in the site.
+- **People move between a few peer views** — use Tabs.
+- **The path has only one useful back destination** — use a normal back link instead of a trail.
+
+## Accessibility
+
+- Renders a flat `<nav aria-label="Breadcrumb">`, not an `<ol>` or `<li>` list.
+- Every item before the last is an anchor. The last is a
+  `<span class="lyra-breadcrumb__current" aria-current="page">`, even when its data has an `href`.
+- Separators are empty, `aria-hidden` spans drawn in CSS. Do not add chevron text that a screen
+  reader could announce between locations.
+- Supply concise, ordered labels that identify locations without relying on the visual hierarchy.
+
+## Props
+
+<PropTable name="Breadcrumb" />
+
+## Plain HTML
+
+The separator span is intentionally empty: CSS draws its chevron, and assistive technology ignores it.
+
+```html
+<nav class="lyra-breadcrumb" aria-label="Breadcrumb">
+  <a href="/workspace">Workspace</a>
+  <span class="lyra-breadcrumb__sep" aria-hidden="true"></span>
+  <a href="/workspace/projects">Projects</a>
+  <span class="lyra-breadcrumb__sep" aria-hidden="true"></span>
+  <span class="lyra-breadcrumb__current" aria-current="page">Brand refresh</span>
+</nav>
+```

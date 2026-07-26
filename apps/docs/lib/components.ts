@@ -46,6 +46,10 @@ export const components: ComponentEntry[] = [
   { slug: 'stat', name: 'Stat', group: 'data' },
   { slug: 'empty-state', name: 'EmptyState', group: 'data' },
   { slug: 'file-manager', name: 'FileManager', group: 'data' },
+  { slug: 'breadcrumb', name: 'Breadcrumb', group: 'navigation' },
+  { slug: 'tabs', name: 'Tabs', group: 'navigation' },
+  { slug: 'pagination', name: 'Pagination', group: 'navigation' },
+  { slug: 'stepper', name: 'Stepper', group: 'navigation' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */

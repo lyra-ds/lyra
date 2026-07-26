@@ -1,0 +1,81 @@
+---
+title: Stepper
+description: A presentational, zero-based progress marker for a named sequence of steps in a flow.
+---
+
+# Stepper
+
+Stepper shows a named sequence and its current point. Use it when a person is moving through known
+steps; the surrounding flow still owns navigation and announcing that the active step changed.
+
+## Examples
+
+<Example id="current-step" title="A step in progress" layout="block">
+  `active` is zero-based. Earlier steps receive a check, the active step gets `aria-current="step"`,
+  and later steps retain their sequence numbers.
+</Example>
+
+<Example id="start" title="At the first step" layout="block">
+  Stepper is presentational, not a wizard controller. Update `active` when the surrounding flow
+  advances, and provide the form or navigation that actually moves a person between steps.
+</Example>
+
+## When to use
+
+Use Stepper for a named sequence a person progresses through, such as onboarding, checkout or setup.
+
+Reach for something else when:
+
+- **The work has no named stages** — use Progress for an unnamed fraction of work.
+- **People need to switch freely between peer views** — use Tabs.
+- **The next action does not depend on a sequence** — use ordinary page navigation or actions.
+
+## Accessibility
+
+- The active step is the only element with ARIA: `aria-current="step"`. The component has no roles,
+  `aria-valuenow` or interactive controls.
+- Completed steps replace their number with an `aria-hidden` check icon. Later steps show `index + 1`.
+- Stepper is inert. The surrounding flow must provide keyboard-operable navigation and announce a
+  step change; updating this visual indicator alone tells a screen-reader user nothing.
+- Keep step names concise and meaningful, because they are the only text that identifies each stage.
+
+## Props
+
+<PropTable name="Stepper" />
+
+## Plain HTML
+
+The connector after a completed step carries `lyra-step__line--done`; the Stepper itself is not interactive.
+
+```html
+<div class="lyra-stepper">
+  <span class="lyra-step lyra-step--done">
+    <span class="lyra-step__dot">
+      <svg
+        aria-hidden="true"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </span>
+    <span class="lyra-step__label">Account</span>
+  </span>
+  <span class="lyra-step__line lyra-step__line--done"></span>
+  <span class="lyra-step lyra-step--active" aria-current="step">
+    <span class="lyra-step__dot">2</span>
+    <span class="lyra-step__label">Invite teammates</span>
+  </span>
+  <span class="lyra-step__line"></span>
+  <span class="lyra-step">
+    <span class="lyra-step__dot">3</span>
+    <span class="lyra-step__label">Choose a plan</span>
+  </span>
+</div>
+```

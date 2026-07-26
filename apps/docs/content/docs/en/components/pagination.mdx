@@ -1,0 +1,63 @@
+---
+title: Pagination
+description: Controlled numeric page navigation with fixed truncation, boundaries and accessible labels.
+---
+
+# Pagination
+
+Pagination moves through a known, finite set of pages. Use it below a Table of records when stable
+pages support scanning; choose loading more in place when preserving the current reading flow matters.
+
+## Examples
+
+<Example id="pages" title="A truncated page range" layout="block">
+  With more than seven pages, the range stays compact: it shows the ends and the current page's
+  neighbors. `page` is one-based, so keep the value you store and the value you display aligned.
+</Example>
+
+<Example id="boundary" title="Boundary and region label" layout="block">
+  Previous and next disable at the ends. Give the navigation an `aria-label` when more than one
+  paginated region appears on a page; it overrides the default "Pagination" label.
+</Example>
+
+## When to use
+
+Use Pagination beneath a Table or another record list when people need to return to a specific page
+or understand the bounds of the result set.
+
+Reach for something else when:
+
+- **The records are in columns that people scan and sort** — pair Pagination with Table.
+- **People should keep reading one continuous feed** — load more in place instead of relocating them.
+- **The full result set is small enough to show at once** — render it directly and avoid page controls.
+
+## Accessibility
+
+- Renders a `<nav aria-label="Pagination">`; your `aria-label` replaces that default for distinct
+  paginated regions.
+- Previous and next are native buttons named "Previous page" and "Next page". They are disabled at
+  the first and last pages.
+- The active page has `aria-current="page"`. Every enabled page button remains in the normal Tab order.
+- Ellipses are `aria-hidden` spans, not buttons. Do not make a truncation gap look actionable.
+
+## Props
+
+<PropTable name="Pagination" />
+
+## Plain HTML
+
+Previous is the first button in the navigation; an ellipsis is a non-interactive span.
+
+```html
+<nav class="lyra-pagination" aria-label="Pagination">
+  <button class="lyra-page" type="button" aria-label="Previous page">‹</button>
+  <button class="lyra-page" type="button">1</button>
+  <span class="lyra-page lyra-page--gap" aria-hidden="true">…</span>
+  <button class="lyra-page" type="button">5</button>
+  <button class="lyra-page lyra-page--active" type="button" aria-current="page">6</button>
+  <button class="lyra-page" type="button">7</button>
+  <span class="lyra-page lyra-page--gap" aria-hidden="true">…</span>
+  <button class="lyra-page" type="button">20</button>
+  <button class="lyra-page" type="button" aria-label="Next page">›</button>
+</nav>
+```

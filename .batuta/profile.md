@@ -25,6 +25,47 @@ constraints relevantes do CLAUDE.md quando tocarem em estilo/tokens.
 - Test: `pnpm test` · Build: `pnpm build` · Lint: `pnpm lint` (prettier) ·
   Typecheck: `pnpm typecheck` · Parity: `pnpm parity` · Smoke: `pnpm smoke`
 
+## Delegação — o que já funcionou e o que já custou rodada
+
+Lições dos lotes da Fase 6b, cada uma com a evidência que a gerou. Valem para
+qualquer executor, não só o codex.
+
+**O trabalho mora no arquivo de brief, não no prompt.** A invocação que entregou
+os Lotes 1, 2 e 3 numa rodada limpa cada é literalmente uma linha: `Follow the
+instructions in .batuta/lot-NN-<slug>.md, which sits on top of the shared brief
+.batuta/brief-phase06b-fanout.md. Read both in full before writing anything. Work
+from the repo root; do not commit.` Prompt mínimo, brief rico. Instrução longa
+inline é onde os workflows internos do executor se enganCham.
+
+**Ao re-disparar depois de um travamento, repita o prompt original verbatim.** No
+Lote 4 o codex parou pedindo aprovação de um "design workflow" dele; re-disparei
+com um prompt cheio de "APPROVED", "design approval", "do not ask questions" — e
+isso **alimentou** o gate em vez de desarmá-lo: a rodada seguinte inventou uma
+parede de permissão. Nomear o gate é invocá-lo. Não discuta com o fluxo interno
+do executor; devolva a mesma instrução que já funcionou.
+
+**Relatório de falha do executor é alegação, não fato — verifique antes de
+escalar.** O codex afirmou que só podia escrever em `packages/react/src` e que
+`apps/docs` era read-only. Um probe de 10 segundos (`codex exec … "crie
+apps/docs/PROBE.txt com 'ok'"`) desmentiu na hora, e os `.codex/`/`.agents/` do
+repo estão vazios. Escalar para a lane cara em cima de um relatório falso é
+desperdício; o probe barato vem primeiro.
+
+**Relatório de sucesso também não basta.** O `next build` prerenderiza exemplo
+quebrado sem falhar, e o executor não consegue abrir o dev no sandbox dele. Toda
+verificação de lote abre as páginas no navegador e exercita a interação; foi assim
+que apareceram o avatar vindo de CDN de terceiro (Lote 2) e o que os gates verdes
+não pegam.
+
+**O que faz a rodada sair limpa é pinar o que o executor não tem como derivar.**
+Não é o tamanho do brief, é a especificidade: shape exato de tipos, armadilhas de
+API (`actions` do FileManager substitui o menu em vez de estender; Tabs renderiza
+painéis vazios próprios), qual classe existe de fato, e as lições das rodadas
+anteriores. Colete isso lendo a fonte antes de escrever o brief.
+
+**Economia de lote:** Context + Conventions são construídos uma vez e reusados no
+lote inteiro; só Goal, critérios e fronteiras variam por item.
+
 ## Takeover do GSD (2026-07-20)
 
 O usuário aposentou o GSD; o Batuta assumiu a condução. Import feito:

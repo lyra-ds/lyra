@@ -1,0 +1,92 @@
+---
+title: Tabs
+description: A controlled tab list for switching between peer views, with line and pill treatments.
+---
+
+# Tabs
+
+Tabs switches among a few peer views already worth keeping in reach. Choose Tabs when moving between
+views is cheap; if loading a view is costly, use a control that lets people choose before activation.
+
+## Examples
+
+<Example id="line" title="Line tabs" layout="block">
+  `active` is required and controlled. Update it in `onChange`; click and keyboard navigation both
+  request the new id. Tabs renders labels and empty panels only, so your application renders
+  content.
+</Example>
+
+<Example id="pills-and-counts" title="Pills and counts" layout="block">
+  Use `pills` when the control reads as a compact filter between peer sets. Counts are part of the
+  label's decision; do not add them when they change too quickly to be useful.
+</Example>
+
+## When to use
+
+Use Tabs for a small, stable set of peer views that people switch between in the same context.
+
+Reach for something else when:
+
+- **Commands need to be folded away** — use Dropdown, which presents actions rather than views.
+- **There are many destinations or a hierarchy** — use navigation that can show the structure.
+- **A panel is expensive to render or fetch** — use a control with explicit activation so arrowing
+  through choices does not trigger work someone did not ask for.
+
+## Accessibility
+
+- Renders a `role="tablist"` with native tab buttons. Each tab has `role="tab"`, `aria-selected` and
+  `aria-controls`; generated empty `role="tabpanel"` elements are labelled by their tabs.
+- Uses roving `tabIndex`: only the active tab is in the Tab order. ArrowLeft/ArrowRight wrap, and
+  Home/End move to the first or last tab.
+- Arrow navigation activates automatically as it moves focus. That works for cheap panels; avoid it
+  when a panel starts expensive rendering or a network request.
+- The component does not render panel content. Render that content yourself and preserve a visible
+  focus indicator for any controls you add around it.
+
+## Props
+
+<PropTable name="Tabs" />
+
+## Plain HTML
+
+Tabs emits the tablist and its empty labelled panels. Application content is separate from this markup.
+
+```html
+<div class="lyra-tabs" id="project-tabs" role="tablist">
+  <button
+    id="project-tabs-tab-0"
+    class="lyra-tab lyra-tab--active"
+    type="button"
+    role="tab"
+    aria-selected="true"
+    aria-controls="project-tabs-panel-0"
+    tabindex="0"
+  >
+    Overview
+  </button>
+  <button
+    id="project-tabs-tab-1"
+    class="lyra-tab"
+    type="button"
+    role="tab"
+    aria-selected="false"
+    aria-controls="project-tabs-panel-1"
+    tabindex="-1"
+  >
+    Activity<span class="lyra-tab__count">8</span>
+  </button>
+</div>
+<div
+  id="project-tabs-panel-0"
+  role="tabpanel"
+  aria-labelledby="project-tabs-tab-0"
+  tabindex="0"
+></div>
+<div
+  id="project-tabs-panel-1"
+  role="tabpanel"
+  aria-labelledby="project-tabs-tab-1"
+  tabindex="0"
+  hidden
+></div>
+```
