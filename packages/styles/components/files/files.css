@@ -316,3 +316,34 @@
 .lyra-upload__zone:active {
   transform: translateY(0.5px);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the file list's column headings are real text,
+   and --text-faint on the card surface measures 2.56:1 in light (3.92:1 in dark) — below WCAG AA's
+   4.5:1 for body-size text. Same call the docs site already made for its own group labels: keep the
+   quiet tone, move one step up the ramp to --text-secondary (7.5:1 light, ~11:1 dark). The handoff
+   declaration above is left intact; this overrides it by cascade order. */
+.lyra-fm__head {
+  color: var(--text-secondary);
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): touch targets, grown only into space the layout
+   already reserves, so nothing moves. The row is 44px tall in the handoff but the name button inside
+   it is 30px, leaving dead margin above and below — stretching the button spends it. The action
+   trigger keeps its 30px visible box (it has a hover background that would grow with it) and gains a
+   transparent 44x44 hit area instead; the overflow stays inside the grid gap.
+   The name button cannot use that same pseudo-element: it carries `overflow: hidden` for the label's
+   ellipsis, which would clip the overlay. It stretches and then reclaims the row's 4px vertical
+   padding with a negative margin — the box is transparent and the content stays centered on the same
+   line, so the only thing that moves is the browser's focus ring, which now hugs the real target. */
+.lyra-fm__name {
+  align-self: stretch;
+  margin-block: calc(var(--space-1) * -1);
+}
+.lyra-fm__more {
+  position: relative;
+}
+.lyra-fm__more::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}

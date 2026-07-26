@@ -192,10 +192,14 @@ const ADDITIVE_EXTENSIONS = {
   },
   'components/files/files.css': {
     // Touch-feedback extension: suppressing the iOS tap highlight and replacing it with a press.
+    // `lyra-fm__head` re-colors the column headings the handoff left at 2.56:1 in light; `lyra-fm__name`
+    // and `lyra-fm__more` grow their hit areas into layout space the row already reserves.
     classes: [
       'lyra-fm__card',
       'lyra-fm__crumb',
+      'lyra-fm__head',
       'lyra-fm__more',
+      'lyra-fm__name',
       'lyra-fm__row',
       'lyra-upload__remove',
       'lyra-upload__zone',
