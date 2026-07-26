@@ -58,6 +58,14 @@ import { PaginationPages } from './pagination/pages';
 import { PaginationBoundary } from './pagination/boundary';
 import { StepperCurrentStep } from './stepper/current-step';
 import { StepperStart } from './stepper/start';
+import { DropdownActions } from './dropdown/actions';
+import { DropdownAlignEnd } from './dropdown/align-end';
+import { SidebarGroupProjects } from './sidebar-group/projects';
+import { SidebarGroupCollapsible } from './sidebar-group/collapsible';
+import { CommandPaletteInline } from './command-palette/inline';
+import { CommandPaletteHints } from './command-palette/hints';
+import { WorkspaceSwitcherSelection } from './workspace-switcher/selection';
+import { WorkspaceSwitcherCreate } from './workspace-switcher/create';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -184,5 +192,21 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   stepper: {
     'current-step': StepperCurrentStep,
     start: StepperStart,
+  },
+  dropdown: {
+    actions: DropdownActions,
+    'align-end': DropdownAlignEnd,
+  },
+  'sidebar-group': {
+    projects: SidebarGroupProjects,
+    collapsible: SidebarGroupCollapsible,
+  },
+  'command-palette': {
+    inline: CommandPaletteInline,
+    hints: CommandPaletteHints,
+  },
+  'workspace-switcher': {
+    selection: WorkspaceSwitcherSelection,
+    create: WorkspaceSwitcherCreate,
   },
 };

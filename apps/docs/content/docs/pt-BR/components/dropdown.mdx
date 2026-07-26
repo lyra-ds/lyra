@@ -1,0 +1,78 @@
+---
+title: Dropdown
+description: Um botão de menu para um conjunto curto de comandos contextuais, com foco pelo teclado.
+---
+
+# Dropdown
+
+Dropdown mantém um conjunto curto de ações ligado a um controle. Escolha-o para comandos no contexto
+atual; escolha CommandPalette quando as pessoas precisarem buscar no produto inteiro, de qualquer lugar.
+
+## Exemplos
+
+<Example id="actions" title="Ações agrupadas">
+  Rótulos e separadores revelam a estrutura de um conjunto de comandos antes de alguém ler cada
+  item. Marque como `danger` apenas a ação que altera ou remove dados.
+</Example>
+
+<Example id="align-end" title="Menu alinhado ao fim">
+  `align="end"` mantém a borda direita deste menu junto ao gatilho. `defaultOpen` inicia um menu
+  aberto para demos visuais; deixe-o de fora de exemplos e fluxos normais da aplicação.
+</Example>
+
+## Quando usar
+
+Use Dropdown para uma lista pequena e contextual de comandos que não precisa permanecer visível.
+
+Prefira outro componente quando:
+
+- **A pessoa escolhe o workspace atual** — use WorkspaceSwitcher, um listbox que informa a seleção.
+- **A pessoa precisa encontrar um comando em todo o produto** — use CommandPalette e seu índice buscável.
+- **A pessoa alterna entre visualizações pares** — use Tabs, que representa visualizações, não ações.
+
+## Acessibilidade
+
+- O elemento que você passa em `trigger` **vira** o gatilho: ele recebe `role="button"`, a parada
+  de tabulação, `aria-haspopup="menu"`, `aria-expanded` e `aria-controls`, e nenhum embrulhador é
+  criado em volta dele. Assim um `Button` como gatilho é um controle com uma parada de Tab, e o
+  elemento que a pessoa foca é o que anuncia que abre um menu. Só um gatilho de texto puro ganha um
+  span próprio.
+- Props que já estão no seu elemento vencem a fusão, então um gatilho que carrega o próprio
+  `aria-label` — um botão só de ícone, por exemplo — mantém esse nome.
+- O popup é um `role="menu"`; os comandos são `role="menuitem"`. Enter, Espaço e ArrowDown o abrem
+  no primeiro comando, enquanto ArrowUp o abre no último.
+- Dentro do menu, ArrowDown e ArrowUp dão a volta, Home e End vão às pontas, Escape fecha e devolve
+  o foco ao gatilho, e Tab fecha sem bloquear a navegação sequencial normal.
+- O foco vai para elementos DOM `menuitem` reais, diferente do descendente ativo virtual de
+  CommandPalette. Perto da borda inferior de um celular, o popup vira para cima em vez de rolar a página.
+
+## Props
+
+<PropTable name="Dropdown" />
+
+## HTML puro
+
+Um elemento é o gatilho. Ponha a semântica de menu no próprio controle — um span embrulhando um
+botão daria duas paradas de Tab para a mesma afordância:
+
+```html
+<div class="lyra-dropdown">
+  <button
+    class="lyra-btn lyra-btn--secondary lyra-btn--md lyra-dropdown__trigger"
+    type="button"
+    aria-haspopup="menu"
+    aria-expanded="true"
+    aria-controls="project-actions"
+  >
+    Ações do projeto
+  </button>
+  <div class="lyra-menu lyra-menu--start" id="project-actions" role="menu">
+    <span class="lyra-menu__label">Projeto</span>
+    <button class="lyra-menu__item" type="button" role="menuitem">Renomear projeto</button>
+    <hr class="lyra-menu__sep" />
+    <button class="lyra-menu__item lyra-menu__item--danger" type="button" role="menuitem">
+      Arquivar projeto
+    </button>
+  </div>
+</div>
+```

@@ -50,6 +50,10 @@ export const components: ComponentEntry[] = [
   { slug: 'tabs', name: 'Tabs', group: 'navigation' },
   { slug: 'pagination', name: 'Pagination', group: 'navigation' },
   { slug: 'stepper', name: 'Stepper', group: 'navigation' },
+  { slug: 'dropdown', name: 'Dropdown', group: 'navigation' },
+  { slug: 'sidebar-group', name: 'SidebarGroup', group: 'navigation' },
+  { slug: 'command-palette', name: 'CommandPalette', group: 'navigation' },
+  { slug: 'workspace-switcher', name: 'WorkspaceSwitcher', group: 'navigation' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */
