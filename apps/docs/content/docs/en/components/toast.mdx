@@ -1,0 +1,61 @@
+---
+title: Toast
+description: A short confirmation that appears over the interface and leaves, stacked bottom-right.
+---
+
+# Toast
+
+Toast confirms that something happened, away from where it happened. Decide whether the person needs
+the message after they have moved on — if not, say it inline instead and spare the interruption.
+
+## Examples
+
+<Example id="basic" title="A single toast" layout="plain">
+  The close button exists only when you pass `onClose`. A toast without one must disappear on its
+  own; a toast with one must still not depend on being closed for the interface to make sense.
+</Example>
+
+<Example id="in-a-stack" title="Inside a ToastStack" layout="row">
+  `ToastStack` is the fixed bottom-right container, and it is what keeps several toasts from
+  covering each other. Press the button more than once to see them queue.
+</Example>
+
+## When to use
+
+Use Toast for a brief, non-blocking confirmation of something the person just did, when they do not
+need to act on it.
+
+Reach for something else when:
+
+- **The message is about content on the page** — use Alert, which stays next to it.
+- **Something needs a decision before continuing** — use Dialog. A toast can be missed entirely.
+- **The message carries information someone will need later** — a toast that leaves takes it with it.
+
+## Accessibility
+
+- Toast renders `role="status"`, a polite live region: it is announced at the next pause, not the
+  instant it appears. Never put the only copy of important information in one.
+- `ToastStack` is `position: fixed` at the bottom-right of the viewport. It sits over whatever is
+  there, so keep toasts short and few.
+- The close button appears only with `onClose`, and its accessible name is the English string
+  "Close notification". There is no prop to translate it — a limitation worth knowing before you ship
+  a localized product.
+- `tone` colors the icon only. The words must say whether something succeeded or failed.
+
+## Props
+
+<PropTable name="Toast" />
+
+## Plain HTML
+
+The stack positions; the toast is a plain dark card:
+
+```html
+<div class="lyra-toast-stack">
+  <div class="lyra-toast" role="status">
+    <span class="lyra-toast__icon lyra-toast__icon--success"></span>
+    <span>Project archived</span>
+    <button class="lyra-toast__close" type="button" aria-label="Close notification">×</button>
+  </div>
+</div>
+```

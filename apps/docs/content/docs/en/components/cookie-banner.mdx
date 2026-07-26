@@ -1,0 +1,66 @@
+---
+title: CookieBanner
+description: A fixed consent notice that remembers the visitor's answer in browser storage.
+---
+
+# CookieBanner
+
+CookieBanner asks once and remembers. Decide what your product actually does with cookies before
+choosing the copy — the default text makes an LGPD claim on your behalf.
+
+## Examples
+
+<Example id="default-copy" title="Default LGPD notice">
+  The banner is fixed to the bottom of the viewport, so these examples mount it from a button rather
+  than on page load. Each one uses its own `storageKey` and clears it first, or the example would
+  work exactly once per reader.
+</Example>
+
+<Example id="custom-copy" title="Your own copy">
+  `children` replaces the default notice entirely. Say what you actually store; a consent notice
+  that describes cookies you do not set is worse than none.
+</Example>
+
+## When to use
+
+Use CookieBanner when the product sets cookies that need consent, and the answer should persist
+across visits.
+
+Reach for something else when:
+
+- **Nothing needs consent** — do not ask. A banner for essential cookies alone is noise.
+- **The choice belongs in settings** — a banner is for the first visit; the setting is where someone
+  changes their mind later, and this component has no UI for that.
+- **The message is not a choice** — use Alert.
+
+## Accessibility
+
+- Renders `role="region"` named "Cookie notice". That name is a fixed English string with no prop to
+  change it, which is worth knowing since the default copy is Brazilian LGPD wording.
+- Both actions are real buttons in the normal tab order. The banner does not trap focus and does not
+  block the page, so a visitor can keep reading and answer later.
+- It reads `localStorage` in an effect and renders `null` until it has, so it is absent from the
+  server-rendered HTML and from the first client paint. That avoids a hydration mismatch, and it
+  means the banner arrives a frame late — do not build layout that depends on its height.
+- Once answered, it does not come back. Provide your own way to revisit the choice.
+
+## Props
+
+<PropTable name="CookieBanner" />
+
+## Plain HTML
+
+The notice and the actions are siblings inside the fixed container:
+
+```html
+<div class="lyra-cookies" role="region" aria-label="Cookie notice">
+  <p class="lyra-cookies__text">
+    We use cookies to improve your experience in accordance with LGPD.
+    <a href="/privacy">Privacy policy</a>
+  </p>
+  <div class="lyra-cookies__actions">
+    <button class="lyra-btn lyra-btn--secondary lyra-btn--sm" type="button">Only essentials</button>
+    <button class="lyra-btn lyra-btn--primary lyra-btn--sm" type="button">Accept all</button>
+  </div>
+</div>
+```

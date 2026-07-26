@@ -71,9 +71,12 @@ For each component in your lot:
   arrangement (a form, a grid), use an inline `style` — that is what a consumer
   would write, and it stays copy-pasteable.
 - **`'use client'` is required** when the example holds state/handlers OR uses
-  `asChild`. A server-rendered child crossing into a client component is not the
-  plain element `Children.only` expects, and the page 500s in `next dev`.
-  `next build` does NOT catch this.
+  `asChild` OR uses `Tooltip`. All three clone the child element, and a child that
+  crosses the RSC boundary arrives serialized: `asChild` throws `Children.only`, and
+  `Tooltip` silently loses its `aria-describedby` from the server HTML (React reports a
+  hydration mismatch and does not patch attribute mismatches, so it never applies).
+  `next build` catches neither: the `asChild` case 500s only in `next dev`, and the
+  `Tooltip` case fails silently in both.
 - **Never invent an API.** Every prop you use must exist in the component's entry in
   `tools/docgen/output/props.json`. Read it before writing.
 - **Never invent a CSS class.** Before writing the Plain HTML block, verify every

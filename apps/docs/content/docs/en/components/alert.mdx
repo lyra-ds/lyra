@@ -1,0 +1,65 @@
+---
+title: Alert
+description: An inline message that stays with the thing it concerns, in four semantic tones.
+---
+
+# Alert
+
+Alert states something about the content around it and stays there. Decide whether the message belongs
+next to what it concerns — if it does, this; if it should appear over the interface and leave, Toast.
+
+## Examples
+
+<Example id="tones" title="The four tones" layout="block">
+  Tone is a claim about consequence, not decoration. `danger` says something failed or will;
+  `warning` says something needs attention before a deadline. Two `danger` alerts in one view means
+  neither is urgent.
+</Example>
+
+<Example id="title-and-icon" title="Title, icon and body" layout="block">
+  A title earns its place when the body needs more than one sentence. The icon repeats the tone for
+  people who do not perceive the color difference.
+</Example>
+
+## When to use
+
+Use Alert when a message is about the content it sits next to, and should remain readable for as long
+as that content is on screen.
+
+Reach for something else when:
+
+- **The message is about an action that just finished** — use Toast, which appears over the interface
+  and leaves on its own.
+- **There is nothing to show yet** — use EmptyState. An empty result is not an error.
+- **The message belongs to one field** — use the form control's own error text, next to the input.
+
+## Accessibility
+
+- Alert renders `role="status"` for every tone, including `danger`. `status` is a **polite** live
+  region: assistive technology announces it at the next pause rather than interrupting. An alert that
+  appears while someone is typing will not cut them off — and will not be heard immediately either.
+- If a failure genuinely must interrupt, announce it yourself in an assertive live region and keep
+  Alert for the visible message.
+- `title` is the bold first line, not the HTML tooltip attribute — Alert omits the native `title` prop
+  precisely so the two cannot be confused.
+- Alert has no dismiss control and no focus behaviour. It never takes focus away from a task.
+- Do not rely on tone alone. The words must carry the meaning for anyone who cannot tell the colors
+  apart.
+
+## Props
+
+<PropTable name="Alert" />
+
+## Plain HTML
+
+Tone is one class; the title and body are separate elements:
+
+```html
+<div class="lyra-alert lyra-alert--warning" role="status">
+  <span class="lyra-alert__icon"></span>
+  <div>
+    <p class="lyra-alert__title">Your trial ends in three days</p>
+    <p class="lyra-alert__body">Projects stay readable after that.</p>
+  </div>
+</div>
+```

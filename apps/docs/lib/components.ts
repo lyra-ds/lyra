@@ -54,6 +54,12 @@ export const components: ComponentEntry[] = [
   { slug: 'sidebar-group', name: 'SidebarGroup', group: 'navigation' },
   { slug: 'command-palette', name: 'CommandPalette', group: 'navigation' },
   { slug: 'workspace-switcher', name: 'WorkspaceSwitcher', group: 'navigation' },
+  { slug: 'alert', name: 'Alert', group: 'feedback' },
+  { slug: 'toast', name: 'Toast', group: 'feedback' },
+  { slug: 'progress', name: 'Progress', group: 'feedback' },
+  { slug: 'spinner', name: 'Spinner', group: 'feedback' },
+  { slug: 'tooltip', name: 'Tooltip', group: 'feedback' },
+  { slug: 'cookie-banner', name: 'CookieBanner', group: 'feedback' },
 ];
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */

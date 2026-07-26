@@ -1,0 +1,63 @@
+---
+title: Progress
+description: A determinate progress bar for work whose remaining share is actually known.
+---
+
+# Progress
+
+Progress shows how much of a known job is done. Use it only when you can compute the fraction
+honestly — a bar that sits at 90% for a minute is worse than no bar at all.
+
+## Examples
+
+<Example id="labelled" title="With its own label" layout="block">
+  Progress emits no accessible name of its own. Point `aria-labelledby` at the visible heading, or
+  pass `aria-label`, or the bar announces as an unnamed progressbar.
+</Example>
+
+<Example id="tones" title="Tones" layout="block">
+  `success` marks a finished job, `danger` a quota running out. The default carries no judgement,
+  which is what most progress deserves.
+</Example>
+
+## When to use
+
+Use Progress when the share of work completed is known and worth watching — an upload, an import, a
+quota.
+
+Reach for something else when:
+
+- **The wait has no known end** — use Spinner, which promises nothing about duration.
+- **The content's shape is known but not its data** — use Skeleton, which holds the layout.
+- **The work finished** — remove the bar and say what happened.
+
+## Accessibility
+
+- Renders `role="progressbar"` with `aria-valuenow`, `aria-valuemin="0"` and `aria-valuemax="100"`.
+  `value` is clamped to that range by the component.
+- **It has no accessible name.** A progressbar with no name is announced as an anonymous one, so the
+  consumer must supply `aria-label` or `aria-labelledby`. This is the single thing to get right.
+- The percentage is not rendered as text. If the exact number matters, put it next to the bar as
+  visible content, as the first example does.
+- Colour is the only difference between the tones. Do not let it carry meaning the words omit.
+
+## Props
+
+<PropTable name="Progress" />
+
+## Plain HTML
+
+The track is the element with the role; the fill is a child sized by inline width:
+
+```html
+<div
+  class="lyra-progress"
+  role="progressbar"
+  aria-valuenow="62"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-label="Importing records"
+>
+  <div class="lyra-progress__fill" style="width: 62%"></div>
+</div>
+```

@@ -66,6 +66,18 @@ import { CommandPaletteInline } from './command-palette/inline';
 import { CommandPaletteHints } from './command-palette/hints';
 import { WorkspaceSwitcherSelection } from './workspace-switcher/selection';
 import { WorkspaceSwitcherCreate } from './workspace-switcher/create';
+import { AlertTones } from './alert/tones';
+import { AlertTitleAndIcon } from './alert/title-and-icon';
+import { ToastBasic } from './toast/basic';
+import { ToastInAStack } from './toast/in-a-stack';
+import { ProgressLabelled } from './progress/labelled';
+import { ProgressTones } from './progress/tones';
+import { SpinnerSizes } from './spinner/sizes';
+import { SpinnerInContext } from './spinner/in-context';
+import { TooltipButton } from './tooltip/button';
+import { TooltipIconButton } from './tooltip/icon-button';
+import { CookieBannerDefaultCopy } from './cookie-banner/default-copy';
+import { CookieBannerCustomCopy } from './cookie-banner/custom-copy';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -208,5 +220,29 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'workspace-switcher': {
     selection: WorkspaceSwitcherSelection,
     create: WorkspaceSwitcherCreate,
+  },
+  alert: {
+    tones: AlertTones,
+    'title-and-icon': AlertTitleAndIcon,
+  },
+  toast: {
+    basic: ToastBasic,
+    'in-a-stack': ToastInAStack,
+  },
+  progress: {
+    labelled: ProgressLabelled,
+    tones: ProgressTones,
+  },
+  spinner: {
+    sizes: SpinnerSizes,
+    'in-context': SpinnerInContext,
+  },
+  tooltip: {
+    button: TooltipButton,
+    'icon-button': TooltipIconButton,
+  },
+  'cookie-banner': {
+    'default-copy': CookieBannerDefaultCopy,
+    'custom-copy': CookieBannerCustomCopy,
   },
 };

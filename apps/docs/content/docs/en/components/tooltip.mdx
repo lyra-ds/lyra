@@ -1,0 +1,72 @@
+---
+title: Tooltip
+description: A short hint shown on hover and focus, dismissible with Escape.
+---
+
+# Tooltip
+
+Tooltip adds a short hint to a control that already has a name. Decide first whether the hint should
+be visible copy instead — a tooltip is the weakest place to put anything a person must read.
+
+## Examples
+
+<Example id="button" title="On a button">
+  Pass one focusable element as the child. The component adds `aria-describedby` to it, so the hint
+  reaches keyboard and screen-reader users, not only the mouse.
+</Example>
+
+<Example id="icon-button" title="On icon-only controls">
+  The icon button's `label` is its name; the tooltip is the extra sentence. They are different jobs,
+  and a tooltip must never be the only place a control's name exists.
+</Example>
+
+## When to use
+
+Use Tooltip for a brief clarification of a control whose purpose is already conveyed by its own name
+or icon.
+
+Reach for something else when:
+
+- **The text is the control's name** — use `IconButton`'s `label`, or a visible label.
+- **The content is long, or contains a link or a button** — the bubble is CSS-drawn and cannot hold
+  interactive content. Use Dialog or inline copy.
+- **The information matters on a touch device** — there is no hover there, and a tooltip that only
+  opens on focus is easy to never see.
+
+## Accessibility
+
+- The visible bubble is drawn by CSS from a `data-tip` attribute, so there is no DOM node holding
+  that text — it is not selectable and cannot be reached by a pointer. A separate hidden
+  `<span role="tooltip">` carries the same words, and the component merges an `aria-describedby` onto
+  your child so assistive technology reads them.
+- That is why `tip` is a plain string rather than a node.
+- It opens on hover **and** on focus, and `Escape` dismisses it while the pointer stays put, which is
+  what WCAG 1.4.13 asks of content that appears on hover.
+- **Pass one focusable element.** Wrapping a bare `<span>` produces a mouse-only tooltip with no
+  keyboard path to it.
+- **In the Next.js App Router, keep the Tooltip and its child in the same client component.** The
+  `aria-describedby` is added by cloning your element, and a child that crosses the server/client
+  boundary arrives already serialized: the attribute is missing from the server HTML, React reports a
+  hydration mismatch, and — because React does not patch attribute mismatches — the description never
+  reaches the DOM at all. A `'use client'` directive on the file that renders both is the fix.
+
+## Props
+
+<PropTable name="Tooltip" />
+
+## Plain HTML
+
+The wrapper carries the text in `data-tip`; CSS draws the bubble from it:
+
+```html
+<span class="lyra-tooltip" data-tip="Everyone in the workspace can open this link">
+  <button
+    class="lyra-btn lyra-btn--secondary lyra-btn--md"
+    type="button"
+    aria-describedby="tip-share"
+  >
+    Copy share link
+  </button>
+  <span id="tip-share" role="tooltip" hidden>Everyone in the workspace can open this link</span>
+</span>
+```

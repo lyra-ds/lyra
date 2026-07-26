@@ -1,0 +1,72 @@
+---
+title: Tooltip
+description: Uma dica curta mostrada no hover e no foco, dispensável com Escape.
+---
+
+# Tooltip
+
+Tooltip acrescenta uma dica curta a um controle que já tem nome. Decida antes se a dica não deveria ser
+texto visível — um tooltip é o lugar mais frágil para pôr qualquer coisa que a pessoa precise ler.
+
+## Exemplos
+
+<Example id="button" title="Num botão">
+  Passe um elemento focável como filho. O componente adiciona `aria-describedby` a ele, então a dica
+  chega a quem usa teclado e leitor de tela, não só ao mouse.
+</Example>
+
+<Example id="icon-button" title="Em controles só de ícone">
+  O `label` do icon button é o nome dele; o tooltip é a frase extra. São funções diferentes, e um
+  tooltip nunca pode ser o único lugar onde o nome de um controle existe.
+</Example>
+
+## Quando usar
+
+Use Tooltip para esclarecer brevemente um controle cujo propósito já é comunicado pelo próprio nome ou
+ícone.
+
+Procure outra coisa quando:
+
+- **O texto é o nome do controle** — use o `label` do `IconButton`, ou um rótulo visível.
+- **O conteúdo é longo, ou tem link ou botão** — a bolha é desenhada em CSS e não comporta conteúdo
+  interativo. Use Dialog ou texto inline.
+- **A informação importa no toque** — ali não existe hover, e um tooltip que só abre no foco é fácil
+  de nunca ver.
+
+## Acessibilidade
+
+- A bolha visível é desenhada em CSS a partir de um atributo `data-tip`, então não existe nó no DOM
+  com esse texto — ele não é selecionável nem alcançável pelo ponteiro. Um `<span role="tooltip">`
+  oculto à parte carrega as mesmas palavras, e o componente funde um `aria-describedby` no seu filho
+  para a tecnologia assistiva lê-las.
+- É por isso que `tip` é uma string simples, e não um nó.
+- Abre no hover **e** no foco, e `Escape` dispensa com o ponteiro parado onde está, que é o que a WCAG
+  1.4.13 pede de conteúdo que aparece no hover.
+- **Passe um elemento focável.** Embrulhar um `<span>` puro produz um tooltip só de mouse, sem
+  caminho de teclado até ele.
+- **No App Router do Next.js, mantenha o Tooltip e o filho dele no mesmo client component.** O
+  `aria-describedby` é adicionado clonando o seu elemento, e um filho que cruza a fronteira
+  servidor/cliente chega já serializado: o atributo some do HTML do servidor, o React acusa
+  divergência de hidratação e — como ele não corrige divergência de atributo — a descrição nunca chega
+  ao DOM. Um `'use client'` no arquivo que renderiza os dois resolve.
+
+## Props
+
+<PropTable name="Tooltip" />
+
+## HTML puro
+
+O wrapper carrega o texto em `data-tip`; o CSS desenha a bolha a partir dele:
+
+```html
+<span class="lyra-tooltip" data-tip="Todos no workspace conseguem abrir este link">
+  <button
+    class="lyra-btn lyra-btn--secondary lyra-btn--md"
+    type="button"
+    aria-describedby="tip-share"
+  >
+    Copiar link de compartilhamento
+  </button>
+  <span id="tip-share" role="tooltip" hidden>Todos no workspace conseguem abrir este link</span>
+</span>
+```
