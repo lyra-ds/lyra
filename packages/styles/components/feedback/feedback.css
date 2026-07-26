@@ -356,3 +356,21 @@
   from { transform: scale(0.97) translateY(-4px); }
   to { transform: scale(1) translateY(0); }
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): iOS paints its own translucent grey rectangle at
+   the moment of a tap. It reads as a glitch on light surfaces and is invisible on dark ones, and it
+   is the only touch feedback most of these controls have. Suppress it and give the press the same
+   half-pixel push Button already uses, so the acknowledgement is the system's own rather than the
+   platform's. Touch pointers only — desktop keeps its hover vocabulary untouched. */
+@media (hover: none) {
+  .lyra-dialog__close,
+  .lyra-drawer__close,
+  .lyra-toast__close {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lyra-dialog__close:active,
+  .lyra-drawer__close:active,
+  .lyra-toast__close:active {
+    transform: translateY(0.5px);
+  }
+}

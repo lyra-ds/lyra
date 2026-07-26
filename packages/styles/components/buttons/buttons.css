@@ -70,3 +70,17 @@
 /* Correctness: button-styled links (Button asChild / <a class="lyra-btn">) must never underline —
    Lyra base `a:hover` underline would otherwise win over the button. */
 .lyra-btn:hover { text-decoration: none; }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): iOS paints its own translucent grey rectangle at
+   the moment of a tap. It reads as a glitch on light surfaces and is invisible on dark ones, and it
+   is the only touch feedback most of these controls have. Suppress it and give the press the same
+   half-pixel push Button already uses, so the acknowledgement is the system's own rather than the
+   platform's. Touch pointers only — desktop keeps its hover vocabulary untouched. */
+@media (hover: none) {
+  .lyra-btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lyra-btn:active {
+    transform: translateY(0.5px);
+  }
+}

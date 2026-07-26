@@ -141,6 +141,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-dialog-overlay--closing',
       'lyra-toast__icon',
       'lyra-drawer__close',
+      'lyra-toast__close',
     ],
     keyframes: ['lyra-fade-out', 'lyra-overlay-in', 'lyra-overlay-out', 'lyra-pop-in-up'],
   },
@@ -152,13 +153,16 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-acc__panel-wrap',
       'lyra-acc__panel-clip',
       'lyra-acc__item--open',
+      'lyra-acc__trigger',
+      'lyra-card--interactive',
+      'lyra-tag__remove',
     ],
     keyframes: [],
   },
   'components/forms/forms.css': {
     // Popup flip modifier: the handoff recipe only opens downward, which forces a page scroll
     // when the trigger sits near the bottom of the viewport.
-    classes: ['lyra-combobox__pop--up'],
+    classes: ['lyra-combobox__pop--up', 'lyra-combobox__trigger', 'lyra-combobox__option'],
     keyframes: [],
   },
   'components/navigation/navigation.css': {
@@ -170,6 +174,13 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-cmdk-overlay--closing',
       'lyra-menu--up',
       'lyra-wssw__pop--up',
+      'lyra-menu__item',
+      'lyra-page',
+      'lyra-sbgroup__item',
+      'lyra-sbgroup__label--btn',
+      'lyra-tab',
+      'lyra-wssw__item',
+      'lyra-wssw__trigger',
     ],
     keyframes: [],
   },
@@ -177,6 +188,18 @@ const ADDITIVE_EXTENSIONS = {
     // `.lyra-btn:hover { text-decoration: none }` — button-styled links must not
     // inherit Lyra's base `a:hover` underline. Correctness extension, no handoff peer.
     classes: ['lyra-btn'],
+    keyframes: [],
+  },
+  'components/files/files.css': {
+    // Touch-feedback extension: suppressing the iOS tap highlight and replacing it with a press.
+    classes: [
+      'lyra-fm__card',
+      'lyra-fm__crumb',
+      'lyra-fm__more',
+      'lyra-fm__row',
+      'lyra-upload__remove',
+      'lyra-upload__zone',
+    ],
     keyframes: [],
   },
 };
