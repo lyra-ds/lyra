@@ -393,3 +393,18 @@
 .lyra-cookies {
   animation-name: lyra-cookies-in;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the toast's close glyph measured 12x19 — the one
+   control in the system that failed WCAG 2.2 AA's 24x24 minimum outright, rather than merely sitting
+   under the project's own 44px bar. It keeps its visible size and gains a transparent hit area, the
+   same repair applied to the file list's action trigger. The inset stops at 12px because that is the
+   flex gap to the message: any larger and a tap on the end of the message text would close the
+   toast. The result is 36x43 — the whole height of the toast, and comfortably past the minimum. */
+.lyra-toast__close {
+  position: relative;
+}
+.lyra-toast__close::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
