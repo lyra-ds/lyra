@@ -621,9 +621,12 @@
   }
 }
 
-/* Touch pointers only: the compact chrome is correct with a mouse, but 23px and 33px targets are
-   below the 44px floor for a finger. Scoped so desktop density is untouched. */
-@media (pointer: coarse) {
+/* The compact chrome is correct with a mouse, but 23px and 33px targets are below the 44px floor
+   for a finger. `pointer: coarse` alone is not enough: an iPad in its default "desktop site" mode
+   reports `pointer: fine`, so the tablets that need this most were excluded. `any-pointer` catches a
+   touchscreen even when a precise pointer is also present, and the width clause covers the spoofed
+   case. */
+@media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
   .lw-nav__link,
   .lw-search,
   .lw-docs__item,

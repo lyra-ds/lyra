@@ -495,26 +495,26 @@
 
 /* Additive extension (parity ADDITIVE_EXTENSIONS): iOS paints its own translucent grey rectangle at
    the moment of a tap. It reads as a glitch on light surfaces and is invisible on dark ones, and it
-   is the only touch feedback most of these controls have. Suppress it and give the press the same
-   half-pixel push Button already uses, so the acknowledgement is the system's own rather than the
-   platform's. Touch pointers only — desktop keeps its hover vocabulary untouched. */
-@media (hover: none) {
-  .lyra-menu__item,
-  .lyra-page,
-  .lyra-sbgroup__item,
-  .lyra-sbgroup__label--btn,
-  .lyra-tab,
-  .lyra-wssw__item,
-  .lyra-wssw__trigger {
-    -webkit-tap-highlight-color: transparent;
-  }
-  .lyra-menu__item:active,
-  .lyra-page:active,
-  .lyra-sbgroup__item:active,
-  .lyra-sbgroup__label--btn:active,
-  .lyra-tab:active,
-  .lyra-wssw__item:active,
-  .lyra-wssw__trigger:active {
-    transform: translateY(0.5px);
-  }
+   is the only touch feedback most of these controls have, since only Button defined :active.
+   Deliberately NOT behind a hover/pointer media query: an iPad in its default "desktop site" mode
+   reports `hover: hover` and `pointer: fine`, so a touch-gated rule never reaches the device that
+   needs it most. -webkit-tap-highlight-color has no effect on a mouse anyway, and the press feedback
+   is the same half-pixel push Button already applied unconditionally. */
+.lyra-menu__item,
+.lyra-page,
+.lyra-sbgroup__item,
+.lyra-sbgroup__label--btn,
+.lyra-tab,
+.lyra-wssw__item,
+.lyra-wssw__trigger {
+  -webkit-tap-highlight-color: transparent;
+}
+.lyra-menu__item:active,
+.lyra-page:active,
+.lyra-sbgroup__item:active,
+.lyra-sbgroup__label--btn:active,
+.lyra-tab:active,
+.lyra-wssw__item:active,
+.lyra-wssw__trigger:active {
+  transform: translateY(0.5px);
 }

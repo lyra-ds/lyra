@@ -17,4 +17,5 @@ the tab order or the accessibility tree. `prefers-reduced-motion: reduce` drops 
 its item's padding, so a padded panel could not collapse to zero without it.
 
 Consumers using the plain CSS classes need the two new wrapper elements around the panel to get the
-animation; the markup without them still renders correctly, just without motion.
+animation; the markup without them still renders correctly, just without motion. Markup that adds
+the wrapper but omits the clip element degrades to an unpadded collapse rather than a blank gap.
