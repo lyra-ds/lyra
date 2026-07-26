@@ -93,7 +93,7 @@
 /* chrome links are UI controls, never underline (base.css underlines a:hover) */
 .lw-brand:hover,
 .lw-nav__link:hover,
-.lw-docs__item:hover,
+.lyra-sbgroup__item:hover,
 .lw-toc__link:hover,
 .lw-footer__links a:hover {
   text-decoration: none;
@@ -221,44 +221,6 @@
   scrollbar-color: var(--border-strong, var(--border-default)) transparent;
   /* keeps the active pill from sitting under the scrollbar */
   padding-right: var(--space-2);
-}
-.lw-docs__group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.lw-docs__group-title {
-  font: var(--overline-font);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  /* --text-faint reads 2.45:1 here; small uppercase text needs 4.5:1 */
-  color: var(--text-secondary);
-  padding: 0 var(--space-3) var(--space-2);
-}
-.lw-docs__item {
-  text-align: left;
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  padding: 6px var(--space-3);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-.lw-docs__item:hover {
-  background: var(--surface-sunken);
-  color: var(--text-primary);
-}
-.lw-docs__item--active {
-  background: var(--accent-soft);
-  color: var(--accent-soft-text);
-  font-weight: var(--weight-semibold);
 }
 .lw-docs__content {
   display: flex;
@@ -629,14 +591,14 @@
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
   .lw-nav__link,
   .lw-search,
-  .lw-docs__item,
+  .lyra-sbgroup__item,
   .lw-toc__link,
   .lw-brand,
   .lw-example__toggle,
   .lw-code__copy {
     min-height: 44px;
   }
-  .lw-docs__item,
+  .lyra-sbgroup__item,
   .lw-toc__link {
     display: flex;
     align-items: center;
