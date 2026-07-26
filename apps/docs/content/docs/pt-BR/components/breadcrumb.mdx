@@ -17,7 +17,9 @@ ao redor precisa de uma localização de página ou da barra de caminho de pasta
 
 <Example id="partial-trail" title="Dados parciais" layout="block">
   Um item não final sem `href` se torna uma âncora para `#`. Trate esse fallback como erro de dados,
-  não como placeholder inofensivo: ele parece navegável, mas não leva a uma página útil.
+  não como placeholder inofensivo: ele parece navegável, mas não leva a uma página útil. Esta trilha
+  também leva o próprio `aria-label`, que é o que evita dois breadcrumbs na mesma página se
+  apresentarem à tecnologia assistiva como dois landmarks de mesmo nome.
 </Example>
 
 ## Quando usar
@@ -34,7 +36,9 @@ Prefira outro componente quando:
 
 ## Acessibilidade
 
-- Renderiza um `<nav aria-label="Breadcrumb">` plano, não uma lista de `<ol>` ou `<li>`.
+- Renderiza um landmark `<nav>` plano, não uma lista de `<ol>` ou `<li>`. Ele se chama "Breadcrumb"
+  a menos que você passe o seu próprio `aria-label` — passe um quando a página tiver mais de uma
+  trilha, ou quando a interface for localizada e um nome em inglês ficar deslocado.
 - Cada item antes do último é uma âncora. O último é um
   `<span class="lyra-breadcrumb__current" aria-current="page">`, mesmo quando seus dados têm `href`.
 - Separadores são spans vazios com `aria-hidden`, desenhados em CSS. Não adicione texto de chevron

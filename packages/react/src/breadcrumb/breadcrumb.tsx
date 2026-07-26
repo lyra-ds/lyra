@@ -16,11 +16,16 @@ export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
   items: BreadcrumbItem[];
 }
 
-/** A hierarchical navigation trail. */
+/** A hierarchical navigation trail. Its landmark is named "Breadcrumb" unless you supply a name. */
 export const Breadcrumb = /*#__PURE__*/ forwardRef<HTMLElement, BreadcrumbProps>(
-  function Breadcrumb({ items, className, ...rest }, ref) {
+  function Breadcrumb({ items, className, 'aria-label': ariaLabel, ...rest }, ref) {
     return (
-      <nav {...rest} ref={ref} className={cx('lyra-breadcrumb', className)} aria-label="Breadcrumb">
+      <nav
+        {...rest}
+        ref={ref}
+        className={cx('lyra-breadcrumb', className)}
+        aria-label={ariaLabel ?? 'Breadcrumb'}
+      >
         {items.map((item, index) => {
           const last = index === items.length - 1;
           return (

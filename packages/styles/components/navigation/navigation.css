@@ -518,3 +518,33 @@
 .lyra-wssw__trigger:active {
   transform: translateY(0.5px);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the stepper is a flex row whose dots, labels and
+   connectors all refuse to shrink (`flex-shrink: 0` plus `white-space: nowrap`), so an ordinary
+   three-step flow measures ~453px and pushed the whole document sideways on a 375px phone.
+   It wraps instead of scrolling. Own-scroll was tried first and rejected on measurement: with no
+   focusable content inside, a keyboard user cannot scroll the region, so the last step — the one
+   that says where the flow ends — stayed 176px out of view with no way to reach it (axe agrees:
+   `scrollable-region-focusable`). Wrapping keeps every step reachable and costs only height on a
+   phone; where the row already fits, nothing changes at all. */
+.lyra-stepper {
+  flex-wrap: wrap;
+  row-gap: var(--space-3);
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): two contrast repairs on Tabs.
+   `--text-muted` reads 4.83:1 on a card but only 4.34:1 on `--surface-sunken`, which is exactly
+   where a pill tab's resting label and every count chip sit — both move to `--text-secondary`.
+   In dark, an active line tab paints its label in `--accent` on the page background: 4.09:1. It
+   takes `--accent-soft-text`, the token the system already keeps for accent-colored *text*, which
+   lightens with the brand and so survives white-labelling. The underline stays `--accent`, and the
+   pills variant is excluded because its active tab is `--text-primary` on a raised surface. */
+.lyra-tabs--pills .lyra-tab {
+  color: var(--text-secondary);
+}
+.lyra-tab__count {
+  color: var(--text-secondary);
+}
+[data-theme='dark'] .lyra-tabs:not(.lyra-tabs--pills) .lyra-tab--active {
+  color: var(--accent-soft-text);
+}

@@ -7,5 +7,5 @@ const items = [
 ];
 
 export function BreadcrumbPartialTrail() {
-  return <Breadcrumb items={items} />;
+  return <Breadcrumb aria-label="Invite flow" items={items} />;
 }

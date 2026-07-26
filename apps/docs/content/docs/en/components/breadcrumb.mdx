@@ -17,7 +17,9 @@ the surrounding navigation needs a page-level location or FileManager's folder-l
 
 <Example id="partial-trail" title="Partial data" layout="block">
   A non-final item without `href` becomes an anchor to `#`. Treat that fallback as a data bug, not a
-  harmless placeholder: it looks navigable but does not move someone to a useful page.
+  harmless placeholder: it looks navigable but does not move someone to a useful page. This trail
+  also carries its own `aria-label`, which is what keeps two breadcrumbs on one page from presenting
+  assistive technology with two landmarks of the same name.
 </Example>
 
 ## When to use
@@ -34,7 +36,9 @@ Reach for something else when:
 
 ## Accessibility
 
-- Renders a flat `<nav aria-label="Breadcrumb">`, not an `<ol>` or `<li>` list.
+- Renders a flat `<nav>` landmark, not an `<ol>` or `<li>` list. It is named "Breadcrumb" unless you
+  pass your own `aria-label` — do pass one when a page holds more than one trail, or when the
+  interface is localized and an English landmark name would be out of place.
 - Every item before the last is an anchor. The last is a
   `<span class="lyra-breadcrumb__current" aria-current="page">`, even when its data has an `href`.
 - Separators are empty, `aria-hidden` spans drawn in CSS. Do not add chevron text that a screen
