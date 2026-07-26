@@ -1,7 +1,6 @@
-import { Card } from '@lyra-ds/react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ComponentIndexGrid } from '@/components/component-index-grid';
 import { components, groupLabelKey, groupOrder } from '@/lib/components';
 import { isLocale, locales } from '@/lib/i18n';
 
@@ -29,17 +28,7 @@ export default async function ComponentsIndex({ params }: { params: Promise<{ la
         return (
           <section key={group} className="lw-index__group">
             <h2>{t(groupLabelKey[group])}</h2>
-            <ul className="lw-index__grid">
-              {items.map((entry) => (
-                <li key={entry.slug}>
-                  <Card asChild interactive>
-                    <Link className="lw-index__card" href={`/${lang}/components/${entry.slug}`}>
-                      {entry.name}
-                    </Link>
-                  </Card>
-                </li>
-              ))}
-            </ul>
+            <ComponentIndexGrid entries={items} lang={lang} />
           </section>
         );
       })}

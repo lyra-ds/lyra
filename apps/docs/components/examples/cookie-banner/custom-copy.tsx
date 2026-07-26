@@ -6,11 +6,11 @@ import { useState } from 'react';
 const STORAGE_KEY = 'lyra-docs-cookie-custom-demo';
 
 export function CookieBannerCustomCopy() {
-  const [shown, setShown] = useState(false);
+  const [round, setRound] = useState(0);
 
   const show = () => {
     localStorage.removeItem(STORAGE_KEY);
-    setShown(true);
+    setRound((current) => current + 1);
   };
 
   return (
@@ -18,12 +18,8 @@ export function CookieBannerCustomCopy() {
       <Button variant="secondary" onClick={show}>
         Show the banner with your own copy
       </Button>
-      {shown && (
-        <CookieBanner
-          storageKey={STORAGE_KEY}
-          onAccept={() => setShown(false)}
-          onEssentials={() => setShown(false)}
-        >
+      {round > 0 && (
+        <CookieBanner key={round} storageKey={STORAGE_KEY}>
           We keep one cookie to remember your theme, and nothing else. Analytics stay off unless you
           turn them on.
         </CookieBanner>
