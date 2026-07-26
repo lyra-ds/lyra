@@ -142,8 +142,15 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-toast__icon',
       'lyra-drawer__close',
       'lyra-toast__close',
+      'lyra-cookies',
     ],
-    keyframes: ['lyra-fade-out', 'lyra-overlay-in', 'lyra-overlay-out', 'lyra-pop-in-up'],
+    keyframes: [
+      'lyra-fade-out',
+      'lyra-overlay-in',
+      'lyra-overlay-out',
+      'lyra-pop-in-up',
+      'lyra-cookies-in',
+    ],
   },
   'components/display/display.css': {
     // `lyra-acc__panel-wrap` keeps the Accordion panel mounted so its height can animate; the

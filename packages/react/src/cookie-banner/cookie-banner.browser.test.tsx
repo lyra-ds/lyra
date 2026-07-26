@@ -46,6 +46,20 @@ describe('CookieBanner', () => {
     });
   }
 
+  it('stays centred while it animates in', async () => {
+    // Regression: the banner centres itself with `transform: translateX(-50%)` and used to borrow
+    // the Toast entrance keyframe, which animates `transform` — so for the length of the entrance
+    // the centring was dropped and the banner slid in from half its own width off-centre.
+    const { container } = await render(<CookieBanner storageKey="lyra-centring-test" />);
+    const banner = container.ownerDocument.querySelector<HTMLElement>('.lyra-cookies')!;
+    const style = getComputedStyle(banner);
+    expect(style.animationName).toBe('lyra-cookies-in');
+
+    const matrix = new DOMMatrixReadOnly(style.transform);
+    const halfWidth = banner.getBoundingClientRect().width / 2;
+    expect(Math.round(matrix.m41)).toBe(-Math.round(halfWidth));
+  });
+
   it('persists a choice, invokes its callback, and hides', async () => {
     const onAccept = vi.fn();
     const { container } = await render(

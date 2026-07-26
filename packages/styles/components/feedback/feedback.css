@@ -374,3 +374,22 @@
 .lyra-toast__close:active {
   transform: translateY(0.5px);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the cookie banner centers itself with
+   `transform: translateX(-50%)`, and the shared `lyra-toast-in` keyframe animates `transform` — so
+   for the length of the entrance the centering was simply gone. Measured at 1280px: the banner
+   entered with its centre at 1000px instead of 640 and its right edge 80px outside the viewport,
+   then snapped into place when the animation ended. A transform-animating keyframe can never be
+   shared with an element that is positioned by transform; this one carries the centering in both
+   frames. The Toast keeps `lyra-toast-in`, where nothing is centered. */
+@keyframes lyra-cookies-in {
+  from {
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+.lyra-cookies {
+  animation-name: lyra-cookies-in;
+}
