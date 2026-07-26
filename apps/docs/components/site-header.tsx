@@ -70,6 +70,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             <Icon name="github" size={18} />
           </a>
           <Button
+            className="lw-header__cta"
             size="sm"
             iconRight={<Icon name="arrow-right" size={16} />}
             onClick={() => router.push(`/${locale}/components`)}

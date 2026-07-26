@@ -35,7 +35,7 @@ export default async function LocaleLayout({
       <SiteHeader locale={lang} />
       <div className="lw-container lw-docs">
         <DocsSidebar locale={lang} />
-        <article className="lw-docs__content">{children}</article>
+        <main className="lw-docs__content">{children}</main>
         <TableOfContents />
       </div>
       <SiteFooter />

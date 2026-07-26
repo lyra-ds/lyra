@@ -108,7 +108,7 @@
   padding: 6px var(--space-3);
   font-family: var(--font-sans);
   font-size: var(--text-sm);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   background: var(--surface-sunken);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
@@ -127,7 +127,7 @@
 .lw-search__kbd {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--text-faint);
+  color: var(--text-secondary);
   background: var(--surface-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xs);
@@ -139,6 +139,29 @@
   }
   .lw-search__label,
   .lw-search__kbd {
+    display: none;
+  }
+}
+
+/* Below 900px the header row cannot hold brand + nav + five actions: it overflowed the viewport and
+   scrolled the whole page sideways. Wrap the nav onto its own row instead of hiding navigation, and
+   drop the CTA, whose only destination is the Components link one row below. */
+@media (max-width: 900px) {
+  .lw-header__inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: var(--space-2);
+    gap: var(--space-3);
+  }
+  .lw-nav {
+    order: 3;
+    width: 100%;
+    margin-right: 0;
+  }
+  .lw-header__actions {
+    margin-left: auto;
+  }
+  .lw-header__cta {
     display: none;
   }
 }
@@ -187,6 +210,17 @@
   gap: var(--space-5);
   position: sticky;
   top: 84px;
+  /* Sticky alone cannot hold a rail taller than the viewport: it only unsticks after the body has
+     scrolled past the overflow. The rail needs its own scroll once the component list outgrows the
+     screen. dvh so the iOS toolbar collapsing does not cut the last items off. */
+  max-height: calc(100vh - 84px - var(--space-8));
+  max-height: calc(100dvh - 84px - var(--space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, var(--border-default)) transparent;
+  /* keeps the active pill from sitting under the scrollbar */
+  padding-right: var(--space-2);
 }
 .lw-docs__group {
   display: flex;
@@ -197,7 +231,8 @@
   font: var(--overline-font);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--text-faint);
+  /* --text-faint reads 2.45:1 here; small uppercase text needs 4.5:1 */
+  color: var(--text-secondary);
   padding: 0 var(--space-3) var(--space-2);
 }
 .lw-docs__item {
@@ -265,12 +300,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  max-height: calc(100vh - 84px - var(--space-8));
+  max-height: calc(100dvh - 84px - var(--space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, var(--border-default)) transparent;
 }
 .lw-toc__title {
   font: var(--overline-font);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-secondary);
 }
 .lw-toc__list {
   list-style: none;
@@ -484,6 +525,25 @@
   gap: var(--space-3);
   margin-top: var(--space-3);
 }
+/* Block components (Accordion, Table, EmptyState…) are containers, not chips: as flex items they
+   shrink to their content and leave the stage half empty. Give them the full width instead. */
+.lw-example__stage--block {
+  display: grid;
+  align-items: start;
+  gap: var(--space-4);
+}
+/* For components that are themselves a surface, the Card stage would nest two borders of the same
+   material. Drop the chrome and let the example be the only surface on screen. */
+.lw-example__stage--plain {
+  display: grid;
+  align-items: start;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-5);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
 .lw-example__toggle {
   display: inline-flex;
   align-items: center;
@@ -552,7 +612,36 @@
     grid-template-columns: 1fr;
     gap: var(--space-6);
   }
+  /* stacked above the content, the rail is no longer a rail — it scrolls with the page */
   .lw-docs__side {
     position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+/* Touch pointers only: the compact chrome is correct with a mouse, but 23px and 33px targets are
+   below the 44px floor for a finger. Scoped so desktop density is untouched. */
+@media (pointer: coarse) {
+  .lw-nav__link,
+  .lw-search,
+  .lw-docs__item,
+  .lw-toc__link,
+  .lw-brand,
+  .lw-example__toggle,
+  .lw-code__copy {
+    min-height: 44px;
+  }
+  .lw-docs__item,
+  .lw-toc__link {
+    display: flex;
+    align-items: center;
+  }
+  .lw-locale__opt {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-3);
   }
 }

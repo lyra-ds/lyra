@@ -9,13 +9,26 @@ import { useState, type ReactNode } from 'react';
  * behind a toggle. The source node is highlighted on the server from the example's
  * file, so what you read is exactly what renders above it.
  */
+/**
+ * How the stage arranges an example.
+ *
+ * - `row` (default): a wrapping flex row — right for chips and controls sitting side by side.
+ * - `block`: full-width rows — right for container components that would otherwise shrink to their
+ *   content and leave the stage half empty.
+ * - `plain`: full-width rows without the Card chrome — for components that are themselves a
+ *   surface, so the example is not a card inside a card.
+ */
+export type ExampleLayout = 'row' | 'block' | 'plain';
+
 export function ExampleView({
   children,
+  layout = 'row',
   preview,
   source,
   title,
 }: {
   children?: ReactNode;
+  layout?: ExampleLayout;
   preview: ReactNode;
   source: ReactNode;
   title?: string;
@@ -27,7 +40,17 @@ export function ExampleView({
     <section className="lw-example">
       {title ? <h3 className="lw-example__title">{title}</h3> : null}
       {children}
-      <Card className="lw-example__stage">{preview}</Card>
+      {layout === 'plain' ? (
+        <div className="lw-example__stage--plain">{preview}</div>
+      ) : (
+        <Card
+          className={
+            layout === 'block' ? 'lw-example__stage lw-example__stage--block' : 'lw-example__stage'
+          }
+        >
+          {preview}
+        </Card>
+      )}
       <button
         type="button"
         className="lw-example__toggle"

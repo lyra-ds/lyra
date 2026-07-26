@@ -10,17 +10,17 @@ boundary earns its place; use `asChild` when the whole plain surface must be one
 
 ## Examples
 
-<Example id="structured" title="Header, actions and footer">
+<Example id="structured" title="Header, actions and footer" layout="plain">
   A title establishes one scan target, actions stay at its edge, and the footer holds the next step.
   Do not make a card do this much work if a heading and paragraph already explain the relationship.
 </Example>
 
-<Example id="plain" title="A simple surface">
+<Example id="plain" title="A simple surface" layout="plain">
   The default padding is for one self-contained block. Set `padded={false}` only when the child owns
   its spacing, such as a table or media area that must meet the border.
 </Example>
 
-<Example id="as-link" title="A fully clickable link">
+<Example id="as-link" title="A fully clickable link" layout="plain">
   `asChild` keeps the child anchor as the one rendered element, so native link behaviour still
   works. It only supports a plain Card: `title` and `footer` would create extra elements and
   therefore throw.

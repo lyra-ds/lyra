@@ -10,17 +10,17 @@ essa fronteira merecer existir; use `asChild` quando toda a superfície simples 
 
 ## Exemplos
 
-<Example id="structured" title="Cabeçalho, ações e rodapé">
+<Example id="structured" title="Cabeçalho, ações e rodapé" layout="plain">
   Um título cria um alvo de leitura, ações ficam na sua ponta e o rodapé guarda o próximo passo. Não
   dê tanto trabalho a um card quando um título e parágrafo já explicam a relação.
 </Example>
 
-<Example id="plain" title="Uma superfície simples">
+<Example id="plain" title="Uma superfície simples" layout="plain">
   O padding padrão serve a um bloco autocontido. Defina `padded={false}` apenas quando o filho
   controla o próprio espaçamento, como uma tabela ou mídia que precisa encostar na borda.
 </Example>
 
-<Example id="as-link" title="Um link totalmente clicável">
+<Example id="as-link" title="Um link totalmente clicável" layout="plain">
   `asChild` preserva a âncora filha como o único elemento renderizado, então o comportamento nativo
   de link continua. Ele só aceita Card simples: `title` e `footer` criariam elementos extras e
   lançam erro.

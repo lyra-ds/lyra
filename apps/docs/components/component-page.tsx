@@ -1,7 +1,7 @@
 import { createElement, type ComponentType, type ReactNode } from 'react';
 import { highlightExampleSource } from '@/lib/highlight-source';
 import type { Locale } from '@/lib/i18n';
-import { ExampleView } from './example-view';
+import { ExampleView, type ExampleLayout } from './example-view';
 import { examples } from './examples';
 import { Pre } from './pre';
 import { PropTable } from './prop-table';
@@ -32,12 +32,22 @@ export async function ComponentPage({ locale, slug }: { locale: Locale; slug: st
     ),
   );
 
-  function Example({ id, title, children }: { id: string; title?: string; children?: ReactNode }) {
+  function Example({
+    id,
+    title,
+    layout,
+    children,
+  }: {
+    id: string;
+    title?: string;
+    layout?: ExampleLayout;
+    children?: ReactNode;
+  }) {
     const Live = registered[id];
     if (!Live) throw new Error(`Unknown example "${id}" for component "${slug}".`);
 
     return (
-      <ExampleView title={title} preview={createElement(Live)} source={sources[id]}>
+      <ExampleView title={title} layout={layout} preview={createElement(Live)} source={sources[id]}>
         {children}
       </ExampleView>
     );
