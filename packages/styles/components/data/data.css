@@ -98,6 +98,12 @@
 }
 .lyra-empty__action { margin-top: var(--space-3); }
 
+/* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
+   extension (see tools/parity/parity.mjs, ADDITIVE_EXTENSIONS). The package's CSS must stay a
+   declaration-level copy of the handoff, so an override cannot edit the original rule: it has to
+   restate the selector at the end of the file and win on cascade order. That is a duplicate
+   selector by construction. The rule stays on for the handoff-verbatim region above. */
+
 /* Additive extension (parity ADDITIVE_EXTENSIONS): the table's column headings are `--text-muted` on
    `--surface-sunken`, which measures 4.34:1 — the same pair, and the same repair, already applied to
    the file list's headings and to Tabs. They take `--text-secondary`. Headings are the labels a

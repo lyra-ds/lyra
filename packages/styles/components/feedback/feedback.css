@@ -295,6 +295,12 @@
 .lyra-dialog__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
 .lyra-dialog__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
 
+/* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
+   extension (see tools/parity/parity.mjs, ADDITIVE_EXTENSIONS). The package's CSS must stay a
+   declaration-level copy of the handoff, so an override cannot edit the original rule: it has to
+   restate the selector at the end of the file and win on cascade order. That is a duplicate
+   selector by construction. The rule stays on for the handoff-verbatim region above. */
+
 /* Additive overlay-motion extension (parity ADDITIVE_EXTENSIONS): large overlay panels use
    dedicated entrance and exit keyframes without altering the shared lyra-pop-in animation. */
 .lyra-dialog--closing {
@@ -427,10 +433,7 @@
   transform: translateX(-50%) translateY(0);
 }
 .lyra-tooltip--left::after {
-  bottom: auto;
-  top: 50%;
-  left: auto;
-  right: calc(100% + 6px);
+  inset: 50% calc(100% + 6px) auto auto;
   transform: translateY(-50%) translateX(2px);
 }
 .lyra-tooltip--left:hover::after,

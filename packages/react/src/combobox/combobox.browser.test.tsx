@@ -50,9 +50,14 @@ describe('Combobox', () => {
           'lyra-combobox__search',
         );
         expect(container.querySelector('[role=listbox]')!.className).toBe('lyra-combobox__list');
-        expect(container.querySelector('[role=option]')!.className).toBe(
-          'lyra-combobox__option lyra-combobox__option--active',
-        );
+        // The active descendant is set by an effect after the popup opens, so under a loaded CI
+        // runner this class can lag the first paint. Awaiting it is the difference between a real
+        // assertion and a flaky one — it failed exactly once in CI and never locally.
+        await vi.waitFor(() => {
+          expect(container.querySelector('[role=option]')!.className).toBe(
+            'lyra-combobox__option lyra-combobox__option--active',
+          );
+        });
         expect(container.querySelector('.lyra-combobox__option-label')!.className).toBe(
           'lyra-combobox__option-label',
         );

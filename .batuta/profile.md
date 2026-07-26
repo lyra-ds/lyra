@@ -25,6 +25,33 @@ constraints relevantes do CLAUDE.md quando tocarem em estilo/tokens.
 - Test: `pnpm test` · Build: `pnpm build` · Lint: `pnpm lint` (prettier) ·
   Typecheck: `pnpm typecheck` · Parity: `pnpm parity` · Smoke: `pnpm smoke`
 
+**Esta lista não é o gate — o CI é.** Ela ficou incompleta e custou um PR com 3
+de 4 checks vermelhos depois de 55 commits. O job `lint` do CI também roda
+`pnpm --filter @lyra-ds/styles run lint:css` (stylelint) e o `build` também roda
+`pnpm --filter @lyra-ds/react exec size-limit`. Antes de abrir PR, rode **o que
+está em `.github/workflows/ci.yml`**, não o que está escrito aqui:
+
+```bash
+pnpm lint && pnpm --filter @lyra-ds/styles run lint:css   # job lint
+pnpm typecheck                                            # job typecheck
+pnpm test                                                 # job test
+pnpm build && pnpm --filter @lyra-ds/react exec size-limit \
+  && pnpm smoke && node tools/docgen/generate.mjs --check  # job build
+```
+
+Duas armadilhas que esses dois gates escondiam:
+
+- **stylelint x extensão aditiva**: reestilizar uma classe existente no fim do
+  arquivo é `no-duplicate-selectors` por construção — a convenção do parity e a
+  regra se contradizem. Resolvido com um `stylelint-disable no-duplicate-selectors`
+  no início da região aditiva de cada arquivo, mantendo a regra ligada na região
+  handoff-verbatim acima.
+- **size-limit x import de conveniência**: o `SidebarGroup` importar `Icon` para
+  desenhar um chevron puxava o registry inteiro e custou **5,4 kB** a quem só
+  importa `SidebarGroup`. SVG inline é o padrão do DS para ícone de chrome
+  (fechar do Drawer, check do Stepper). Feature nova que cresce o bundle de
+  propósito (`asChild`) precisa do orçamento atualizado no mesmo commit.
+
 ## Delegação — o que já funcionou e o que já custou rodada
 
 Lições dos lotes da Fase 6b, cada uma com a evidência que a gerou. Valem para
