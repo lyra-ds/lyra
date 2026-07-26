@@ -59,11 +59,26 @@ export const Accordion = /*#__PURE__*/ forwardRef<HTMLDivElement, AccordionProps
                 {item.title}
                 <span className="lyra-acc__chevron" aria-hidden="true" />
               </button>
-              {open && (
-                <div id={panelId} className="lyra-acc__panel" aria-labelledby={triggerId}>
-                  {item.content}
+              {/*
+                The panel stays mounted so its height can animate: a conditionally rendered node has
+                no "from" size to transition from. Collapsed, the wrapper is a 0fr grid row and is
+                `inert` + `visibility: hidden`, so the content is out of the tab order and out of the
+                accessibility tree — a collapsed panel must not be reachable just because it exists.
+                On React 18, which does not map `inert`, the CSS `visibility: hidden` above is what
+                keeps the collapsed panel out of the tab order and the accessibility tree.
+              */}
+              <div className="lyra-acc__panel-wrap" inert={!open}>
+                {/*
+                  The clip element carries no padding of its own on purpose. A 0fr row still
+                  reserves the grid item's padding — padding does not shrink — so the padded panel
+                  needs an unpadded element between it and the animated row.
+                */}
+                <div className="lyra-acc__panel-clip">
+                  <div id={panelId} className="lyra-acc__panel" aria-labelledby={triggerId}>
+                    {item.content}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}

@@ -18,6 +18,22 @@ const nextConfig: NextConfig = {
     'dev.lynx-kelvin.ts.net',
     '*.ts.net',
   ],
+  // Dev only. Safari — iOS especially — holds onto previously fetched assets long enough that a
+  // device keeps rendering an old build with nothing on screen to say so, which turns every
+  // cross-device check into "is this the bug or yesterday's bundle?". `export` builds ignore
+  // headers(), so this never reaches production.
+  async headers() {
+    if (process.env.NODE_ENV === 'production') return [];
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' },
+          { key: 'Pragma', value: 'no-cache' },
+        ],
+      },
+    ];
+  },
 };
 
 const withMDX = createMDX();

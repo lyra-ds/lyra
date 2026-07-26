@@ -145,7 +145,14 @@ const ADDITIVE_EXTENSIONS = {
     keyframes: ['lyra-fade-out', 'lyra-overlay-in', 'lyra-overlay-out', 'lyra-pop-in-up'],
   },
   'components/display/display.css': {
-    classes: ['lyra-card__actions'],
+    // `lyra-acc__panel-wrap` keeps the Accordion panel mounted so its height can animate; the
+    // handoff mounts the panel on open and therefore has no opening motion at all.
+    classes: [
+      'lyra-card__actions',
+      'lyra-acc__panel-wrap',
+      'lyra-acc__panel-clip',
+      'lyra-acc__item--open',
+    ],
     keyframes: [],
   },
   'components/forms/forms.css': {

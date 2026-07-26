@@ -172,3 +172,37 @@
    appearance stays CSS-first. Appended at end of file to preserve parity's positional
    alignment, matching the Dialog additive extensions in feedback.css (D-18/D-19). */
 .lyra-card__actions { display: flex; gap: var(--space-2); }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the handoff Accordion mounts its panel on open,
+   so it had no opening motion while Dialog, the command palette and the popovers all animate.
+   The wrapper keeps the panel mounted and animates its height through grid-template-rows, which
+   transitions to the content's real height without hard-coding one. Collapsed it is visually and
+   programmatically hidden; `inert` on the element handles focus and the accessibility tree. */
+.lyra-acc__panel-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  /* on the wrapper, not just the panel: overflow does not clip an element's own padding, so a
+     collapsed panel would still contribute its bottom padding to the height */
+  overflow: hidden;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--duration-base) var(--ease-out),
+    visibility 0s linear var(--duration-base);
+}
+.lyra-acc__item--open .lyra-acc__panel-wrap {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--duration-base) var(--ease-out),
+    visibility 0s;
+}
+.lyra-acc__panel-clip {
+  overflow: hidden;
+  min-height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lyra-acc__panel-wrap,
+  .lyra-acc__item--open .lyra-acc__panel-wrap {
+    transition: none;
+  }
+}
