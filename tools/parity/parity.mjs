@@ -177,6 +177,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-menu__item',
       'lyra-page',
       'lyra-sbgroup__item',
+      'lyra-sbgroup__label',
       'lyra-sbgroup__label--btn',
       'lyra-tab',
       // Contrast repairs on Tabs (muted on sunken; accent-as-text in dark) and the stepper's own

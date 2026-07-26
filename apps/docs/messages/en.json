@@ -33,6 +33,7 @@
   "languageLabel": "Language",
   "search": "Search…",
   "searchEmpty": "No results for",
+  "searchLandmark": "Command palette",
   "searchHintNavigate": "navigate",
   "searchHintSelect": "select",
   "searchHintClose": "close",

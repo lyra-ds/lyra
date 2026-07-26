@@ -48,6 +48,22 @@ describe('SidebarGroup', () => {
     });
   }
 
+  for (const theme of ['light', 'dark'] as const) {
+    it(`clears color-contrast on the section label in ${theme}`, async () => {
+      setTheme(theme);
+      const { container } = await render(
+        <SidebarGroup label="Workspace" items={[{ id: 'home', label: 'Home' }]} />,
+      );
+      expect(
+        (
+          await axe.run(container.querySelector<HTMLElement>('.lyra-sbgroup__label')!, {
+            runOnly: ['color-contrast'],
+          })
+        ).violations,
+      ).toEqual([]);
+    });
+  }
+
   it('toggles with Space and Enter and calls item and group callbacks', async () => {
     const itemSelect = vi.fn();
     const groupSelect = vi.fn();

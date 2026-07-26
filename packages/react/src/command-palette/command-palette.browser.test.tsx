@@ -118,6 +118,29 @@ describe('CommandPalette', () => {
     });
   }
 
+  it('names the modal dialog in English by default, and lets a localized app rename it', async () => {
+    const { container } = await render(<CommandPalette open onClose={() => {}} groups={groups} />);
+    expect(container.querySelector('[role=dialog]')).toBeNull(); // it portals out of the container
+    expect(document.querySelector('[role=dialog]')!.getAttribute('aria-label')).toBe(
+      'Command palette',
+    );
+    await cleanup();
+
+    await render(
+      <CommandPalette open onClose={() => {}} groups={groups} aria-label="Paleta de comandos" />,
+    );
+    expect(document.querySelector('[role=dialog]')!.getAttribute('aria-label')).toBe(
+      'Paleta de comandos',
+    );
+  });
+
+  it('does not make the inline panel a dialog', async () => {
+    const { container } = await render(<CommandPalette inline groups={groups} />);
+    const panel = container.querySelector('.lyra-cmdk')!;
+    expect(panel.getAttribute('role')).toBeNull();
+    expect(panel.getAttribute('aria-label')).toBeNull();
+  });
+
   it('keeps focus on the input while filtering, navigating, and selecting the active command', async () => {
     const itemSelect = vi.fn();
     const select = vi.fn();

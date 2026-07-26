@@ -548,3 +548,16 @@
 [data-theme='dark'] .lyra-tabs:not(.lyra-tabs--pills) .lyra-tab--active {
   color: var(--accent-soft-text);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the sidebar section label was `--text-faint`,
+   2.45:1 — the worst text ratio in the system, and it is the word that tells a person what a group
+   of navigation items has in common. It takes `--text-secondary`, the same repair applied to the
+   table, file-list and tab headings. Its hover had to move with it: the handoff brightened
+   faint → muted, and leaving that in place would now make hover *less* prominent than rest, in both
+   themes. Hover goes to `--text-primary`, so the direction of the change is preserved. */
+.lyra-sbgroup__label {
+  color: var(--text-secondary);
+}
+.lyra-sbgroup__label--btn:hover {
+  color: var(--text-primary);
+}

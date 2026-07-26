@@ -630,6 +630,12 @@ export interface CommandPaletteProps {
   inline?: boolean;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
+  /**
+   * Accessible name for the modal dialog. Default: `"Command palette"`. Translate it in a
+   * localized interface — it is what a screen reader announces when the palette opens.
+   * Ignored in inline mode, which is not a dialog.
+  */
+  'aria-label'?: string;
 }
 export declare function CommandPalette(props: CommandPaletteProps): JSX.Element;
 ```

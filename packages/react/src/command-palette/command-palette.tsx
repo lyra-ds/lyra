@@ -75,6 +75,12 @@ export interface CommandPaletteProps {
   inline?: boolean;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
+  /**
+   * Accessible name for the modal dialog. Default: `"Command palette"`. Translate it in a
+   * localized interface — it is what a screen reader announces when the palette opens.
+   * Ignored in inline mode, which is not a dialog.
+   */
+  'aria-label'?: string;
 }
 
 const DEFAULT_HINTS: Required<CommandPaletteHints> = {
@@ -107,6 +113,7 @@ interface CommandPalettePanelProps {
   query: string;
   placeholder: string;
   emptyMessage: string;
+  dialogLabel: string;
   hints: Required<CommandPaletteHints>;
   className?: string;
   modal: boolean;
@@ -138,6 +145,7 @@ function CommandPalettePanel({
   query,
   placeholder,
   emptyMessage,
+  dialogLabel,
   hints,
   className,
   modal,
@@ -203,7 +211,7 @@ function CommandPalettePanel({
       className={cx('lyra-cmdk', closing && 'lyra-cmdk--closing', className)}
       role={modal ? 'dialog' : undefined}
       aria-modal={modal || undefined}
-      aria-label={modal ? 'Paleta de comandos' : undefined}
+      aria-label={modal ? dialogLabel : undefined}
       onAnimationEnd={onAnimationEnd}
     >
       <div className="lyra-cmdk__search">
@@ -312,6 +320,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
       hotkey = 'k',
       inline = false,
       className,
+      'aria-label': ariaLabel = 'Command palette',
     },
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -413,6 +422,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
         query={query}
         placeholder={placeholder}
         emptyMessage={emptyMessage}
+        dialogLabel={ariaLabel}
         hints={{ ...DEFAULT_HINTS, ...hints }}
         className={className}
         modal={!inline}

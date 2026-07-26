@@ -1187,6 +1187,12 @@
         "type": "string",
         "optional": true,
         "description": "Additional class name appended to `.lyra-cmdk`."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the modal dialog. Default: `\"Command palette\"`. Translate it in a\nlocalized interface — it is what a screen reader announces when the palette opens.\nIgnored in inline mode, which is not a dialog."
       }
     ]
   },

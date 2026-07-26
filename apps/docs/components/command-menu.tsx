@@ -59,6 +59,7 @@ export function CommandMenu({ locale }: { locale: Locale }) {
         groups={groups}
         placeholder={t('search')}
         emptyMessage={t('searchEmpty')}
+        aria-label={t('searchLandmark')}
         hints={{
           navigate: t('searchHintNavigate'),
           select: t('searchHintSelect'),
