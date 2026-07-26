@@ -71,6 +71,35 @@ describe('Drawer', () => {
     });
   }
 
+  it('animates out before it leaves, instead of vanishing on the same frame', async () => {
+    // Regression: Drawer entered with `lyra-slide-in` and then unmounted immediately, while Dialog
+    // and the command palette both hold a `--closing` class for their exit.
+    function Harness() {
+      const [open, setOpen] = useState(true);
+      return (
+        <Drawer open={open} onClose={() => setOpen(false)} title="Details">
+          Body
+        </Drawer>
+      );
+    }
+    await render(<Harness />);
+    const panel = document.querySelector<HTMLElement>('.lyra-drawer')!;
+    await userEvent.keyboard('{Escape}');
+
+    // Still mounted, now carrying the exit animation.
+    expect(panel.className).toContain('lyra-drawer--closing');
+    expect(getComputedStyle(panel).animationName).toBe('lyra-slide-out');
+    expect(document.querySelector('.lyra-drawer-overlay')!.className).toContain(
+      'lyra-drawer-overlay--closing',
+    );
+
+    // And the page is scrollable again straight away — the lock keys on the request, not the exit.
+    expect(document.body.style.overflow).not.toBe('hidden');
+    await vi.waitFor(() => {
+      expect(document.querySelector('.lyra-drawer')).toBeNull();
+    });
+  });
+
   it('traps focus, locks scroll, and restores its opener on Escape and backdrop close', async () => {
     const { container } = await render(<DrawerHarness />);
     const opener = container.querySelector<HTMLButtonElement>('button')!;

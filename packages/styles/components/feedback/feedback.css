@@ -450,3 +450,48 @@
 .lyra-tooltip[data-state='closed']::after {
   opacity: 0;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): exit motion for Drawer and CookieBanner.
+   Both entered with motion and then vanished on the same frame, while Dialog and the command
+   palette animate out — measured, the Dialog holds `--closing` for about 200ms and these two were
+   already gone in the first sample after the close. The drawer leaves toward the edge it came from
+   and its backdrop reuses the shared fade. The banner's exit MUST carry `translateX(-50%)` in both
+   frames for the same reason its entrance does: it is positioned by transform, so a keyframe that
+   animates transform without the centring would throw it sideways on the way out. */
+@keyframes lyra-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(40px);
+  }
+}
+@keyframes lyra-cookies-out {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50%) translateY(8px);
+    opacity: 0;
+  }
+}
+.lyra-drawer--closing {
+  animation: lyra-slide-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-drawer-overlay--closing {
+  animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-cookies--closing {
+  animation: lyra-cookies-out var(--duration-base) var(--ease-out) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lyra-drawer-overlay,
+  .lyra-drawer,
+  .lyra-drawer-overlay--closing,
+  .lyra-drawer--closing,
+  .lyra-cookies,
+  .lyra-cookies--closing {
+    animation: none;
+  }
+}

@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useState } from 'react';
+import { usePresence } from '../internal/use-presence';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { Button } from '../button';
 import { cx } from '../internal/cx';
@@ -43,6 +44,10 @@ export const CookieBanner = /*#__PURE__*/ forwardRef<HTMLDivElement, CookieBanne
       }
     }, [storageKey]);
 
+    // The banner animates out before it leaves, like the other overlays. `visible` is the request;
+    // presence keeps the element mounted for the length of the exit.
+    const { mounted, closing, onAnimationEnd } = usePresence(visible === true);
+
     const decide = (choice: 'all' | 'essentials', callback?: () => void): void => {
       try {
         localStorage.setItem(storageKey, choice);
@@ -53,13 +58,14 @@ export const CookieBanner = /*#__PURE__*/ forwardRef<HTMLDivElement, CookieBanne
       callback?.();
     };
 
-    if (visible !== true) return null;
+    if (!mounted) return null;
 
     return (
       <div
         {...rest}
         ref={ref}
-        className={cx('lyra-cookies', className)}
+        className={cx('lyra-cookies', closing && 'lyra-cookies--closing', className)}
+        onAnimationEnd={onAnimationEnd}
         role="region"
         aria-label="Cookie notice"
       >

@@ -147,6 +147,9 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-tooltip--bottom',
       'lyra-tooltip--left',
       'lyra-tooltip--right',
+      'lyra-drawer--closing',
+      'lyra-drawer-overlay--closing',
+      'lyra-cookies--closing',
     ],
     keyframes: [
       'lyra-fade-out',
@@ -154,6 +157,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-overlay-out',
       'lyra-pop-in-up',
       'lyra-cookies-in',
+      'lyra-slide-out',
+      'lyra-cookies-out',
     ],
   },
   'components/display/display.css': {
