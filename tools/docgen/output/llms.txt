@@ -375,6 +375,11 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
   tip: string;
   /** The target element. Pass one focusable React element for full keyboard support. */
   children: ReactNode;
+  /**
+   * Side of the target to draw the tip on. Default `"top"`. The tip flips to the opposite side on
+   * its own when the chosen one would be clipped by the viewport, so this is a preference.
+  */
+  placement?: TooltipPlacement;
 }
 export declare function Tooltip(props: TooltipProps): JSX.Element;
 ```

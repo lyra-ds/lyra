@@ -40,8 +40,12 @@ Reach for something else when:
   `<span role="tooltip">` carries the same words, and the component merges an `aria-describedby` onto
   your child so assistive technology reads them.
 - That is why `tip` is a plain string rather than a node.
-- It opens on hover **and** on focus, and `Escape` dismisses it while the pointer stays put, which is
-  what WCAG 1.4.13 asks of content that appears on hover.
+- It opens on hover **and** on focus. `Escape` dismisses it without moving the pointer — WCAG 1.4.13
+  asks exactly that of content shown on hover, and the listener is on the document, because a tip
+  opened by hovering never has focus inside it to receive the key.
+- `placement` picks the side (`top` by default). It is a preference, not a guarantee: the tip flips
+  to the opposite side on its own when the chosen one would be clipped, measured against
+  `visualViewport` so an iOS toolbar or pinch zoom cannot make an off-screen tip look like it fits.
 - **Pass one focusable element.** Wrapping a bare `<span>` produces a mouse-only tooltip with no
   keyboard path to it.
 - **In the Next.js App Router, keep the Tooltip and its child in the same client component.** The

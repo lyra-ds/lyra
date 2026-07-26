@@ -40,8 +40,12 @@ Procure outra coisa quando:
   oculto à parte carrega as mesmas palavras, e o componente funde um `aria-describedby` no seu filho
   para a tecnologia assistiva lê-las.
 - É por isso que `tip` é uma string simples, e não um nó.
-- Abre no hover **e** no foco, e `Escape` dispensa com o ponteiro parado onde está, que é o que a WCAG
-  1.4.13 pede de conteúdo que aparece no hover.
+- Abre no hover **e** no foco. `Escape` dispensa sem mover o ponteiro — é exatamente o que a WCAG
+  1.4.13 pede de conteúdo mostrado no hover, e o listener fica no documento, porque uma dica aberta
+  por hover nunca tem foco dentro dela para receber a tecla.
+- `placement` escolhe o lado (`top` por padrão). É uma preferência, não uma garantia: a dica vira
+  para o lado oposto sozinha quando o escolhido seria cortado, medindo contra o `visualViewport`
+  para que a barra do iOS ou o zoom de pinça não façam uma dica fora da tela parecer que cabe.
 - **Passe um elemento focável.** Embrulhar um `<span>` puro produz um tooltip só de mouse, sem
   caminho de teclado até ele.
 - **No App Router do Next.js, mantenha o Tooltip e o filho dele no mesmo client component.** O

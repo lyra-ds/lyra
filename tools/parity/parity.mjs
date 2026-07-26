@@ -143,6 +143,10 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-drawer__close',
       'lyra-toast__close',
       'lyra-cookies',
+      'lyra-tooltip',
+      'lyra-tooltip--bottom',
+      'lyra-tooltip--left',
+      'lyra-tooltip--right',
     ],
     keyframes: [
       'lyra-fade-out',

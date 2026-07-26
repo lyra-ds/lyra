@@ -653,6 +653,12 @@
         "type": "ReactNode",
         "optional": false,
         "description": "The target element. Pass one focusable React element for full keyboard support."
+      },
+      {
+        "name": "placement",
+        "type": "TooltipPlacement",
+        "optional": true,
+        "description": "Side of the target to draw the tip on. Default `\"top\"`. The tip flips to the opposite side on\nits own when the chosen one would be clipped by the viewport, so this is a preference."
       }
     ]
   },

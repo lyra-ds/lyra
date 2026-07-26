@@ -1,4 +1,12 @@
-import { cloneElement, forwardRef, isValidElement, useId, useState } from 'react';
+import {
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 import type {
   FocusEvent,
   HTMLAttributes,
@@ -8,6 +16,8 @@ import type {
   ReactNode,
 } from 'react';
 import { cx } from '../internal/cx';
+import { useTooltipPlacement } from '../internal/use-tooltip-placement';
+import type { TooltipPlacement } from '../internal/use-tooltip-placement';
 
 /** Props for {@link Tooltip}. */
 export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
@@ -15,6 +25,11 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
   tip: string;
   /** The target element. Pass one focusable React element for full keyboard support. */
   children: ReactNode;
+  /**
+   * Side of the target to draw the tip on. Default `"top"`. The tip flips to the opposite side on
+   * its own when the chosen one would be clipped by the viewport, so this is a preference.
+   */
+  placement?: TooltipPlacement;
 }
 
 /**
@@ -24,16 +39,47 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
  * assistive technologies a real `role="tooltip"` target without duplicating visible text.
  */
 export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(function Tooltip(
-  { tip, children, id, className, onMouseEnter, onMouseLeave, onFocus, onBlur, ...rest },
+  {
+    tip,
+    children,
+    id,
+    className,
+    placement = 'top',
+    onMouseEnter,
+    onMouseLeave,
+    onFocus,
+    onBlur,
+    ...rest
+  },
   ref,
 ) {
   const generatedId = useId();
   const rootId = id ?? generatedId;
   const tooltipId = useId();
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLSpanElement | null>(null);
+  const resolvedPlacement = useTooltipPlacement(open, placement, rootRef);
 
   const show = (): void => setOpen(true);
   const hide = (): void => setOpen(false);
+
+  const attachRoot = (node: HTMLSpanElement | null): void => {
+    rootRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) ref.current = node;
+  };
+
+  // WCAG 1.4.13 asks that content shown on hover be dismissible without moving the pointer. The
+  // element's own key handler only fires when focus is inside it, which is never true for a tip
+  // opened by hovering, so Escape has to be heard at the document.
+  useEffect(() => {
+    if (!open) return;
+    const onDocumentKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') hide();
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
+    return () => document.removeEventListener('keydown', onDocumentKeyDown);
+  }, [open]);
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLElement>): void => {
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -86,9 +132,13 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <span
       {...rest}
-      ref={ref}
+      ref={attachRoot}
       id={rootId}
-      className={cx('lyra-tooltip', className)}
+      className={cx(
+        'lyra-tooltip',
+        resolvedPlacement !== 'top' && `lyra-tooltip--${resolvedPlacement}`,
+        className,
+      )}
       data-tip={tip}
       data-state={open ? 'open' : 'closed'}
       onMouseEnter={(event) => {

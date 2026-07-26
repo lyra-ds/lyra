@@ -408,3 +408,45 @@
   position: absolute;
   inset: -12px;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): Tooltip placement and dismissal.
+   The handoff recipe only ever opens upward, so a tooltip near the top of the viewport was clipped
+   with no way to recover — the same problem the popovers solved with a flip. These three modifiers
+   give the other sides; React picks one and flips it when the chosen side does not fit.
+   `[data-state='closed']` is what makes the tip dismissible (WCAG 1.4.13): the handoff drives
+   visibility purely from `:hover`/`:focus-within`, so pressing Escape changed the component's state
+   and the bubble stayed on screen regardless. Same specificity as the hover rule, later in the
+   cascade, so the closed state wins while the pointer is still on the target. */
+.lyra-tooltip--bottom::after {
+  bottom: auto;
+  top: calc(100% + 6px);
+  transform: translateX(-50%) translateY(-2px);
+}
+.lyra-tooltip--bottom:hover::after,
+.lyra-tooltip--bottom:focus-within::after {
+  transform: translateX(-50%) translateY(0);
+}
+.lyra-tooltip--left::after {
+  bottom: auto;
+  top: 50%;
+  left: auto;
+  right: calc(100% + 6px);
+  transform: translateY(-50%) translateX(2px);
+}
+.lyra-tooltip--left:hover::after,
+.lyra-tooltip--left:focus-within::after {
+  transform: translateY(-50%) translateX(0);
+}
+.lyra-tooltip--right::after {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 6px);
+  transform: translateY(-50%) translateX(-2px);
+}
+.lyra-tooltip--right:hover::after,
+.lyra-tooltip--right:focus-within::after {
+  transform: translateY(-50%) translateX(0);
+}
+.lyra-tooltip[data-state='closed']::after {
+  opacity: 0;
+}
