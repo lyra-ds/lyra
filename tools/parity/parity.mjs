@@ -196,6 +196,11 @@ const ADDITIVE_EXTENSIONS = {
     classes: ['lyra-btn'],
     keyframes: [],
   },
+  'components/data/data.css': {
+    // Contrast repair: the handoff's column headings sit at 4.34:1 on the sunken header band.
+    classes: ['lyra-table'],
+    keyframes: [],
+  },
   'components/files/files.css': {
     // Touch-feedback extension: suppressing the iOS tap highlight and replacing it with a press.
     // `lyra-fm__head` re-colors the column headings the handoff left at 2.56:1 in light; `lyra-fm__name`

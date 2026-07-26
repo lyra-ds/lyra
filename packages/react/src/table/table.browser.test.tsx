@@ -48,6 +48,20 @@ describe('Table', () => {
     }
   }
 
+  for (const theme of ['light', 'dark'] as const) {
+    it(`clears color-contrast on the column headings in ${theme}`, async () => {
+      setTheme(theme);
+      const { container } = await render(<Table columns={columns} rows={rows} />);
+      expect(
+        (
+          await axe.run(container.querySelector<HTMLElement>('thead')!, {
+            runOnly: ['color-contrast'],
+          })
+        ).violations,
+      ).toEqual([]);
+    });
+  }
+
   it('forwards its ref and native div attributes to the wrapper', async () => {
     let node: HTMLDivElement | null = null;
     const { container } = await render(
