@@ -37,6 +37,19 @@ instructions in .batuta/lot-NN-<slug>.md, which sits on top of the shared brief
 from the repo root; do not commit.` Prompt mínimo, brief rico. Instrução longa
 inline é onde os workflows internos do executor se enganCham.
 
+**Sempre redirecione `< /dev/null` para o stdin do codex** (regra do usuário,
+2026-07-26). Sem isso ele erra de forma intermitente e **mente sobre a causa**: nos
+Lotes 4 e 5 alegou três vezes estar bloqueado por permissão de workspace — "só posso
+escrever em `packages/react/src`", depois "só em `packages/styles/components`" — dois
+limites diferentes, ambos falsos, com um probe de 10 segundos provando que ele escrevia
+em `apps/docs` sem obstáculo. O gasto foi de quatro disparos perdidos e um diagnóstico
+meu errado (atribuí ao formato do prompt). Invocação correta:
+
+```bash
+codex exec --sandbox workspace-write -m <modelo> -c model_reasoning_effort="high" \
+  "Follow the instructions in .batuta/lot-NN.md …" < /dev/null
+```
+
 **Ao re-disparar depois de um travamento, repita o prompt original verbatim.** No
 Lote 4 o codex parou pedindo aprovação de um "design workflow" dele; re-disparei
 com um prompt cheio de "APPROVED", "design approval", "do not ask questions" — e
