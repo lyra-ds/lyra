@@ -6,7 +6,7 @@
 //
 // The @lyra-ds/styles entry CSS is imported IN THIS TEST (never in src, RCT-03). Vite resolves
 // its @import graph and injects it as a <style> — this is the fixture stylesheet, and it carries
-// the .lyra-dialog--closing / lyra-pop-out exit keyframe the presence assertions read.
+// the .lyra-dialog--closing / lyra-overlay-out exit keyframe the presence assertions read.
 //
 // Dialog renders through a Portal into document.body, so the assertions query document.* (NOT
 // the render container) and axe.run targets document.body — the tree the portal actually lands
@@ -388,7 +388,7 @@ describe('Dialog — close paths', () => {
 // --- Presence: closing class + exit keyframe, then unmount within the wedge guard -------------
 
 describe('Dialog — presence', () => {
-  it('stays mounted with .lyra-dialog--closing + lyra-pop-out, then unmounts within 500ms', async () => {
+  it('stays mounted with .lyra-dialog--closing + lyra-overlay-out, then unmounts within 500ms', async () => {
     await openHarness();
     backdropDismiss(overlay()!);
 
@@ -396,7 +396,7 @@ describe('Dialog — presence', () => {
     await vi.waitFor(() => expect(panel()?.classList.contains('lyra-dialog--closing')).toBe(true));
     const closingPanel = panel()!;
     expect(overlay()!.classList.contains('lyra-dialog-overlay--closing')).toBe(true);
-    expect(getComputedStyle(closingPanel).animationName).toBe('lyra-pop-out');
+    expect(getComputedStyle(closingPanel).animationName).toBe('lyra-overlay-out');
 
     // Wedge guard (Pitfall 7): the panel's own animationend (or the timeout) finalizes unmount.
     await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
@@ -465,20 +465,22 @@ describe('Dialog — layout backstops', () => {
         </div>
       ),
     });
-    expect(panel()!.getBoundingClientRect().width).toBeLessThanOrEqual(440);
+    await vi.waitFor(() => {
+      expect(panel()!.getBoundingClientRect().width).toBeLessThanOrEqual(440);
+    });
     expect(document.body.style.overflow).toBe('hidden');
   });
 
-  it('a long title wraps in the header while the × keeps its 28px hit area', async () => {
+  it('a long title wraps in the header while the × keeps its 44px touch target', async () => {
     await openHarness({ title: LONG_TITLE });
-    const btn = closeBtn()!;
-    const rect = btn.getBoundingClientRect();
-    // The 03-02 `flex: 0 0 28px` keeps the box ~28px (sub-pixel rounding in headless chromium)
-    // — it must NOT collapse under the wrapping long title.
-    expect(rect.width).toBeGreaterThan(26);
-    expect(rect.width).toBeLessThanOrEqual(29);
-    expect(rect.height).toBeGreaterThan(26);
-    expect(rect.height).toBeLessThanOrEqual(29);
+    // The additive a11y extension reserves a WCAG-sized target without letting the long title
+    // collapse it. Measure inside waitFor so the entrance transform (scale) has settled — a
+    // mid-animation rect reports the scaled-down box.
+    await vi.waitFor(() => {
+      const rect = closeBtn()!.getBoundingClientRect();
+      expect(rect.width).toBeGreaterThanOrEqual(44);
+      expect(rect.height).toBeGreaterThanOrEqual(44);
+    });
     expect(panel()!.querySelector('.lyra-dialog__title')!.textContent).toBe(LONG_TITLE);
   });
 });

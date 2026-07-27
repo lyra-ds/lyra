@@ -3,6 +3,7 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { useControllableState } from '../internal/use-controllable-state';
+import { useFlipPlacement } from '../internal/use-flip-placement';
 
 /** An option shown by {@link Combobox}. */
 export interface ComboboxOption {
@@ -94,6 +95,8 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
     const triggerRef = useRef<HTMLButtonElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
+    const popRef = useRef<HTMLDivElement>(null);
+    const placement = useFlipPlacement(open, triggerRef, popRef);
 
     const filtered: IndexedOption[] = options
       .map((option, index) => ({ option, index }))
@@ -119,7 +122,9 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
       if (!open) return;
       setQuery('');
       setActiveIndex(0);
-      searchRef.current?.focus();
+      // preventScroll: the popup is already positioned to fit, so letting the browser scroll to the
+      // freshly focused input would move the page out from under the trigger.
+      searchRef.current?.focus({ preventScroll: true });
     }, [open]);
 
     // Filtering changes the rendered option collection, so always reset the active descendant to
@@ -201,7 +206,10 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
           <Icon name="chevrons-up-down" size={15} color="var(--text-faint)" />
         </button>
         {open && (
-          <div className="lyra-combobox__pop">
+          <div
+            ref={popRef}
+            className={cx('lyra-combobox__pop', placement === 'up' && 'lyra-combobox__pop--up')}
+          >
             <div className="lyra-combobox__search">
               <Icon name="search" size={15} color="var(--text-faint)" />
               <input

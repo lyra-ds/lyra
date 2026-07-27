@@ -88,6 +88,88 @@ describe('Button — class emission', () => {
   });
 });
 
+// --- asChild ---------------------------------------------------------------------------------
+
+describe('Button — asChild', () => {
+  it('renders a link with Lyra button classes and a label wrapper', async () => {
+    const { container } = await render(
+      <Button asChild>
+        <a href="#">Browse</a>
+      </Button>,
+    );
+    const link = container.querySelector('a')!;
+    expect(link.getAttribute('href')).toBe('#');
+    expect(link.className).toBe('lyra-btn lyra-btn--primary lyra-btn--md');
+    expect(link.querySelector('.lyra-btn__label')!.textContent).toBe('Browse');
+  });
+
+  it('preserves the child className after the Button classes', async () => {
+    const { container } = await render(
+      <Button asChild className="button-class">
+        <a href="#" className="child-class">
+          Browse
+        </a>
+      </Button>,
+    );
+    expect(container.querySelector('a')!.className).toBe(
+      'lyra-btn lyra-btn--primary lyra-btn--md button-class child-class',
+    );
+  });
+
+  it('renders iconLeft inside the slotted element', async () => {
+    const { container } = await render(
+      <Button asChild iconLeft={<svg data-testid="left-icon" aria-hidden="true" />}>
+        <a href="#">Browse</a>
+      </Button>,
+    );
+    expect(container.querySelector('a [data-testid="left-icon"]')).not.toBeNull();
+  });
+
+  it('composes the child and Button event handlers', async () => {
+    const buttonClick = vi.fn();
+    const childClick = vi.fn();
+    const { container } = await render(
+      <Button asChild onClick={buttonClick}>
+        <a
+          href="#"
+          onClick={(event) => {
+            event.preventDefault();
+            childClick(event);
+          }}
+        >
+          Browse
+        </a>
+      </Button>,
+    );
+    container.querySelector('a')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(childClick).toHaveBeenCalledTimes(1);
+    expect(buttonClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses aria-disabled without a disabled attribute for disabled links', async () => {
+    const { container } = await render(
+      <Button asChild disabled>
+        <a href="#">Browse</a>
+      </Button>,
+    );
+    const link = container.querySelector('a')!;
+    expect(link.getAttribute('aria-disabled')).toBe('true');
+    expect(link.hasAttribute('disabled')).toBe(false);
+  });
+
+  it('marks loading links aria-disabled and keeps the spinner inside the link', async () => {
+    const { container } = await render(
+      <Button asChild loading>
+        <a href="#">Browse</a>
+      </Button>,
+    );
+    const link = container.querySelector('a')!;
+    expect(link.getAttribute('aria-disabled')).toBe('true');
+    expect(link.querySelector('.lyra-btn__spinner')).not.toBeNull();
+    expect(link.hasAttribute('disabled')).toBe(false);
+  });
+});
+
 // --- Smoke matrix: 5 variants x 3 sizes, light + dark, zero axe violations -------------------
 
 describe('Button — smoke matrix (light + dark)', () => {

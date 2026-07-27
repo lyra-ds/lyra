@@ -50,9 +50,17 @@ describe('Combobox', () => {
           'lyra-combobox__search',
         );
         expect(container.querySelector('[role=listbox]')!.className).toBe('lyra-combobox__list');
-        expect(container.querySelector('[role=option]')!.className).toBe(
-          'lyra-combobox__option lyra-combobox__option--active',
-        );
+        // WHICH option is active is not deterministic here: each option sets the active index on
+        // `mouseenter`, so wherever the runner happens to leave the pointer decides it. Asserting
+        // "the first one is active" passed locally and failed on CI. What the class contract
+        // actually promises is that exactly one option is active and both class shapes are exact.
+        const active = container.querySelectorAll('.lyra-combobox__option--active');
+        expect(active).toHaveLength(1);
+        expect(active[0].className).toBe('lyra-combobox__option lyra-combobox__option--active');
+        const inactive = [...container.querySelectorAll('[role=option]')].find(
+          (option) => !option.className.includes('--active'),
+        )!;
+        expect(inactive.className).toBe('lyra-combobox__option');
         expect(container.querySelector('.lyra-combobox__option-label')!.className).toBe(
           'lyra-combobox__option-label',
         );
@@ -131,5 +139,35 @@ describe('Combobox', () => {
     expect(container.querySelector('.lyra-combobox__empty')!.className).toBe(
       'lyra-combobox__empty',
     );
+  });
+
+  it('opens downward when the popup fits below the trigger', async () => {
+    const { container } = await render(
+      <>
+        <Combobox options={options} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!);
+    expect(container.querySelector('.lyra-combobox__pop')!.className).not.toContain(
+      'lyra-combobox__pop--up',
+    );
+  });
+
+  it('flips above the trigger instead of scrolling the page when there is no room below', async () => {
+    const { container } = await render(
+      <>
+        <div style={{ height: 'calc(100vh - 80px)' }} />
+        <Combobox options={options} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-combobox__trigger')!;
+    const scrollBefore = window.scrollY;
+    await userEvent.click(trigger);
+    expect(container.querySelector('.lyra-combobox__pop')!.className).toContain(
+      'lyra-combobox__pop--up',
+    );
+    expect(window.scrollY).toBe(scrollBefore);
   });
 });

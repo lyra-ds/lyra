@@ -1,0 +1,68 @@
+---
+title: Select
+description: A styled native select for a compact, known list that does not need filtering.
+---
+
+# Select
+
+Select is a styled native `<select>`, not an APG combobox. Use it for a known list that stays manageable
+without filtering, and let the browser own its picker, keyboard behavior and platform conventions.
+
+## Examples
+
+<Example id="basic" title="Label, hint and native options">
+  Use a disabled empty option when a choice is required. The label names the decision after the
+  picker closes; a placeholder-like first option cannot replace it.
+</Example>
+
+<Example id="sizes-and-error" title="Sizes and error">
+  Select shares the form-field height tokens. `error` replaces `hint` and adds `aria-invalid`,
+  keeping one message connected to the control instead of stacking feedback.
+</Example>
+
+## When to use
+
+Use Select for one choice from a short, stable list where the native picker is enough.
+
+Reach for something else when:
+
+- **The list needs filtering or rich option detail** — use Combobox, which provides a searchable listbox.
+- **All few choices should remain visible and one must be selected** — use Radio so people can compare them without opening a picker.
+- **Several choices can be true** — use Checkbox rather than overloading a single-select control.
+
+## Accessibility
+
+- Renders a native `<select>` with native `<option>` or `<optgroup>` children; browser keyboard and picker behavior apply.
+- A supplied `label` uses `htmlFor` with a generated or consumer `id`. Without a label, provide an accessible name.
+- `hint` or `error` is connected with `aria-describedby`; `error` takes precedence and sets `aria-invalid`.
+- Focus uses `--shadow-focus`. Do not document custom listbox keystrokes here: this is not a custom combobox.
+
+## Props
+
+<PropTable name="Select" />
+
+## Plain HTML
+
+Place the native select in its wrapper so the CSS arrow can sit over the control without receiving clicks:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="team-size">Team size</label>
+  <span class="lyra-select-wrap">
+    <select class="lyra-input" id="team-size">
+      <option value="">Choose a range</option>
+      <option value="1-10">1–10 people</option>
+      <option value="11-50">11–50 people</option>
+    </select>
+  </span>
+  <span class="lyra-hint">Used to tailor your workspace.</span>
+</div>
+
+<div class="lyra-field">
+  <label class="lyra-label" for="country">Billing country</label>
+  <span class="lyra-select-wrap">
+    <select class="lyra-input lyra-input--error" id="country" aria-invalid="true"></select>
+  </span>
+  <span class="lyra-hint lyra-hint--error">Choose the billing country.</span>
+</div>
+```

@@ -96,4 +96,9 @@ export { CookieBanner } from './cookie-banner';
 export type { CookieBannerProps } from './cookie-banner';
 
 export { CommandPalette } from './command-palette';
-export type { CommandGroup, CommandItem, CommandPaletteProps } from './command-palette';
+export type {
+  CommandGroup,
+  CommandItem,
+  CommandPaletteHints,
+  CommandPaletteProps,
+} from './command-palette';

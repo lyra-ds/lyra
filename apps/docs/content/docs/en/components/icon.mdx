@@ -1,0 +1,66 @@
+---
+title: Icon
+description: A tree-shakable Lucide icon from a curated registry, with a custom component escape hatch.
+---
+
+# Icon
+
+Icon renders a Lucide glyph without a network dependency. Choose a verified registry `name` for common
+symbols; pass `icon` only when the glyph is absent, and decide whether it is decoration or meaningful content.
+
+## Examples
+
+<Example id="registry" title="Curated registry">
+  Registry names are kebab-case and intentionally finite, so common icons stay tree-shakable. An
+  unknown `name` renders nothing and warns during development rather than guessing at a symbol.
+</Example>
+
+<Example id="size-and-label" title="Size and accessible label">
+  Use 16px inline and 24px for emphasis. Without `title`, an Icon is decorative; give it a title
+  only when the glyph carries information that is absent from nearby text.
+</Example>
+
+## When to use
+
+Use an Icon to reinforce a nearby label or to supply the visual content of an IconButton.
+For a glyph outside the registry, the `icon` prop accepts a Lucide component and takes precedence over `name`.
+
+Reach for something else when:
+
+- **The control has no visible text** — use IconButton and give its required `label` a clear action name.
+- **The symbol must be a logo or product mark** — use the approved brand asset.
+- **A status needs words as well as a color** — use Badge or an explicit text label.
+
+## Accessibility
+
+- Without `title`, Icon emits `aria-hidden="true"`; use this for decorative glyphs beside visible text.
+- With `title`, it emits `role="img"` and `aria-label` with that exact title. Keep it concise and avoid
+  repeating adjacent text such as “Search” beside a search icon.
+- An Icon inside IconButton is normally decorative. The button's `label`, not the glyph title, supplies
+  the control's accessible name.
+- A bare Icon is not interactive or focusable. Put it inside a semantic link or button when it triggers
+  something.
+
+## Props
+
+<PropTable name="Icon" />
+
+## Plain HTML
+
+Icon renders an SVG. The React component also emits `.lyra-icon` as a targeting hook, but no stylesheet
+rule ships for it, so plain HTML needs no Lyra class:
+
+```html
+<svg
+  aria-hidden="true"
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+>
+  <path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+
+<svg role="img" aria-label="Featured project" width="24" height="24" viewBox="0 0 24 24"></svg>
+```

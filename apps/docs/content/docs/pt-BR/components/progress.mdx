@@ -1,0 +1,63 @@
+---
+title: Progress
+description: Uma barra de progresso determinada, para trabalho cuja parcela restante é realmente conhecida.
+---
+
+# Progress
+
+Progress mostra quanto de um trabalho conhecido já foi feito. Use só quando der para calcular a fração
+honestamente — uma barra parada em 90% por um minuto é pior do que barra nenhuma.
+
+## Exemplos
+
+<Example id="labelled" title="Com rótulo próprio" layout="block">
+  Progress não emite nome acessível nenhum. Aponte `aria-labelledby` para o título visível, ou passe
+  `aria-label`, ou a barra é anunciada como um progressbar sem nome.
+</Example>
+
+<Example id="tones" title="Tons" layout="block">
+  `success` marca um trabalho concluído, `danger` uma cota se esgotando. O padrão não carrega
+  julgamento, que é o que a maioria dos progressos merece.
+</Example>
+
+## Quando usar
+
+Use Progress quando a parcela concluída é conhecida e vale acompanhar — um upload, uma importação, uma
+cota.
+
+Procure outra coisa quando:
+
+- **A espera não tem fim conhecido** — use Spinner, que não promete duração.
+- **A forma do conteúdo é conhecida, mas não os dados** — use Skeleton, que segura o layout.
+- **O trabalho terminou** — tire a barra e diga o que aconteceu.
+
+## Acessibilidade
+
+- Renderiza `role="progressbar"` com `aria-valuenow`, `aria-valuemin="0"` e `aria-valuemax="100"`. O
+  `value` é limitado a essa faixa pelo próprio componente.
+- **Ele não tem nome acessível.** Um progressbar sem nome é anunciado como anônimo, então o consumidor
+  precisa fornecer `aria-label` ou `aria-labelledby`. É a única coisa a acertar aqui.
+- A porcentagem não é renderizada como texto. Se o número exato importa, coloque-o ao lado da barra
+  como conteúdo visível, como faz o primeiro exemplo.
+- A cor é a única diferença entre os tons. Não deixe ela carregar um sentido que as palavras omitem.
+
+## Props
+
+<PropTable name="Progress" />
+
+## HTML puro
+
+A trilha é o elemento com o role; o preenchimento é um filho dimensionado por largura inline:
+
+```html
+<div
+  class="lyra-progress"
+  role="progressbar"
+  aria-valuenow="62"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-label="Importando registros"
+>
+  <div class="lyra-progress__fill" style="width: 62%"></div>
+</div>
+```

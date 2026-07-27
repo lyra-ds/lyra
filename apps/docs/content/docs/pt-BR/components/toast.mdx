@@ -1,0 +1,61 @@
+---
+title: Toast
+description: Uma confirmação curta que aparece sobre a interface e sai, empilhada no canto inferior direito.
+---
+
+# Toast
+
+Toast confirma que algo aconteceu, longe de onde aconteceu. Decida se a pessoa vai precisar da
+mensagem depois de seguir adiante — se não, diga inline e poupe a interrupção.
+
+## Exemplos
+
+<Example id="basic" title="Um toast sozinho" layout="plain">
+  O botão de fechar só existe quando você passa `onClose`. Um toast sem ele precisa sumir sozinho;
+  um toast com ele ainda não pode ser necessário fechar para a interface fazer sentido.
+</Example>
+
+<Example id="in-a-stack" title="Dentro de um ToastStack" layout="row">
+  `ToastStack` é o container fixo no canto inferior direito, e é ele que impede vários toasts de se
+  cobrirem. Aperte o botão mais de uma vez para vê-los enfileirar.
+</Example>
+
+## Quando usar
+
+Use Toast para uma confirmação breve e não bloqueante de algo que a pessoa acabou de fazer, quando ela
+não precisa agir sobre isso.
+
+Procure outra coisa quando:
+
+- **A mensagem é sobre conteúdo da página** — use Alert, que fica ao lado dele.
+- **Algo precisa de decisão antes de continuar** — use Dialog. Um toast pode passar despercebido.
+- **A mensagem carrega informação que alguém vai precisar depois** — um toast que sai leva junto.
+
+## Acessibilidade
+
+- Toast renderiza `role="status"`, uma live region polida: é anunciado na próxima pausa, não no
+  instante em que aparece. Nunca coloque a única cópia de uma informação importante num toast.
+- `ToastStack` é `position: fixed` no canto inferior direito da viewport. Ele fica por cima do que
+  estiver ali, então mantenha os toasts curtos e poucos.
+- O botão de fechar só aparece com `onClose`, e o nome acessível dele é a string em inglês
+  "Close notification". Não há prop para traduzir — uma limitação que vale conhecer antes de lançar um
+  produto localizado.
+- `tone` colore apenas o ícone. As palavras precisam dizer se algo deu certo ou errado.
+
+## Props
+
+<PropTable name="Toast" />
+
+## HTML puro
+
+A pilha posiciona; o toast é um cartão escuro simples:
+
+```html
+<div class="lyra-toast-stack">
+  <div class="lyra-toast" role="status">
+    <span class="lyra-toast__icon lyra-toast__icon--success"></span>
+    <span>Projeto arquivado</span>
+    <button class="lyra-toast__close" type="button" aria-label="Close notification">×</button>
+  </div>
+</div>
+```

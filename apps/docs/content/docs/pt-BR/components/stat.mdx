@@ -1,0 +1,58 @@
+---
+title: Stat
+description: Uma métrica compacta com indicador opcional de variação direcional para resumos e painéis.
+---
+
+# Stat
+
+Stat apresenta uma métrica e seu movimento recente. Use-o para um número que precisa de tendência;
+use Badge quando a pergunta for o status atual de algo próximo, não uma variação medida.
+
+## Exemplos
+
+<Example id="metrics-grid" title="Métricas lidas em conjunto" layout="block">
+  Coloque stats relacionados em uma grade que você controla. Mantenha o mesmo período de comparação
+  em cada `delta`, ou valores que parecem comparáveis passarão a significar coisas diferentes em
+  silêncio.
+</Example>
+
+<Example id="directions" title="Direção e delta">
+  `direction` fornece a seta e sua cor, então passe `delta="12%"`, não uma seta escrita à mão. Ele
+  segue a direção que você passa, não o sinal do texto; para churn ou latência, passe `down` para um
+  número caindo e deixe claro em um texto próximo se isso é bom ou ruim.
+</Example>
+
+## Quando usar
+
+Use Stat para um resultado numérico em destaque cuja variação em um período conhecido ajude alguém a decidir.
+
+Prefira outro componente quando:
+
+- **Você está marcando um estado atual** — use Badge, que rotula um status, não uma tendência.
+- **As pessoas precisam comparar muitos registros e campos** — use Table.
+- **O número ainda está carregando** — use Skeleton no formato da métrica final até o valor existir.
+
+## Acessibilidade
+
+- Stat renderiza uma `<div>` simples com spans de rótulo e valor. Ele não tem semântica de `<dl>`,
+  então um leitor de tela lê primeiro o rótulo e depois o valor.
+- O delta opcional vem depois do valor e inclui uma seta visível. Mantenha o texto da variação
+  significativo; cor e direção da seta devem confirmá-lo, não carregar a mensagem inteira.
+- Stat não tem elemento interativo nem comportamento de foco. Coloque-o perto do título ou região que
+  explica a métrica e seu período de referência.
+
+## Props
+
+<PropTable name="Stat" />
+
+## HTML puro
+
+O delta carrega a classe de direção e a seta como texto visível:
+
+```html
+<div class="lyra-stat">
+  <span class="lyra-stat__label">Receita mensal</span>
+  <span class="lyra-stat__value">US$ 48.240</span>
+  <span class="lyra-stat__delta lyra-stat__delta--up">↑ 12%</span>
+</div>
+```

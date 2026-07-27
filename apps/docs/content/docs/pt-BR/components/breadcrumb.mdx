@@ -1,0 +1,64 @@
+---
+title: Breadcrumb
+description: Uma trilha plana de localização cuja última entrada é sempre a página atual, nunca um link.
+---
+
+# Breadcrumb
+
+Breadcrumb mostra onde a página atual fica no site. Forneça a trilha da página e decida se a navegação
+ao redor precisa de uma localização de página ou da barra de caminho de pasta do FileManager.
+
+## Exemplos
+
+<Example id="basic" title="Localização da página" layout="block">
+  O último item é sempre a página atual, mesmo que tenha `href`. Dê a cada item anterior um destino
+  real para a trilha continuar útil a quem volta pelo site.
+</Example>
+
+<Example id="partial-trail" title="Dados parciais" layout="block">
+  Um item não final sem `href` se torna uma âncora para `#`. Trate esse fallback como erro de dados,
+  não como placeholder inofensivo: ele parece navegável, mas não leva a uma página útil. Esta trilha
+  também leva o próprio `aria-label`, que é o que evita dois breadcrumbs na mesma página se
+  apresentarem à tecnologia assistiva como dois landmarks de mesmo nome.
+</Example>
+
+## Quando usar
+
+Use Breadcrumb para a posição de uma página na hierarquia do site, sobretudo quando a localização
+atual tiver mais de um pai relevante.
+
+Prefira outro componente quando:
+
+- **As pessoas navegam por pastas dentro de FileManager** — use o `path` e `onNavigate` do
+  FileManager; eles modelam a pasta atual, não a posição da página no site.
+- **As pessoas alternam entre poucas visualizações pares** — use Tabs.
+- **O caminho tem só um destino útil para voltar** — use um link normal de voltar, em vez de uma trilha.
+
+## Acessibilidade
+
+- Renderiza um landmark `<nav>` plano, não uma lista de `<ol>` ou `<li>`. Ele se chama "Breadcrumb"
+  a menos que você passe o seu próprio `aria-label` — passe um quando a página tiver mais de uma
+  trilha, ou quando a interface for localizada e um nome em inglês ficar deslocado.
+- Cada item antes do último é uma âncora. O último é um
+  `<span class="lyra-breadcrumb__current" aria-current="page">`, mesmo quando seus dados têm `href`.
+- Separadores são spans vazios com `aria-hidden`, desenhados em CSS. Não adicione texto de chevron
+  que um leitor de tela possa anunciar entre localizações.
+- Forneça rótulos curtos e ordenados que identifiquem as localizações sem depender da hierarquia visual.
+
+## Props
+
+<PropTable name="Breadcrumb" />
+
+## HTML puro
+
+O span separador é propositalmente vazio: o CSS desenha o chevron e a tecnologia assistiva o ignora.
+
+```html
+<nav class="lyra-breadcrumb" aria-label="Breadcrumb">
+  <a href="/workspace">Workspace</a>
+  <span class="lyra-breadcrumb__sep" aria-hidden="true"></span>
+  <a href="/workspace/projects">Projetos</a>
+  <span class="lyra-breadcrumb__sep" aria-hidden="true"></span>
+  <span class="lyra-breadcrumb__current" aria-current="page">Atualização da marca</span>
+</nav>
+```

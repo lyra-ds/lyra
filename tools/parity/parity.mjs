@@ -94,6 +94,27 @@ const MASK_DIVERGENCE = new Map([
   ['components/navigation/navigation.css', { icon: 'chevron-right', payload: CHEVRON_RIGHT_MASK }],
 ]);
 
+// Approved large-overlay entrance refinements. The handoff's shared `lyra-pop-in` remains
+// canonical for smaller surfaces; only Dialog and CommandPalette opt into the dedicated motion.
+const OVERLAY_ENTRANCE_DIVERGENCE = new Map([
+  [
+    'components/feedback/feedback.css',
+    {
+      selector: '.lyra-dialog',
+      handoff: 'lyra-pop-in var(--duration-base) var(--ease-out)',
+      package: 'lyra-overlay-in var(--duration-slow) var(--ease-out)',
+    },
+  ],
+  [
+    'components/navigation/navigation.css',
+    {
+      selector: '.lyra-cmdk',
+      handoff: 'lyra-pop-in var(--duration-fast) var(--ease-out)',
+      package: 'lyra-overlay-in var(--duration-slow) var(--ease-out)',
+    },
+  ],
+]);
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -108,23 +129,112 @@ const MASK_DIVERGENCE = new Map([
 // can carry documented package-only declarations (D-18 Dialog animation, D-19 Dialog
 // close button, and the Card actions-group class that replaces the handoff prototype's
 // inline flex style — same CSS-first promotion pattern).
+// Existing Dialog/CommandPalette class names appear here only to scope their additive
+// reduced-motion declarations; the approved baseline animation-value changes stay pinned above.
 const ADDITIVE_EXTENSIONS = {
   'components/feedback/feedback.css': {
     classes: [
       'lyra-dialog__close',
+      'lyra-dialog',
+      'lyra-dialog-overlay',
       'lyra-dialog--closing',
       'lyra-dialog-overlay--closing',
       'lyra-toast__icon',
       'lyra-drawer__close',
+      'lyra-toast__close',
+      'lyra-cookies',
+      'lyra-tooltip',
+      'lyra-tooltip--bottom',
+      'lyra-tooltip--left',
+      'lyra-tooltip--right',
+      'lyra-drawer--closing',
+      'lyra-drawer-overlay--closing',
+      'lyra-cookies--closing',
     ],
-    keyframes: ['lyra-pop-out', 'lyra-fade-out'],
+    keyframes: [
+      'lyra-fade-out',
+      'lyra-overlay-in',
+      'lyra-overlay-out',
+      'lyra-pop-in-up',
+      'lyra-cookies-in',
+      'lyra-slide-out',
+      'lyra-cookies-out',
+    ],
   },
   'components/display/display.css': {
-    classes: ['lyra-card__actions'],
+    // `lyra-acc__panel-wrap` keeps the Accordion panel mounted so its height can animate; the
+    // handoff mounts the panel on open and therefore has no opening motion at all.
+    classes: [
+      'lyra-card__actions',
+      'lyra-acc__panel-wrap',
+      'lyra-acc__panel-clip',
+      'lyra-acc__item--open',
+      'lyra-acc__trigger',
+      'lyra-card--interactive',
+      'lyra-tag__remove',
+    ],
+    keyframes: [],
+  },
+  'components/forms/forms.css': {
+    // Popup flip modifier: the handoff recipe only opens downward, which forces a page scroll
+    // when the trigger sits near the bottom of the viewport.
+    classes: ['lyra-combobox__pop--up', 'lyra-combobox__trigger', 'lyra-combobox__option'],
     keyframes: [],
   },
   'components/navigation/navigation.css': {
-    classes: ['lyra-dropdown__trigger'],
+    classes: [
+      'lyra-dropdown__trigger',
+      'lyra-cmdk',
+      'lyra-kbd',
+      'lyra-cmdk__group-label',
+      'lyra-cmdk__item-hint',
+      'lyra-cmdk-overlay',
+      'lyra-cmdk--closing',
+      'lyra-cmdk-overlay--closing',
+      'lyra-menu--up',
+      'lyra-wssw__pop--up',
+      'lyra-menu__item',
+      'lyra-page',
+      'lyra-sbgroup__item',
+      'lyra-sbgroup__label',
+      'lyra-sbgroup__label--btn',
+      'lyra-tab',
+      // Contrast repairs on Tabs (muted on sunken; accent-as-text in dark) and the stepper's own
+      // horizontal scroll, which keeps a three-step flow from scrolling the whole page on a phone.
+      'lyra-tab--active',
+      'lyra-tab__count',
+      'lyra-tabs--pills',
+      'lyra-stepper',
+      'lyra-wssw__item',
+      'lyra-wssw__trigger',
+    ],
+    keyframes: [],
+  },
+  'components/buttons/buttons.css': {
+    // `.lyra-btn:hover { text-decoration: none }` — button-styled links must not
+    // inherit Lyra's base `a:hover` underline. Correctness extension, no handoff peer.
+    classes: ['lyra-btn'],
+    keyframes: [],
+  },
+  'components/data/data.css': {
+    // Contrast repair: the handoff's column headings sit at 4.34:1 on the sunken header band.
+    classes: ['lyra-table'],
+    keyframes: [],
+  },
+  'components/files/files.css': {
+    // Touch-feedback extension: suppressing the iOS tap highlight and replacing it with a press.
+    // `lyra-fm__head` re-colors the column headings the handoff left at 2.56:1 in light; `lyra-fm__name`
+    // and `lyra-fm__more` grow their hit areas into layout space the row already reserves.
+    classes: [
+      'lyra-fm__card',
+      'lyra-fm__crumb',
+      'lyra-fm__head',
+      'lyra-fm__more',
+      'lyra-fm__name',
+      'lyra-fm__row',
+      'lyra-upload__remove',
+      'lyra-upload__zone',
+    ],
     keyframes: [],
   },
 };
@@ -140,10 +250,10 @@ const ADDITIVE_CLASS_SELECTORS = new Set(
 /**
  * True when an EXTRA package declaration (one with no handoff counterpart in the
  * index-aligned diff) belongs to a documented additive extension — i.e. its file is
- * allowlisted AND its outermost enclosing block is an allowlisted @keyframes name OR a
- * selector whose .lyra-* class chain exact-matches an allowlisted class name. Exact-name
- * match only: a future un-enumerated addition (e.g. a stray .lyra-zzz rule) is NOT rooted
- * in the allowlist and still fails.
+ * allowlisted AND its outermost enclosing block is an allowlisted @keyframes name OR a selector
+ * in its block path whose .lyra-* class chain exact-matches an allowlisted class name. Exact-name
+ * match only: a future un-enumerated addition (e.g. a stray .lyra-zzz rule) is not rooted in the
+ * allowlist and still fails.
  */
 function isAdditiveExtension(relPath, decl) {
   const ext = ADDITIVE_EXTENSIONS[relPath];
@@ -151,7 +261,9 @@ function isAdditiveExtension(relPath, decl) {
   const root = decl.blockPath[0] || '';
   const kf = /^@keyframes\s+([a-zA-Z0-9_-]+)/.exec(root);
   if (kf) return ext.keyframes.includes(kf[1]);
-  const classTokens = [...root.matchAll(/\.(lyra-[a-zA-Z0-9_-]+)/g)].map((m) => m[1]);
+  const classTokens = [...decl.blockPath.join(' ').matchAll(/\.(lyra-[a-zA-Z0-9_-]+)/g)].map(
+    (m) => m[1],
+  );
   return classTokens.some((t) => ext.classes.includes(t));
 }
 
@@ -467,12 +579,21 @@ function tokenCheck() {
 
 function isAllowedDivergence(relPath, hd, pd) {
   const expected = MASK_DIVERGENCE.get(relPath);
-  return (
+  const allowsMaskDivergence =
     expected !== undefined &&
     (hd.prop === 'mask' || hd.prop === '-webkit-mask') &&
     hd.val.includes('unpkg.com/lucide-static') &&
     hd.val.includes(`icons/${expected.icon}.svg`) &&
-    pd.val === expected.payload // EXACT canonical data: payload — no truncation/swap
+    pd.val === expected.payload; // EXACT canonical data: payload — no truncation/swap
+  if (allowsMaskDivergence) return true;
+
+  const overlay = OVERLAY_ENTRANCE_DIVERGENCE.get(relPath);
+  return (
+    overlay !== undefined &&
+    hd.prop === 'animation' &&
+    hd.blockPath.at(-1) === overlay.selector &&
+    hd.val === overlay.handoff &&
+    pd.val === overlay.package
   );
 }
 

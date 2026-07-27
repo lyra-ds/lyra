@@ -1,0 +1,64 @@
+---
+title: Pagination
+description: Navegação numérica de páginas controlada, com truncamento fixo, limites e rótulos acessíveis.
+---
+
+# Pagination
+
+Pagination percorre um conjunto conhecido e finito de páginas. Use-a abaixo de uma Table de registros
+quando páginas estáveis ajudarem a escanear; escolha carregar mais no lugar quando preservar a leitura importar.
+
+## Exemplos
+
+<Example id="pages" title="Uma faixa de páginas truncada" layout="block">
+  Com mais de sete páginas, a faixa fica compacta: mostra as extremidades e os vizinhos da página
+  atual. `page` começa em um, então mantenha alinhados o valor armazenado e o valor exibido.
+</Example>
+
+<Example id="boundary" title="Limite e rótulo da região" layout="block">
+  Anterior e próximo ficam desabilitados nos extremos. Dê à navegação um `aria-label` quando houver
+  mais de uma região paginada na página; ele substitui o rótulo padrão "Pagination".
+</Example>
+
+## Quando usar
+
+Use Pagination abaixo de uma Table ou outra lista de registros quando as pessoas precisarem voltar a
+uma página específica ou entender os limites do conjunto de resultados.
+
+Prefira outro componente quando:
+
+- **Os registros estão em colunas que as pessoas escaneiam e ordenam** — combine Pagination com Table.
+- **As pessoas devem continuar lendo um feed contínuo** — carregue mais no lugar, em vez de realocá-las.
+- **O conjunto completo é pequeno o bastante para aparecer de uma vez** — renderize-o diretamente e
+  evite controles de página.
+
+## Acessibilidade
+
+- Renderiza um `<nav aria-label="Pagination">`; seu `aria-label` substitui o padrão para regiões
+  paginadas distintas.
+- Anterior e próximo são botões nativos chamados "Previous page" e "Next page". Eles ficam
+  desabilitados na primeira e na última páginas.
+- A página ativa tem `aria-current="page"`. Cada botão de página habilitado continua na ordem normal de Tab.
+- Reticências são spans com `aria-hidden`, não botões. Não faça uma lacuna de truncamento parecer acionável.
+
+## Props
+
+<PropTable name="Pagination" />
+
+## HTML puro
+
+Anterior é o primeiro botão na navegação; uma reticência é um span não interativo.
+
+```html
+<nav class="lyra-pagination" aria-label="Pagination">
+  <button class="lyra-page" type="button" aria-label="Previous page">‹</button>
+  <button class="lyra-page" type="button">1</button>
+  <span class="lyra-page lyra-page--gap" aria-hidden="true">…</span>
+  <button class="lyra-page" type="button">5</button>
+  <button class="lyra-page lyra-page--active" type="button" aria-current="page">6</button>
+  <button class="lyra-page" type="button">7</button>
+  <span class="lyra-page lyra-page--gap" aria-hidden="true">…</span>
+  <button class="lyra-page" type="button">20</button>
+  <button class="lyra-page" type="button" aria-label="Next page">›</button>
+</nav>
+```

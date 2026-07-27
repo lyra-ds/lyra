@@ -1,0 +1,85 @@
+---
+title: Button
+description: O gatilho de ação principal, com cinco variantes, três tamanhos, ícones e estado de carregamento.
+---
+
+# Button
+
+Button dispara ações. Use exatamente um botão `primary` por tela para a ação principal e recorra a
+`secondary`, `soft`, `ghost` ou `danger` para sinalizar a intenção. Ícones, modo `full` (largura
+total) e um estado `loading` que mantém o rótulo no lugar (sem deslocamento de layout) já vêm
+embutidos.
+
+## Exemplos
+
+<Example id="variants" title="Variantes">
+  Variante é sobre intenção, não decoração. Um `primary` por tela; `danger` só para ações que
+  destroem algo.
+</Example>
+
+<Example id="sizes" title="Tamanhos">
+  As alturas são fixadas por token: sm 32px, md 40px, lg 48px. Use um tamanho só por linha de ações.
+</Example>
+
+<Example id="icons-and-states" title="Ícones e estados">
+  `loading` mantém o rótulo renderizado e bloqueia a interação, então o botão nunca muda de largura
+  no meio do clique. Se o motivo de um botão estar desabilitado não estiver óbvio na tela, diga isso
+  em um texto próximo.
+</Example>
+
+<Example id="as-link" title="Renderizando como link">
+`asChild` estiliza o elemento filho em vez de renderizar um `<button>`. Use sempre que a ação
+navegar: o resultado é uma âncora de verdade, então clique do meio, "abrir em nova aba" e a prévia
+do link na barra de status continuam funcionando.
+</Example>
+
+## Quando usar
+
+Use um Button para uma ação que o usuário executa na página atual — enviar, abrir um diálogo,
+iniciar um processo.
+
+Prefira outro componente quando:
+
+- **Ele navega para algum lugar** — é um link. Use `<Button asChild>` em volta de uma âncora, para
+  ter a aparência de botão com o comportamento de link.
+- **É uma entre várias escolhas exclusivas** — use Radio ou Tabs.
+- **Ele liga e desliga uma configuração** — use Switch, que anuncia o próprio estado.
+- **É só ícone, numa barra de ferramentas densa** — use IconButton, dimensionado para alvo de
+  toque de 44px.
+
+## Acessibilidade
+
+- Renderiza um `<button>` nativo, então ativação por Enter/Espaço, envio de formulário e ordem de
+  foco vêm da plataforma.
+- `loading` define `aria-busy` e bloqueia a interação; o rótulo visível permanece, então leitores
+  de tela continuam anunciando o que o botão faz.
+- Um Button só de ícone **não tem nome acessível** a menos que você forneça um — passe `aria-label`
+  (isso é cobrado pela suíte do axe, não pelo sistema de tipos).
+- O foco é um anel `box-shadow: var(--shadow-focus)` no `:focus-visible`. Nunca troque por
+  `outline: none`.
+- Com `asChild`, o contrato de acessibilidade é do filho: uma âncora precisa de um `href` real para
+  ser alcançável pelo teclado.
+
+## Props
+
+<PropTable name="Button" />
+
+## HTML puro
+
+Componha uma classe de variante e uma de tamanho; o rótulo fica em elemento próprio para o spinner
+entrar sem reflow:
+
+```html
+<button class="lyra-btn lyra-btn--primary lyra-btn--md">
+  <span class="lyra-btn__label">Salvar alterações</span>
+</button>
+
+<button class="lyra-btn lyra-btn--danger lyra-btn--md lyra-btn--loading" aria-busy="true">
+  <span class="lyra-btn__spinner" aria-hidden="true"></span>
+  <span class="lyra-btn__label">Excluindo</span>
+</button>
+
+<a class="lyra-btn lyra-btn--secondary lyra-btn--md" href="/docs">
+  <span class="lyra-btn__label">Ler a documentação</span>
+</a>
+```

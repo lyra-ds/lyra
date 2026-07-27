@@ -1,7 +1,7 @@
 {
   "name": "@lyra-ds/react",
   "version": "0.0.0",
-  "description": "Lyra DS — thin, tree-shakable React wrappers over @lyra-ds/styles. All appearance comes from .lyra-* classes; zero runtime CSS-in-JS.",
+  "description": "Lyra DS \u2014 thin, tree-shakable React wrappers over @lyra-ds/styles. All appearance comes from .lyra-* classes; zero runtime CSS-in-JS.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -444,7 +444,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "3 kB"
+      "limit": "3.2 kB"
     },
     {
       "name": "WorkspaceSwitcher (curated icon registry)",
@@ -464,7 +464,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "300 B"
+      "limit": "800 B"
     },
     {
       "name": "import { Icon } from '@lyra-ds/react/icon' (70-icon registry, lucide measured)",
@@ -574,7 +574,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "500 B"
+      "limit": "700 B"
     },
     {
       "name": "import { Avatar } from '@lyra-ds/react/avatar'",

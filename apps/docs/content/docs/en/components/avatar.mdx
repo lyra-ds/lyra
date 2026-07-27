@@ -1,0 +1,80 @@
+---
+title: Avatar
+description: A person or organisation marker with image, initials, size, shape and presence status.
+---
+
+# Avatar
+
+Avatar identifies a person or organisation in compact spaces. Choose an image when recognition matters;
+otherwise `name` produces a predictable initials fallback, and `square` distinguishes organisations.
+
+## Examples
+
+<Example id="initials-and-status" title="Initials and presence">
+  When an image is unavailable, initials keep an identity visible without reserving a broken image
+  space. A status dot is for live presence, not a substitute for a written availability state.
+</Example>
+
+<Example id="sizes-and-shapes" title="Sizes and organisation shape">
+  Match the avatar to the density of its row. Use `square` for an organisation so people and shared
+  spaces do not blur into the same visual category.
+</Example>
+
+<Example id="image" title="Image with status">
+  Provide `name` alongside every `src`: it is the image alternative text and the fallback identity
+  if that source is later removed.
+</Example>
+
+## AvatarGroup
+
+<Example id="group" title="People in one row">
+  AvatarGroup overlaps a set of people in one row. It has no maximum or "+3 more" behavior, so
+  decide the visible set in your application rather than expecting it to manage overflow.
+</Example>
+
+AvatarGroup has no accessible name of its own. A group of avatars without nearby names says nothing
+to a screen reader, so label the surrounding region or list the people's names.
+
+## When to use
+
+Use an Avatar beside a name, owner or participant list when recognising who is involved changes the
+reader's next action.
+
+Reach for something else when:
+
+- **The text is a status, count or metadata value** — use Badge.
+- **The item is a user-managed category or filter** — use Tag.
+- **The identity needs an action or profile summary** — use a Card or a dedicated profile view.
+
+## Accessibility
+
+- With `src`, Avatar renders an `<img>` whose `alt` is `name`; pass the real full name, not initials.
+- Without `src`, `name` is used to derive at most two initials and for the native tooltip. The initials
+  are `aria-hidden`, so keep the person's name in nearby text or add an `aria-label` to the Avatar.
+- A presence dot uses `role="status"` with an `online`, `busy` or `away` label. Do not make presence
+  the only way important availability is communicated.
+- Avatar is a `<span>`, not a button or link. Wrap it in the semantic interactive element when it opens
+  a profile, and give that parent an accessible name.
+
+## Props
+
+<PropTable name="Avatar" />
+
+## Plain HTML
+
+Keep the image alternative text meaningful; the status dot has its own announced state:
+
+```html
+<span class="lyra-avatar lyra-avatar--md" title="Maya Chen">
+  <img src="maya-chen.jpg" alt="Maya Chen" />
+  <span
+    class="lyra-avatar__status lyra-avatar__status--online"
+    role="status"
+    aria-label="online"
+  ></span>
+</span>
+
+<span class="lyra-avatar lyra-avatar--lg lyra-avatar--square" title="Lyra Design">
+  <span aria-hidden="true">LD</span>
+</span>
+```

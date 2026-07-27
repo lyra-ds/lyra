@@ -3,6 +3,7 @@ import type { HTMLAttributes, KeyboardEvent } from 'react';
 import { Avatar } from '../avatar';
 import { Icon } from '../icon';
 import { cx } from '../internal/cx';
+import { useFlipPlacement } from '../internal/use-flip-placement';
 
 /** A workspace listed in {@link WorkspaceSwitcher}. */
 export interface Workspace {
@@ -58,6 +59,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
     const rootRef = useRef<HTMLDivElement | null>(null);
     const triggerRef = useRef<HTMLButtonElement | null>(null);
     const popoverRef = useRef<HTMLDivElement | null>(null);
+    const placement = useFlipPlacement(open, triggerRef, popoverRef);
     const selected = workspaces.find((workspace) => workspace.id === current) ?? workspaces[0];
 
     const optionButtons = (): HTMLButtonElement[] =>
@@ -87,7 +89,8 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           : pendingFocus < 0
             ? options.length - 1
             : pendingFocus;
-      options[Math.min(target, options.length - 1)]?.focus();
+      // preventScroll: the popover is already placed to fit; focusing an option must not scroll.
+      options[Math.min(target, options.length - 1)]?.focus({ preventScroll: true });
       setPendingFocus(null);
     }, [open, pendingFocus]);
 
@@ -175,7 +178,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           <div
             ref={popoverRef}
             id={listboxId}
-            className="lyra-wssw__pop"
+            className={cx('lyra-wssw__pop', placement === 'up' && 'lyra-wssw__pop--up')}
             role="listbox"
             aria-labelledby={listboxLabelId}
           >

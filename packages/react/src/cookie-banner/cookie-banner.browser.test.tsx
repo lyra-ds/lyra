@@ -46,6 +46,38 @@ describe('CookieBanner', () => {
     });
   }
 
+  it('animates out, still centred, before it leaves', async () => {
+    const { container } = await render(<CookieBanner storageKey="lyra-exit-test" />);
+    const banner = container.ownerDocument.querySelector<HTMLElement>('.lyra-cookies')!;
+    const halfWidth = banner.getBoundingClientRect().width / 2;
+
+    await userEvent.click(container.ownerDocument.querySelector<HTMLElement>('.lyra-btn')!);
+
+    expect(banner.className).toContain('lyra-cookies--closing');
+    expect(getComputedStyle(banner).animationName).toBe('lyra-cookies-out');
+    // The exit keyframe carries the centring too — without it the banner would leave sideways.
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(banner).transform);
+    expect(Math.round(matrix.m41)).toBe(-Math.round(halfWidth));
+
+    await vi.waitFor(() => {
+      expect(container.ownerDocument.querySelector('.lyra-cookies')).toBeNull();
+    });
+  });
+
+  it('stays centred while it animates in', async () => {
+    // Regression: the banner centres itself with `transform: translateX(-50%)` and used to borrow
+    // the Toast entrance keyframe, which animates `transform` — so for the length of the entrance
+    // the centring was dropped and the banner slid in from half its own width off-centre.
+    const { container } = await render(<CookieBanner storageKey="lyra-centring-test" />);
+    const banner = container.ownerDocument.querySelector<HTMLElement>('.lyra-cookies')!;
+    const style = getComputedStyle(banner);
+    expect(style.animationName).toBe('lyra-cookies-in');
+
+    const matrix = new DOMMatrixReadOnly(style.transform);
+    const halfWidth = banner.getBoundingClientRect().width / 2;
+    expect(Math.round(matrix.m41)).toBe(-Math.round(halfWidth));
+  });
+
   it('persists a choice, invokes its callback, and hides', async () => {
     const onAccept = vi.fn();
     const { container } = await render(
@@ -54,7 +86,11 @@ describe('CookieBanner', () => {
     await userEvent.click(container.querySelector<HTMLButtonElement>('button:last-child')!);
     expect(localStorage.getItem(storageKey)).toBe('all');
     expect(onAccept).toHaveBeenCalledOnce();
-    expect(container.querySelector('.lyra-cookies')).toBeNull();
+    // The choice is recorded and the callback fires immediately; the element itself leaves only
+    // after its exit animation, so the disappearance is awaited rather than asserted synchronously.
+    await vi.waitFor(() => {
+      expect(container.querySelector('.lyra-cookies')).toBeNull();
+    });
   });
 
   it('does not render after an existing stored choice', async () => {

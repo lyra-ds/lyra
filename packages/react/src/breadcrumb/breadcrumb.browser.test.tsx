@@ -18,4 +18,16 @@ describe('Breadcrumb', () => {
       expect((await axe.run(container)).violations).toEqual([]);
       error.mockRestore();
     });
+
+  it('names the landmark "Breadcrumb" by default', async () => {
+    const { container } = await render(<Breadcrumb items={[{ label: 'Only' }]} />);
+    expect(container.querySelector('nav')!.getAttribute('aria-label')).toBe('Breadcrumb');
+  });
+
+  it('lets a consumer name the landmark, so two trails on one page stay distinguishable', async () => {
+    const { container } = await render(
+      <Breadcrumb aria-label="Documentation" items={[{ label: 'Only' }]} />,
+    );
+    expect(container.querySelector('nav')!.getAttribute('aria-label')).toBe('Documentation');
+  });
 });

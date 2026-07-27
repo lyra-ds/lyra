@@ -1,0 +1,59 @@
+---
+title: Checkbox
+description: Um checkbox nativo para escolhas salvas junto com o restante de um formulário.
+---
+
+# Checkbox
+
+Checkbox é um checkbox nativo com uma linha de rótulo clicável. Use-o quando alguém pode escolher
+zero, uma ou muitas opções independentes e enviar essas escolhas junto com o formulário.
+
+## Exemplos
+
+<Example id="basic" title="Escolhas independentes">
+  Cada checkbox representa uma decisão própria. Dê um `label` visível a cada escolha relevante; a
+  linha inteira vira a área de clique.
+</Example>
+
+<Example id="states" title="Selecionado e desabilitado">
+  `defaultChecked` inicia um campo não controlado. Use `disabled` só quando o motivo da
+  indisponibilidade já estiver explicado próximo, pois o controle não pode receber foco para trazer
+  essa explicação.
+</Example>
+
+## Quando usar
+
+Use Checkbox para uma configuração opcional, consentimento ou escolha múltipla confirmada ao enviar o formulário.
+
+Prefira outro componente quando:
+
+- **A alteração tem efeito imediato** — use Switch, para o estado ligado/desligado comunicar uma configuração aplicada.
+- **Exatamente uma opção é obrigatória** — use Radio, com todas as opções compartilhando o mesmo `name`.
+- **As opções formam uma lista conhecida longa** — use Select ou Combobox para a leitura não virar um muro de checks.
+
+## Acessibilidade
+
+- Renderiza um `<input type="checkbox">` nativo, então Espaço o alterna e a plataforma anuncia o estado marcado.
+- Com `label`, o componente envolve input e texto em um `<label>`, tornando a linha inteira clicável.
+- Não há `id` gerado nem `htmlFor`; passe `id` nas props do consumidor se outro elemento precisar referenciá-lo.
+- O anel em foco visível é `--shadow-focus`. Não o remova e forneça rótulo visível ou `aria-label` quando não houver texto.
+
+## Props
+
+<PropTable name="Checkbox" />
+
+## HTML puro
+
+Input e texto compartilham um único label, então a linha em si não precisa de par `for`/`id`:
+
+```html
+<label class="lyra-check-row">
+  <input class="lyra-checkbox" type="checkbox" name="updates" checked />
+  <span>Envie as notas de versão</span>
+</label>
+
+<label class="lyra-check-row">
+  <input class="lyra-checkbox" type="checkbox" name="terms" disabled />
+  <span>Concordo com os termos de processamento de dados</span>
+</label>
+```

@@ -1,0 +1,612 @@
+/*
+ * Docs-site layout CSS — ported from handoff/ui_kits/website (index.html <style>).
+ * App-local layout scaffolding only (grid/rails/header/footer); every visible UI
+ * piece still uses @lyra-ds components + tokens. No Tailwind. Namespaced `lw-*`.
+ */
+
+.lw-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* header */
+.lw-header {
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-card);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+.lw-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  height: 60px;
+}
+.lw-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+.lw-mark {
+  width: 24px;
+  height: 24px;
+}
+.ld-mark-dark {
+  display: none;
+}
+[data-theme='dark'] .ld-mark-light {
+  display: none;
+}
+[data-theme='dark'] .ld-mark-dark {
+  display: inline;
+}
+.lw-brand__word {
+  font-family: var(--font-display);
+  font-weight: var(--weight-extrabold);
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.lw-nav {
+  display: flex;
+  gap: var(--space-1);
+  margin-right: auto;
+}
+.lw-nav__link {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lw-nav__link:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.lw-nav__link--active {
+  color: var(--accent-soft-text);
+  background: var(--accent-soft);
+}
+.lw-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* chrome links are UI controls, never underline (base.css underlines a:hover) */
+.lw-brand:hover,
+.lw-nav__link:hover,
+.lyra-sbgroup__item:hover,
+.lw-toc__link:hover,
+.lw-footer__links a:hover {
+  text-decoration: none;
+}
+
+/* header search trigger (opens the ⌘K command palette) */
+.lw-search {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 200px;
+  padding: 6px var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lw-search:hover {
+  border-color: var(--border-strong, var(--text-faint));
+  color: var(--text-secondary);
+}
+.lw-search__label {
+  margin-right: auto;
+}
+.lw-search__kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  padding: 0 5px;
+}
+@media (max-width: 720px) {
+  .lw-search {
+    min-width: 0;
+  }
+  .lw-search__label,
+  .lw-search__kbd {
+    display: none;
+  }
+}
+
+/* Below 900px the header row cannot hold brand + nav + five actions: it overflowed the viewport and
+   scrolled the whole page sideways. Wrap the nav onto its own row instead of hiding navigation, and
+   drop the CTA, whose only destination is the Components link one row below. */
+@media (max-width: 900px) {
+  .lw-header__inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: var(--space-2);
+    gap: var(--space-3);
+  }
+  .lw-nav {
+    order: 3;
+    width: 100%;
+    margin-right: 0;
+  }
+  .lw-header__actions {
+    margin-left: auto;
+  }
+  .lw-header__cta {
+    display: none;
+  }
+}
+
+/* segmented language toggle */
+.lw-locale {
+  display: inline-flex;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.lw-locale__opt {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lw-locale__opt:hover {
+  color: var(--text-primary);
+  background: var(--surface-sunken);
+}
+.lw-locale__opt--active {
+  color: var(--accent-soft-text);
+  background: var(--accent-soft);
+}
+
+/* docs shell */
+.lw-docs {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 200px;
+  gap: var(--space-10);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+  align-items: start;
+}
+.lw-docs__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  position: sticky;
+  top: 84px;
+  /* Sticky alone cannot hold a rail taller than the viewport: it only unsticks after the body has
+     scrolled past the overflow. The rail needs its own scroll once the component list outgrows the
+     screen. dvh so the iOS toolbar collapsing does not cut the last items off. */
+  max-height: calc(100vh - 84px - var(--space-8));
+  max-height: calc(100dvh - 84px - var(--space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, var(--border-default)) transparent;
+  /* keeps the active pill from sitting under the scrollbar */
+  padding-right: var(--space-2);
+}
+.lw-docs__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: 760px;
+}
+
+/* MDX prose inside the docs content column */
+.lw-docs__content h1 {
+  font: var(--h1-font);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-primary);
+  margin: 0;
+}
+.lw-docs__content h2 {
+  font: var(--h2-font);
+  font-size: var(--text-xl);
+  color: var(--text-primary);
+  margin: var(--space-4) 0 0;
+}
+.lw-docs__content h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin: var(--space-3) 0 0;
+}
+/* offset anchored headings below the sticky header */
+.lw-docs__content :is(h1, h2, h3) {
+  scroll-margin-top: 80px;
+}
+
+/* on-this-page rail */
+.lw-toc {
+  position: sticky;
+  top: 84px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: calc(100vh - 84px - var(--space-8));
+  max-height: calc(100dvh - 84px - var(--space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, var(--border-default)) transparent;
+}
+.lw-toc__title {
+  font: var(--overline-font);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.lw-toc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 1px solid var(--border-default);
+}
+.lw-toc__list li[data-level='3'] {
+  padding-left: var(--space-4);
+}
+.lw-toc__link {
+  display: block;
+  padding: 2px var(--space-3);
+  margin-left: -1px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 1px solid transparent;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.lw-toc__link:hover {
+  color: var(--text-primary);
+}
+.lw-toc__link--active {
+  color: var(--accent-soft-text);
+  font-weight: var(--weight-semibold);
+  border-left-color: var(--accent);
+}
+.lw-docs__content p {
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.lw-docs__content a:not(.lyra-btn) {
+  color: var(--accent-soft-text);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.lw-docs__content a:not(.lyra-btn):hover {
+  text-decoration: underline;
+}
+
+/* code panel (Shiki) — card chrome + dual-theme token colors via CSS vars */
+.lw-code {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.lw-code__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-default);
+}
+.lw-code__lang {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+.lw-code__copy {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lw-code__copy:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+.lw-code__pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  overflow-x: auto;
+  background-color: var(--surface-sunken);
+}
+/* Shiki dual theme (Lyra palette): light vars by default, dark under [data-theme=dark] */
+.lw-code__pre,
+.lw-code__pre span {
+  color: var(--shiki-light);
+}
+[data-theme='dark'] .lw-code__pre,
+[data-theme='dark'] .lw-code__pre span {
+  color: var(--shiki-dark);
+}
+/* line numbers */
+.lw-code__pre code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+.lw-code__pre .line::before {
+  content: counter(step);
+  counter-increment: step;
+  display: inline-block;
+  width: 1.25rem;
+  margin-right: var(--space-4);
+  text-align: right;
+  color: var(--text-faint);
+  user-select: none;
+}
+.lw-docs__content strong {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}
+.lw-docs__content :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+}
+
+/* footer */
+.lw-footer {
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-card);
+}
+.lw-footer__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+  flex-wrap: wrap;
+}
+.lw-footer__note {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-right: auto;
+}
+.lw-footer__links {
+  display: flex;
+  gap: var(--space-4);
+}
+.lw-footer__links a {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+/* home / getting-started */
+.lw-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6) 0 var(--space-8);
+}
+.lw-hero__title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-extrabold);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  color: var(--text-primary);
+  margin: 0;
+}
+.lw-hero__sub {
+  max-width: 560px;
+}
+/* MDX wraps the subtitle text in a <p>; a <p className> here would nest <p> in <p> */
+.lw-hero__sub p {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.lw-hero__cta {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* documented examples: title, prose, live stage, source behind a toggle */
+.lw-example {
+  margin: var(--space-6) 0;
+}
+.lw-example__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+/* the stage arranges the demo so example files stay copy-pasteable (no docs-only classes) */
+.lw-example__stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+/* Block components (Accordion, Table, EmptyState…) are containers, not chips: as flex items they
+   shrink to their content and leave the stage half empty. Give them the full width instead. */
+.lw-example__stage--block {
+  display: grid;
+  align-items: start;
+  gap: var(--space-4);
+}
+/* For components that are themselves a surface, the Card stage would nest two borders of the same
+   material. Drop the chrome and let the example be the only surface on screen. */
+.lw-example__stage--plain {
+  display: grid;
+  align-items: start;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-5);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+.lw-example__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.lw-example__toggle:hover {
+  color: var(--text-primary);
+}
+.lw-example__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.lw-example__code {
+  margin-top: var(--space-2);
+}
+
+/* generated prop tables — the table itself is the Lyra <Table> */
+.lw-prop-table__optional {
+  color: var(--text-faint);
+}
+
+/* component index — prefixed with .lw-docs__content to outrank the prose defaults above */
+.lw-docs__content p.lw-index__intro {
+  color: var(--text-muted);
+}
+.lw-index__group {
+  margin-top: var(--space-6);
+}
+.lw-index__grid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* the card surface is the affordance — no link color, no hover underline */
+.lw-docs__content a.lw-index__card,
+.lw-docs__content a.lw-index__card:hover {
+  display: block;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+/* drop the on-this-page rail first, then the sidebar */
+@media (max-width: 1100px) {
+  .lw-docs {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .lw-toc {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .lw-docs {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  /* stacked above the content, the rail is no longer a rail — it scrolls with the page */
+  .lw-docs__side {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+/* The compact chrome is correct with a mouse, but 23px and 33px targets are below the 44px floor
+   for a finger. `pointer: coarse` alone is not enough: an iPad in its default "desktop site" mode
+   reports `pointer: fine`, so the tablets that need this most were excluded. `any-pointer` catches a
+   touchscreen even when a precise pointer is also present, and the width clause covers the spoofed
+   case. */
+@media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
+  .lw-nav__link,
+  .lw-search,
+  .lyra-sbgroup__item,
+  .lw-toc__link,
+  .lw-brand,
+  .lw-example__toggle,
+  .lw-code__copy {
+    min-height: 44px;
+  }
+  .lyra-sbgroup__item,
+  .lw-toc__link {
+    display: flex;
+    align-items: center;
+  }
+  .lw-locale__opt {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-3);
+  }
+}

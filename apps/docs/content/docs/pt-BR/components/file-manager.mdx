@@ -1,0 +1,85 @@
+---
+title: FileManager
+description: Um navegador de arquivos pesquisável, com pastas, visualizações em lista ou grade e menus por item.
+---
+
+# FileManager
+
+FileManager é um navegador pronto para arquivos e pastas. Escolha se a página ao redor controla o
+modo de visualização; use Table quando as linhas forem dados que você define, não arquivos com comportamento de navegador.
+
+## Exemplos
+
+<Example id="browse" title="Navegando em uma pasta" layout="plain">
+  Pastas ordenam antes de documentos, e `path` fornece os segmentos do breadcrumb. `onOpen` recebe o
+  arquivo selecionado; `onNavigate` recebe o índice do segmento, então a página controla a navegação
+  real.
+</Example>
+
+<Example id="controlled-view" title="Visualização controlada" layout="plain">
+  Defina `view` com `onViewChange` quando outro controle ou uma preferência salva for dono do modo
+  de exibição. Use `defaultView` quando FileManager puder administrar essa escolha sozinho.
+</Example>
+
+<Example id="custom-actions" title="Substituindo ações por item" layout="plain">
+  `actions` substitui todo o menu padrão; ela não acrescenta comandos. Retorne cada ação de que a
+  pessoa precisa, incluindo uma destrutiva quando esse fluxo ainda precisar de exclusão.
+</Example>
+
+## Quando usar
+
+Use FileManager quando as pessoas precisarem encontrar, abrir e organizar arquivos em uma hierarquia de pastas.
+
+Prefira outro componente quando:
+
+- **Você define registros e colunas arbitrários** — use Table, que deixa estrutura de linha e ações
+  para sua aplicação.
+- **As pessoas só precisam anexar arquivos a um formulário** — use FileUpload.
+- **Não há arquivos porque o recurso ainda não foi configurado** — use EmptyState fora do navegador
+  quando a mensagem específica de busca vazia dele for enganosa.
+
+## Acessibilidade
+
+- Os controles de visualização formam um `role="group"` chamado "View mode". Cada botão tem nome
+  acessível e `aria-pressed`, então o estado atual de lista ou grade é anunciado.
+- O breadcrumb é um `<nav aria-label="Current folder">`; cada gatilho de ação recebe o nome "Actions
+  for &lt;name&gt;". O segmento atual do breadcrumb fica desabilitado, em vez de ser um alvo de navegação.
+- O input de busca tem placeholder, mas **não tem nome acessível**. Esta é uma lacuna do componente
+  que consumidores precisam considerar; um título ao redor não transforma o placeholder em rótulo.
+- Os rótulos embutidos são fixos em inglês. Localize `searchPlaceholder` e `emptyMessage` e considere
+  os controles embutidos restantes em inglês em uma aplicação localizada.
+
+## Props
+
+<PropTable name="FileManager" />
+
+## HTML puro
+
+O componente fornece a interação; este markup é a estrutura estática de lista correspondente:
+
+```html
+<div class="lyra-fm">
+  <div class="lyra-fm__toolbar">
+    <div class="lyra-fm__search"><input placeholder="Buscar arquivos…" /></div>
+    <div class="lyra-fm__views" role="group" aria-label="View mode">
+      <button class="lyra-fm__view lyra-fm__view--on" aria-label="List view" aria-pressed="true">
+        Lista
+      </button>
+      <button class="lyra-fm__view" aria-label="Grid view" aria-pressed="false">Grade</button>
+    </div>
+  </div>
+  <ul class="lyra-fm__list">
+    <li class="lyra-fm__row">
+      <button class="lyra-fm__name" type="button">
+        <span class="lyra-fm__icon lyra-fm__icon--folder">Pasta</span>
+        <span class="lyra-fm__label">Materiais de marca</span>
+      </button>
+      <span class="lyra-fm__cell">12 itens</span>
+      <span class="lyra-fm__cell">Hoje</span>
+      <span class="lyra-fm__actions"
+        ><button class="lyra-fm__more" aria-label="Actions for Brand assets">•••</button></span
+      >
+    </li>
+  </ul>
+</div>
+```

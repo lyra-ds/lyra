@@ -1,0 +1,73 @@
+---
+title: Table
+description: Uma tabela declarativa para registros comparáveis, com colunas alinhadas e hover opcional nas linhas.
+---
+
+# Table
+
+Table renderiza os registros que você define como linhas e colunas. Escolha-a quando a comparação
+importar; escolha FileManager quando os registros forem arquivos e precisarem de navegação, busca,
+troca de visualização e ações por item.
+
+## Exemplos
+
+<Example id="basic" title="Registros com status" layout="plain">
+  Dê chaves estáveis às colunas e passe nós React como valores das células. Um Badge cabe em uma
+  célula de status porque marca o estado daquela linha sem transformar a tabela em um layout
+  próprio.
+</Example>
+
+<Example id="alignment" title="Valores alinhados" layout="plain">
+  Números são mais fáceis de percorrer quando compartilham uma borda. Defina `align="right"` na
+  coluna, em vez de estilizar cada célula; Table aplica o alinhamento ao cabeçalho e às células
+  juntas.
+</Example>
+
+## Quando usar
+
+Use Table quando as pessoas precisarem comparar os mesmos campos em um conjunto delimitado de registros.
+
+Prefira outro componente quando:
+
+- **Os registros são arquivos que alguém precisa navegar ou manipular** — use FileManager, com busca,
+  seletor de visualização e menus por item embutidos.
+- **A informação principal é uma métrica única e sua variação** — use Stat.
+- **Não há registros para mostrar** — use EmptyState, em vez de um corpo de tabela vazio.
+
+## Acessibilidade
+
+- Table emite elementos reais `<table>`, `<thead>`, `<tbody>`, `<th>` e `<td>`, então a estrutura de
+  linhas e colunas fica disponível para tecnologias assistivas.
+- Ela não renderiza `<caption>` nem acrescenta `scope` aos cabeçalhos. Dê contexto ao redor e use uma
+  tabela nativa quando as relações precisarem de uma semântica de tabela mais explícita.
+- `hover` é apenas retorno visual. Não faça o propósito de uma linha depender do hover; exponha a ação
+  em um controle visível quando ela puder ser operada.
+- A primeira célula recebe estilo de valor principal, mas continua sendo uma célula de dados. Coloque
+  primeiro o valor identificador, em vez de tratar esse estilo como cabeçalho de linha.
+
+## Props
+
+<PropTable name="Table" />
+
+## HTML puro
+
+Use o wrapper para a superfície e coloque o valor principal do registro na primeira célula:
+
+```html
+<div class="lyra-table-wrap">
+  <table class="lyra-table lyra-table--hover">
+    <thead>
+      <tr>
+        <th>Projeto</th>
+        <th style="text-align: right">Receita</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="lyra-table__primary">Atlas</td>
+        <td style="text-align: right">US$ 38.240</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+```

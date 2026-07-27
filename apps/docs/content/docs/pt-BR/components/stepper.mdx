@@ -1,0 +1,82 @@
+---
+title: Stepper
+description: Um marcador visual de progresso, com índice iniciado em zero, para uma sequência nomeada de etapas.
+---
+
+# Stepper
+
+Stepper mostra uma sequência nomeada e seu ponto atual. Use-o quando alguém percorre etapas conhecidas;
+o fluxo ao redor continua responsável pela navegação e por anunciar que a etapa ativa mudou.
+
+## Exemplos
+
+<Example id="current-step" title="Uma etapa em andamento" layout="block">
+  `active` começa em zero. Etapas anteriores recebem um check, a etapa ativa ganha
+  `aria-current="step"` e as posteriores mantêm seus números sequenciais.
+</Example>
+
+<Example id="start" title="Na primeira etapa" layout="block">
+  Stepper é presentacional, não um controlador de wizard. Atualize `active` quando o fluxo ao redor
+  avançar e forneça o formulário ou a navegação que realmente leva alguém entre etapas.
+</Example>
+
+## Quando usar
+
+Use Stepper para uma sequência nomeada pela qual alguém progride, como onboarding, checkout ou configuração.
+
+Prefira outro componente quando:
+
+- **O trabalho não tem estágios nomeados** — use Progress para uma fração de trabalho sem nome.
+- **As pessoas precisam alternar livremente entre visualizações pares** — use Tabs.
+- **A próxima ação não depende de uma sequência** — use navegação ou ações normais de página.
+
+## Acessibilidade
+
+- A etapa ativa é o único elemento com ARIA: `aria-current="step"`. O componente não tem roles,
+  `aria-valuenow` nem controles interativos.
+- Etapas concluídas substituem seu número por um ícone de check com `aria-hidden`. Etapas posteriores
+  mostram `index + 1`.
+- Stepper é inerte. O fluxo ao redor precisa fornecer navegação operável por teclado e anunciar a
+  mudança de etapa; atualizar só este indicador visual não informa nada a quem usa leitor de tela.
+- Mantenha os nomes das etapas curtos e significativos, pois são o único texto que identifica cada estágio.
+
+## Props
+
+<PropTable name="Stepper" />
+
+## HTML puro
+
+O conector após uma etapa concluída carrega `lyra-step__line--done`; o Stepper não é interativo.
+
+```html
+<div class="lyra-stepper">
+  <span class="lyra-step lyra-step--done">
+    <span class="lyra-step__dot">
+      <svg
+        aria-hidden="true"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </span>
+    <span class="lyra-step__label">Conta</span>
+  </span>
+  <span class="lyra-step__line lyra-step__line--done"></span>
+  <span class="lyra-step lyra-step--active" aria-current="step">
+    <span class="lyra-step__dot">2</span>
+    <span class="lyra-step__label">Convide colegas</span>
+  </span>
+  <span class="lyra-step__line"></span>
+  <span class="lyra-step">
+    <span class="lyra-step__dot">3</span>
+    <span class="lyra-step__label">Escolha um plano</span>
+  </span>
+</div>
+```

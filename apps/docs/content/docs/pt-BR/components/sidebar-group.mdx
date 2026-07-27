@@ -1,0 +1,68 @@
+---
+title: SidebarGroup
+description: Uma seção de navegação persistente com itens ativos, badges opcionais e recolhimento.
+---
+
+# SidebarGroup
+
+SidebarGroup mantém destinos relacionados visíveis na barra lateral. Escolha-o para a estrutura
+persistente do site; use Tabs para poucas visualizações pares dentro da página que alguém já está lendo.
+
+## Exemplos
+
+<Example id="projects" title="Destino atual" layout="block">
+  `active` marca a página atual, enquanto um badge pode carregar uma contagem ou estado estável.
+  Faça o callback navegar ou atualizar o conteúdo ao redor; o grupo não é dono de nenhum dos dois.
+</Example>
+
+<Example id="collapsible" title="Seção recolhível" layout="block">
+  `collapsible` transforma o rótulo em um controle de disclosure. Use `defaultCollapsed` apenas
+  quando a densidade inicial ajudar a escanear uma barra lateral longa, não para esconder o destino
+  principal.
+</Example>
+
+## Quando usar
+
+Use SidebarGroup para destinos persistentes e agrupados no shell da aplicação ou numa barra lateral.
+
+Prefira outro componente quando:
+
+- **Os destinos são poucas visualizações pares de uma página** — use Tabs.
+- **A escolha é uma lista temporária de ações** — use Dropdown.
+- **A pessoa precisa trocar o tenant ou conta atual** — use WorkspaceSwitcher.
+
+## Acessibilidade
+
+- Os itens são botões nativos; `active` adiciona `aria-current="page"`. Faça cada callback de item
+  navegar ou atualizar a visualização atual, para o comportamento de botão levar a algo significativo.
+- Um rótulo recolhível é um `<button aria-expanded>`; um rótulo não recolhível não é botão. Sua seta é
+  um span vazio com `aria-hidden`, rotacionado por CSS.
+- O `onSelect` do item roda antes de `onSelect(id, item)` do grupo. Use o callback do item para trabalho
+  local e o do grupo para o efeito de seleção compartilhado.
+- O rótulo é um cabeçalho estrutural para este grupo de botões, não uma ação, a menos que `collapsible` esteja definido.
+
+## Props
+
+<PropTable name="SidebarGroup" />
+
+## HTML puro
+
+O destino ativo é um botão com `aria-current`; o rótulo de disclosure é outro botão:
+
+```html
+<div class="lyra-sbgroup">
+  <button class="lyra-sbgroup__label lyra-sbgroup__label--btn" type="button" aria-expanded="true">
+    <span>Projeto</span>
+    <span class="lyra-sbgroup__chev" aria-hidden="true"></span>
+  </button>
+  <div class="lyra-sbgroup__items">
+    <button class="lyra-sbgroup__item lyra-sbgroup__item--active" type="button" aria-current="page">
+      <span class="lyra-sbgroup__item-label">Visão geral</span>
+    </button>
+    <button class="lyra-sbgroup__item" type="button">
+      <span class="lyra-sbgroup__item-label">Atividade</span>
+      <span class="lyra-sbgroup__item-badge">8</span>
+    </button>
+  </div>
+</div>
+```

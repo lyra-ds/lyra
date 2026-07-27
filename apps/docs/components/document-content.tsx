@@ -1,25 +1,26 @@
 import type { ComponentType } from 'react';
-import EnDialog from '@/content/docs/en/components/dialog.mdx';
 import EnIndex from '@/content/docs/en/index.mdx';
-import PtBrDialog from '@/content/docs/pt-BR/components/dialog.mdx';
 import PtBrIndex from '@/content/docs/pt-BR/index.mdx';
 import type { Locale } from '@/lib/i18n';
-import { CodeBlock } from './code-block';
-import { DialogPreview } from './dialog-preview';
+import { HeroActions } from './hero-actions';
+import { Pre } from './pre';
 import { PropTable } from './prop-table';
-
-type PageKind = 'dialog' | 'index';
 
 const content: Record<
   Locale,
-  Record<PageKind, ComponentType<{ components?: Record<string, ComponentType<any>> }>>
+  ComponentType<{ components?: Record<string, ComponentType<any>> }>
 > = {
-  en: { dialog: EnDialog, index: EnIndex },
-  'pt-BR': { dialog: PtBrDialog, index: PtBrIndex },
+  en: EnIndex,
+  'pt-BR': PtBrIndex,
 };
 
-export function DocumentContent({ locale, page }: { locale: Locale; page: PageKind }) {
-  const Content = content[locale][page];
+/** Renders the localized landing (index) MDX. Component pages use `ComponentPage`. */
+export function DocumentContent({ locale }: { locale: Locale }) {
+  const Content = content[locale];
 
-  return <Content components={{ CodeBlock, DialogPreview, PropTable }} />;
+  return (
+    <Content
+      components={{ HeroActions: () => <HeroActions locale={locale} />, PropTable, pre: Pre }}
+    />
+  );
 }

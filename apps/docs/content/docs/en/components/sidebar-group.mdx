@@ -1,0 +1,67 @@
+---
+title: SidebarGroup
+description: A persistent navigation section with active items, optional badges and disclosure.
+---
+
+# SidebarGroup
+
+SidebarGroup keeps related destinations visible in a sidebar. Choose it for persistent site structure;
+use Tabs for a few peer views inside the page someone is already reading.
+
+## Examples
+
+<Example id="projects" title="Current destination" layout="block">
+  `active` marks the page someone is on, while a badge can carry a stable count or status. Make the
+  callback perform navigation or update the surrounding content; the group does not own either.
+</Example>
+
+<Example id="collapsible" title="Collapsible section" layout="block">
+  `collapsible` turns the label into a disclosure control. Use `defaultCollapsed` only when the
+  initial density helps people scan a long sidebar, not to hide the primary destination by default.
+</Example>
+
+## When to use
+
+Use SidebarGroup for persistent, grouped destinations in an application shell or a sidebar.
+
+Reach for something else when:
+
+- **The destinations are a few peer views within one page** — use Tabs.
+- **The choice is a temporary action list** — use Dropdown.
+- **The person needs to switch the current tenant or account** — use WorkspaceSwitcher.
+
+## Accessibility
+
+- Items are native buttons; `active` adds `aria-current="page"`. Make each item callback navigate
+  or update the current view, so its button behavior leads somewhere meaningful.
+- A collapsible label is a `<button aria-expanded>`; a non-collapsible label is not a button at all.
+  Its chevron is an empty `aria-hidden` span rotated by CSS.
+- Item-level `onSelect` runs before the group-level `onSelect(id, item)`. Use the item callback for
+  local work and the group callback for the shared selection effect.
+- The label is a structural heading for this group of buttons, not an action unless `collapsible` is set.
+
+## Props
+
+<PropTable name="SidebarGroup" />
+
+## Plain HTML
+
+The active destination is a button with `aria-current`; the disclosure label is a separate button:
+
+```html
+<div class="lyra-sbgroup">
+  <button class="lyra-sbgroup__label lyra-sbgroup__label--btn" type="button" aria-expanded="true">
+    <span>Project</span>
+    <span class="lyra-sbgroup__chev" aria-hidden="true"></span>
+  </button>
+  <div class="lyra-sbgroup__items">
+    <button class="lyra-sbgroup__item lyra-sbgroup__item--active" type="button" aria-current="page">
+      <span class="lyra-sbgroup__item-label">Overview</span>
+    </button>
+    <button class="lyra-sbgroup__item" type="button">
+      <span class="lyra-sbgroup__item-label">Activity</span>
+      <span class="lyra-sbgroup__item-badge">8</span>
+    </button>
+  </div>
+</div>
+```

@@ -1,0 +1,79 @@
+---
+title: Input
+description: Um campo de texto com rótulo, estados de dica e erro, tamanhos e ícones inline.
+---
+
+# Input
+
+Input encapsula o `<input>` nativo, então todo atributo do DOM (`type`, `placeholder`, `value`,
+`onChange`, `disabled`, `aria-*`) passa direto. Ele é **controlado se e somente se `value` estiver
+definido**. Adicione um `label` (ligado via `htmlFor`), um `hint` ou um `error`, que ativa o estilo
+de erro e o `aria-invalid`.
+
+## Exemplos
+
+<Example id="basic" title="Rótulo e dica">
+  Na prática, `label` não é opcional: um placeholder some no instante em que alguém digita, levando
+  junto a única descrição do campo.
+</Example>
+
+<Example id="sizes-and-icon" title="Tamanhos e ícone inline">
+  As alturas acompanham as do Button (sm 32px, md 40px, lg 48px), então campos e ações se alinham na
+  mesma linha. `iconLeft` fica dentro do campo e é decorativo — nunca substitui o rótulo.
+</Example>
+
+<Example id="error" title="Erro e desabilitado">
+  `error` substitui o `hint`, então o campo mostra uma mensagem por vez e o layout nunca salta entre
+  os estados.
+</Example>
+
+<Example id="in-a-form" title="Dentro de um formulário">
+  Valide no submit, não a cada tecla — um erro que aparece enquanto a pessoa ainda está digitando o
+  primeiro caractere é ruído. `name` e `required` são atributos nativos que passam direto, então o
+  campo funciona com `FormData` e com qualquer biblioteca de formulário.
+</Example>
+
+## Quando usar
+
+Use um Input para uma linha de texto livre ou um valor tipado nativo (`email`, `password`,
+`number`, `date` — defina o `type` e o teclado e a validação da plataforma vêm junto).
+
+Prefira outro componente quando:
+
+- **A resposta passa de uma linha** — use Textarea.
+- **A resposta vem de uma lista conhecida** — use Select para listas curtas e Combobox quando for
+  longa a ponto de precisar de filtro.
+- **É um sim/não** — use Checkbox ou Switch.
+- **É um arquivo** — use FileUpload.
+
+## Acessibilidade
+
+- O `label` é ligado ao controle por `htmlFor`/`id`, então clicar nele foca o campo e leitores de
+  tela anunciam o nome. Um Input sem `label` precisa de um `aria-label` seu.
+- `error` define `aria-invalid` e é referenciado pelo campo, então a mensagem é anunciada em vez de
+  ser um retorno apenas por cor.
+- `hint` e `error` dividem um único espaço e um único id: só um é renderizado por vez, então nunca
+  sobra uma descrição velha apontando para o campo.
+- O foco é o anel `--shadow-focus`; o estado de erro muda a borda, nunca o anel de foco.
+
+## Props
+
+<PropTable name="Input" />
+
+## HTML puro
+
+O wrapper do campo carrega o layout; a variante com ícone precisa do `lyra-input-wrap` extra:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="email">E-mail corporativo</label>
+  <input class="lyra-input" id="email" type="email" placeholder="voce@exemplo.dev" />
+  <span class="lyra-hint">Só usamos para avisos de deploy.</span>
+</div>
+
+<div class="lyra-field">
+  <label class="lyra-label" for="slug">Slug do workspace</label>
+  <input class="lyra-input lyra-input--error" id="slug" aria-invalid="true" value="meu workspace" />
+  <span class="lyra-hint lyra-hint--error">Use minúsculas e hífens.</span>
+</div>
+```

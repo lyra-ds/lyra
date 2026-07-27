@@ -1,0 +1,60 @@
+---
+title: Skeleton
+description: A shimmer placeholder shaped like content that is loading, preserving the final layout.
+---
+
+# Skeleton
+
+Skeleton holds the space that real content will occupy while it loads. Match the final shape and line
+lengths, so the page does not jump; use a Spinner when there is no meaningful layout to reserve.
+
+## Examples
+
+<Example id="content-shape" title="Profile-shaped loading state" layout="block">
+  A circle and uneven text bars tell people what is coming while preserving the row's final height.
+  Repeating generic full-width bars makes loading content feel less predictable.
+</Example>
+
+<Example id="card" title="Card-shaped loading state" layout="block">
+  Use the same media and copy proportions as the loaded card. Skeleton is a temporary structural
+  preview, not decoration to add after the layout is already known.
+</Example>
+
+## When to use
+
+Use Skeleton while the page knows the form of content that is still loading.
+
+Reach for something else when:
+
+- **The wait has no final content shape to preserve** — use Spinner.
+- **The operation has measurable progress** — use Progress.
+- **A result failed or needs an explanation** — use Alert or an explicit empty state.
+
+## Accessibility
+
+- Skeleton is `aria-hidden="true"`, so it never announces a meaningless loading bar to screen readers.
+- Put loading state on the surrounding region when it matters, such as `aria-busy="true"` on the content
+  container and a concise nearby status message when the wait is not obvious.
+- The shimmer respects `prefers-reduced-motion` by stopping its animation. Do not add a second animation
+  that reintroduces motion for people who opted out.
+- Skeleton is a `<span>` with no keyboard interaction or focus behaviour.
+
+## Props
+
+<PropTable name="Skeleton" />
+
+## Plain HTML
+
+Use a circle's height as its diameter; give bars widths that resemble the content they replace:
+
+```html
+<div aria-busy="true">
+  <span
+    class="lyra-skeleton lyra-skeleton--circle"
+    style="width: 40px; height: 40px"
+    aria-hidden="true"
+  ></span>
+  <span class="lyra-skeleton" style="width: 55%; height: 14px" aria-hidden="true"></span>
+  <span class="lyra-skeleton" style="width: 85%; height: 12px" aria-hidden="true"></span>
+</div>
+```

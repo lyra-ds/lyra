@@ -1,0 +1,89 @@
+---
+title: Combobox
+description: Um combobox pesquisável de escolha única para listas longas que precisam de filtro antes da seleção.
+---
+
+# Combobox
+
+Combobox é o controle de escolha pesquisável para listas longas demais para percorrer de uma vez. Ele
+mantém o foco DOM no campo de busca enquanto `aria-activedescendant` identifica a opção ativa, então
+filtrar e navegar pelo teclado não desloca o foco pela lista.
+
+## Exemplos
+
+<Example id="basic" title="Opções pesquisáveis" layout="block">
+  Use rótulos curtos que as pessoas consigam prever ao digitar. O `hint` opcional da opção dá
+  contexto para diferenciar escolhas parecidas sem transformar o resultado em outro parágrafo.
+</Example>
+
+<Example id="controlled" title="Seleção controlada" layout="block">
+  Passe `value` e `onChange` quando outra parte da tela possuir a escolha. Sem `value`,
+  `defaultValue` inicia o valor selecionado pelo próprio componente.
+</Example>
+
+## Quando usar
+
+Use Combobox para uma escolha em uma lista conhecida quando filtrar tornar essa escolha materialmente mais rápida de encontrar.
+
+Prefira outro componente quando:
+
+- **A lista é curta e não precisa de filtro** — use Select e mantenha o seletor nativo do navegador.
+- **Poucas opções mutuamente exclusivas devem ser comparadas de relance** — use Radio, em vez de escondê-las.
+- **A pessoa está inserindo um valor que não se limita às opções** — use Input ou Textarea, conforme o comprimento.
+
+## Acessibilidade
+
+- O gatilho expõe `aria-haspopup="listbox"`, `aria-expanded` e `aria-controls`; seu popup contém uma `role="listbox"` com itens `role="option"`.
+- Quando aberto, o foco vai para a busca (`role="combobox"`). Ela usa `aria-activedescendant` para a opção ativa e a reinicia após filtrar.
+- Seta para cima/baixo muda a opção ativa; Enter a seleciona; Escape fecha o popup e devolve o foco ao gatilho.
+- Um label nomeia a busca com `aria-labelledby`; sem ele, o placeholder da busca vira `aria-label`. Dica ou erro descreve ambos os controles.
+
+## Props
+
+<PropTable name="Combobox" />
+
+## HTML puro
+
+Mantenha alinhados os ids do gatilho, da busca e da listbox. O foco DOM permanece na busca;
+`aria-activedescendant` identifica a opção ativa sem mover o foco para dentro da lista:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" id="country-label" for="country">País</label>
+  <span class="lyra-combobox">
+    <button
+      class="lyra-input lyra-combobox__trigger"
+      id="country"
+      type="button"
+      aria-haspopup="listbox"
+      aria-expanded="true"
+      aria-controls="country-listbox"
+    >
+      <span class="lyra-combobox__placeholder">Escolha um país</span>
+    </button>
+    <div class="lyra-combobox__pop">
+      <div class="lyra-combobox__search">
+        <input
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="country-listbox"
+          aria-autocomplete="list"
+          aria-activedescendant="country-option-0"
+          aria-labelledby="country-label"
+        />
+      </div>
+      <div class="lyra-combobox__list" id="country-listbox" role="listbox">
+        <button
+          class="lyra-combobox__option lyra-combobox__option--active"
+          id="country-option-0"
+          role="option"
+          tabindex="-1"
+          aria-selected="false"
+        >
+          Brasil
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

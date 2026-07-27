@@ -1,0 +1,77 @@
+---
+title: Card
+description: Uma superfície com borda para conteúdo relacionado, ações no cabeçalho, rodapé e estado de link.
+---
+
+# Card
+
+Card agrupa informações que devem ser lidas e acionadas como uma unidade. Adicione borda apenas quando
+essa fronteira merecer existir; use `asChild` quando toda a superfície simples precisar ser um link real.
+
+## Exemplos
+
+<Example id="structured" title="Cabeçalho, ações e rodapé" layout="plain">
+  Um título cria um alvo de leitura, ações ficam na sua ponta e o rodapé guarda o próximo passo. Não
+  dê tanto trabalho a um card quando um título e parágrafo já explicam a relação.
+</Example>
+
+<Example id="plain" title="Uma superfície simples" layout="plain">
+  O padding padrão serve a um bloco autocontido. Defina `padded={false}` apenas quando o filho
+  controla o próprio espaçamento, como uma tabela ou mídia que precisa encostar na borda.
+</Example>
+
+<Example id="as-link" title="Um link totalmente clicável" layout="plain">
+  `asChild` preserva a âncora filha como o único elemento renderizado, então o comportamento nativo
+  de link continua. Ele só aceita Card simples: `title` e `footer` criariam elementos extras e
+  lançam erro.
+</Example>
+
+## Quando usar
+
+Use Card para um registro, resumo ou opção coerente cujo conteúdo precisa de uma fronteira compartilhada
+e talvez de uma próxima ação.
+
+Prefira outro componente quando:
+
+- **Um título e conteúdo já pertencem ao fluxo da página** — use uma seção simples.
+- **A informação é um status ou contagem curta ao lado de outro elemento** — use Badge.
+- **A unidade expande e recolhe no próprio lugar** — use Accordion.
+- **O tratamento visual existe só para disparar uma ação** — use Button ou IconButton.
+
+## Acessibilidade
+
+- Card renderiza um `<div>` não semântico por padrão. Seu `title` opcional é um `<h3>`; mantenha os
+  níveis de título significativos no contorno da página.
+- `interactive` adiciona elevação no hover e cursor de ponteiro, não interação por teclado. Use
+  `asChild` com âncora para navegação, ou coloque um Button real dentro para uma ação.
+- Com `asChild`, forneça exatamente um filho semântico. Uma âncora precisa de `href` real para entrar
+  na ordem de foco do teclado e aceitar os comandos padrão de link.
+- Não aninhe elementos interativos em um card totalmente clicável. Separe ações concorrentes em Card
+  estruturado, com botões em `actions` ou `footer`.
+
+## Props
+
+<PropTable name="Card" />
+
+## HTML puro
+
+Use a classe do corpo apenas com cabeçalho ou rodapé; cards simples com padding usam `lyra-card--padded`:
+
+```html
+<article class="lyra-card">
+  <header class="lyra-card__header">
+    <h3 class="lyra-card__title">Deploy de produção</h3>
+    <div class="lyra-card__actions">
+      <button class="lyra-btn lyra-btn--ghost lyra-btn--sm">Ver logs</button>
+    </div>
+  </header>
+  <div class="lyra-card__body">A versão 2.4.0 aguarda aprovação.</div>
+  <footer class="lyra-card__footer">
+    <button class="lyra-btn lyra-btn--primary lyra-btn--sm">Revisar</button>
+  </footer>
+</article>
+
+<a class="lyra-card lyra-card--padded lyra-card--interactive" href="/deployments/2-4-0"
+  >Ler deploy</a
+>
+```

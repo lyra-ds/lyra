@@ -1,0 +1,92 @@
+---
+title: Tabs
+description: Uma lista de abas controlada para alternar entre visualizações pares, com linhas ou pílulas.
+---
+
+# Tabs
+
+Tabs alterna entre poucas visualizações pares que já merecem ficar ao alcance. Escolha Tabs quando
+mudar de visualização for barato; se carregar uma visualização custar caro, use um controle que peça confirmação.
+
+## Exemplos
+
+<Example id="line" title="Abas em linha" layout="block">
+  `active` é obrigatório e controlado. Atualize-o em `onChange`; clique e navegação pelo teclado
+  solicitam o novo id. Tabs renderiza apenas rótulos e painéis vazios, então a aplicação renderiza o
+  conteúdo.
+</Example>
+
+<Example id="pills-and-counts" title="Pílulas e contagens" layout="block">
+  Use `pills` quando o controle parecer um filtro compacto entre conjuntos pares. Contagens fazem
+  parte da decisão pelo rótulo; não as adicione quando mudarem rápido demais para ajudar.
+</Example>
+
+## Quando usar
+
+Use Tabs para um conjunto pequeno e estável de visualizações pares que as pessoas alternam no mesmo contexto.
+
+Prefira outro componente quando:
+
+- **Comandos precisam ficar recolhidos** — use Dropdown, que apresenta ações, não visualizações.
+- **Há muitos destinos ou uma hierarquia** — use uma navegação que possa mostrar a estrutura.
+- **Um painel é caro para renderizar ou buscar** — use um controle com ativação explícita, para que
+  percorrer as escolhas não dispare trabalho que ninguém pediu.
+
+## Acessibilidade
+
+- Renderiza um `role="tablist"` com botões de aba nativos. Cada aba tem `role="tab"`, `aria-selected`
+  e `aria-controls`; elementos vazios `role="tabpanel"` gerados são rotulados por suas abas.
+- Usa `tabIndex` rotativo: apenas a aba ativa entra na ordem de Tab. ArrowLeft/ArrowRight dão a volta,
+  e Home/End levam à primeira ou à última aba.
+- A navegação por setas ativa automaticamente enquanto move o foco. Isso serve para painéis baratos;
+  evite quando um painel iniciar renderização cara ou uma requisição de rede.
+- O componente não renderiza o conteúdo dos painéis. Renderize esse conteúdo você e preserve um
+  indicador de foco visível para controles que adicionar ao redor dele.
+
+## Props
+
+<PropTable name="Tabs" />
+
+## HTML puro
+
+Tabs emite a lista de abas e seus painéis vazios rotulados. O conteúdo da aplicação fica fora deste markup.
+
+```html
+<div class="lyra-tabs" id="project-tabs" role="tablist">
+  <button
+    id="project-tabs-tab-0"
+    class="lyra-tab lyra-tab--active"
+    type="button"
+    role="tab"
+    aria-selected="true"
+    aria-controls="project-tabs-panel-0"
+    tabindex="0"
+  >
+    Visão geral
+  </button>
+  <button
+    id="project-tabs-tab-1"
+    class="lyra-tab"
+    type="button"
+    role="tab"
+    aria-selected="false"
+    aria-controls="project-tabs-panel-1"
+    tabindex="-1"
+  >
+    Atividade<span class="lyra-tab__count">8</span>
+  </button>
+</div>
+<div
+  id="project-tabs-panel-0"
+  role="tabpanel"
+  aria-labelledby="project-tabs-tab-0"
+  tabindex="0"
+></div>
+<div
+  id="project-tabs-panel-1"
+  role="tabpanel"
+  aria-labelledby="project-tabs-tab-1"
+  tabindex="0"
+  hidden
+></div>
+```

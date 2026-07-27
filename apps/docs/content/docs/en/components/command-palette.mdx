@@ -1,0 +1,92 @@
+---
+title: CommandPalette
+description: A searchable command index with grouped results, keyboard navigation and modal or inline modes.
+---
+
+# CommandPalette
+
+CommandPalette is a searchable index of commands and destinations. Choose whether it opens as a global
+modal or embeds `inline`; use Dropdown instead when a short command list belongs to one control.
+
+## Examples
+
+<Example id="inline" title="Inline command list" layout="plain">
+  `inline` renders only the panel, so it works in documentation and embedded surfaces without an
+  overlay, portal, focus trap or scroll lock. `hint` is secondary text and also part of filtering;
+  `shortcut` only displays keys separated by spaces.
+</Example>
+
+<Example id="hints" title="Partial keyboard hints" layout="plain">
+  `hints` merges over the defaults, so changing `navigate` and `select` keeps the close hint. The
+  default `emptyMessage` is followed by the query, so use a sentence opener such as “No results
+  for”.
+</Example>
+
+## When to use
+
+Use CommandPalette when people need a keyboard-reachable, searchable index of actions or destinations.
+
+Reach for something else when:
+
+- **A few commands belong to one visible control** — use Dropdown.
+- **The choice changes the active workspace** — use WorkspaceSwitcher, which reports selection.
+- **People move among a small set of peer views** — use Tabs.
+
+## Accessibility
+
+- The search input is a `role="combobox"` with `aria-expanded`, `aria-controls`,
+  `aria-autocomplete="list"` and `aria-activedescendant`. Results are `role="option"` in a
+  `role="listbox"`; labelled groups use `role="group"`.
+- DOM focus stays in the input. Arrow keys move virtual focus through the options, so people can keep
+  typing while the active descendant changes; Enter selects the active item and Escape calls `onClose`.
+- An item's `onSelect` runs before the palette-level callback. In modal mode, supply `onClose` to
+  update `open`; closing restores focus to the element that opened the palette.
+- Modal mode portals a named `role="dialog"`, traps focus, locks scroll and remains mounted for exit
+  motion. Pass `aria-label` to replace “Command palette” in a localized interface. Inline mode is
+  not a dialog and has no dialog name.
+- `onOpen` installs the global Command/Ctrl+`hotkey` listener (`k` by default). It is intentionally
+  absent from these examples because this documentation site owns that shortcut.
+
+## Props
+
+<PropTable name="CommandPalette" />
+
+## Plain HTML
+
+This is the panel structure used by inline mode. A modal wraps it in the overlay and adds dialog semantics:
+
+```html
+<div class="lyra-cmdk">
+  <div class="lyra-cmdk__search">
+    <input
+      role="combobox"
+      aria-label="Search commands"
+      aria-expanded="true"
+      aria-controls="command-list"
+      aria-autocomplete="list"
+      aria-activedescendant="command-new-project"
+    />
+    <kbd class="lyra-kbd">esc</kbd>
+  </div>
+  <div class="lyra-cmdk__body" id="command-list" role="listbox">
+    <div class="lyra-cmdk__group" role="group" aria-labelledby="create-label">
+      <span class="lyra-cmdk__group-label" id="create-label">Create</span>
+      <button
+        class="lyra-cmdk__item lyra-cmdk__item--active"
+        id="command-new-project"
+        type="button"
+        role="option"
+        aria-selected="true"
+      >
+        <span class="lyra-cmdk__item-label">New project</span>
+        <span class="lyra-cmdk__shortcut"
+          ><kbd class="lyra-kbd">C</kbd><kbd class="lyra-kbd">P</kbd></span
+        >
+      </button>
+    </div>
+  </div>
+  <div class="lyra-cmdk__footer">
+    <span><kbd class="lyra-kbd">↑</kbd><kbd class="lyra-kbd">↓</kbd> navigate</span>
+  </div>
+</div>
+```

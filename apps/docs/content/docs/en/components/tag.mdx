@@ -1,0 +1,57 @@
+---
+title: Tag
+description: A neutral label for user-managed categories, filters and keywords, optionally removable.
+---
+
+# Tag
+
+Tag represents a member of a set someone can recognise, filter or remove. Keep its text concrete;
+when removal is allowed, `onRemove` adds a compact control instead of turning the whole label into one.
+
+## Examples
+
+<Example id="basic" title="Labels in a set">
+  Tags work best when each word describes the same kind of thing: topics, assignees or active
+  filters. A mixed bag of statuses and actions is harder to scan than separate components.
+</Example>
+
+<Example id="removable" title="Removing a filter">
+  Passing `onRemove` adds the remove affordance. Update the surrounding set immediately, so the
+  result of the click is visible without asking a person to infer whether it worked.
+</Example>
+
+## When to use
+
+Use a Tag for a user-managed label that belongs to a set, especially where it may become an active filter.
+
+Reach for something else when:
+
+- **The label reports status, severity or a count** — use Badge.
+- **The choice is one of several named options** — use Checkbox, Radio or Select.
+- **The label needs an action beyond removal** — use Button or a menu.
+
+## Accessibility
+
+- Tag itself is a plain `<span>` and stays in the reading order as text.
+- When `onRemove` is present, it renders a native `type="button"` with the accessible name “Remove”.
+  Keep the set's purpose and the tag text available nearby so that action has clear context.
+- The remove button is keyboard reachable and uses native Enter/Space activation. Its 14px visual size
+  is compact, so do not make it the only practical way to clear a filter on touch-heavy screens.
+- Do not use color as the category name; the visible tag text is the meaning.
+
+## Props
+
+<PropTable name="Tag" />
+
+## Plain HTML
+
+Use a real button for removal, not a clickable span:
+
+```html
+<span class="lyra-tag">Accessibility</span>
+
+<span class="lyra-tag">
+  Active
+  <button class="lyra-tag__remove" type="button" aria-label="Remove">×</button>
+</span>
+```

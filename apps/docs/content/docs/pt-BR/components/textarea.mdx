@@ -1,0 +1,66 @@
+---
+title: Textarea
+description: Um campo multilinha com rótulo, estados de dica e erro, baseado no textarea nativo.
+---
+
+# Textarea
+
+Textarea encapsula o `<textarea>` nativo para respostas que precisam de mais de uma linha. Decida o
+volume esperado antes: `rows` define a altura inicial, e a pessoa ainda pode redimensionar o campo na vertical.
+
+## Exemplos
+
+<Example id="basic" title="Rótulo e dica">
+  Um placeholder some assim que alguém digita. Mantenha a pergunta no `label` e use `hint` para uma
+  orientação que continue disponível durante a resposta.
+</Example>
+
+<Example id="error-and-rows" title="Erro, linhas e desabilitado">
+  `error` substitui `hint` e acrescenta `aria-invalid`, então há uma mensagem para ler, não duas
+  concorrendo. Use `rows` para a primeira resposta esperada, não como limite rígido.
+</Example>
+
+## Quando usar
+
+Use Textarea para notas, descrições e mensagens livres em que uma linha esconderia a forma da resposta.
+
+Prefira outro componente quando:
+
+- **A resposta é um valor curto** — use Input para ter um campo compacto e o tipo nativo adequado.
+- **A resposta vem de uma lista conhecida** — use Select ou Combobox, em vez de pedir que a pessoa
+  reconstrua uma opção em texto.
+- **A resposta é um arquivo** — use FileUpload, que deixa claro o seletor de arquivos e o estado do upload.
+
+## Acessibilidade
+
+- Um `label` fornecido é ligado por `htmlFor` e um `id` gerado ou passado pelo consumidor. Sem ele,
+  ofereça um nome acessível, como `aria-label`.
+- `hint` ou `error` é ligado por `aria-describedby`; `error` substitui `hint` e define `aria-invalid`.
+- É um `<textarea>` nativo, então digitação, edição multilinha e envio de formulário mantêm o comportamento do navegador.
+- O anel de foco é `--shadow-focus`; o erro muda a borda e a sombra de foco, nunca apenas o rótulo.
+
+## Props
+
+<PropTable name="Textarea" />
+
+## HTML puro
+
+Use as classes compartilhadas de campo, rótulo e dica em volta de um textarea nativo:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="summary">Resumo do projeto</label>
+  <textarea class="lyra-input lyra-textarea" id="summary" rows="4"></textarea>
+  <span class="lyra-hint">Visível para todos no workspace.</span>
+</div>
+
+<div class="lyra-field">
+  <label class="lyra-label" for="notes">Notas da versão</label>
+  <textarea
+    class="lyra-input lyra-textarea lyra-input--error"
+    id="notes"
+    aria-invalid="true"
+  ></textarea>
+  <span class="lyra-hint lyra-hint--error">Adicione mais detalhes antes de publicar.</span>
+</div>
+```

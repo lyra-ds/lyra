@@ -1,0 +1,91 @@
+---
+title: CommandPalette
+description: Um índice buscável de comandos com resultados agrupados, teclado e modos modal ou inline.
+---
+
+# CommandPalette
+
+CommandPalette é um índice buscável de comandos e destinos. Escolha entre abrir como modal global ou
+incorporar com `inline`; use Dropdown quando uma lista curta de comandos pertencer a um único controle.
+
+## Exemplos
+
+<Example id="inline" title="Lista de comandos inline" layout="plain">
+  `inline` renderiza apenas o painel, então funciona em documentação e superfícies incorporadas sem
+  overlay, portal, focus trap ou scroll lock. `hint` é texto secundário e também participa do
+  filtro; `shortcut` apenas exibe teclas separadas por espaços.
+</Example>
+
+<Example id="hints" title="Dicas de teclado parciais" layout="plain">
+  `hints` se mistura aos padrões, então mudar `navigate` e `select` preserva a dica de fechar. O
+  `emptyMessage` padrão é seguido pela busca, então use uma abertura de frase como “No results for”.
+</Example>
+
+## Quando usar
+
+Use CommandPalette quando as pessoas precisarem de um índice buscável de ações ou destinos, acessível pelo teclado.
+
+Prefira outro componente quando:
+
+- **Poucos comandos pertencem a um controle visível** — use Dropdown.
+- **A escolha muda o workspace ativo** — use WorkspaceSwitcher, que informa a seleção.
+- **A pessoa alterna entre poucas visualizações pares** — use Tabs.
+
+## Acessibilidade
+
+- O campo de busca é um `role="combobox"` com `aria-expanded`, `aria-controls`,
+  `aria-autocomplete="list"` e `aria-activedescendant`. Os resultados são `role="option"` dentro de
+  um `role="listbox"`; grupos rotulados usam `role="group"`.
+- O foco DOM fica no campo. As setas movem o foco virtual pelas opções, permitindo continuar digitando
+  enquanto o descendente ativo muda; Enter seleciona o item ativo e Escape chama `onClose`.
+- O `onSelect` de um item roda antes do callback do palette. No modo modal, passe `onClose` para
+  atualizar `open`; ao fechar, o foco volta ao elemento que abriu a paleta.
+- O modo modal faz portal de um `role="dialog"` nomeado, prende o foco, bloqueia a rolagem e permanece
+  montado durante a animação de saída. Passe `aria-label` para substituir “Command palette” numa
+  interface localizada. O modo inline não é diálogo e não tem nome de diálogo.
+- `onOpen` instala o listener global Command/Ctrl+`hotkey` (`k` por padrão). Ele fica de propósito
+  fora destes exemplos porque este site de documentação já é dono desse atalho.
+
+## Props
+
+<PropTable name="CommandPalette" />
+
+## HTML puro
+
+Esta é a estrutura de painel usada pelo modo inline. Um modal a envolve no overlay e adiciona a semântica de diálogo:
+
+```html
+<div class="lyra-cmdk">
+  <div class="lyra-cmdk__search">
+    <input
+      role="combobox"
+      aria-label="Buscar comandos"
+      aria-expanded="true"
+      aria-controls="command-list"
+      aria-autocomplete="list"
+      aria-activedescendant="command-new-project"
+    />
+    <kbd class="lyra-kbd">esc</kbd>
+  </div>
+  <div class="lyra-cmdk__body" id="command-list" role="listbox">
+    <div class="lyra-cmdk__group" role="group" aria-labelledby="create-label">
+      <span class="lyra-cmdk__group-label" id="create-label">Criar</span>
+      <button
+        class="lyra-cmdk__item lyra-cmdk__item--active"
+        id="command-new-project"
+        type="button"
+        role="option"
+        aria-selected="true"
+      >
+        <span class="lyra-cmdk__item-label">Novo projeto</span>
+        <span class="lyra-cmdk__shortcut"
+          ><kbd class="lyra-kbd">C</kbd><kbd class="lyra-kbd">P</kbd></span
+        >
+      </button>
+    </div>
+  </div>
+  <div class="lyra-cmdk__footer">
+    <span><kbd class="lyra-kbd">↑</kbd><kbd class="lyra-kbd">↓</kbd> navegar</span>
+  </div>
+</div>
+```

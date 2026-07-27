@@ -1,0 +1,82 @@
+---
+title: Avatar
+description: Um marcador de pessoa ou organização com imagem, iniciais, tamanho, forma e presença.
+---
+
+# Avatar
+
+Avatar identifica uma pessoa ou organização em espaços compactos. Escolha uma imagem quando o
+reconhecimento importar; caso contrário, `name` cria iniciais previsíveis e `square` diferencia organizações.
+
+## Exemplos
+
+<Example id="initials-and-status" title="Iniciais e presença">
+  Quando uma imagem não está disponível, as iniciais mantêm uma identidade visível sem reservar
+  espaço para imagem quebrada. O ponto de status indica presença ao vivo, não substitui
+  disponibilidade escrita.
+</Example>
+
+<Example id="sizes-and-shapes" title="Tamanhos e forma de organização">
+  Combine o avatar com a densidade da linha. Use `square` para uma organização, para que pessoas e
+  espaços compartilhados não se confundam na mesma categoria visual.
+</Example>
+
+<Example id="image" title="Imagem com status">
+  Forneça `name` junto de todo `src`: ele é o texto alternativo da imagem e a identidade de fallback
+  se essa fonte for removida depois.
+</Example>
+
+## AvatarGroup
+
+<Example id="group" title="Pessoas em uma linha">
+  AvatarGroup sobrepõe um conjunto de pessoas em uma linha. Ele não tem máximo nem comportamento de
+  "+3 mais", então decida o conjunto visível na aplicação em vez de esperar que ele gerencie
+  excesso.
+</Example>
+
+AvatarGroup não tem nome acessível próprio. Um grupo de avatares sem nomes próximos não diz nada a um
+leitor de tela, então rotule a região ao redor ou liste os nomes das pessoas.
+
+## Quando usar
+
+Use Avatar ao lado de um nome, dono ou lista de participantes quando reconhecer quem está envolvido
+muda a próxima ação de quem lê.
+
+Prefira outro componente quando:
+
+- **O texto é um status, uma contagem ou metadado** — use Badge.
+- **O item é uma categoria ou filtro gerenciado pelo usuário** — use Tag.
+- **A identidade precisa de ação ou resumo de perfil** — use Card ou uma tela de perfil dedicada.
+
+## Acessibilidade
+
+- Com `src`, Avatar renderiza um `<img>` cujo `alt` é `name`; passe o nome completo real, não iniciais.
+- Sem `src`, `name` gera no máximo duas iniciais e o tooltip nativo. As iniciais são `aria-hidden`, então
+  mantenha o nome da pessoa em texto próximo ou adicione `aria-label` ao Avatar.
+- Um ponto de presença usa `role="status"` com rótulo `online`, `busy` ou `away`. Não faça da presença a
+  única forma de comunicar uma disponibilidade importante.
+- Avatar é um `<span>`, não um botão ou link. Envolva-o no elemento interativo semântico ao abrir um
+  perfil e dê a esse elemento um nome acessível.
+
+## Props
+
+<PropTable name="Avatar" />
+
+## HTML puro
+
+Mantenha o texto alternativo da imagem significativo; o ponto de status tem um estado próprio anunciado:
+
+```html
+<span class="lyra-avatar lyra-avatar--md" title="Maya Chen">
+  <img src="maya-chen.jpg" alt="Maya Chen" />
+  <span
+    class="lyra-avatar__status lyra-avatar__status--online"
+    role="status"
+    aria-label="online"
+  ></span>
+</span>
+
+<span class="lyra-avatar lyra-avatar--lg lyra-avatar--square" title="Lyra Design">
+  <span aria-hidden="true">LD</span>
+</span>
+```

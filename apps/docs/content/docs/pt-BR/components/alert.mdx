@@ -1,0 +1,64 @@
+---
+title: Alert
+description: Uma mensagem inline que fica junto do que ela trata, em quatro tons semânticos.
+---
+
+# Alert
+
+Alert diz algo sobre o conteúdo ao redor e permanece ali. Decida se a mensagem pertence ao lado do que
+ela trata — se pertence, use este; se deve aparecer sobre a interface e sumir, use Toast.
+
+## Exemplos
+
+<Example id="tones" title="Os quatro tons" layout="block">
+  Tom é uma afirmação sobre consequência, não decoração. `danger` diz que algo falhou ou vai falhar;
+  `warning` diz que algo precisa de atenção antes de um prazo. Dois alertas `danger` na mesma tela
+  significam que nenhum é urgente.
+</Example>
+
+<Example id="title-and-icon" title="Título, ícone e corpo" layout="block">
+  Um título se justifica quando o corpo precisa de mais de uma frase. O ícone repete o tom para quem
+  não percebe a diferença de cor.
+</Example>
+
+## Quando usar
+
+Use Alert quando a mensagem é sobre o conteúdo ao lado dela e deve continuar legível enquanto esse
+conteúdo estiver na tela.
+
+Procure outra coisa quando:
+
+- **A mensagem é sobre uma ação que acabou de terminar** — use Toast, que aparece sobre a interface e
+  sai sozinho.
+- **Não há nada para mostrar ainda** — use EmptyState. Resultado vazio não é erro.
+- **A mensagem é de um campo só** — use o texto de erro do próprio controle, junto do input.
+
+## Acessibilidade
+
+- Alert renderiza `role="status"` em todos os tons, inclusive `danger`. `status` é uma live region
+  **polida**: a tecnologia assistiva anuncia na próxima pausa, sem interromper. Um alerta que aparece
+  enquanto alguém digita não corta a pessoa — e também não é ouvido na hora.
+- Se uma falha precisa mesmo interromper, anuncie você numa live region assertiva e deixe o Alert com
+  a mensagem visível.
+- `title` é a primeira linha em negrito, não o atributo HTML de tooltip — o Alert omite a prop nativa
+  `title` justamente para os dois não se confundirem.
+- Alert não tem controle de dispensa nem comportamento de foco. Ele nunca tira o foco de uma tarefa.
+- Não dependa só do tom. As palavras precisam carregar o significado para quem não distingue as cores.
+
+## Props
+
+<PropTable name="Alert" />
+
+## HTML puro
+
+O tom é uma classe; título e corpo são elementos separados:
+
+```html
+<div class="lyra-alert lyra-alert--warning" role="status">
+  <span class="lyra-alert__icon"></span>
+  <div>
+    <p class="lyra-alert__title">Seu teste termina em três dias</p>
+    <p class="lyra-alert__body">Os projetos continuam legíveis depois disso.</p>
+  </div>
+</div>
+```

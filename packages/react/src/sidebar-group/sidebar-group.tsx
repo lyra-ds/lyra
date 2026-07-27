@@ -71,7 +71,28 @@ export const SidebarGroup = /*#__PURE__*/ forwardRef<HTMLDivElement, SidebarGrou
               onClick={() => setCollapsed((previous) => !previous)}
             >
               <span>{label}</span>
-              <span className="lyra-sbgroup__chev" aria-hidden="true" />
+              {/*
+                The handoff draws this chevron with an Icon and the class only supplies the
+                rotation; converting it to a bare span left a 0x0 element, so a collapsible group
+                had no visible affordance at all. The SVG is inlined rather than imported from
+                Icon — importing Icon here pulls the whole name registry into every consumer that
+                imports SidebarGroup, which cost 5.4kB and blew the package's size budget. Drawer's
+                close button and Stepper's check mark inline theirs for the same reason.
+              */}
+              <svg
+                className="lyra-sbgroup__chev"
+                aria-hidden="true"
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </button>
           ) : (
             <div className="lyra-sbgroup__label">{label}</div>

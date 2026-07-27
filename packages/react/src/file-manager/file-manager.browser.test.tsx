@@ -50,7 +50,13 @@ describe('FileManager', () => {
         expect(container.querySelector('.lyra-fm__shared')!.className).toBe('lyra-fm__shared');
         expect(container.querySelector('.lyra-fm__cell')!.className).toBe('lyra-fm__cell');
         expect(container.querySelector('.lyra-fm__actions')!.className).toBe('lyra-fm__actions');
-        expect(container.querySelector('.lyra-fm__more')!.className).toBe('lyra-fm__more');
+        // Dropdown merges its trigger semantics onto this span instead of wrapping it, so the
+        // action affordance is one element and one tab stop rather than two nested ones.
+        const more = container.querySelector<HTMLElement>('.lyra-fm__more')!;
+        expect(more.className).toBe('lyra-dropdown__trigger lyra-fm__more');
+        expect(more.getAttribute('role')).toBe('button');
+        expect(more.getAttribute('aria-haspopup')).toBe('menu');
+        expect(more.getAttribute('aria-label')).toBe('Actions for Projects');
         expect(errorSpy).not.toHaveBeenCalled();
         expect(
           (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
@@ -78,6 +84,33 @@ describe('FileManager', () => {
       ).toEqual([]);
     });
   }
+
+  for (const theme of themes) {
+    it(`clears color-contrast on the column headings in ${theme}`, async () => {
+      setTheme(theme);
+      const { container } = await render(<FileManager files={files} />);
+      const violations = (
+        await axe.run(container.querySelector<HTMLElement>('.lyra-fm__head')!, {
+          runOnly: ['color-contrast'],
+        })
+      ).violations;
+      expect(violations).toEqual([]);
+    });
+  }
+
+  it('gives the row name and the action trigger a 44px touch target', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    const name = container.querySelector<HTMLElement>('.lyra-fm__name')!.getBoundingClientRect();
+    expect(name.height).toBeGreaterThanOrEqual(44);
+
+    // The trigger keeps its 30px visible box; the hit area is the transparent ::after.
+    const more = container.querySelector<HTMLElement>('.lyra-fm__more')!;
+    expect(Math.round(more.getBoundingClientRect().height)).toBe(30);
+    const hit = getComputedStyle(more, '::after');
+    expect(hit.content).not.toBe('none');
+    expect(hit.top).toBe('-7px');
+    expect(hit.left).toBe('-7px');
+  });
 
   it('filters by name, keeps folders first, and shows the empty state', async () => {
     const screen = await render(<FileManager files={files} emptyMessage="Nothing here" />);

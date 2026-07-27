@@ -4,6 +4,7 @@ import { userEvent } from 'vitest/browser';
 import axe from 'axe-core';
 import '@lyra-ds/styles/styles.css';
 import { Dropdown } from './index';
+import { Button } from '../button';
 
 const themes = ['light', 'dark'] as const;
 const items = [
@@ -51,6 +52,42 @@ describe('Dropdown', () => {
     });
   }
 
+  it('makes a Button trigger the control itself: one tab stop, the ARIA on the focused element', async () => {
+    const { container } = await render(
+      <Dropdown trigger={<Button variant="secondary">Project actions</Button>} items={items} />,
+    );
+
+    // No wrapper element around the button: the button IS the trigger.
+    const trigger = container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!;
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(trigger.className).toContain('lyra-btn');
+    expect(trigger.querySelector('button')).toBeNull();
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+
+    // Exactly one focusable node for the control, and it is the one carrying the menu semantics.
+    const focusable = container.querySelectorAll('button, [tabindex="0"], [role="button"]');
+    expect(focusable).toHaveLength(1);
+    expect(focusable[0]).toBe(trigger);
+
+    // It still opens, and axe sees no nested-interactive.
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(container.querySelector('[role=menu]')).not.toBeNull();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
+    ).toEqual([]);
+  });
+
+  it('still wraps a bare string trigger in its own button-role span', async () => {
+    const { container } = await render(<Dropdown trigger="Actions" items={items} />);
+    const trigger = container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!;
+    expect(trigger.tagName).toBe('SPAN');
+    expect(trigger.getAttribute('role')).toBe('button');
+    expect(trigger.tabIndex).toBe(0);
+  });
+
   it('opens on trigger keys and moves real DOM focus through menu commands', async () => {
     const { container } = await render(<Dropdown trigger="Actions" items={items} />);
     const trigger = container.querySelector<HTMLElement>('[role=button]')!;
@@ -96,5 +133,31 @@ describe('Dropdown', () => {
     await userEvent.keyboard('{Tab}');
     expect(container.querySelector('[role=menu]')).toBeNull();
     expect(document.activeElement).not.toBe(reopened);
+  });
+
+  it('flips the menu above the trigger instead of scrolling the page when there is no room below', async () => {
+    const { container } = await render(
+      <>
+        <div style={{ height: 'calc(100vh - 80px)' }} />
+        <Dropdown trigger="Actions" items={items} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    const trigger = container.querySelector<HTMLElement>('[role=button]')!;
+    const scrollBefore = window.scrollY;
+    await userEvent.click(trigger);
+    expect(container.querySelector('[role=menu]')!.className).toContain('lyra-menu--up');
+    expect(window.scrollY).toBe(scrollBefore);
+  });
+
+  it('keeps the menu below the trigger when it fits', async () => {
+    const { container } = await render(
+      <>
+        <Dropdown trigger="Actions" items={items} />
+        <div style={{ height: '150vh' }} />
+      </>,
+    );
+    await userEvent.click(container.querySelector<HTMLElement>('[role=button]')!);
+    expect(container.querySelector('[role=menu]')!.className).not.toContain('lyra-menu--up');
   });
 });

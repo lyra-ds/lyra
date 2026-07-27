@@ -84,7 +84,7 @@
   width: 100%;
   max-width: 440px;
   z-index: var(--z-dialog);
-  animation: lyra-pop-in var(--duration-base) var(--ease-out);
+  animation: lyra-overlay-in var(--duration-slow) var(--ease-out);
 }
 .lyra-dialog__header {
   display: flex;
@@ -295,16 +295,28 @@
 .lyra-dialog__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
 .lyra-dialog__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
 
+/* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
+   extension (see tools/parity/parity.mjs, ADDITIVE_EXTENSIONS). The package's CSS must stay a
+   declaration-level copy of the handoff, so an override cannot edit the original rule: it has to
+   restate the selector at the end of the file and win on cascade order. That is a duplicate
+   selector by construction. The rule stays on for the handoff-verbatim region above. */
+
+/* Additive overlay-motion extension (parity ADDITIVE_EXTENSIONS): large overlay panels use
+   dedicated entrance and exit keyframes without altering the shared lyra-pop-in animation. */
 .lyra-dialog--closing {
-  animation: lyra-pop-out var(--duration-base) var(--ease-out) forwards;
+  animation: lyra-overlay-out var(--duration-base) var(--ease-out) forwards;
 }
 .lyra-dialog-overlay--closing {
   animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
 }
 @keyframes lyra-fade-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes lyra-pop-out {
-  from { transform: scale(1) translateY(0); opacity: 1; }
-  to { transform: scale(0.97) translateY(4px); opacity: 0; }
+@keyframes lyra-overlay-in {
+  from { transform: scale(0.95) translateY(8px); }
+  to { transform: scale(1) translateY(0); }
+}
+@keyframes lyra-overlay-out {
+  from { transform: scale(1) translateY(0); }
+  to { transform: scale(0.95) translateY(8px); }
 }
 
 .lyra-toast__icon { display: inline-flex; }
@@ -325,3 +337,164 @@
 }
 .lyra-drawer__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
 .lyra-drawer__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): make the Dialog close control meet
+   the 44px WCAG target size while negative margins preserve the original header geometry. */
+.lyra-dialog__close {
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  margin: -8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyra-dialog-overlay,
+  .lyra-dialog,
+  .lyra-dialog-overlay--closing,
+  .lyra-dialog--closing {
+    animation: none;
+  }
+}
+
+/* Entrance for popups that flipped above their anchor: same motion as lyra-pop-in, mirrored so the
+   popup still rises toward the trigger. Transform only, per the animation constraint. */
+@keyframes lyra-pop-in-up {
+  from { transform: scale(0.97) translateY(-4px); }
+  to { transform: scale(1) translateY(0); }
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): iOS paints its own translucent grey rectangle at
+   the moment of a tap. It reads as a glitch on light surfaces and is invisible on dark ones, and it
+   is the only touch feedback most of these controls have, since only Button defined :active.
+   Deliberately NOT behind a hover/pointer media query: an iPad in its default "desktop site" mode
+   reports `hover: hover` and `pointer: fine`, so a touch-gated rule never reaches the device that
+   needs it most. -webkit-tap-highlight-color has no effect on a mouse anyway, and the press feedback
+   is the same half-pixel push Button already applied unconditionally. */
+.lyra-dialog__close,
+.lyra-drawer__close,
+.lyra-toast__close {
+  -webkit-tap-highlight-color: transparent;
+}
+.lyra-dialog__close:active,
+.lyra-drawer__close:active,
+.lyra-toast__close:active {
+  transform: translateY(0.5px);
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the cookie banner centers itself with
+   `transform: translateX(-50%)`, and the shared `lyra-toast-in` keyframe animates `transform` — so
+   for the length of the entrance the centering was simply gone. Measured at 1280px: the banner
+   entered with its centre at 1000px instead of 640 and its right edge 80px outside the viewport,
+   then snapped into place when the animation ended. A transform-animating keyframe can never be
+   shared with an element that is positioned by transform; this one carries the centering in both
+   frames. The Toast keeps `lyra-toast-in`, where nothing is centered. */
+@keyframes lyra-cookies-in {
+  from {
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+.lyra-cookies {
+  animation-name: lyra-cookies-in;
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the toast's close glyph measured 12x19 — the one
+   control in the system that failed WCAG 2.2 AA's 24x24 minimum outright, rather than merely sitting
+   under the project's own 44px bar. It keeps its visible size and gains a transparent hit area, the
+   same repair applied to the file list's action trigger. The inset stops at 12px because that is the
+   flex gap to the message: any larger and a tap on the end of the message text would close the
+   toast. The result is 36x43 — the whole height of the toast, and comfortably past the minimum. */
+.lyra-toast__close {
+  position: relative;
+}
+.lyra-toast__close::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): Tooltip placement and dismissal.
+   The handoff recipe only ever opens upward, so a tooltip near the top of the viewport was clipped
+   with no way to recover — the same problem the popovers solved with a flip. These three modifiers
+   give the other sides; React picks one and flips it when the chosen side does not fit.
+   `[data-state='closed']` is what makes the tip dismissible (WCAG 1.4.13): the handoff drives
+   visibility purely from `:hover`/`:focus-within`, so pressing Escape changed the component's state
+   and the bubble stayed on screen regardless. Same specificity as the hover rule, later in the
+   cascade, so the closed state wins while the pointer is still on the target. */
+.lyra-tooltip--bottom::after {
+  bottom: auto;
+  top: calc(100% + 6px);
+  transform: translateX(-50%) translateY(-2px);
+}
+.lyra-tooltip--bottom:hover::after,
+.lyra-tooltip--bottom:focus-within::after {
+  transform: translateX(-50%) translateY(0);
+}
+.lyra-tooltip--left::after {
+  inset: 50% calc(100% + 6px) auto auto;
+  transform: translateY(-50%) translateX(2px);
+}
+.lyra-tooltip--left:hover::after,
+.lyra-tooltip--left:focus-within::after {
+  transform: translateY(-50%) translateX(0);
+}
+.lyra-tooltip--right::after {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 6px);
+  transform: translateY(-50%) translateX(-2px);
+}
+.lyra-tooltip--right:hover::after,
+.lyra-tooltip--right:focus-within::after {
+  transform: translateY(-50%) translateX(0);
+}
+.lyra-tooltip[data-state='closed']::after {
+  opacity: 0;
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): exit motion for Drawer and CookieBanner.
+   Both entered with motion and then vanished on the same frame, while Dialog and the command
+   palette animate out — measured, the Dialog holds `--closing` for about 200ms and these two were
+   already gone in the first sample after the close. The drawer leaves toward the edge it came from
+   and its backdrop reuses the shared fade. The banner's exit MUST carry `translateX(-50%)` in both
+   frames for the same reason its entrance does: it is positioned by transform, so a keyframe that
+   animates transform without the centring would throw it sideways on the way out. */
+@keyframes lyra-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(40px);
+  }
+}
+@keyframes lyra-cookies-out {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50%) translateY(8px);
+    opacity: 0;
+  }
+}
+.lyra-drawer--closing {
+  animation: lyra-slide-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-drawer-overlay--closing {
+  animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-cookies--closing {
+  animation: lyra-cookies-out var(--duration-base) var(--ease-out) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lyra-drawer-overlay,
+  .lyra-drawer,
+  .lyra-drawer-overlay--closing,
+  .lyra-drawer--closing,
+  .lyra-cookies,
+  .lyra-cookies--closing {
+    animation: none;
+  }
+}

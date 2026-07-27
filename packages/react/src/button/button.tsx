@@ -1,6 +1,7 @@
-import { forwardRef } from 'react';
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Children, cloneElement, forwardRef, isValidElement } from 'react';
+import type { ButtonHTMLAttributes, ForwardedRef, ReactElement, ReactNode } from 'react';
 import { cx } from '../internal/cx';
+import { Slot } from '../internal/slot';
 
 /**
  * Props for {@link Button}. Extends the native `<button>` attributes, so every DOM
@@ -19,6 +20,24 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   /** Stretch to 100% of the container width. */
   full?: boolean;
+  /** Render the single child element instead of a `<button>`, keeping Lyra button styling — use for links: `<Button asChild><a href>…</a></Button>`. */
+  asChild?: boolean;
+}
+
+function buttonContents(
+  children: ReactNode,
+  iconLeft: ReactNode,
+  iconRight: ReactNode,
+  loading: boolean,
+): ReactNode {
+  return (
+    <>
+      {loading && <span className="lyra-btn__spinner" aria-hidden="true" />}
+      {iconLeft}
+      {children != null && <span className="lyra-btn__label">{children}</span>}
+      {iconRight}
+    </>
+  );
 }
 
 /**
@@ -43,6 +62,7 @@ export const Button = /*#__PURE__*/ forwardRef<HTMLButtonElement, ButtonProps>(f
     loading = false,
     disabled = false,
     full = false,
+    asChild = false,
     className,
     children,
     ...rest
@@ -57,6 +77,35 @@ export const Button = /*#__PURE__*/ forwardRef<HTMLButtonElement, ButtonProps>(f
     full && 'lyra-btn--full',
     className,
   );
+
+  if (asChild) {
+    const child = Children.only(children);
+    if (!isValidElement(child)) {
+      throw new Error('Button with asChild expects exactly one React element child.');
+    }
+
+    const childProps = child.props as Record<string, unknown>;
+    const childWithButtonContents = cloneElement(
+      child as ReactElement<Record<string, unknown>>,
+      {
+        ...(loading && { 'aria-busy': true }),
+        ...(disabled || loading ? { 'aria-disabled': 'true' } : {}),
+      },
+      buttonContents(childProps.children as ReactNode, iconLeft, iconRight, loading),
+    );
+
+    return (
+      <Slot
+        {...rest}
+        ref={ref as ForwardedRef<HTMLElement>}
+        className={cls}
+        aria-busy={loading || undefined}
+      >
+        {childWithButtonContents}
+      </Slot>
+    );
+  }
+
   return (
     <button
       ref={ref}
@@ -65,10 +114,7 @@ export const Button = /*#__PURE__*/ forwardRef<HTMLButtonElement, ButtonProps>(f
       aria-busy={loading || undefined}
       {...rest}
     >
-      {loading && <span className="lyra-btn__spinner" aria-hidden="true" />}
-      {iconLeft}
-      {children != null && <span className="lyra-btn__label">{children}</span>}
-      {iconRight}
+      {buttonContents(children, iconLeft, iconRight, loading)}
     </button>
   );
 });

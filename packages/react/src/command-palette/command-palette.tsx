@@ -14,6 +14,7 @@ import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useScrollLock } from '../internal/use-scroll-lock';
 
 /** A command available from {@link CommandPalette}. */
@@ -40,9 +41,19 @@ export interface CommandGroup {
   items: CommandItem[];
 }
 
+/** Labels for the keyboard hints in {@link CommandPalette}'s footer. */
+export interface CommandPaletteHints {
+  /** Label after the ↑↓ keys. Default `"navigate"`. */
+  navigate?: string;
+  /** Label after the ↵ key. Default `"select"`. */
+  select?: string;
+  /** Label after the esc key. Default `"close"`. */
+  close?: string;
+}
+
 /** Props for {@link CommandPalette}. */
 export interface CommandPaletteProps {
-  /** Controls visibility of the modal overlay. Ignored in inline mode. */
+  /** Controls modal visibility. On close, the overlay and panel remain mounted for their exit motion. Ignored in inline mode. */
   open?: boolean;
   /** Called when the palette is dismissed or an item is selected. */
   onClose?: () => void;
@@ -52,17 +63,31 @@ export interface CommandPaletteProps {
   onSelect?: (item: CommandItem) => void;
   /** Command groups to filter and render. */
   groups?: CommandGroup[];
-  /** Search field placeholder. Default: `"Digite um comando ou busque…"`. */
+  /** Search field placeholder. Default: `"Type a command or search…"`. */
   placeholder?: string;
-  /** Text shown before the current query when no commands match. Default: `"Nenhum resultado para"`. */
+  /** Text shown before the current query when no commands match. Default: `"No results for"`. */
   emptyMessage?: string;
+  /** Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work. */
+  hints?: CommandPaletteHints;
   /** Key used with Command/Ctrl for the global shortcut. Default: `"k"`. */
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
   inline?: boolean;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
+  /**
+   * Accessible name for the modal dialog. Default: `"Command palette"`. Translate it in a
+   * localized interface — it is what a screen reader announces when the palette opens.
+   * Ignored in inline mode, which is not a dialog.
+   */
+  'aria-label'?: string;
 }
+
+const DEFAULT_HINTS: Required<CommandPaletteHints> = {
+  navigate: 'navigate',
+  select: 'select',
+  close: 'close',
+};
 
 interface IndexedCommandItem {
   item: CommandItem;
@@ -88,12 +113,17 @@ interface CommandPalettePanelProps {
   query: string;
   placeholder: string;
   emptyMessage: string;
+  dialogLabel: string;
+  hints: Required<CommandPaletteHints>;
   className?: string;
   modal: boolean;
+  open: boolean;
+  closing: boolean;
   onQueryChange: (query: string) => void;
   onActiveIndexChange: (index: number) => void;
   onPick: (item: CommandItem) => void;
   onClose?: () => void;
+  onAnimationEnd: PresenceState['onAnimationEnd'];
   onReady: () => void;
   captureOpener?: (element: Element | null) => void;
 }
@@ -115,12 +145,17 @@ function CommandPalettePanel({
   query,
   placeholder,
   emptyMessage,
+  dialogLabel,
+  hints,
   className,
   modal,
+  open,
+  closing,
   onQueryChange,
   onActiveIndexChange,
   onPick,
   onClose,
+  onAnimationEnd,
   onReady,
   captureOpener,
 }: CommandPalettePanelProps): ReactNode {
@@ -130,14 +165,15 @@ function CommandPalettePanel({
   const activeOptionId = activeItem ? `${idBase}-option-${activeItem.index}` : undefined;
 
   useEffect(() => {
+    if (modal && !open) return;
     if (modal) captureOpener?.(document.activeElement);
     onReady();
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
     return () => cancelAnimationFrame(frame);
-  }, [captureOpener, inputRef, modal, onReady]);
+  }, [captureOpener, inputRef, modal, onReady, open]);
 
-  useFocusTrap(panelRef, modal);
-  useScrollLock(modal);
+  useFocusTrap(panelRef, modal && open);
+  useScrollLock(modal && open);
 
   // Focus never leaves the input in this model, so the active option needs manual scrolling.
   useEffect(() => {
@@ -172,10 +208,11 @@ function CommandPalettePanel({
   return (
     <div
       ref={attachPanel}
-      className={cx('lyra-cmdk', className)}
+      className={cx('lyra-cmdk', closing && 'lyra-cmdk--closing', className)}
       role={modal ? 'dialog' : undefined}
       aria-modal={modal || undefined}
-      aria-label={modal ? 'Paleta de comandos' : undefined}
+      aria-label={modal ? dialogLabel : undefined}
+      onAnimationEnd={onAnimationEnd}
     >
       <div className="lyra-cmdk__search">
         <Icon name="search" size={17} color="var(--text-faint)" />
@@ -250,13 +287,13 @@ function CommandPalettePanel({
       <div className="lyra-cmdk__footer">
         <span>
           <kbd className="lyra-kbd">↑</kbd>
-          <kbd className="lyra-kbd">↓</kbd> navegar
+          <kbd className="lyra-kbd">↓</kbd> {hints.navigate}
         </span>
         <span>
-          <kbd className="lyra-kbd">↵</kbd> selecionar
+          <kbd className="lyra-kbd">↵</kbd> {hints.select}
         </span>
         <span>
-          <kbd className="lyra-kbd">esc</kbd> fechar
+          <kbd className="lyra-kbd">esc</kbd> {hints.close}
         </span>
       </div>
     </div>
@@ -265,8 +302,9 @@ function CommandPalettePanel({
 
 /**
  * A Command/Ctrl+K command palette with grouped filtering and APG `aria-activedescendant`
- * navigation. Overlay mode is portaled, scroll-locked, focus-trapped, and restores focus to
- * its opener; `inline` renders just the panel for documentation and embedded demos.
+ * navigation. Overlay mode is portaled, scroll-locked, focus-trapped, kept mounted through its
+ * exit motion, and restores focus to its opener; `inline` renders just the panel for
+ * documentation and embedded demos.
  */
 export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPaletteProps>(
   function CommandPalette(
@@ -276,11 +314,13 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
       onOpen,
       onSelect,
       groups = [],
-      placeholder = 'Digite um comando ou busque…',
-      emptyMessage = 'Nenhum resultado para',
+      placeholder = 'Type a command or search…',
+      emptyMessage = 'No results for',
+      hints,
       hotkey = 'k',
       inline = false,
       className,
+      'aria-label': ariaLabel = 'Command palette',
     },
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -292,6 +332,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
     const openerRef = useRef<Element | null>(null);
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
+    const { mounted, closing, onAnimationEnd } = usePresence(open);
 
     const flatItems: IndexedCommandItem[] = [];
     const normalizedQuery = query.toLocaleLowerCase();
@@ -381,26 +422,31 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
         query={query}
         placeholder={placeholder}
         emptyMessage={emptyMessage}
+        dialogLabel={ariaLabel}
+        hints={{ ...DEFAULT_HINTS, ...hints }}
         className={className}
         modal={!inline}
+        open={inline || open}
+        closing={!inline && closing}
         onQueryChange={handleQueryChange}
         onActiveIndexChange={setActiveIndex}
         onPick={pick}
         onClose={onClose}
+        onAnimationEnd={onAnimationEnd}
         onReady={resetAndFocus}
         captureOpener={inline ? undefined : captureOpener}
       />
     );
 
     if (inline) return panel;
-    if (!open) return null;
+    if (!mounted) return null;
 
     return (
       <Portal>
         {/* Backdrop click is pointer-only convenience; Escape on the combobox is the keyboard path. */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
         <div
-          className="lyra-cmdk-overlay"
+          className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
           onClick={(event) => {
             if (event.target === event.currentTarget) onClose?.();
           }}

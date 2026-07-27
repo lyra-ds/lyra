@@ -1,13 +1,46 @@
 ---
 title: Documentação do Lyra DS
-description: Um sistema de componentes CSS-first para interfaces de produto cuidadosas.
+description: Um design system white-label e CSS-first para interfaces de produto bem cuidadas.
 ---
 
-# Lyra DS
+<div className="lw-hero">
+  <h1 className="lw-hero__title">Componentes que escalam do protótipo à produção</h1>
+  <div className="lw-hero__sub">
+    Lyra é um design system CSS-first e white-label — toda a aparência vive em classes
+    <code>.lyra-*</code> com temas claro e escuro, então o mesmo core funciona em vários frameworks.
+    Este site é feito com os próprios componentes que documenta.
+  </div>
+  <HeroActions />
+</div>
 
-Boas-vindas à documentação do Lyra Design System. Este site estático usa os mesmos estilos e
-componentes React que documenta.
+## Instalação
 
-<a className="lyra-btn lyra-btn--primary lyra-btn--md" href="/pt-BR/components/dialog">
-  Explorar Dialog
-</a>
+Instale o pacote React e os estilos, e importe o CSS uma única vez na raiz do app.
+
+```bash
+npm i @lyra-ds/react @lyra-ds/styles
+```
+
+```tsx
+// entrada do app (main.tsx / layout.tsx)
+import '@lyra-ds/styles/styles.css';
+```
+
+## Seu primeiro componente
+
+```tsx
+import { Button } from '@lyra-ds/react';
+
+export function App() {
+  return <Button>Olá, Lyra</Button>;
+}
+```
+
+## Tema escuro
+
+Adicione <code>data-theme="dark"</code> ao elemento `<html>`. Todos os tokens semânticos respondem
+automaticamente — sem trabalho por componente.
+
+```html
+<html data-theme="dark"></html>
+```

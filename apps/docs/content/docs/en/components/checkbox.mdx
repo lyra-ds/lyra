@@ -1,0 +1,59 @@
+---
+title: Checkbox
+description: A native checkbox for choices that are saved together with the rest of a form.
+---
+
+# Checkbox
+
+Checkbox is a native checkbox with a clickable label row. Use it when someone can choose zero, one
+or many independent options, then submit those choices with the rest of a form.
+
+## Examples
+
+<Example id="basic" title="Independent choices">
+  Each checkbox owns a separate decision. Give every meaningful choice a visible `label`; the whole
+  row becomes the hit target.
+</Example>
+
+<Example id="states" title="Selected and disabled">
+  `defaultChecked` seeds an uncontrolled field. Use `disabled` only when the unavailable state is
+  already explained nearby, because it cannot receive focus for that explanation.
+</Example>
+
+## When to use
+
+Use a Checkbox for an optional setting, consent or multi-select choice that is confirmed when the
+form is submitted.
+
+Reach for something else when:
+
+- **The change takes effect immediately** — use Switch so the on/off state reads as a setting being applied.
+- **Exactly one option is required** — use Radio, with every option sharing the same `name`.
+- **The options form a long known list** — use Select or Combobox so scanning does not become a wall of checks.
+
+## Accessibility
+
+- Renders a native `<input type="checkbox">`, so Space toggles it and checked state is announced by the platform.
+- With `label`, the component wraps its input and text in a `<label>`, making the entire row clickable.
+- There is no generated `id` or `htmlFor`; pass `id` through consumer props if another element must reference it.
+- The focus-visible ring is `--shadow-focus`. Do not remove it, and provide a visible label or `aria-label` when no text is shown.
+
+## Props
+
+<PropTable name="Checkbox" />
+
+## Plain HTML
+
+The input and its text share one label, so no `for`/`id` pair is needed for the row itself:
+
+```html
+<label class="lyra-check-row">
+  <input class="lyra-checkbox" type="checkbox" name="updates" checked />
+  <span>Send me release notes</span>
+</label>
+
+<label class="lyra-check-row">
+  <input class="lyra-checkbox" type="checkbox" name="terms" disabled />
+  <span>I agree to the data processing terms</span>
+</label>
+```

@@ -1,0 +1,68 @@
+---
+title: Select
+description: Um select nativo estilizado para uma lista conhecida e compacta que não precisa de filtro.
+---
+
+# Select
+
+Select é um `<select>` nativo estilizado, não um combobox APG. Use-o em uma lista conhecida que continue
+administrável sem filtro e deixe o seletor, teclado e convenções da plataforma por conta do navegador.
+
+## Exemplos
+
+<Example id="basic" title="Rótulo, dica e opções nativas">
+  Use uma opção vazia desabilitada quando uma escolha for obrigatória. O rótulo nomeia a decisão
+  depois que o seletor fecha; uma primeira opção parecida com placeholder não o substitui.
+</Example>
+
+<Example id="sizes-and-error" title="Tamanhos e erro">
+  Select compartilha os tokens de altura dos campos. `error` substitui `hint` e acrescenta
+  `aria-invalid`, mantendo uma única mensagem ligada ao controle em vez de empilhar retornos.
+</Example>
+
+## Quando usar
+
+Use Select para uma escolha em uma lista curta e estável em que o seletor nativo seja suficiente.
+
+Prefira outro componente quando:
+
+- **A lista precisa de filtro ou detalhes ricos nas opções** — use Combobox, que oferece uma listbox pesquisável.
+- **Poucas escolhas devem continuar visíveis e uma precisa estar selecionada** — use Radio para comparar sem abrir o seletor.
+- **Várias escolhas podem ser verdadeiras** — use Checkbox, em vez de sobrecarregar um controle de escolha única.
+
+## Acessibilidade
+
+- Renderiza um `<select>` nativo com filhos `<option>` ou `<optgroup>` nativos; teclado e seletor do navegador se aplicam.
+- Um `label` fornecido usa `htmlFor` com um `id` gerado ou passado pelo consumidor. Sem label, ofereça nome acessível.
+- `hint` ou `error` é conectado por `aria-describedby`; `error` tem precedência e define `aria-invalid`.
+- O foco usa `--shadow-focus`. Não documente atalhos de listbox personalizados: este não é um combobox customizado.
+
+## Props
+
+<PropTable name="Select" />
+
+## HTML puro
+
+Coloque o select nativo no wrapper para a seta CSS ficar sobre o controle sem receber cliques:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="team-size">Tamanho do time</label>
+  <span class="lyra-select-wrap">
+    <select class="lyra-input" id="team-size">
+      <option value="">Escolha uma faixa</option>
+      <option value="1-10">1–10 pessoas</option>
+      <option value="11-50">11–50 pessoas</option>
+    </select>
+  </span>
+  <span class="lyra-hint">Usado para personalizar seu workspace.</span>
+</div>
+
+<div class="lyra-field">
+  <label class="lyra-label" for="country">País de cobrança</label>
+  <span class="lyra-select-wrap">
+    <select class="lyra-input lyra-input--error" id="country" aria-invalid="true"></select>
+  </span>
+  <span class="lyra-hint lyra-hint--error">Escolha o país de cobrança.</span>
+</div>
+```

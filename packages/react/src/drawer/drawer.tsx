@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useId, useRef } from 'react';
 import type {
+  AnimationEventHandler,
   ForwardedRef,
   HTMLAttributes,
   KeyboardEventHandler,
@@ -10,6 +11,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useScrollLock } from '../internal/use-scroll-lock';
+import { usePresence } from '../internal/use-presence';
 
 const INITIAL_FOCUS_SELECTOR = [
   'a[href]',
@@ -47,6 +49,8 @@ interface DrawerPanelProps {
   className?: string;
   children: ReactNode;
   rest: HTMLAttributes<HTMLDivElement>;
+  closing: boolean;
+  onAnimationEnd: AnimationEventHandler;
 }
 
 /** Portal child: DOM-dependent effects intentionally live with the portaled panel. */
@@ -61,6 +65,8 @@ function DrawerPanel({
   className,
   children,
   rest,
+  closing,
+  onAnimationEnd,
 }: DrawerPanelProps): ReactNode {
   useEffect(() => {
     const panel = panelRef.current;
@@ -71,7 +77,9 @@ function DrawerPanel({
   }, [panelRef, captureOpener]);
 
   useFocusTrap(panelRef, true);
-  useScrollLock(true);
+  // Keyed on the close REQUEST, not on `mounted`: the page is scrollable again immediately while
+  // the exit animation still plays, exactly as Dialog does it.
+  useScrollLock(!closing);
 
   const { onKeyDown: restOnKeyDown, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
@@ -83,7 +91,7 @@ function DrawerPanel({
     // The backdrop is a pointer-only close convenience; Escape and the close button provide keyboard access.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
-      className="lyra-drawer-overlay"
+      className={cx('lyra-drawer-overlay', closing && 'lyra-drawer-overlay--closing')}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
@@ -92,7 +100,8 @@ function DrawerPanel({
       <div
         {...restProps}
         ref={attachPanel}
-        className={cx('lyra-drawer', className)}
+        className={cx('lyra-drawer', closing && 'lyra-drawer--closing', className)}
+        onAnimationEnd={onAnimationEnd}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -143,6 +152,8 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
   const panelRef = useRef<HTMLDivElement | null>(null);
   const openerRef = useRef<Element | null>(null);
 
+  const { mounted, closing, onAnimationEnd } = usePresence(open);
+
   useEffect(() => {
     if (open) return;
     if (openerRef.current instanceof HTMLElement) openerRef.current.focus();
@@ -162,7 +173,7 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
     [forwardedRef],
   );
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return (
     <Portal container={container}>
@@ -176,6 +187,8 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
         captureOpener={captureOpener}
         className={className}
         rest={rest}
+        closing={closing}
+        onAnimationEnd={onAnimationEnd}
       >
         {children}
       </DrawerPanel>

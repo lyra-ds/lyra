@@ -1,0 +1,66 @@
+---
+title: CookieBanner
+description: Um aviso de consentimento fixo que lembra a resposta da pessoa no armazenamento do navegador.
+---
+
+# CookieBanner
+
+CookieBanner pergunta uma vez e lembra. Decida o que o seu produto realmente faz com cookies antes de
+escolher o texto — o padrão faz uma afirmação de LGPD em seu nome.
+
+## Exemplos
+
+<Example id="default-copy" title="Aviso LGPD padrão">
+  O banner é fixo no rodapé da viewport, então estes exemplos o montam a partir de um botão, e não
+  no carregamento da página. Cada um usa o próprio `storageKey` e o limpa antes, senão o exemplo
+  funcionaria exatamente uma vez por leitor.
+</Example>
+
+<Example id="custom-copy" title="Seu próprio texto">
+  `children` substitui o aviso padrão inteiro. Diga o que você realmente armazena; um aviso de
+  consentimento que descreve cookies que você não usa é pior do que nenhum.
+</Example>
+
+## Quando usar
+
+Use CookieBanner quando o produto usa cookies que precisam de consentimento e a resposta deve persistir
+entre visitas.
+
+Procure outra coisa quando:
+
+- **Nada precisa de consentimento** — não pergunte. Banner só para cookies essenciais é ruído.
+- **A escolha pertence às configurações** — o banner é da primeira visita; a configuração é onde
+  alguém muda de ideia depois, e este componente não tem interface para isso.
+- **A mensagem não é uma escolha** — use Alert.
+
+## Acessibilidade
+
+- Renderiza `role="region"` com o nome "Cookie notice". Esse nome é uma string fixa em inglês sem prop
+  para mudar, o que vale saber já que o texto padrão é redigido para a LGPD.
+- As duas ações são botões reais na ordem normal de tabulação. O banner não prende o foco nem bloqueia
+  a página, então dá para continuar lendo e responder depois.
+- Ele lê o `localStorage` dentro de um effect e renderiza `null` até conseguir, então não aparece no
+  HTML do servidor nem na primeira pintura do cliente. Isso evita divergência de hidratação, e
+  significa que o banner chega um quadro atrasado — não construa layout que dependa da altura dele.
+- Uma vez respondido, ele não volta. Ofereça o seu próprio caminho para rever a escolha.
+
+## Props
+
+<PropTable name="CookieBanner" />
+
+## HTML puro
+
+O aviso e as ações são irmãos dentro do container fixo:
+
+```html
+<div class="lyra-cookies" role="region" aria-label="Cookie notice">
+  <p class="lyra-cookies__text">
+    Usamos cookies para melhorar sua experiência conforme a LGPD.
+    <a href="/privacy">Política de privacidade</a>
+  </p>
+  <div class="lyra-cookies__actions">
+    <button class="lyra-btn lyra-btn--secondary lyra-btn--sm" type="button">Só essenciais</button>
+    <button class="lyra-btn lyra-btn--primary lyra-btn--sm" type="button">Aceitar todos</button>
+  </div>
+</div>
+```

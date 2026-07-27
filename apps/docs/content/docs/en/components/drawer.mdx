@@ -1,0 +1,71 @@
+---
+title: Drawer
+description: A controlled side panel for short tasks that keep the current page visible behind it.
+---
+
+# Drawer
+
+Drawer is a controlled side panel that slides in from the right. Choose it for work that belongs
+alongside the page; choose a Dialog when the decision must block the page until it is resolved.
+
+## Examples
+
+<Example id="basic" title="Details with a fixed action">
+  Put the action that completes the side task in `footer`. The panel keeps the page behind it, so
+  people can retain its context while they review or change something small.
+</Example>
+
+<Example id="without-footer" title="Read-only details">
+  Omit `footer` when there is no action to pin. That removes the footer chrome entirely instead of
+  leaving an empty divider at the bottom of the panel.
+</Example>
+
+## When to use
+
+Use a Drawer for details or a short task that benefits from the page staying visible: inspecting an
+activity record, editing a small set of fields, or reviewing context before an action.
+
+Reach for something else when:
+
+- **A decision must stop progress** — use Dialog, a centred modal that makes the blocking choice
+  explicit.
+- **The task needs its own destination, history or shareable URL** — use a route. A drawer leaves
+  the current page behind it; a full page does not.
+- **The message only confirms something that already happened** — use Toast or an inline Alert.
+
+## Accessibility
+
+- The panel is `role="dialog"` with `aria-modal="true"`, named by `title` through
+  `aria-labelledby`. `title` is the heading, not the native HTML tooltip attribute.
+- On open, focus moves into the panel and stays trapped there. On close, focus returns to the
+  element that opened it; body scroll is locked while it is open.
+- Escape, the close button and a backdrop click call `onClose`. The backdrop is a pointer-only
+  convenience; keyboard users close with Escape or the close button.
+- The close button's accessible name is the hard-coded English string "Close". There is no prop to
+  translate it, which is a limitation for localized products.
+- The component is portaled to `document.body` by default. Pass `container` only when your app
+  needs a different portal host.
+
+## Props
+
+<PropTable name="Drawer" />
+
+## Plain HTML
+
+Without React, compose the same classes — you own open state, focus trapping, scroll locking and
+the Escape path:
+
+```html
+<div class="lyra-drawer-overlay">
+  <div class="lyra-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div class="lyra-drawer__header">
+      <h2 class="lyra-drawer__title" id="drawer-title">Project details</h2>
+      <button class="lyra-drawer__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="lyra-drawer__body">Review the latest deployment before you continue.</div>
+    <div class="lyra-drawer__footer">
+      <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button">Done</button>
+    </div>
+  </div>
+</div>
+```

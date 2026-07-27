@@ -1,0 +1,77 @@
+---
+title: Dropdown
+description: A menu button for a short set of contextual commands, with keyboard focus roving.
+---
+
+# Dropdown
+
+Dropdown keeps a short set of actions attached to one control. Choose it for commands in the current
+context; choose CommandPalette when people need to search across the product from anywhere.
+
+## Examples
+
+<Example id="actions" title="Grouped actions">
+  Labels and separators reveal the shape of a command set before someone reads every item. Mark only
+  the action that changes or removes data as `danger`.
+</Example>
+
+<Example id="align-end" title="End-aligned menu">
+  `align="end"` keeps this menu's right edge with its trigger. `defaultOpen` starts a menu open for
+  visual demos; leave it out of ordinary examples and application flows.
+</Example>
+
+## When to use
+
+Use Dropdown for a small, contextual list of commands that does not need to stay visible.
+
+Reach for something else when:
+
+- **People choose the current workspace** — use WorkspaceSwitcher, a listbox that reports selection.
+- **People need to find a command across the product** — use CommandPalette and its searchable index.
+- **People switch between peer views** — use Tabs, which represents views rather than actions.
+
+## Accessibility
+
+- The element you pass as `trigger` **becomes** the trigger: it receives `role="button"`, the tab
+  stop, `aria-haspopup="menu"`, `aria-expanded` and `aria-controls`, and no wrapper is added around
+  it. So a `Button` trigger is one control with one tab stop, and the element a person focuses is
+  the one that announces it opens a menu. Only a bare string trigger gets a span of its own.
+- Props already on your element win the merge, so a trigger that carries its own `aria-label` — an
+  icon-only affordance, say — keeps that name.
+- The popup is a `role="menu"`; commands are `role="menuitem"`. Enter, Space and ArrowDown open
+  it at the first command, while ArrowUp opens it at the last.
+- Inside the menu, ArrowDown and ArrowUp wrap, Home and End jump to the ends, Escape closes and
+  restores focus to the trigger, and Tab closes without blocking normal sequential focus.
+- Focus moves to real menuitem DOM elements, unlike CommandPalette's virtual active descendant.
+  Near the bottom of a phone screen, the popup flips above its trigger instead of scrolling the page.
+
+## Props
+
+<PropTable name="Dropdown" />
+
+## Plain HTML
+
+One element is the trigger. Put the menu semantics on the control itself — a span wrapping a button
+would give the same affordance two tab stops:
+
+```html
+<div class="lyra-dropdown">
+  <button
+    class="lyra-btn lyra-btn--secondary lyra-btn--md lyra-dropdown__trigger"
+    type="button"
+    aria-haspopup="menu"
+    aria-expanded="true"
+    aria-controls="project-actions"
+  >
+    Project actions
+  </button>
+  <div class="lyra-menu lyra-menu--start" id="project-actions" role="menu">
+    <span class="lyra-menu__label">Project</span>
+    <button class="lyra-menu__item" type="button" role="menuitem">Rename project</button>
+    <hr class="lyra-menu__sep" />
+    <button class="lyra-menu__item lyra-menu__item--danger" type="button" role="menuitem">
+      Archive project
+    </button>
+  </div>
+</div>
+```

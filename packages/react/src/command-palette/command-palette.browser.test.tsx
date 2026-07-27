@@ -118,6 +118,29 @@ describe('CommandPalette', () => {
     });
   }
 
+  it('names the modal dialog in English by default, and lets a localized app rename it', async () => {
+    const { container } = await render(<CommandPalette open onClose={() => {}} groups={groups} />);
+    expect(container.querySelector('[role=dialog]')).toBeNull(); // it portals out of the container
+    expect(document.querySelector('[role=dialog]')!.getAttribute('aria-label')).toBe(
+      'Command palette',
+    );
+    await cleanup();
+
+    await render(
+      <CommandPalette open onClose={() => {}} groups={groups} aria-label="Paleta de comandos" />,
+    );
+    expect(document.querySelector('[role=dialog]')!.getAttribute('aria-label')).toBe(
+      'Paleta de comandos',
+    );
+  });
+
+  it('does not make the inline panel a dialog', async () => {
+    const { container } = await render(<CommandPalette inline groups={groups} />);
+    const panel = container.querySelector('.lyra-cmdk')!;
+    expect(panel.getAttribute('role')).toBeNull();
+    expect(panel.getAttribute('aria-label')).toBeNull();
+  });
+
   it('keeps focus on the input while filtering, navigating, and selecting the active command', async () => {
     const itemSelect = vi.fn();
     const select = vi.fn();
@@ -187,6 +210,28 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  it('stays mounted with closing motion until its panel animation ends', async () => {
+    const { rerender } = await render(<CommandPalette open groups={groups} />);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+
+    await rerender(<CommandPalette open={false} groups={groups} />);
+    await vi.waitFor(() => {
+      expect(document.querySelector('.lyra-cmdk')?.classList.contains('lyra-cmdk--closing')).toBe(
+        true,
+      );
+    });
+    const closingPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+    expect(
+      document
+        .querySelector('.lyra-cmdk-overlay')
+        ?.classList.contains('lyra-cmdk-overlay--closing'),
+    ).toBe(true);
+    expect(getComputedStyle(closingPanel).animationName).toBe('lyra-overlay-out');
+
+    closingPanel.dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
+  });
+
   it('toggles through the global Command/Ctrl+K listener only when onOpen is provided', async () => {
     const onOpen = vi.fn();
     const onClose = vi.fn();
@@ -216,5 +261,22 @@ describe('CommandPalette', () => {
       new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, key: 'k' }),
     );
     expect(closeOnly).not.toHaveBeenCalled();
+  });
+
+  it('renders English hints by default and merges partial overrides', async () => {
+    const { container } = await render(<CommandPalette inline groups={groups} />);
+    expect(container.querySelector('.lyra-cmdk__footer')!.textContent).toContain('navigate');
+    expect(container.querySelector('.lyra-cmdk__footer')!.textContent).toContain('select');
+    expect(container.querySelector('.lyra-cmdk__footer')!.textContent).toContain('close');
+
+    await cleanup();
+    const { container: translated } = await render(
+      <CommandPalette inline groups={groups} hints={{ navigate: 'navegar' }} />,
+    );
+    const footer = translated.querySelector('.lyra-cmdk__footer')!.textContent;
+    // A partial override keeps the untouched hints on their defaults.
+    expect(footer).toContain('navegar');
+    expect(footer).toContain('select');
+    expect(footer).toContain('close');
   });
 });

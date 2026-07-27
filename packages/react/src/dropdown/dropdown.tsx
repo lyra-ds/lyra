@@ -1,6 +1,8 @@
-import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, isValidElement, useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../internal/cx';
+import { Slot } from '../internal/slot';
+import { useFlipPlacement } from '../internal/use-flip-placement';
 
 /** A command, separator, or non-interactive label rendered in a {@link Dropdown}. */
 export type DropdownItem =
@@ -21,7 +23,11 @@ export type DropdownItem =
 
 /** Props for {@link Dropdown}. */
 export interface DropdownProps extends HTMLAttributes<HTMLSpanElement> {
-  /** Element that opens the action menu, such as a Button, IconButton, or Avatar. */
+  /**
+   * Content that opens the action menu — a Button, IconButton, Avatar, icon or plain text.
+   * When it is an element, it receives the trigger semantics itself (role, tab stop, and the
+   * menu ARIA) instead of being wrapped, so one control is one tab stop.
+   */
   trigger: ReactNode;
   /** Commands, separators, and labels rendered by the menu. */
   items: DropdownItem[];
@@ -51,6 +57,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
   const rootRef = useRef<HTMLSpanElement>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const placement = useFlipPlacement(open, triggerRef, menuRef);
 
   const commandItems = (): HTMLElement[] =>
     Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
@@ -75,7 +82,8 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
     const commands = commandItems();
     if (commands.length === 0) return;
     const index = pendingFocus < 0 ? commands.length - 1 : pendingFocus;
-    commands[Math.min(index, commands.length - 1)]?.focus();
+    // preventScroll: the menu is already placed to fit; focusing an item must not scroll the page.
+    commands[Math.min(index, commands.length - 1)]?.focus({ preventScroll: true });
     setPendingFocus(null);
   }, [open, pendingFocus]);
 
@@ -91,7 +99,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
     return () => document.removeEventListener('mousedown', onDocumentMouseDown);
   }, [open]);
 
-  const handleTriggerKeyDown = (event: KeyboardEvent<HTMLSpanElement>): void => {
+  const handleTriggerKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
     if (event.defaultPrevented) return;
     if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
       event.preventDefault();
@@ -133,6 +141,21 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
     else if (ref) ref.current = node;
   };
 
+  const triggerProps = {
+    ref: triggerRef,
+    className: 'lyra-dropdown__trigger',
+    role: 'button',
+    tabIndex: 0,
+    'aria-haspopup': 'menu' as const,
+    'aria-expanded': open,
+    'aria-controls': menuId,
+    onClick: () => (open ? closeMenu() : openMenu(null)),
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      onKeyDown?.(event as KeyboardEvent<HTMLSpanElement>);
+      handleTriggerKeyDown(event);
+    },
+  };
+
   return (
     // The root forwards the native `onKeyDown` prop for non-trigger descendants. It is not
     // itself interactive; the trigger and menuitems own the corresponding keyboard semantics.
@@ -148,28 +171,24 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
         if (event.target !== triggerRef.current) onKeyDown?.(event);
       }}
     >
-      {/* A role button avoids invalid nested buttons when trigger is a Lyra Button/IconButton. */}
-      <span
-        ref={triggerRef}
-        className="lyra-dropdown__trigger"
-        role="button"
-        tabIndex={0}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={menuId}
-        onClick={() => (open ? closeMenu() : openMenu(null))}
-        onKeyDown={(event) => {
-          onKeyDown?.(event);
-          handleTriggerKeyDown(event);
-        }}
-      >
-        {trigger}
-      </span>
+      {/*
+        The trigger BECOMES the interactive element rather than being wrapped in one. Wrapping a
+        consumer's Button in a `span[role="button"][tabIndex=0]` produced two tab stops for one
+        control — the outer span carrying `aria-haspopup`/`aria-expanded` and the inner button
+        carrying neither — which axe reports as `nested-interactive`. Slot merges the trigger
+        semantics onto the element the consumer passed; only a bare string still needs a span of
+        its own. Child props win the merge, so a trigger that brings its own `aria-label` keeps it.
+      */}
+      {isValidElement(trigger) ? (
+        <Slot {...triggerProps}>{trigger}</Slot>
+      ) : (
+        <span {...triggerProps}>{trigger}</span>
+      )}
       {open && (
         <div
           ref={menuRef}
           id={menuId}
-          className={cx('lyra-menu', `lyra-menu--${align}`)}
+          className={cx('lyra-menu', `lyra-menu--${align}`, placement === 'up' && 'lyra-menu--up')}
           role="menu"
         >
           {items.map((item, index) => {

@@ -1,0 +1,87 @@
+---
+title: WorkspaceSwitcher
+description: Um seletor de workspace em listbox, com seleção atual, criação e navegação por teclado.
+---
+
+# WorkspaceSwitcher
+
+WorkspaceSwitcher muda o workspace atual e informa esse estado selecionado. Escolha-o em vez de Dropdown
+quando a escolha for uma conta ou tenant, não uma ação executada no contexto atual.
+
+## Exemplos
+
+<Example id="selection" title="Workspace atual controlado">
+  Passe `current` com `onChange` quando a aplicação for dona do workspace ativo. Sem `current`, o
+  primeiro workspace aparece, o que serve apenas quando esse padrão corresponde ao estado ao redor.
+</Example>
+
+<Example id="create" title="Ação de criar">
+  Fornecer `onCreate` adiciona uma opção após a lista de workspaces. `createLabel` deve nomear o
+  próximo fluxo, não repetir o workspace atual. `defaultOpen` existe para demos visuais; deixe-o
+  fora de exemplos e fluxos normais da aplicação.
+</Example>
+
+## Quando usar
+
+Use WorkspaceSwitcher quando uma pessoa selecionar o workspace, conta ou tenant que enquadra a página.
+
+Prefira outro componente quando:
+
+- **A lista contém comandos para o contexto atual** — use Dropdown, que é um menu.
+- **A escolha é uma entre poucas visualizações pares** — use Tabs.
+- **A pessoa precisa encontrar um destino ou comando no produto inteiro** — use CommandPalette.
+
+## Acessibilidade
+
+- O gatilho tem `aria-haspopup="listbox"`, `aria-expanded` e `aria-controls`. Seu popup é um
+  `role="listbox"` rotulado pelo gatilho, e cada workspace é um `role="option"` com
+  `aria-selected`; a ação de criar é outra opção após um `<hr role="presentation">`.
+- Enter, Espaço e ArrowDown abrem a lista na primeira opção; ArrowUp abre na última. Na lista,
+  ArrowDown e ArrowUp dão a volta, Home e End vão às pontas, Escape restaura o foco no gatilho, e
+  Tab fecha sem impedir o foco sequencial nativo.
+- O componente move o foco DOM real entre opções, diferente do modelo de descendente ativo de
+  CommandPalette. Ele também vira para cima quando não há espaço abaixo do gatilho.
+- `onChange` recebe o id e o registro do workspace selecionado. Atualize o estado da aplicação nele;
+  `current` é como um switcher controlado anuncia esse estado na próxima renderização.
+
+## Props
+
+<PropTable name="WorkspaceSwitcher" />
+
+## HTML puro
+
+O workspace atual é a opção selecionada do listbox; criar continua sendo opção, não comando de menu:
+
+```html
+<div class="lyra-wssw">
+  <button
+    class="lyra-wssw__trigger"
+    type="button"
+    aria-haspopup="listbox"
+    aria-expanded="true"
+    aria-controls="workspace-list"
+  >
+    <span class="lyra-wssw__id">
+      <span class="lyra-wssw__name">Atlas</span>
+      <span class="lyra-wssw__plan">Pro</span>
+    </span>
+  </button>
+  <div class="lyra-wssw__pop" id="workspace-list" role="listbox" aria-labelledby="workspace-label">
+    <span class="lyra-wssw__pop-label" id="workspace-label">Workspaces</span>
+    <button class="lyra-wssw__item" type="button" role="option" aria-selected="true">
+      <span class="lyra-wssw__id"
+        ><span class="lyra-wssw__name">Atlas</span
+        ><span class="lyra-wssw__meta">Pro · 12 members</span></span
+      >
+    </button>
+    <button class="lyra-wssw__item" type="button" role="option" aria-selected="false">
+      <span class="lyra-wssw__id"><span class="lyra-wssw__name">Northstar Studio</span></span>
+    </button>
+    <hr class="lyra-wssw__sep" role="presentation" />
+    <button class="lyra-wssw__item" type="button" role="option" aria-selected="false">
+      <span class="lyra-wssw__plus">+</span
+      ><span class="lyra-wssw__create-label">Criar workspace</span>
+    </button>
+  </div>
+</div>
+```

@@ -38,6 +38,12 @@ export default tseslint.config(
     files: ['src/**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': 'off',
+      // `anchor-is-valid` exists to stop `href="#"` reaching a real interface. In a Browser Mode
+      // fixture the opposite is true: a *valid* href makes the click under test navigate the
+      // runner's iframe, which aborts the whole suite ("Cannot connect to the iframe"). The rule
+      // and the runner genuinely conflict here, and the rule's purpose — a navigable link for a
+      // real person — does not apply to a fixture that is never published.
+      'jsx-a11y/anchor-is-valid': 'off',
     },
   },
 );

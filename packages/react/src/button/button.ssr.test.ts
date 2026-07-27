@@ -29,4 +29,14 @@ describe('Button — SSR', () => {
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('disabled');
   });
+
+  it('renderToString of asChild emits the child element with button classes and label', () => {
+    const html = renderToString(
+      createElement(Button, { asChild: true }, createElement('a', { href: '/browse' }, 'Browse')),
+    );
+    expect(html).toContain('<a');
+    expect(html).toContain('href="/browse"');
+    expect(html).toContain('lyra-btn lyra-btn--primary lyra-btn--md');
+    expect(html).toContain('<span class="lyra-btn__label">Browse</span>');
+  });
 });

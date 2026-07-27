@@ -1,28 +1,36 @@
 'use client';
 
-import { IconButton } from '@lyra-ds/react';
+import { Icon } from '@lyra-ds/react';
 import { useEffect, useState } from 'react';
 
+/** Reads the theme applied by the pre-paint script, then toggles + persists it. */
 export function ThemeToggle({ label }: { label: string }) {
-  const [isDark, setIsDark] = useState(false);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem('lyra-docs-theme');
-    const dark = savedTheme === 'dark';
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    setIsDark(dark);
+    setDark(document.documentElement.dataset.theme === 'dark');
   }, []);
 
-  function toggleTheme() {
-    const dark = !isDark;
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    window.localStorage.setItem('lyra-docs-theme', dark ? 'dark' : 'light');
-    setIsDark(dark);
+  function toggle() {
+    const next = !dark;
+    document.documentElement.dataset.theme = next ? 'dark' : 'light';
+    try {
+      localStorage.setItem('lyra-docs-theme', next ? 'dark' : 'light');
+    } catch {
+      /* ignore */
+    }
+    setDark(next);
   }
 
   return (
-    <IconButton label={label} onClick={toggleTheme} variant="ghost">
-      <span aria-hidden="true">{isDark ? '☀' : '☾'}</span>
-    </IconButton>
+    <button
+      type="button"
+      className="lw-nav__link"
+      onClick={toggle}
+      aria-label={label}
+      title={label}
+    >
+      <Icon name={dark ? 'sun' : 'moon'} size={18} />
+    </button>
   );
 }

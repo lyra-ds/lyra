@@ -66,3 +66,27 @@
   animation: lyra-spin 0.7s linear infinite;
 }
 @keyframes lyra-spin { to { transform: rotate(360deg); } }
+
+/* Correctness: button-styled links (Button asChild / <a class="lyra-btn">) must never underline —
+   Lyra base `a:hover` underline would otherwise win over the button. */
+.lyra-btn:hover { text-decoration: none; }
+
+/* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
+   extension (see tools/parity/parity.mjs, ADDITIVE_EXTENSIONS). The package's CSS must stay a
+   declaration-level copy of the handoff, so an override cannot edit the original rule: it has to
+   restate the selector at the end of the file and win on cascade order. That is a duplicate
+   selector by construction. The rule stays on for the handoff-verbatim region above. */
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): iOS paints its own translucent grey rectangle at
+   the moment of a tap. It reads as a glitch on light surfaces and is invisible on dark ones, and it
+   is the only touch feedback most of these controls have, since only Button defined :active.
+   Deliberately NOT behind a hover/pointer media query: an iPad in its default "desktop site" mode
+   reports `hover: hover` and `pointer: fine`, so a touch-gated rule never reaches the device that
+   needs it most. -webkit-tap-highlight-color has no effect on a mouse anyway, and the press feedback
+   is the same half-pixel push Button already applied unconditionally. */
+.lyra-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+.lyra-btn:active {
+  transform: translateY(0.5px);
+}

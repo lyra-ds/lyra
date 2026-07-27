@@ -47,6 +47,41 @@ describe('Accordion', () => {
     buttons[1].focus();
     await userEvent.keyboard('{Enter}');
     expect(buttons[1].getAttribute('aria-expanded')).toBe('true');
-    expect(container.querySelectorAll('.lyra-acc__panel').length).toBe(2);
+    // Every panel stays mounted for the height transition, so open-ness is the item modifier.
+    expect(container.querySelectorAll('.lyra-acc__item--open').length).toBe(2);
+  });
+
+  it('keeps a collapsed panel mounted but inert, hidden and out of the tab order', async () => {
+    const { container } = await render(<Accordion items={items} defaultOpen="a" />);
+    const wraps = container.querySelectorAll<HTMLElement>('.lyra-acc__panel-wrap');
+    expect(wraps.length).toBe(2);
+
+    const [openWrap, closedWrap] = wraps;
+    expect(openWrap.hasAttribute('inert')).toBe(false);
+    expect(closedWrap.hasAttribute('inert')).toBe(true);
+    expect(getComputedStyle(closedWrap).visibility).toBe('hidden');
+    expect(Math.round(closedWrap.getBoundingClientRect().height)).toBe(0);
+    expect(openWrap.getBoundingClientRect().height).toBeGreaterThan(0);
+
+    // A collapsed panel that is still in the DOM must not be reachable by assistive technology.
+    expect((await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast')).toEqual(
+      [],
+    );
+  });
+
+  it('animates the panel height instead of snapping it open', async () => {
+    const { container } = await render(<Accordion items={items} />);
+    const wrap = container.querySelector<HTMLElement>('.lyra-acc__panel-wrap')!;
+    expect(getComputedStyle(wrap).transitionProperty).toContain('grid-template-rows');
+
+    const button = container.querySelector<HTMLButtonElement>('.lyra-acc__trigger')!;
+    button.click();
+    // Mid-transition the row is neither collapsed nor at its final height.
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const midHeight = wrap.getBoundingClientRect().height;
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const finalHeight = wrap.getBoundingClientRect().height;
+    expect(finalHeight).toBeGreaterThan(0);
+    expect(midHeight).toBeLessThan(finalHeight);
   });
 });

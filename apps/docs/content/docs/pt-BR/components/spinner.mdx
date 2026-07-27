@@ -1,0 +1,54 @@
+---
+title: Spinner
+description: Um indicador de carregamento indeterminado, para esperas de duração desconhecida.
+---
+
+# Spinner
+
+Spinner diz que há trabalho acontecendo e não promete nada sobre quando termina. Recorra a ele só
+quando não der para dizer quanto falta — se der, Progress respeita mais quem lê.
+
+## Exemplos
+
+<Example id="sizes" title="Três tamanhos">
+  `sm`, o padrão `md` de 24px, e `lg`. Combine o spinner com o texto ou o controle ao lado, não com
+  o espaço disponível.
+</Example>
+
+<Example id="in-context" title="Ao lado do que está esperando">
+  Um spinner sozinho num painel não diz o que está carregando. A prop `loading` do Button coloca um
+  dentro do controle que causou a espera, que é onde a pessoa já está olhando.
+</Example>
+
+## Quando usar
+
+Use Spinner para uma espera curta de duração desconhecida, ao lado do que está esperando.
+
+Procure outra coisa quando:
+
+- **Você sabe a fração** — use Progress.
+- **O layout é conhecido e a espera passa de um instante** — use Skeleton, para a página não saltar
+  quando o conteúdo chegar.
+- **A espera bloqueia a página inteira** — um spinner não substitui dizer o que está acontecendo.
+
+## Acessibilidade
+
+- Renderiza `role="status"` com o nome acessível "Loading". Esse nome é uma string fixa em inglês, sem
+  prop para mudar, então uma interface localizada anuncia uma palavra em inglês aqui.
+- Por ser live region, o nome é anunciado quando o spinner aparece. Não coloque vários na mesma tela —
+  eles serão anunciados um atrás do outro.
+- A animação é decorativa. Nada no spinner comunica progresso, então nunca o combine com um texto que
+  sugira duração.
+- Dê texto próprio à região ao redor se a pessoa precisa saber _o que_ está carregando.
+
+## Props
+
+<PropTable name="Spinner" />
+
+## HTML puro
+
+O tamanho é uma classe modificadora; a animação vive inteiramente no CSS:
+
+```html
+<span class="lyra-spinner lyra-spinner--md" role="status" aria-label="Loading"></span>
+```

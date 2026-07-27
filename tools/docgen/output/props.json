@@ -41,6 +41,12 @@
         "type": "boolean",
         "optional": true,
         "description": "Stretch to 100% of the container width."
+      },
+      {
+        "name": "asChild",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render the single child element instead of a `<button>`, keeping Lyra button styling — use for links: `<Button asChild><a href>…</a></Button>`."
       }
     ]
   },
@@ -314,6 +320,12 @@
         "type": "boolean",
         "optional": true,
         "description": "Add hover elevation for clickable cards."
+      },
+      {
+        "name": "asChild",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render the single child element instead of a `<div>`, keeping Lyra card styling — use for\nfully clickable cards: `<Card asChild interactive><a href>…</a></Card>`. Only supported for\nthe plain surface (no `title`, no `footer`), so the child stays the one rendered element."
       }
     ]
   },
@@ -641,6 +653,12 @@
         "type": "ReactNode",
         "optional": false,
         "description": "The target element. Pass one focusable React element for full keyboard support."
+      },
+      {
+        "name": "placement",
+        "type": "TooltipPlacement",
+        "optional": true,
+        "description": "Side of the target to draw the tip on. Default `\"top\"`. The tip flips to the opposite side on\nits own when the chosen one would be clipped by the viewport, so this is a preference."
       }
     ]
   },
@@ -1114,7 +1132,7 @@
         "name": "open",
         "type": "boolean",
         "optional": true,
-        "description": "Controls visibility of the modal overlay. Ignored in inline mode."
+        "description": "Controls modal visibility. On close, the overlay and panel remain mounted for their exit motion. Ignored in inline mode."
       },
       {
         "name": "onClose",
@@ -1144,13 +1162,19 @@
         "name": "placeholder",
         "type": "string",
         "optional": true,
-        "description": "Search field placeholder. Default: `\"Digite um comando ou busque…\"`."
+        "description": "Search field placeholder. Default: `\"Type a command or search…\"`."
       },
       {
         "name": "emptyMessage",
         "type": "string",
         "optional": true,
-        "description": "Text shown before the current query when no commands match. Default: `\"Nenhum resultado para\"`."
+        "description": "Text shown before the current query when no commands match. Default: `\"No results for\"`."
+      },
+      {
+        "name": "hints",
+        "type": "CommandPaletteHints",
+        "optional": true,
+        "description": "Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work."
       },
       {
         "name": "hotkey",
@@ -1169,6 +1193,12 @@
         "type": "string",
         "optional": true,
         "description": "Additional class name appended to `.lyra-cmdk`."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the modal dialog. Default: `\"Command palette\"`. Translate it in a\nlocalized interface — it is what a screen reader announces when the palette opens.\nIgnored in inline mode, which is not a dialog."
       }
     ]
   },
@@ -1222,7 +1252,7 @@
         "name": "trigger",
         "type": "ReactNode",
         "optional": false,
-        "description": "Element that opens the action menu, such as a Button, IconButton, or Avatar."
+        "description": "Content that opens the action menu — a Button, IconButton, Avatar, icon or plain text.\nWhen it is an element, it receives the trigger semantics itself (role, tab stop, and the\nmenu ARIA) instead of being wrapped, so one control is one tab stop."
       },
       {
         "name": "items",

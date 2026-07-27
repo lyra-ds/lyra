@@ -1,0 +1,58 @@
+---
+title: Tag
+description: Um rótulo neutro para categorias, filtros e palavras-chave gerenciados pelo usuário.
+---
+
+# Tag
+
+Tag representa um membro de um conjunto que alguém reconhece, filtra ou remove. Mantenha o texto concreto;
+quando a remoção for permitida, `onRemove` adiciona um controle compacto sem transformar todo o rótulo nele.
+
+## Exemplos
+
+<Example id="basic" title="Rótulos em um conjunto">
+  Tags funcionam melhor quando cada palavra descreve o mesmo tipo de coisa: tópicos, responsáveis ou
+  filtros ativos. Misturar status e ações torna a leitura mais difícil que usar componentes
+  separados.
+</Example>
+
+<Example id="removable" title="Removendo um filtro">
+  Passar `onRemove` acrescenta a ação de remover. Atualize o conjunto ao redor imediatamente, para
+  que o resultado do clique fique visível sem exigir que alguém adivinhe se funcionou.
+</Example>
+
+## Quando usar
+
+Use Tag para um rótulo gerenciado pelo usuário que pertence a um conjunto, especialmente quando pode virar filtro ativo.
+
+Prefira outro componente quando:
+
+- **O rótulo informa status, gravidade ou contagem** — use Badge.
+- **A escolha é uma entre várias opções nomeadas** — use Checkbox, Radio ou Select.
+- **O rótulo precisa de uma ação além de remoção** — use Button ou um menu.
+
+## Acessibilidade
+
+- O próprio Tag é um `<span>` simples e permanece na ordem de leitura como texto.
+- Quando `onRemove` existe, ele renderiza um `type="button"` nativo com nome acessível “Remove”. Mantenha
+  o propósito do conjunto e o texto da tag por perto para que a ação tenha contexto claro.
+- O botão de remover recebe foco pelo teclado e usa ativação nativa por Enter/Espaço. Seu tamanho visual é
+  14px, então não o torne a única forma prática de limpar um filtro em telas de toque.
+- Não use cor como nome da categoria; o texto visível da tag é o significado.
+
+## Props
+
+<PropTable name="Tag" />
+
+## HTML puro
+
+Use um botão real para remoção, não um span clicável:
+
+```html
+<span class="lyra-tag">Acessibilidade</span>
+
+<span class="lyra-tag">
+  Ativo
+  <button class="lyra-tag__remove" type="button" aria-label="Remove">×</button>
+</span>
+```

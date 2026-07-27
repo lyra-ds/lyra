@@ -8,31 +8,61 @@ description: Um diálogo modal controlado com foco gerenciado e caminhos de fech
 Dialog é um modal controlado com portal, retenção de foco, bloqueio de rolagem e caminhos de
 fechamento acessíveis.
 
-## Prévia ao vivo
+## Exemplos
 
-<DialogPreview />
+<Example id="basic" title="Confirmando uma ação destrutiva">
+  O rodapé é onde as ações moram — o caminho de cancelar primeiro, o destrutivo por último.
+</Example>
+
+<Example id="dismissal" title="Bloqueando o fechamento acidental">
+  Desligue `closeOnEsc` e `closeOnOverlayClick` só quando perder o diálogo significar perder
+  trabalho ou pular uma decisão. Nunca remova todos os caminhos de fechamento: o × aparece sempre
+  que `onClose` está definido.
+</Example>
+
+## Quando usar
+
+Use um Dialog para uma decisão curta e focada que precisa ser resolvida antes de o usuário seguir
+em frente: confirmar uma exclusão, nomear um recurso novo, revisar termos.
+
+Prefira outro componente quando:
+
+- **O conteúdo é longo ou a tarefa é uma jornada paralela** — use Drawer, que entra deslizando sem
+  tomar a tela inteira.
+- **Você só precisa relatar o resultado de algo** — use Toast (transitório) ou Alert (persistente,
+  inline).
+- **O painel é ancorado a um controle e contém opções** — use Dropdown.
+
+## Acessibilidade
+
+- O painel é `role="dialog"` com `aria-modal`, nomeado pelo `title` via `aria-labelledby`.
+- O foco entra no painel na abertura, fica retido enquanto ele está aberto e volta para o elemento
+  que o abriu no fechamento.
+- Todo caminho de fechamento chama `onClose`: o botão ×, o Escape e o clique no backdrop. O ×
+  aparece só quando `onClose` é fornecido, então um diálogo nunca fica sem uma saída visível.
+- A rolagem da página fica bloqueada enquanto o diálogo está aberto, e o painel é portado para o
+  `document.body`, escapando de qualquer ancestral com `overflow: hidden`.
 
 ## Props
 
 <PropTable name="Dialog" />
 
-## Uso
+## HTML puro
 
-<CodeBlock>{`'use client';
+Sem React, componha as mesmas classes — o estado de abertura, o foco e o Escape ficam com você:
 
-import { Button, Dialog } from '@lyra-ds/react';
-import { useState } from 'react';
-
-export function Exemplo() {
-  const [open, setOpen] = useState(false);
-
-return (
-
-<>
-<Button onClick={() => setOpen(true)}>Abrir diálogo</Button>
-<Dialog open={open} onClose={() => setOpen(false)} title="Excluir projeto">
-Esta ação não pode ser desfeita.
-</Dialog>
-</>
-);
-}`}</CodeBlock>
+```html
+<div class="lyra-dialog-overlay">
+  <div class="lyra-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <div class="lyra-dialog__header">
+      <h2 class="lyra-dialog__title" id="dialog-title">Excluir projeto</h2>
+      <button class="lyra-dialog__close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="lyra-dialog__body">Esta ação não pode ser desfeita.</div>
+    <div class="lyra-dialog__footer">
+      <button class="lyra-btn lyra-btn--ghost lyra-btn--md">Cancelar</button>
+      <button class="lyra-btn lyra-btn--danger lyra-btn--md">Excluir</button>
+    </div>
+  </div>
+</div>
+```

@@ -1,0 +1,82 @@
+---
+title: Button
+description: The primary action trigger, with five variants, three sizes, icons and a loading state.
+---
+
+# Button
+
+Button triggers actions. Use exactly one `primary` button per view for the main action, and reach
+for `secondary`, `soft`, `ghost` or `danger` to signal intent. Icons, a `full`-width mode and a
+`loading` state that keeps the label in place (no layout shift) are all built in.
+
+## Examples
+
+<Example id="variants" title="Variants">
+  Variant is about intent, not decoration. One `primary` per view; `danger` only for actions that
+  destroy something.
+</Example>
+
+<Example id="sizes" title="Sizes">
+  Heights are fixed by token: sm 32px, md 40px, lg 48px. Keep one size per row of actions.
+</Example>
+
+<Example id="icons-and-states" title="Icons and states">
+  `loading` keeps the label rendered and blocks interaction, so the button never changes width
+  mid-click. If the reason a button is disabled is not obvious on screen, say it in nearby text.
+</Example>
+
+<Example id="as-link" title="Rendering as a link">
+`asChild` styles the child element instead of rendering a `<button>`. Use it whenever the action
+navigates: the result is a real anchor, so middle-click, "open in new tab" and the status bar
+preview all keep working.
+</Example>
+
+## When to use
+
+Use a Button for an action the user takes on the current page — submitting, opening a dialog,
+starting a job.
+
+Reach for something else when:
+
+- **It navigates somewhere** — it is a link. Use `<Button asChild>` around an anchor so it is
+  styled as a button but behaves as a link.
+- **It is one of several exclusive choices** — use Radio or Tabs.
+- **It toggles a setting on or off** — use a Switch, which announces its own state.
+- **It is icon-only in a dense toolbar** — use IconButton, which sizes for a 44px touch target.
+
+## Accessibility
+
+- Renders a native `<button>`, so Enter/Space activation, form submission and focus order come
+  from the platform.
+- `loading` sets `aria-busy` and blocks interaction; the visible label stays, so screen readers
+  keep announcing what the button does.
+- An icon-only Button has **no accessible name** unless you provide one — pass `aria-label`
+  (this is enforced by the axe suite, not by the type system).
+- Focus is a `box-shadow: var(--shadow-focus)` ring on `:focus-visible`. Never replace it with
+  `outline: none`.
+- With `asChild`, the accessibility contract belongs to the child: an anchor needs a real `href`
+  to be reachable by keyboard.
+
+## Props
+
+<PropTable name="Button" />
+
+## Plain HTML
+
+Compose one variant class and one size class; the label sits in its own element so the spinner
+can be added without reflow:
+
+```html
+<button class="lyra-btn lyra-btn--primary lyra-btn--md">
+  <span class="lyra-btn__label">Save changes</span>
+</button>
+
+<button class="lyra-btn lyra-btn--danger lyra-btn--md lyra-btn--loading" aria-busy="true">
+  <span class="lyra-btn__spinner" aria-hidden="true"></span>
+  <span class="lyra-btn__label">Deleting</span>
+</button>
+
+<a class="lyra-btn lyra-btn--secondary lyra-btn--md" href="/docs">
+  <span class="lyra-btn__label">Read the docs</span>
+</a>
+```

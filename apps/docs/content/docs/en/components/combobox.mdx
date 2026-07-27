@@ -1,0 +1,89 @@
+---
+title: Combobox
+description: A searchable single-select combobox for longer lists that need filtering before a choice.
+---
+
+# Combobox
+
+Combobox is the searchable choice control for lists that are too long to scan at once. It keeps DOM
+focus in its search input while `aria-activedescendant` identifies the active option, so filtering and
+keyboard movement do not move focus through the list.
+
+## Examples
+
+<Example id="basic" title="Searchable options" layout="block">
+  Use short labels people can predict while typing. Optional option `hint` adds enough context to
+  tell similar choices apart without turning the result into a second paragraph.
+</Example>
+
+<Example id="controlled" title="Controlled selection" layout="block">
+  Pass `value` and `onChange` when another part of the view owns the choice. Without `value`,
+  `defaultValue` seeds the component's own selected value.
+</Example>
+
+## When to use
+
+Use a Combobox for one choice from a known list when filtering makes finding that choice materially faster.
+
+Reach for something else when:
+
+- **The list is short and does not need filtering** — use Select and retain the browser's native picker.
+- **A few mutually exclusive options should be compared at a glance** — use Radio rather than hiding them.
+- **People are entering a value that is not limited to options** — use Input or Textarea, depending on length.
+
+## Accessibility
+
+- The trigger exposes `aria-haspopup="listbox"`, `aria-expanded` and `aria-controls`; its popup contains a `role="listbox"` with `role="option"` items.
+- When open, focus moves to the search input (`role="combobox"`). It uses `aria-activedescendant` for the active option and resets that active option after filtering.
+- Arrow Up/Down changes the active option; Enter selects it; Escape closes the popup and restores focus to the trigger.
+- A label names the search input through `aria-labelledby`; without one, the search placeholder is used as its `aria-label`. Hint or error is described to both controls.
+
+## Props
+
+<PropTable name="Combobox" />
+
+## Plain HTML
+
+Keep the trigger, search input and listbox ids aligned. DOM focus remains on the search input;
+`aria-activedescendant` identifies the active option without moving focus into the list:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" id="country-label" for="country">Country</label>
+  <span class="lyra-combobox">
+    <button
+      class="lyra-input lyra-combobox__trigger"
+      id="country"
+      type="button"
+      aria-haspopup="listbox"
+      aria-expanded="true"
+      aria-controls="country-listbox"
+    >
+      <span class="lyra-combobox__placeholder">Choose a country</span>
+    </button>
+    <div class="lyra-combobox__pop">
+      <div class="lyra-combobox__search">
+        <input
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="country-listbox"
+          aria-autocomplete="list"
+          aria-activedescendant="country-option-0"
+          aria-labelledby="country-label"
+        />
+      </div>
+      <div class="lyra-combobox__list" id="country-listbox" role="listbox">
+        <button
+          class="lyra-combobox__option lyra-combobox__option--active"
+          id="country-option-0"
+          role="option"
+          tabindex="-1"
+          aria-selected="false"
+        >
+          Brazil
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

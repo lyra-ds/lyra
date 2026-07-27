@@ -1,0 +1,76 @@
+---
+title: FileUpload
+description: A dropzone with browser file selection, progress, validation feedback and removable files.
+---
+
+# FileUpload
+
+FileUpload is an uncontrolled dropzone for adding files through the browser picker or drag and drop.
+Choose `accept`, `multiple` and `maxSizeMB` around the server's real rules; the component's size feedback
+helps people recover, but it cannot replace server-side validation.
+
+## Examples
+
+<Example id="default-items" title="Accepted types and existing files" layout="block">
+  `accept` reaches the hidden file input and also contributes to the visible helper text.
+  `defaultItems` seeds an existing uncontrolled list, useful when a form already has uploaded
+  assets.
+</Example>
+
+<Example id="on-files" title="Single-file handoff" layout="block">
+  Set `multiple={false}` when the next step needs one file. `onFiles` receives browser `File`
+  objects, while `onChange` reports the component's display items and simulated progress.
+</Example>
+
+## When to use
+
+Use FileUpload when people must add one or more files and need drop, picker, validation and progress feedback in one place.
+
+Reach for something else when:
+
+- **The form only needs the browser's plain file field** — use Input with `type="file"` when no dropzone or upload list is needed.
+- **People are editing typed metadata, not adding a file** — use Input or Textarea for the value itself.
+- **Existing remote files need browsing and management** — use a file manager view rather than an upload-only dropzone.
+
+## Accessibility
+
+- The drop zone is a native `<button>`, so it can receive focus and opens the hidden native file input on click.
+- Dragging changes visual state, while keyboard users retain the same browser file picker path through the button.
+- Each completed item includes `.lyra-upload__check` with `role="img"` and the accessible name “Upload complete”. Remove buttons name the file they remove.
+- The visible `label` is button text, not a form `<label>`. Make its action and accepted file rules explicit through `label`, `hint`, `accept` and nearby instructions.
+
+## Props
+
+<PropTable name="FileUpload" />
+
+## Plain HTML
+
+The React component handles the picker, drag events and progress. This markup shows the public classes used by the rendered upload state:
+
+```html
+<div class="lyra-upload">
+  <button class="lyra-upload__zone" type="button">
+    <span class="lyra-upload__zone-icon" aria-hidden="true"></span>
+    <span class="lyra-upload__zone-label">Drag files here or click to select</span>
+    <span class="lyra-upload__zone-hint">.pdf,.png · Up to 5 MB per file</span>
+    <input type="file" accept=".pdf,.png" multiple hidden tabindex="-1" />
+  </button>
+  <ul class="lyra-upload__list">
+    <li class="lyra-upload__item">
+      <span class="lyra-upload__item-icon" aria-hidden="true"></span>
+      <span class="lyra-upload__item-body">
+        <span class="lyra-upload__item-row">
+          <span class="lyra-upload__item-name">brand-guidelines.pdf</span>
+          <span class="lyra-upload__item-meta">825 KB</span>
+        </span>
+      </span>
+      <span class="lyra-upload__check" role="img" aria-label="Upload complete"></span>
+      <button
+        class="lyra-upload__remove"
+        type="button"
+        aria-label="Remove brand-guidelines.pdf"
+      ></button>
+    </li>
+  </ul>
+</div>
+```

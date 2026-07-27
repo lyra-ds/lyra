@@ -1,0 +1,75 @@
+---
+title: FileUpload
+description: Uma área de upload com seletor de arquivos, progresso, retorno de validação e remoção de arquivos.
+---
+
+# FileUpload
+
+FileUpload é uma área de upload não controlada para adicionar arquivos pelo seletor do navegador ou por
+arrastar e soltar. Escolha `accept`, `multiple` e `maxSizeMB` conforme as regras reais do servidor; o
+retorno de tamanho ajuda a recuperar, mas não substitui validação no servidor.
+
+## Exemplos
+
+<Example id="default-items" title="Tipos aceitos e arquivos existentes" layout="block">
+  `accept` chega ao input de arquivo oculto e também compõe o texto auxiliar visível. `defaultItems`
+  inicia uma lista não controlada existente, útil quando o formulário já tem assets enviados.
+</Example>
+
+<Example id="on-files" title="Entrega de arquivo único" layout="block">
+  Defina `multiple={false}` quando a próxima etapa precisar de um arquivo. `onFiles` recebe objetos
+  `File` do navegador, enquanto `onChange` informa os itens de exibição e o progresso simulado.
+</Example>
+
+## Quando usar
+
+Use FileUpload quando pessoas precisam adicionar um ou mais arquivos e necessitam de drop, seletor, validação e progresso no mesmo lugar.
+
+Prefira outro componente quando:
+
+- **O formulário só precisa do campo de arquivo simples do navegador** — use Input com `type="file"` quando não for necessária área de drop nem lista de upload.
+- **As pessoas editam metadados digitados, não adicionam um arquivo** — use Input ou Textarea para o valor.
+- **Arquivos remotos existentes precisam ser navegados e gerenciados** — use uma visualização de gerenciador de arquivos, não uma área só de upload.
+
+## Acessibilidade
+
+- A área de drop é um `<button>` nativo, então recebe foco e abre o input de arquivo nativo oculto ao clicar.
+- Arrastar altera o estado visual, enquanto pessoas no teclado mantêm o mesmo caminho do seletor pelo botão.
+- Cada item concluído inclui `.lyra-upload__check` com `role="img"` e nome acessível “Upload complete”. Botões de remoção nomeiam o arquivo removido.
+- O `label` visível é texto do botão, não um `<label>` de formulário. Deixe ação e regras de arquivo claras com `label`, `hint`, `accept` e instruções próximas.
+
+## Props
+
+<PropTable name="FileUpload" />
+
+## HTML puro
+
+O componente React cuida do seletor, eventos de drop e progresso. Esta marcação mostra as classes públicas usadas pelo estado renderizado do upload:
+
+```html
+<div class="lyra-upload">
+  <button class="lyra-upload__zone" type="button">
+    <span class="lyra-upload__zone-icon" aria-hidden="true"></span>
+    <span class="lyra-upload__zone-label">Arraste arquivos aqui ou clique para selecionar</span>
+    <span class="lyra-upload__zone-hint">.pdf,.png · Até 5 MB por arquivo</span>
+    <input type="file" accept=".pdf,.png" multiple hidden tabindex="-1" />
+  </button>
+  <ul class="lyra-upload__list">
+    <li class="lyra-upload__item">
+      <span class="lyra-upload__item-icon" aria-hidden="true"></span>
+      <span class="lyra-upload__item-body">
+        <span class="lyra-upload__item-row">
+          <span class="lyra-upload__item-name">guia-da-marca.pdf</span>
+          <span class="lyra-upload__item-meta">825 KB</span>
+        </span>
+      </span>
+      <span class="lyra-upload__check" role="img" aria-label="Upload complete"></span>
+      <button
+        class="lyra-upload__remove"
+        type="button"
+        aria-label="Remove guia-da-marca.pdf"
+      ></button>
+    </li>
+  </ul>
+</div>
+```
