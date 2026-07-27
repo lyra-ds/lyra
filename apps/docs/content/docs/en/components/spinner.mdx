@@ -33,8 +33,8 @@ Reach for something else when:
 
 ## Accessibility
 
-- Renders `role="status"` with the accessible name "Loading". That name is a fixed English string
-  with no prop to change it, so a localized interface announces an English word here.
+- Renders `role="status"` with the accessible name "Loading" by default. Pass `aria-label` to translate
+  the live-region name for a localized interface.
 - Because it is a live region, the name is announced when the spinner appears. Do not place several
   on one screen — they will be announced one after another.
 - The animation is decorative. Nothing about the spinner conveys progress, so never pair it with copy

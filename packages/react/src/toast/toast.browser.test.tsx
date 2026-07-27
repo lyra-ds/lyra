@@ -41,6 +41,24 @@ describe('Toast', () => {
     }
   }
 
+  it('uses "Close notification" as the default accessible name for the close button', async () => {
+    const { container } = await render(<Toast onClose={() => {}}>Saved</Toast>);
+    expect(container.querySelector('.lyra-toast__close')!.getAttribute('aria-label')).toBe(
+      'Close notification',
+    );
+  });
+
+  it('uses closeLabel as the accessible name for the close button', async () => {
+    const { container } = await render(
+      <Toast onClose={() => {}} closeLabel="Fechar notificação">
+        Saved
+      </Toast>,
+    );
+    expect(container.querySelector('.lyra-toast__close')!.getAttribute('aria-label')).toBe(
+      'Fechar notificação',
+    );
+  });
+
   it('gives the close button a hit area that clears the WCAG minimum', async () => {
     // Regression: the close glyph measured 12x19 — the one control in the system that failed
     // WCAG 2.2 AA's 24x24 minimum outright. It keeps its visible size; the area is the ::after.

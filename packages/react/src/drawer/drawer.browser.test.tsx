@@ -71,6 +71,28 @@ describe('Drawer', () => {
     });
   }
 
+  it('uses "Close" as the default accessible name for the close button', async () => {
+    await render(
+      <Drawer open onClose={() => {}} title="Details">
+        Body
+      </Drawer>,
+    );
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer__close')).not.toBeNull());
+    expect(document.querySelector('.lyra-drawer__close')!.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('uses closeLabel as the accessible name for the close button', async () => {
+    await render(
+      <Drawer open onClose={() => {}} closeLabel="Fechar" title="Details">
+        Body
+      </Drawer>,
+    );
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer__close')).not.toBeNull());
+    expect(document.querySelector('.lyra-drawer__close')!.getAttribute('aria-label')).toBe(
+      'Fechar',
+    );
+  });
+
   it('animates out before it leaves, instead of vanishing on the same frame', async () => {
     // Regression: Drawer entered with `lyra-slide-in` and then unmounted immediately, while Dialog
     // and the command palette both hold a `--closing` class for their exit.

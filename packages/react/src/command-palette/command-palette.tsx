@@ -67,6 +67,8 @@ export interface CommandPaletteProps {
   placeholder?: string;
   /** Text shown before the current query when no commands match. Default: `"No results for"`. */
   emptyMessage?: string;
+  /** Accessible name for the command search field. Default: `"Search commands"`. */
+  searchLabel?: string;
   /** Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work. */
   hints?: CommandPaletteHints;
   /** Key used with Command/Ctrl for the global shortcut. Default: `"k"`. */
@@ -113,6 +115,7 @@ interface CommandPalettePanelProps {
   query: string;
   placeholder: string;
   emptyMessage: string;
+  searchLabel: string;
   dialogLabel: string;
   hints: Required<CommandPaletteHints>;
   className?: string;
@@ -145,6 +148,7 @@ function CommandPalettePanel({
   query,
   placeholder,
   emptyMessage,
+  searchLabel,
   dialogLabel,
   hints,
   className,
@@ -219,7 +223,7 @@ function CommandPalettePanel({
         <input
           ref={inputRef}
           role="combobox"
-          aria-label="Search commands"
+          aria-label={searchLabel}
           aria-expanded="true"
           aria-controls={listboxId}
           aria-autocomplete="list"
@@ -316,6 +320,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
       groups = [],
       placeholder = 'Type a command or search…',
       emptyMessage = 'No results for',
+      searchLabel = 'Search commands',
       hints,
       hotkey = 'k',
       inline = false,
@@ -422,6 +427,7 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
         query={query}
         placeholder={placeholder}
         emptyMessage={emptyMessage}
+        searchLabel={searchLabel}
         dialogLabel={ariaLabel}
         hints={{ ...DEFAULT_HINTS, ...hints }}
         className={className}

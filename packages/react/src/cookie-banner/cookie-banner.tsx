@@ -8,6 +8,8 @@ const DEFAULT_STORAGE_KEY = 'lyra-cookie-consent';
 
 /** Props for {@link CookieBanner}. */
 export interface CookieBannerProps extends HTMLAttributes<HTMLDivElement> {
+  /** Accessible name for the region. Default: `"Cookie notice"`. Translate it in a localized interface. */
+  'aria-label'?: string;
   /** Browser storage key used to persist the visitor's choice. */
   storageKey?: string;
   /** Optional URL for the privacy policy linked from the default copy. */
@@ -30,6 +32,7 @@ export const CookieBanner = /*#__PURE__*/ forwardRef<HTMLDivElement, CookieBanne
       onEssentials,
       className,
       children,
+      'aria-label': ariaLabel,
       ...rest
     },
     ref,
@@ -67,7 +70,7 @@ export const CookieBanner = /*#__PURE__*/ forwardRef<HTMLDivElement, CookieBanne
         className={cx('lyra-cookies', closing && 'lyra-cookies--closing', className)}
         onAnimationEnd={onAnimationEnd}
         role="region"
-        aria-label="Cookie notice"
+        aria-label={ariaLabel ?? 'Cookie notice'}
       >
         <p className="lyra-cookies__text">
           {children ?? (

@@ -75,4 +75,36 @@ describe('FileUpload', () => {
     expect(onFiles).toHaveBeenCalledWith([file]);
     expect(onChange.mock.calls.at(-1)![0][0]).toMatchObject({ name: 'large.pdf', status: 'error' });
   });
+
+  it('uses "Upload complete" as the default accessible name for completed uploads', async () => {
+    const { container } = await render(<FileUpload defaultItems={[DONE_ITEM]} />);
+    expect(container.querySelector('.lyra-upload__check')!.getAttribute('aria-label')).toBe(
+      'Upload complete',
+    );
+  });
+
+  it('uses doneLabel as the accessible name for completed uploads', async () => {
+    const { container } = await render(
+      <FileUpload defaultItems={[DONE_ITEM]} doneLabel="Upload concluído" />,
+    );
+    expect(container.querySelector('.lyra-upload__check')!.getAttribute('aria-label')).toBe(
+      'Upload concluído',
+    );
+  });
+
+  it('uses the file name in the default accessible name for each remove button', async () => {
+    const { container } = await render(<FileUpload defaultItems={[DONE_ITEM]} />);
+    expect(container.querySelector('.lyra-upload__remove')!.getAttribute('aria-label')).toBe(
+      'Remove report.pdf',
+    );
+  });
+
+  it('passes the file name to removeLabel for each remove button', async () => {
+    const { container } = await render(
+      <FileUpload defaultItems={[DONE_ITEM]} removeLabel={(name) => `Excluir ${name}`} />,
+    );
+    expect(container.querySelector('.lyra-upload__remove')!.getAttribute('aria-label')).toBe(
+      'Excluir report.pdf',
+    );
+  });
 });

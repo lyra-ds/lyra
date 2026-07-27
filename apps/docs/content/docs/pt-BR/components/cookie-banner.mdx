@@ -35,8 +35,8 @@ Procure outra coisa quando:
 
 ## Acessibilidade
 
-- Renderiza `role="region"` com o nome "Cookie notice". Esse nome é uma string fixa em inglês sem prop
-  para mudar, o que vale saber já que o texto padrão é redigido para a LGPD.
+- Renderiza `role="region"` com o nome "Cookie notice" por padrão. Passe `aria-label` para traduzir esse
+  nome, algo especialmente útil ao substituir o texto padrão redigido para a LGPD.
 - As duas ações são botões reais na ordem normal de tabulação. O banner não prende o foco nem bloqueia
   a página, então dá para continuar lendo e responder depois.
 - Ele lê o `localStorage` dentro de um effect e renderiza `null` até conseguir, então não aparece no

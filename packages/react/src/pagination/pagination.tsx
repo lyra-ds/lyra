@@ -4,12 +4,18 @@ import { cx } from '../internal/cx';
 
 /** Props for {@link Pagination}. */
 export interface PaginationProps extends Omit<HTMLAttributes<HTMLElement>, 'onChange'> {
+  /** Accessible name for the navigation landmark. Default: `"Pagination"`. */
+  'aria-label'?: string;
   /** Current one-based page. */
   page: number;
   /** Total number of pages. */
   total: number;
   /** Called with the requested one-based page. */
   onChange?: (page: number) => void;
+  /** Accessible name for the previous-page button. Default: `"Previous page"`. */
+  previousLabel?: string;
+  /** Accessible name for the next-page button. Default: `"Next page"`. */
+  nextLabel?: string;
 }
 
 function range(start: number, end: number): number[] {
@@ -25,7 +31,19 @@ function visiblePages(page: number, total: number): Array<number | '…'> {
 
 /** Numeric page navigation. Each enabled page button remains in the normal Tab order. */
 export const Pagination = /*#__PURE__*/ forwardRef<HTMLElement, PaginationProps>(
-  function Pagination({ page, total, onChange, className, 'aria-label': ariaLabel, ...rest }, ref) {
+  function Pagination(
+    {
+      page,
+      total,
+      onChange,
+      previousLabel = 'Previous page',
+      nextLabel = 'Next page',
+      className,
+      'aria-label': ariaLabel,
+      ...rest
+    },
+    ref,
+  ) {
     const goTo = (nextPage: number): void => {
       if (nextPage >= 1 && nextPage <= total) onChange?.(nextPage);
     };
@@ -43,7 +61,7 @@ export const Pagination = /*#__PURE__*/ forwardRef<HTMLElement, PaginationProps>
           className="lyra-page"
           disabled={page <= 1}
           onClick={() => goTo(page - 1)}
-          aria-label="Previous page"
+          aria-label={previousLabel}
         >
           ‹
         </button>
@@ -69,7 +87,7 @@ export const Pagination = /*#__PURE__*/ forwardRef<HTMLElement, PaginationProps>
           className="lyra-page"
           disabled={page >= total}
           onClick={() => goTo(page + 1)}
-          aria-label="Next page"
+          aria-label={nextLabel}
         >
           ›
         </button>

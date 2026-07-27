@@ -37,9 +37,8 @@ Procure outra coisa quando:
   instante em que aparece. Nunca coloque a única cópia de uma informação importante num toast.
 - `ToastStack` é `position: fixed` no canto inferior direito da viewport. Ele fica por cima do que
   estiver ali, então mantenha os toasts curtos e poucos.
-- O botão de fechar só aparece com `onClose`, e o nome acessível dele é a string em inglês
-  "Close notification". Não há prop para traduzir — uma limitação que vale conhecer antes de lançar um
-  produto localizado.
+- O botão de fechar só aparece com `onClose`, e o nome acessível dele tem como padrão a string em inglês
+  "Close notification"; passe `closeLabel` para traduzi-lo em um produto localizado.
 - `tone` colore apenas o ícone. As palavras precisam dizer se algo deu certo ou errado.
 
 ## Props

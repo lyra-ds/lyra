@@ -39,6 +39,10 @@ export interface FileUploadProps {
   onFiles?: (files: File[]) => void;
   /** Called whenever the internal item list changes. */
   onChange?: (items: FileUploadItem[]) => void;
+  /** Accessible name for the completed-upload icon. Default: `"Upload complete"`. */
+  doneLabel?: string;
+  /** Accessible name for each remove button. Receives the file name. Default: `` (name) => `Remove ${name}` ``. */
+  removeLabel?: (name: string) => string;
   /** Class appended after the public `.lyra-upload` class. */
   className?: string;
 }
@@ -79,6 +83,8 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       defaultItems = [],
       onFiles,
       onChange,
+      doneLabel = 'Upload complete',
+      removeLabel = (name) => `Remove ${name}`,
       className,
     },
     ref,
@@ -242,14 +248,14 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
                   )}
                 </span>
                 {item.status === 'done' && (
-                  <span className="lyra-upload__check" role="img" aria-label="Upload complete">
+                  <span className="lyra-upload__check" role="img" aria-label={doneLabel}>
                     <Icon name="circle-check" size={17} />
                   </span>
                 )}
                 <button
                   type="button"
                   className="lyra-upload__remove"
-                  aria-label={`Remove ${item.name}`}
+                  aria-label={removeLabel(item.name)}
                   onClick={() => remove(item.id)}
                 >
                   <Icon name="x" size={15} />

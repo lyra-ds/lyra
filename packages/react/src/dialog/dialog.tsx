@@ -43,6 +43,8 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   open: boolean;
   /** Called by every close path (Esc, overlay click, the × button). The × renders only when this is provided. */
   onClose?: () => void;
+  /** Accessible name for the close button. Default: `"Close"`. */
+  closeLabel?: string;
   /** Heading rendered in the panel header and wired as the accessible name via `aria-labelledby`. */
   title: ReactNode;
   /** Action buttons rendered in the footer. Omitted → no `.lyra-dialog__footer` chrome. */
@@ -70,6 +72,7 @@ interface DialogPanelProps {
   title: ReactNode;
   footer?: ReactNode;
   onClose?: () => void;
+  closeLabel: string;
   closeOnEsc: boolean;
   closeOnOverlayClick: boolean;
   /** The live `open` prop — drives the initial-focus transition (WR-03), not component mount. */
@@ -96,6 +99,7 @@ function DialogPanel({
   title,
   footer,
   onClose,
+  closeLabel,
   closeOnEsc,
   closeOnOverlayClick,
   open,
@@ -185,7 +189,7 @@ function DialogPanel({
             <button
               type="button"
               className="lyra-dialog__close"
-              aria-label="Close"
+              aria-label={closeLabel}
               onClick={onClose}
             >
               <svg
@@ -234,6 +238,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
   {
     open,
     onClose,
+    closeLabel = 'Close',
     title,
     footer,
     closeOnEsc = true,
@@ -299,6 +304,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
         title={title}
         footer={footer}
         onClose={onClose}
+        closeLabel={closeLabel}
         closeOnEsc={closeOnEsc}
         closeOnOverlayClick={closeOnOverlayClick}
         open={open}

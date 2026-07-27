@@ -28,6 +28,8 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   open: boolean;
   /** Called when the user dismisses the drawer with Escape, the backdrop, or the close button. */
   onClose?: () => void;
+  /** Accessible name for the close button. Default: `"Close"`. */
+  closeLabel?: string;
   /** Heading rendered in the drawer header and used as its accessible name. */
   title: ReactNode;
   /** Fixed actions rendered in the footer. Omit to remove the footer chrome. */
@@ -45,6 +47,7 @@ interface DrawerPanelProps {
   title: ReactNode;
   footer?: ReactNode;
   onClose?: () => void;
+  closeLabel: string;
   captureOpener: (element: Element | null) => void;
   className?: string;
   children: ReactNode;
@@ -61,6 +64,7 @@ function DrawerPanel({
   title,
   footer,
   onClose,
+  closeLabel,
   captureOpener,
   className,
   children,
@@ -116,7 +120,7 @@ function DrawerPanel({
             <button
               type="button"
               className="lyra-drawer__close"
-              aria-label="Close"
+              aria-label={closeLabel}
               onClick={onClose}
             >
               <svg
@@ -145,7 +149,7 @@ function DrawerPanel({
  * background scroll, and restores focus to its opener after the controlled `open` prop closes.
  */
 export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(function Drawer(
-  { open, onClose, title, footer, container, className, children, ...rest },
+  { open, onClose, closeLabel = 'Close', title, footer, container, className, children, ...rest },
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const titleId = useId();
@@ -184,6 +188,7 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
         title={title}
         footer={footer}
         onClose={onClose}
+        closeLabel={closeLabel}
         captureOpener={captureOpener}
         className={className}
         rest={rest}

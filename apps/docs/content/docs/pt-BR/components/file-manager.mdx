@@ -40,14 +40,15 @@ Prefira outro componente quando:
 
 ## Acessibilidade
 
-- Os controles de visualização formam um `role="group"` chamado "View mode". Cada botão tem nome
-  acessível e `aria-pressed`, então o estado atual de lista ou grade é anunciado.
+- Os controles de visualização formam um `role="group"` chamado "View mode" por padrão. Cada botão tem
+  nome acessível e `aria-pressed`, então o estado atual de lista ou grade é anunciado.
 - O breadcrumb é um `<nav aria-label="Current folder">`; cada gatilho de ação recebe o nome "Actions
-  for &lt;name&gt;". O segmento atual do breadcrumb fica desabilitado, em vez de ser um alvo de navegação.
+  for &lt;name&gt;" por padrão. O segmento atual do breadcrumb fica desabilitado, em vez de ser um alvo de navegação.
 - O input de busca tem placeholder, mas **não tem nome acessível**. Esta é uma lacuna do componente
   que consumidores precisam considerar; um título ao redor não transforma o placeholder em rótulo.
-- Os rótulos embutidos são fixos em inglês. Localize `searchPlaceholder` e `emptyMessage` e considere
-  os controles embutidos restantes em inglês em uma aplicação localizada.
+- Passe um objeto parcial `labels` para traduzir o grupo e os botões de visualização, o breadcrumb e os
+  gatilhos de ação. `labels.itemActions` recebe o nome de cada arquivo; localize `searchPlaceholder` e
+  `emptyMessage` separadamente.
 
 ## Props
 

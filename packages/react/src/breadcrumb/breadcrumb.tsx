@@ -12,6 +12,8 @@ export interface BreadcrumbItem {
 
 /** Props for {@link Breadcrumb}. */
 export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
+  /** Accessible name for the navigation landmark. Default: `"Breadcrumb"`. */
+  'aria-label'?: string;
   /** Navigation items; the final item is rendered as the current page. */
   items: BreadcrumbItem[];
 }

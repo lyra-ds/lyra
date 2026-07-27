@@ -35,7 +35,7 @@ Prefira outro componente quando:
 
 - A área de drop é um `<button>` nativo, então recebe foco e abre o input de arquivo nativo oculto ao clicar.
 - Arrastar altera o estado visual, enquanto pessoas no teclado mantêm o mesmo caminho do seletor pelo botão.
-- Cada item concluído inclui `.lyra-upload__check` com `role="img"` e nome acessível “Upload complete”. Botões de remoção nomeiam o arquivo removido.
+- Cada item concluído inclui `.lyra-upload__check` com `role="img"` e nome acessível “Upload complete” por padrão. Passe `doneLabel` para traduzi-lo; `removeLabel` recebe o nome de cada arquivo para que o rótulo de remoção siga a ordem natural do idioma.
 - O `label` visível é texto do botão, não um `<label>` de formulário. Deixe ação e regras de arquivo claras com `label`, `hint`, `accept` e instruções próximas.
 
 ## Props

@@ -279,4 +279,20 @@ describe('CommandPalette', () => {
     expect(footer).toContain('select');
     expect(footer).toContain('close');
   });
+
+  it('uses "Search commands" as the default accessible name for the search field', async () => {
+    const { container } = await render(<CommandPalette inline groups={groups} />);
+    expect(container.querySelector('[role=combobox]')!.getAttribute('aria-label')).toBe(
+      'Search commands',
+    );
+  });
+
+  it('uses searchLabel as the accessible name for the search field', async () => {
+    const { container } = await render(
+      <CommandPalette inline groups={groups} searchLabel="Pesquisar comandos" />,
+    );
+    expect(container.querySelector('[role=combobox]')!.getAttribute('aria-label')).toBe(
+      'Pesquisar comandos',
+    );
+  });
 });

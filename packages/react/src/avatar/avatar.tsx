@@ -14,11 +14,13 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   shape?: 'circle' | 'square';
   /** Optional presence status. */
   status?: 'online' | 'busy' | 'away';
+  /** Accessible name for the presence dot. Default: the `status` value itself. */
+  statusLabel?: string;
 }
 
 /** An image or initials avatar with an optional presence indicator. */
 export const Avatar = /*#__PURE__*/ forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
-  { src, name = '', size = 'md', shape = 'circle', status, className, ...rest },
+  { src, name = '', size = 'md', shape = 'circle', status, statusLabel, className, ...rest },
   ref,
 ) {
   const initials = name
@@ -44,7 +46,7 @@ export const Avatar = /*#__PURE__*/ forwardRef<HTMLSpanElement, AvatarProps>(fun
         <span
           className={`lyra-avatar__status lyra-avatar__status--${status}`}
           role="status"
-          aria-label={status}
+          aria-label={statusLabel ?? status}
         />
       )}
     </span>

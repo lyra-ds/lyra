@@ -36,7 +36,7 @@ Reach for something else when:
 
 - The drop zone is a native `<button>`, so it can receive focus and opens the hidden native file input on click.
 - Dragging changes visual state, while keyboard users retain the same browser file picker path through the button.
-- Each completed item includes `.lyra-upload__check` with `role="img"` and the accessible name “Upload complete”. Remove buttons name the file they remove.
+- Each completed item includes `.lyra-upload__check` with `role="img"` and the accessible name “Upload complete” by default. Pass `doneLabel` to translate it; `removeLabel` receives each file name so remove-button names can follow local word order.
 - The visible `label` is button text, not a form `<label>`. Make its action and accepted file rules explicit through `label`, `hint`, `accept` and nearby instructions.
 
 ## Props

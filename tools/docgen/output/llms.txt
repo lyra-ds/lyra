@@ -154,6 +154,8 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   shape?: 'circle' | 'square';
   /** Optional presence status. */
   status?: 'online' | 'busy' | 'away';
+  /** Accessible name for the presence dot. Default: the `status` value itself. */
+  statusLabel?: string;
 }
 export declare function Avatar(props: AvatarProps): JSX.Element;
 ```
@@ -212,6 +214,8 @@ export declare function Card(props: CardProps): JSX.Element;
 export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
   /** Called when the optional remove button is clicked. */
   onRemove?: () => void;
+  /** Accessible name for the remove button. Default: `"Remove"`. */
+  removeLabel?: string;
   /** Tag content. */
   children: ReactNode;
 }
@@ -240,6 +244,8 @@ export declare function Alert(props: AlertProps): JSX.Element;
 ```ts
 /** Props for {@link CookieBanner}. */
 export interface CookieBannerProps extends HTMLAttributes<HTMLDivElement> {
+  /** Accessible name for the region. Default: `"Cookie notice"`. Translate it in a localized interface. */
+  'aria-label'?: string;
   /** Browser storage key used to persist the visitor's choice. */
   storageKey?: string;
   /** Optional URL for the privacy policy linked from the default copy. */
@@ -269,6 +275,8 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   open: boolean;
   /** Called by every close path (Esc, overlay click, the × button). The × renders only when this is provided. */
   onClose?: () => void;
+  /** Accessible name for the close button. Default: `"Close"`. */
+  closeLabel?: string;
   /** Heading rendered in the panel header and wired as the accessible name via `aria-labelledby`. */
   title: ReactNode;
   /** Action buttons rendered in the footer. Omitted → no `.lyra-dialog__footer` chrome. */
@@ -293,6 +301,8 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   open: boolean;
   /** Called when the user dismisses the drawer with Escape, the backdrop, or the close button. */
   onClose?: () => void;
+  /** Accessible name for the close button. Default: `"Close"`. */
+  closeLabel?: string;
   /** Heading rendered in the drawer header and used as its accessible name. */
   title: ReactNode;
   /** Fixed actions rendered in the footer. Omit to remove the footer chrome. */
@@ -337,6 +347,8 @@ export declare function Skeleton(props: SkeletonProps): JSX.Element;
 export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
   /** Spinner size. Default `"md"` (24px). */
   size?: 'sm' | 'md' | 'lg';
+  /** Accessible name for the live region. Default: `"Loading"`. Translate it in a localized interface — it is what a screen reader announces while content loads. */
+  'aria-label'?: string;
 }
 export declare function Spinner(props: SpinnerProps): JSX.Element;
 ```
@@ -351,6 +363,8 @@ export interface ToastProps extends HTMLAttributes<HTMLDivElement> {
   icon?: ReactNode;
   /** Called when the optional close button is activated. */
   onClose?: () => void;
+  /** Accessible name for the close button. Default: `"Close notification"`. */
+  closeLabel?: string;
   /** Toast message content. */
   children: ReactNode;
 }
@@ -410,6 +424,8 @@ export interface FileManagerProps {
   searchPlaceholder?: string;
   /** Message shown when no files match the search. */
   emptyMessage?: string;
+  /** Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work. */
+  labels?: FileManagerLabels;
   /** Class appended after the public `.lyra-fm` class. */
   className?: string;
 }
@@ -438,6 +454,10 @@ export interface FileUploadProps {
   onFiles?: (files: File[]) => void;
   /** Called whenever the internal item list changes. */
   onChange?: (items: FileUploadItem[]) => void;
+  /** Accessible name for the completed-upload icon. Default: `"Upload complete"`. */
+  doneLabel?: string;
+  /** Accessible name for each remove button. Receives the file name. Default: `` (name) => `Remove ${name}` ``. */
+  removeLabel?: (name: string) => string;
   /** Class appended after the public `.lyra-upload` class. */
   className?: string;
 }
@@ -603,6 +623,8 @@ export declare function Icon(props: IconProps): JSX.Element;
 ```ts
 /** Props for {@link Breadcrumb}. */
 export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
+  /** Accessible name for the navigation landmark. Default: `"Breadcrumb"`. */
+  'aria-label'?: string;
   /** Navigation items; the final item is rendered as the current page. */
   items: BreadcrumbItem[];
 }
@@ -627,6 +649,8 @@ export interface CommandPaletteProps {
   placeholder?: string;
   /** Text shown before the current query when no commands match. Default: `"No results for"`. */
   emptyMessage?: string;
+  /** Accessible name for the command search field. Default: `"Search commands"`. */
+  searchLabel?: string;
   /** Overrides for the footer keyboard hints. Merged over the defaults, so partial objects work. */
   hints?: CommandPaletteHints;
   /** Key used with Command/Ctrl for the global shortcut. Default: `"k"`. */
@@ -690,12 +714,18 @@ export declare function Dropdown(props: DropdownProps): JSX.Element;
 ```ts
 /** Props for {@link Pagination}. */
 export interface PaginationProps extends Omit<HTMLAttributes<HTMLElement>, 'onChange'> {
+  /** Accessible name for the navigation landmark. Default: `"Pagination"`. */
+  'aria-label'?: string;
   /** Current one-based page. */
   page: number;
   /** Total number of pages. */
   total: number;
   /** Called with the requested one-based page. */
   onChange?: (page: number) => void;
+  /** Accessible name for the previous-page button. Default: `"Previous page"`. */
+  previousLabel?: string;
+  /** Accessible name for the next-page button. Default: `"Next page"`. */
+  nextLabel?: string;
 }
 export declare function Pagination(props: PaginationProps): JSX.Element;
 ```

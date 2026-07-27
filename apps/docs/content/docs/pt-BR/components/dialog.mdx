@@ -40,6 +40,7 @@ Prefira outro componente quando:
   que o abriu no fechamento.
 - Todo caminho de fechamento chama `onClose`: o botão ×, o Escape e o clique no backdrop. O ×
   aparece só quando `onClose` é fornecido, então um diálogo nunca fica sem uma saída visível.
+- O botão × tem o nome "Close" por padrão. Passe `closeLabel` para traduzir seu nome acessível.
 - A rolagem da página fica bloqueada enquanto o diálogo está aberto, e o painel é portado para o
   `document.body`, escapando de qualquer ancestral com `overflow: hidden`.
 

@@ -39,6 +39,7 @@ Reach for something else when:
   opened it on close.
 - Every close path calls `onClose`: the × button, Escape, and a backdrop click. The × renders
   only when `onClose` is provided, so a dialog is never left without a visible way out.
+- The × button is named "Close" by default. Pass `closeLabel` to translate its accessible name.
 - Page scroll is locked while the dialog is open, and the panel is portaled to `document.body`
   so it escapes any `overflow: hidden` ancestor.
 

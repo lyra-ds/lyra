@@ -41,8 +41,8 @@ Prefira outro componente quando:
   abriu; a rolagem do corpo fica bloqueada enquanto ele está aberto.
 - Escape, o botão de fechar e um clique no backdrop chamam `onClose`. O backdrop é uma conveniência
   apenas para ponteiro; quem usa teclado fecha com Escape ou com o botão de fechar.
-- O nome acessível do botão de fechar é a string em inglês "Close", fixada no componente. Não há prop
-  para traduzi-la, uma limitação para produtos localizados.
+- O nome acessível do botão de fechar tem como padrão a string em inglês "Close". Passe `closeLabel`
+  para traduzi-la em produtos localizados.
 - Por padrão, o componente é portado para `document.body`. Passe `container` apenas quando a aplicação
   precisar de outro host de portal.
 
