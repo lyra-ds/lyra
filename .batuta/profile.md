@@ -20,6 +20,10 @@ constraints relevantes do CLAUDE.md quando tocarem em estilo/tokens.
 - Conventional commits; feature branches com PR para `main` (branch
   protegida — nunca commitar direto na main).
 
+Execution: sequential
+Worktree: medium+
+Install: pnpm install
+
 ## Comandos
 
 - Test: `pnpm test` · Build: `pnpm build` · Lint: `pnpm lint` (prettier) ·
@@ -170,27 +174,46 @@ sendo referência de leitura); o usuário arquiva quando quiser.
 
 ## Project map
 
-(sweep de 2026-07-20 — scout gratuito estourou timeout, mapeado pelo maestro;
-detalhes ficam com grep e git)
+(sweep de 2026-07-27 pelo scout da lane Research — kimi-k2.7-code; detalhes
+ficam com grep e git)
 
-- `packages/styles` — pacote CSS puro, SEM build: `styles.css` é o entry
-  (`exports "."`), `tokens/` e `components/` publicados como arquivos,
-  `compat-shadcn.css` é subpath opt-in nunca importado pelo entry. Testes em
-  `packages/styles/tests/` (Vitest, com screenshots em `__screenshots__/`).
+- Monorepo pnpm com três workspaces (`pnpm-workspace.yaml`): `packages/*`,
+  `apps/*` e `tools/*`. Node 24 obrigatório.
+- `packages/styles` — core CSS puro, SEM build: `styles.css` é o entry e
+  importa `tokens/` (base, brand, colors, effects, fonts, spacing, typography)
+  e `components/` (buttons, data, display, feedback, files, forms,
+  navigation). `compat-shadcn.css` é subpath opt-in nunca importado pelo
+  entry. Validado por stylelint + testes em `tests/` (Vitest Browser Mode).
 - `packages/react` — wrappers finos sobre as classes `.lyra-*`. Um diretório
-  por componente em `src/` (`button/`, `dialog/`, `icon/`, `input/`,
-  `internal/`), cada um com `*.browser.test.tsx` (Browser Mode/chromium) e
-  `*.ssr.test.ts` colocados junto. Build tsup → `dist/` com entries por
-  componente e exports duais ESM+CJS (`.`, `./button`, `./input`, …).
-  `src/index.ts` é o barrel.
-- `tools/` — scripts Node de gate: `parity/` (fidelidade vs handoff),
-  `pack-smoke/`, `smoke/` (fixture Next.js), `dist-scan/`, `icon-registry/`
-  (mapa estático de ícones Lucide). Invocados pelos scripts do root
-  `package.json`.
-- `handoff/` — material de design de referência (tokens, componentes,
-  protótipos, `llms.txt`): SOMENTE leitura, é a fonte de verdade pixel-perfect.
-- `.github/workflows/ci.yml` — pipeline única (lint → typecheck → test →
-  build → smoke). `.changeset/` — versionamento. `.planning/` — artefatos do
-  GSD, não tocar via Batuta.
-- Não tocar: `node_modules/`, `dist/`, `pnpm-lock.yaml` (só via pnpm),
-  `handoff/**`, screenshots de teste gerados.
+  por componente em `src/<componente>/` (~35 componentes + `internal/`), cada
+  um com `index.ts`, `*.tsx`, `*.browser.test.tsx` (chromium),
+  `*.ssr.test.ts` e `__screenshots__/` quando aplicável. `src/index.ts` é o
+  barrel. Build tsup → `dist/` com exports duais ESM+CJS por componente.
+  Única dep de runtime: `lucide-react`, via
+  `src/icon/icon-registry.ts` (GERADO por `tools/icon-registry`, não editar).
+- `apps/docs` — site de docs Next.js 16 + fumadocs-core/fumadocs-mdx.
+  `app/layout.tsx` carrega fontes e `@lyra-ds/styles/styles.css`;
+  `app/[lang]/layout.tsx` faz i18n via next-intl (locales em `lib/i18n.ts`,
+  strings em `messages/{en,pt-BR}.json`). `app/site.css` define as classes
+  `.lw-*` (só chrome do site). Conteúdo MDX em `content/docs/{en,pt-BR}/`
+  (index + 1 página por componente), exemplos vivos em
+  `components/examples/<componente>/`, chrome do site em `components/`
+  (site-header, docs-sidebar, command-menu, toc, theme-toggle, …).
+  Build estático → `out/` (inclui `llms.txt` copiado por
+  `scripts/copy-llms.mjs`).
+- `tools/` — gates Node invocados pelos scripts do root: `parity/` (tokens e
+  classes vs handoff), `icon-registry/` (gera o registry do Icon),
+  `docgen/` (gera `output/llms.txt` + `props.json` a partir dos tipos do
+  dist), `pack-smoke/` (pack + build Vite real), `smoke/` (consumidores Vite
+  e Next.js reais), `dist-scan/` (`use client` + zero CDN no dist).
+- `handoff/` — referência de design SOMENTE leitura, fonte pixel-perfect
+  (tokens, componentes, ui_kits, guidelines, llms.txt).
+- `.github/workflows/ci.yml` — 4 jobs (lint, typecheck, test, build); o gate
+  real é este arquivo (ver seção Comandos). `.changeset/` — versionamento
+  (styles + react fixados, publicados juntos). `.planning/` — arquivo
+  histórico do GSD, não tocar via Batuta.
+- Não tocar: `node_modules/`, `dist/`, `apps/docs/.next/` e `apps/docs/out/`,
+  `pnpm-lock.yaml` (só via pnpm), `handoff/**`, `__screenshots__/`,
+  `.vitest-attachments/`, `tools/docgen/output/*`,
+  `packages/react/src/icon/icon-registry.ts` (gerados — mude a fonte e rode o
+  gerador).
