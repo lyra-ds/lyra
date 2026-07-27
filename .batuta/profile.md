@@ -32,12 +32,27 @@ de 4 checks vermelhos depois de 55 commits. O job `lint` do CI também roda
 está em `.github/workflows/ci.yml`**, não o que está escrito aqui:
 
 ```bash
-pnpm lint && pnpm --filter @lyra-ds/styles run lint:css   # job lint
-pnpm typecheck                                            # job typecheck
-pnpm test                                                 # job test
-pnpm build && pnpm --filter @lyra-ds/react exec size-limit \
-  && pnpm smoke && node tools/docgen/generate.mjs --check  # job build
+# job lint
+pnpm run lint && pnpm --filter @lyra-ds/styles run lint:css \
+  && pnpm --filter @lyra-ds/react run lint
+# job typecheck
+pnpm --filter @lyra-ds/react run build && pnpm run typecheck
+# job test
+pnpm run test && pnpm run parity && node tools/icon-registry/generate.mjs --check
+# job build
+pnpm run build && node tools/docgen/generate.mjs --check \
+  && pnpm exec publint packages/styles && node tools/pack-smoke/pack-smoke.mjs \
+  && pnpm exec publint packages/react \
+  && pnpm --filter @lyra-ds/react exec attw --pack . --profile node16 \
+  && pnpm --filter @lyra-ds/react exec size-limit \
+  && node tools/dist-scan/assert-use-client.mjs packages/react/dist \
+  && node tools/dist-scan/no-cdn-scan.mjs packages/react/dist \
+  && node tools/smoke/smoke.mjs
 ```
+
+São 17 comandos. Eu errei isso **duas vezes seguidas**: na primeira segui a lista
+resumida acima em vez do workflow, e na segunda "corrigi" a partir de um `grep`
+do `ci.yml`, que também escondeu o eslint. Leia o arquivo inteiro.
 
 Duas armadilhas que esses dois gates escondiam:
 
@@ -46,6 +61,10 @@ Duas armadilhas que esses dois gates escondiam:
   regra se contradizem. Resolvido com um `stylelint-disable no-duplicate-selectors`
   no início da região aditiva de cada arquivo, mantendo a regra ligada na região
   handoff-verbatim acima.
+- **eslint x runner de browser**: `jsx-a11y/anchor-is-valid` reprova `href="#"`,
+  mas em fixture do Browser Mode um href **válido** faz o clique sob teste navegar
+  o iframe do runner e **abortar a suíte inteira** ("Cannot connect to the iframe").
+  A regra vale para produto, não para fixture: desligada só em `src/**/*.test.tsx`.
 - **size-limit x import de conveniência**: o `SidebarGroup` importar `Icon` para
   desenhar um chevron puxava o registry inteiro e custou **5,4 kB** a quem só
   importa `SidebarGroup`. SVG inline é o padrão do DS para ícone de chrome

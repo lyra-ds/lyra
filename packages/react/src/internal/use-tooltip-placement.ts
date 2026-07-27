@@ -33,12 +33,18 @@ export function useTooltipPlacement(
   ref: RefObject<HTMLElement | null>,
 ): TooltipPlacement {
   const [placement, setPlacement] = useState<TooltipPlacement>(requested);
+  const [previousOpen, setPreviousOpen] = useState(open);
+
+  // Reset to the requested side on close by adjusting state during render, not from an effect:
+  // a synchronous setState inside an effect body causes a cascading render, and `usePresence`
+  // already establishes this pattern in the package.
+  if (previousOpen !== open) {
+    setPreviousOpen(open);
+    if (!open) setPlacement(requested);
+  }
 
   useEffect(() => {
-    if (!open) {
-      setPlacement(requested);
-      return;
-    }
+    if (!open) return;
 
     const measure = (): void => {
       const node = ref.current;
