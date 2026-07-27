@@ -114,6 +114,31 @@ apps/docs/PROBE.txt com 'ok'"`) desmentiu na hora, e os `.codex/`/`.agents/` do
 repo estão vazios. Escalar para a lane cara em cima de um relatório falso é
 desperdício; o probe barato vem primeiro.
 
+**O sandbox do codex não roda Browser Mode — então ele nunca executa os testes que
+escreve.** Ele não consegue bindar localhost, e o runner do Vitest precisa disso.
+No Lote 08 isso custou 8 falhas que ele reportou como sucesso: inseriu os `it()`
+novos **dentro** do corpo de um `it()` existente (e dentro do duplo `for` de
+tema×tom), o que o Vitest recusa em tempo de execução — "Calling the test function
+inside another test function is not allowed". Erro estrutural, invisível para
+typecheck, eslint e prettier, que ele rodou e viu passar. Consequência prática: em
+qualquer lote com teste, **rodar `pnpm run test` é do maestro, sempre**, e o
+relatório dele sobre teste vale zero. O mesmo vale para `pack-smoke`, `smoke` e
+`publint`, que também não sobrevivem ao sandbox.
+
+**Teste que passa não é teste que prova.** Ainda no Lote 08: a forma de verificar
+que uma regressão está coberta é **reverter o fix e ver o teste quebrar**. Um
+`sed` no arquivo, rodar só aquele diretório, restaurar. Levou 30 segundos e
+transformou "o teste passa" em `expected 'Loading' to be 'Carregando'` — a prova
+de que ele pega o descarte silencioso, e não algo que passaria de qualquer jeito.
+(Cuidado com `cp` sem `-f`: um alias interativo pode deixar o arquivo revertido.)
+
+**Prop que funciona mas não está na interface não existe para o consumidor.** O
+docgen lê a interface, não o destructure. `Breadcrumb` e `Pagination` honravam
+`aria-label` desde sempre e ninguém sabia, porque a prop vinha herdada de
+`HTMLAttributes` e não aparecia na tabela. Redeclarar com JSDoc é o que a põe no
+`props.json`. Vale para qualquer prop herdada que o componente trate de forma
+especial.
+
 **Relatório de sucesso também não basta.** O `next build` prerenderiza exemplo
 quebrado sem falhar, e o executor não consegue abrir o dev no sandbox dele. Toda
 verificação de lote abre as páginas no navegador e exercita a interação; foi assim
