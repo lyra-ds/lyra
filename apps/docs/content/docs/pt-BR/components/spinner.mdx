@@ -33,8 +33,8 @@ Procure outra coisa quando:
 
 ## Acessibilidade
 
-- Renderiza `role="status"` com o nome acessível "Loading". Esse nome é uma string fixa em inglês, sem
-  prop para mudar, então uma interface localizada anuncia uma palavra em inglês aqui.
+- Renderiza `role="status"` com o nome acessível "Loading" por padrão. Passe `aria-label` para traduzir o
+  nome da live region em uma interface localizada.
 - Por ser live region, o nome é anunciado quando o spinner aparece. Não coloque vários na mesma tela —
   eles serão anunciados um atrás do outro.
 - A animação é decorativa. Nada no spinner comunica progresso, então nunca o combine com um texto que

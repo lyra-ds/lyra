@@ -239,6 +239,12 @@
         "type": "'online' | 'busy' | 'away'",
         "optional": true,
         "description": "Optional presence status."
+      },
+      {
+        "name": "statusLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the presence dot. Default: the `status` value itself."
       }
     ]
   },
@@ -343,6 +349,12 @@
         "description": "Called when the optional remove button is clicked."
       },
       {
+        "name": "removeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the remove button. Default: `\"Remove\"`."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,
@@ -390,6 +402,12 @@
     "description": "Props for {@link CookieBanner}.",
     "signature": "export declare function CookieBanner(props: CookieBannerProps): JSX.Element;",
     "props": [
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the region. Default: `\"Cookie notice\"`. Translate it in a localized interface."
+      },
       {
         "name": "storageKey",
         "type": "string",
@@ -440,6 +458,12 @@
         "type": "() => void",
         "optional": true,
         "description": "Called by every close path (Esc, overlay click, the × button). The × renders only when this is provided."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the close button. Default: `\"Close\"`."
       },
       {
         "name": "title",
@@ -497,6 +521,12 @@
         "type": "() => void",
         "optional": true,
         "description": "Called when the user dismisses the drawer with Escape, the backdrop, or the close button."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the close button. Default: `\"Close\"`."
       },
       {
         "name": "title",
@@ -584,6 +614,12 @@
         "type": "'sm' | 'md' | 'lg'",
         "optional": true,
         "description": "Spinner size. Default `\"md\"` (24px)."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the live region. Default: `\"Loading\"`. Translate it in a localized interface — it is what a screen reader announces while content loads."
       }
     ]
   },
@@ -611,6 +647,12 @@
         "type": "() => void",
         "optional": true,
         "description": "Called when the optional close button is activated."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the close button. Default: `\"Close notification\"`."
       },
       {
         "name": "children",
@@ -730,6 +772,12 @@
         "description": "Message shown when no files match the search."
       },
       {
+        "name": "labels",
+        "type": "FileManagerLabels",
+        "optional": true,
+        "description": "Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work."
+      },
+      {
         "name": "className",
         "type": "string",
         "optional": true,
@@ -797,6 +845,18 @@
         "type": "(items: FileUploadItem[]) => void",
         "optional": true,
         "description": "Called whenever the internal item list changes."
+      },
+      {
+        "name": "doneLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the completed-upload icon. Default: `\"Upload complete\"`."
+      },
+      {
+        "name": "removeLabel",
+        "type": "(name: string) => string",
+        "optional": true,
+        "description": "Accessible name for each remove button. Receives the file name. Default: `` (name) => `Remove ${name}` ``."
       },
       {
         "name": "className",
@@ -1114,6 +1174,12 @@
     "signature": "export declare function Breadcrumb(props: BreadcrumbProps): JSX.Element;",
     "props": [
       {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the navigation landmark. Default: `\"Breadcrumb\"`."
+      },
+      {
         "name": "items",
         "type": "BreadcrumbItem[]",
         "optional": false,
@@ -1169,6 +1235,12 @@
         "type": "string",
         "optional": true,
         "description": "Text shown before the current query when no commands match. Default: `\"No results for\"`."
+      },
+      {
+        "name": "searchLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the command search field. Default: `\"Search commands\"`."
       },
       {
         "name": "hints",
@@ -1282,6 +1354,12 @@
     "signature": "export declare function Pagination(props: PaginationProps): JSX.Element;",
     "props": [
       {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the navigation landmark. Default: `\"Pagination\"`."
+      },
+      {
         "name": "page",
         "type": "number",
         "optional": false,
@@ -1298,6 +1376,18 @@
         "type": "(page: number) => void",
         "optional": true,
         "description": "Called with the requested one-based page."
+      },
+      {
+        "name": "previousLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the previous-page button. Default: `\"Previous page\"`."
+      },
+      {
+        "name": "nextLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the next-page button. Default: `\"Next page\"`."
       }
     ]
   },

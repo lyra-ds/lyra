@@ -98,4 +98,20 @@ describe('CookieBanner', () => {
     const { container } = await render(<CookieBanner storageKey={storageKey} />);
     expect(container.querySelector('.lyra-cookies')).toBeNull();
   });
+
+  it('uses "Cookie notice" as the default accessible name', async () => {
+    const { container } = await render(<CookieBanner storageKey={storageKey} />);
+    expect(container.querySelector('.lyra-cookies')!.getAttribute('aria-label')).toBe(
+      'Cookie notice',
+    );
+  });
+
+  it('uses a consumer-provided accessible name instead of "Cookie notice"', async () => {
+    const { container } = await render(
+      <CookieBanner storageKey={storageKey} aria-label="Aviso de cookies" />,
+    );
+    expect(container.querySelector('.lyra-cookies')!.getAttribute('aria-label')).toBe(
+      'Aviso de cookies',
+    );
+  });
 });

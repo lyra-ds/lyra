@@ -7,20 +7,27 @@ import { cx } from '../internal/cx';
 export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
   /** Called when the optional remove button is clicked. */
   onRemove?: () => void;
+  /** Accessible name for the remove button. Default: `"Remove"`. */
+  removeLabel?: string;
   /** Tag content. */
   children: ReactNode;
 }
 
 /** A neutral tag for labels and filters, optionally removable. */
 export const Tag = /*#__PURE__*/ forwardRef<HTMLSpanElement, TagProps>(function Tag(
-  { onRemove, className, children, ...rest },
+  { onRemove, removeLabel = 'Remove', className, children, ...rest },
   ref,
 ) {
   return (
     <span {...rest} ref={ref} className={cx('lyra-tag', className)}>
       {children}
       {onRemove && (
-        <button type="button" className="lyra-tag__remove" aria-label="Remove" onClick={onRemove}>
+        <button
+          type="button"
+          className="lyra-tag__remove"
+          aria-label={removeLabel}
+          onClick={onRemove}
+        >
           <Icon name="x" size={10} />
         </button>
       )}

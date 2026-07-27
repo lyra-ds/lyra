@@ -10,6 +10,8 @@ export interface ToastProps extends HTMLAttributes<HTMLDivElement> {
   icon?: ReactNode;
   /** Called when the optional close button is activated. */
   onClose?: () => void;
+  /** Accessible name for the close button. Default: `"Close notification"`. */
+  closeLabel?: string;
   /** Toast message content. */
   children: ReactNode;
 }
@@ -22,7 +24,7 @@ export interface ToastStackProps extends HTMLAttributes<HTMLDivElement> {
 
 /** A polite, non-focus-moving status notification. */
 export const Toast = /*#__PURE__*/ forwardRef<HTMLDivElement, ToastProps>(function Toast(
-  { tone = 'info', icon, onClose, className, children, ...rest },
+  { tone = 'info', icon, onClose, closeLabel = 'Close notification', className, children, ...rest },
   ref,
 ) {
   return (
@@ -33,7 +35,7 @@ export const Toast = /*#__PURE__*/ forwardRef<HTMLDivElement, ToastProps>(functi
         <button
           type="button"
           className="lyra-toast__close"
-          aria-label="Close notification"
+          aria-label={closeLabel}
           onClick={onClose}
         >
           ×

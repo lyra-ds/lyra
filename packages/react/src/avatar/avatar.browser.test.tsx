@@ -18,4 +18,18 @@ describe('Avatar', () => {
         expect((await axe.run(container)).violations).toEqual([]);
         error.mockRestore();
       });
+
+  it('uses the status value as the default accessible name for the presence dot', async () => {
+    const { container } = await render(<Avatar status="online" />);
+    expect(container.querySelector('.lyra-avatar__status')!.getAttribute('aria-label')).toBe(
+      'online',
+    );
+  });
+
+  it('uses statusLabel as the accessible name for the presence dot', async () => {
+    const { container } = await render(<Avatar status="online" statusLabel="Disponível" />);
+    expect(container.querySelector('.lyra-avatar__status')!.getAttribute('aria-label')).toBe(
+      'Disponível',
+    );
+  });
 });

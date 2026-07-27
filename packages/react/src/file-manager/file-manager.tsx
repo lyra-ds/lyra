@@ -24,6 +24,28 @@ export interface ManagedFile {
   shared?: boolean;
 }
 
+/** Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work. */
+export interface FileManagerLabels {
+  /** Name of the `role="group"` around the view toggle. Default: `"View mode"`. */
+  viewMode?: string;
+  /** List-view button. Default: `"List view"`. */
+  listView?: string;
+  /** Grid-view button. Default: `"Grid view"`. */
+  gridView?: string;
+  /** Breadcrumb landmark for the current folder. Default: `"Current folder"`. */
+  currentFolder?: string;
+  /** Per-item action trigger. Receives the file name. Default: `` (name) => `Actions for ${name}` ``. */
+  itemActions?: (name: string) => string;
+}
+
+const DEFAULT_FM_LABELS: Required<FileManagerLabels> = {
+  viewMode: 'View mode',
+  listView: 'List view',
+  gridView: 'Grid view',
+  currentFolder: 'Current folder',
+  itemActions: (name) => `Actions for ${name}`,
+};
+
 /** Props for {@link FileManager}. */
 export interface FileManagerProps {
   /** Files and folders to display. */
@@ -46,6 +68,8 @@ export interface FileManagerProps {
   searchPlaceholder?: string;
   /** Message shown when no files match the search. */
   emptyMessage?: string;
+  /** Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work. */
+  labels?: FileManagerLabels;
   /** Class appended after the public `.lyra-fm` class. */
   className?: string;
 }
@@ -98,6 +122,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
       actions,
       searchPlaceholder = 'Search files…',
       emptyMessage = 'No files found.',
+      labels: labelsProp,
       className,
     },
     ref,
@@ -109,6 +134,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
       onChange: onViewChange,
     });
     const normalizedQuery = query.toLowerCase();
+    const labels = { ...DEFAULT_FM_LABELS, ...labelsProp };
     const visible = files.filter(
       (file) => !normalizedQuery || file.name.toLowerCase().includes(normalizedQuery),
     );
@@ -121,7 +147,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
       <Dropdown
         align="end"
         trigger={
-          <span className="lyra-fm__more" aria-label={`Actions for ${file.name}`}>
+          <span className="lyra-fm__more" aria-label={labels.itemActions(file.name)}>
             <Icon name="ellipsis" size={17} />
           </span>
         }
@@ -140,12 +166,12 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <div className="lyra-fm__views" role="group" aria-label="View mode">
+          <div className="lyra-fm__views" role="group" aria-label={labels.viewMode}>
             <button
               type="button"
               className={cx('lyra-fm__view', currentView === 'list' && 'lyra-fm__view--on')}
               aria-pressed={currentView === 'list'}
-              aria-label="List view"
+              aria-label={labels.listView}
               onClick={() => setCurrentView('list')}
             >
               <Icon name="list" size={15} />
@@ -154,7 +180,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
               type="button"
               className={cx('lyra-fm__view', currentView === 'grid' && 'lyra-fm__view--on')}
               aria-pressed={currentView === 'grid'}
-              aria-label="Grid view"
+              aria-label={labels.gridView}
               onClick={() => setCurrentView('grid')}
             >
               <Icon name="layout-grid" size={15} />
@@ -162,7 +188,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
           </div>
         </div>
         {path.length > 0 && (
-          <nav className="lyra-fm__path" aria-label="Current folder">
+          <nav className="lyra-fm__path" aria-label={labels.currentFolder}>
             {path.map((segment, index) => (
               <Fragment key={`${segment}-${index}`}>
                 {index > 0 && <Icon name="chevron-right" size={13} color="var(--text-faint)" />}

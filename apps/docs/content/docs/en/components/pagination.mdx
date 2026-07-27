@@ -35,8 +35,8 @@ Reach for something else when:
 
 - Renders a `<nav aria-label="Pagination">`; your `aria-label` replaces that default for distinct
   paginated regions.
-- Previous and next are native buttons named "Previous page" and "Next page". They are disabled at
-  the first and last pages.
+- Previous and next are native buttons named "Previous page" and "Next page" by default. Pass
+  `previousLabel` and `nextLabel` to translate them; they are disabled at the first and last pages.
 - The active page has `aria-current="page"`. Every enabled page button remains in the normal Tab order.
 - Ellipses are `aria-hidden` spans, not buttons. Do not make a truncation gap look actionable.
 

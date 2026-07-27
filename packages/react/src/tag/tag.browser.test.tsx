@@ -18,4 +18,18 @@ describe('Tag', () => {
       expect((await axe.run(container)).violations).toEqual([]);
       error.mockRestore();
     });
+
+  it('uses "Remove" as the default accessible name for the remove button', async () => {
+    const { container } = await render(<Tag onRemove={() => {}}>Filter</Tag>);
+    expect(container.querySelector('button')!.getAttribute('aria-label')).toBe('Remove');
+  });
+
+  it('uses removeLabel as the accessible name for the remove button', async () => {
+    const { container } = await render(
+      <Tag onRemove={() => {}} removeLabel="Remover">
+        Filter
+      </Tag>,
+    );
+    expect(container.querySelector('button')!.getAttribute('aria-label')).toBe('Remover');
+  });
 });

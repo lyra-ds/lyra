@@ -39,14 +39,15 @@ Reach for something else when:
 
 ## Accessibility
 
-- The view controls are a `role="group"` named "View mode". Each button has an accessible name and
-  `aria-pressed`, so its current list or grid state is announced.
+- The view controls are a `role="group"` named "View mode" by default. Each button has an accessible
+  name and `aria-pressed`, so its current list or grid state is announced.
 - The breadcrumb is a `<nav aria-label="Current folder">`; each action trigger is named "Actions for
-  &lt;name&gt;". The current breadcrumb segment is disabled rather than a navigation target.
+  &lt;name&gt;" by default. The current breadcrumb segment is disabled rather than a navigation target.
 - The search input has a placeholder but **no accessible name**. This is a component gap consumers
   must account for; a surrounding heading does not turn the placeholder into a field label.
-- The component's built-in labels are hard-coded English. Localise `searchPlaceholder` and
-  `emptyMessage`, and account for the remaining built-in control labels in a localized application.
+- Pass a partial `labels` object to translate the view group, view buttons, breadcrumb, and item-action
+  triggers. `labels.itemActions` receives each file name; localise `searchPlaceholder` and `emptyMessage`
+  separately.
 
 ## Props
 

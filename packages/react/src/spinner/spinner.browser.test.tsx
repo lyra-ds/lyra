@@ -18,4 +18,14 @@ describe('Spinner', () => {
         expect((await axe.run(container)).violations).toEqual([]);
         error.mockRestore();
       });
+
+  it('uses "Loading" as the default accessible name', async () => {
+    const { container } = await render(<Spinner />);
+    expect(container.querySelector('span')!.getAttribute('aria-label')).toBe('Loading');
+  });
+
+  it('uses a consumer-provided accessible name instead of "Loading"', async () => {
+    const { container } = await render(<Spinner aria-label="Carregando" />);
+    expect(container.querySelector('span')!.getAttribute('aria-label')).toBe('Carregando');
+  });
 });

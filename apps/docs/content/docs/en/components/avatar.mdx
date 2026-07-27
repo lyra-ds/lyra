@@ -51,8 +51,9 @@ Reach for something else when:
 - With `src`, Avatar renders an `<img>` whose `alt` is `name`; pass the real full name, not initials.
 - Without `src`, `name` is used to derive at most two initials and for the native tooltip. The initials
   are `aria-hidden`, so keep the person's name in nearby text or add an `aria-label` to the Avatar.
-- A presence dot uses `role="status"` with an `online`, `busy` or `away` label. Do not make presence
-  the only way important availability is communicated.
+- A presence dot uses `role="status"` with its `online`, `busy` or `away` value as the default label.
+  Pass `statusLabel` to supply a localized accessible name; do not make presence the only way important
+  availability is communicated.
 - Avatar is a `<span>`, not a button or link. Wrap it in the semantic interactive element when it opens
   a profile, and give that parent an accessible name.
 

@@ -39,4 +39,34 @@ describe('Pagination', () => {
         spy.mockRestore();
       }
     });
+
+  it('uses "Previous page" as the default accessible name for the previous button', async () => {
+    const { container } = await render(<Pagination page={2} total={3} />);
+    expect(container.querySelectorAll('button')[0]!.getAttribute('aria-label')).toBe(
+      'Previous page',
+    );
+  });
+
+  it('uses previousLabel as the accessible name for the previous button', async () => {
+    const { container } = await render(
+      <Pagination page={2} total={3} previousLabel="Página anterior" />,
+    );
+    expect(container.querySelectorAll('button')[0]!.getAttribute('aria-label')).toBe(
+      'Página anterior',
+    );
+  });
+
+  it('uses "Next page" as the default accessible name for the next button', async () => {
+    const { container } = await render(<Pagination page={2} total={3} />);
+    const buttons = container.querySelectorAll('button');
+    expect(buttons[buttons.length - 1]!.getAttribute('aria-label')).toBe('Next page');
+  });
+
+  it('uses nextLabel as the accessible name for the next button', async () => {
+    const { container } = await render(
+      <Pagination page={2} total={3} nextLabel="Próxima página" />,
+    );
+    const buttons = container.querySelectorAll('button');
+    expect(buttons[buttons.length - 1]!.getAttribute('aria-label')).toBe('Próxima página');
+  });
 });

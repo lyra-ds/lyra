@@ -36,8 +36,8 @@ Prefira outro componente quando:
 
 - Renderiza um `<nav aria-label="Pagination">`; seu `aria-label` substitui o padrão para regiões
   paginadas distintas.
-- Anterior e próximo são botões nativos chamados "Previous page" e "Next page". Eles ficam
-  desabilitados na primeira e na última páginas.
+- Anterior e próximo são botões nativos chamados "Previous page" e "Next page" por padrão. Passe
+  `previousLabel` e `nextLabel` para traduzi-los; eles ficam desabilitados na primeira e na última páginas.
 - A página ativa tem `aria-current="page"`. Cada botão de página habilitado continua na ordem normal de Tab.
 - Reticências são spans com `aria-hidden`, não botões. Não faça uma lacuna de truncamento parecer acionável.
 

@@ -53,8 +53,9 @@ Prefira outro componente quando:
 - Com `src`, Avatar renderiza um `<img>` cujo `alt` é `name`; passe o nome completo real, não iniciais.
 - Sem `src`, `name` gera no máximo duas iniciais e o tooltip nativo. As iniciais são `aria-hidden`, então
   mantenha o nome da pessoa em texto próximo ou adicione `aria-label` ao Avatar.
-- Um ponto de presença usa `role="status"` com rótulo `online`, `busy` ou `away`. Não faça da presença a
-  única forma de comunicar uma disponibilidade importante.
+- Um ponto de presença usa `role="status"` com o valor `online`, `busy` ou `away` como rótulo padrão.
+  Passe `statusLabel` para fornecer um nome acessível localizado; não faça da presença a única forma de
+  comunicar uma disponibilidade importante.
 - Avatar é um `<span>`, não um botão ou link. Envolva-o no elemento interativo semântico ao abrir um
   perfil e dê a esse elemento um nome acessível.
 

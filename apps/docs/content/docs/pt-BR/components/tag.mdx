@@ -34,8 +34,9 @@ Prefira outro componente quando:
 ## Acessibilidade
 
 - O próprio Tag é um `<span>` simples e permanece na ordem de leitura como texto.
-- Quando `onRemove` existe, ele renderiza um `type="button"` nativo com nome acessível “Remove”. Mantenha
-  o propósito do conjunto e o texto da tag por perto para que a ação tenha contexto claro.
+- Quando `onRemove` existe, ele renderiza um `type="button"` nativo com nome acessível “Remove” por padrão.
+  Passe `removeLabel` para traduzi-lo e mantenha o propósito do conjunto e o texto da tag por perto para
+  que a ação tenha contexto claro.
 - O botão de remover recebe foco pelo teclado e usa ativação nativa por Enter/Espaço. Seu tamanho visual é
   14px, então não o torne a única forma prática de limpar um filtro em telas de toque.
 - Não use cor como nome da categoria; o texto visível da tag é o significado.

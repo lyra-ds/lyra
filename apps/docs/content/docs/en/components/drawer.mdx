@@ -41,8 +41,8 @@ Reach for something else when:
   element that opened it; body scroll is locked while it is open.
 - Escape, the close button and a backdrop click call `onClose`. The backdrop is a pointer-only
   convenience; keyboard users close with Escape or the close button.
-- The close button's accessible name is the hard-coded English string "Close". There is no prop to
-  translate it, which is a limitation for localized products.
+- The close button's accessible name defaults to the English string "Close". Pass `closeLabel` to
+  translate it for localized products.
 - The component is portaled to `document.body` by default. Pass `container` only when your app
   needs a different portal host.
 

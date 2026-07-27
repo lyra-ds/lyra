@@ -178,4 +178,84 @@ describe('FileManager', () => {
     expect(screen.getByRole('menuitem', { name: 'Share' })).not.toBeNull();
     expect(customActions).toHaveBeenCalledWith(files[1]);
   });
+
+  it('uses "View mode" as the default accessible name for the view toggle', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelector('.lyra-fm__views')!.getAttribute('aria-label')).toBe(
+      'View mode',
+    );
+  });
+
+  it('uses labels.viewMode as the accessible name for the view toggle', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ viewMode: 'Modo de visualização' }} />,
+    );
+    expect(container.querySelector('.lyra-fm__views')!.getAttribute('aria-label')).toBe(
+      'Modo de visualização',
+    );
+  });
+
+  it('uses "List view" as the default accessible name for the list-view button', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelectorAll('.lyra-fm__view')[0]!.getAttribute('aria-label')).toBe(
+      'List view',
+    );
+  });
+
+  it('uses labels.listView as the accessible name for the list-view button', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ listView: 'Visualização em lista' }} />,
+    );
+    expect(container.querySelectorAll('.lyra-fm__view')[0]!.getAttribute('aria-label')).toBe(
+      'Visualização em lista',
+    );
+  });
+
+  it('uses "Grid view" as the default accessible name for the grid-view button', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelectorAll('.lyra-fm__view')[1]!.getAttribute('aria-label')).toBe(
+      'Grid view',
+    );
+  });
+
+  it('uses labels.gridView as the accessible name for the grid-view button', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ gridView: 'Visualização em grade' }} />,
+    );
+    expect(container.querySelectorAll('.lyra-fm__view')[1]!.getAttribute('aria-label')).toBe(
+      'Visualização em grade',
+    );
+  });
+
+  it('uses "Current folder" as the default accessible name for the breadcrumb', async () => {
+    const { container } = await render(<FileManager files={files} path={['Drive']} />);
+    expect(container.querySelector('.lyra-fm__path')!.getAttribute('aria-label')).toBe(
+      'Current folder',
+    );
+  });
+
+  it('uses labels.currentFolder as the accessible name for the breadcrumb', async () => {
+    const { container } = await render(
+      <FileManager files={files} path={['Drive']} labels={{ currentFolder: 'Pasta atual' }} />,
+    );
+    expect(container.querySelector('.lyra-fm__path')!.getAttribute('aria-label')).toBe(
+      'Pasta atual',
+    );
+  });
+
+  it('uses the file name in the default accessible name for each action trigger', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelector('.lyra-fm__more')!.getAttribute('aria-label')).toBe(
+      'Actions for Projects',
+    );
+  });
+
+  it('passes the file name to labels.itemActions for each action trigger', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ itemActions: (name) => `Ações para ${name}` }} />,
+    );
+    expect(container.querySelector('.lyra-fm__more')!.getAttribute('aria-label')).toBe(
+      'Ações para Projects',
+    );
+  });
 });

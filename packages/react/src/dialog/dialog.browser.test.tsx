@@ -181,6 +181,16 @@ describe('Dialog — structure', () => {
     expect(btn.getAttribute('style')).toBeNull(); // D-19 — no inline visual styles
     expect(btn.querySelector('svg')).not.toBeNull();
   });
+
+  it('uses "Close" as the default accessible name for the close button', async () => {
+    await openHarness();
+    expect(closeBtn()!.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('uses closeLabel as the accessible name for the close button', async () => {
+    await openHarness({ closeLabel: 'Fechar' });
+    expect(closeBtn()!.getAttribute('aria-label')).toBe('Fechar');
+  });
 });
 
 // --- Focus trap: both directions, zero-candidate containment, panel routing -------------------

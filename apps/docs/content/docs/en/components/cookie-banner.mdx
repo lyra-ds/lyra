@@ -35,8 +35,8 @@ Reach for something else when:
 
 ## Accessibility
 
-- Renders `role="region"` named "Cookie notice". That name is a fixed English string with no prop to
-  change it, which is worth knowing since the default copy is Brazilian LGPD wording.
+- Renders `role="region"` named "Cookie notice" by default. Pass `aria-label` to translate that name,
+  which is especially useful when replacing the default Brazilian LGPD wording.
 - Both actions are real buttons in the normal tab order. The banner does not trap focus and does not
   block the page, so a visitor can keep reading and answer later.
 - It reads `localStorage` in an effect and renders `null` until it has, so it is absent from the

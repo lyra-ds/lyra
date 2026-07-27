@@ -37,9 +37,8 @@ Reach for something else when:
   instant it appears. Never put the only copy of important information in one.
 - `ToastStack` is `position: fixed` at the bottom-right of the viewport. It sits over whatever is
   there, so keep toasts short and few.
-- The close button appears only with `onClose`, and its accessible name is the English string
-  "Close notification". There is no prop to translate it — a limitation worth knowing before you ship
-  a localized product.
+- The close button appears only with `onClose`. Its accessible name defaults to the English string
+  "Close notification"; pass `closeLabel` to translate it for a localized product.
 - `tone` colors the icon only. The words must say whether something succeeded or failed.
 
 ## Props
