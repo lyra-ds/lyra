@@ -24,7 +24,7 @@ export interface ManagedFile {
   shared?: boolean;
 }
 
-/** Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work. */
+/** Labels for the FileManager chrome — accessible names and visible text. Merged over the defaults, so partial objects work. */
 export interface FileManagerLabels {
   /** Name of the `role="group"` around the view toggle. Default: `"View mode"`. */
   viewMode?: string;
@@ -36,6 +36,22 @@ export interface FileManagerLabels {
   currentFolder?: string;
   /** Per-item action trigger. Receives the file name. Default: `` (name) => `Actions for ${name}` ``. */
   itemActions?: (name: string) => string;
+  /** List header for file names. Default: `"Name"`. */
+  headerName?: string;
+  /** List header for file sizes. Default: `"Size"`. */
+  headerSize?: string;
+  /** List header for modification dates. Default: `"Modified"`. */
+  headerModified?: string;
+  /** Default menu label for opening a file. Default: `"Open"`. */
+  menuOpen?: string;
+  /** Default menu label for renaming a file. Default: `"Rename"`. */
+  menuRename?: string;
+  /** Default menu label for downloading a file. Default: `"Download"`. */
+  menuDownload?: string;
+  /** Default menu label for deleting a file. Default: `"Delete"`. */
+  menuDelete?: string;
+  /** Folder item-count text. Receives the item count. Default: `` (n) => `${n ?? '—'} items` ``. */
+  itemsCount?: (items: number | undefined) => string;
 }
 
 const DEFAULT_FM_LABELS: Required<FileManagerLabels> = {
@@ -44,6 +60,14 @@ const DEFAULT_FM_LABELS: Required<FileManagerLabels> = {
   gridView: 'Grid view',
   currentFolder: 'Current folder',
   itemActions: (name) => `Actions for ${name}`,
+  headerName: 'Name',
+  headerSize: 'Size',
+  headerModified: 'Modified',
+  menuOpen: 'Open',
+  menuRename: 'Rename',
+  menuDownload: 'Download',
+  menuDelete: 'Delete',
+  itemsCount: (items) => `${items ?? '—'} items`,
 };
 
 /** Props for {@link FileManager}. */
@@ -68,7 +92,7 @@ export interface FileManagerProps {
   searchPlaceholder?: string;
   /** Message shown when no files match the search. */
   emptyMessage?: string;
-  /** Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work. */
+  /** Labels for the FileManager chrome — accessible names and visible text. Merged over the defaults, so partial objects work. */
   labels?: FileManagerLabels;
   /** Class appended after the public `.lyra-fm` class. */
   className?: string;
@@ -94,14 +118,19 @@ function fmIconFor(file: ManagedFile): IconName {
   return 'file';
 }
 
-function defaultActions(file: ManagedFile): DropdownItem[] {
+function defaultActions(file: ManagedFile, labels: Required<FileManagerLabels>): DropdownItem[] {
   void file;
   return [
-    { id: 'open', label: 'Open', icon: <Icon name="external-link" size={15} /> },
-    { id: 'rename', label: 'Rename', icon: <Icon name="pencil" size={15} /> },
-    { id: 'download', label: 'Download', icon: <Icon name="download" size={15} /> },
+    { id: 'open', label: labels.menuOpen, icon: <Icon name="external-link" size={15} /> },
+    { id: 'rename', label: labels.menuRename, icon: <Icon name="pencil" size={15} /> },
+    { id: 'download', label: labels.menuDownload, icon: <Icon name="download" size={15} /> },
     { type: 'separator' },
-    { id: 'delete', label: 'Delete', icon: <Icon name="trash-2" size={15} />, danger: true },
+    {
+      id: 'delete',
+      label: labels.menuDelete,
+      icon: <Icon name="trash-2" size={15} />,
+      danger: true,
+    },
   ];
 }
 
@@ -151,7 +180,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
             <Icon name="ellipsis" size={17} />
           </span>
         }
-        items={actions ? actions(file) : defaultActions(file)}
+        items={actions ? actions(file) : defaultActions(file, labels)}
       />
     );
 
@@ -210,9 +239,9 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
         ) : currentView === 'list' ? (
           <ul className="lyra-fm__list">
             <li className="lyra-fm__head" aria-hidden="true">
-              <span>Name</span>
-              <span>Size</span>
-              <span>Modified</span>
+              <span>{labels.headerName}</span>
+              <span>{labels.headerSize}</span>
+              <span>{labels.headerModified}</span>
               <span />
             </li>
             {ordered.map((file) => (
@@ -234,7 +263,9 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
                   )}
                 </button>
                 <span className="lyra-fm__cell">
-                  {file.type === 'folder' ? `${file.items ?? '—'} items` : fmFormatBytes(file.size)}
+                  {file.type === 'folder'
+                    ? labels.itemsCount(file.items)
+                    : fmFormatBytes(file.size)}
                 </span>
                 <span className="lyra-fm__cell">{file.updated || '—'}</span>
                 <span className="lyra-fm__actions">{renderActions(file)}</span>
@@ -259,7 +290,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
                   <span className="lyra-fm__label">{file.name}</span>
                   <span className="lyra-fm__card-meta">
                     {file.type === 'folder'
-                      ? `${file.items ?? '—'} items`
+                      ? labels.itemsCount(file.items)
                       : fmFormatBytes(file.size)}
                   </span>
                 </button>

@@ -254,6 +254,10 @@ export interface CookieBannerProps extends HTMLAttributes<HTMLDivElement> {
   onAccept?: () => void;
   /** Called after the visitor keeps only essential cookies. */
   onEssentials?: () => void;
+  /** Visible label of the essentials-only button. Default: `"Only essentials"`. */
+  essentialsLabel?: string;
+  /** Visible label of the accept-all button. Default: `"Accept all"`. */
+  acceptLabel?: string;
   /** Custom banner copy that replaces the default LGPD notice. */
   children?: ReactNode;
 }
@@ -424,7 +428,7 @@ export interface FileManagerProps {
   searchPlaceholder?: string;
   /** Message shown when no files match the search. */
   emptyMessage?: string;
-  /** Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work. */
+  /** Labels for the FileManager chrome — accessible names and visible text. Merged over the defaults, so partial objects work. */
   labels?: FileManagerLabels;
   /** Class appended after the public `.lyra-fm` class. */
   className?: string;
