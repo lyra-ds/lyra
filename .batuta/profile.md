@@ -125,6 +125,26 @@ qualquer lote com teste, **rodar `pnpm run test` é do maestro, sempre**, e o
 relatório dele sobre teste vale zero. O mesmo vale para `pack-smoke`, `smoke` e
 `publint`, que também não sobrevivem ao sandbox.
 
+**Asserção de existência no Browser Mode exige `expect.element` — locator nunca é
+null.** No Lote 09, 12 dos 20 testes novos usavam
+`expect(screen.getByRole(...)).not.toBeNull()`: o `getByRole` do Vitest Browser
+Mode retorna um Locator lazy, que é objeto sempre — a asserção passa exista o
+elemento ou não. Foi a prova de reverter-o-fix que pegou (os testes seguiram
+verdes procurando um botão inexistente); typecheck, eslint e a própria suíte
+verde não pegam. Forma correta:
+`await expect.element(screen.getByRole(...)).toBeInTheDocument()`. Briefs com
+teste de existência devem pinar isso. Há 4 usos vácuos pré-existentes no
+`file-manager.browser.test.tsx` (débito, anotado no WORK.md).
+
+**Num worktree sem commits, `git checkout -- <arquivo>` apaga o trabalho do
+executor.** O executor entrega árvore suja (o brief manda não commitar), então
+HEAD ainda é a main — "restaurar" com checkout reverte para a main e destrói a
+implementação. No Lote 09 isso apagou os dois `.tsx` depois do experimento de
+regressão (recuperados do diff já revisado no contexto). Backup de experimento é
+por cópia: `cat arquivo > backup` antes, `cat backup > arquivo` depois — `cat`,
+não `cp`, porque o alias interativo do `cp` engole até `-f` e deixa o arquivo
+revertido em silêncio (mordeu duas vezes no mesmo lote).
+
 **Teste que passa não é teste que prova.** Ainda no Lote 08: a forma de verificar
 que uma regressão está coberta é **reverter o fix e ver o teste quebrar**. Um
 `sed` no arquivo, rodar só aquele diretório, restaurar. Levou 30 segundos e
