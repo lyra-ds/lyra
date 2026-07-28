@@ -433,6 +433,18 @@
         "description": "Called after the visitor keeps only essential cookies."
       },
       {
+        "name": "essentialsLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Visible label of the essentials-only button. Default: `\"Only essentials\"`."
+      },
+      {
+        "name": "acceptLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Visible label of the accept-all button. Default: `\"Accept all\"`."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": true,
@@ -775,7 +787,7 @@
         "name": "labels",
         "type": "FileManagerLabels",
         "optional": true,
-        "description": "Accessible names for the FileManager chrome. Merged over the defaults, so partial objects work."
+        "description": "Labels for the FileManager chrome — accessible names and visible text. Merged over the defaults, so partial objects work."
       },
       {
         "name": "className",

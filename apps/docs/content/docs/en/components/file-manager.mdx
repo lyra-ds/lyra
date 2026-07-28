@@ -45,9 +45,10 @@ Reach for something else when:
   &lt;name&gt;" by default. The current breadcrumb segment is disabled rather than a navigation target.
 - The search input has a placeholder but **no accessible name**. This is a component gap consumers
   must account for; a surrounding heading does not turn the placeholder into a field label.
-- Pass a partial `labels` object to translate the view group, view buttons, breadcrumb, and item-action
-  triggers. `labels.itemActions` receives each file name; localise `searchPlaceholder` and `emptyMessage`
-  separately.
+- Pass a partial `labels` object to translate the view group, view buttons, breadcrumb, item-action
+  triggers, list headers, default menu commands, and folder item counts. `labels.itemActions` receives
+  each file name and `labels.itemsCount` receives the count; localise `searchPlaceholder` and
+  `emptyMessage` separately.
 
 ## Props
 

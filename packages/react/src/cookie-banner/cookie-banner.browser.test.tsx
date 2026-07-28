@@ -99,6 +99,34 @@ describe('CookieBanner', () => {
     expect(container.querySelector('.lyra-cookies')).toBeNull();
   });
 
+  it('uses "Only essentials" as the default essentials button label', async () => {
+    const screen = await render(<CookieBanner storageKey={storageKey} />);
+    await expect
+      .element(screen.getByRole('button', { name: 'Only essentials' }))
+      .toBeInTheDocument();
+  });
+
+  it('uses essentialsLabel for the essentials button label', async () => {
+    const screen = await render(
+      <CookieBanner storageKey={storageKey} essentialsLabel="Apenas essenciais" />,
+    );
+    await expect
+      .element(screen.getByRole('button', { name: 'Apenas essenciais' }))
+      .toBeInTheDocument();
+  });
+
+  it('uses "Accept all" as the default accept button label', async () => {
+    const screen = await render(<CookieBanner storageKey={storageKey} />);
+    await expect.element(screen.getByRole('button', { name: 'Accept all' })).toBeInTheDocument();
+  });
+
+  it('uses acceptLabel for the accept button label', async () => {
+    const screen = await render(
+      <CookieBanner storageKey={storageKey} acceptLabel="Aceitar todos" />,
+    );
+    await expect.element(screen.getByRole('button', { name: 'Aceitar todos' })).toBeInTheDocument();
+  });
+
   it('uses "Cookie notice" as the default accessible name', async () => {
     const { container } = await render(<CookieBanner storageKey={storageKey} />);
     expect(container.querySelector('.lyra-cookies')!.getAttribute('aria-label')).toBe(

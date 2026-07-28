@@ -18,6 +18,10 @@ export interface CookieBannerProps extends HTMLAttributes<HTMLDivElement> {
   onAccept?: () => void;
   /** Called after the visitor keeps only essential cookies. */
   onEssentials?: () => void;
+  /** Visible label of the essentials-only button. Default: `"Only essentials"`. */
+  essentialsLabel?: string;
+  /** Visible label of the accept-all button. Default: `"Accept all"`. */
+  acceptLabel?: string;
   /** Custom banner copy that replaces the default LGPD notice. */
   children?: ReactNode;
 }
@@ -30,6 +34,8 @@ export const CookieBanner = /*#__PURE__*/ forwardRef<HTMLDivElement, CookieBanne
       policyHref,
       onAccept,
       onEssentials,
+      essentialsLabel = 'Only essentials',
+      acceptLabel = 'Accept all',
       className,
       children,
       'aria-label': ariaLabel,
@@ -88,10 +94,10 @@ export const CookieBanner = /*#__PURE__*/ forwardRef<HTMLDivElement, CookieBanne
         </p>
         <div className="lyra-cookies__actions">
           <Button variant="secondary" size="sm" onClick={() => decide('essentials', onEssentials)}>
-            Only essentials
+            {essentialsLabel}
           </Button>
           <Button size="sm" onClick={() => decide('all', onAccept)}>
-            Accept all
+            {acceptLabel}
           </Button>
         </div>
       </div>

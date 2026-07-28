@@ -152,6 +152,107 @@ describe('FileManager', () => {
     expect(screen.getByRole('menuitem', { name: 'Open' })).not.toBeNull();
   });
 
+  it('uses "Name" as the default list header', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelectorAll('.lyra-fm__head span')[0]!.textContent).toBe('Name');
+  });
+
+  it('uses labels.headerName for the list header while preserving partial-label defaults', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ headerName: 'Nome' }} />,
+    );
+    const headers = container.querySelectorAll('.lyra-fm__head span');
+    expect(headers[0]!.textContent).toBe('Nome');
+    expect(headers[1]!.textContent).toBe('Size');
+    expect(headers[2]!.textContent).toBe('Modified');
+  });
+
+  it('uses "Size" as the default list header', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelectorAll('.lyra-fm__head span')[1]!.textContent).toBe('Size');
+  });
+
+  it('uses labels.headerSize for the list header', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ headerSize: 'Tamanho' }} />,
+    );
+    expect(container.querySelectorAll('.lyra-fm__head span')[1]!.textContent).toBe('Tamanho');
+  });
+
+  it('uses "Modified" as the default list header', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelectorAll('.lyra-fm__head span')[2]!.textContent).toBe('Modified');
+  });
+
+  it('uses labels.headerModified for the list header', async () => {
+    const { container } = await render(
+      <FileManager files={files} labels={{ headerModified: 'Modificado' }} />,
+    );
+    expect(container.querySelectorAll('.lyra-fm__head span')[2]!.textContent).toBe('Modificado');
+  });
+
+  it('uses "Open" as the default action-menu label', async () => {
+    const screen = await render(<FileManager files={files} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Open' })).toBeInTheDocument();
+  });
+
+  it('uses labels.menuOpen for the action-menu label', async () => {
+    const screen = await render(<FileManager files={files} labels={{ menuOpen: 'Abrir' }} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Abrir' })).toBeInTheDocument();
+  });
+
+  it('uses "Rename" as the default action-menu label', async () => {
+    const screen = await render(<FileManager files={files} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Rename' })).toBeInTheDocument();
+  });
+
+  it('uses labels.menuRename for the action-menu label', async () => {
+    const screen = await render(<FileManager files={files} labels={{ menuRename: 'Renomear' }} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Renomear' })).toBeInTheDocument();
+  });
+
+  it('uses "Download" as the default action-menu label', async () => {
+    const screen = await render(<FileManager files={files} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Download' })).toBeInTheDocument();
+  });
+
+  it('uses labels.menuDownload for the action-menu label', async () => {
+    const screen = await render(<FileManager files={files} labels={{ menuDownload: 'Baixar' }} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Baixar' })).toBeInTheDocument();
+  });
+
+  it('uses "Delete" as the default action-menu label', async () => {
+    const screen = await render(<FileManager files={files} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument();
+  });
+
+  it('uses labels.menuDelete for the action-menu label', async () => {
+    const screen = await render(<FileManager files={files} labels={{ menuDelete: 'Excluir' }} />);
+    await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
+    await expect.element(screen.getByRole('menuitem', { name: 'Excluir' })).toBeInTheDocument();
+  });
+
+  it('uses the default item-count label in the list', async () => {
+    const { container } = await render(<FileManager files={files} />);
+    expect(container.querySelector('.lyra-fm__row .lyra-fm__cell')!.textContent).toBe('3 items');
+  });
+
+  it('passes the folder item count to labels.itemsCount in the grid', async () => {
+    const itemsCount = vi.fn((items: number | undefined) => `${items} itens`);
+    const { container } = await render(
+      <FileManager files={files} defaultView="grid" labels={{ itemsCount }} />,
+    );
+    expect(container.querySelector('.lyra-fm__card-meta')!.textContent).toBe('3 itens');
+    expect(itemsCount).toHaveBeenCalledWith(3);
+  });
+
   it('opens files, navigates breadcrumbs, and composes the Dropdown action menu', async () => {
     const onOpen = vi.fn();
     const onNavigate = vi.fn();
