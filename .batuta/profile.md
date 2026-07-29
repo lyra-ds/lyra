@@ -197,7 +197,16 @@ sendo referência de leitura); o usuário arquiva quando quiser.
   registry gerado (prettier-ignored, gate --check de drift).
 - JSDoc canônico em inglês; convenções de conversão em
   `packages/react/CONVENTIONS.md`.
-- **Dogfooding do site de docs (jul/2026):** `apps/docs` usa o próprio DS, não
+- **Dogfooding do site — docs E landing (jul/2026; ampliado em 2026-07-28):** o motivo
+  não é estética interna. O usuário decidiu que landing e docs usam componentes do Lyra
+  **porque eles podem ser reaproveitados por outros usuários** — o site é a primeira
+  prova de que o DS serve para construir um produto real. Consequência prática: quando
+  o site precisa de algo que o DS não tem, a pergunta é "um consumidor do Lyra ia querer
+  isto?". Se sim, **vira componente do DS** (com changeset e teste), não classe `.lw-*`.
+  Foi por essa regra que `ThemeProvider` e `PageHeader` entraram na Fase 6 em vez de
+  ficarem para o porte do delta. `.lw-*` fica só para o que é genuinamente específico
+  deste site: composição de página, hero, CTA, cromo de marketing.
+  `apps/docs` usa o próprio DS, não
   reimplementa. Onde existe componente em `@lyra-ds/react`, use o componente —
   nunca a classe `.lyra-*` crua (ex.: `<Table>`, `<Card>`, `<Badge>`, e
   `<Button asChild>` para links com cara de botão). Classes `.lw-*` no
