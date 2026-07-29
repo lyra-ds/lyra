@@ -17,7 +17,10 @@ export type GuideEntry = {
   titleKey: string;
 };
 
-export const guides: GuideEntry[] = [{ slug: 'getting-started', titleKey: 'gettingStarted' }];
+export const guides: GuideEntry[] = [
+  { slug: 'getting-started', titleKey: 'gettingStarted' },
+  { slug: 'white-label', titleKey: 'whiteLabel' },
+];
 
 export const guideSlugs = guides.map((entry) => entry.slug);
 

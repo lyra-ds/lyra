@@ -1,0 +1,80 @@
+---
+title: White-label
+description: Brand an entire Lyra application by overriding four tokens.
+---
+
+# White-label
+
+Put `data-brand` on an element and set up to four custom properties. Lyra re-derives its accent
+group from that seed, so the components in that subtree use your brand without per-component
+overrides.
+
+## See it working
+
+<Example id="brands" title="Three brands in the current theme" layout="plain">
+  Each card scopes its own `data-brand`. Use the site theme toggle in the header to see all three
+  brands re-derive in place, without a rebuild. Tab to an input or primary button to see the
+  brand-derived focus ring.
+</Example>
+
+## Define a brand
+
+`--brand` is the required seed. The other three tokens have defaults, but set
+`--brand-contrast` whenever the seed is light enough that white text would not be readable.
+
+| Token              | Default                                      | Purpose                                  |
+| ------------------ | -------------------------------------------- | ---------------------------------------- |
+| `--brand`          | Required                                     | The brand-color seed.                    |
+| `--brand-contrast` | `#FFFFFF`                                    | Text and icons on the primary accent.    |
+| `--brand-radius`   | `10px`                                       | The `--radius-md` value.                 |
+| `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Both `--font-sans` and `--font-display`. |
+
+Here is a complete brand definition:
+
+```css
+html[data-brand='harbor'] {
+  --brand: #0d9488;
+  --brand-contrast: #ffffff;
+  --brand-radius: 12px;
+  --brand-font: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+```
+
+## Choose the scope
+
+Put `data-brand` on `<html>` when the whole application belongs to one brand. Every descendant
+uses the derived values.
+
+Put it on a container when only part of the page needs a different identity, such as an embedded
+workspace preview or a tenant-specific area. Only that container and its descendants receive the
+brand values, which is how the three cards above coexist.
+
+## What Lyra re-derives
+
+In light mode, Lyra keeps `--accent` as the raw `--brand`, darkens hover and active with black,
+and derives `--accent-soft`, `--accent-soft-text`, and `--focus-ring` with `color-mix()` in
+`oklab`. It also sets `--on-accent`, `--text-link`, `--border-accent`, `--radius-md`,
+`--font-sans`, and `--font-display`.
+
+Inside `data-theme="dark"`, the accent, hover, active, soft-text, and link mixes use white instead.
+The dark rule works whether `data-theme="dark"` and `data-brand` are on the same element or the
+branded element is inside the themed one.
+
+## Theme islands
+
+A `data-theme="dark"` container inside a light page works, including a branded descendant. This is
+useful for a permanently dark panel. The inverse does not work today: light tokens are the defaults
+on `:root`, not a `[data-theme="light"]` block, so `data-theme="light"` cannot restore light tokens
+inside a dark ancestor. Use the site theme toggle to preview each brand in both themes.
+
+## Keep primary text readable
+
+`--on-accent` defaults to `#FFFFFF`. That works for a dark brand, but a light brand needs an
+explicit dark `--brand-contrast`; otherwise the label on a primary button can become illegible.
+Check the contrast of each brand/contrast pair before shipping it.
+
+## What this contract does not change
+
+The contract does not re-derive `--surface-*` tokens, text colors, spacing, or radii other than
+`--radius-md`. It does not override borders beyond `--border-accent`. If your product needs those
+to change per tenant, define that layer separately instead of expecting `data-brand` to do it.

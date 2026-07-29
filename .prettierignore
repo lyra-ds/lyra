@@ -14,6 +14,14 @@ tools/icon-registry/fixtures/
 packages/react/src/icon/icon-registry.ts
 # Generated llms reference — its byte-exact format is owned by docgen --check.
 tools/docgen/output/llms.txt
+# Batuta task worktrees — a second checkout of this repo under .batuta/worktrees/, so every file
+# in it is a duplicate that prettier would scan (and report, including the handoff and fixtures this
+# file deliberately excludes above — the exclusions are relative to the repo root, not to a nested
+# copy). Git ignores the directory via .git/info/exclude, which prettier does not read, so it needs
+# its own entry here. Never committed, so CI never sees it; without this line `pnpm run lint` fails
+# locally for anyone with a worktree open.
+.batuta/worktrees/
+
 # Generated / non-source files
 pnpm-lock.yaml
 CHANGELOG.md

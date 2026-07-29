@@ -532,6 +532,21 @@
   margin-top: var(--space-2);
 }
 
+/* white-label guide: only the three-card comparison layout lives in the docs chrome */
+.lw-white-label {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+}
+.lw-white-label__card {
+  min-width: 0;
+}
+.lw-white-label__body {
+  display: grid;
+  gap: var(--space-4);
+}
+
 /* generated prop tables — the table itself is the Lyra <Table> */
 .lw-prop-table__optional {
   color: var(--text-faint);
@@ -580,6 +595,11 @@
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
+  }
+}
+@media (max-width: 700px) {
+  .lw-white-label {
+    grid-template-columns: 1fr;
   }
 }
 

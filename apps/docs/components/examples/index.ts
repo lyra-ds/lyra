@@ -83,6 +83,7 @@ import { DrawerWithoutFooter } from './drawer/without-footer';
 import { CreateWorkspaceDialogBasic } from './create-workspace-dialog/basic';
 import { CreateWorkspaceDialogCustomCopy } from './create-workspace-dialog/custom-copy';
 import { AvatarGroupPeople } from './avatar/group';
+import { WhiteLabelBrands } from './white-label/brands';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -258,5 +259,8 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'create-workspace-dialog': {
     basic: CreateWorkspaceDialogBasic,
     'custom-copy': CreateWorkspaceDialogCustomCopy,
+  },
+  'white-label': {
+    brands: WhiteLabelBrands,
   },
 };
