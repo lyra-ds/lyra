@@ -13,34 +13,9 @@ description: Um design system white-label e CSS-first para interfaces de produto
   <HeroActions />
 </div>
 
-## Instalação
+O Lyra entrega toda a aparência em classes `.lyra-*`, com temas claro e escuro e white-label
+em quatro tokens. O pacote React é um wrapper fino sobre essas classes, então o mesmo core
+funciona fora do React também.
 
-Instale o pacote React e os estilos, e importe o CSS uma única vez na raiz do app.
-
-```bash
-npm i @lyra-ds/react @lyra-ds/styles
-```
-
-```tsx
-// entrada do app (main.tsx / layout.tsx)
-import '@lyra-ds/styles/styles.css';
-```
-
-## Seu primeiro componente
-
-```tsx
-import { Button } from '@lyra-ds/react';
-
-export function App() {
-  return <Button>Olá, Lyra</Button>;
-}
-```
-
-## Tema escuro
-
-Adicione <code>data-theme="dark"</code> ao elemento `<html>`. Todos os tokens semânticos respondem
-automaticamente — sem trabalho por componente.
-
-```html
-<html data-theme="dark"></html>
-```
+Chegou agora? [Primeiros passos](/pt-BR/guides/getting-started) leva da instalação ao seu
+primeiro componente em poucos minutos.

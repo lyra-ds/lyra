@@ -1,0 +1,73 @@
+---
+title: Primeiros passos
+description: Instale o Lyra, importe o CSS uma única vez e renderize seu primeiro componente.
+---
+
+# Primeiros passos
+
+O Lyra vem em dois pacotes. O `@lyra-ds/styles` carrega toda a aparência — tokens e classes
+`.lyra-*`, sem build. O `@lyra-ds/react` é um wrapper fino sobre essas classes. Você pode
+usar só o CSS; o pacote React é conveniência, não requisito.
+
+## Instalação
+
+```bash
+npm i @lyra-ds/react @lyra-ds/styles
+```
+
+As fontes são peer dependencies, então você as instala e controla como elas carregam:
+
+```bash
+npm i @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono
+```
+
+## Importe o CSS uma única vez
+
+Um import, na raiz do app. Todo o resto é classe.
+
+```tsx
+// entrada do app (main.tsx / layout.tsx)
+import '@lyra-ds/styles/styles.css';
+```
+
+Importe uma vez e só uma. É uma folha de estilo comum, então importar em vários módulos
+só entrega as mesmas regras repetidas.
+
+## Seu primeiro componente
+
+```tsx
+import { Button } from '@lyra-ds/react';
+
+export function App() {
+  return <Button>Olá, Lyra</Button>;
+}
+```
+
+## Tema escuro
+
+Defina `data-theme="dark"` no elemento `<html>`. Todos os tokens semânticos respondem — não
+há trabalho por componente nem provider de tema para ligar.
+
+```html
+<html data-theme="dark"></html>
+```
+
+Para seguir a preferência do sistema sem piscar o tema errado, defina o atributo antes da
+primeira pintura, num script inline e bloqueante:
+
+```html
+<script>
+  const stored = localStorage.getItem('theme');
+  const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+</script>
+```
+
+Ele precisa ser inline e bloqueante. Qualquer coisa adiada roda depois da primeira pintura,
+que é exatamente o piscar que você quer evitar.
+
+## Por onde seguir
+
+Cada componente tem página própria, com exemplos vivos, tabela de props gerada e o HTML puro
+por trás. Comece pelo [índice de componentes](/pt-BR/components), ou leia
+[Button](/pt-BR/components/button) para ver o formato que todas as páginas seguem.

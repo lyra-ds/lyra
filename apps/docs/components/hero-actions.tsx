@@ -18,7 +18,7 @@ export function HeroActions({ locale }: { locale: Locale }) {
         <a href={`/${locale}/components`}>{t('heroBrowse')}</a>
       </Button>
       <Button asChild variant="secondary" size="lg">
-        <a href={`/${locale}/components/button`}>{t('getStarted')}</a>
+        <a href={`/${locale}/guides/getting-started`}>{t('getStarted')}</a>
       </Button>
     </div>
   );

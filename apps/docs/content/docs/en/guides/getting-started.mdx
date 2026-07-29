@@ -1,0 +1,73 @@
+---
+title: Getting started
+description: Install Lyra, import the stylesheet once, and render your first component.
+---
+
+# Getting started
+
+Lyra ships as two packages. `@lyra-ds/styles` carries the whole look — tokens and
+`.lyra-*` classes, no build step. `@lyra-ds/react` is a thin wrapper over those classes.
+You can use the CSS on its own; the React package is a convenience, not a requirement.
+
+## Install
+
+```bash
+npm i @lyra-ds/react @lyra-ds/styles
+```
+
+The fonts are peer dependencies, so you install them yourself and control how they load:
+
+```bash
+npm i @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono
+```
+
+## Import the stylesheet once
+
+One import, at your app's root. Everything else is classes.
+
+```tsx
+// app entry (main.tsx / layout.tsx)
+import '@lyra-ds/styles/styles.css';
+```
+
+Import it once and only once. It is a plain stylesheet, so importing it in several
+modules just ships the same rules repeatedly.
+
+## Your first component
+
+```tsx
+import { Button } from '@lyra-ds/react';
+
+export function App() {
+  return <Button>Hello Lyra</Button>;
+}
+```
+
+## Dark theme
+
+Set `data-theme="dark"` on your `<html>` element. Every semantic token responds — there is
+no per-component work and no theme provider to wire up.
+
+```html
+<html data-theme="dark"></html>
+```
+
+To follow the reader's system preference without a flash of the wrong theme, set the
+attribute before first paint, in a blocking inline script:
+
+```html
+<script>
+  const stored = localStorage.getItem('theme');
+  const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+</script>
+```
+
+It has to be inline and blocking. Anything deferred runs after the first paint, which is
+exactly the flash you are trying to avoid.
+
+## Where to go next
+
+Every component has its own page with live examples, a generated prop table and the plain
+HTML behind it. Start from the [component index](/en/components), or read
+[Button](/en/components/button) for the shape every page follows.
