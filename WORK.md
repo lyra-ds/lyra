@@ -106,12 +106,20 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
   a contagem de declarações de cada (cobre as redeclarações de `[data-theme="dark"]`),
   as 248 classes e a ordem dos imports da entrada.
 
+- **`Popover` sobre o `useFlipPlacement` — resolvido em 2026-07-28** (PR #21). Detalhes
+  em `.batuta/handoff-v1.2-map.md`. O achado que reposicionou a questão: **posicionamento
+  já está extraído — o que está triplicado é o comportamento de overlay** (outside-click,
+  Escape com restauração de foco, fusão de gatilho via `Slot`, ligação ARIA), ~60 linhas
+  em três cópias entre Dropdown, Combobox e WorkspaceSwitcher. É isso que o primitivo
+  extrai; o flip já é compartilhado. Decidido também: o hook ganha o **eixo horizontal
+  antes dos pickers** (`.lyra-cal` tem 252px fixos, 308 em `md` — os primeiros painéis
+  largos o bastante para estourar à direita, e por isso ninguém topou com o buraco até
+  agora); fica **em fluxo, não portalado**, com o recorte por ancestral `overflow` como
+  limite nomeado e decisão adiada até haver bug concreto; e os três overlays existentes
+  **não migram no mesmo lote** — o primitivo se prova antes com os date pickers.
+
 ## Decisões pendentes do usuário
 
-- **`Popover` do handoff × `useFlipPlacement` do repo** — o do handoff posiciona só por
-  CSS, sem medição JS; adotá-lo verbatim seria regressão frente aos três overlays que já
-  temos. Recomendação: implementar sobre o hook. Decisão de caminho crítico da Fase 8
-  (bloqueia todos os date/time pickers).
 - **Repositório das docs** — a copy da landing afirma que elas vivem em `lyra-ds/docs`,
   repositório separado, contradizendo o `apps/docs` do monorepo. Alinhar antes de
   publicar.

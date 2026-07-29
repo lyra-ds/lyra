@@ -566,3 +566,64 @@ rótulos cobriria: página de app sem topbar, ou docs sem TOC.
 2. O risco oposto ao do `variant` é um Shell configurável demais e confuso. Mitigação
    barata: documentar as **duas receitas prontas** ("assim se faz um site de docs",
    "assim se faz um app"), não só a lista de props.
+
+## `Popover` sobre o `useFlipPlacement` — decisão de 2026-07-28
+
+Resolvida lendo o hook, os três consumidores dele e o `Popover.jsx` do handoff.
+
+### O achado que reposiciona a questão
+
+A pergunta era "o Popover do handoff substitui o hook?". Lendo o código, a resposta certa
+é outra: **posicionamento já está extraído — o que está triplicado é o comportamento de
+overlay.**
+
+`useFlipPlacement` faz uma coisa só, bem: devolve `'down' | 'up'` medindo contra o
+`visualViewport`. Todo o resto cada widget refaz por conta própria. No `Dropdown`:
+outside-click em `mousedown` no documento, Escape com restauração de foco ao gatilho,
+fusão da semântica de gatilho via `Slot` (o que matou o bug de duas paradas de Tab que o
+axe reportava como `nested-interactive`) e o trio
+`aria-haspopup`/`aria-expanded`/`aria-controls`. `Combobox` e `WorkspaceSwitcher` repetem
+o equivalente.
+
+São ~60 linhas de comportamento sutil em três cópias. **É isso que o primitivo deve
+extrair** — não o flip, que já é compartilhado.
+
+### Decisões
+
+**1. O `Popover` é construído sobre o `useFlipPlacement`.** Adotar o do handoff verbatim
+seria regressão: ele posiciona só por CSS (`side` é escolha estática do autor, não flip),
+é recortado por qualquer ancestral com `overflow`, não põe `aria-expanded`/`aria-haspopup`
+no gatilho, não devolve foco no Escape, e tem `role="dialog"` sem nome nem focus trap. E
+envolve o gatilho num `<span onClick>` — exatamente o padrão que produziu o
+`nested-interactive` que o `Dropdown` já corrigiu com `Slot`.
+
+**2. O primitivo carrega o comportamento, não só a posição:** outside-click, Escape com
+restauração de foco, fusão de gatilho via `Slot`, e a ligação ARIA. Sem isso ele não paga
+o próprio custo.
+
+**3. O hook ganha o eixo horizontal ANTES dos pickers.** Hoje ele só decide vertical, e
+isso bastava porque os três popups existentes têm largura de gatilho. **`.lyra-cal` tem
+252px fixos (308px em `--md`)** — os pickers são os primeiros painéis largos o bastante
+para estourar à direita com `align="start"` perto da borda. Trocar o retorno de
+`'down' | 'up'` para `{ side, align }`, mantendo `down`/`start` como padrão.
+
+**4. Em fluxo, não portalado — por ora, e com o limite nomeado.** Portalar exige
+posicionamento por JS de verdade (x/y calculados), não uma classe de flip: é um motor de
+posicionamento inteiro, escrito à mão, porque a constraint de zero dependência de runtime
+proíbe um floating-ui. Não vale pagar isso preventivamente.
+
+O limite real é que o painel é recortado por ancestral com `overflow` — e o delta
+**introduz dois** (`.lyra-appshell__content` e `.lyra-table-scroll`). O primeiro caso
+concreto provável é o popover "Copiar para…" do `WeeklyScheduleEditor` dentro de um
+container rolável. Decisão adiada e **condicionada a evidência**: quando esse bug
+aparecer de fato, aí se decide entre portal + posicionamento por JS ou CSS anchor
+positioning (que ainda não é Baseline em todos os navegadores).
+
+**5. Combobox, Dropdown e WorkspaceSwitcher NÃO migram no mesmo lote.** O primitivo se
+prova primeiro com os date pickers, que são consumidores novos. Migrar três widgets que
+funcionam e têm teste para um primitivo recém-nascido, no mesmo commit em que ele nasce,
+é como se produz uma regressão que não dá para bissectar. A migração é aditiva e vem
+depois, verificável sozinha.
+
+**6. Corrigir o `@keyframes lyra-popover-in`**, que começa em `opacity: 0` e viola a
+constraint travada (keyframe de entrada anima só `transform`).
