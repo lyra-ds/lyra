@@ -89,12 +89,25 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
       inteira. Ondas de porte, conflitos de arquitetura e armadilhas por componente estão
       em `.batuta/handoff-v1.2-map.md`. Reabre a 6b em ~35 páginas de docs novas.
 
+## Decisões tomadas
+
+- **Baseline do parity — resolvido em 2026-07-28.** As constantes `EXPECTED_TOKENS` (209)
+  e `EXPECTED_CLASSES` (248) e o `STYLES_ENTRY_ORDER` saíram do código e viraram
+  `tools/parity/baseline.json`, um snapshot commitado do handoff canônico, regenerado
+  com `pnpm parity --update-baseline`. **O 6c-b1 está destravado**: portar o delta passa
+  a ser "atualiza `handoff/`, regenera o baseline, revisa o diff", e esse diff é o
+  registro do que a versão nova trouxe.
+
+  Não foi só acomodar o delta — **fechou um buraco real**. As constantes só contavam, e
+  contagem é grossa demais: renomear uma classe nos dois lados mantinha 248 e o gate
+  ficava mudo. Provado com experimento antes de commitar (o swap
+  `.lyra-stat__label` → `.lyra-stat__caption` nos dois lados manteve 248 e o gate novo
+  nomeia os dois lados). O baseline guarda nomes, não só totais: 153 nomes de token com
+  a contagem de declarações de cada (cobre as redeclarações de `[data-theme="dark"]`),
+  as 248 classes e a ordem dos imports da entrada.
+
 ## Decisões pendentes do usuário
 
-- **Baseline do parity** — o delta quebra as contagens travadas no `CLAUDE.md`: 209 → 211
-  tokens, 248 → 433 classes, 14 → 17 imports do `styles.css`. Opções: bump simples das
-  constantes, baseline versionado por handoff, ou contagem derivada com snapshot
-  commitado. **Bloqueia o 6c-b** (o primeiro porte que mexe em CSS).
 - **`Popover` do handoff × `useFlipPlacement` do repo** — o do handoff posiciona só por
   CSS, sem medição JS; adotá-lo verbatim seria regressão frente aos três overlays que já
   temos. Recomendação: implementar sobre o hook. Decisão de caminho crítico da Fase 8

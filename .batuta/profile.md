@@ -189,8 +189,15 @@ sendo referência de leitura); o usuário arquiva quando quiser.
 - Versões exatas sempre (`save-exact` no .npmrc); engines `>=24 <25`.
 - CSS de `@lyra-ds/styles` é handoff-verbatim: sem prettier, stylelint só
   valida namespace `.lyra-*`; extras vão no FIM do arquivo + allowlist
-  ADDITIVE_EXTENSIONS do parity (209 tokens / 248 classes são contagens do
-  handoff, imutáveis).
+  ADDITIVE_EXTENSIONS do parity. **O inventário do handoff (209 tokens / 248
+  classes / 14 imports da entrada) não é mais literal no código** — desde
+  2026-07-28 vive em `tools/parity/baseline.json`, snapshot commitado e
+  regenerado com `pnpm parity --update-baseline`. Ele não é imutável, é
+  _versionado_: avançar o handoff é atualizar `handoff/`, regenerar e revisar o
+  diff, que é o registro do que a versão nova trouxe. Regenerar sem que
+  `handoff/` tenha mudado de propósito é apagar o tripwire — o baseline guarda
+  nomes justamente porque contagem não pega troca (renomear uma classe nos dois
+  lados mantinha 248 e o gate antigo ficava mudo).
 - `@lyra-ds/react`: exports map == entries do tsup == basenames do dist;
   `'use client'` via onSuccess do tsup (prepend determinístico); zero import
   de CSS no código shipped; lucide-react é a única dep de runtime, via

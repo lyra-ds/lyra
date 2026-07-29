@@ -206,9 +206,33 @@ alterados, zero removidos.
 Classes novas: 78 em `scheduling.css`, 41 em `forms.css`, 24 em `data.css`, 21 em
 `layout.css`, 14 em `navigation.css`, 7 em `primitives.css` = **185**.
 
-As contagens 209/248 estão travadas no `CLAUDE.md` como imutáveis. Elas param de valer;
-a decisão de como versionar o baseline (bump simples, baseline por versão de handoff,
-ou contagem derivada com snapshot commitado) é do usuário.
+### Resolvido em 2026-07-28 (PR #20), antes de qualquer porte
+
+As constantes `EXPECTED_TOKENS`/`EXPECTED_CLASSES` e o `STYLES_ENTRY_ORDER` saíram do
+código e viraram **`tools/parity/baseline.json`** — snapshot commitado do handoff
+canônico, regenerado com `pnpm parity --update-baseline`. Portar o delta passa a ser:
+atualiza `handoff/`, regenera o baseline, revisa o diff. Esse diff é o registro do que a
+versão nova trouxe, que dois números mágicos nunca dariam. As três primeiras linhas da
+tabela acima deixam de ser edições de literal e viram uma regeneração revisável.
+
+A escolha não foi só acomodar o delta. As constantes eram **contagem**, e contagem não
+distingue troca: renomear uma classe nos dois lados mantinha 248 e o gate ficava mudo. O
+baseline guarda **nomes** — 153 nomes de token com a contagem de declarações de cada
+(cobrindo as redeclarações de `[data-theme="dark"]`), as 248 classes e a ordem dos
+imports da entrada — então adição, remoção e troca falham, cada uma nomeando o símbolo.
+
+Verificado por experimento antes do commit: o swap `.lyra-stat__label` →
+`.lyra-stat__caption` aplicado nos **dois** lados manteve a contagem em 248 (o gate
+antigo passaria) e o gate novo reprovou nomeando os dois lados.
+
+Descartadas: o bump simples das constantes (perde rastreabilidade — qualquer bisect de
+regressão de fidelidade vira diff cego) e o porte faseado com baselines intermediários
+(resolve o mesmo problema de forma mais cara; o baseline versionado já permite fasear se
+quisermos).
+
+Segue valendo que o check (B) vai falhar em `forms.css` pelas duas reescritas in-place, e
+que o `ADDITIVE_EXTENSIONS` precisa de entradas novas — nenhum dos dois é resolvido pelo
+baseline.
 
 ### Armadilha de porte do CSS — a mais cara do pacote
 
