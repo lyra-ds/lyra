@@ -406,6 +406,14 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xs);
   padding: 1px 5px;
+  /* Inline code in prose is often one unbreakable token — a package subpath, a long class name.
+     Without this, such a token cannot wrap and pushes the whole document sideways on a narrow
+     screen (measured: `@lyra-ds/styles/components/buttons/buttons.css` in the plain-HTML guide
+     made a 375px viewport scroll to 390px). `anywhere` rather than `break-word` because the
+     latter still refuses to break inside a single long word with no break opportunity. Block
+     code is unaffected — it scrolls inside .lw-code__pre instead of wrapping, which is correct
+     for code you may want to copy line by line. */
+  overflow-wrap: anywhere;
 }
 
 /* footer */
