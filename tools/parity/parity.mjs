@@ -15,13 +15,14 @@
  * whitespace on the assumption bytes are checked — they are not; only the parsed
  * declaration is. Four guarantees:
  *
- *   (A) Token check .......... 209 `--custom-property` declarations across the six
+ *   (A) Token check .......... every `--custom-property` declaration across the six
  *                              canonical token files (base+brand+colors+effects+
  *                              spacing+typography, including [data-theme="dark"]
- *                              re-declarations) exist in the package with identical
- *                              values. fonts.css (CDN divergence, 0 tokens) and
- *                              compat-shadcn.css (opt-in, outside the entry) are
- *                              excluded.
+ *                              re-declarations) exists in the package with an identical
+ *                              value, and the handoff's own token inventory still
+ *                              matches tools/parity/baseline.json. fonts.css (CDN
+ *                              divergence, 0 tokens) and compat-shadcn.css (opt-in,
+ *                              outside the entry) are excluded.
  *   (B) Placement- + cascade-aware declaration diff ... every declaration is keyed
  *                              by file + at-rule-ancestry + selector + property and
  *                              compared IN ORDER, so a declaration relocated to a
@@ -32,8 +33,9 @@
  *                              (fonts @import removal handled by exclusion; the
  *                              unpkg→data: chevron mask URLs) keeps the faithful copy
  *                              green.
- *   (C) Class inventory ...... the 248 unique `.lyra-*` class names in
- *                              handoff/components/** match the package set exactly.
+ *   (C) Class inventory ...... the unique `.lyra-*` class names in handoff/components/**
+ *                              match the package set exactly, and the handoff's own set
+ *                              still matches the baseline.
  *   (D) External-URL guard ... every `url()` in the shipped package CSS targets a
  *                              `data:` URI or a relative path — any absolute scheme
  *                              (http:, https:, other scheme:) or protocol-relative
@@ -45,10 +47,16 @@
  *                              import-notation:"string", so that is the single most
  *                              likely way a runtime CDN dependency re-enters.
  *   (E) Entry cascade order .. styles.css (the aggregate entry, not part of the
- *                              handoff) imports the seven token layers before the
- *                              seven component layers, in the documented order, so a
+ *                              handoff) imports the token layers before the component
+ *                              layers, in the order recorded in the baseline, so a
  *                              mis-ordered token layer cannot silently break the
  *                              cascade the whole package depends on.
+ *
+ * (A), (C) and (E) compare handoff/ against tools/parity/baseline.json — a committed
+ * snapshot regenerated with `pnpm parity --update-baseline` when the handoff is
+ * intentionally advanced to a new version. It replaces the former EXPECTED_TOKENS /
+ * EXPECTED_CLASSES literals, which could only count: renaming a class on BOTH sides
+ * kept the count at 248 and the guard stayed silent. See the baseline block below.
  *
  * The parser is a real tokenizer / brace-depth state machine (NOT split(';') or a
  * flat regex): it tracks string state so quoted `data:` URIs with interior `;`/`{`/`}`
@@ -61,9 +69,13 @@
  * On any drift: prints a message naming the drifted token/class/declaration (and points
  * at handoff/ as canonical) and exits non-zero. On full pass:
  *   `parity OK: 209 tokens, 248 classes, placement + at-rule ancestry + no-CDN verified`
+ *
+ * Flags: `--update-baseline` rewrites baseline.json from the current handoff/ and exits
+ * without running the parity checks. It is a deliberate act — the resulting diff is the
+ * reviewable record of what a new handoff version changed.
  */
 
-import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -74,8 +86,71 @@ const PKG = join(REPO, 'packages', 'styles');
 const FIXTURES = join(__dirname, 'fixtures');
 
 const TOKEN_FILES = ['base', 'brand', 'colors', 'effects', 'spacing', 'typography']; // fonts + compat EXCLUDED
-const EXPECTED_TOKENS = 209;
-const EXPECTED_CLASSES = 248;
+
+// ---------------------------------------------------------------------------
+// Versioned handoff baseline (supersedes the EXPECTED_TOKENS/EXPECTED_CLASSES literals)
+// ---------------------------------------------------------------------------
+//
+// Checks (A)-(C) prove `handoff ⊆ package`. What they CANNOT notice on their own is
+// that handoff/ ITSELF changed: a port that edits the handoff and the package together
+// satisfies every value comparison, because both sides move at once. The old guard
+// against that was a pair of literals (209 / 248) asserted against the HANDOFF side —
+// a tripwire, not a parity check.
+//
+// Counting is too coarse for that job. Swap one class for another in both trees and the
+// count stays 248, so the tripwire never fires; the same holds for a token renamed on
+// both sides. This baseline records the token names (with their declaration counts, so
+// the dark-theme re-declarations are covered), the class names, and the package entry
+// order — so an add, a removal, AND a swap each fail, naming the exact symbol.
+//
+// It is regenerated deliberately with `pnpm parity --update-baseline` when handoff/ is
+// intentionally advanced to a new version. The diff of THAT regeneration is the
+// reviewable record of what the new handoff brought — which two magic numbers could
+// never be. Same pattern the icon registry already uses (generated artifact + --check).
+const BASELINE_PATH = join(__dirname, 'baseline.json');
+const UPDATE_BASELINE = process.argv.includes('--update-baseline');
+const BASELINE = UPDATE_BASELINE ? null : loadBaseline();
+
+function loadBaseline() {
+  if (!existsSync(BASELINE_PATH)) {
+    console.error(
+      `parity FAILED: tools/parity/baseline.json is missing.\n` +
+        `  It is a committed artifact, not a cache — regenerate with \`pnpm parity --update-baseline\`\n` +
+        `  and review the result before committing.`,
+    );
+    process.exit(1);
+  }
+  return JSON.parse(readFileSync(BASELINE_PATH, 'utf8'));
+}
+
+/** Snapshot what handoff/ + the package entry contain right now. Sorted, so diffs stay readable. */
+function writeBaseline() {
+  const byName = tokenNameCounts(collectTokens(HANDOFF));
+  const classes = [...collectClasses(HANDOFF)].sort();
+  const next = {
+    $comment:
+      'Generated by `pnpm parity --update-baseline`. Snapshot of the canonical handoff/ — ' +
+      'regenerate only when handoff/ is intentionally advanced, and review the diff: it is the ' +
+      'record of what the new handoff version added or removed.',
+    handoffVersion: BASELINE?.handoffVersion ?? 'v1.0',
+    tokens: {
+      declarations: Object.values(byName).reduce((a, b) => a + b, 0),
+      byName: Object.fromEntries(
+        Object.keys(byName)
+          .sort()
+          .map((n) => [n, byName[n]]),
+      ),
+    },
+    classes: { count: classes.length, names: classes },
+    stylesEntryOrder: extractImports(read(join(PKG, 'styles.css'))),
+  };
+  writeFileSync(BASELINE_PATH, `${JSON.stringify(next, null, 2)}\n`);
+  console.log(
+    `baseline updated: ${next.tokens.declarations} token declarations, ${next.classes.count} classes, ` +
+      `${next.stylesEntryOrder.length} entry imports (handoff version "${next.handoffVersion}").\n` +
+      `Review the diff before committing — bump "handoffVersion" by hand when the handoff version changes.`,
+  );
+}
 
 // Intentional-divergence allowlist: the unpkg.com chevron mask URLs rewritten to
 // local data: URIs (forms/display/navigation). fonts.css's dropped Google-Fonts
@@ -528,15 +603,51 @@ function collectTokens(baseDir) {
   return pairs;
 }
 
-function tokenCheck() {
+/**
+ * Compare what handoff/ contains NOW against the committed baseline, naming every
+ * symbol that appeared, vanished, or changed declaration count. Counting alone missed
+ * a same-size swap; this does not.
+ *
+ * The failure message names `--update-baseline` on purpose: an intentional handoff bump
+ * should be one obvious command whose diff is the review artifact, not a hunt for which
+ * literal to edit.
+ */
+function baselineDrift(label, actual, expected) {
+  const names = [...new Set([...Object.keys(actual), ...Object.keys(expected)])].sort();
+  const added = names.filter((n) => !(n in expected));
+  const removed = names.filter((n) => !(n in actual));
+  const changed = names.filter((n) => n in actual && n in expected && actual[n] !== expected[n]);
+
+  if (!added.length && !removed.length && !changed.length) return;
+
+  const parts = [];
+  if (added.length) parts.push(`added: ${added.join(', ')}`);
+  if (removed.length) parts.push(`removed: ${removed.join(', ')}`);
+  if (changed.length) {
+    parts.push(
+      `declaration count changed: ${changed.map((n) => `${n} ${expected[n]}→${actual[n]}`).join(', ')}`,
+    );
+  }
+  fail(
+    `${label} baseline drift — handoff/ no longer matches tools/parity/baseline.json ` +
+      `(handoff version "${BASELINE.handoffVersion}").\n      ${parts.join('\n      ')}\n` +
+      `      If handoff/ was advanced on purpose, run \`pnpm parity --update-baseline\` and ` +
+      `commit the regenerated baseline alongside the handoff change.`,
+  );
+}
+
+/** Token name -> number of declarations of it (2 when re-declared under [data-theme="dark"]). */
+function tokenNameCounts(pairs) {
+  const counts = {};
+  for (const [name] of pairs) counts[name] = (counts[name] ?? 0) + 1;
+  return counts;
+}
+
+function tokenCheck(baseline) {
   const handoff = collectTokens(HANDOFF);
   const pkg = collectTokens(PKG);
 
-  if (handoff.length !== EXPECTED_TOKENS) {
-    fail(
-      `Token count drift: canonical handoff has ${handoff.length} token declarations, expected ${EXPECTED_TOKENS} — handoff/ is canonical`,
-    );
-  }
+  baselineDrift('Token', tokenNameCounts(handoff), baseline.tokens.byName);
 
   // multiset of values per token name
   const toMap = (pairs) => {
@@ -663,15 +774,12 @@ function collectClasses(baseDir) {
   return set;
 }
 
-function classCheck() {
+function classCheck(baseline) {
   const handoff = collectClasses(HANDOFF);
   const pkg = collectClasses(PKG);
 
-  if (handoff.size !== EXPECTED_CLASSES) {
-    fail(
-      `Class count drift: canonical handoff has ${handoff.size} unique .lyra-* classes, expected ${EXPECTED_CLASSES} — handoff/ is canonical`,
-    );
-  }
+  const asCounts = (names) => Object.fromEntries([...names].map((n) => [n, 1]));
+  baselineDrift('Class', asCounts(handoff), asCounts(baseline.classes.names));
   for (const c of handoff) {
     if (!pkg.has(c)) fail(`Class ${c}: missing from package components — handoff/ is canonical`);
   }
@@ -799,33 +907,17 @@ function extractImports(css) {
 // the seven component layers, in the documented order. styles.css is not part of
 // the handoff and is otherwise unchecked; a mis-ordered token layer would silently
 // break the cascade the whole package depends on (IN-04).
-const STYLES_ENTRY_ORDER = [
-  './tokens/fonts.css',
-  './tokens/colors.css',
-  './tokens/typography.css',
-  './tokens/spacing.css',
-  './tokens/effects.css',
-  './tokens/brand.css',
-  './tokens/base.css',
-  './components/buttons/buttons.css',
-  './components/forms/forms.css',
-  './components/display/display.css',
-  './components/navigation/navigation.css',
-  './components/feedback/feedback.css',
-  './components/files/files.css',
-  './components/data/data.css',
-];
-
-/** Assert styles.css imports the token layers before the component layers, in order. */
-function stylesEntryOrderCheck() {
+// The expected order now lives in baseline.json, so adding a component layer (the delta
+// brings layout/, primitives/ and scheduling/) is a reviewed baseline diff rather than an
+// edit to a literal buried in this file.
+function stylesEntryOrderCheck(baseline) {
+  const expected = baseline.stylesEntryOrder;
   const imports = extractImports(read(join(PKG, 'styles.css')));
-  if (
-    imports.length !== STYLES_ENTRY_ORDER.length ||
-    STYLES_ENTRY_ORDER.some((rel, k) => imports[k] !== rel)
-  ) {
+  if (imports.length !== expected.length || expected.some((rel, k) => imports[k] !== rel)) {
     fail(
-      `styles.css @import order drift: the 7 token layers must precede the 7 component ` +
-        `layers in the documented cascade order.\n      expected: ${STYLES_ENTRY_ORDER.join(', ')}\n      actual:   ${imports.join(', ')}`,
+      `styles.css @import order drift: the token layers must precede the component layers ` +
+        `in the documented cascade order.\n      expected: ${expected.join(', ')}\n      actual:   ${imports.join(', ')}\n` +
+        `      If a layer was added on purpose, run \`pnpm parity --update-baseline\`.`,
     );
   }
 }
@@ -853,12 +945,18 @@ function importGuard() {
 
 fixtureSelfCheck();
 importSelfCheck();
-const tokenCount = tokenCheck();
+
+if (UPDATE_BASELINE) {
+  writeBaseline();
+  process.exit(0);
+}
+
+const tokenCount = tokenCheck(BASELINE);
 placementCheck();
-const classCount = classCheck();
+const classCount = classCheck(BASELINE);
 urlGuard();
 importGuard();
-stylesEntryOrderCheck();
+stylesEntryOrderCheck(BASELINE);
 
 if (errors.length) {
   console.error(
