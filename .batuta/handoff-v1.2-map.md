@@ -28,7 +28,7 @@ O sistema vai de **40 para 75 componentes** (+35, ~+88%), mais 2 hooks (`useThem
 
 | Grupo                          | Novos | Quais                                                                                                      |
 | ------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------- |
-| `layout/` (categoria nova)     | 8     | Stack, Inline, Grid, Container, Separator, PageHeader, AppShell, ActionBar                                 |
+| `layout/` (categoria nova)     | 8     | Stack, Inline, Grid, Container, Separator, PageHeader, ~~AppShell~~ (absorvido pelo `Shell`), ActionBar    |
 | `scheduling/` (categoria nova) | 6     | CalendarView, SlotPicker, TimeZonePicker, WeeklyScheduleEditor, RecurrenceSelector, SegmentedRing          |
 | `primitives/` (categoria nova) | 3     | Popover, Portal, VisuallyHidden                                                                            |
 | `system/` (categoria nova)     | 2     | ThemeProvider (+useTheme), ToastProvider (+useToast)                                                       |
@@ -363,7 +363,8 @@ DataTable + PersonCell, ActionBar, e o delta de duas linhas do SidebarGroup.
 **Onda 3 — depende de Popover:** Calendar (pode ir em paralelo à onda 2), TimePicker,
 **BottomSheet** (pré-requisito faltante), DatePicker, DateRangePicker.
 
-**Onda 4 — casca de app:** AppSidebar, AppShell, BottomNav.
+**Onda 4 — casca de app:** AppSidebar, BottomNav. **`AppShell` saiu desta onda** — foi
+absorvido pelo `Shell` unificado, que é construção nossa na Fase 6, não porte.
 
 **Onda 5 — camada de sistema:** ThemeProvider (com correção SSR), ToastProvider.
 
@@ -395,16 +396,16 @@ feito com Lyra e hoje cada um a reescreve.
 
 ### A — Vira componente do DS (8 adições)
 
-| Novo                                                      | Absorve                                                                                                           | Por que passa no teste                                                                                                                                                                                                                                                                                                                                                                                      |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`Navbar`** (+ `NavLink`, slots `brand`/`nav`/`actions`) | `.lw-header`, `__inner`, `__actions`, `.lw-nav`, `.lw-nav__link`, `--active`, e o wrap responsivo de 900px        | Barra superior fixa com marca, navegação e ações é o cromo nº 1 de qualquer produto ou site de docs. O nosso já carrega a lição do overflow em 375px.                                                                                                                                                                                                                                                       |
-| **`Footer`** (slots `note`/`links`)                       | `.lw-footer`, `__inner`, `__note`, `__links`                                                                      | Mesmo argumento; são 4 classes e uma decisão de layout que todo mundo repete.                                                                                                                                                                                                                                                                                                                               |
-| **`DocsShell`**                                           | `.lw-docs` (grade de 3 colunas), `.lw-docs__side`, `.lw-docs__content`, e as duas media queries de colapso        | Carrega conhecimento caro: `max-height` + `dvh` + `overscroll-behavior` na trilha (sticky sozinho não segura trilha mais alta que a viewport), e a ordem de colapso — some o TOC em 1100px, depois a sidebar em 900px. **Decisão de design:** virar componente próprio ou uma terceira trilha no `AppShell` do delta? O `AppShell` é sidebar + topbar + conteúdo; docs precisa de sidebar + conteúdo + TOC. |
-| **`TableOfContents`**                                     | `.lw-toc`, `__title`, `__list`, `__link`, `--active`, indentação por `data-level`                                 | Todo site de documentação tem. Recebe os headings como dados; o observador de scroll é do consumidor ou vem junto como hook.                                                                                                                                                                                                                                                                                |
-| **`CodeBlock`**                                           | `.lw-code`, `__bar`, `__lang`, `__copy`, `__pre`, numeração de linha, e o `.lw-show__code` do handoff             | A ausência mais gritante: o handoff usa bloco de código na landing **e** nas docs, dois contextos. **Regra dura:** o DS entrega só o cromo (moldura, badge de linguagem, botão de copiar, numeração, scroll horizontal); o HTML já destacado entra como `children`. O DS **não** pode depender de Shiki.                                                                                                    |
-| **`SegmentedControl`**                                    | `.lw-locale`, `__opt`, `--active`                                                                                 | O toggle EN\|PT não tem nada de idioma — é um segmentado genérico de 2+ opções. Generalizar é o que o torna útil (densidade, período de gráfico, visão lista/grade).                                                                                                                                                                                                                                        |
-| **`CommandPalette.Trigger`**                              | `.lw-search`, `__label`, `__kbd`                                                                                  | Botão que parece campo de busca e abre a paleta. Já temos o `CommandPalette`; falta o gatilho canônico, que hoje cada um refaz. O `__kbd` some: **`.lyra-kbd` já existe** e o `apps/docs` duplicou sem perceber.                                                                                                                                                                                            |
-| **`.lyra-prose`** (camada CSS, sem React)                 | `.lw-docs__content h1/h2/h3/p/a/strong/code`, `scroll-margin-top`, e os `.lw-docs__title`/`__h2`/`__p` do handoff | O item mais CSS-first da lista: escopo tipográfico dirigido por tokens que funciona em Vue/Blade/LiveView **sem uma linha de JS**. É exatamente o tipo de coisa que justifica a arquitetura do Lyra.                                                                                                                                                                                                        |
+| Novo                                                          | Absorve                                                                                                                               | Por que passa no teste                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`Navbar`** (+ `NavLink`, slots `brand`/`nav`/`actions`)     | `.lw-header`, `__inner`, `__actions`, `.lw-nav`, `.lw-nav__link`, `--active`, e o wrap responsivo de 900px                            | Barra superior fixa com marca, navegação e ações é o cromo nº 1 de qualquer produto ou site de docs. O nosso já carrega a lição do overflow em 375px.                                                                                                                                                                 |
+| **`Footer`** (slots `note`/`links`)                           | `.lw-footer`, `__inner`, `__note`, `__links`                                                                                          | Mesmo argumento; são 4 classes e uma decisão de layout que todo mundo repete.                                                                                                                                                                                                                                         |
+| **`Shell`** (slots `sidebar`/`topbar`/`aside`, prop `scroll`) | `.lw-docs` (grade de 3 colunas), `.lw-docs__side`, `.lw-docs__content`, as duas media queries de colapso, **e o `AppShell` do delta** | **Decidido em 2026-07-28: um `Shell` só, absorvendo o `AppShell`** (ver seção própria abaixo). Carrega conhecimento caro: `max-height` + `dvh` + `overscroll-behavior` na trilha (sticky sozinho não segura trilha mais alta que a viewport), e a ordem de colapso — some o TOC em 1100px, depois a sidebar em 900px. |
+| **`TableOfContents`**                                         | `.lw-toc`, `__title`, `__list`, `__link`, `--active`, indentação por `data-level`                                                     | Todo site de documentação tem. Recebe os headings como dados; o observador de scroll é do consumidor ou vem junto como hook.                                                                                                                                                                                          |
+| **`CodeBlock`**                                               | `.lw-code`, `__bar`, `__lang`, `__copy`, `__pre`, numeração de linha, e o `.lw-show__code` do handoff                                 | A ausência mais gritante: o handoff usa bloco de código na landing **e** nas docs, dois contextos. **Regra dura:** o DS entrega só o cromo (moldura, badge de linguagem, botão de copiar, numeração, scroll horizontal); o HTML já destacado entra como `children`. O DS **não** pode depender de Shiki.              |
+| **`SegmentedControl`**                                        | `.lw-locale`, `__opt`, `--active`                                                                                                     | O toggle EN\|PT não tem nada de idioma — é um segmentado genérico de 2+ opções. Generalizar é o que o torna útil (densidade, período de gráfico, visão lista/grade).                                                                                                                                                  |
+| **`CommandPalette.Trigger`**                                  | `.lw-search`, `__label`, `__kbd`                                                                                                      | Botão que parece campo de busca e abre a paleta. Já temos o `CommandPalette`; falta o gatilho canônico, que hoje cada um refaz. O `__kbd` some: **`.lyra-kbd` já existe** e o `apps/docs` duplicou sem perceber.                                                                                                      |
+| **`.lyra-prose`** (camada CSS, sem React)                     | `.lw-docs__content h1/h2/h3/p/a/strong/code`, `scroll-margin-top`, e os `.lw-docs__title`/`__h2`/`__p` do handoff                     | O item mais CSS-first da lista: escopo tipográfico dirigido por tokens que funciona em Vue/Blade/LiveView **sem uma linha de JS**. É exatamente o tipo de coisa que justifica a arquitetura do Lyra.                                                                                                                  |
 
 Menores, valor médio, decidir caso a caso: **`IconTile`** (`.lw-comm__icon` — quadrado
 40px com `accent-soft`, padrão recorrente em card de feature), **`CheckList`**
@@ -484,7 +485,7 @@ E são **duas cascas diferentes**, não uma:
    `footer`, `width` (260 padrão) e modo **rail** de 64px só-ícones com tooltip nativa.
    Compõe `SidebarGroup` por baixo. É a barra de um produto SaaS.
 2. **Trilha de _documentação_** — não existe em handoff nenhum. É a que o `apps/docs` já
-   construiu, e ela entra no `DocsShell` da lista de adições.
+   construiu, e ela entra no `Shell` da lista de adições.
 
 **Armadilha a pinar quando o `AppSidebar` for portado:** a API dele é dirigida por dados
 (`groups[].items[]`), e cada item vira `<button>`. O nosso site de docs **deliberadamente
@@ -493,3 +494,51 @@ justamente para preservar navegação client-side, prefetch, abrir em nova aba e
 link, que `<button>` não dá. Se o `AppSidebar` só aceitar `items`, ele é inutilizável
 para navegação real e o docs não vai poder dogfoodá-lo. Requisito: aceitar `children`
 com o mesmo contrato do `SidebarGroup`.
+
+### `Shell` unificado — decisão de 2026-07-28
+
+Pergunta do usuário: um `Shell` só, com `variant="docs" | "app"`? **Sim para o
+componente único, não para o `variant`.**
+
+A razão de descartar o `variant`: os dois não diferem em aparência, diferem em **modelo
+de scroll**. No shell de app o `main` é o container que rola (sidebar fixa de altura
+cheia, conteúdo com `overflow: auto`); no de docs quem rola é o documento e as trilhas
+laterais são `sticky` com `max-height`/`dvh` e scroll próprio. Não é tema, são dois
+motores de layout — e as props seriam disjuntas (`collapsible`/`topbar` só no app, `toc`
+só no docs), exigindo união discriminada no TS para não mentir e entregando um
+componente onde metade das props é inerte.
+
+A API adotada nomeia o eixo que existe de verdade:
+
+```tsx
+<Shell
+  sidebar={…}   // opcional
+  topbar={…}    // opcional
+  aside={…}     // opcional — a trilha de TOC
+  scroll="page" | "content"
+>
+```
+
+- **Docs** = `sidebar` + `main` + `aside`, `scroll="page"`.
+- **App** = `sidebar` + `topbar` + `main`, `scroll="content"`.
+
+"Ter terceira trilha" deixa de ser variante e vira "você preencheu o slot `aside`". O
+colapso para rail de 64px **sai do Shell e fica no `AppSidebar`**, que é onde pertence —
+é assunto da barra, não do container. E a API cobre um terceiro caso que nenhum dos dois
+rótulos cobriria: página de app sem topbar, ou docs sem TOC.
+
+**Consequências no plano:**
+
+- O `AppShell` do delta **não é portado** — é absorvido. Sai da Onda 4 e a Fase 8 perde
+  um componente.
+- O `Shell` passa a ser construção nossa na Fase 6 (6c-b), com o `AppShell` do handoff
+  como referência de uma das duas configurações.
+
+**Dois cuidados:**
+
+1. Não travar a API só olhando o CSS. A ordem de colapso (TOC em 1100px, sidebar em
+   900px) foi descoberta empiricamente, e o `max-height` + `dvh` + `overscroll-behavior`
+   veio de um bug real de iPad. Montar as duas páginas contra a API antes de fechar.
+2. O risco oposto ao do `variant` é um Shell configurável demais e confuso. Mitigação
+   barata: documentar as **duas receitas prontas** ("assim se faz um site de docs",
+   "assim se faz um app"), não só a lista de props.

@@ -14,36 +14,65 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
 - [ ] **6c-a — guias** (getting-started, white-label, HTML-puro, compat-shadcn).
       **Sem dependência do delta** — é o que dá para fazer agora. Subiu para primeiro
       justamente por isso.
-- [ ] **6c-b — camada reusável que a landing e as docs consomem** (decisão do usuário,
-      2026-07-28: _"a ideia é que tanto a landing quanto as docs usem componentes do
-      Lyra, porque eles podem ser reaproveitados por outros usuários"_). Portar do
-      handoff v1.1: `Container`, `Stack`/`Inline`, `Grid`, **`PageHeader`** e
-      **`ThemeProvider`**/`useTheme`. - `PageHeader` entra porque cobre exatamente o trio `eyebrow` + título +
-      descrição que hoje seria `.lw-overline` + `.lw-h2` + `.lw-section__sub` —
-      padrão que todo site de produto repete, logo é componente, não CSS de chrome. - `ThemeProvider` deixa de ser adiado: quem consome o DS precisa de um jeito
-      pronto de trocar tema, e o `apps/docs` reimplementar o seu é justamente o que a
-      regra de dogfooding proíbe. Porte exige **correção de SSR** (o do handoff faz
-      `useState(() => localStorage.getItem())`, que roda no servidor) e ganhar
-      `system`/`prefers-color-scheme`, que o docs já tem e o handoff não. O script
-      anti-flash continua sendo do consumidor, entregue como snippet copiável. - **Decisão pendente e agora mais pesada**: `Stack`/`Grid` violam o CSS-first — a
-      aparência vive em `style` inline e a classe `.lyra-stack` sequer existe, porque o
-      gap é dinâmico (`gap={3}` → `var(--space-3)`). Se esses componentes vão ser
-      reaproveitados por terceiros, estilo inline os torna inúteis para Vue/Blade/
-      LiveView, que é o motivo de existir da camada CSS. Recomendação: emitir custom
-      properties (`--lyra-stack-gap`) e estilizar por classe. - Traz junto `layout.css` e o rebaseline do parity (ver bloco de decisões).
+      Fundamento dos dois itens seguintes — decisão do usuário, 2026-07-28: _"a ideia é que
+      tanto a landing quanto as docs usem componentes do Lyra, porque eles podem ser
+      reaproveitados por outros usuários"_. O site é a primeira prova de que o DS serve para
+      construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`** — o
+      `apps/docs` importa, nunca define.
+
+- [ ] **6c-b1 — porte da camada de layout e tema** (do handoff v1.1): `Container`,
+      `Stack`/`Inline`, `Grid`, `PageHeader` e `ThemeProvider`/`useTheme`.
+
+  - `PageHeader` cobre o trio eyebrow + título + descrição que seria `.lw-overline` +
+    `.lw-h2` + `.lw-section__sub`. Precisa de variante centralizada: nasceu alinhado à
+    esquerda, para tela de app.
+  - `ThemeProvider` exige **correção de SSR** (o do handoff faz
+    `useState(() => localStorage.getItem())`, que roda no servidor) e ganhar
+    `system`/`prefers-color-scheme`, que o docs já tem e o handoff não. O script
+    anti-flash continua sendo do consumidor, entregue como snippet copiável.
+  - **Decisão pendente**: `Stack`/`Grid` violam o CSS-first — a aparência vive em
+    `style` inline e a classe `.lyra-stack` sequer existe, porque o gap é dinâmico
+    (`gap={3}` → `var(--space-3)`). Se vão ser reaproveitados por terceiros, estilo
+    inline os torna inúteis para Vue/Blade/LiveView, que é o motivo de a camada CSS
+    existir. Recomendação: emitir custom properties (`--lyra-stack-gap`) e estilizar por
+    classe.
+  - Traz junto `layout.css` e o rebaseline do parity.
+
+- [ ] **6c-b2 — construir a camada de cromo** (8 adições, ~3–4 lotes). Não têm handoff:
+      são design nosso a partir do CSS já validado em produção no `apps/docs`. Cada uma
+      com changeset, teste e página de documentação. Inventário completo das 76 classes
+      `.lw-*` em `.batuta/handoff-v1.2-map.md`.
+
+  - **`Shell`** — slots `sidebar`/`topbar`/`aside` + `scroll="page" | "content"`.
+    **Absorve o `AppShell` do delta**, que deixa de ser portado (docs = sidebar + main +
+    aside com `scroll="page"`; app = sidebar + topbar + main com `scroll="content"`). O
+    colapso para rail de 64px fica no `AppSidebar`, não aqui.
+  - **`Navbar`** (+ `NavLink`, slots brand/nav/actions) e **`Footer`** (slots
+    note/links). Só valem como **shells com slots** — um `Navbar` que só serve à barra do
+    Lyra é dívida com cara de componente.
+  - **`TableOfContents`**, **`CodeBlock`** (só o cromo; o HTML destacado entra como
+    children — o DS **não** pode depender de Shiki), **`SegmentedControl`** (o toggle
+    EN|PT generalizado), **`CommandPalette.Trigger`**.
+  - **`.lyra-prose`** — camada CSS sem React, o item mais CSS-first da lista: funciona
+    nos quatro frameworks sem uma linha de JS.
+  - Menores, a decidir caso a caso: `IconTile`, `CheckList`, `Brand`/`ThemedMark`.
+
 - [ ] **6c-c — landing de marketing** (`ui_kits/website` do handoff v1.2). Seções na
       ordem: hero → showcase (tabs preview/código) → frameworks → **temas/tokens** →
       **comunidade** → FAQ → CTA → cookie banner LGPD. **Sem pricing, sem depoimentos,
       sem Discord** — o posicionamento virou 100% open source (MIT), comunidade via
-      GitHub issues + Discussions. - **Critério de corte do `.lw-*`** (extensão da regra de dogfooding do
-      `profile.md`, que até aqui só valia para as docs): `.lw-*` fica para o que é
-      genuinamente específico deste site — composição de página, hero, CTA, cromo de
-      marketing. Tudo que outro produto reusaria vira componente do DS, com changeset
-      e teste. Ao portar cada seção, a pergunta é "um consumidor do Lyra ia querer
-      isto?" antes de escrever qualquer classe nova. - Reconciliar as **16 classes `.lw-*` que colidem** entre o `site.css` oficial do
-      handoff e o `apps/docs/app/site.css` que inventamos — mesmo nome não garante
-      mesma definição, comparar regra a regra. - Tirar de fonte única os números que a copy fixa ("209 tokens" vira 211; "55+
-      componentes" vira 75).
+      GitHub issues + Discussions.
+
+  - **Critério de corte do `.lw-*`**: fica só o que é genuinamente específico deste site
+    (composição de página, hero, CTA, cromo de marketing). Tudo que outro produto
+    reusaria vira componente do DS. A pergunta antes de escrever qualquer classe nova é
+    "um consumidor do Lyra ia querer isto?".
+  - Reconciliar as **16 classes `.lw-*` que colidem** entre o `site.css` oficial do
+    handoff e o `apps/docs/app/site.css` que inventamos — mesmo nome não garante mesma
+    definição, comparar regra a regra.
+  - Tirar de fonte única os números que a copy fixa ("209 tokens" vira 211; "55+
+    componentes" vira 75).
+
 - [ ] **6c-d — favicon theme-aware** (opcional) — favicon seguir tema/dispositivo; hoje é
       `/favicon.svg` estático.
 - [ ] **6c-e — deploy Cloudflare Pages** (manual, do usuário).
@@ -53,7 +82,9 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
 - [ ] **Fase 7 — Release Pipeline & Launch** (`.batuta/plan-07-release-pipeline-launch.md`)
       — v0.1.0 com os 40 componentes atuais.
 - [ ] **Fase 8 (nova) — porte do handoff v1.1 + v1.2** → v0.2.0. **35 componentes novos**
-      (40 → 75), 4 categorias novas (`layout`, `scheduling`, `primitives`, `system`),
+      (40 → 75), **menos os que a Fase 6 já leva** (`Container`, `Stack`/`Inline`,
+      `Grid`, `PageHeader`, `ThemeProvider`) e menos o `AppShell`, absorvido pelo `Shell`.
+      4 categorias novas (`layout`, `scheduling`, `primitives`, `system`),
       +185 classes CSS e 1 token. Estimativa de **12–16 lotes**, comparável à Fase 4
       inteira. Ondas de porte, conflitos de arquitetura e armadilhas por componente estão
       em `.batuta/handoff-v1.2-map.md`. Reabre a 6b em ~35 páginas de docs novas.
