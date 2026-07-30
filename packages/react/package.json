@@ -439,7 +439,17 @@
         "default": "./dist/command-palette.cjs"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./theme-provider": {
+      "import": {
+        "types": "./dist/theme-provider.d.ts",
+        "default": "./dist/theme-provider.js"
+      },
+      "require": {
+        "types": "./dist/theme-provider.d.cts",
+        "default": "./dist/theme-provider.cjs"
+      }
+    }
   },
   "files": [
     "dist",
@@ -866,6 +876,16 @@
         "react-dom/client"
       ],
       "limit": "9 kB"
+    },
+    {
+      "name": "import { ThemeProvider } from '@lyra-ds/react/theme-provider'",
+      "path": "dist/theme-provider.js",
+      "import": "{ ThemeProvider }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "0.7 kB"
     }
   ]
 }

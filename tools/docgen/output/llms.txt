@@ -881,3 +881,20 @@ export interface WorkspaceSwitcherProps extends Omit<HTMLAttributes<HTMLDivEleme
 }
 export declare function WorkspaceSwitcher(props: WorkspaceSwitcherProps): JSX.Element;
 ```
+
+## System
+
+### ThemeProvider
+```ts
+/** Props for {@link ThemeProvider}. */
+export interface ThemeProviderProps {
+  /** Theme to use when nothing is stored yet. Default: `"system"`. */
+  defaultTheme?: Theme;
+  /** localStorage key holding the choice. Default: `"lyra-theme"`. */
+  storageKey?: string;
+  /** Sets `data-brand` on `<html>` for white-label theming. See the white-label guide. */
+  brand?: string;
+  children: ReactNode;
+}
+export declare function ThemeProvider(props: ThemeProviderProps): JSX.Element;
+```

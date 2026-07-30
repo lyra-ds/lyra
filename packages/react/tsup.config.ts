@@ -63,6 +63,7 @@ export default defineConfig({
     grid: 'src/grid/index.ts',
     'page-header': 'src/page-header/index.ts',
     stack: 'src/stack/index.ts',
+    'theme-provider': 'src/theme-provider/index.ts',
     avatar: 'src/avatar/index.ts',
     alert: 'src/alert/index.ts',
     spinner: 'src/spinner/index.ts',

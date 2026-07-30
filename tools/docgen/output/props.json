@@ -1699,5 +1699,38 @@
         "description": "Whether the popover starts open. Useful for demos."
       }
     ]
+  },
+  {
+    "name": "ThemeProvider",
+    "category": "System",
+    "extends": "",
+    "description": "Props for {@link ThemeProvider}.",
+    "signature": "export declare function ThemeProvider(props: ThemeProviderProps): JSX.Element;",
+    "props": [
+      {
+        "name": "defaultTheme",
+        "type": "Theme",
+        "optional": true,
+        "description": "Theme to use when nothing is stored yet. Default: `\"system\"`."
+      },
+      {
+        "name": "storageKey",
+        "type": "string",
+        "optional": true,
+        "description": "localStorage key holding the choice. Default: `\"lyra-theme\"`."
+      },
+      {
+        "name": "brand",
+        "type": "string",
+        "optional": true,
+        "description": "Sets `data-brand` on `<html>` for white-label theming. See the white-label guide."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": ""
+      }
+    ]
   }
 ]
