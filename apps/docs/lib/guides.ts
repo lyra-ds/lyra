@@ -21,6 +21,7 @@ export const guides: GuideEntry[] = [
   { slug: 'getting-started', titleKey: 'gettingStarted' },
   { slug: 'white-label', titleKey: 'whiteLabel' },
   { slug: 'plain-html', titleKey: 'plainHtml' },
+  { slug: 'compat-shadcn', titleKey: 'compatShadcn' },
 ];
 
 export const guideSlugs = guides.map((entry) => entry.slug);

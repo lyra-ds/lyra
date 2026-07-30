@@ -1,0 +1,123 @@
+---
+title: shadcn/ui compatibility
+description: Use shadcn/ui components with Lyra tokens while keeping each system’s accent color safe.
+---
+
+# shadcn/ui compatibility
+
+`@lyra-ds/styles/compat-shadcn.css` is an opt-in compatibility layer for applications that use
+both Lyra and shadcn/ui. It maps 19 shadcn semantic variables to Lyra color and radius tokens, so
+shadcn components from a registry, block, or v0 use the Lyra skin. It does not add shadcn
+components or classes to your application.
+
+## Import the compatibility layer
+
+Import the complete Lyra stylesheet first, then the compatibility layer. The order matters: the
+compatibility variables must be defined after `styles.css`.
+
+```css
+/* app.css — processed by your bundler */
+@import '@lyra-ds/styles/styles.css';
+@import '@lyra-ds/styles/compat-shadcn.css';
+```
+
+The `compat-shadcn.css` subpath is public, but it is never imported by `styles.css`. Add it only
+where you intentionally mix the two systems.
+
+## What it maps
+
+The layer maps color and radius variables only:
+
+| shadcn variable                                             | Lyra token                                             |
+| ----------------------------------------------------------- | ------------------------------------------------------ |
+| `--background`, `--card`, `--popover`                       | `--surface-page`, `--surface-card`, `--surface-raised` |
+| `--foreground`, `--card-foreground`, `--popover-foreground` | `--text-primary`                                       |
+| `--primary`, `--primary-foreground`                         | `--accent`, `--on-accent`                              |
+| `--secondary`, `--muted`                                    | `--surface-sunken`                                     |
+| `--secondary-foreground`                                    | `--text-primary`                                       |
+| `--muted-foreground`                                        | `--text-muted`                                         |
+| `--accent-foreground`                                       | `--accent-soft-text`                                   |
+| `--destructive`, `--destructive-foreground`                 | `--danger`, `#FFFFFF`                                  |
+| `--border`, `--input`                                       | `--border-default`                                     |
+| `--ring`                                                    | `--focus-ring`                                         |
+| `--radius`                                                  | `--radius-md`                                          |
+
+It does not provide shadcn component classes, spacing, typography, shadows, or animations. Those
+come from the Tailwind classes that shadcn components bring. It also does not map shadcn variables
+outside these 19, including `--chart-*` and `--sidebar-*`.
+
+## One mapping works in both themes
+
+The stylesheet uses one shared block for `:root` and `[data-theme="dark"]`. That is intentional:
+each mapped value is a `var()` reference to a Lyra semantic token, and Lyra re-derives those tokens
+when the theme changes. The compatibility layer does not need separate light and dark values; the
+semantic token behind each reference changes instead.
+
+## Handle the `--accent` collision
+
+`--accent` means different things in the two systems. In shadcn, it is the subtle hover surface for
+menu items, dropdowns, and command items. In Lyra, it is the brand color used throughout Lyra
+components.
+
+The compatibility layer deliberately maps `--accent-foreground` but does not map `--accent`.
+Without a local override, the shadcn accent pair is indigo on indigo: its measured contrast is
+**1.34:1 in light theme** and **1.96:1 in dark theme**.
+
+Do not fix this by setting `--accent` on `:root`:
+
+```css
+/* Do not apply this globally. */
+:root {
+  --accent: var(--surface-sunken);
+}
+```
+
+That custom property is shared. This global change turns Lyra's primary button from
+`rgb(91,91,214)` to `rgb(241,245,249)`. It also changes shadcn's `--primary`, which is
+`var(--accent)`, reducing its measured contrast to **1.09:1**. Leaving `--accent` out of the
+compatibility layer is therefore necessary, not an omission.
+
+Scope the shadcn hover surface to the subtree that renders shadcn components instead:
+
+```css
+.shadcn-scope {
+  --accent: var(--surface-sunken);
+}
+```
+
+```html
+<section class="shadcn-scope">
+  <!-- shadcn/ui components -->
+</section>
+```
+
+Inside that scope, shadcn gets its neutral accent surface and an AA contrast pair. Outside it,
+Lyra components continue to read the indigo brand value from `--accent`.
+
+## Connect it to Tailwind
+
+Tailwind is configured by the application that consumes both systems. With Tailwind v4, you can
+expose the compatibility variables through `@theme inline`:
+
+```css
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --radius-md: var(--radius);
+}
+```
+
+You can also use the variables directly, without adding theme aliases:
+
+```html
+<div class="bg-[var(--background)] text-[var(--foreground)] border-[var(--border)]">Content</div>
+```
+
+This is consumer-side setup. Lyra's core does not use Tailwind and will not bring Tailwind into
+the package.

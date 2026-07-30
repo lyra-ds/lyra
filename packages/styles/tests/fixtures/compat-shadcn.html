@@ -1,0 +1,66 @@
+<!--
+  compat-shadcn fixture — injected as a document.body fragment by compat-shadcn.test.ts.
+
+  Both stylesheets are loaded by the test (`import "../styles.css"` then
+  `import "../compat-shadcn.css"`), in that order, because the compat layer is documented as
+  opt-in and imported AFTER the entry. This fixture supplies ONLY the probe DOM.
+
+  WHY probe elements (not getPropertyValue): the compat layer maps shadcn variables onto Lyra
+  tokens by reference (`--primary: var(--accent)`), so reading the custom property back returns
+  the unresolved `var(...)` stream. Each probe binds a shadcn PAIR to real longhands
+  (background-color + color) so the browser resolves the chain to channels the test can read
+  and score for contrast.
+
+  The test toggles data-theme on #lyra-compat-root to cover light and dark.
+-->
+<style>
+  .probe {
+    display: block;
+    width: 120px;
+    height: 24px;
+    box-sizing: border-box;
+  }
+</style>
+
+<div id="lyra-compat-root">
+  <!-- The pair this file exists to guard: shadcn's subtle hover surface. -->
+  <div
+    class="probe"
+    data-probe="accent"
+    style="background-color: var(--accent); color: var(--accent-foreground)"
+  >
+    Hover row
+  </div>
+  <!-- The pairs the suite scores or reproduces damage against. -->
+  <div
+    class="probe"
+    data-probe="primary"
+    style="background-color: var(--primary); color: var(--primary-foreground)"
+  >
+    Primary
+  </div>
+  <div
+    class="probe"
+    data-probe="secondary"
+    style="background-color: var(--secondary); color: var(--secondary-foreground)"
+  >
+    Secondary
+  </div>
+  <div
+    class="probe"
+    data-probe="muted"
+    style="background-color: var(--muted); color: var(--muted-foreground)"
+  >
+    Muted
+  </div>
+  <div
+    class="probe"
+    data-probe="destructive"
+    style="background-color: var(--destructive); color: var(--destructive-foreground)"
+  >
+    Destructive
+  </div>
+  <!-- Proves the mapping resolves to Lyra tokens at all, not to shadcn's own defaults. -->
+  <div class="probe" data-probe="background" style="background-color: var(--background)"></div>
+  <div class="probe" data-probe="border" style="background-color: var(--border)"></div>
+</div>
