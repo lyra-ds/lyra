@@ -72,6 +72,19 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
     definição, comparar regra a regra.
   - Tirar de fonte única os números que a copy fixa ("209 tokens" vira 211; "55+
     componentes" vira 75).
+  - **Status dos frameworks (decisão do usuário, 2026-07-30):** só o **React** aparece como
+    pronto; **Vue, Blade e LiveView vão como "Em breve"** — não como "Beta"/"Em dev", que é o
+    que o kit do handoff traz e que promete um estágio de maturidade inexistente (nenhum dos
+    três existe no repo). Nada publicado hoje promete demais: os guias só afirmam que as
+    classes `.lyra-*` funcionam nesses frameworks, o que é verdade e não diz que há pacote.
+    Dois detalhes a resolver ao portar a seção:
+    - **Não mostrar o nome do pacote** ao lado dos três "Em breve" (`@lyra-ds/vue`,
+      `lyra/blade`, `lyra_liveview`). Nome de pacote é um convite a rodar `npm i` e receber 404. Mostrar só o nome do framework até existir o que instalar.
+    - **O badge do React precisa casar com a realidade na data em que a landing subir.** A
+      6c-c vem **antes** da Fase 7, que é quando o pacote é publicado no npm — então, na
+      janela entre as duas, nem `@lyra-ds/react` é instalável. Ou a landing sobe depois do
+      release, ou o rótulo do React reflete o pré-lançamento. Decidir junto com a ordem de
+      6c-e (deploy) e Fase 7.
 
 - [ ] **6c-d — favicon theme-aware** (opcional) — favicon seguir tema/dispositivo; hoje é
       `/favicon.svg` estático.
@@ -157,10 +170,6 @@ se paga porque há conteúdo real.
 
 ## Decisões pendentes do usuário
 
-- **Frameworks anunciados na landing** — o kit do handoff lista Vue e Blade como "Beta" e
-  LiveView como "Em dev"; **nenhum dos três existe no repo**. É copy aspiracional que vira
-  promessa pública no dia em que a landing subir (6c-c). Decidir antes de publicar: cortar,
-  marcar como roadmap, ou entregar os adapters.
 - **Repositório das docs** — a copy da landing afirma que elas vivem em `lyra-ds/docs`,
   repositório separado, contradizendo o `apps/docs` do monorepo. Alinhar antes de
   publicar.
