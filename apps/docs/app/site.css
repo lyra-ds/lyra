@@ -406,6 +406,14 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xs);
   padding: 1px 5px;
+  /* Inline code in prose is often one unbreakable token — a package subpath, a long class name.
+     Without this, such a token cannot wrap and pushes the whole document sideways on a narrow
+     screen (measured: `@lyra-ds/styles/components/buttons/buttons.css` in the plain-HTML guide
+     made a 375px viewport scroll to 390px). `anywhere` rather than `break-word` because the
+     latter still refuses to break inside a single long word with no break opportunity. Block
+     code is unaffected — it scrolls inside .lw-code__pre instead of wrapping, which is correct
+     for code you may want to copy line by line. */
+  overflow-wrap: anywhere;
 }
 
 /* footer */
@@ -532,6 +540,21 @@
   margin-top: var(--space-2);
 }
 
+/* white-label guide: only the three-card comparison layout lives in the docs chrome */
+.lw-white-label {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+}
+.lw-white-label__card {
+  min-width: 0;
+}
+.lw-white-label__body {
+  display: grid;
+  gap: var(--space-4);
+}
+
 /* generated prop tables — the table itself is the Lyra <Table> */
 .lw-prop-table__optional {
   color: var(--text-faint);
@@ -580,6 +603,11 @@
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
+  }
+}
+@media (max-width: 700px) {
+  .lw-white-label {
+    grid-template-columns: 1fr;
   }
 }
 

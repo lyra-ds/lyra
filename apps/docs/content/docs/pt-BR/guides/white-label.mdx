@@ -1,0 +1,81 @@
+---
+title: White-label
+description: Aplique uma marca a todo um aplicativo Lyra sobrescrevendo quatro tokens.
+---
+
+# White-label
+
+Coloque `data-brand` em um elemento e defina até quatro propriedades customizadas. O Lyra
+recalcula o grupo de acento a partir dessa cor-base, então os componentes dentro dessa subárvore
+usam sua marca sem sobrescritas por componente.
+
+## Veja em funcionamento
+
+<Example id="brands" title="Três marcas no tema atual" layout="plain">
+  Cada card limita sua própria `data-brand`. Use o alternador de tema no cabeçalho para ver as três
+  marcas se recalcularem no mesmo lugar, sem rebuild. Navegue com Tab até um input ou botão primário
+  para ver o anel de foco derivado da marca.
+</Example>
+
+## Defina uma marca
+
+`--brand` é a cor-base obrigatória. Os outros três tokens têm defaults, mas defina
+`--brand-contrast` sempre que a cor-base for clara o bastante para deixar texto branco ilegível.
+
+| Token              | Default                                      | Finalidade                                   |
+| ------------------ | -------------------------------------------- | -------------------------------------------- |
+| `--brand`          | Obrigatório                                  | A cor-base da marca.                         |
+| `--brand-contrast` | `#FFFFFF`                                    | Texto e ícones sobre o acento primário.      |
+| `--brand-radius`   | `10px`                                       | O valor de `--radius-md`.                    |
+| `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Tanto `--font-sans` quanto `--font-display`. |
+
+Esta é uma definição completa de marca:
+
+```css
+html[data-brand='harbor'] {
+  --brand: #0d9488;
+  --brand-contrast: #ffffff;
+  --brand-radius: 12px;
+  --brand-font: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+```
+
+## Escolha o escopo
+
+Coloque `data-brand` em `<html>` quando o aplicativo inteiro pertencer a uma marca. Todos os
+descendentes usam os valores derivados.
+
+Coloque-o em um contêiner quando apenas parte da página precisar de outra identidade, como uma
+prévia de workspace incorporada ou uma área específica do tenant. Apenas esse contêiner e seus
+descendentes recebem os valores da marca, como acontece com os três cards acima.
+
+## O que o Lyra recalcula
+
+No modo claro, o Lyra mantém `--accent` como o `--brand` cru, escurece hover e active com preto e
+deriva `--accent-soft`, `--accent-soft-text` e `--focus-ring` com `color-mix()` em `oklab`. Ele
+também define `--on-accent`, `--text-link`, `--border-accent`, `--radius-md`, `--font-sans` e
+`--font-display`.
+
+Dentro de `data-theme="dark"`, as misturas de accent, hover, active, soft-text e link usam branco.
+A regra escura funciona quando `data-theme="dark"` e `data-brand` estão no mesmo elemento ou quando
+o elemento com marca fica dentro do elemento tematizado.
+
+## Ilhas de tema
+
+Um contêiner `data-theme="dark"` dentro de uma página clara funciona, inclusive com um descendente
+com marca. Isso é útil para um painel permanentemente escuro. O inverso não funciona hoje: os
+tokens claros são os defaults em `:root`, não um bloco `[data-theme="light"]`, então
+`data-theme="light"` não restaura tokens claros dentro de um ancestral escuro. Use o alternador de
+tema do site para pré-visualizar cada marca nos dois temas.
+
+## Mantenha o texto primário legível
+
+`--on-accent` usa `#FFFFFF` por default. Isso funciona para uma marca escura, mas uma marca clara
+precisa de um `--brand-contrast` escuro explícito; caso contrário, o rótulo de um botão primário
+pode ficar ilegível. Confira o contraste de cada par marca/contraste antes de publicá-lo.
+
+## O que este contrato não altera
+
+O contrato não recalcula tokens `--surface-*`, cores de texto, espaçamento ou raios além de
+`--radius-md`. Ele não sobrescreve bordas além de `--border-accent`. Se o produto precisar mudar
+isso por tenant, defina essa camada separadamente em vez de esperar que `data-brand` faça isso.

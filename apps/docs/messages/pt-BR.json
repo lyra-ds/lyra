@@ -20,6 +20,9 @@
   "navDocs": "Documentação",
   "introduction": "Introdução",
   "gettingStarted": "Primeiros passos",
+  "whiteLabel": "White-label",
+  "plainHtml": "HTML puro",
+  "compatShadcn": "Compatibilidade com shadcn/ui",
   "getStarted": "Começar",
   "footerNote": "Open source sob licença MIT. Feito pela comunidade, para a comunidade.",
   "cancel": "Cancelar",
@@ -41,5 +44,6 @@
   "showCode": "Ver código",
   "hideCode": "Ocultar código",
   "groupAction": "Ações",
-  "groupData": "Dados"
+  "groupData": "Dados",
+  "overview": "Visão geral"
 }

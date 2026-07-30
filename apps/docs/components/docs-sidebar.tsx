@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { components, groupLabelKey, groupOrder } from '@/lib/components';
+import { guides } from '@/lib/guides';
 import type { Locale } from '@/lib/i18n';
 
 function itemClass(active: boolean) {
@@ -50,8 +51,16 @@ export function DocsSidebar({ locale }: { locale: Locale }) {
     <aside className="lw-docs__side" ref={rail}>
       <SidebarGroup label={t('introduction')} collapsible>
         <Link href={home} className={itemClass(pathname === home)}>
-          {t('gettingStarted')}
+          {t('overview')}
         </Link>
+        {guides.map((guide) => {
+          const href = `/${locale}/guides/${guide.slug}`;
+          return (
+            <Link key={guide.slug} href={href} className={itemClass(pathname === href)}>
+              {t(guide.titleKey)}
+            </Link>
+          );
+        })}
         <Link href={componentsHref} className={itemClass(pathname === componentsHref)}>
           {t('components')}
         </Link>

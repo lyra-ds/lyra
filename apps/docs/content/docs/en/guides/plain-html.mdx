@@ -1,0 +1,121 @@
+---
+title: Plain HTML
+description: Use Lyra’s CSS classes without React in Vue, Blade, LiveView, or static HTML.
+---
+
+# Plain HTML
+
+`@lyra-ds/styles` works without `@lyra-ds/react`. It gives you the tokens and `.lyra-*`
+classes; you provide the HTML and, where a component needs it, the behaviour. That makes the
+same system usable from Vue, Blade, LiveView, or static pages.
+
+## Install the stylesheet
+
+Run `npm i @lyra-ds/styles @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono`. Do not
+install `@lyra-ds/react` for this approach.
+
+The fonts are peer dependencies: the stylesheet does not embed Plus Jakarta Sans or JetBrains
+Mono. Install `@fontsource/plus-jakarta-sans` and `@fontsource/jetbrains-mono`, or the font
+stack falls back to `system-ui` and the platform monospace font.
+
+Put these imports in the main CSS entry your bundler processes:
+
+```css
+/* app.css — processed by your bundler */
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@lyra-ds/styles/styles.css';
+```
+
+Import the resulting stylesheet once at the application root. For a static site with no bundler,
+serve the resolved CSS as an asset and link that file once:
+
+```html
+<!-- /assets/lyra.css is the resolved CSS you serve -->
+<link rel="stylesheet" href="/assets/lyra.css" />
+```
+
+## Import boundaries
+
+The package has three public entry-point forms:
+
+- `@lyra-ds/styles` and `@lyra-ds/styles/styles.css` both resolve to the complete stylesheet.
+- `@lyra-ds/styles/tokens/*` exposes individual token files.
+- `@lyra-ds/styles/compat-shadcn.css` exposes the shadcn compatibility stylesheet.
+
+There is no CSS import per component. An import such as
+`@lyra-ds/styles/components/buttons/buttons.css` is not exported and fails resolution. Import
+the complete stylesheet, then use only the classes your markup needs.
+
+## Write class names
+
+Lyra follows BEM: `.lyra-<block>` is a component block, `__element` names a part inside it, and
+`--modifier` changes its state or variant. Button supplies a complete real example:
+`.lyra-btn`, `.lyra-btn__spinner`, and `.lyra-btn--loading`.
+
+Accordion is the important exception to that pattern. Its container is `.lyra-accordion`, while
+its parts use the distinct `lyra-acc__` prefix: `.lyra-acc__item`,
+`.lyra-acc__item--open`, and `.lyra-acc__chevron`. Do not infer its part classes from the
+container name.
+
+Most blocks use the component name directly, such as `.lyra-card`, `.lyra-badge`,
+`.lyra-input`, and `.lyra-table`. These exceptions are worth looking up instead of guessing:
+
+| Component             | Class block                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| Button                | `.lyra-btn`                                                  |
+| IconButton            | `.lyra-btn` with `.lyra-btn--icon`                           |
+| Accordion             | Container `.lyra-accordion`; parts such as `.lyra-acc__item` |
+| Tabs                  | `.lyra-tabs` with `.lyra-tab` items                          |
+| Dropdown              | `.lyra-dropdown` with `.lyra-menu`                           |
+| Pagination            | `.lyra-pagination` with `.lyra-page`                         |
+| Stepper               | `.lyra-stepper` with `.lyra-step`                            |
+| CommandPalette        | `.lyra-cmdk`                                                 |
+| SidebarGroup          | `.lyra-sbgroup`                                              |
+| FileManager           | `.lyra-fm`                                                   |
+| FileUpload            | `.lyra-upload`                                               |
+| WorkspaceSwitcher     | `.lyra-wssw`                                                 |
+| CreateWorkspaceDialog | `.lyra-wscreate`                                             |
+| EmptyState            | `.lyra-empty`                                                |
+| CookieBanner          | `.lyra-cookies`                                              |
+
+Do not turn this table into a markup reference. The **Plain HTML** section of each component page
+is the source of truth for that component's complete structure, nesting, and ARIA attributes.
+
+## CSS is not behaviour
+
+The stylesheet supplies appearance, variants, responsive rules, and state styles. It does not
+add event listeners, manage state, or move focus for you.
+
+Button, IconButton, Badge, Card, Alert, Tag, Skeleton, Stat, Table, Avatar, Progress, and Spinner
+are styling-first: use their documented markup and the platform supplies the native behaviour. Your
+application still owns actions, form submission, and data.
+
+Icon is different: in plain HTML, insert the Lucide SVG yourself. It inherits text colour through
+`currentColor`. The React wrapper emits `.lyra-icon` as a targeting hook, but the styles package
+has no rule for that class, so there is no Icon markup to copy from Lyra CSS.
+
+Dialog, Drawer, Combobox, Dropdown, Tabs, Accordion, CommandPalette, Tooltip, FileUpload,
+CookieBanner, SidebarGroup, and WorkspaceSwitcher need consumer behaviour. Use the component page
+to copy the markup, then implement its state and keyboard contract.
+
+For example:
+
+- **Accordion:** toggle `.lyra-acc__item--open` and keep the trigger's `aria-expanded`,
+  `aria-controls`, and the controlled panel's label in sync.
+- **Dialog and Drawer:** CSS can show the open state, but your code must add the dialog ARIA
+  attributes, move focus in, trap it, restore it to the trigger, lock page scroll, and close on
+  Escape.
+- **Combobox, Dropdown, Tabs, and CommandPalette:** manage the open or active class and the
+  corresponding ARIA state, focus movement, and keyboard navigation.
+- **Tooltip:** expose the text to assistive technology, show it on both hover and focus, and let
+  Escape dismiss it.
+
+## Theme and brand
+
+`data-theme="dark"` and `data-brand` work on HTML elements without React or a theme provider.
+For the brand tokens, scope, and contrast contract, see the [white-label guide](/en/guides/white-label).
+
+## Find the markup
+
+Open a component page and use its **Plain HTML** section for the exact markup. Start with
+[Button](/en/components/button), or browse the full [component index](/en/components).

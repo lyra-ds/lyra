@@ -1,0 +1,122 @@
+---
+title: HTML puro
+description: Use as classes CSS do Lyra sem React no Vue, Blade, LiveView ou HTML estático.
+---
+
+# HTML puro
+
+`@lyra-ds/styles` funciona sem `@lyra-ds/react`. Ele entrega os tokens e as classes `.lyra-*`;
+você fornece o HTML e, quando um componente precisa, o comportamento. Assim, o mesmo sistema
+funciona em Vue, Blade, LiveView ou páginas estáticas.
+
+## Instale a folha de estilos
+
+Rode `npm i @lyra-ds/styles @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono`. Não
+instale `@lyra-ds/react` nesta abordagem.
+
+As fontes são peer dependencies: a folha de estilos não incorpora Plus Jakarta Sans nem JetBrains
+Mono. Instale `@fontsource/plus-jakarta-sans` e `@fontsource/jetbrains-mono`, ou a pilha de fontes
+recorre a `system-ui` e à fonte monoespaçada da plataforma.
+
+Coloque estes imports na entrada principal de CSS processada pelo seu bundler:
+
+```css
+/* app.css — processado pelo seu bundler */
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@lyra-ds/styles/styles.css';
+```
+
+Importe a folha resultante uma vez na raiz do aplicativo. Em um site estático sem bundler, sirva o
+CSS resolvido como um asset e inclua esse arquivo uma vez:
+
+```html
+<!-- /assets/lyra.css é o CSS resolvido que você serve -->
+<link rel="stylesheet" href="/assets/lyra.css" />
+```
+
+## Limites de import
+
+O pacote tem três formas de ponto de entrada público:
+
+- `@lyra-ds/styles` e `@lyra-ds/styles/styles.css` resolvem para a mesma folha de estilos completa.
+- `@lyra-ds/styles/tokens/*` expõe arquivos de token individuais.
+- `@lyra-ds/styles/compat-shadcn.css` expõe a folha de compatibilidade com shadcn.
+
+Não existe import de CSS por componente. Um import como
+`@lyra-ds/styles/components/buttons/buttons.css` não é exportado e falha ao resolver. Importe a
+folha completa e use somente as classes de que sua marcação precisa.
+
+## Escreva os nomes das classes
+
+O Lyra segue BEM: `.lyra-<bloco>` é o bloco do componente, `__elemento` nomeia uma parte dentro
+dele e `--modificador` muda seu estado ou variante. Button traz um exemplo completo e real:
+`.lyra-btn`, `.lyra-btn__spinner` e `.lyra-btn--loading`.
+
+Accordion é a exceção importante desse padrão. Seu contêiner é `.lyra-accordion`, enquanto suas
+partes usam o prefixo distinto `lyra-acc__`: `.lyra-acc__item`,
+`.lyra-acc__item--open` e `.lyra-acc__chevron`. Não deduza as classes das partes a partir do nome
+do contêiner.
+
+A maioria dos blocos usa o nome do componente diretamente, como `.lyra-card`, `.lyra-badge`,
+`.lyra-input` e `.lyra-table`. Vale consultar estas exceções em vez de adivinhá-las:
+
+| Componente            | Bloco de classe                                            |
+| --------------------- | ---------------------------------------------------------- |
+| Button                | `.lyra-btn`                                                |
+| IconButton            | `.lyra-btn` com `.lyra-btn--icon`                          |
+| Accordion             | Contêiner `.lyra-accordion`; partes como `.lyra-acc__item` |
+| Tabs                  | `.lyra-tabs` com itens `.lyra-tab`                         |
+| Dropdown              | `.lyra-dropdown` com `.lyra-menu`                          |
+| Pagination            | `.lyra-pagination` com `.lyra-page`                        |
+| Stepper               | `.lyra-stepper` com `.lyra-step`                           |
+| CommandPalette        | `.lyra-cmdk`                                               |
+| SidebarGroup          | `.lyra-sbgroup`                                            |
+| FileManager           | `.lyra-fm`                                                 |
+| FileUpload            | `.lyra-upload`                                             |
+| WorkspaceSwitcher     | `.lyra-wssw`                                               |
+| CreateWorkspaceDialog | `.lyra-wscreate`                                           |
+| EmptyState            | `.lyra-empty`                                              |
+| CookieBanner          | `.lyra-cookies`                                            |
+
+Não transforme esta tabela em referência de marcação. A seção **HTML puro** da página de cada
+componente é a fonte de verdade da estrutura completa, do aninhamento e dos atributos ARIA daquele
+componente.
+
+## CSS não é comportamento
+
+A folha de estilos entrega aparência, variantes, regras responsivas e estilos de estado. Ela não
+adiciona listeners de evento, gerencia estado nem move o foco por você.
+
+Button, IconButton, Badge, Card, Alert, Tag, Skeleton, Stat, Table, Avatar, Progress e Spinner são
+principalmente de estilo: use a marcação documentada e a plataforma fornece o comportamento
+nativo. Seu aplicativo continua responsável por ações, envio de formulários e dados.
+
+Icon é diferente: em HTML puro, insira você mesmo o SVG do Lucide. Ele herda a cor do texto por
+`currentColor`. O wrapper React emite `.lyra-icon` para você conseguir selecionar o ícone no seu CSS, mas o pacote de
+estilos não tem regra para essa classe; portanto, não há marcação de Icon para copiar do CSS Lyra.
+
+Dialog, Drawer, Combobox, Dropdown, Tabs, Accordion, CommandPalette, Tooltip, FileUpload,
+CookieBanner, SidebarGroup e WorkspaceSwitcher exigem comportamento do consumidor. Use a página
+do componente para copiar a marcação e implemente seu contrato de estado e teclado.
+
+Por exemplo:
+
+- **Accordion:** alterne `.lyra-acc__item--open` e mantenha `aria-expanded`, `aria-controls` no
+  gatilho e o rótulo do painel controlado em sincronia.
+- **Dialog e Drawer:** o CSS pode mostrar o estado aberto, mas seu código precisa adicionar os
+  atributos ARIA do diálogo, mover o foco para dentro, prendê-lo, devolvê-lo ao gatilho, travar a
+  rolagem da página e fechar com Escape.
+- **Combobox, Dropdown, Tabs e CommandPalette:** gerencie a classe aberta ou ativa e o estado ARIA
+  correspondente, o movimento de foco e a navegação pelo teclado.
+- **Tooltip:** exponha o texto para tecnologias assistivas, mostre-o tanto em hover quanto em foco
+  e permita que Escape o feche.
+
+## Tema e marca
+
+`data-theme="dark"` e `data-brand` funcionam em elementos HTML sem React nem provider de tema.
+Para os tokens de marca, escopo e contrato de contraste, consulte o [guia de white-label](/pt-BR/guides/white-label).
+
+## Encontre a marcação
+
+Abra a página de um componente e use a seção **HTML puro** para obter a marcação exata. Comece por
+[Button](/pt-BR/components/button), ou navegue pelo [índice completo de componentes](/pt-BR/components).

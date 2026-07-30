@@ -13,34 +13,9 @@ description: A CSS-first, white-label component system for thoughtful product in
   <HeroActions />
 </div>
 
-## Installation
+Lyra ships the whole look as `.lyra-*` classes, with light and dark themes and white-label
+theming in four tokens. The React package is a thin wrapper over those classes, so the same
+core works outside React too.
 
-Install the React package and the styles, then import the stylesheet once at your app root.
-
-```bash
-npm i @lyra-ds/react @lyra-ds/styles
-```
-
-```tsx
-// app entry (main.tsx / layout.tsx)
-import '@lyra-ds/styles/styles.css';
-```
-
-## Your first component
-
-```tsx
-import { Button } from '@lyra-ds/react';
-
-export function App() {
-  return <Button>Hello Lyra</Button>;
-}
-```
-
-## Dark theme
-
-Add <code>data-theme="dark"</code> to your `<html>` element. Every semantic token responds
-automatically — no per-component work.
-
-```html
-<html data-theme="dark"></html>
-```
+New here? [Getting started](/en/guides/getting-started) takes you from install to your first
+component in a few minutes.

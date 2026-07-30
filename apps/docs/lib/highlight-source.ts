@@ -12,7 +12,11 @@ const APP_ROOT = process.cwd();
  *
  * The example file is the single source of truth: the same module is rendered live and
  * printed in the code panel, so a preview can never drift from the code beside it. Runs
- * at build time only — every component page is prerendered by `generateStaticParams`.
+ * at build time only — every page that uses this is prerendered by `generateStaticParams`.
+ *
+ * `slug` is a registry NAMESPACE, not necessarily a component: guides register their
+ * examples under their own slug in the same `components/examples/` tree (see
+ * `components/guide-page.tsx`). `lib/guides.ts` asserts the two namespaces never collide.
  */
 export async function highlightExampleSource(slug: string, id: string): Promise<ReactNode> {
   const source = await readFile(

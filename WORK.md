@@ -72,6 +72,19 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
     definição, comparar regra a regra.
   - Tirar de fonte única os números que a copy fixa ("209 tokens" vira 211; "55+
     componentes" vira 75).
+  - **Status dos frameworks (decisão do usuário, 2026-07-30):** só o **React** aparece como
+    pronto; **Vue, Blade e LiveView vão como "Em breve"** — não como "Beta"/"Em dev", que é o
+    que o kit do handoff traz e que promete um estágio de maturidade inexistente (nenhum dos
+    três existe no repo). Nada publicado hoje promete demais: os guias só afirmam que as
+    classes `.lyra-*` funcionam nesses frameworks, o que é verdade e não diz que há pacote.
+    Dois detalhes a resolver ao portar a seção:
+    - **Não mostrar o nome do pacote** ao lado dos três "Em breve" (`@lyra-ds/vue`,
+      `lyra/blade`, `lyra_liveview`). Nome de pacote é um convite a rodar `npm i` e receber 404. Mostrar só o nome do framework até existir o que instalar.
+    - **O badge do React precisa casar com a realidade na data em que a landing subir.** A
+      6c-c vem **antes** da Fase 7, que é quando o pacote é publicado no npm — então, na
+      janela entre as duas, nem `@lyra-ds/react` é instalável. Ou a landing sobe depois do
+      release, ou o rótulo do React reflete o pré-lançamento. Decidir junto com a ordem de
+      6c-e (deploy) e Fase 7.
 
 - [ ] **6c-d — favicon theme-aware** (opcional) — favicon seguir tema/dispositivo; hoje é
       `/favicon.svg` estático.
@@ -117,6 +130,43 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
   agora); fica **em fluxo, não portalado**, com o recorte por ancestral `overflow` como
   limite nomeado e decisão adiada até haver bug concreto; e os três overlays existentes
   **não migram no mesmo lote** — o primitivo se prova antes com os date pickers.
+
+## Alvo arquitetural adiado — switcher de framework nas páginas de componente
+
+Ideia do usuário (2026-07-29): em vez de "HTML puro" ser uma seção no fim da página React,
+cada componente mostraria o mesmo exemplo em cada framework suportado (React, Vue, Blade,
+LiveView, HTML puro), no estilo do seletor das docs do TypeScript. **Adiado com as
+constraints abaixo, não descartado.**
+
+**Por que adiar:** só existe um framework. `@lyra-ds/vue` e `lyra/blade` não existem no
+repo. Um switcher hoje teria React e HTML puro — exatamente a seção que já existe, com mais
+maquinário. O momento certo é quando o segundo adapter nascer, e aí a migração dos exemplos
+se paga porque há conteúdo real.
+
+**Constraints a respeitar quando for construído:**
+
+- **O preview continua sendo React; só o painel de código troca.** O site é React e não
+  executa Blade nem LiveView, mas a aparência é a mesma por construção — ela vive nas
+  classes `.lyra-*`. Um leitor de Vue vendo preview renderizado por React não é mentira, é a
+  demonstração do CSS-first. Dizer isso na página em vez de esconder.
+- **A variação é por exemplo, nunca por página.** Hoje são 40 componentes × 2 idiomas = 80
+  MDX; framework como dimensão de página daria 320, insustentável à mão. O exemplo deixa de
+  ser arquivo e passa a ser diretório:
+  `components/examples/<slug>/<id>/{react.tsx, vue.vue, blade.blade.php, plain.html}` — o
+  `react.tsx` renderiza vivo e é a aba React; os outros são fonte-somente. A migração do
+  formato atual é mecânica e roteirizável.
+- **A garantia de fonte única quebra para os não-React, e isso precisa de gate.** Hoje o
+  mesmo módulo é renderizado e impresso, então preview e código não conseguem divergir — foi
+  o que a 6b comprou ao matar o "Usage" escrito à mão, que já divergia. Um `vue.vue`
+  fonte-somente não tem nada que prove que compila. Docs que exibem snippet de Vue quebrado
+  são piores que docs sem Vue. Mínimo: gate exigindo que os arquivos declarados existam;
+  ideal: compilar cada um no CI.
+- **A tabela de props é específica de React** (gerada dos `.d.ts` do dist pelo docgen). O
+  custo real de "suportar um framework nas docs" é adapter + docgen próprio + snippets por
+  exemplo + entrada no `llms.txt`, que hoje documenta só a API React. Não é uma aba.
+- O guia de HTML puro (item 6c-a) **não** é afetado: ele é panorama de consumir o CSS sem
+  React, conteúdo de guia, e sobrevive ao switcher. O que viraria aba é a seção "HTML puro"
+  das páginas de componente.
 
 ## Decisões pendentes do usuário
 
