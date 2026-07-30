@@ -6,7 +6,7 @@ description: Aplique uma marca a todo um aplicativo Lyra sobrescrevendo quatro t
 # White-label
 
 Coloque `data-brand` em um elemento e defina até quatro propriedades customizadas. O Lyra
-recalcula o grupo de acento a partir dessa semente, então os componentes dentro dessa subárvore
+recalcula o grupo de acento a partir dessa cor-base, então os componentes dentro dessa subárvore
 usam sua marca sem sobrescritas por componente.
 
 ## Veja em funcionamento
@@ -19,12 +19,12 @@ usam sua marca sem sobrescritas por componente.
 
 ## Defina uma marca
 
-`--brand` é a semente obrigatória. Os outros três tokens têm defaults, mas defina
-`--brand-contrast` sempre que a semente for clara o bastante para deixar texto branco ilegível.
+`--brand` é a cor-base obrigatória. Os outros três tokens têm defaults, mas defina
+`--brand-contrast` sempre que a cor-base for clara o bastante para deixar texto branco ilegível.
 
 | Token              | Default                                      | Finalidade                                   |
 | ------------------ | -------------------------------------------- | -------------------------------------------- |
-| `--brand`          | Obrigatório                                  | A semente da cor da marca.                   |
+| `--brand`          | Obrigatório                                  | A cor-base da marca.                         |
 | `--brand-contrast` | `#FFFFFF`                                    | Texto e ícones sobre o acento primário.      |
 | `--brand-radius`   | `10px`                                       | O valor de `--radius-md`.                    |
 | `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Tanto `--font-sans` quanto `--font-display`. |

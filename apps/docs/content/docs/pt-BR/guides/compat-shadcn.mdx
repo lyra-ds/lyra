@@ -49,7 +49,7 @@ variáveis shadcn fora destas 19, incluindo `--chart-*` e `--sidebar-*`.
 ## Um mapeamento serve aos dois temas
 
 A folha usa um único bloco compartilhado por `:root` e `[data-theme="dark"]`. Isso é intencional:
-cada valor mapeado é uma referência `var()` a um token semântico do Lyra, e o Lyra rederiva esses
+cada valor mapeado é uma referência `var()` a um token semântico do Lyra, e o Lyra recalcula esses
 tokens quando o tema muda. A camada de compatibilidade não precisa de valores separados para claro
 e escuro; o token semântico por trás de cada referência muda.
 

@@ -204,6 +204,24 @@ sendo referência de leitura); o usuário arquiva quando quiser.
   registry gerado (prettier-ignored, gate --check de drift).
 - JSDoc canônico em inglês; convenções de conversão em
   `packages/react/CONVENTIONS.md`.
+- **Terminologia do pt-BR (regra do usuário, 2026-07-30):** o `CLAUDE.md` já trava
+  que código, token e nome de API ficam em inglês e a prosa em pt-BR. O que faltava
+  era o **jargão de conceito**, e a regra é:
+  - Mantenha em inglês o que o dev brasileiro **digita na busca e fala em voz alta**:
+    build, deploy, bundler, viewport, overflow, token, hook, rebuild.
+  - Traduza onde já existe termo dominante em pt-BR: folha de estilos, marca, escopo,
+    superfície, contraste, anel de foco.
+  - **Nunca invente tradução para fugir de um estrangeirismo dominante.** Foi o erro
+    de "semente" para _seed_ (o `--brand` do white-label) — botânico e estranho.
+  - Quando as duas opções soam ruins, **troque a metáfora por descrição** em vez de
+    escolher entre metáforas: `--brand` virou **"cor-base"**, que diz o que a coisa
+    faz sem precisar de glossário. Mesmo caminho valeu para "targeting hook" do
+    `.lyra-icon`: em vez de "gancho" ou "hook" (que ali colidiria com hook de React,
+    citado duas palavras antes), a frase foi reescrita para "para você conseguir
+    selecionar o ícone no seu CSS".
+  - Uma forma por conceito no site inteiro. A varredura achou "folha de estilo" vs
+    "folha de estilos" e "rederiva" vs "recalcula" — normalizados para o plural e
+    para "recalcula".
 - **Dogfooding do site — docs E landing (jul/2026; ampliado em 2026-07-28):** o motivo
   não é estética interna. O usuário decidiu que landing e docs usam componentes do Lyra
   **porque eles podem ser reaproveitados por outros usuários** — o site é a primeira
