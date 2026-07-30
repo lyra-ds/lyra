@@ -1,0 +1,122 @@
+/* @lyra-ds/styles — layout: appshell, container, pageheader, separator, actionbar · MIT */
+
+/* app shell */
+.lyra-appshell { display: flex; height: 100%; min-height: 0; background: var(--surface-page); }
+.lyra-appshell__sidebar { flex: none; display: flex; min-height: 0; }
+.lyra-appshell__main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.lyra-appshell__topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 56px;
+  padding: 0 var(--content-gutter);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-default);
+}
+.lyra-appshell__content { flex: 1; overflow-y: auto; min-height: 0; }
+.lyra-appshell__content--padded { padding: var(--content-gutter); }
+
+/* container */
+.lyra-container { width: 100%; max-width: var(--container-max); margin-inline: auto; padding-inline: var(--content-gutter); box-sizing: border-box; }
+
+/* page header */
+.lyra-pageheader { display: flex; flex-direction: column; gap: var(--space-4); }
+.lyra-pageheader__row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.lyra-pageheader__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.lyra-pageheader__eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-extrabold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent);
+}
+.lyra-pageheader__title { font: var(--h1-font); letter-spacing: var(--tracking-heading); color: var(--text-primary); margin: 0; }
+.lyra-pageheader__desc { font-size: var(--text-base); color: var(--text-muted); margin: 0; max-width: 640px; text-wrap: pretty; }
+.lyra-pageheader__actions { display: flex; align-items: center; gap: var(--space-2); flex: none; }
+
+/* separator */
+.lyra-separator { border: 0; border-top: 1px solid var(--border-default); margin: 0; }
+.lyra-separator--vertical { border-top: 0; border-left: 1px solid var(--border-default); align-self: stretch; min-height: 16px; display: inline-block; }
+.lyra-separator--label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+.lyra-separator--label::before, .lyra-separator--label::after { content: ""; flex: 1; border-top: 1px solid var(--border-default); }
+
+/* action bar */
+.lyra-actionbar {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: lyra-actionbar-in var(--duration-base) var(--ease-out);
+}
+.lyra-actionbar__count { font-size: var(--text-sm); color: var(--text-secondary); white-space: nowrap; }
+.lyra-actionbar__count strong { color: var(--text-primary); font-weight: var(--weight-bold); }
+.lyra-actionbar__actions { display: flex; align-items: center; gap: var(--space-2); }
+.lyra-actionbar__clear {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: var(--radius-sm);
+  color: var(--text-muted); cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-actionbar__clear:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-actionbar__clear:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+@keyframes lyra-actionbar-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
+   extension (see tools/parity/parity.mjs, ADDITIVE_EXTENSIONS). The package's CSS must stay a
+   declaration-level copy of the handoff, so an addition cannot edit the original region: it is
+   restated at the end of the file. The rule stays on for the handoff-verbatim region above. */
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): Stack, Inline and Grid.
+   The handoff's React components EMIT `lyra-stack` / `lyra-grid` but the stylesheet defines no
+   rule for either — the whole appearance lives in an inline `style` prop. That makes them the one
+   pair of Lyra components a Vue, Blade or LiveView adapter could NOT reuse: there is no class to
+   apply, so each adapter would have to re-derive the same flex/grid declarations itself, and they
+   would drift. The CSS layer exists precisely to stop that.
+   The dynamic parts (gap, direction, alignment, column template) cannot be modifier classes —
+   4 directions x 5 alignments x 5 justifications is a combinatorial explosion, and the column
+   template is an arbitrary string. They are custom properties instead: a wrapper sets only the
+   ones that differ from the default, in ANY framework, and the declarations themselves stay here.
+   Defaults below mirror the handoff component defaults (Stack: column/gap 4; Grid: 2 columns/gap 4;
+   Inline is Stack with row/wrap/center, set by the wrapper). */
+/* stylelint-disable-next-line declaration-block-no-redundant-longhand-properties -- flex-direction
+   and flex-wrap stay LONGHANDS on purpose. Collapsing them into `flex-flow: var(--a) var(--b)`
+   couples the two knobs: if either custom property resolves to something invalid the whole
+   shorthand is invalid at computed-value time and BOTH longhands reset. Measured — with a garbage
+   --lyra-stack-direction, the longhand form keeps `flex-wrap: wrap`, the shorthand form drops it
+   back to `nowrap`. Independent knobs must fail independently. */
+/* stylelint-disable declaration-block-no-redundant-longhand-properties */
+.lyra-stack {
+  display: flex;
+  flex-direction: var(--lyra-stack-direction, column);
+  gap: var(--lyra-stack-gap, var(--space-4));
+  align-items: var(--lyra-stack-align, stretch);
+  justify-content: var(--lyra-stack-justify, flex-start);
+  flex-wrap: var(--lyra-stack-wrap, nowrap);
+}
+/* stylelint-enable declaration-block-no-redundant-longhand-properties */
+.lyra-grid {
+  display: grid;
+  grid-template-columns: var(--lyra-grid-columns, repeat(2, minmax(0, 1fr)));
+  gap: var(--lyra-grid-gap, var(--space-4));
+}

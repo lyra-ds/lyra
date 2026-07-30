@@ -207,6 +207,14 @@ const OVERLAY_ENTRANCE_DIVERGENCE = new Map([
 // Existing Dialog/CommandPalette class names appear here only to scope their additive
 // reduced-motion declarations; the approved baseline animation-value changes stay pinned above.
 const ADDITIVE_EXTENSIONS = {
+  'components/layout/layout.css': {
+    // The handoff's Stack/Grid emit `lyra-stack` / `lyra-grid` with no rule behind them — the whole
+    // appearance is an inline style prop, which no non-React adapter can reuse. These rules move
+    // the declarations into the CSS layer, with custom properties for the parts that cannot be
+    // modifier classes (gap, direction, alignment, column template).
+    classes: ['lyra-stack', 'lyra-grid'],
+    keyframes: [],
+  },
   'components/feedback/feedback.css': {
     classes: [
       'lyra-dialog__close',
