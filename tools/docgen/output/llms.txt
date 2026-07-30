@@ -621,6 +621,84 @@ export interface IconProps {
 export declare function Icon(props: IconProps): JSX.Element;
 ```
 
+## Layout
+
+### Container
+```ts
+/** Props for {@link Container}. */
+export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Maximum content width in pixels. Sets `--container-max`, which cascades to nested containers.
+  */
+  max?: number;
+}
+export declare function Container(props: ContainerProps): JSX.Element;
+```
+
+### Grid
+```ts
+/** Props for {@link Grid}. */
+export interface GridProps extends HTMLAttributes<HTMLDivElement> {
+  /** Number of equal columns or an arbitrary CSS grid template. Effective default: `2` from the stylesheet. */
+  columns?: number | string;
+  /** Minimum item width in pixels for a responsive auto-fit grid. Takes precedence over `columns`. */
+  minItem?: number;
+  /** Spacing-scale step or a CSS gap value. Effective default: `4` from the stylesheet. */
+  gap?: number | string;
+}
+export declare function Grid(props: GridProps): JSX.Element;
+```
+
+### Inline
+```ts
+/** Props for {@link Inline}. */
+export interface InlineProps extends Omit<StackProps, 'align' | 'direction' | 'gap' | 'wrap'> {
+  /** Cross-axis alignment. Default: `"center"`. */
+  align?: CSSProperties['alignItems'];
+  /** Spacing-scale step or a CSS gap value. Default: `2`. */
+  gap?: number | string;
+}
+export declare function Inline(props: InlineProps): JSX.Element;
+```
+
+### PageHeader
+```ts
+/** Props for {@link PageHeader}. */
+export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'title'> {
+  /** Optional label displayed above the title. */
+  eyebrow?: ReactNode;
+  /** Required page heading, rendered in an `<h1>`. */
+  title: ReactNode;
+  /** Optional text that explains the page's purpose. */
+  description?: ReactNode;
+  /** Optional controls aligned alongside the heading. */
+  actions?: ReactNode;
+  /** Optional secondary row, such as tabs or filters, rendered below the header row. */
+  children?: ReactNode;
+}
+export declare function PageHeader(props: PageHeaderProps): JSX.Element;
+```
+
+### Stack
+```ts
+/** Props for {@link Stack}. */
+export interface StackProps extends HTMLAttributes<HTMLElement> {
+  /** Flex direction. Effective default: `"column"` from the stylesheet. */
+  direction?: 'row' | 'column';
+  /** Spacing-scale step or a CSS gap value. Effective default: `4` from the stylesheet. */
+  gap?: number | string;
+  /** Cross-axis alignment. Effective default: `"stretch"` from the stylesheet. */
+  align?: CSSProperties['alignItems'];
+  /** Main-axis distribution. Effective default: `"flex-start"` from the stylesheet. */
+  justify?: CSSProperties['justifyContent'];
+  /** Allow items to wrap onto additional lines. Default: `false`. */
+  wrap?: boolean;
+  /** Element to render. Default: `"div"`. */
+  as?: keyof React.JSX.IntrinsicElements;
+}
+export declare function Stack(props: StackProps): JSX.Element;
+```
+
 ## Navigation
 
 ### Breadcrumb
