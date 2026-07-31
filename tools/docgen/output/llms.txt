@@ -156,6 +156,20 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
 export declare function Shell(props: ShellProps): JSX.Element;
 ```
 
+### TableOfContents
+```ts
+/** Props for {@link TableOfContents}. */
+export interface TableOfContentsProps extends HTMLAttributes<HTMLElement> {
+  /** In-page anchor links rendered in the contents rail. */
+  items: TableOfContentsItem[];
+  /** Id of the current in-page position. The component does not derive it from scroll state. */
+  activeId?: string;
+  /** Visible heading and accessible name for the contents navigation landmark. */
+  label: string;
+}
+export declare function TableOfContents(props: TableOfContentsProps): JSX.Element;
+```
+
 ## Data
 
 ### EmptyState

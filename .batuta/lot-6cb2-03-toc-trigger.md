@@ -150,3 +150,73 @@ const activeId = useScrollSpy(ids)
   stop and report.
 - `apps/docs` MDX content and `apps/docs/lib/components.ts`.
 - The shared brief's global boundaries. Do not commit, branch or push.
+
+---
+
+## Addendum — o que mudou desde que este brief foi escrito
+
+Lots 1 and 2 landed. Account for all of this.
+
+### 1. The `button-name` bug is yours to fix, and it is the point
+
+An axe audit of the built docs reports a **critical** `button-name` violation at 375px on
+`.lw-search`: below 720px the CSS hides the label and the shortcut, leaving the button with
+no accessible name at all. A screen-reader user hears "button".
+
+`CommandPalette.Trigger` replaces that button, so this lot is what fixes it. Acceptance
+criterion 6 already requires the name to survive when the visible text is hidden — this is
+the concrete bug behind it. **Verify it with axe, not by inspection**: the built docs must
+report zero `button-name` violations at 375px, in both `en` and `pt-BR`.
+
+### 2. Deleting a class requires an orphan sweep — this bit Lot 2
+
+Lot 2 deleted `.lw-nav__link` from `apps/docs/app/site.css` while
+`apps/docs/components/theme-toggle.tsx` still referenced it. The button silently fell back to
+the browser's default `<button>` chrome. No gate caught it: tests, parity, lint, typecheck
+and axe were all green.
+
+You delete more classes than any other lot — `.lw-search*`, `.lw-toc*`, and the duplicated
+`__kbd`. **Run this sweep after deleting, and report its output as part of your evidence.
+It must be empty:**
+
+```bash
+for c in $(grep -rhoE 'lw-[a-z0-9_-]+' apps/docs/components/*.tsx apps/docs/app/*.tsx "apps/docs/app/[lang]/layout.tsx" | sort -u); do
+  grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
+done
+```
+
+Migrating every consumer is part of deleting the class, not a follow-up.
+
+### 3. The touch-target block, as it stands now
+
+Lot 2 already removed `.lw-nav__link` from it. What remains:
+
+```
+.lw-search, .lyra-sbgroup__item, .lw-toc__link, .lw-brand,
+.lw-example__toggle, .lw-code__copy  { min-height: 44px }
+.lyra-sbgroup__item, .lw-toc__link   { display: flex; align-items: center }
+.lw-locale__opt                      { … }
+```
+
+**`.lw-search` and `.lw-toc__link` are yours** — carry their 44px floor into the equivalent
+rule in `chrome.css`. `.lw-code__copy` and `.lw-locale__opt` belong to Lot 4, `.lw-brand` to
+Lot 5, and `.lyra-sbgroup__item` / `.lw-example__toggle` stay in the docs. Leave those.
+
+### 4. The `Shell` already owns the rail
+
+`Shell`'s `aside` slot provides the sticky positioning, `max-height` (`vh` **and** `dvh`),
+`overscroll-behavior` and the rail's own scrolling. `.lw-toc`'s old sticky block is already
+gone from `site.css`. `TableOfContents` styles the rail's **contents** only — title, list,
+indentation, links, active marker. Do not re-add positioning or scrolling.
+
+### 5. Where the trigger lives now
+
+`command-menu.tsx` renders inside the `Navbar`'s `actions` slot. Keep it there; you are
+replacing the hand-rolled button inside that component, not moving it.
+
+### 6. Verification you should expect from the maestro
+
+Beyond the gates: the built docs get an axe sweep at 1440/900/375 in both locales, a
+**visual capture of the chrome compared against the current state**, and the orphan sweep
+above. Two lots in a row shipped a defect that only a screenshot caught — a green suite is
+not evidence that the page still looks right.

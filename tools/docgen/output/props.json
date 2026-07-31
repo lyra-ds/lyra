@@ -258,6 +258,33 @@
     ]
   },
   {
+    "name": "TableOfContents",
+    "category": "Chrome",
+    "extends": "HTMLAttributes<HTMLElement>",
+    "description": "Props for {@link TableOfContents}.",
+    "signature": "export declare function TableOfContents(props: TableOfContentsProps): JSX.Element;",
+    "props": [
+      {
+        "name": "items",
+        "type": "TableOfContentsItem[]",
+        "optional": false,
+        "description": "In-page anchor links rendered in the contents rail."
+      },
+      {
+        "name": "activeId",
+        "type": "string",
+        "optional": true,
+        "description": "Id of the current in-page position. The component does not derive it from scroll state."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": false,
+        "description": "Visible heading and accessible name for the contents navigation landmark."
+      }
+    ]
+  },
+  {
     "name": "EmptyState",
     "category": "Data",
     "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",

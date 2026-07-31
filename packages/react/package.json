@@ -479,6 +479,16 @@
         "default": "./dist/command-palette.cjs"
       }
     },
+    "./table-of-contents": {
+      "import": {
+        "types": "./dist/table-of-contents.d.ts",
+        "default": "./dist/table-of-contents.js"
+      },
+      "require": {
+        "types": "./dist/table-of-contents.d.cts",
+        "default": "./dist/table-of-contents.cjs"
+      }
+    },
     "./package.json": "./package.json",
     "./theme-provider": {
       "import": {

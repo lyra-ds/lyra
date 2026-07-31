@@ -1,6 +1,6 @@
 'use client';
 
-import { CommandPalette, Icon, type CommandGroup } from '@lyra-ds/react';
+import { CommandPalette, type CommandGroup } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -47,11 +47,7 @@ export function CommandMenu({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <button type="button" className="lw-search" onClick={() => setOpen(true)}>
-        <Icon name="search" size={16} />
-        <span className="lw-search__label">{t('search')}</span>
-        <kbd className="lw-search__kbd">⌘K</kbd>
-      </button>
+      <CommandPalette.Trigger label={t('search')} shortcut="⌘K" onClick={() => setOpen(true)} />
       <CommandPalette
         open={open}
         onOpen={() => setOpen(true)}

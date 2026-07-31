@@ -39,53 +39,8 @@
 }
 /* chrome links are UI controls, never underline (base.css underlines a:hover) */
 .lw-brand:hover,
-.lyra-sbgroup__item:hover,
-.lw-toc__link:hover {
+.lyra-sbgroup__item:hover {
   text-decoration: none;
-}
-
-/* header search trigger (opens the ⌘K command palette) */
-.lw-search {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 200px;
-  padding: 6px var(--space-3);
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  background: var(--surface-sunken);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-.lw-search:hover {
-  border-color: var(--border-strong, var(--text-faint));
-  color: var(--text-secondary);
-}
-.lw-search__label {
-  margin-right: auto;
-}
-.lw-search__kbd {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  background: var(--surface-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xs);
-  padding: 0 5px;
-}
-@media (max-width: 720px) {
-  .lw-search {
-    min-width: 0;
-  }
-  .lw-search__label,
-  .lw-search__kbd {
-    display: none;
-  }
 }
 
 /* Below 900px the header row cannot hold brand + nav + five actions: it overflowed the viewport and
@@ -126,43 +81,6 @@
   background: var(--accent-soft);
 }
 
-.lw-toc__title {
-  font: var(--overline-font);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-.lw-toc__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  border-left: 1px solid var(--border-default);
-}
-.lw-toc__list li[data-level='3'] {
-  padding-left: var(--space-4);
-}
-.lw-toc__link {
-  display: block;
-  padding: 2px var(--space-3);
-  margin-left: -1px;
-  font-size: var(--text-sm);
-  line-height: var(--leading-snug);
-  color: var(--text-muted);
-  text-decoration: none;
-  border-left: 1px solid transparent;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-.lw-toc__link:hover {
-  color: var(--text-primary);
-}
-.lw-toc__link--active {
-  color: var(--accent-soft-text);
-  font-weight: var(--weight-semibold);
-  border-left-color: var(--accent);
-}
 /* code panel (Shiki) — card chrome + dual-theme token colors via CSS vars */
 .lw-code {
   border: 1px solid var(--border-default);
@@ -388,16 +306,13 @@
    touchscreen even when a precise pointer is also present, and the width clause covers the spoofed
    case. */
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
-  .lw-search,
   .lyra-sbgroup__item,
-  .lw-toc__link,
   .lw-brand,
   .lw-example__toggle,
   .lw-code__copy {
     min-height: 44px;
   }
-  .lyra-sbgroup__item,
-  .lw-toc__link {
+  .lyra-sbgroup__item {
     display: flex;
     align-items: center;
   }

@@ -23,4 +23,12 @@ describe('CommandPalette — SSR', () => {
     expect(html).toContain('New file');
     expect(html).not.toContain('role="dialog"');
   });
+
+  it('renders the static Trigger without browser globals', () => {
+    const html = renderToString(
+      createElement(CommandPalette.Trigger, { label: 'Search', shortcut: '⌘K' }),
+    );
+    expect(html).toContain('lyra-cmdk-trigger');
+    expect(html).toContain('aria-label="Search"');
+  });
 });

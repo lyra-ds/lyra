@@ -93,6 +93,81 @@
 }
 .lyra-footer__links a:hover { text-decoration: none; }
 
+/* In-page navigation keeps its active marker on the list rail, rather than introducing a pill. */
+.lyra-toc { min-width: 0; }
+.lyra-toc__title {
+  font: var(--overline-font);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.lyra-toc__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--border-default);
+}
+.lyra-toc__list li[data-level='3'] { padding-left: var(--space-4); }
+.lyra-toc__link {
+  display: block;
+  margin-left: -1px;
+  padding: 2px var(--space-3);
+  border-left: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.lyra-toc__link:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.lyra-toc__link--active {
+  border-left-color: var(--accent);
+  color: var(--accent-soft-text);
+  font-weight: var(--weight-semibold);
+}
+
+/* CommandPalette.Trigger is a search-shaped control; its icon stays local to avoid Icon registry cost. */
+.lyra-cmdk-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 200px;
+  padding: 6px var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.lyra-cmdk-trigger:hover {
+  border-color: var(--border-strong, var(--text-faint));
+  color: var(--text-secondary);
+}
+.lyra-cmdk-trigger__icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.lyra-cmdk-trigger__label { margin-right: auto; }
+@media (max-width: 720px) {
+  .lyra-cmdk-trigger { min-width: 0; }
+  .lyra-cmdk-trigger__label,
+  .lyra-cmdk-trigger .lyra-kbd {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .lyra-navbar__inner {
     flex-wrap: wrap;
@@ -110,6 +185,12 @@
 
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
   .lyra-navlink { min-height: 44px; }
+  .lyra-cmdk-trigger,
+  .lyra-toc__link { min-height: 44px; }
+  .lyra-toc__link {
+    display: flex;
+    align-items: center;
+  }
 }
 
 /*

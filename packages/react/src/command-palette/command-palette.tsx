@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type ForwardedRef,
+  type ButtonHTMLAttributes,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -84,6 +85,48 @@ export interface CommandPaletteProps {
    */
   'aria-label'?: string;
 }
+
+interface CommandPaletteTriggerProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'children'
+> {
+  /** Visible and accessible button label. */
+  label: string;
+  /** Optional keyboard shortcut displayed beside the label. */
+  shortcut?: string;
+}
+
+/** A search-shaped button that delegates opening behavior to its consumer. */
+const CommandPaletteTrigger = /*#__PURE__*/ forwardRef<
+  HTMLButtonElement,
+  CommandPaletteTriggerProps
+>(function CommandPaletteTrigger({ label, shortcut, className, ...rest }, ref) {
+  return (
+    <button
+      {...rest}
+      ref={ref}
+      type="button"
+      className={cx('lyra-cmdk-trigger', className)}
+      aria-label={label}
+    >
+      <svg
+        className="lyra-cmdk-trigger__icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <span className="lyra-cmdk-trigger__label">{label}</span>
+      {shortcut && <kbd className="lyra-kbd">{shortcut}</kbd>}
+    </button>
+  );
+});
 
 const DEFAULT_HINTS: Required<CommandPaletteHints> = {
   navigate: 'navigate',
@@ -310,7 +353,7 @@ function CommandPalettePanel({
  * exit motion, and restores focus to its opener; `inline` renders just the panel for
  * documentation and embedded demos.
  */
-export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPaletteProps>(
+const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPaletteProps>(
   function CommandPalette(
     {
       open = false,
@@ -463,3 +506,6 @@ export const CommandPalette = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPa
     );
   },
 );
+
+/** A Command/Ctrl+K command palette with an optional search-shaped trigger. */
+export const CommandPalette = Object.assign(CommandPaletteRoot, { Trigger: CommandPaletteTrigger });
