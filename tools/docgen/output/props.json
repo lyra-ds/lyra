@@ -1179,6 +1179,153 @@
     ]
   },
   {
+    "name": "Container",
+    "category": "Layout",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Container}.",
+    "signature": "export declare function Container(props: ContainerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "max",
+        "type": "number",
+        "optional": true,
+        "description": "Maximum content width in pixels. Sets `--container-max`, which cascades to nested containers."
+      }
+    ]
+  },
+  {
+    "name": "Grid",
+    "category": "Layout",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Grid}.",
+    "signature": "export declare function Grid(props: GridProps): JSX.Element;",
+    "props": [
+      {
+        "name": "columns",
+        "type": "number | string",
+        "optional": true,
+        "description": "Number of equal columns or an arbitrary CSS grid template. Effective default: `2` from the stylesheet."
+      },
+      {
+        "name": "minItem",
+        "type": "number",
+        "optional": true,
+        "description": "Minimum item width in pixels for a responsive auto-fit grid. Takes precedence over `columns`."
+      },
+      {
+        "name": "gap",
+        "type": "number | string",
+        "optional": true,
+        "description": "Spacing-scale step or a CSS gap value. Effective default: `4` from the stylesheet."
+      }
+    ]
+  },
+  {
+    "name": "Inline",
+    "category": "Layout",
+    "extends": "Omit<StackProps, 'align' | 'direction' | 'gap' | 'wrap'>",
+    "description": "Props for {@link Inline}.",
+    "signature": "export declare function Inline(props: InlineProps): JSX.Element;",
+    "props": [
+      {
+        "name": "align",
+        "type": "CSSProperties['alignItems']",
+        "optional": true,
+        "description": "Cross-axis alignment. Default: `\"center\"`."
+      },
+      {
+        "name": "gap",
+        "type": "number | string",
+        "optional": true,
+        "description": "Spacing-scale step or a CSS gap value. Default: `2`."
+      }
+    ]
+  },
+  {
+    "name": "PageHeader",
+    "category": "Layout",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'children' | 'title'>",
+    "description": "Props for {@link PageHeader}.",
+    "signature": "export declare function PageHeader(props: PageHeaderProps): JSX.Element;",
+    "props": [
+      {
+        "name": "eyebrow",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional label displayed above the title."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Required page heading, rendered in an `<h1>`."
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional text that explains the page's purpose."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional controls aligned alongside the heading."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional secondary row, such as tabs or filters, rendered below the header row."
+      }
+    ]
+  },
+  {
+    "name": "Stack",
+    "category": "Layout",
+    "extends": "HTMLAttributes<HTMLElement>",
+    "description": "Props for {@link Stack}.",
+    "signature": "export declare function Stack(props: StackProps): JSX.Element;",
+    "props": [
+      {
+        "name": "direction",
+        "type": "'row' | 'column'",
+        "optional": true,
+        "description": "Flex direction. Effective default: `\"column\"` from the stylesheet."
+      },
+      {
+        "name": "gap",
+        "type": "number | string",
+        "optional": true,
+        "description": "Spacing-scale step or a CSS gap value. Effective default: `4` from the stylesheet."
+      },
+      {
+        "name": "align",
+        "type": "CSSProperties['alignItems']",
+        "optional": true,
+        "description": "Cross-axis alignment. Effective default: `\"stretch\"` from the stylesheet."
+      },
+      {
+        "name": "justify",
+        "type": "CSSProperties['justifyContent']",
+        "optional": true,
+        "description": "Main-axis distribution. Effective default: `\"flex-start\"` from the stylesheet."
+      },
+      {
+        "name": "wrap",
+        "type": "boolean",
+        "optional": true,
+        "description": "Allow items to wrap onto additional lines. Default: `false`."
+      },
+      {
+        "name": "as",
+        "type": "keyof React.JSX.IntrinsicElements",
+        "optional": true,
+        "description": "Element to render. Default: `\"div\"`."
+      }
+    ]
+  },
+  {
     "name": "Breadcrumb",
     "category": "Navigation",
     "extends": "HTMLAttributes<HTMLElement>",
@@ -1550,6 +1697,39 @@
         "type": "boolean",
         "optional": true,
         "description": "Whether the popover starts open. Useful for demos."
+      }
+    ]
+  },
+  {
+    "name": "ThemeProvider",
+    "category": "System",
+    "extends": "",
+    "description": "Props for {@link ThemeProvider}.",
+    "signature": "export declare function ThemeProvider(props: ThemeProviderProps): JSX.Element;",
+    "props": [
+      {
+        "name": "defaultTheme",
+        "type": "Theme",
+        "optional": true,
+        "description": "Theme to use when nothing is stored yet. Default: `\"system\"`."
+      },
+      {
+        "name": "storageKey",
+        "type": "string",
+        "optional": true,
+        "description": "localStorage key holding the choice. Default: `\"lyra-theme\"`."
+      },
+      {
+        "name": "brand",
+        "type": "string",
+        "optional": true,
+        "description": "Sets `data-brand` on `<html>` for white-label theming. See the white-label guide."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": ""
       }
     ]
   }

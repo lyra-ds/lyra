@@ -189,6 +189,46 @@
         "default": "./dist/card.cjs"
       }
     },
+    "./container": {
+      "import": {
+        "types": "./dist/container.d.ts",
+        "default": "./dist/container.js"
+      },
+      "require": {
+        "types": "./dist/container.d.cts",
+        "default": "./dist/container.cjs"
+      }
+    },
+    "./grid": {
+      "import": {
+        "types": "./dist/grid.d.ts",
+        "default": "./dist/grid.js"
+      },
+      "require": {
+        "types": "./dist/grid.d.cts",
+        "default": "./dist/grid.cjs"
+      }
+    },
+    "./page-header": {
+      "import": {
+        "types": "./dist/page-header.d.ts",
+        "default": "./dist/page-header.js"
+      },
+      "require": {
+        "types": "./dist/page-header.d.cts",
+        "default": "./dist/page-header.cjs"
+      }
+    },
+    "./stack": {
+      "import": {
+        "types": "./dist/stack.d.ts",
+        "default": "./dist/stack.js"
+      },
+      "require": {
+        "types": "./dist/stack.d.cts",
+        "default": "./dist/stack.cjs"
+      }
+    },
     "./avatar": {
       "import": {
         "types": "./dist/avatar.d.ts",
@@ -399,7 +439,17 @@
         "default": "./dist/command-palette.cjs"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./theme-provider": {
+      "import": {
+        "types": "./dist/theme-provider.d.ts",
+        "default": "./dist/theme-provider.js"
+      },
+      "require": {
+        "types": "./dist/theme-provider.d.cts",
+        "default": "./dist/theme-provider.cjs"
+      }
+    }
   },
   "files": [
     "dist",
@@ -575,6 +625,46 @@
         "react-dom"
       ],
       "limit": "700 B"
+    },
+    {
+      "name": "import { Container } from '@lyra-ds/react/container'",
+      "path": "dist/container.js",
+      "import": "{ Container }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "300 B"
+    },
+    {
+      "name": "import { Grid } from '@lyra-ds/react/grid'",
+      "path": "dist/grid.js",
+      "import": "{ Grid }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "400 B"
+    },
+    {
+      "name": "import { PageHeader } from '@lyra-ds/react/page-header'",
+      "path": "dist/page-header.js",
+      "import": "{ PageHeader }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "400 B"
+    },
+    {
+      "name": "import { Stack } from '@lyra-ds/react/stack'",
+      "path": "dist/stack.js",
+      "import": "{ Stack }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "400 B"
     },
     {
       "name": "import { Avatar } from '@lyra-ds/react/avatar'",
@@ -786,6 +876,16 @@
         "react-dom/client"
       ],
       "limit": "9 kB"
+    },
+    {
+      "name": "import { ThemeProvider } from '@lyra-ds/react/theme-provider'",
+      "path": "dist/theme-provider.js",
+      "import": "{ ThemeProvider }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "0.7 kB"
     }
   ]
 }

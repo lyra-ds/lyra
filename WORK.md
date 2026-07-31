@@ -180,6 +180,22 @@ se paga porque há conteúdo real.
 
 ## Débito técnico anotado
 
+- **`"use client"` em todo módulo bloqueia export chamável do servidor.** O `onSuccess` do tsup
+  prepende a diretiva em cada chunk emitido (decisão travada D-13, com gate
+  `tools/dist-scan/assert-use-client.mjs` exigindo em **todos**). Consequência descoberta ao
+  portar o `ThemeProvider`: um helper `themeScript()` — função pura que gera o script anti-flash
+  e **precisa** rodar no servidor, porque tem de estar no HTML antes da primeira pintura — não
+  pode ser exportado, e o `next build` falha com "Attempted to call themeScript() from the server
+  but themeScript is on the client". O script ficou inline no `apps/docs` e o trecho está no
+  JSDoc do provider. Para shippá-lo de verdade seria preciso um subpath sem a diretiva, o que
+  muda o contrato de build e o gate. Segundo efeito, mais amplo: primitivos de layout (`Stack`,
+  `Grid`, `Container`) criam fronteira de client component num consumidor RSC só por serem
+  usados — justamente os mais prováveis num layout de servidor.
+- **`@keyframes lyra-actionbar-in` começa em `opacity: 0`**, violando a constraint travada
+  (keyframe de entrada anima só transform). Veio verbatim do handoff v1.1 e hoje é CSS morto —
+  nada renderiza `.lyra-actionbar`. Resolver com divergência documentada quando o `ActionBar`
+  ganhar wrapper.
+
 - 4 asserções vácuas pré-existentes no `file-manager.browser.test.tsx`
   (`expect(...).not.toBeNull()` nunca falha no Browser Mode) — de lotes antigos, fora do
   escopo do Lote 09.

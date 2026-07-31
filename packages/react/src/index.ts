@@ -52,6 +52,14 @@ export { Tag } from './tag';
 export type { TagProps } from './tag';
 export { Card } from './card';
 export type { CardProps } from './card';
+export { Container } from './container';
+export type { ContainerProps } from './container';
+export { Grid } from './grid';
+export type { GridProps } from './grid';
+export { PageHeader } from './page-header';
+export type { PageHeaderProps } from './page-header';
+export { Inline, Stack } from './stack';
+export type { InlineProps, StackProps } from './stack';
 export { Avatar, AvatarGroup } from './avatar';
 export type { AvatarProps, AvatarGroupProps } from './avatar';
 export { Alert } from './alert';
@@ -102,3 +110,6 @@ export type {
   CommandPaletteHints,
   CommandPaletteProps,
 } from './command-palette';
+
+export { ThemeProvider, useTheme } from './theme-provider';
+export type { ThemeApi, ThemeProviderProps, Theme, ResolvedTheme } from './theme-provider';
