@@ -18,37 +18,37 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
         **O que cada rodada custou, porque é lição reaproveitável:**
 
-                1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
-                `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
-                rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
-                mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
-                `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
-                **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
-                `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
-                junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
+                    1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
+                    `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
+                    rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
+                    mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
+                    `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
+                    **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
+                    `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
+                    junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
 
-                2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
-                defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
-                `.lyra-shell--page` (0,1,0) e perdia para
-                `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
-                de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
-                375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
-                "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
-                sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
-                nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
+                    2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
+                    defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
+                    `.lyra-shell--page` (0,1,0) e perdia para
+                    `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
+                    de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
+                    375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
+                    "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
+                    sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
+                    nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
 
-                3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
-                forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
-                colapso correto e `scrollWidth == viewport`.
+                    3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
+                    forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
+                    colapso correto e `scrollWidth == viewport`.
 
-                **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
-                diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
-                Batuta existe para o mesmo brief falhando duas vezes.
+                    **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
+                    diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
+                    Batuta existe para o mesmo brief falhando duas vezes.
 
-                **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
-                detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
-                estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
-                são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
+                    **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
+                    detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
+                    estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
+                    são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
 
   - [ ] **Lote 2 — `Navbar` + `NavLink` + `Footer`**
   - [ ] **Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`**
@@ -174,6 +174,41 @@ construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`**
   teste, mas quebra no `eqRGB` de identidade de cor, que roda antes — a asserção de contraste
   nunca era exercitada. A prova que fecha é mexer no `--on-accent` (cinza médio, fundos
   intactos): `expected 2.11 to be greater than or equal to 4.5`.
+
+- **Tinta do white-label derivada do acento — resolvido em 2026-07-31** (commit `76f3217`),
+  decisão do usuário. O diagnóstico inicial subestimava o problema: não era "o escuro repete
+  o erro", era **ausência de garantia nos dois temas**. Medido em navegador, com
+  `--on-accent: var(--brand-contrast, #FFFFFF)`, **5 de 7 cores-base representativas
+  reprovavam AA no claro e 6 de 7 no escuro** (amarelo 1,53:1, ciano 1,81:1). Tinta branca só
+  serve para cor-base escura.
+
+  **Escolhido:** derivar a tinta da luminosidade do acento resolvido com relative color
+  syntax — `oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h)`. CSS puro,
+  zero runtime, serve os quatro frameworks, e se adapta por tema sozinha porque lê o
+  `--accent` que o bloco escuro já redefine. O `--brand-contrast` continua sendo o primeiro
+  argumento do `var()`, então o contrato **segue em 4 tokens** — foi o que descartou a opção
+  de um `--accent-solid`.
+
+  **O limiar 0,58 é medido, não escolhido:** varredura de 18 cores-base × 2 temas × 7
+  limiares. Em 0,58 sobra 1 falha em 36 (`#E11D48` no claro, 4,47:1 contra 4,5) e AA-large
+  (3,0) passa em todas as 36. Os vizinhos são bem piores — 0,62 falha 6, 0,65 falha 9. O
+  limite do `#E11D48` está declarado nas duas guias com o número, não escondido, e o teste o
+  trata como exceção enumerada com piso de 4,4 para que uma regressão ali ainda reprove.
+
+  **A guarda `@supports` foi correção minha, não capricho.** O brief original especificou a
+  derivação sem ela e eu afirmei ao usuário que "degrada sozinha para o comportamento atual".
+  Estava errado, e o navegador provou: sem guarda, engine sem relative color syntax deixa o
+  `--on-accent` inválido em tempo de valor computado, o `color` cai para a cor **herdada** do
+  body e o rótulo fica azul-escuro sobre navy — **pior que o branco que substituiu**
+  (`rgb(18,52,86)` medido). Com a guarda, a base fora do `@supports` é byte-idêntica ao
+  handoff e só o bloco novo diverge no parity. Lição geral: `@supports` não é opcional quando
+  a falha de suporte cai em `var()` sem fallback próprio — IACVT herda, não reverte.
+
+  **Verificação:** 59 testes no styles (eram 23). Reverter para tinta branca reprova 8
+  sementes já em AA-large; **colapsar as duas declarações numa só quebra o teste de CSSOM**,
+  que existe exatamente para isso — num navegador que suporta, um teste de valor computado
+  não distinguiria os dois casos. Em navegador real, 16 cores-base × 2 temas passam AA em
+  Chromium **e** Firefox.
 
 - **APIs da camada de cromo (6c-b2) — fechadas em 2026-07-30.** As 8 adições não têm
   handoff, então o contrato era o trabalho. Onde o CSS mora: categoria nova
@@ -319,17 +354,12 @@ se paga porque há conteúdo real.
   `726141e`. Ver § Decisões tomadas. **Mas o white-label continua com o mesmo buraco**,
   registrado logo abaixo.
 
-- **O white-label repete o erro estrutural do contraste — e não tem conserto mecânico.**
-  O `tokens/brand.css` faz, no escuro, `--accent: color-mix(in oklab, var(--brand), white
-14%)`: clareia a cor-base do consumidor exatamente como a paleta padrão fazia antes do
-  `726141e`. Consertamos a paleta que **nós** enviamos; quem usa o white-label reproduz a
-  reprova com a cor dele. E aqui não existe valor que resolva — **nenhum `color-mix`
-  garante 4,5:1 para uma cor-base arbitrária**; cor-base clara falha por mais que se ajuste
-  o mix. As saídas são de produto, não de token: parar de clarear no escuro (melhora a
-  média, não garante), promover o `--brand-contrast` — que já existe, em
-  `--on-accent: var(--brand-contrast, #FFFFFF)` — a parte documentada do contrato, ou o
-  sistema escolher a tinta sozinho pela luminância da cor-base. Pesa porque "tematizável em
-  4 tokens" é promessa de capa; decidir antes da Fase 7.
+- ~~**O white-label repete o erro estrutural do contraste**~~ — **resolvido em 2026-07-31**,
+  commit `76f3217`. Registro em § Decisões tomadas. Fica **uma verificação pendente**:
+  WebKit/Safari não pôde ser testado nesta máquina (o `playwright install-deps webkit` pede
+  sudo), então a derivação está confirmada só em Chromium e Firefox. A guarda `@supports`
+  cobre o risco — onde não houver suporte, cai no branco de hoje — mas vale confirmar antes
+  da Fase 7. Para completar: `npx playwright install-deps webkit` e reexecutar a medição.
 
 - **Alvos de toque de 27px nos rótulos de grupo da sidebar.** A media query de toque do
   `apps/docs/app/site.css` cobre `.lyra-sbgroup__item`, mas nunca cobriu
