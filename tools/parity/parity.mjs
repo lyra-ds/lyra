@@ -207,6 +207,23 @@ const OVERLAY_ENTRANCE_DIVERGENCE = new Map([
 // Existing Dialog/CommandPalette class names appear here only to scope their additive
 // reduced-motion declarations; the approved baseline animation-value changes stay pinned above.
 const ADDITIVE_EXTENSIONS = {
+  'components/chrome/chrome.css': {
+    // Shell and the CSS-only prose scope are package-native chrome primitives with no handoff peer.
+    classes: [
+      'lyra-shell',
+      'lyra-shell--page',
+      'lyra-shell--has-sidebar',
+      'lyra-shell--has-aside',
+      'lyra-shell__sidebar',
+      'lyra-shell__aside',
+      'lyra-shell__main',
+      'lyra-shell__content',
+      'lyra-shell--content',
+      'lyra-shell__topbar',
+      'lyra-prose',
+    ],
+    keyframes: [],
+  },
   'components/layout/layout.css': {
     // The handoff's Stack/Grid emit `lyra-stack` / `lyra-grid` with no rule behind them — the whole
     // appearance is an inline style prop, which no non-React adapter can reuse. These rules move

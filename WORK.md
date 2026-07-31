@@ -5,7 +5,33 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-Nada em voo. A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
+- [ ] **6c-b2 — camada de cromo (9 adições)** → ciclo aberto em 2026-07-30. APIs decididas
+      (registro em § Decisões tomadas) e quebrado em 5 lotes, sequenciais, cada um com
+      worktree próprio. Briefs em `.batuta/brief-6cb2-chrome.md` (compartilhado) +
+      `.batuta/lot-6cb2-0N-*.md`.
+
+  - [ ] **Lote 1 — `Shell` + `.lyra-prose`** → codex (`gpt-5.6-terra`, reasoning high),
+        delegado 2026-07-30. Estabelece a mecânica que os outros quatro herdam: o
+        `components/chrome/chrome.css`, a categoria `Chrome` no docgen e o registro do
+        parity para um arquivo CSS sem contraparte no handoff.
+  - [ ] **Lote 2 — `Navbar` + `NavLink` + `Footer`**
+  - [ ] **Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`**
+  - [ ] **Lote 4 — `CodeBlock` + `SegmentedControl`**
+  - [ ] **Lote 5 — `Brand`**
+
+  **Cada lote dogfooda o `apps/docs` no mesmo commit** — migra o site para o componente
+  novo e apaga do `site.css` as regras que ele substitui. É isso que prova a API (melhor
+  que uma demo sintética) e é onde o `impeccable` roda, na página real.
+
+- [ ] **6c-b3 — documentar as adições** (novo, 2026-07-30). Descoberta ao montar os lotes:
+      o manifesto do docs tem **40 entradas** e o docgen conta **46 componentes** — o 6c-b1
+      entregou `Container`, `Stack`, `Inline`, `Grid`, `PageHeader` e `ThemeProvider` **sem
+      página de documentação**, contrariando o "cada uma com página" escrito aqui. Decisão:
+      em vez de cinco lotes parciais de docs, **um lote só** cobrindo as 6 pendentes do
+      6c-b1 mais as 9 do 6c-b2 — 15 páginas de uma vez, no formato de fan-out da 6b, que é
+      onde essa forma de trabalho já se provou barata.
+
+A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
 v1.1+v1.2 (mapa completo em `.batuta/handoff-v1.2-map.md`) — a landing deixou de ser
 independente porque o kit novo dogfooda a camada de layout que ainda não existe.
 
@@ -82,6 +108,70 @@ construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`**
       em `.batuta/handoff-v1.2-map.md`. Reabre a 6b em ~35 páginas de docs novas.
 
 ## Decisões tomadas
+
+- **APIs da camada de cromo (6c-b2) — fechadas em 2026-07-30.** As 8 adições não têm
+  handoff, então o contrato era o trabalho. Onde o CSS mora: categoria nova
+  `components/chrome/chrome.css`, no padrão por categoria que já existe. Como é arquivo
+  100% nosso, sem contraparte em `handoff/`, o parity precisa aceitá-lo como região
+  aditiva inteira — o Lote 1 resolve isso e os demais herdam. Valem para todas: defaults
+  só no CSS via custom property (lição do `Stack`/`Grid`), texto visível é prop traduzível.
+
+  - **`Shell`** — `sidebar`/`topbar`/`aside` + `scroll="page" | "content"` (default
+    `page`), `<main class="lyra-shell__main">`. Custom properties `--shell-sidebar`
+    (220px), `--shell-aside` (200px), `--shell-top` (0; o docs passa 84px). Breakpoints
+    ficam fixos porque media query não lê custom property: TOC some em 1100px, sidebar
+    empilha em 900px — ordem descoberta empiricamente, preservar. Vai literal o
+    conhecimento caro: `max-height` em `vh` **e** `dvh`, `overscroll-behavior: contain`.
+    **Achado que reposicionou a decisão:** o `.lyra-appshell*` **já está no CSS** — o
+    6c-b1 portou o `layout.css` do delta inteiro, porque parity é verbatim; o que não
+    existe é o wrapper React (absorvido pelo `Shell`, como decidido). Ou seja, o motor de
+    scroll de app já existe em CSS e só o de página é nosso. **Decisão do usuário:
+    vocabulário único `.lyra-shell`** nos dois modos, reescrevendo as ~10 declarações do
+    modo content na região aditiva. Custo aceito: duplicação de CSS e o `.lyra-appshell*`
+    virando CSS legado sem wrapper (parity proíbe apagar). Ganho: uma API, um vocabulário
+    — e o consumidor de Vue/Blade não precisa saber que a prop troca a família de classe.
+  - **`Navbar` + `NavLink` + `Footer`** — shells com slots (`brand`/`nav`/`actions`;
+    `brand`/`note`/`links`), nunca layouts fechados. **`asChild` no `NavLink` é
+    requisito**, não conveniência: sem ele o docs não dogfooda (perde prefetch, nova aba,
+    copiar link do `<Link>`) — mesma armadilha anotada para o `AppSidebar`. `active` põe a
+    classe **e** `aria-current="page"`. O `.lw-header__cta` não entra: é copy deste site.
+  - **`TableOfContents`** — dirigido por dados (`items`/`activeId`/`label`), e aqui isso é
+    seguro porque link de TOC é âncora na mesma página: o `<button>` sem prefetch que
+    inutilizaria o `AppSidebar` não se aplica. **O `useScrollSpy` vem junto** (decisão do
+    usuário): ~25 linhas de lógica pura, sem CSS, opcional — sem ele todo consumidor
+    reescreve o mesmo IntersectionObserver, que é o argumento que justificou o componente.
+  - **`CodeBlock`** — só o cromo. O DS **não** depende de Shiki: o texto copiado sai do
+    `textContent` do próprio `<pre>` (funciona com qualquer highlighter), com `copyText`
+    opcional. Numeração por contador CSS sobre filhos `.line`, convenção de fato do Shiki
+    e do rehype-pretty-code, documentada como contrato. As variáveis
+    `--shiki-light`/`--shiki-dark` **ficam no `apps/docs`**: são do highlighter.
+  - **`SegmentedControl`** — o toggle EN|PT generalizado, com **semântica de
+    `radiogroup`** (decisão do usuário): `role="radio"`/`aria-checked`, roving tabindex,
+    setas + Home/End. É o que um segmentado é, e mantém consistência com os widgets APG da
+    Fase 4; o caso do idioma vira "escolher opção que se aplica na hora".
+  - **`CommandPalette.Trigger`** — propriedade estática no módulo que já existe: sem entry
+    nova no tsup, sem caminho novo no exports map. O `__kbd` duplicado morre em favor do
+    `.lyra-kbd`. **`shortcut` é prop, nunca detecção de plataforma** — sniff de
+    `navigator` no render é mismatch de hidratação garantido.
+  - **`.lyra-prose`** — camada CSS sem React, o item mais CSS-first da lista. Cobre o que
+    o docs já tem (`h1/h2/h3`, `p`, `a`, `strong`, code inline) mais o que falta e todo
+    consumidor precisa (`ul/ol/li`, `blockquote`, `hr`). Custom properties
+    `--prose-measure` (760px, o valor validado em produção — fidelidade é constraint
+    travada) e `--prose-scroll-offset` (0; o docs passa 80px). Preserva o
+    `overflow-wrap: anywhere` no code inline, que veio de medição real (375px virando
+    390px na guia de HTML puro), e a guarda `a:not(.lyra-btn)`.
+
+- **Os três menores do 6c-b2 — resolvido em 2026-07-30 verificando contra a fonte.** O
+  mapa deixou `IconTile`, `CheckList` e `Brand` como "decidir caso a caso". Verificação:
+  **`.lw-comm__icon` não existe em lugar nenhum** — `grep -rn "lw-comm"` no `handoff/`, no
+  `apps/docs` e no `packages/` devolve zero. O inventário do `handoff-v1.2-map.md` listou
+  a classe entre as 27 que "o handoff traz e o repo não tem", e ela não está no handoff: a
+  seção de comunidade do kit é `.lw-quotes`/`.lw-quote-card` (depoimentos, cortados). O
+  `CheckList` é real no kit, mas seu único consumidor era a seção de **pricing**, também
+  cortada. O `Brand` é o único com duplicação comprovada hoje: `site-header.tsx` e
+  `site-footer.tsx` repetem as mesmas 14 linhas de troca light/dark, `eslint-disable`
+  incluso. **Decisão: só o `Brand` entra** (Lote 5); `IconTile` e `CheckList` ficam para a
+  6c-c, quando a landing existir e disser se precisam.
 
 - **Baseline do parity — resolvido em 2026-07-28.** As constantes `EXPECTED_TOKENS` (209)
   e `EXPECTED_CLASSES` (248) e o `STYLES_ENTRY_ORDER` saíram do código e viraram

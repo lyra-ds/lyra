@@ -20,6 +20,7 @@ const PROPS_FILE = join(OUTPUT, 'props.json');
 
 const CATEGORY_ORDER = [
   'Buttons',
+  'Chrome',
   'Data',
   'Display',
   'Feedback',
@@ -230,10 +231,11 @@ function extractComponents() {
 
   // Counts exported `*Props` INTERFACES in the dist, not component directories and not exports-map
   // subpaths — the three differ. `src/stack/` alone contributes two (Stack and Inline), which is why
-  // the four layout wrappers moved this from 40 to 45. The guard's job is catching a stale or partial
+  // the four layout wrappers moved this from 40 to 45, and Shell moves it from 46 to 47. The guard's
+  // job is catching a stale or partial
   // dist (which yields FEWER), so it is maintained by hand: bump it in the same commit that adds a
   // component, and the mismatch message tells you the number it actually found.
-  const EXPECTED_COMPONENTS = 46;
+  const EXPECTED_COMPONENTS = 47;
   if (components.length !== EXPECTED_COMPONENTS) {
     throw new Error(
       `Expected exactly ${EXPECTED_COMPONENTS} exported component Props interfaces from packages/react/dist; extracted ${components.length}. Rebuild @lyra-ds/react or fix the declaration exports.`,

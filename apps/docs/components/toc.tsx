@@ -15,9 +15,9 @@ function slugify(text: string) {
 }
 
 /**
- * "On this page" rail. Reads the rendered MDX headings from the content column
+ * "On this page" contents. Reads the rendered MDX headings from the prose scope
  * (assigning ids where the pipeline didn't) and scroll-spies the active one.
- * Renders an empty column placeholder on sparse pages to keep the grid stable.
+ * Renders an empty placeholder on sparse pages to keep the Shell grid stable.
  */
 export function TableOfContents() {
   const t = useTranslations();
@@ -26,7 +26,7 @@ export function TableOfContents() {
   const [active, setActive] = useState('');
 
   useEffect(() => {
-    const container = document.querySelector('.lw-docs__content');
+    const container = document.querySelector('.lyra-prose');
     if (!container) return;
 
     const els = Array.from(container.querySelectorAll('h2, h3')) as HTMLElement[];
@@ -50,10 +50,10 @@ export function TableOfContents() {
     return () => observer.disconnect();
   }, [pathname]);
 
-  if (headings.length < 2) return <div className="lw-toc" aria-hidden="true" />;
+  if (headings.length < 2) return <div aria-hidden="true" />;
 
   return (
-    <nav className="lw-toc" aria-label={t('onThisPage')}>
+    <nav aria-label={t('onThisPage')}>
       <span className="lw-toc__title">{t('onThisPage')}</span>
       <ul className="lw-toc__list">
         {headings.map((h) => (

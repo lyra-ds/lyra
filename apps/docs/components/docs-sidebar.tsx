@@ -4,7 +4,7 @@ import { SidebarGroup } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { components, groupLabelKey, groupOrder } from '@/lib/components';
 import { guides } from '@/lib/guides';
 import type { Locale } from '@/lib/i18n';
@@ -24,10 +24,10 @@ function itemClass(active: boolean) {
  * `scrollIntoView` is deliberately avoided — it also scrolls the document, which would drop the
  * reader past the page heading. Setting `scrollTop` moves the rail and nothing else.
  */
-function useRevealActiveEntry(rail: React.RefObject<HTMLElement | null>) {
+function useRevealActiveEntry() {
   useEffect(() => {
-    const node = rail.current;
-    const active = node?.querySelector<HTMLElement>('.lyra-sbgroup__item--active');
+    const active = document.querySelector<HTMLElement>('.lyra-sbgroup__item--active');
+    const node = active?.closest<HTMLElement>('.lyra-shell__sidebar');
     if (!node || !active) return;
 
     const visible = node.clientHeight;
@@ -41,14 +41,13 @@ function useRevealActiveEntry(rail: React.RefObject<HTMLElement | null>) {
 export function DocsSidebar({ locale }: { locale: Locale }) {
   const t = useTranslations();
   const pathname = usePathname();
-  const rail = useRef<HTMLElement | null>(null);
   const home = `/${locale}`;
   const componentsHref = `/${locale}/components`;
 
-  useRevealActiveEntry(rail);
+  useRevealActiveEntry();
 
   return (
-    <aside className="lw-docs__side" ref={rail}>
+    <>
       <SidebarGroup label={t('introduction')} collapsible>
         <Link href={home} className={itemClass(pathname === home)}>
           {t('overview')}
@@ -82,6 +81,6 @@ export function DocsSidebar({ locale }: { locale: Locale }) {
           </SidebarGroup>
         );
       })}
-    </aside>
+    </>
   );
 }

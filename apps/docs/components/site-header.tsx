@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon } from '@lyra-ds/react';
+import { Button, Container, Icon } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -17,7 +17,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   return (
     <header className="lw-header">
-      <div className="lw-container lw-header__inner">
+      <Container className="lw-header__inner">
         <Link href={`/${locale}`} className="lw-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -78,7 +78,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             {t('getStarted')}
           </Button>
         </div>
-      </div>
+      </Container>
     </header>
   );
 }

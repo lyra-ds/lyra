@@ -199,6 +199,16 @@
         "default": "./dist/container.cjs"
       }
     },
+    "./shell": {
+      "import": {
+        "types": "./dist/shell.d.ts",
+        "default": "./dist/shell.js"
+      },
+      "require": {
+        "types": "./dist/shell.d.cts",
+        "default": "./dist/shell.cjs"
+      }
+    },
     "./grid": {
       "import": {
         "types": "./dist/grid.d.ts",
@@ -476,6 +486,16 @@
     "access": "public"
   },
   "size-limit": [
+    {
+      "name": "import { Shell } from '@lyra-ds/react/shell'",
+      "path": "dist/shell.js",
+      "import": "{ Shell }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
     {
       "name": "import { Drawer } from '@lyra-ds/react/drawer'",
       "path": "dist/drawer.js",

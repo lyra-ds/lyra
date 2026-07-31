@@ -448,6 +448,7 @@
     "./components/feedback/feedback.css",
     "./components/files/files.css",
     "./components/data/data.css",
-    "./components/layout/layout.css"
+    "./components/layout/layout.css",
+    "./components/chrome/chrome.css"
   ]
 }

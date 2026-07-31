@@ -84,6 +84,81 @@
     ]
   },
   {
+    "name": "Shell",
+    "category": "Chrome",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Shell}.",
+    "signature": "export declare function Shell(props: ShellProps): JSX.Element;",
+    "props": [
+      {
+        "name": "sidebar",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional navigation or complementary rail content."
+      },
+      {
+        "name": "sidebarAs",
+        "type": "'aside' | 'nav'",
+        "optional": true,
+        "description": "Semantic element for the sidebar rail. Use `\"nav\"` when it contains primary navigation."
+      },
+      {
+        "name": "sidebarLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the sidebar landmark."
+      },
+      {
+        "name": "topbar",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional top region placed before the main content."
+      },
+      {
+        "name": "aside",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional complementary context rail content."
+      },
+      {
+        "name": "asideAs",
+        "type": "'aside' | 'nav'",
+        "optional": true,
+        "description": "Semantic element for the aside rail. Use `\"nav\"` when it contains navigation."
+      },
+      {
+        "name": "asideLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the aside landmark."
+      },
+      {
+        "name": "scroll",
+        "type": "'page' | 'content'",
+        "optional": true,
+        "description": "Whether the document or the main region is the scroll container. Default: `\"page\"`."
+      },
+      {
+        "name": "sidebarWidth",
+        "type": "number",
+        "optional": true,
+        "description": "Sidebar rail width in pixels. Sets `--shell-sidebar`."
+      },
+      {
+        "name": "asideWidth",
+        "type": "number",
+        "optional": true,
+        "description": "Complementary aside rail width in pixels. Sets `--shell-aside`."
+      },
+      {
+        "name": "top",
+        "type": "number",
+        "optional": true,
+        "description": "Sticky rail offset in pixels. Sets `--shell-top`."
+      }
+    ]
+  },
+  {
     "name": "EmptyState",
     "category": "Data",
     "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",

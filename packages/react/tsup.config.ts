@@ -60,6 +60,7 @@ export default defineConfig({
     tag: 'src/tag/index.ts',
     card: 'src/card/index.ts',
     container: 'src/container/index.ts',
+    shell: 'src/shell/index.ts',
     grid: 'src/grid/index.ts',
     'page-header': 'src/page-header/index.ts',
     stack: 'src/stack/index.ts',

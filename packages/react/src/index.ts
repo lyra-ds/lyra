@@ -54,6 +54,8 @@ export { Card } from './card';
 export type { CardProps } from './card';
 export { Container } from './container';
 export type { ContainerProps } from './container';
+export { Shell } from './shell';
+export type { ShellProps } from './shell';
 export { Grid } from './grid';
 export type { GridProps } from './grid';
 export { PageHeader } from './page-header';

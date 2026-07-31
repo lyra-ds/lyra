@@ -1,0 +1,195 @@
+/* @lyra-ds/styles — chrome: shell and prose · MIT */
+
+/*
+ * Shell responsive contract: collapse the complementary aside at 1100px, then stack the
+ * sidebar above the document at 900px. These literal breakpoints are intentional: media queries
+ * cannot read custom properties, and this order keeps the document usable at each width.
+ */
+.lyra-shell {
+  --shell-sidebar: 220px;
+  --shell-aside: 200px;
+  --shell-top: 0px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-10);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+  align-items: start;
+}
+.lyra-shell--has-sidebar { grid-template-columns: var(--shell-sidebar) minmax(0, 1fr); }
+.lyra-shell--has-aside { grid-template-columns: minmax(0, 1fr) var(--shell-aside); }
+.lyra-shell--has-sidebar.lyra-shell--has-aside {
+  grid-template-columns: var(--shell-sidebar) minmax(0, 1fr) var(--shell-aside);
+}
+.lyra-shell__sidebar,
+.lyra-shell__aside {
+  position: sticky;
+  top: var(--shell-top);
+  align-self: start;
+  max-height: calc(100vh - var(--shell-top) - var(--space-8));
+  max-height: calc(100dvh - var(--shell-top) - var(--space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, var(--border-default)) transparent;
+}
+.lyra-shell__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-right: var(--space-2);
+}
+.lyra-shell__main { min-width: 0; }
+.lyra-shell__content { min-width: 0; }
+.lyra-shell__topbar { min-width: 0; }
+.lyra-shell--page .lyra-shell__topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+/* The content-scroll model mirrors the existing .lyra-appshell vocabulary without making the
+   Shell class family vary by mode. */
+.lyra-shell--content {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  background: var(--surface-page);
+}
+.lyra-shell--content .lyra-shell__sidebar,
+.lyra-shell--content .lyra-shell__aside {
+  position: static;
+  flex: none;
+  display: flex;
+  min-height: 0;
+  max-height: none;
+}
+.lyra-shell--content .lyra-shell__sidebar { width: var(--shell-sidebar); }
+.lyra-shell--content .lyra-shell__aside { width: var(--shell-aside); }
+.lyra-shell--content .lyra-shell__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.lyra-shell--content .lyra-shell__topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 56px;
+  padding: 0 var(--content-gutter);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-default);
+}
+.lyra-shell--content .lyra-shell__content { flex: 1; overflow-y: auto; min-height: 0; }
+
+/* A typographic scope for plain HTML. Button-styled links keep their component styling. */
+.lyra-prose {
+  --prose-measure: 760px;
+  --prose-scroll-offset: 0px;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: var(--prose-measure);
+}
+.lyra-prose h1 {
+  font: var(--h1-font);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-primary);
+  margin: 0;
+}
+.lyra-prose h2 {
+  font: var(--h2-font);
+  font-size: var(--text-xl);
+  color: var(--text-primary);
+  margin: var(--space-4) 0 0;
+}
+.lyra-prose h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin: var(--space-3) 0 0;
+}
+.lyra-prose :is(h1, h2, h3) { scroll-margin-top: var(--prose-scroll-offset); }
+.lyra-prose p {
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* The guard is deliberate: component links styled as .lyra-btn must not inherit prose links. */
+.lyra-prose a:not(.lyra-btn) {
+  color: var(--accent-soft-text);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.lyra-prose a:not(.lyra-btn):hover { text-decoration: underline; }
+.lyra-prose strong { color: var(--text-primary); font-weight: var(--weight-semibold); }
+.lyra-prose :not(pre) > code {
+  font-family: var(--font-mono);
+
+  /* Locked handoff fidelity: these values intentionally have no matching tokens. */
+  font-size: 0.9em;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+
+  /* Long package paths and class names must wrap instead of widening a narrow document. */
+  overflow-wrap: anywhere;
+}
+.lyra-prose :is(ul, ol) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+}
+.lyra-prose li::marker { color: var(--text-muted); }
+.lyra-prose blockquote {
+  margin: 0;
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+.lyra-prose hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--border-default);
+  margin: var(--space-4) 0;
+}
+
+@media (max-width: 1100px) {
+  .lyra-shell--page.lyra-shell--has-aside { grid-template-columns: minmax(0, 1fr); }
+  .lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside {
+    grid-template-columns: var(--shell-sidebar) minmax(0, 1fr);
+  }
+  .lyra-shell--page .lyra-shell__aside { display: none; }
+}
+@media (max-width: 900px) {
+  /* Match every page-shell rail state so this override defeats the stateful grid rules above. */
+  .lyra-shell--page,
+  .lyra-shell--page.lyra-shell--has-sidebar,
+  .lyra-shell--page.lyra-shell--has-aside,
+  .lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+  .lyra-shell--page .lyra-shell__sidebar {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}

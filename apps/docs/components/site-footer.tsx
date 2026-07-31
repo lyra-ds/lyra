@@ -1,13 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Container } from '@lyra-ds/react';
 
 export function SiteFooter() {
   const t = useTranslations();
 
   return (
     <footer className="lw-footer">
-      <div className="lw-container lw-footer__inner">
+      <Container className="lw-footer__inner">
         <span className="lw-brand" style={{ cursor: 'default' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -44,7 +45,7 @@ export function SiteFooter() {
           </a>
           <a href="/llms.txt">llms.txt</a>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }
