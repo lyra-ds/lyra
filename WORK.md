@@ -11,32 +11,11 @@ independente porque o kit novo dogfooda a camada de layout que ainda não existe
 
 ## Next — Fase 6, na ordem de dependência
 
-- [ ] **6c-a — guias** (getting-started, white-label, HTML-puro, compat-shadcn).
-      **Sem dependência do delta** — é o que dá para fazer agora. Subiu para primeiro
-      justamente por isso.
-      Fundamento dos dois itens seguintes — decisão do usuário, 2026-07-28: _"a ideia é que
-      tanto a landing quanto as docs usem componentes do Lyra, porque eles podem ser
-      reaproveitados por outros usuários"_. O site é a primeira prova de que o DS serve para
-      construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`** — o
-      `apps/docs` importa, nunca define.
-
-- [ ] **6c-b1 — porte da camada de layout e tema** (do handoff v1.1): `Container`,
-      `Stack`/`Inline`, `Grid`, `PageHeader` e `ThemeProvider`/`useTheme`.
-
-  - `PageHeader` cobre o trio eyebrow + título + descrição que seria `.lw-overline` +
-    `.lw-h2` + `.lw-section__sub`. Precisa de variante centralizada: nasceu alinhado à
-    esquerda, para tela de app.
-  - `ThemeProvider` exige **correção de SSR** (o do handoff faz
-    `useState(() => localStorage.getItem())`, que roda no servidor) e ganhar
-    `system`/`prefers-color-scheme`, que o docs já tem e o handoff não. O script
-    anti-flash continua sendo do consumidor, entregue como snippet copiável.
-  - **Decisão pendente**: `Stack`/`Grid` violam o CSS-first — a aparência vive em
-    `style` inline e a classe `.lyra-stack` sequer existe, porque o gap é dinâmico
-    (`gap={3}` → `var(--space-3)`). Se vão ser reaproveitados por terceiros, estilo
-    inline os torna inúteis para Vue/Blade/LiveView, que é o motivo de a camada CSS
-    existir. Recomendação: emitir custom properties (`--lyra-stack-gap`) e estilizar por
-    classe.
-  - Traz junto `layout.css` e o rebaseline do parity.
+Fundamento dos itens abaixo — decisão do usuário, 2026-07-28: _"a ideia é que
+tanto a landing quanto as docs usem componentes do Lyra, porque eles podem ser
+reaproveitados por outros usuários"_. O site é a primeira prova de que o DS serve para
+construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`** — o
+`apps/docs` importa, nunca define.
 
 - [ ] **6c-b2 — construir a camada de cromo** (8 adições, ~3–4 lotes). Não têm handoff:
       são design nosso a partir do CSS já validado em produção no `apps/docs`. Cada uma
@@ -205,6 +184,41 @@ se paga porque há conteúdo real.
   falta o JSX.
 
 ## Done
+
+- [x] **6c-b1 — camada de layout e ThemeProvider, consumíveis fora do React** (PR #23, 3
+      commits). Primeiro porte do handoff v1.1 e primeiro item a tocar a biblioteca. O achado
+      que decidiu a forma: `layout.css` não tem regra para Stack/Inline/Grid, mas os JSX do
+      handoff **emitem** `lyra-stack`/`lyra-grid` — classes sem estilo, com a aparência num
+      `style` inline, que é a única forma que um adapter Vue/Blade/LiveView não reaproveita.
+      As declarações foram para o CSS com custom properties, e `<Stack />` sem props renderiza
+      **sem `style`** (teste prova). Três decisões medidas, não presumidas: os longhands
+      `flex-direction`/`flex-wrap` contra o stylelint (no shorthand, um custom property
+      inválido reseta os dois — medido); o JS não pode duplicar os defaults do CSS (`if (gap
+!== 4)` faria `<Stack gap={4}>` renderizar space-3 se o CSS mudasse); e escrever no DOM
+      durante o render está errado (o eslint pegou, e sob render concorrente um render
+      descartado deixaria o documento com tema não confirmado). `ThemeProvider` corrige o SSR
+      do handoff via `useSyncExternalStore` com snapshot-string, ganha `system`, e o
+      `apps/docs` passou a consumi-lo — o toggle perdeu todo o estado próprio. **O que não foi
+      possível:** exportar `themeScript()`, porque o `"use client"` cobre todo módulo do
+      pacote (dívida registrada abaixo). Baseline do parity 248 → 269 classes; docgen 40 → 46
+      componentes com as categorias `Layout` e `System`. 456 testes. → codex em worktree, 3
+      disparos (o primeiro parou no gate de aprovação; re-disparo **verbatim** conforme a
+      lição do profile). 2026-07-30
+- [x] **6c-a — os quatro guias do site, bilíngues** (PR #22, 6 commits). Infra de guias
+      data-driven (`lib/guides.ts` + rota + `GuidePage`) mais getting-started, white-label,
+      HTML puro e compat-shadcn, em EN e pt-BR. O `GuidePage` **compartilha** o maquinário de
+      exemplos do `ComponentPage` — o registro nunca esteve preso a componente — com asserção
+      de colisão de slug provada revertendo. Dependência que ninguém tinha visto: o
+      getting-started **tinha** que sair da home neste lote, porque a landing ocupa a home na
+      6c-c. Dois achados de conteúdo que passariam por build, lint e typecheck (classe em
+      bloco de código é só string): `.lyra-acc` não é bloco, e `.lyra-icon` tem zero regras no
+      CSS. Dois erros meus de brief, ambos por constraint de forma sem dizer o que evita: as 6
+      células do white-label eram impossíveis (medido — ilha clara dentro de página escura não
+      existe, o claro vive só em `:root`), e "apenas fences html" gerou código que não roda.
+      Três correções de infra vieram de carona: `.batuta/worktrees/` no `.prettierignore`,
+      `overflow-wrap: anywhere` no código inline (um token longo rolava a página em 375px), e
+      o teste do compat-shadcn — que pegou uma **recomendação minha errada**, a de mapear
+      `--accent` no `:root`, que destrói o Lyra. 2026-07-30
 
 - [x] **Lote 09 — texto visível traduzível no CookieBanner e FileManager** (PR #17). O irmão do Lote 08: **10 strings**, não as 9 do levantamento — relendo a fonte para o brief apareceu o sufixo visível `` `${items ?? '—'} items` ``, que aparece na lista E no grid e virou `labels.itemsCount`, **função** `(items) => string` pela mesma razão do Lote 08 (plural e ordem de palavras não sobrevivem a template fixo). CookieBanner ganhou `essentialsLabel`/`acceptLabel` planas (a cópia LGPD e o link já saíam via `children`); FileManager estendeu o **mesmo objeto `labels`** do Lote 08 com cabeçalhos, comandos do menu default e a contagem — e o JSDoc da interface foi reescrito, porque "Accessible names" viraria mentira. Semântica do `actions` (substituir o menu) intacta. → codex (`gpt-5.6-terra`, reasoning high) em worktree, implementação limpa na primeira rodada **mas 12 dos 20 testes eram vácuos**: `expect(screen.getByRole(...)).not.toBeNull()` nunca falha no Browser Mode — o locator é lazy e nunca é null — e foi a **prova de regressão** (reverter o fix e exigir teste vermelho) que pegou: os 4 testes do CookieBanner seguiram verdes procurando um botão que não existia. Retry 1 trocou os 12 por `await expect.element(...).toBeInTheDocument()`, e a prova refeita quebra como deve. **Débito anotado: 4 asserções vácuas pré-existentes** no `file-manager.browser.test.tsx`, de lotes antigos — fora do escopo, a tratar. Dois tropeços do maestro no caminho, ambos meus: `git checkout --` para "restaurar" após o experimento de reversão **apaga o trabalho não-commitado do executor** num worktree sem commits (reapliquei do diff revisado; experimentos passaram a usar backup por cópia), e o alias interativo do `cp` mordeu de novo mesmo com `-f` (saída: `cat a > b`). 425 testes (+20), os 17 comandos do `ci.yml` verdes, docgen regenerado, size-limit sem estouro, prosa nova conferida no build estático das 4 páginas MDX. Changeset minor. 2026-07-28
 - [x] **Lote 08 — nomes acessíveis traduzíveis em 12 componentes** (PR #15). Eram **17 rótulos, não os 14 anotados aqui**: relendo a fonte para montar o brief apareceram três que o levantamento original não tinha — `` `Actions for ${file.name}` `` (FileManager) e `` `Remove ${item.name}` `` (FileUpload), que **interpolam o nome do arquivo e por isso recebem função `(name: string) => string`, não string** (ordem de palavras muda entre idiomas; template fixo não localiza), e o `aria-label={status}` do `Avatar`, o pior do conjunto: anunciava o token cru do enum (`"online"`, `"busy"`, `"away"`). Classe (a) resolvida como previsto (`ariaLabel ?? 'padrão'` no Spinner e CookieBanner); classe (b) com props novas, e o `FileManager` — 5 rótulos, onde prop plana vira ruído — com objeto agrupado `labels` no mesmo contrato de merge do `hints` do CommandPalette. **`Breadcrumb` e `Pagination` ganharam a declaração explícita de `'aria-label'`**: a prop já funcionava neles, mas sem estar na interface o docgen não a via e ela não aparecia na tabela de props — funcionar sem ser documentada não resolve nada. As 22 páginas MDX afetadas **afirmavam explicitamente que a limitação não tinha saída** ("There is no prop to translate it"), então atualizá-las era obrigatório, não um extra. → codex (`gpt-5.6-terra`, reasoning high) em worktree, rodada limpa de código **mas os testes que ele escreveu não compilavam**: ele inseriu os `it()` novos **dentro** do corpo de um `it()` existente e dentro do duplo `for` de tema×tom no Toast e do loop de tema no Drawer — 8 falhas, "Calling the test function inside another test function is not allowed". Ele não pegou porque **o sandbox dele não roda Browser Mode** (não consegue bindar localhost) e ele relatou sucesso em tudo que conseguiu rodar. Movidos para o nível do `describe` pelo maestro. **Verificação:** 405 testes (+34), e a regressão da classe (a) foi **provada revertendo o fix** — sem ele, `expected 'Loading' to be 'Carregando'`, que é exatamente o descarte silencioso. Os 17 comandos do `ci.yml` rodados um a um, verdes; nenhum orçamento de size-limit estourado; docgen regenerado; as 24 páginas abertas no navegador nas duas línguas com props novas na tabela, zero erro de console e zero prosa desatualizada. Changeset minor. 2026-07-27
