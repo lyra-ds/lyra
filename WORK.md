@@ -10,10 +10,46 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       worktree próprio. Briefs em `.batuta/brief-6cb2-chrome.md` (compartilhado) +
       `.batuta/lot-6cb2-0N-*.md`.
 
-  - [ ] **Lote 1 — `Shell` + `.lyra-prose`** → codex (`gpt-5.6-terra`, reasoning high),
-        delegado 2026-07-30. Estabelece a mecânica que os outros quatro herdam: o
-        `components/chrome/chrome.css`, a categoria `Chrome` no docgen e o registro do
-        parity para um arquivo CSS sem contraparte no handoff.
+  - [x] **Lote 1 — `Shell` + `.lyra-prose`** → codex (`gpt-5.6-terra`, reasoning high),
+        **três rodadas**, commit `1f26db7`. Estabeleceu a mecânica que os outros quatro
+        herdam: `components/chrome/chrome.css`, a categoria `Chrome` no docgen e o registro
+        do parity para um arquivo CSS sem contraparte no handoff (enumerado como aditivo
+        nosso, com o tripwire provado).
+
+        **O que cada rodada custou, porque é lição reaproveitável:**
+
+            1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
+            `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
+            rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
+            mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
+            `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
+            **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
+            `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
+            junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
+
+            2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
+            defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
+            `.lyra-shell--page` (0,1,0) e perdia para
+            `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
+            de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
+            375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
+            "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
+            sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
+            nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
+
+            3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
+            forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
+            colapso correto e `scrollWidth == viewport`.
+
+            **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
+            diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
+            Batuta existe para o mesmo brief falhando duas vezes.
+
+            **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
+            detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
+            estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
+            são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
+
   - [ ] **Lote 2 — `Navbar` + `NavLink` + `Footer`**
   - [ ] **Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`**
   - [ ] **Lote 4 — `CodeBlock` + `SegmentedControl`**
@@ -248,6 +284,29 @@ se paga porque há conteúdo real.
   64px, do diagnóstico do iPad.
 
 ## Débito técnico anotado
+
+- **Contraste do tema escuro reprova WCAG AA — e é conflito entre duas constraints suas.**
+  Achado na auditoria do Lote 1 (2026-07-31), medido no build estático com 1,2s de espera
+  para descartar artefato de transição: rótulo branco sobre `--accent` no escuro dá
+  **4,39:1** e sobre `--danger` dá **3,76:1**; AA pede 4,5:1 para texto normal. São
+  **tokens do handoff**, e fidelidade pixel-perfect é decisão travada — então isto não se
+  resolve por lote, precisa da sua escolha entre afinar o token no escuro e aceitar a
+  reprovação. Vale para `.lyra-btn--primary` e `--danger` em qualquer página.
+
+- **Alvos de toque de 27px nos rótulos de grupo da sidebar.** A media query de toque do
+  `apps/docs/app/site.css` cobre `.lyra-sbgroup__item`, mas nunca cobriu
+  `.lyra-sbgroup__label--btn` (os títulos colapsáveis). Pré-existente, escapou da primeira
+  rodada de impeccable. 25 alvos abaixo de 44px a 375px, a maioria por esta causa.
+
+- **Anel de foco do cromo do site cai no `outline` do navegador.** `.lw-brand`,
+  `.lw-nav__link`, `.lw-search` e `.lw-locale__opt` não têm `:focus-visible`, então perdem
+  o `--shadow-focus` do DS. **Resolve-se sozinho nos Lotes 2–4**, que trocam os quatro por
+  componentes do DS — anotado para não ser "descoberto" de novo.
+
+- **No mobile a sidebar empilhada toma a tela inteira** — o leitor cai em ~50 links antes
+  do conteúdo. É idêntico ao comportamento anterior (o `.lw-docs__side` já ficava `static`
+  a 900px), então não é regressão; mas agora é o **default do `Shell` para todo consumidor
+  do DS**. Decidir se o `Shell` deve colapsar a trilha em disclosure/drawer no mobile.
 
 - **`"use client"` em todo módulo bloqueia export chamável do servidor.** O `onSuccess` do tsup
   prepende a diretiva em cada chunk emitido (decisão travada D-13, com gate
