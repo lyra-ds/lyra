@@ -232,7 +232,8 @@ const BRAND_ON_ACCENT_CONTRAST_DIVERGENCE = {
 // reduced-motion declarations; the approved baseline animation-value changes stay pinned above.
 const ADDITIVE_EXTENSIONS = {
   'components/chrome/chrome.css': {
-    // Shell and the CSS-only prose scope are package-native chrome primitives with no handoff peer.
+    // Shell, prose, Navbar, NavLink, and Footer are package-native chrome primitives with no
+    // handoff peer. Names remain explicit so a stray chrome selector still fails parity.
     classes: [
       'lyra-shell',
       'lyra-shell--page',
@@ -245,6 +246,19 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-shell--content',
       'lyra-shell__topbar',
       'lyra-prose',
+      'lyra-navbar',
+      'lyra-navbar--static',
+      'lyra-navbar__inner',
+      'lyra-navbar__brand',
+      'lyra-navbar__nav',
+      'lyra-navbar__actions',
+      'lyra-navlink',
+      'lyra-navlink--active',
+      'lyra-footer',
+      'lyra-footer__inner',
+      'lyra-footer__brand',
+      'lyra-footer__note',
+      'lyra-footer__links',
     ],
     keyframes: [],
   },

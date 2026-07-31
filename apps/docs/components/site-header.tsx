@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Container, Icon } from '@lyra-ds/react';
+import { Button, Icon, Navbar, NavLink } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -16,8 +16,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const onComponents = pathname.includes('/components');
 
   return (
-    <header className="lw-header">
-      <Container className="lw-header__inner">
+    <Navbar
+      brand={
         <Link href={`/${locale}`} className="lw-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -37,30 +37,24 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           />
           <span className="lw-brand__word">Lyra</span>
         </Link>
-        <nav className="lw-nav">
-          <Link
-            href={`/${locale}`}
-            className={['lw-nav__link', !onComponents && 'lw-nav__link--active']
-              .filter(Boolean)
-              .join(' ')}
-          >
-            {t('navDocs')}
-          </Link>
-          <Link
-            href={`/${locale}/components`}
-            className={['lw-nav__link', onComponents && 'lw-nav__link--active']
-              .filter(Boolean)
-              .join(' ')}
-          >
-            {t('components')}
-          </Link>
-        </nav>
-        <div className="lw-header__actions">
+      }
+      navLabel={t('siteNavigation')}
+      nav={
+        <>
+          <NavLink asChild active={!onComponents}>
+            <Link href={`/${locale}`}>{t('navDocs')}</Link>
+          </NavLink>
+          <NavLink asChild active={onComponents}>
+            <Link href={`/${locale}/components`}>{t('components')}</Link>
+          </NavLink>
+        </>
+      }
+      actions={
+        <>
           <CommandMenu locale={locale} />
           <ThemeToggle label={t('theme')} />
           <LocaleSwitcher locale={locale} label={t('languageLabel')} />
-          <a
-            className="lw-nav__link"
+          <NavLink
             href="https://github.com/lyra-ds"
             target="_blank"
             rel="noreferrer"
@@ -68,7 +62,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             title={t('github')}
           >
             <Icon name="github" size={18} />
-          </a>
+          </NavLink>
           <Button
             className="lw-header__cta"
             size="sm"
@@ -77,8 +71,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           >
             {t('getStarted')}
           </Button>
-        </div>
-      </Container>
-    </header>
+        </>
+      }
+    />
   );
 }

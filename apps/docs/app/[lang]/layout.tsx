@@ -42,7 +42,7 @@ export default async function LocaleLayout({
         <Shell
           sidebar={<DocsSidebar locale={lang} />}
           sidebarAs="nav"
-          sidebarLabel={t('navDocs')}
+          sidebarLabel={t('documentationNavigation')}
           aside={<TableOfContents />}
           asideLabel={t('onThisPage')}
           top={84}

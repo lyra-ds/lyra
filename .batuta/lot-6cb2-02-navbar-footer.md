@@ -145,3 +145,28 @@ destination is a link one row below on this specific site. It stays site chrome.
 - The touch-target media query's selectors that belong to other lots.
 - `apps/docs` MDX content and `apps/docs/lib/components.ts`.
 - The shared brief's global boundaries. Do not commit, branch or push.
+
+---
+
+## Addendum — o que mudou desde que este brief foi escrito
+
+Lot 1 landed. Three things you must account for:
+
+1. **`Container` is already in use in both files.** `site-header.tsx` and `site-footer.tsx`
+   now wrap their inner row in `<Container className="lw-header__inner">` /
+   `<Container className="lw-footer__inner">` instead of `.lw-container`. Keep that — the
+   `Navbar` and `Footer` own the outer bar (border, background, sticky) and compose a
+   `Container` for the centered inner row. Do not reintroduce `.lw-container`.
+
+2. **The chrome has no focus ring, and this lot is where that gets fixed.** An audit found
+   that `.lw-brand`, `.lw-nav__link`, `.lw-search` and `.lw-locale__opt` have no
+   `:focus-visible` rule, so keyboard focus falls back to the browser's default outline
+   instead of the design system's `--shadow-focus`. `NavLink` is one of those four.
+   **Give it the DS focus treatment** — read how an existing interactive component does it
+   (`.lyra-btn:focus-visible` is the reference) and match it. Cover it with a test. The other
+   three belong to later lots; leave them.
+
+3. **`.lw-brand`, `.lw-mark`, `.lw-brand__word` and the `.ld-mark-*` pair stay put.** The
+   brand becomes a component in Lot 5, not here. They appear in the "chrome links never
+   underline" selector list and in the touch-target block — when you move your own selectors
+   out of those two rules, leave every `.lw-brand*` selector exactly where it is.

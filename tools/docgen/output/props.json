@@ -84,6 +84,105 @@
     ]
   },
   {
+    "name": "Footer",
+    "category": "Chrome",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'children'>",
+    "description": "Props for {@link Footer}.",
+    "signature": "export declare function Footer(props: FooterProps): JSX.Element;",
+    "props": [
+      {
+        "name": "brand",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional brand content placed at the start of the footer row."
+      },
+      {
+        "name": "note",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional supporting note placed after the brand."
+      },
+      {
+        "name": "links",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional resource links rendered inside the footer navigation landmark."
+      },
+      {
+        "name": "linksLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the resource-links navigation landmark."
+      }
+    ]
+  },
+  {
+    "name": "Navbar",
+    "category": "Chrome",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'children'>",
+    "description": "Props for {@link Navbar}.",
+    "signature": "export declare function Navbar(props: NavbarProps): JSX.Element;",
+    "props": [
+      {
+        "name": "brand",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional brand content placed at the start of the navigation row."
+      },
+      {
+        "name": "nav",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional primary navigation content rendered inside the navigation landmark."
+      },
+      {
+        "name": "navLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the navigation landmark."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional controls placed at the end of the navigation row."
+      },
+      {
+        "name": "sticky",
+        "type": "boolean",
+        "optional": true,
+        "description": "Keep the navbar fixed to the top while scrolling. Default `true`."
+      }
+    ]
+  },
+  {
+    "name": "NavLink",
+    "category": "Chrome",
+    "extends": "AnchorHTMLAttributes<HTMLAnchorElement>",
+    "description": "Props for {@link NavLink}.",
+    "signature": "export declare function NavLink(props: NavLinkProps): JSX.Element;",
+    "props": [
+      {
+        "name": "active",
+        "type": "boolean",
+        "optional": true,
+        "description": "Marks the destination as the current page."
+      },
+      {
+        "name": "asChild",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render the single child element instead of an `<a>`, preserving its routing behavior."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Link content. Must be exactly one element when `asChild` is enabled."
+      }
+    ]
+  },
+  {
     "name": "Shell",
     "category": "Chrome",
     "extends": "HTMLAttributes<HTMLDivElement>",

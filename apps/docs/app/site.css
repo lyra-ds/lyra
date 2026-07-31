@@ -4,20 +4,6 @@
  * piece still uses @lyra-ds components + tokens. No Tailwind. Namespaced `lw-*`.
  */
 
-/* header */
-.lw-header {
-  border-bottom: 1px solid var(--border-default);
-  background: var(--surface-card);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
-}
-.lw-header__inner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  height: 60px;
-}
 .lw-brand {
   display: flex;
   align-items: center;
@@ -27,6 +13,9 @@
   cursor: pointer;
   padding: 0;
   text-decoration: none;
+}
+.lw-brand--static {
+  cursor: default;
 }
 .lw-mark {
   width: 24px;
@@ -48,48 +37,10 @@
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
-.lw-nav {
-  display: flex;
-  gap: var(--space-1);
-  margin-right: auto;
-}
-.lw-nav__link {
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-.lw-nav__link:hover {
-  background: var(--surface-sunken);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-.lw-nav__link--active {
-  color: var(--accent-soft-text);
-  background: var(--accent-soft);
-}
-.lw-header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
 /* chrome links are UI controls, never underline (base.css underlines a:hover) */
 .lw-brand:hover,
-.lw-nav__link:hover,
 .lyra-sbgroup__item:hover,
-.lw-toc__link:hover,
-.lw-footer__links a:hover {
+.lw-toc__link:hover {
   text-decoration: none;
 }
 
@@ -141,20 +92,6 @@
    scrolled the whole page sideways. Wrap the nav onto its own row instead of hiding navigation, and
    drop the CTA, whose only destination is the Components link one row below. */
 @media (max-width: 900px) {
-  .lw-header__inner {
-    flex-wrap: wrap;
-    height: auto;
-    padding-block: var(--space-2);
-    gap: var(--space-3);
-  }
-  .lw-nav {
-    order: 3;
-    width: 100%;
-    margin-right: 0;
-  }
-  .lw-header__actions {
-    margin-left: auto;
-  }
   .lw-header__cta {
     display: none;
   }
@@ -300,34 +237,6 @@
   color: var(--text-faint);
   user-select: none;
 }
-/* footer */
-.lw-footer {
-  border-top: 1px solid var(--border-default);
-  background: var(--surface-card);
-}
-.lw-footer__inner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  padding-top: var(--space-8);
-  padding-bottom: var(--space-8);
-  flex-wrap: wrap;
-}
-.lw-footer__note {
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-  margin-right: auto;
-}
-.lw-footer__links {
-  display: flex;
-  gap: var(--space-4);
-}
-.lw-footer__links a {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-}
-
 /* home / getting-started */
 .lw-hero {
   display: flex;
@@ -479,7 +388,6 @@
    touchscreen even when a precise pointer is also present, and the width clause covers the spoofed
    case. */
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
-  .lw-nav__link,
   .lw-search,
   .lyra-sbgroup__item,
   .lw-toc__link,

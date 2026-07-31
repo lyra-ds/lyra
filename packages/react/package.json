@@ -209,6 +209,36 @@
         "default": "./dist/shell.cjs"
       }
     },
+    "./navbar": {
+      "import": {
+        "types": "./dist/navbar.d.ts",
+        "default": "./dist/navbar.js"
+      },
+      "require": {
+        "types": "./dist/navbar.d.cts",
+        "default": "./dist/navbar.cjs"
+      }
+    },
+    "./nav-link": {
+      "import": {
+        "types": "./dist/nav-link.d.ts",
+        "default": "./dist/nav-link.js"
+      },
+      "require": {
+        "types": "./dist/nav-link.d.cts",
+        "default": "./dist/nav-link.cjs"
+      }
+    },
+    "./footer": {
+      "import": {
+        "types": "./dist/footer.d.ts",
+        "default": "./dist/footer.js"
+      },
+      "require": {
+        "types": "./dist/footer.d.cts",
+        "default": "./dist/footer.cjs"
+      }
+    },
     "./grid": {
       "import": {
         "types": "./dist/grid.d.ts",
@@ -495,6 +525,36 @@
         "react-dom"
       ],
       "limit": "1 kB"
+    },
+    {
+      "name": "import { Navbar } from '@lyra-ds/react/navbar'",
+      "path": "dist/navbar.js",
+      "import": "{ Navbar }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { NavLink } from '@lyra-ds/react/nav-link'",
+      "path": "dist/nav-link.js",
+      "import": "{ NavLink }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { Footer } from '@lyra-ds/react/footer'",
+      "path": "dist/footer.js",
+      "import": "{ Footer }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
     },
     {
       "name": "import { Drawer } from '@lyra-ds/react/drawer'",

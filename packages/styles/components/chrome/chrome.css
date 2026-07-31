@@ -1,4 +1,116 @@
-/* @lyra-ds/styles — chrome: shell and prose · MIT */
+/* @lyra-ds/styles — chrome: shell, prose, navbar, and footer · MIT */
+
+/* Site chrome owns layout and responsive behavior; consumers provide all content through slots. */
+.lyra-navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-card);
+}
+.lyra-navbar--static { position: static; }
+.lyra-navbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  height: 60px;
+}
+.lyra-navbar__brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.lyra-navbar__nav {
+  display: flex;
+  min-width: 0;
+  gap: var(--space-1);
+  margin-right: auto;
+}
+.lyra-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.lyra-navlink {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+.lyra-navlink:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.lyra-navlink:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.lyra-navlink--active {
+  background: var(--accent-soft);
+  color: var(--accent-soft-text);
+}
+
+.lyra-footer {
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-card);
+}
+.lyra-footer__inner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+}
+.lyra-footer__brand { display: flex; align-items: center; }
+.lyra-footer__note {
+  margin-right: auto;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.lyra-footer__links {
+  display: flex;
+  gap: var(--space-4);
+}
+.lyra-footer__links a {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.lyra-footer__links a:hover { text-decoration: none; }
+
+@media (max-width: 900px) {
+  .lyra-navbar__inner {
+    flex-wrap: wrap;
+    height: auto;
+    gap: var(--space-3);
+    padding-block: var(--space-2);
+  }
+  .lyra-navbar__nav {
+    order: 3;
+    width: 100%;
+    margin-right: 0;
+  }
+  .lyra-navbar__actions { margin-left: auto; }
+}
+
+@media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
+  .lyra-navlink { min-height: 44px; }
+}
 
 /*
  * Shell responsive contract: collapse the complementary aside at 1100px, then stack the

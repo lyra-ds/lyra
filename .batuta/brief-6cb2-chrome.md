@@ -107,8 +107,16 @@ has not seen before. The requirement is an outcome, not a recipe:
 - The tripwire still bites: an un-enumerated stray class must still fail the gate. Prove
   this — add a throwaway `.lyra-zzz { color: red }` to `chrome.css`, run `pnpm parity`,
   confirm it FAILS, then remove it. Report both outputs.
-- `pnpm parity --update-baseline` regenerates the snapshot. Regenerate it in the same
-  commit, and report the baseline diff so the maestro can review what changed.
+- **Do not regenerate `tools/parity/baseline.json` unless `handoff/` actually changed.**
+  Your lot adds package-only classes registered as additive; the baseline counts the
+  **handoff** side, so it should not move at all. If `pnpm parity` passes without
+  regenerating, you are done — regenerating anyway is destructive, because
+  `pnpm parity --update-baseline` **overwrites `$comment` and `handoffVersion` with
+  defaults**, erasing the hand-maintained record of which handoff groups have landed
+  (currently `"v1.0 + v1.1 layout"`). This has already bitten twice.
+
+  If a regeneration is genuinely required, restore those two fields by hand afterwards and
+  report the full baseline diff so the maestro can review what changed.
 
 ## The stylelint trap in `packages/styles`
 
@@ -245,9 +253,17 @@ honest delivery is worth more than a complete one built on a wrong assumption.
 ## Global boundaries — do not touch
 
 `node_modules/`, `dist/`, `apps/docs/.next/`, `apps/docs/out/`, `pnpm-lock.yaml`,
-`__screenshots__/`, `.vitest-attachments/`, `tools/docgen/output/*`,
-`packages/react/src/icon/icon-registry.ts` (generated — change the source and run the
-generator), `.planning/` (historical archive), and all of `handoff/` except the
-`handoff/components/chrome/*.d.ts` files your lot creates.
+`__screenshots__/`, `.vitest-attachments/`, `.planning/` (historical archive), and all of
+`handoff/` except the `handoff/components/chrome/*.d.ts` files your lot creates.
+
+**Generated-but-committed files: regenerate, never hand-edit.**
+`tools/docgen/output/llms.txt`, `tools/docgen/output/props.json` and
+`packages/react/src/icon/icon-registry.ts` are build artifacts that live in git. Adding a
+component makes them stale and `node tools/docgen/generate.mjs --check` will fail.
+
+That is **not** a boundary violation to stop on — the fix is to run the generator
+(`pnpm run docgen`, and `node tools/icon-registry/generate.mjs` if icons changed) and leave
+its output in the tree. Editing those files by hand is what is forbidden. Report what the
+regeneration changed; it should be only your lot's components.
 
 Do not commit. Do not create branches. Do not push.

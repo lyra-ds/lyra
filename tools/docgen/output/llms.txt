@@ -78,6 +78,54 @@ export declare function IconButton(props: IconButtonProps): JSX.Element;
 
 ## Chrome
 
+### Footer
+```ts
+/** Props for {@link Footer}. */
+export interface FooterProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+  /** Optional brand content placed at the start of the footer row. */
+  brand?: ReactNode;
+  /** Optional supporting note placed after the brand. */
+  note?: ReactNode;
+  /** Optional resource links rendered inside the footer navigation landmark. */
+  links?: ReactNode;
+  /** Accessible name for the resource-links navigation landmark. */
+  linksLabel?: string;
+}
+export declare function Footer(props: FooterProps): JSX.Element;
+```
+
+### Navbar
+```ts
+/** Props for {@link Navbar}. */
+export interface NavbarProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+  /** Optional brand content placed at the start of the navigation row. */
+  brand?: ReactNode;
+  /** Optional primary navigation content rendered inside the navigation landmark. */
+  nav?: ReactNode;
+  /** Accessible name for the navigation landmark. */
+  navLabel?: string;
+  /** Optional controls placed at the end of the navigation row. */
+  actions?: ReactNode;
+  /** Keep the navbar fixed to the top while scrolling. Default `true`. */
+  sticky?: boolean;
+}
+export declare function Navbar(props: NavbarProps): JSX.Element;
+```
+
+### NavLink
+```ts
+/** Props for {@link NavLink}. */
+export interface NavLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  /** Marks the destination as the current page. */
+  active?: boolean;
+  /** Render the single child element instead of an `<a>`, preserving its routing behavior. */
+  asChild?: boolean;
+  /** Link content. Must be exactly one element when `asChild` is enabled. */
+  children?: ReactNode;
+}
+export declare function NavLink(props: NavLinkProps): JSX.Element;
+```
+
 ### Shell
 ```ts
 /** Props for {@link Shell}. */
