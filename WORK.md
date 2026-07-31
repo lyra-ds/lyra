@@ -18,37 +18,37 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
         **O que cada rodada custou, porque é lição reaproveitável:**
 
-            1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
-            `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
-            rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
-            mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
-            `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
-            **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
-            `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
-            junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
+                1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
+                `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
+                rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
+                mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
+                `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
+                **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
+                `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
+                junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
 
-            2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
-            defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
-            `.lyra-shell--page` (0,1,0) e perdia para
-            `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
-            de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
-            375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
-            "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
-            sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
-            nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
+                2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
+                defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
+                `.lyra-shell--page` (0,1,0) e perdia para
+                `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
+                de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
+                375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
+                "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
+                sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
+                nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
 
-            3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
-            forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
-            colapso correto e `scrollWidth == viewport`.
+                3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
+                forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
+                colapso correto e `scrollWidth == viewport`.
 
-            **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
-            diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
-            Batuta existe para o mesmo brief falhando duas vezes.
+                **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
+                diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
+                Batuta existe para o mesmo brief falhando duas vezes.
 
-            **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
-            detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
-            estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
-            são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
+                **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
+                detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
+                estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
+                são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
 
   - [ ] **Lote 2 — `Navbar` + `NavLink` + `Footer`**
   - [ ] **Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`**
@@ -144,6 +144,36 @@ construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`**
       em `.batuta/handoff-v1.2-map.md`. Reabre a 6b em ~35 páginas de docs novas.
 
 ## Decisões tomadas
+
+- **Contraste AA do tema escuro — resolvido em 2026-07-31** (commit `726141e`), decisão do
+  usuário depois da auditoria do Lote 1. O bloco escuro clareava o accent um degrau
+  (indigo-600 → 500) e o danger (red-600 → 500). A convenção está certa para token que é
+  **texto ou borda** sobre fundo escuro e errada para token que é **preenchimento sob texto
+  branco** — e o mesmo token faz os dois trabalhos. Medido: 4,39:1 e 3,76:1 contra os 4,5:1
+  do AA; o claro já passava (5,37 e 4,83).
+
+  **Escolhido:** descer o ramp um degrau no escuro (accent 600, hover 500, active 400) e
+  danger para red-600. Custo aceito: o accent no escuro fica igual ao do claro. Duas
+  alternativas foram medidas e descartadas — escurecer a tinta em vez do fundo é impossível
+  (o `#6E6ADE` é mid-tone, teto de **4,78** mesmo contra preto puro, e o próprio indigo-950
+  só chega a 4,09), e um token novo `--accent-solid` **quebraria o white-label em 4 tokens**,
+  que é promessa de capa.
+
+  A divergência de valor é aprovada e fixada nos quatro tokens (arquivo, bloco, valor
+  canônico e valor aprovado), no formato dos precedentes `MASK_DIVERGENCE` e
+  `OVERLAY_ENTRANCE_DIVERGENCE`. **Sonda que vale repetir:** o executor "provou" o tripwire
+  mexendo no `--info`, que nem está no mapa — não provava nada. A sonda certa é valor **não
+  aprovado** num token **que está** no mapa; aí o gate reprova nos dois níveis.
+
+  **Efeito colateral que ensinou algo:** quebrou o `STY-03`, que prova que trocar de tema
+  recalcula o longhand sem rebuild. Ele sondava o accent, que deixou de servir por ser agora
+  igual nos dois temas. Passou a sondar `--surface-page`, que precisa diferir por definição —
+  sonda mais estável, imune a afinação futura de accent.
+
+  **E a prova do teste precisou de três tentativas para valer:** reverter cada token quebra o
+  teste, mas quebra no `eqRGB` de identidade de cor, que roda antes — a asserção de contraste
+  nunca era exercitada. A prova que fecha é mexer no `--on-accent` (cinza médio, fundos
+  intactos): `expected 2.11 to be greater than or equal to 4.5`.
 
 - **APIs da camada de cromo (6c-b2) — fechadas em 2026-07-30.** As 8 adições não têm
   handoff, então o contrato era o trabalho. Onde o CSS mora: categoria nova
@@ -285,13 +315,21 @@ se paga porque há conteúdo real.
 
 ## Débito técnico anotado
 
-- **Contraste do tema escuro reprova WCAG AA — e é conflito entre duas constraints suas.**
-  Achado na auditoria do Lote 1 (2026-07-31), medido no build estático com 1,2s de espera
-  para descartar artefato de transição: rótulo branco sobre `--accent` no escuro dá
-  **4,39:1** e sobre `--danger` dá **3,76:1**; AA pede 4,5:1 para texto normal. São
-  **tokens do handoff**, e fidelidade pixel-perfect é decisão travada — então isto não se
-  resolve por lote, precisa da sua escolha entre afinar o token no escuro e aceitar a
-  reprovação. Vale para `.lyra-btn--primary` e `--danger` em qualquer página.
+- ~~**Contraste do tema escuro reprova WCAG AA**~~ — **resolvido em 2026-07-31**, commit
+  `726141e`. Ver § Decisões tomadas. **Mas o white-label continua com o mesmo buraco**,
+  registrado logo abaixo.
+
+- **O white-label repete o erro estrutural do contraste — e não tem conserto mecânico.**
+  O `tokens/brand.css` faz, no escuro, `--accent: color-mix(in oklab, var(--brand), white
+14%)`: clareia a cor-base do consumidor exatamente como a paleta padrão fazia antes do
+  `726141e`. Consertamos a paleta que **nós** enviamos; quem usa o white-label reproduz a
+  reprova com a cor dele. E aqui não existe valor que resolva — **nenhum `color-mix`
+  garante 4,5:1 para uma cor-base arbitrária**; cor-base clara falha por mais que se ajuste
+  o mix. As saídas são de produto, não de token: parar de clarear no escuro (melhora a
+  média, não garante), promover o `--brand-contrast` — que já existe, em
+  `--on-accent: var(--brand-contrast, #FFFFFF)` — a parte documentada do contrato, ou o
+  sistema escolher a tinta sozinho pela luminância da cor-base. Pesa porque "tematizável em
+  4 tokens" é promessa de capa; decidir antes da Fase 7.
 
 - **Alvos de toque de 27px nos rótulos de grupo da sidebar.** A media query de toque do
   `apps/docs/app/site.css` cobre `.lyra-sbgroup__item`, mas nunca cobriu
