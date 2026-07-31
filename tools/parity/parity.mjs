@@ -190,6 +190,18 @@ const OVERLAY_ENTRANCE_DIVERGENCE = new Map([
   ],
 ]);
 
+// Approved dark-theme fill contrast repair. The handoff lightens the accent ramp and danger token
+// for dark surfaces, but the same tokens also fill controls under white text. These exact four
+// replacements keep those solid fills at WCAG AA contrast while preserving the ramp's direction.
+// The selector, canonical handoff value, and approved package value are all pinned so any other
+// dark-token drift remains a parity failure.
+const DARK_FILL_CONTRAST_DIVERGENCES = new Map([
+  ['--accent', { handoff: 'var(--indigo-500)', package: 'var(--indigo-600)' }],
+  ['--accent-hover', { handoff: 'var(--indigo-400)', package: 'var(--indigo-500)' }],
+  ['--accent-active', { handoff: 'var(--indigo-300)', package: 'var(--indigo-400)' }],
+  ['--danger', { handoff: 'var(--red-500)', package: 'var(--red-600)' }],
+]);
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -668,6 +680,23 @@ function tokenNameCounts(pairs) {
   return counts;
 }
 
+/**
+ * The token inventory check compares per-name value multisets before the placement-aware diff
+ * below runs. Permit only the same exact approved substitutions pinned for dark solid fills;
+ * placementCheck() then proves each replacement is in [data-theme="dark"].
+ */
+function isAllowedTokenDivergence(name, handoffValues, packageValues) {
+  const divergence = DARK_FILL_CONTRAST_DIVERGENCES.get(name);
+  if (divergence === undefined) return false;
+
+  const expectedPackageValues = [...handoffValues];
+  const index = expectedPackageValues.indexOf(divergence.handoff);
+  if (index === -1) return false;
+  expectedPackageValues[index] = divergence.package;
+  expectedPackageValues.sort();
+  return expectedPackageValues.every((value, index) => value === packageValues[index]);
+}
+
 function tokenCheck(baseline) {
   const handoff = collectTokens(HANDOFF);
   const pkg = collectTokens(PKG);
@@ -693,7 +722,10 @@ function tokenCheck(baseline) {
       fail(`Token ${name}: missing from package tokens — handoff/ is canonical`);
       continue;
     }
-    if (hVals.length !== pVals.length || hVals.some((v, k) => v !== pVals[k])) {
+    if (
+      hVals.length !== pVals.length ||
+      (hVals.some((v, k) => v !== pVals[k]) && !isAllowedTokenDivergence(name, hVals, pVals))
+    ) {
       fail(
         `Token ${name}: package=[${pVals.join(', ')}] handoff=[${hVals.join(', ')}] — handoff/ is canonical`,
       );
@@ -722,6 +754,17 @@ function isAllowedDivergence(relPath, hd, pd) {
     hd.val.includes(`icons/${expected.icon}.svg`) &&
     pd.val === expected.payload; // EXACT canonical data: payload — no truncation/swap
   if (allowsMaskDivergence) return true;
+
+  const darkFill = DARK_FILL_CONTRAST_DIVERGENCES.get(hd.prop);
+  if (
+    relPath === 'tokens/colors.css' &&
+    darkFill !== undefined &&
+    hd.blockPath.at(-1) === '[data-theme="dark"]' &&
+    hd.val === darkFill.handoff &&
+    pd.val === darkFill.package
+  ) {
+    return true;
+  }
 
   const overlay = OVERLAY_ENTRANCE_DIVERGENCE.get(relPath);
   return (

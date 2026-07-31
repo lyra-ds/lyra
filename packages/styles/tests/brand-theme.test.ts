@@ -44,6 +44,22 @@ function luminance(c: RGB): number {
   return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
 }
 
+/** WCAG relative luminance for the resolved sRGB channels. */
+function relativeLuminance({ r, g, b }: RGB): number {
+  const linear = [r, g, b].map((channel) => {
+    const srgb = channel / 255;
+    return srgb <= 0.03928 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+/** WCAG contrast ratio for two resolved token colors. */
+function contrast(foreground: RGB, background: RGB): number {
+  const fgLuminance = relativeLuminance(foreground);
+  const bgLuminance = relativeLuminance(background);
+  return (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
+}
+
 /**
  * Teal-family discriminator: green is (approximately) the dominant channel.
  * Acme teal (#0D9488, g=148 max) passes; indigo fallbacks (#5B5BD6, blue max) FAIL — so this
@@ -68,7 +84,10 @@ function isTealFamily(c: RGB): boolean {
 
 const RAW_ACME = parseHex('#0D9488'); // consumer brand seed, unmixed
 const LIGHT_ACCENT = parseHex('#5B5BD6'); // indigo-600 (default light --accent)
-const DARK_ACCENT = parseHex('#6E6ADE'); // indigo-500 (default dark --accent)
+const DARK_ACCENT = parseHex('#5B5BD6'); // indigo-600 (default dark --accent)
+const DARK_DANGER = parseHex('#DC2626'); // red-600 (default dark --danger)
+const LIGHT_SURFACE_PAGE = parseHex('#F8FAFC'); // slate-50
+const DARK_SURFACE_PAGE = parseHex('#0E1023'); // night-950
 
 function eqRGB(actual: RGB, expected: RGB, tol = 2): void {
   expect(Math.abs(actual.r - expected.r)).toBeLessThanOrEqual(tol);
@@ -111,14 +130,25 @@ describe('STY-03 — dark theming (no rebuild, read resolved longhands)', () => 
     eqRGB(bg('accent'), LIGHT_ACCENT);
   });
 
-  it('setting data-theme=dark switches the same probe to indigo-500 (no rebuild)', () => {
+  it('setting data-theme=dark re-derives --surface-page without rebuilding', () => {
     setPermutation('light', 'none');
-    const light = bg('accent');
+    const light = bg('surface-page');
     setPermutation('dark', 'none');
-    const dark = bg('accent');
-    eqRGB(dark, DARK_ACCENT);
+    const dark = bg('surface-page');
+    eqRGB(light, LIGHT_SURFACE_PAGE);
+    eqRGB(dark, DARK_SURFACE_PAGE);
     // The switch is a real change of the resolved longhand, not the raw custom-property string.
     expect(luminance(dark)).not.toBe(luminance(light));
+  });
+
+  it('dark solid accent and danger fills keep --on-accent at WCAG AA', () => {
+    setPermutation('dark', 'none');
+    const onAccent = fg('on-accent');
+    eqRGB(bg('accent'), DARK_ACCENT);
+    eqRGB(bg('danger'), DARK_DANGER);
+    expect(onAccent.a, '--on-accent must resolve to an opaque text color').toBeGreaterThan(0.99);
+    expect(contrast(onAccent, bg('accent'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(onAccent, bg('danger'))).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -170,7 +200,7 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     expect(isTealFamily(fg('accent-soft-text'))).toBe(true);
   });
 
-  it('dark default (no brand) --accent is indigo-500, distinct from dark-acme teal', () => {
+  it('dark default (no brand) --accent is indigo-600, distinct from dark-acme teal', () => {
     setPermutation('dark', 'none');
     eqRGB(bg('accent'), DARK_ACCENT);
     setPermutation('dark', 'acme');
