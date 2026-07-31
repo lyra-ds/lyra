@@ -18,39 +18,76 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
         **O que cada rodada custou, porque é lição reaproveitável:**
 
-                    1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
-                    `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
-                    rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
-                    mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
-                    `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
-                    **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
-                    `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
-                    junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
+                        1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
+                        `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
+                        rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
+                        mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
+                        `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
+                        **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
+                        `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
+                        junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
 
-                    2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
-                    defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
-                    `.lyra-shell--page` (0,1,0) e perdia para
-                    `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
-                    de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
-                    375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
-                    "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
-                    sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
-                    nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
+                        2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
+                        defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
+                        `.lyra-shell--page` (0,1,0) e perdia para
+                        `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
+                        de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
+                        375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
+                        "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
+                        sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
+                        nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
 
-                    3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
-                    forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
-                    colapso correto e `scrollWidth == viewport`.
+                        3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
+                        forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
+                        colapso correto e `scrollWidth == viewport`.
 
-                    **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
-                    diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
-                    Batuta existe para o mesmo brief falhando duas vezes.
+                        **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
+                        diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
+                        Batuta existe para o mesmo brief falhando duas vezes.
 
-                    **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
-                    detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
-                    estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
-                    são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
+                        **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
+                        detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
+                        estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
+                        são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
 
-  - [ ] **Lote 2 — `Navbar` + `NavLink` + `Footer`**
+  - [x] **Lote 2 — `Navbar` + `NavLink` + `Footer`** → codex (`gpt-5.6-terra`, reasoning
+        high), **três rodadas**, commit `0628b78`. Navbar 290 B, NavLink 470 B, Footer 266 B.
+
+        **1ª — parou numa contradição do brief, e acertou em parar.** A fronteira dizia
+            `tools/docgen/output/*` intocável; são artefatos gerados **e commitados**, então
+            falhar o `--check` não era motivo de parada, era motivo de rodar o gerador. Eu já
+            tinha corrigido isso no retorno do Lote 1 e **não** no brief compartilhado, que é o
+            que os lotes 2–5 leem. Corrigido na origem: a seção de fronteiras agora separa
+            "gerado e commitado — regenere" de "intocável de verdade".
+
+            **2ª — `landmark-unique`.** O header ganhou nome acessível e colidiu com a trilha do
+            `Shell`, que já se chamava "Docs": dois landmarks de navegação com nome idêntico. O
+            componente estava certo em exigir rótulo; a fiação do docs é que reusou um nome
+            ocupado. Resolvido com nomes de escopo nos dois idiomas.
+
+            **3ª — classe apagada com consumidor vivo.** O `.lw-nav__link` saiu do `site.css`
+            (correto), mas o `theme-toggle.tsx` ainda o referenciava: o botão virou `<button>`
+            cru do navegador. Migrado para `IconButton` ghost. **Nenhum gate pega isso** — só
+            apareceu na captura comparativa do cromo, e tinha sobrevivido também à minha
+            primeira verificação, que olhou axe/overflow/landmarks/foco e não a aparência.
+
+  **Prática que os lotes 1 e 2 impuseram, nesta ordem de custo:**
+
+  1. **Captura comparativa do cromo entra na verificação**, não como passo opcional. Os dois
+     defeitos mais caros dos dois lotes (a sidebar que nunca empilhava e o toggle sem estilo)
+     passaram por gates verdes, testes verdes e axe limpo.
+  2. **Apagar classe exige varredura de órfãs.** Vale para o Lote 3, que remove
+     `.lw-search`, `.lw-toc*` e `.lw-code*`:
+
+     ```bash
+     for c in $(grep -rhoE 'lw-[a-z0-9_-]+' apps/docs/**/*.tsx | sort -u); do
+       grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
+     done
+     ```
+
+  3. **Não regenerar `baseline.json` sem o `handoff/` ter mudado** — `--update-baseline`
+     sobrescreve `$comment` e `handoffVersion` com defaults e apaga o registro de quais
+     grupos do handoff já entraram. Mordeu duas vezes; agora está no brief compartilhado.
   - [ ] **Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`**
   - [ ] **Lote 4 — `CodeBlock` + `SegmentedControl`**
   - [ ] **Lote 5 — `Brand`**
