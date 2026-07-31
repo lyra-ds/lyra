@@ -19,15 +19,16 @@ usam sua marca sem sobrescritas por componente.
 
 ## Defina uma marca
 
-`--brand` é a cor-base obrigatória. Os outros três tokens têm defaults, mas defina
-`--brand-contrast` sempre que a cor-base for clara o bastante para deixar texto branco ilegível.
+`--brand` é a cor-base obrigatória. Os outros três tokens têm defaults. O Lyra deriva
+automaticamente uma tinta legível para o acento primário; defina `--brand-contrast` apenas quando
+quiser escolher essa tinta.
 
-| Token              | Default                                      | Finalidade                                   |
-| ------------------ | -------------------------------------------- | -------------------------------------------- |
-| `--brand`          | Obrigatório                                  | A cor-base da marca.                         |
-| `--brand-contrast` | `#FFFFFF`                                    | Texto e ícones sobre o acento primário.      |
-| `--brand-radius`   | `10px`                                       | O valor de `--radius-md`.                    |
-| `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Tanto `--font-sans` quanto `--font-display`. |
+| Token              | Default                                      | Finalidade                                                        |
+| ------------------ | -------------------------------------------- | ----------------------------------------------------------------- |
+| `--brand`          | Obrigatório                                  | A cor-base da marca.                                              |
+| `--brand-contrast` | Preto ou branco automático                   | Sobrescrita opcional para texto e ícones sobre o acento primário. |
+| `--brand-radius`   | `10px`                                       | O valor de `--radius-md`.                                         |
+| `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Tanto `--font-sans` quanto `--font-display`.                      |
 
 Esta é uma definição completa de marca:
 
@@ -70,9 +71,12 @@ tema do site para pré-visualizar cada marca nos dois temas.
 
 ## Mantenha o texto primário legível
 
-`--on-accent` usa `#FFFFFF` por default. Isso funciona para uma marca escura, mas uma marca clara
-precisa de um `--brand-contrast` escuro explícito; caso contrário, o rótulo de um botão primário
-pode ficar ilegível. Confira o contraste de cada par marca/contraste antes de publicá-lo.
+O Lyra deriva `--on-accent` a partir do acento resolvido e escolhe automaticamente preto ou branco
+neutro. Use `--brand-contrast` apenas para fixar uma tinta específica. Em navegadores com suporte
+a sintaxe de cor relativa, a regra automática atende AA-large (3,0:1) para todas as combinações de
+cor-base e tema compatíveis. A transição conhecida no
+tema claro é `#E11D48`, que chega a 4,47:1 em vez dos 4,5:1 de AA para texto normal; confira uma
+sobrescrita customizada antes de publicá-la.
 
 ## O que este contrato não altera
 

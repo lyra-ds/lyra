@@ -15,6 +15,13 @@
   --font-display:     var(--brand-font, "Plus Jakarta Sans", system-ui, sans-serif);
 }
 
+/* Keep the valid white fallback outside @supports: unsupported engines would otherwise inherit text color. */
+@supports (color: oklch(from red l c h)) {
+  [data-brand] {
+    --on-accent: var(--brand-contrast, oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h));
+  }
+}
+
 [data-theme="dark"][data-brand],
 [data-theme="dark"] [data-brand] {
   --accent:           color-mix(in oklab, var(--brand), white 14%);

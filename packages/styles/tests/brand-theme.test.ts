@@ -3,6 +3,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 // tokens/brand.css color-mix derivation, all component CSS) and injects it as a <style> into
 // document.head. This is the fixture's stylesheet — the mechanism declared in vitest.config.ts.
 import '../styles.css';
+// brand.css is shipped source (the styles package has no CSS build step). Import it directly so
+// this structural check can distinguish the unsupported-engine fallback from the supported path.
+import brandCss from '../tokens/brand.css?raw';
 // The fixture DOM (probe elements) as raw markup, injected into document.body below.
 import fixtureHtml from './fixtures/brand-theme.html?raw';
 
@@ -116,6 +119,46 @@ const bg = (name: string): RGB => parseColor(getComputedStyle(probe(name)).backg
 const fg = (name: string): RGB => parseColor(getComputedStyle(probe(name)).color);
 const border = (name: string): RGB => parseColor(getComputedStyle(probe(name)).borderTopColor);
 
+const BRAND_SEEDS = [
+  '#0D9488', // teal
+  '#FACC15', // yellow
+  '#2563EB', // blue
+  '#84CC16', // lime
+  '#EC4899', // pink
+  '#1E3A8A', // navy
+  '#22D3EE', // cyan
+  '#DC2626',
+  '#7C3AED',
+  '#059669',
+  '#F97316',
+  '#0EA5E9',
+  '#A16207',
+  '#BE185D',
+  '#111827',
+  '#E11D48',
+  '#65A30D',
+] as const;
+
+type BrandTheme = 'light' | 'dark';
+type BrandSeed = (typeof BRAND_SEEDS)[number];
+
+// A crossover seed has no black-or-white choice that reaches normal-text AA in light mode.
+// This list is intentionally narrow: every listed case must still stay above 4.4:1.
+const KNOWN_BELOW_AA = new Set<`${BrandSeed}:${BrandTheme}`>(['#E11D48:light']);
+const ON_ACCENT_FALLBACK = 'var(--brand-contrast, #FFFFFF)';
+const ON_ACCENT_DERIVATION =
+  'var(--brand-contrast, oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h))';
+
+function setBrandSeed(theme: BrandTheme, seed: BrandSeed, brandContrast?: string): void {
+  root.setAttribute('data-brand', 'contrast-test');
+  root.style.setProperty('--brand', seed);
+  if (brandContrast) root.style.setProperty('--brand-contrast', brandContrast);
+  else root.style.removeProperty('--brand-contrast');
+  if (theme === 'dark') root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  void root.offsetHeight;
+}
+
 beforeAll(() => {
   document.body.innerHTML = fixtureHtml;
   root = document.getElementById('lyra-fixture-root')!;
@@ -206,6 +249,43 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     setPermutation('dark', 'acme');
     // Proves the brand path actually re-derives rather than falling through to the indigo token.
     expect(isTealFamily(bg('accent'))).toBe(true);
+  });
+});
+
+// --- white-label primary-fill contrast -----------------------------------------------------------
+
+describe('white-label --on-accent contrast guarantee', () => {
+  it('ships a valid fallback outside the relative-color @supports derivation', () => {
+    const baseRule = brandCss.match(/^\[data-brand\]\s*\{(?<declarations>[^{}]*)\}/m)?.groups
+      ?.declarations;
+    const supportedRule = brandCss.match(
+      /@supports\s*\(color:\s*oklch\(from red l c h\)\)\s*\{\s*\[data-brand\]\s*\{(?<declarations>[^{}]*)\}/s,
+    )?.groups?.declarations;
+
+    expect(baseRule).toContain(`--on-accent:        ${ON_ACCENT_FALLBACK};`);
+    expect(supportedRule).toContain(`--on-accent: ${ON_ACCENT_DERIVATION};`);
+  });
+
+  for (const theme of ['light', 'dark'] as const) {
+    for (const seed of BRAND_SEEDS) {
+      const key: `${BrandSeed}:${BrandTheme}` = `${seed}:${theme}`;
+      const isKnownBelowAA = KNOWN_BELOW_AA.has(key);
+      it(`${theme} ${seed}: primary ink is AA-large${isKnownBelowAA ? ' (known AA crossover)' : ''}`, () => {
+        setBrandSeed(theme, seed);
+        const ratio = contrast(fg('on-accent'), bg('accent'));
+        expect(ratio, `${theme} ${seed} must meet AA-large`).toBeGreaterThanOrEqual(3);
+        if (isKnownBelowAA) {
+          expect(ratio, `${theme} ${seed} must remain below normal-text AA`).toBeLessThan(4.5);
+          expect(ratio, `${theme} ${seed} must remain near AA`).toBeGreaterThanOrEqual(4.4);
+        } else
+          expect(ratio, `${theme} ${seed} must meet normal-text AA`).toBeGreaterThanOrEqual(4.5);
+      });
+    }
+  }
+
+  it('--brand-contrast overrides the automatic ink derivation', () => {
+    setBrandSeed('light', '#FACC15', '#123456');
+    eqRGB(fg('on-accent'), parseHex('#123456'));
   });
 });
 

@@ -202,6 +202,18 @@ const DARK_FILL_CONTRAST_DIVERGENCES = new Map([
   ['--danger', { handoff: 'var(--red-500)', package: 'var(--red-600)' }],
 ]);
 
+// Approved white-label ink derivation. The handoff's valid white default must remain outside
+// @supports so engines without relative-color syntax do not inherit the page text color. Inside
+// the exact support guard, this derivation chooses neutral black or white from the resolved accent
+// lightness while `--brand-contrast` remains the consumer override. Pinning both declarations and
+// the @supports ancestry keeps any other brand.css drift a parity failure.
+const BRAND_ON_ACCENT_CONTRAST_DIVERGENCE = {
+  handoff: 'var(--brand-contrast, #FFFFFF)',
+  derivation:
+    'var(--brand-contrast, oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h))',
+  supports: '@supports (color: oklch(from red l c h))',
+};
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -686,6 +698,18 @@ function tokenNameCounts(pairs) {
  * placementCheck() then proves each replacement is in [data-theme="dark"].
  */
 function isAllowedTokenDivergence(name, handoffValues, packageValues) {
+  if (name === '--on-accent') {
+    const expectedPackageValues = [
+      ...handoffValues,
+      BRAND_ON_ACCENT_CONTRAST_DIVERGENCE.derivation,
+    ].sort();
+    return (
+      handoffValues.includes(BRAND_ON_ACCENT_CONTRAST_DIVERGENCE.handoff) &&
+      packageValues.length === expectedPackageValues.length &&
+      expectedPackageValues.every((value, index) => value === packageValues[index])
+    );
+  }
+
   const divergence = DARK_FILL_CONTRAST_DIVERGENCES.get(name);
   if (divergence === undefined) return false;
 
@@ -722,10 +746,9 @@ function tokenCheck(baseline) {
       fail(`Token ${name}: missing from package tokens — handoff/ is canonical`);
       continue;
     }
-    if (
-      hVals.length !== pVals.length ||
-      (hVals.some((v, k) => v !== pVals[k]) && !isAllowedTokenDivergence(name, hVals, pVals))
-    ) {
+    const valuesMatch =
+      hVals.length === pVals.length && hVals.every((value, index) => value === pVals[index]);
+    if (!valuesMatch && !isAllowedTokenDivergence(name, hVals, pVals)) {
       fail(
         `Token ${name}: package=[${pVals.join(', ')}] handoff=[${hVals.join(', ')}] — handoff/ is canonical`,
       );
@@ -776,6 +799,17 @@ function isAllowedDivergence(relPath, hd, pd) {
   );
 }
 
+function isAllowedPackageAddition(relPath, decl) {
+  return (
+    relPath === 'tokens/brand.css' &&
+    decl.prop === '--on-accent' &&
+    decl.val === BRAND_ON_ACCENT_CONTRAST_DIVERGENCE.derivation &&
+    decl.blockPath.length === 2 &&
+    decl.blockPath[0] === BRAND_ON_ACCENT_CONTRAST_DIVERGENCE.supports &&
+    decl.blockPath[1] === '[data-brand]'
+  );
+}
+
 function diffFile(relPath) {
   const hPath = join(HANDOFF, relPath);
   const pPath = join(PKG, relPath);
@@ -785,34 +819,48 @@ function diffFile(relPath) {
   }
   const h = parse(read(hPath));
   const p = parse(read(pPath));
-  const len = Math.max(h.length, p.length);
-  for (let k = 0; k < len; k++) {
-    const hd = h[k];
-    const pd = p[k];
+  let hIndex = 0;
+  let pIndex = 0;
+  while (hIndex < h.length || pIndex < p.length) {
+    const hd = h[hIndex];
+    const pd = p[pIndex];
+    if (pd && isAllowedPackageAddition(relPath, pd)) {
+      pIndex++;
+      continue;
+    }
     if (!hd) {
-      if (isAdditiveExtension(relPath, pd)) continue; // documented additive extension (D-18/D-19)
+      if (isAdditiveExtension(relPath, pd)) {
+        pIndex++;
+        continue;
+      }
       fail(
-        `Extra declaration ${relPath} #${k}: package has [${describe(pd)}] with no handoff counterpart — handoff/ is canonical`,
+        `Extra declaration ${relPath} #${pIndex}: package has [${describe(pd)}] with no handoff counterpart — handoff/ is canonical`,
       );
+      pIndex++;
       continue;
     }
     if (!pd) {
       fail(
-        `Dropped declaration ${relPath} #${k}: handoff has [${describe(hd)}] absent from package — handoff/ is canonical`,
+        `Dropped declaration ${relPath} #${hIndex}: handoff has [${describe(hd)}] absent from package — handoff/ is canonical`,
       );
+      hIndex++;
       continue;
     }
     if (keyOf(hd) !== keyOf(pd)) {
       fail(
-        `Decl placement mismatch ${relPath} #${k}: package=[${describe(pd)}] handoff=[${describe(hd)}] — handoff/ is canonical`,
+        `Decl placement mismatch ${relPath} package #${pIndex}=[${describe(pd)}] handoff #${hIndex}=[${describe(hd)}] — handoff/ is canonical`,
       );
+      hIndex++;
+      pIndex++;
       continue;
     }
     if (hd.val !== pd.val && !isAllowedDivergence(relPath, hd, pd)) {
       fail(
-        `Decl mismatch ${relPath} ${describe(hd)} #${k}: package=${pd.val} handoff=${hd.val} — handoff/ is canonical`,
+        `Decl mismatch ${relPath} ${describe(hd)} #${hIndex}: package=${pd.val} handoff=${hd.val} — handoff/ is canonical`,
       );
     }
+    hIndex++;
+    pIndex++;
   }
 }
 
