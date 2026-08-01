@@ -26,10 +26,10 @@ many new props.
 
 The reader-facing taxonomy in `apps/docs/lib/components.ts` gains exactly two groups:
 
-| group | components |
-| --- | --- |
+| group    | components                                          |
+| -------- | --------------------------------------------------- |
 | `layout` | `Container`, `Stack`, `Grid`, `PageHeader`, `Shell` |
-| `system` | `ThemeProvider` |
+| `system` | `ThemeProvider`                                     |
 
 Everything else joins an existing group: `Navbar`, `Footer` and `TableOfContents` in
 `navigation`; `Brand` and `CodeBlock` in `display`; `SegmentedControl` in `form`.
@@ -50,11 +50,11 @@ The 6b precedent is `AvatarGroup` inside the Avatar page and `ToastStack` inside
 page: something that only makes sense alongside its parent gets a section there, not a
 sidebar entry of its own. Apply it to:
 
-| goes as a section on | not its own page |
-| --- | --- |
-| `Stack` | `Inline` |
-| `Navbar` | `NavLink` |
-| `TableOfContents` | `useScrollSpy` |
+| goes as a section on               | not its own page         |
+| ---------------------------------- | ------------------------ |
+| `Stack`                            | `Inline`                 |
+| `Navbar`                           | `NavLink`                |
+| `TableOfContents`                  | `useScrollSpy`           |
 | the existing `command-palette.mdx` | `CommandPalette.Trigger` |
 
 A section is an `##` heading after `## Examples` with its own `<Example>` block, in both

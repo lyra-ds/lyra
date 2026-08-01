@@ -62,7 +62,7 @@ misleading unless the page says so. One sentence, both locales.
 
 ## A judgment call I am leaving to you, with the trade-off named
 
-`Shell` is one of the few components whose *whole point* is what happens at different widths.
+`Shell` is one of the few components whose _whole point_ is what happens at different widths.
 A single fixed-width preview shows one state and hides the contract.
 
 If you can show the collapse — two frames at different widths, or one that the reader can

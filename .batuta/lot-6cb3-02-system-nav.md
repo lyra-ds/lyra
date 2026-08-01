@@ -8,12 +8,12 @@ brief, then this file.
 
 Four pages × two locales, plus the `system` sidebar group:
 
-| page | group | documents as a section on the same page |
-| --- | --- | --- |
-| `ThemeProvider` | `system` (new) | — |
-| `Navbar` | `navigation` | `NavLink` |
-| `Footer` | `navigation` | — |
-| `TableOfContents` | `navigation` | `useScrollSpy` |
+| page              | group          | documents as a section on the same page |
+| ----------------- | -------------- | --------------------------------------- |
+| `ThemeProvider`   | `system` (new) | —                                       |
+| `Navbar`          | `navigation`   | `NavLink`                               |
+| `Footer`          | `navigation`   | —                                       |
+| `TableOfContents` | `navigation`   | `useScrollSpy`                          |
 
 ## What Lot 1 already built and you inherit
 

@@ -27,10 +27,10 @@ brief said so.
 
 These components are **page-level**: they emit the elements a documentation page already has.
 
-| component | emits | inside a docs page |
-| --- | --- | --- |
-| `PageHeader` | `<h1>` | a second `h1`, under an `h2` — heading order breaks |
-| `Shell` | `<main>` | `<main>` inside `<main>` — **invalid HTML**, not just an axe opinion |
+| component    | emits    | inside a docs page                                                   |
+| ------------ | -------- | -------------------------------------------------------------------- |
+| `PageHeader` | `<h1>`   | a second `h1`, under an `h2` — heading order breaks                  |
+| `Shell`      | `<main>` | `<main>` inside `<main>` — **invalid HTML**, not just an axe opinion |
 
 `Navbar` (`<header>`) and `Footer` (`<footer>`) hit the same wall in Lot 2. So this is not a
 per-example fix; the docs need a way to preview a page-level component.
