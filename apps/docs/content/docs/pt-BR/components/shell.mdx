@@ -48,7 +48,8 @@ Prefira outro componente quando:
 
 ## Acessibilidade
 
-- Shell renderiza um único `<main>` nativo. Não coloque outro landmark main nos filhos.
+- Shell renderiza um único `<main>` nativo por padrão. Para uma Shell aninhada ou incorporada, use
+  `mainAs="div"`; a página ainda deve ter exatamente um landmark `<main>` em algum lugar.
 - `sidebarAs` e `asideAs` escolhem `nav` ou `aside`. Dê a cada trilho um `sidebarLabel` ou
   `asideLabel` distinto; um trilho de navegação deve usar `sidebarAs="nav"`, como na receita de docs.
 - Shell não adiciona atalhos de teclado nem armadilha de foco. Links e controles nos trilhos preservam

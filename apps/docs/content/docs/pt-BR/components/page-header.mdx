@@ -34,8 +34,9 @@ Prefira outro componente quando:
 
 ## Acessibilidade
 
-- PageHeader renderiza um `<header>` nativo e seu `title` como `<h1>`. Forneça o único título de
-  página que representa o documento atual.
+- PageHeader renderiza um `<header>` nativo e seu `title` como `<h1>` por padrão. Forneça o único
+  título de página que representa o documento atual; para o cabeçalho de uma seção, escolha
+  `titleAs="h2"` ou `titleAs="h3"` e mantenha o `<h1>` padrão para o título da página.
 - `eyebrow` e `description` são texto comum, não rótulos conectados com ARIA. Não dependa deles como
   o único nome acessível de uma ação.
 - `actions` e `children` mantêm a ordem no DOM depois do título. Use Buttons, links, Tabs ou campos
