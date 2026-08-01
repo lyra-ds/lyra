@@ -20,7 +20,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       (registro em § Decisões tomadas), quebrada em 5 lotes sequenciais. Briefs em
       `.batuta/brief-6cc-landing.md` (compartilhado) + `.batuta/lot-6cc-0N-*.md`.
   - [x] Lote 1 — `apps/site`, cromo e Hero → codex, commit 5ae1075
-  - [ ] Lote 2 — ComponentShowcase + Frameworks
+  - [x] Lote 2 — ComponentShowcase + Frameworks → codex (1 retry), commit 60c3d5b
   - [ ] Lote 3 — Temas/Tokens + Comunidade
   - [ ] Lote 4 — FAQ + CTA
   - [ ] Lote 5 — CookieBanner LGPD + meta/OG + varredura final + deploy
@@ -429,6 +429,31 @@ levaria centenas de artefatos de build. Passou a casar `apps/*/.next/` e `apps/*
 regra por app cobre o próximo no dia em que ele nascer, não no dia em que alguém nota o lixo
 no diff. O executor não tinha como ver isso: não conseguiu construir.
 
+### Lote 2 — showcase e frameworks, e o gate que eu mesmo convidava
+
+**Três disparos sem uma linha escrita, e a culpa era do brief.** O codex parou duas vezes
+pedindo confirmação de design. A lição do perfil manda re-disparar verbatim — e não resolveu,
+porque o convite estava no texto que o re-disparo reentregava: a seção `Method` do brief
+compartilhado dizia _"se você tem um workflow test-first ou **plan-first**, use"_, e o contrato
+do plan-first (o `brainstorming` do superpowers, do lado do executor) é justamente parar e
+pedir aprovação humana. A correção não é encher o prompt de "APPROVED" — isso já
+**alimentou** o gate numa fase anterior — é declarar o que é fato: a rodada é não-interativa,
+não há quem aprove, e o lot file **é** o design aprovado. As stop conditions ficaram intactas,
+com a distinção nomeada: parar porque o brief está errado é certo; parar para perguntar se um
+plano correto serve, não.
+
+**Dois defeitos que nenhum gate automático enxerga.** O `CodeBlock` numera linha por contador
+CSS, e o `counter-reset` mora em `.lyra-code__pre code`. Os `span.line` tinham ficado soltos
+no `<pre>`, então o contador nunca reiniciava e **toda linha imprimia "1"**. Build, typecheck,
+eslint, 514 testes e o axe passaram verdes por cima disso — número errado não é erro de tipo
+nem de contraste. E o snippet trazia `className="lw-show__stage"`, classe privada deste site:
+quem copiasse levaria um `div` com classe inexistente e um layout diferente do que viu. Mesma
+família da métrica inventada, só que falha depois, na máquina do leitor.
+
+**A honestidade da grade de frameworks é escolha de tom, não de texto.** Trocar `warning`/
+`info` por `neutral` importa tanto quanto trocar "Beta" por "Em breve": os dois tons afirmam
+trabalho em andamento, e nada de Vue, Blade ou LiveView existe no repo.
+
 ### Práticas de verificação que este lote acrescentou
 
 1. **Falha de verificação minha é alegação como qualquer outra.** Reportei a troca de idioma
@@ -445,6 +470,15 @@ build` ignora em silêncio um app mal formado. A prova é destrutiva: apagar `ou
    (`ERR_SQLITE_ERROR`, depois `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). O relatório
    nomeou cada coisa que não rodou em vez de fingir verde — que é exatamente o contrato do
    brief, e o que separa uma rodada honesta de uma rodada perdida.
+4. **Gate rodado antes do build não vê o que o build cria.** No Lote 1 o `pnpm run lint` passou
+   porque o `next-env.d.ts` do site ainda não existia — ele nasce no primeiro `next build`, e
+   depois eu mesmo commitei o arquivo gerado, que o prettier reprova (aspas duplas, e um "should
+   not be edited" no topo). O `.prettierignore` isentava só o do `apps/docs`. Corrigido em
+   `apps/*/next-env.d.ts`, mesma generalização e mesmo motivo do `.gitignore` no Lote 1: **regra
+   presa a um app é regra que o próximo app não herda.** Depois de construir, o lint volta a valer.
+5. **Verde em tudo que é automatizável não diz nada sobre o que a tela mostra.** Os dois defeitos
+   do Lote 2 — numeração toda "1" e uma classe privada dentro do snippet — sobreviveram a build,
+   tipos, lint, 573 testes e oito varreduras de axe. O que os pegou foi abrir a aba e ler.
 
 ## Next — depois da Fase 6
 
