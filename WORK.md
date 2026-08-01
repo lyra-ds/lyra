@@ -721,7 +721,8 @@ se paga porque há conteúdo real.
 - **Alvos de toque de 27px nos rótulos de grupo da sidebar.** A media query de toque do
   `apps/docs/app/site.css` cobre `.lyra-sbgroup__item`, mas nunca cobriu
   `.lyra-sbgroup__label--btn` (os títulos colapsáveis). Pré-existente, escapou da primeira
-  rodada de impeccable. 25 alvos abaixo de 44px a 375px, a maioria por esta causa.
+  rodada de impeccable. 25 alvos abaixo de 44px a 375px, a maioria por esta causa. Aberto
+  como [#29](https://github.com/lyra-ds/lyra/issues/29).
 
 - ~~**Anel de foco do cromo do site**~~ e ~~**`button-name` no `.lw-search`**~~ —
   **resolvidos** pelos Lotes 2 e 3 (`0628b78`, `f713085`), como previsto: as classes viraram
@@ -749,9 +750,12 @@ se paga porque há conteúdo real.
   nada renderiza `.lyra-actionbar`. Resolver com divergência documentada quando o `ActionBar`
   ganhar wrapper.
 
-- 4 asserções vácuas pré-existentes no `file-manager.browser.test.tsx`
-  (`expect(...).not.toBeNull()` nunca falha no Browser Mode) — de lotes antigos, fora do
-  escopo do Lote 09.
+- **2** asserções vácuas pré-existentes no `file-manager.browser.test.tsx` — linhas 152 e 279,
+  onde `expect(screen.getByRole(...)).not.toBeNull()` recebe um Locator preguiçoso, que é
+  objeto sempre. **Este item dizia "4", e estava errado:** as linhas 129 e 144 usam
+  `screen.container.querySelector(...)`, que é API do DOM e devolve `Element | null` — ali
+  `not.toBeNull()` é asserção legítima. Contado de verdade em 2026-08-01, ao transformar o
+  débito em issue. Aberto como [#28](https://github.com/lyra-ds/lyra/issues/28).
 - `BottomSheet` e `Dropzone` estão documentados no `llms.txt` do handoff novo mas **não
   têm código** (o `BottomSheet` é importado pelo `DatePicker`/`DateRangePicker` e bloqueia
   o caminho mobile deles). `BottomNav`, `PersonCell` e `DiffCard` têm CSS e contrato, só
