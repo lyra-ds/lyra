@@ -1,0 +1,72 @@
+---
+title: Prose
+description: Style plain HTML content with Lyra typography, without React or an element-by-element wrapper.
+---
+
+# Prose
+
+`.lyra-prose` is a typographic scope for content, not a React component. Put it on one container
+when the HTML inside comes from MDX, a CMS, or authors; choose the scope that should share one
+reading width and heading treatment.
+
+## What `.lyra-prose` styles
+
+The scope styles `h1`, `h2`, and `h3`; paragraphs; links; `strong`; inline `code`; ordered and
+unordered lists; blockquotes; and `hr` elements. It also gives list markers a quieter color.
+
+Code blocks are outside this contract. The inline-code rule targets `code` outside a `pre`, so a
+syntax highlighter can own its own block markup and colors.
+
+## Set the measure and anchor offset
+
+Both custom properties belong on the `.lyra-prose` container:
+
+| Property                | Default | What it controls                                                                                                                                           |
+| ----------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--prose-measure`       | `760px` | The scope's maximum reading width. Change it when the surrounding layout needs a narrower or wider column.                                                 |
+| `--prose-scroll-offset` | `0px`   | The `scroll-margin-top` for `h1`, `h2`, and `h3`. Set it to a sticky header's height so an anchored link does not land with its heading hidden underneath. |
+
+## Keep actions out of prose link styling
+
+Prose links receive the text-link treatment through `a:not(.lyra-btn)`. The exclusion keeps a
+call-to-action inside an article looking like a button instead of turning it into underlined body
+text. Use a real `Button` when React is available; in plain HTML, use the documented button
+classes and keep the link's destination meaningful.
+
+## Keep long inline code on narrow screens
+
+Inline code uses `overflow-wrap: anywhere`. A package subpath or class name can be one unbreakable
+token; without a break point, a 375px page can grow to 390px and scroll sideways.
+
+## Use it outside React
+
+The class is CSS only. Import `@lyra-ds/styles`, add it to a content container, and write ordinary
+HTML:
+
+```html
+<article class="lyra-prose" style="--prose-scroll-offset: 60px">
+  <h1 id="install">Install the stylesheet</h1>
+  <p>
+    Import <code>@lyra-ds/styles/styles.css</code> once, then use the classes your markup needs.
+  </p>
+  <p><a href="/guides/plain-html">Read the plain HTML guide</a></p>
+
+  <h2 id="content">Content rules</h2>
+  <ul>
+    <li>Keep the document structure semantic.</li>
+    <li>Let long inline names wrap on narrow viewports.</li>
+  </ul>
+  <blockquote>Typography should make a document easier to scan, not harder to maintain.</blockquote>
+  <hr />
+  <a class="lyra-btn lyra-btn--primary lyra-btn--md" href="/get-started">Get started</a>
+</article>
+```
+
+The same markup works in Vue templates, Blade views, LiveView, and static HTML. No React wrapper
+or JavaScript is required.
+
+## What it does not do
+
+Use this scope for content whose individual elements should not each need a component wrapper:
+MDX, a CMS body, or user-authored HTML. It does not replace components or add their behavior. An
+action is still a `Button`, not a prose-styled `<a>` made to resemble one.
