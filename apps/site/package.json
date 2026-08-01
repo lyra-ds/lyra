@@ -1,0 +1,26 @@
+{
+  "name": "@lyra-ds/site",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "build": "next build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "5.2.8",
+    "@fontsource/plus-jakarta-sans": "5.2.8",
+    "@lyra-ds/react": "workspace:*",
+    "@lyra-ds/styles": "workspace:*",
+    "next": "16.2.10",
+    "next-intl": "4.13.2",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}
