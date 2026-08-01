@@ -1,42 +1,34 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRef, useState, type ComponentPropsWithoutRef } from 'react';
+import { CodeBlock } from '@lyra-ds/react';
+import type { ComponentPropsWithoutRef } from 'react';
+
+type PreProps = Pick<ComponentPropsWithoutRef<'pre'>, 'children' | 'className' | 'style'> & {
+  'data-language'?: string;
+};
 
 /**
- * Code panel: the old card chrome (language badge + copy button in a header bar)
- * wrapping Shiki-highlighted output. Token colors come from Shiki's dual theme
- * (light/dark) via CSS variables, so the panel follows the active [data-theme].
+ * Code panel: the design system's CodeBlock wrapping Shiki-highlighted output.
+ * Token colors come from Shiki's dual theme (light/dark) via CSS variables, so
+ * the panel follows the active [data-theme].
+ *
+ * `lineNumbers` is opt-in on the component but always on here: the docs numbered
+ * every panel before the migration, and dropping it would be a silent regression.
  */
-export function Pre({ children, className, ...props }: ComponentPropsWithoutRef<'pre'>) {
-  const ref = useRef<HTMLPreElement>(null);
-  const [copied, setCopied] = useState(false);
+export function Pre({ children, className, style, 'data-language': language }: PreProps) {
   const t = useTranslations();
 
-  const lang = (props as Record<string, unknown>)['data-language'];
-
-  async function copy() {
-    const text = ref.current?.textContent ?? '';
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* ignore */
-    }
-  }
-
   return (
-    <div className="lw-code">
-      <div className="lw-code__bar">
-        {typeof lang === 'string' ? <span className="lw-code__lang">{lang}</span> : <span />}
-        <button type="button" className="lw-code__copy" onClick={copy}>
-          {copied ? t('copied') : t('copy')}
-        </button>
-      </div>
-      <pre ref={ref} className={['lw-code__pre', className].filter(Boolean).join(' ')} {...props}>
-        {children}
-      </pre>
-    </div>
+    <CodeBlock
+      className={className}
+      style={style}
+      language={language}
+      lineNumbers
+      copyLabel={t('copy')}
+      copiedLabel={t('copied')}
+    >
+      {children}
+    </CodeBlock>
   );
 }

@@ -1,34 +1,22 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Brand, Footer } from '@lyra-ds/react';
 
 export function SiteFooter() {
   const t = useTranslations();
 
   return (
-    <footer className="lw-footer">
-      <div className="lw-container lw-footer__inner">
-        <span className="lw-brand" style={{ cursor: 'default' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/lyra-mark.svg"
-            alt=""
-            className="lw-mark ld-mark-light"
-            width={24}
-            height={24}
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/lyra-mark-light.svg"
-            alt=""
-            className="lw-mark ld-mark-dark"
-            width={24}
-            height={24}
-          />
-          <span className="lw-brand__word">Lyra</span>
-        </span>
-        <span className="lw-footer__note">{t('footerNote')}</span>
-        <div className="lw-footer__links">
+    <Footer
+      brand={
+        <Brand mark="/lyra-mark.svg" markDark="/lyra-mark-light.svg">
+          Lyra
+        </Brand>
+      }
+      note={t('footerNote')}
+      linksLabel={t('siteName')}
+      links={
+        <>
           <a href="https://github.com/lyra-ds" target="_blank" rel="noreferrer">
             GitHub
           </a>
@@ -43,8 +31,8 @@ export function SiteFooter() {
             Contributing
           </a>
           <a href="/llms.txt">llms.txt</a>
-        </div>
-      </div>
-    </footer>
+        </>
+      }
+    />
   );
 }

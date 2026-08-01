@@ -437,6 +437,17 @@ Menores, valor médio, decidir caso a caso: **`IconTile`** (`.lw-comm__icon` —
 (a troca de marca light/dark por `[data-theme]`, 4 linhas que todo site refaz — pode ser
 só um slot do `Navbar`).
 
+> **Correção de 2026-07-30 (verificado contra a fonte).** O parágrafo acima erra em um
+> ponto: **`.lw-comm__icon` não existe** — `grep -rn "lw-comm"` no `handoff/`, no
+> `apps/docs` e no `packages/` devolve zero. A classe entrou na lista das 27 "que o
+> handoff traz e o repo não tem" sem estar no handoff; a seção de comunidade do kit é
+> `.lw-quotes`/`.lw-quote-card` (depoimentos, cortados da landing). O `IconTile`, portanto,
+> não tem original. O `.lw-checks`/`.lw-check` é real (`index.html` l. 113–117, com a
+> variante `--muted` de ícone `minus` para "não incluído"), mas seu único consumidor era a
+> seção de **pricing**, também cortada. Decisão tomada: **só o `Brand` entra no 6c-b2**;
+> `IconTile` e `CheckList` ficam para a 6c-c, quando houver uso real. Registro completo em
+> `WORK.md` § Decisões tomadas.
+
 ### B — Já resolvido, é só parar de reimplementar
 
 - Itens da sidebar de docs → **`SidebarGroup`** (o `apps/docs` já dogfooda; as

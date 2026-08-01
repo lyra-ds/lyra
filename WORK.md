@@ -5,9 +5,13 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-Nada em voo. A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
-v1.1+v1.2 (mapa completo em `.batuta/handoff-v1.2-map.md`) — a landing deixou de ser
-independente porque o kit novo dogfooda a camada de layout que ainda não existe.
+- [x] **6c-b2 — camada de cromo (9 adições) — CONCLUÍDO em 2026-07-31.** Ciclo aberto em
+      2026-07-30. APIs decididas
+      (registro em § Decisões tomadas) e quebrado em 5 lotes, sequenciais, cada um com
+      worktree próprio. Briefs em `.batuta/brief-6cb2-chrome.md` (compartilhado) +
+      `.batuta/lot-6cb2-0N-*.md`.
+
+O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
 ## Next — Fase 6, na ordem de dependência
 
@@ -69,6 +73,192 @@ construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`**
       `/favicon.svg` estático.
 - [ ] **6c-e — deploy Cloudflare Pages** (manual, do usuário).
 
+## 6c-b2 — o que cada lote custou
+
+### Lote 1 — `Shell` + `.lyra-prose`
+
+→ codex (`gpt-5.6-terra`, reasoning high),
+**três rodadas**, commit `1f26db7`. Estabeleceu a mecânica que os outros quatro
+herdam: `components/chrome/chrome.css`, a categoria `Chrome` no docgen e o registro
+do parity para um arquivo CSS sem contraparte no handoff (enumerado como aditivo
+nosso, com o tripwire provado).
+
+**O que cada rodada custou, porque é lição reaproveitável:**
+
+                              1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
+                              `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
+                              rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
+                              mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
+                              `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
+                              **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
+                              `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
+                              junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
+
+                              2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
+                              defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
+                              `.lyra-shell--page` (0,1,0) e perdia para
+                              `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
+                              de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
+                              375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
+                              "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
+                              sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
+                              nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
+
+                              3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
+                              forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
+                              colapso correto e `scrollWidth == viewport`.
+
+                              **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
+                              diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
+                              Batuta existe para o mesmo brief falhando duas vezes.
+
+                              **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
+                              detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
+                              estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
+                              são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
+
+### Lote 2 — `Navbar` + `NavLink` + `Footer`
+
+→ codex (`gpt-5.6-terra`, reasoning
+high), **três rodadas**, commit `0628b78`. Navbar 290 B, NavLink 470 B, Footer 266 B.
+
+**1ª — parou numa contradição do brief, e acertou em parar.** A fronteira dizia
+`tools/docgen/output/*` intocável; são artefatos gerados **e commitados**, então
+falhar o `--check` não era motivo de parada, era motivo de rodar o gerador. Eu já
+tinha corrigido isso no retorno do Lote 1 e **não** no brief compartilhado, que é o
+que os lotes 2–5 leem. Corrigido na origem: a seção de fronteiras agora separa
+"gerado e commitado — regenere" de "intocável de verdade".
+
+                  **2ª — `landmark-unique`.** O header ganhou nome acessível e colidiu com a trilha do
+                  `Shell`, que já se chamava "Docs": dois landmarks de navegação com nome idêntico. O
+                  componente estava certo em exigir rótulo; a fiação do docs é que reusou um nome
+                  ocupado. Resolvido com nomes de escopo nos dois idiomas.
+
+                  **3ª — classe apagada com consumidor vivo.** O `.lw-nav__link` saiu do `site.css`
+                  (correto), mas o `theme-toggle.tsx` ainda o referenciava: o botão virou `<button>`
+                  cru do navegador. Migrado para `IconButton` ghost. **Nenhum gate pega isso** — só
+                  apareceu na captura comparativa do cromo, e tinha sobrevivido também à minha
+                  primeira verificação, que olhou axe/overflow/landmarks/foco e não a aparência.
+
+### Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`
+
+→ codex
+(`gpt-5.6-terra`, reasoning high), **duas rodadas**, commit `f713085`. 4. **Rebuildar antes de qualquer medição pós-retry.** Duas vezes nesta fase eu quase
+reportei defeito medindo artefato velho — o build estático servido era anterior à
+correção. O sintoma é convincente (atributo ausente, estilo faltando) e leva a um
+retorno errado. 5. **Migração de componente preserva o comportamento visível, não só o comportamento.**
+Três dos quatro lotes perderam algo que nenhum gate cobre — o toggle sem estilo (Lote
+2), a trilha sem item ativo (Lote 3), a numeração de linha (Lote 4). Todos foram
+defaults novos e razoáveis do componente que o consumidor precisava reativar. Ao migrar,
+comparar a aparência **antes e depois**, não só verificar que o novo componente funciona.
+
+**Fechou uma violação CRÍTICA que estava em produção.** Abaixo de 720px o CSS
+escondia rótulo e atalho do `.lw-search`, e o axe reportava `button-name` — quem usa
+leitor de tela ouvia só "botão". O `CommandPalette.Trigger` mantém o nome quando o
+texto visível some. **O docs agora tem axe limpo em 1440/900/375 nos dois idiomas,
+zero violações**, o que não acontecia desde o começo desta fase.
+
+**A rodada extra foi por fronteira de scroll spy.** O observer com
+`rootMargin: '0px 0px -70% 0px'` observa os 30% superiores da viewport, e essa faixa
+fica vazia em duas situações: no topo, antes de qualquer título subir até lá; e no
+fim, onde o documento acaba e os últimos títulos nunca a alcançam. A trilha ficava
+**sem item marcado nas duas posições em que o leitor mais fica**. A implementação
+antiga do docs driblava só a primeira, semeando o primeiro título — a segunda nunca
+esteve coberta, nem antes. Agora responde nas três: `Examples` no topo,
+`Accessibility` no meio, `Plain HTML` no fim.
+
+A varredura de órfãs saiu vazia de primeira — a lição do Lote 2 pegou, e este era o
+lote que mais apagava classe (`.lw-search*`, `.lw-toc*`, o `__kbd` duplicado).
+
+### Lote 4 — `CodeBlock` + `SegmentedControl`
+
+→ codex (`gpt-5.6-terra`, reasoning
+high), **três rodadas + uma correção do maestro**, commit `ed465e1`. CodeBlock 445 B,
+SegmentedControl 527 B. Fecha o último dos quatro controles de cromo sem anel de foco.
+
+**1ª — `scrollable-region-focusable`.** O `<pre>` rolável não era alcançável por
+teclado, e o docs estava em zero violações desde o Lote 3. Causa instrutiva: o
+pipeline de MDX punha `tabindex="0"` no `<pre>` (é o que Shiki e rehype-pretty-code
+fazem, justamente por essa regra) e o `pre.tsx` antigo repassava os props; o
+`CodeBlock` renderiza o próprio `<pre>` e descartava. **Corrigido no componente, não
+no consumidor** — a garantia deixa de depender do highlighter de cada um lembrar de
+um atributo.
+
+          **2ª — asserção de teste dependente do runner.** O teste afirmava
+          `pre.scrollLeft > 0` após uma seta, mas rolar container com seta é **ação padrão do
+          navegador**, que o evento sintético do runner não dispara. No navegador real a mesma
+          interação rola (medido: 0 → 40). A asserção testava o navegador, não o componente.
+          Regra que ficou: **teste que passa por acidente do modelo de eventos do runner é pior
+          que teste que afirma o contrato real.**
+
+          **3ª — os números de linha sumiram.** A regra antiga do docs numerava
+          incondicionalmente; o componente tem numeração opt-in (correto) e a migração não
+          passou a prop. Regressão visual silenciosa, invisível a todo gate. **Aqui escalei**:
+          depois de três rodadas, por uma prop numa linha, a escada do Batuta manda subir uma
+          linha — e a linha acima de complex é a crítica, que é o maestro. Feito por mim, com
+          comentário no `pre.tsx` explicando por que a prop é obrigatória ali.
+
+          **Duas provas de mutação:** remover o `tabIndex` quebra 2 testes; remover o seletor
+          do `<pre>` no anel de foco quebra 1.
+
+### Lote 5 — `Brand`
+
+→ codex (`gpt-5.6-terra`), **duas rodadas**, commit `a41de53`.
+653 B. Mata 28 linhas duplicadas entre header e rodapé, com os dois `eslint-disable`
+que cada cópia carregava.
+
+**O executor parou e perguntou** qual seria o default do nome acessível para uma
+marca sem wordmark, propondo `"Brand"`. **Recusado**: um `aria-label` literal em
+inglês _é_ saída renderizada — um leitor de tela anunciaria "Brand" numa página em
+pt-BR. É o pior tipo de defeito de i18n, porque parece resolvido. A regra ficou: com
+wordmark, as imagens são decorativas e o texto é o nome; sem wordmark, o consumidor
+fornece, e isso é **erro de compilação** via união discriminada, não surpresa em
+runtime.
+
+      A 2ª rodada foi teste, não componente: um `cleanup()` no meio do corpo de um teste
+      anterior deixava o `render` seguinte sem container, e o `querySelector(...)!`
+      transformava "elemento ausente" em `TypeError` três linhas depois. É o mesmo pé de
+      ouvido das doze asserções vácuas do Lote 08, visto pelo outro lado.
+
+      **Único lote que não perdeu um default** — a marca renderiza em 24px sem ninguém
+      passar `size`, porque o default vive como fallback do `var()`.
+
+**Cada lote dogfooda o `apps/docs` no mesmo commit** — migra o site para o componente
+novo e apaga do `site.css` as regras que ele substitui. É isso que prova a API (melhor
+que uma demo sintética) e é onde o `impeccable` roda, na página real.
+
+- [ ] **6c-b3 — documentar as adições** (novo, 2026-07-30). Descoberta ao montar os lotes:
+      o manifesto do docs tem **40 entradas** e o docgen conta **46 componentes** — o 6c-b1
+      entregou `Container`, `Stack`, `Inline`, `Grid`, `PageHeader` e `ThemeProvider` **sem
+      página de documentação**, contrariando o "cada uma com página" escrito aqui. Decisão:
+      em vez de cinco lotes parciais de docs, **um lote só** cobrindo as 6 pendentes do
+      6c-b1 mais as 9 do 6c-b2 — 15 páginas de uma vez, no formato de fan-out da 6b, que é
+      onde essa forma de trabalho já se provou barata.
+
+A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
+v1.1+v1.2 (mapa completo em `.batuta/handoff-v1.2-map.md`) — a landing deixou de ser
+independente porque o kit novo dogfooda a camada de layout que ainda não existe.
+
+### Práticas de verificação que esta fase impôs
+
+Nesta ordem de custo:
+
+1. **Captura comparativa do cromo entra na verificação**, não como passo opcional. Os dois
+   defeitos mais caros dos dois lotes (a sidebar que nunca empilhava e o toggle sem estilo)
+   passaram por gates verdes, testes verdes e axe limpo.
+2. **Apagar classe exige varredura de órfãs.** Vale para o Lote 3, que remove
+   `.lw-search`, `.lw-toc*` e `.lw-code*`:
+
+```bash
+for c in $(grep -rhoE 'lw-[a-z0-9_-]+' apps/docs/**/*.tsx | sort -u); do
+grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
+done
+```
+
+3. **Não regenerar `baseline.json` sem o `handoff/` ter mudado** — `--update-baseline`
+   sobrescreve `$comment` e `handoffVersion` com defaults e apaga o registro de quais
+   grupos do handoff já entraram. Mordeu duas vezes; agora está no brief compartilhado.
+
 ## Next — depois da Fase 6
 
 - [ ] **Fase 7 — Release Pipeline & Launch** (`.batuta/plan-07-release-pipeline-launch.md`)
@@ -82,6 +272,135 @@ construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`**
       em `.batuta/handoff-v1.2-map.md`. Reabre a 6b em ~35 páginas de docs novas.
 
 ## Decisões tomadas
+
+- **Contraste AA do tema escuro — resolvido em 2026-07-31** (commit `726141e`), decisão do
+  usuário depois da auditoria do Lote 1. O bloco escuro clareava o accent um degrau
+  (indigo-600 → 500) e o danger (red-600 → 500). A convenção está certa para token que é
+  **texto ou borda** sobre fundo escuro e errada para token que é **preenchimento sob texto
+  branco** — e o mesmo token faz os dois trabalhos. Medido: 4,39:1 e 3,76:1 contra os 4,5:1
+  do AA; o claro já passava (5,37 e 4,83).
+
+  **Escolhido:** descer o ramp um degrau no escuro (accent 600, hover 500, active 400) e
+  danger para red-600. Custo aceito: o accent no escuro fica igual ao do claro. Duas
+  alternativas foram medidas e descartadas — escurecer a tinta em vez do fundo é impossível
+  (o `#6E6ADE` é mid-tone, teto de **4,78** mesmo contra preto puro, e o próprio indigo-950
+  só chega a 4,09), e um token novo `--accent-solid` **quebraria o white-label em 4 tokens**,
+  que é promessa de capa.
+
+  A divergência de valor é aprovada e fixada nos quatro tokens (arquivo, bloco, valor
+  canônico e valor aprovado), no formato dos precedentes `MASK_DIVERGENCE` e
+  `OVERLAY_ENTRANCE_DIVERGENCE`. **Sonda que vale repetir:** o executor "provou" o tripwire
+  mexendo no `--info`, que nem está no mapa — não provava nada. A sonda certa é valor **não
+  aprovado** num token **que está** no mapa; aí o gate reprova nos dois níveis.
+
+  **Efeito colateral que ensinou algo:** quebrou o `STY-03`, que prova que trocar de tema
+  recalcula o longhand sem rebuild. Ele sondava o accent, que deixou de servir por ser agora
+  igual nos dois temas. Passou a sondar `--surface-page`, que precisa diferir por definição —
+  sonda mais estável, imune a afinação futura de accent.
+
+  **E a prova do teste precisou de três tentativas para valer:** reverter cada token quebra o
+  teste, mas quebra no `eqRGB` de identidade de cor, que roda antes — a asserção de contraste
+  nunca era exercitada. A prova que fecha é mexer no `--on-accent` (cinza médio, fundos
+  intactos): `expected 2.11 to be greater than or equal to 4.5`.
+
+- **Tinta do white-label derivada do acento — resolvido em 2026-07-31** (commit `76f3217`),
+  decisão do usuário. O diagnóstico inicial subestimava o problema: não era "o escuro repete
+  o erro", era **ausência de garantia nos dois temas**. Medido em navegador, com
+  `--on-accent: var(--brand-contrast, #FFFFFF)`, **5 de 7 cores-base representativas
+  reprovavam AA no claro e 6 de 7 no escuro** (amarelo 1,53:1, ciano 1,81:1). Tinta branca só
+  serve para cor-base escura.
+
+  **Escolhido:** derivar a tinta da luminosidade do acento resolvido com relative color
+  syntax — `oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h)`. CSS puro,
+  zero runtime, serve os quatro frameworks, e se adapta por tema sozinha porque lê o
+  `--accent` que o bloco escuro já redefine. O `--brand-contrast` continua sendo o primeiro
+  argumento do `var()`, então o contrato **segue em 4 tokens** — foi o que descartou a opção
+  de um `--accent-solid`.
+
+  **O limiar 0,58 é medido, não escolhido:** varredura de 18 cores-base × 2 temas × 7
+  limiares. Em 0,58 sobra 1 falha em 36 (`#E11D48` no claro, 4,47:1 contra 4,5) e AA-large
+  (3,0) passa em todas as 36. Os vizinhos são bem piores — 0,62 falha 6, 0,65 falha 9. O
+  limite do `#E11D48` está declarado nas duas guias com o número, não escondido, e o teste o
+  trata como exceção enumerada com piso de 4,4 para que uma regressão ali ainda reprove.
+
+  **A guarda `@supports` foi correção minha, não capricho.** O brief original especificou a
+  derivação sem ela e eu afirmei ao usuário que "degrada sozinha para o comportamento atual".
+  Estava errado, e o navegador provou: sem guarda, engine sem relative color syntax deixa o
+  `--on-accent` inválido em tempo de valor computado, o `color` cai para a cor **herdada** do
+  body e o rótulo fica azul-escuro sobre navy — **pior que o branco que substituiu**
+  (`rgb(18,52,86)` medido). Com a guarda, a base fora do `@supports` é byte-idêntica ao
+  handoff e só o bloco novo diverge no parity. Lição geral: `@supports` não é opcional quando
+  a falha de suporte cai em `var()` sem fallback próprio — IACVT herda, não reverte.
+
+  **Verificação:** 59 testes no styles (eram 23). Reverter para tinta branca reprova 8
+  sementes já em AA-large; **colapsar as duas declarações numa só quebra o teste de CSSOM**,
+  que existe exatamente para isso — num navegador que suporta, um teste de valor computado
+  não distinguiria os dois casos. Em navegador real, 16 cores-base × 2 temas passam AA em
+  Chromium **e** Firefox.
+
+- **APIs da camada de cromo (6c-b2) — fechadas em 2026-07-30.** As 8 adições não têm
+  handoff, então o contrato era o trabalho. Onde o CSS mora: categoria nova
+  `components/chrome/chrome.css`, no padrão por categoria que já existe. Como é arquivo
+  100% nosso, sem contraparte em `handoff/`, o parity precisa aceitá-lo como região
+  aditiva inteira — o Lote 1 resolve isso e os demais herdam. Valem para todas: defaults
+  só no CSS via custom property (lição do `Stack`/`Grid`), texto visível é prop traduzível.
+
+  - **`Shell`** — `sidebar`/`topbar`/`aside` + `scroll="page" | "content"` (default
+    `page`), `<main class="lyra-shell__main">`. Custom properties `--shell-sidebar`
+    (220px), `--shell-aside` (200px), `--shell-top` (0; o docs passa 84px). Breakpoints
+    ficam fixos porque media query não lê custom property: TOC some em 1100px, sidebar
+    empilha em 900px — ordem descoberta empiricamente, preservar. Vai literal o
+    conhecimento caro: `max-height` em `vh` **e** `dvh`, `overscroll-behavior: contain`.
+    **Achado que reposicionou a decisão:** o `.lyra-appshell*` **já está no CSS** — o
+    6c-b1 portou o `layout.css` do delta inteiro, porque parity é verbatim; o que não
+    existe é o wrapper React (absorvido pelo `Shell`, como decidido). Ou seja, o motor de
+    scroll de app já existe em CSS e só o de página é nosso. **Decisão do usuário:
+    vocabulário único `.lyra-shell`** nos dois modos, reescrevendo as ~10 declarações do
+    modo content na região aditiva. Custo aceito: duplicação de CSS e o `.lyra-appshell*`
+    virando CSS legado sem wrapper (parity proíbe apagar). Ganho: uma API, um vocabulário
+    — e o consumidor de Vue/Blade não precisa saber que a prop troca a família de classe.
+  - **`Navbar` + `NavLink` + `Footer`** — shells com slots (`brand`/`nav`/`actions`;
+    `brand`/`note`/`links`), nunca layouts fechados. **`asChild` no `NavLink` é
+    requisito**, não conveniência: sem ele o docs não dogfooda (perde prefetch, nova aba,
+    copiar link do `<Link>`) — mesma armadilha anotada para o `AppSidebar`. `active` põe a
+    classe **e** `aria-current="page"`. O `.lw-header__cta` não entra: é copy deste site.
+  - **`TableOfContents`** — dirigido por dados (`items`/`activeId`/`label`), e aqui isso é
+    seguro porque link de TOC é âncora na mesma página: o `<button>` sem prefetch que
+    inutilizaria o `AppSidebar` não se aplica. **O `useScrollSpy` vem junto** (decisão do
+    usuário): ~25 linhas de lógica pura, sem CSS, opcional — sem ele todo consumidor
+    reescreve o mesmo IntersectionObserver, que é o argumento que justificou o componente.
+  - **`CodeBlock`** — só o cromo. O DS **não** depende de Shiki: o texto copiado sai do
+    `textContent` do próprio `<pre>` (funciona com qualquer highlighter), com `copyText`
+    opcional. Numeração por contador CSS sobre filhos `.line`, convenção de fato do Shiki
+    e do rehype-pretty-code, documentada como contrato. As variáveis
+    `--shiki-light`/`--shiki-dark` **ficam no `apps/docs`**: são do highlighter.
+  - **`SegmentedControl`** — o toggle EN|PT generalizado, com **semântica de
+    `radiogroup`** (decisão do usuário): `role="radio"`/`aria-checked`, roving tabindex,
+    setas + Home/End. É o que um segmentado é, e mantém consistência com os widgets APG da
+    Fase 4; o caso do idioma vira "escolher opção que se aplica na hora".
+  - **`CommandPalette.Trigger`** — propriedade estática no módulo que já existe: sem entry
+    nova no tsup, sem caminho novo no exports map. O `__kbd` duplicado morre em favor do
+    `.lyra-kbd`. **`shortcut` é prop, nunca detecção de plataforma** — sniff de
+    `navigator` no render é mismatch de hidratação garantido.
+  - **`.lyra-prose`** — camada CSS sem React, o item mais CSS-first da lista. Cobre o que
+    o docs já tem (`h1/h2/h3`, `p`, `a`, `strong`, code inline) mais o que falta e todo
+    consumidor precisa (`ul/ol/li`, `blockquote`, `hr`). Custom properties
+    `--prose-measure` (760px, o valor validado em produção — fidelidade é constraint
+    travada) e `--prose-scroll-offset` (0; o docs passa 80px). Preserva o
+    `overflow-wrap: anywhere` no code inline, que veio de medição real (375px virando
+    390px na guia de HTML puro), e a guarda `a:not(.lyra-btn)`.
+
+- **Os três menores do 6c-b2 — resolvido em 2026-07-30 verificando contra a fonte.** O
+  mapa deixou `IconTile`, `CheckList` e `Brand` como "decidir caso a caso". Verificação:
+  **`.lw-comm__icon` não existe em lugar nenhum** — `grep -rn "lw-comm"` no `handoff/`, no
+  `apps/docs` e no `packages/` devolve zero. O inventário do `handoff-v1.2-map.md` listou
+  a classe entre as 27 que "o handoff traz e o repo não tem", e ela não está no handoff: a
+  seção de comunidade do kit é `.lw-quotes`/`.lw-quote-card` (depoimentos, cortados). O
+  `CheckList` é real no kit, mas seu único consumidor era a seção de **pricing**, também
+  cortada. O `Brand` é o único com duplicação comprovada hoje: `site-header.tsx` e
+  `site-footer.tsx` repetem as mesmas 14 linhas de troca light/dark, `eslint-disable`
+  incluso. **Decisão: só o `Brand` entra** (Lote 5); `IconTile` e `CheckList` ficam para a
+  6c-c, quando a landing existir e disser se precisam.
 
 - **Baseline do parity — resolvido em 2026-07-28.** As constantes `EXPECTED_TOKENS` (209)
   e `EXPECTED_CLASSES` (248) e o `STYLES_ENTRY_ORDER` saíram do código e viraram
@@ -158,6 +477,40 @@ se paga porque há conteúdo real.
   64px, do diagnóstico do iPad.
 
 ## Débito técnico anotado
+
+- ~~**Contraste do tema escuro reprova WCAG AA**~~ — **resolvido em 2026-07-31**, commit
+  `726141e`. Ver § Decisões tomadas. **Mas o white-label continua com o mesmo buraco**,
+  registrado logo abaixo.
+
+- ~~**O white-label repete o erro estrutural do contraste**~~ — **resolvido em 2026-07-31**,
+  commit `76f3217`, e **verificado nos três motores em 2026-07-31**. Registro em § Decisões
+  tomadas. Chromium, Firefox e WebKit concordam exatamente: 16 cores-base × 2 temas, zero
+  abaixo de AA, e as mesmas 23 combinações recebendo tinta preta.
+
+  **Como o WebKit foi verificado num Manjaro** (o `playwright install-deps` só cobre
+  Debian/Ubuntu, e o usuário não pode instalar): faltavam só `libicu74`, `libxml2.so.2` e
+  `libflite1` — o Arch tem ICU 78 e `libxml2.so.16`, sonames incompatíveis com o binário
+  pré-compilado. Resolvido **sem tocar no sistema**: baixar os três `.deb` do Ubuntu, extrair
+  com `ar`/`tar` num diretório temporário e copiar os `.so` para
+  `~/.cache/ms-playwright/webkit-<v>/minibrowser-*/sys/lib` (o `pw_run.sh` sobrescreve
+  `LD_LIBRARY_PATH`, então apontar a variável de fora não funciona — as bibliotecas precisam
+  estar no bundle). Os `libflite*.so.2.2` precisam de symlink para `.so.1`. Vale para
+  qualquer verificação futura em WebKit nesta máquina.
+
+- **Alvos de toque de 27px nos rótulos de grupo da sidebar.** A media query de toque do
+  `apps/docs/app/site.css` cobre `.lyra-sbgroup__item`, mas nunca cobriu
+  `.lyra-sbgroup__label--btn` (os títulos colapsáveis). Pré-existente, escapou da primeira
+  rodada de impeccable. 25 alvos abaixo de 44px a 375px, a maioria por esta causa.
+
+- ~~**Anel de foco do cromo do site**~~ e ~~**`button-name` no `.lw-search`**~~ —
+  **resolvidos** pelos Lotes 2 e 3 (`0628b78`, `f713085`), como previsto: as classes viraram
+  componentes do DS e herdaram o `--shadow-focus` e o nome acessível. O `.lw-locale__opt` é o
+  último dos quatro e sai no Lote 4.
+
+- **No mobile a sidebar empilhada toma a tela inteira** — o leitor cai em ~50 links antes
+  do conteúdo. É idêntico ao comportamento anterior (o `.lw-docs__side` já ficava `static`
+  a 900px), então não é regressão; mas agora é o **default do `Shell` para todo consumidor
+  do DS**. Decidir se o `Shell` deve colapsar a trilha em disclosure/drawer no mobile.
 
 - **`"use client"` em todo módulo bloqueia export chamável do servidor.** O `onSuccess` do tsup
   prepende a diretiva em cada chunk emitido (decisão travada D-13, com gate

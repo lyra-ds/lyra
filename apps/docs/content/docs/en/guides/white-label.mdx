@@ -19,15 +19,15 @@ overrides.
 
 ## Define a brand
 
-`--brand` is the required seed. The other three tokens have defaults, but set
-`--brand-contrast` whenever the seed is light enough that white text would not be readable.
+`--brand` is the required seed. The other three tokens have defaults. Lyra derives readable primary
+ink automatically; set `--brand-contrast` only when you want to choose that ink yourself.
 
-| Token              | Default                                      | Purpose                                  |
-| ------------------ | -------------------------------------------- | ---------------------------------------- |
-| `--brand`          | Required                                     | The brand-color seed.                    |
-| `--brand-contrast` | `#FFFFFF`                                    | Text and icons on the primary accent.    |
-| `--brand-radius`   | `10px`                                       | The `--radius-md` value.                 |
-| `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Both `--font-sans` and `--font-display`. |
+| Token              | Default                                      | Purpose                                                     |
+| ------------------ | -------------------------------------------- | ----------------------------------------------------------- |
+| `--brand`          | Required                                     | The brand-color seed.                                       |
+| `--brand-contrast` | Automatic black or white                     | Optional override for text and icons on the primary accent. |
+| `--brand-radius`   | `10px`                                       | The `--radius-md` value.                                    |
+| `--brand-font`     | `"Plus Jakarta Sans", system-ui, sans-serif` | Both `--font-sans` and `--font-display`.                    |
 
 Here is a complete brand definition:
 
@@ -69,9 +69,10 @@ inside a dark ancestor. Use the site theme toggle to preview each brand in both 
 
 ## Keep primary text readable
 
-`--on-accent` defaults to `#FFFFFF`. That works for a dark brand, but a light brand needs an
-explicit dark `--brand-contrast`; otherwise the label on a primary button can become illegible.
-Check the contrast of each brand/contrast pair before shipping it.
+Lyra derives `--on-accent` from the resolved accent, choosing neutral black or white automatically.
+Use `--brand-contrast` only to pin a specific ink. In browsers that support relative color syntax,
+the automatic rule meets AA-large (3.0:1) for all supported brand/theme combinations. The known light-mode crossover is `#E11D48`, which reaches
+4.47:1 rather than normal-text AA's 4.5:1; check a custom override before shipping it.
 
 ## What this contract does not change
 

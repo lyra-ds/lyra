@@ -189,6 +189,26 @@
         "default": "./dist/card.cjs"
       }
     },
+    "./code-block": {
+      "import": {
+        "types": "./dist/code-block.d.ts",
+        "default": "./dist/code-block.js"
+      },
+      "require": {
+        "types": "./dist/code-block.d.cts",
+        "default": "./dist/code-block.cjs"
+      }
+    },
+    "./segmented-control": {
+      "import": {
+        "types": "./dist/segmented-control.d.ts",
+        "default": "./dist/segmented-control.js"
+      },
+      "require": {
+        "types": "./dist/segmented-control.d.cts",
+        "default": "./dist/segmented-control.cjs"
+      }
+    },
     "./container": {
       "import": {
         "types": "./dist/container.d.ts",
@@ -197,6 +217,56 @@
       "require": {
         "types": "./dist/container.d.cts",
         "default": "./dist/container.cjs"
+      }
+    },
+    "./shell": {
+      "import": {
+        "types": "./dist/shell.d.ts",
+        "default": "./dist/shell.js"
+      },
+      "require": {
+        "types": "./dist/shell.d.cts",
+        "default": "./dist/shell.cjs"
+      }
+    },
+    "./navbar": {
+      "import": {
+        "types": "./dist/navbar.d.ts",
+        "default": "./dist/navbar.js"
+      },
+      "require": {
+        "types": "./dist/navbar.d.cts",
+        "default": "./dist/navbar.cjs"
+      }
+    },
+    "./nav-link": {
+      "import": {
+        "types": "./dist/nav-link.d.ts",
+        "default": "./dist/nav-link.js"
+      },
+      "require": {
+        "types": "./dist/nav-link.d.cts",
+        "default": "./dist/nav-link.cjs"
+      }
+    },
+    "./footer": {
+      "import": {
+        "types": "./dist/footer.d.ts",
+        "default": "./dist/footer.js"
+      },
+      "require": {
+        "types": "./dist/footer.d.cts",
+        "default": "./dist/footer.cjs"
+      }
+    },
+    "./brand": {
+      "import": {
+        "types": "./dist/brand.d.ts",
+        "default": "./dist/brand.js"
+      },
+      "require": {
+        "types": "./dist/brand.d.cts",
+        "default": "./dist/brand.cjs"
       }
     },
     "./grid": {
@@ -439,6 +509,16 @@
         "default": "./dist/command-palette.cjs"
       }
     },
+    "./table-of-contents": {
+      "import": {
+        "types": "./dist/table-of-contents.d.ts",
+        "default": "./dist/table-of-contents.js"
+      },
+      "require": {
+        "types": "./dist/table-of-contents.d.cts",
+        "default": "./dist/table-of-contents.cjs"
+      }
+    },
     "./package.json": "./package.json",
     "./theme-provider": {
       "import": {
@@ -476,6 +556,56 @@
     "access": "public"
   },
   "size-limit": [
+    {
+      "name": "import { Shell } from '@lyra-ds/react/shell'",
+      "path": "dist/shell.js",
+      "import": "{ Shell }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { Navbar } from '@lyra-ds/react/navbar'",
+      "path": "dist/navbar.js",
+      "import": "{ Navbar }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { NavLink } from '@lyra-ds/react/nav-link'",
+      "path": "dist/nav-link.js",
+      "import": "{ NavLink }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { Footer } from '@lyra-ds/react/footer'",
+      "path": "dist/footer.js",
+      "import": "{ Footer }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { Brand } from '@lyra-ds/react/brand'",
+      "path": "dist/brand.js",
+      "import": "{ Brand }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
     {
       "name": "import { Drawer } from '@lyra-ds/react/drawer'",
       "path": "dist/drawer.js",
@@ -635,6 +765,26 @@
         "react-dom"
       ],
       "limit": "300 B"
+    },
+    {
+      "name": "import { CodeBlock } from '@lyra-ds/react/code-block'",
+      "path": "dist/code-block.js",
+      "import": "{ CodeBlock }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { SegmentedControl } from '@lyra-ds/react/segmented-control'",
+      "path": "dist/segmented-control.js",
+      "import": "{ SegmentedControl }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
     },
     {
       "name": "import { Grid } from '@lyra-ds/react/grid'",

@@ -84,6 +84,330 @@
     ]
   },
   {
+    "name": "Brand",
+    "category": "Chrome",
+    "extends": "",
+    "description": "Props for {@link Brand}.",
+    "signature": "export declare function Brand(props: BrandProps): JSX.Element;",
+    "props": [
+      {
+        "name": "mark",
+        "type": "string",
+        "optional": false,
+        "description": "Image source used for the light theme mark."
+      },
+      {
+        "name": "markDark",
+        "type": "string",
+        "optional": true,
+        "description": "Optional image source used for the dark theme mark."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "optional": true,
+        "description": "Mark edge length in pixels. Sets `--brand-mark-size`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode | undefined | ReactElement",
+        "optional": true,
+        "description": "Wordmark content that gives the brand its accessible name.\n\nOmit the wordmark to render a mark-only brand.\n\nA child link or framework routing element containing the wordmark."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Optional translated accessible name that overrides the wordmark text.\n\nTranslated accessible name required when no wordmark is rendered."
+      },
+      {
+        "name": "href",
+        "type": "string | never",
+        "optional": true,
+        "description": "Destination rendered as an anchor. Mutually exclusive with `asChild`.\n\nDestination is provided by the child element when `asChild` is enabled."
+      },
+      {
+        "name": "asChild",
+        "type": "false | true",
+        "optional": true,
+        "description": "Render the native anchor or span.\n\nRender the single child element with the brand's props and classes merged."
+      }
+    ]
+  },
+  {
+    "name": "CodeBlock",
+    "category": "Chrome",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link CodeBlock}.",
+    "signature": "export declare function CodeBlock(props: CodeBlockProps): JSX.Element;",
+    "props": [
+      {
+        "name": "language",
+        "type": "string",
+        "optional": true,
+        "description": "Optional language badge shown in the code panel bar."
+      },
+      {
+        "name": "lineNumbers",
+        "type": "boolean",
+        "optional": true,
+        "description": "Draw line numbers beside descendants whose class list includes `line`."
+      },
+      {
+        "name": "copyLabel",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Translated visible label for the copy button. Omit with `copiedLabel` to hide copying."
+      },
+      {
+        "name": "copiedLabel",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Translated visible label and polite announcement shown after a successful copy."
+      },
+      {
+        "name": "copyText",
+        "type": "string",
+        "optional": true,
+        "description": "Text copied instead of the rendered text content of this code block's `<pre>`."
+      }
+    ]
+  },
+  {
+    "name": "Footer",
+    "category": "Chrome",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'children'>",
+    "description": "Props for {@link Footer}.",
+    "signature": "export declare function Footer(props: FooterProps): JSX.Element;",
+    "props": [
+      {
+        "name": "brand",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional brand content placed at the start of the footer row."
+      },
+      {
+        "name": "note",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional supporting note placed after the brand."
+      },
+      {
+        "name": "links",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional resource links rendered inside the footer navigation landmark."
+      },
+      {
+        "name": "linksLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the resource-links navigation landmark."
+      }
+    ]
+  },
+  {
+    "name": "Navbar",
+    "category": "Chrome",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'children'>",
+    "description": "Props for {@link Navbar}.",
+    "signature": "export declare function Navbar(props: NavbarProps): JSX.Element;",
+    "props": [
+      {
+        "name": "brand",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional brand content placed at the start of the navigation row."
+      },
+      {
+        "name": "nav",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional primary navigation content rendered inside the navigation landmark."
+      },
+      {
+        "name": "navLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the navigation landmark."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional controls placed at the end of the navigation row."
+      },
+      {
+        "name": "sticky",
+        "type": "boolean",
+        "optional": true,
+        "description": "Keep the navbar fixed to the top while scrolling. Default `true`."
+      }
+    ]
+  },
+  {
+    "name": "NavLink",
+    "category": "Chrome",
+    "extends": "AnchorHTMLAttributes<HTMLAnchorElement>",
+    "description": "Props for {@link NavLink}.",
+    "signature": "export declare function NavLink(props: NavLinkProps): JSX.Element;",
+    "props": [
+      {
+        "name": "active",
+        "type": "boolean",
+        "optional": true,
+        "description": "Marks the destination as the current page."
+      },
+      {
+        "name": "asChild",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render the single child element instead of an `<a>`, preserving its routing behavior."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Link content. Must be exactly one element when `asChild` is enabled."
+      }
+    ]
+  },
+  {
+    "name": "SegmentedControl",
+    "category": "Chrome",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "description": "Props for {@link SegmentedControl}.",
+    "signature": "export declare function SegmentedControl(props: SegmentedControlProps): JSX.Element;",
+    "props": [
+      {
+        "name": "options",
+        "type": "SegmentedControlOption[]",
+        "optional": false,
+        "description": "Options rendered in keyboard-navigation order. Provide at least two options."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "optional": false,
+        "description": "Currently selected option value."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: string) => void",
+        "optional": false,
+        "description": "Called with the next value after pointer or keyboard selection."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": false,
+        "description": "Translated accessible name for the radiogroup."
+      }
+    ]
+  },
+  {
+    "name": "Shell",
+    "category": "Chrome",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link Shell}.",
+    "signature": "export declare function Shell(props: ShellProps): JSX.Element;",
+    "props": [
+      {
+        "name": "sidebar",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional navigation or complementary rail content."
+      },
+      {
+        "name": "sidebarAs",
+        "type": "'aside' | 'nav'",
+        "optional": true,
+        "description": "Semantic element for the sidebar rail. Use `\"nav\"` when it contains primary navigation."
+      },
+      {
+        "name": "sidebarLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the sidebar landmark."
+      },
+      {
+        "name": "topbar",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional top region placed before the main content."
+      },
+      {
+        "name": "aside",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional complementary context rail content."
+      },
+      {
+        "name": "asideAs",
+        "type": "'aside' | 'nav'",
+        "optional": true,
+        "description": "Semantic element for the aside rail. Use `\"nav\"` when it contains navigation."
+      },
+      {
+        "name": "asideLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the aside landmark."
+      },
+      {
+        "name": "scroll",
+        "type": "'page' | 'content'",
+        "optional": true,
+        "description": "Whether the document or the main region is the scroll container. Default: `\"page\"`."
+      },
+      {
+        "name": "sidebarWidth",
+        "type": "number",
+        "optional": true,
+        "description": "Sidebar rail width in pixels. Sets `--shell-sidebar`."
+      },
+      {
+        "name": "asideWidth",
+        "type": "number",
+        "optional": true,
+        "description": "Complementary aside rail width in pixels. Sets `--shell-aside`."
+      },
+      {
+        "name": "top",
+        "type": "number",
+        "optional": true,
+        "description": "Sticky rail offset in pixels. Sets `--shell-top`."
+      }
+    ]
+  },
+  {
+    "name": "TableOfContents",
+    "category": "Chrome",
+    "extends": "HTMLAttributes<HTMLElement>",
+    "description": "Props for {@link TableOfContents}.",
+    "signature": "export declare function TableOfContents(props: TableOfContentsProps): JSX.Element;",
+    "props": [
+      {
+        "name": "items",
+        "type": "TableOfContentsItem[]",
+        "optional": false,
+        "description": "In-page anchor links rendered in the contents rail."
+      },
+      {
+        "name": "activeId",
+        "type": "string",
+        "optional": true,
+        "description": "Id of the current in-page position. The component does not derive it from scroll state."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": false,
+        "description": "Visible heading and accessible name for the contents navigation landmark."
+      }
+    ]
+  },
+  {
     "name": "EmptyState",
     "category": "Data",
     "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",

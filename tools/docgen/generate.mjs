@@ -20,6 +20,7 @@ const PROPS_FILE = join(OUTPUT, 'props.json');
 
 const CATEGORY_ORDER = [
   'Buttons',
+  'Chrome',
   'Data',
   'Display',
   'Feedback',
@@ -140,7 +141,8 @@ function exportedNames(sourceFile) {
     if (
       (ts.isFunctionDeclaration(statement) ||
         ts.isVariableStatement(statement) ||
-        ts.isInterfaceDeclaration(statement)) &&
+        ts.isInterfaceDeclaration(statement) ||
+        ts.isTypeAliasDeclaration(statement)) &&
       statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)
     ) {
       if ('name' in statement && statement.name) names.add(statement.name.text);
@@ -173,6 +175,68 @@ function membersFromInterface(interfaceNode, sourceFile) {
   });
 }
 
+function membersFromTypeNode(typeNode, sourceFile, declarations, seen = new Set()) {
+  if (ts.isTypeLiteralNode(typeNode)) {
+    return typeNode.members.map((member) => {
+      if (!ts.isPropertySignature(member) || !member.type) {
+        throw new Error('Unsupported props type member: expected a typed property signature.');
+      }
+
+      return {
+        name: member.name.getText(sourceFile),
+        type: member.type.getText(sourceFile),
+        optional: Boolean(member.questionToken),
+        description: descriptionFromJSDoc(rawJSDoc(member, sourceFile)),
+        jsDoc: rawJSDoc(member, sourceFile),
+      };
+    });
+  }
+
+  if (ts.isParenthesizedTypeNode(typeNode)) {
+    return membersFromTypeNode(typeNode.type, sourceFile, declarations, seen);
+  }
+
+  if (ts.isIntersectionTypeNode(typeNode) || ts.isUnionTypeNode(typeNode)) {
+    return typeNode.types.flatMap((type) =>
+      membersFromTypeNode(type, sourceFile, declarations, seen),
+    );
+  }
+
+  if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
+    const name = typeNode.typeName.text;
+    if (seen.has(name)) return [];
+    const declaration = declarations.get(name);
+    if (!declaration) return [];
+
+    const nested = new Set(seen).add(name);
+    return membersFromTypeNode(declaration.type, sourceFile, declarations, nested);
+  }
+
+  return [];
+}
+
+function membersFromTypeAlias(alias, sourceFile, declarations) {
+  const grouped = new Map();
+  for (const member of membersFromTypeNode(alias.type, sourceFile, declarations)) {
+    const existing = grouped.get(member.name);
+    if (existing) existing.push(member);
+    else grouped.set(member.name, [member]);
+  }
+
+  return [...grouped.values()].map((members) => {
+    const types = [...new Set(members.map((member) => member.type))];
+    const descriptions = [...new Set(members.map((member) => member.description).filter(Boolean))];
+    const docs = [...new Set(members.map((member) => member.jsDoc).filter(Boolean))];
+    return {
+      name: members[0].name,
+      type: types.join(' | '),
+      optional: members.some((member) => member.optional),
+      description: descriptions.join('\n\n'),
+      jsDoc: docs.join('\n'),
+    };
+  });
+}
+
 function extractComponents() {
   const categoryByName = collectCategoryMap();
   const components = [];
@@ -187,11 +251,16 @@ function extractComponents() {
       true,
     );
     const exported = exportedNames(sourceFile);
+    const typeAliases = new Map(
+      sourceFile.statements
+        .filter(ts.isTypeAliasDeclaration)
+        .map((statement) => [statement.name.text, statement]),
+    );
     const ownerName = pascalFromKebab(file.slice(0, -'.d.ts'.length));
     const ownerCategory = categoryByName.get(ownerName);
 
     for (const statement of sourceFile.statements) {
-      if (!ts.isInterfaceDeclaration(statement)) continue;
+      if (!ts.isInterfaceDeclaration(statement) && !ts.isTypeAliasDeclaration(statement)) continue;
       const propsName = statement.name.text;
       if (!propsName.endsWith('Props') || !exported.has(propsName)) continue;
 
@@ -205,9 +274,11 @@ function extractComponents() {
         throw new Error(`${file}: no handoff category for ${name}.`);
       }
 
-      const extensions = (statement.heritageClauses ?? [])
-        .filter((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
-        .flatMap((clause) => clause.types.map((type) => type.getText(sourceFile)));
+      const extensions = ts.isInterfaceDeclaration(statement)
+        ? (statement.heritageClauses ?? [])
+            .filter((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
+            .flatMap((clause) => clause.types.map((type) => type.getText(sourceFile)))
+        : [];
 
       components.push({
         name,
@@ -217,7 +288,9 @@ function extractComponents() {
         jsDoc: rawJSDoc(statement, sourceFile),
         signature: `export declare function ${name}(props: ${propsName}): JSX.Element;`,
         propsName,
-        props: membersFromInterface(statement, sourceFile),
+        props: ts.isInterfaceDeclaration(statement)
+          ? membersFromInterface(statement, sourceFile)
+          : membersFromTypeAlias(statement, sourceFile, typeAliases),
       });
     }
   }
@@ -228,12 +301,15 @@ function extractComponents() {
       left.name.localeCompare(right.name),
   );
 
-  // Counts exported `*Props` INTERFACES in the dist, not component directories and not exports-map
+  // Counts exported `*Props` declarations in the dist, not component directories and not exports-map
   // subpaths — the three differ. `src/stack/` alone contributes two (Stack and Inline), which is why
-  // the four layout wrappers moved this from 40 to 45. The guard's job is catching a stale or partial
-  // dist (which yields FEWER), so it is maintained by hand: bump it in the same commit that adds a
-  // component, and the mismatch message tells you the number it actually found.
-  const EXPECTED_COMPONENTS = 46;
+  // the four layout wrappers moved this from 40 to 45, Shell moved it from 46 to 47, and Navbar,
+  // NavLink, and Footer moved it from 47 to 50; TableOfContents moved it from 50 to 51; CodeBlock
+  // SegmentedControl move it from 51 to 53, and Brand moves it from 53 to 54. The guard's job is
+  // catching a stale or partial dist (which yields FEWER), so it is maintained by hand: bump it in
+  // the same commit that adds a component, and the mismatch message tells you the number it
+  // actually found.
+  const EXPECTED_COMPONENTS = 54;
   if (components.length !== EXPECTED_COMPONENTS) {
     throw new Error(
       `Expected exactly ${EXPECTED_COMPONENTS} exported component Props interfaces from packages/react/dist; extracted ${components.length}. Rebuild @lyra-ds/react or fix the declaration exports.`,

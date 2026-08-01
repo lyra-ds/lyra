@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { SegmentedControl } from '@lyra-ds/react';
 import { locales, type Locale } from '@/lib/i18n';
 
 const shortLabel: Record<Locale, string> = { en: 'EN', 'pt-BR': 'PT' };
@@ -22,20 +23,11 @@ export function LocaleSwitcher({ locale, label }: { locale: Locale; label: strin
   }
 
   return (
-    <div className="lw-locale" role="group" aria-label={label}>
-      {locales.map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={['lw-locale__opt', option === locale && 'lw-locale__opt--active']
-            .filter(Boolean)
-            .join(' ')}
-          aria-current={option === locale ? 'true' : undefined}
-          onClick={() => go(option)}
-        >
-          {shortLabel[option]}
-        </button>
-      ))}
-    </div>
+    <SegmentedControl
+      options={locales.map((option) => ({ value: option, label: shortLabel[option] }))}
+      value={locale}
+      onChange={(option) => go(option as Locale)}
+      label={label}
+    />
   );
 }

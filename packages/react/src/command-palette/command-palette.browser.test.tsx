@@ -29,6 +29,33 @@ function setTheme(theme: (typeof themes)[number]): void {
   else document.documentElement.removeAttribute('data-theme');
 }
 
+type VitestBrowserRunner = { iframeId: string; sessionId: string };
+
+function setViewport(width: number, height: number) {
+  const runner = (window as typeof window & { __vitest_browser_runner__?: VitestBrowserRunner })
+    .__vitest_browser_runner__;
+  if (!runner) throw new Error('Vitest Browser Mode runner is unavailable.');
+
+  const channel = new BroadcastChannel(`vitest:${runner.sessionId}`);
+  channel.postMessage({ event: 'viewport', width, height, iframeId: runner.iframeId });
+
+  return new Promise<void>((resolve, reject) => {
+    channel.addEventListener('message', function handler(event) {
+      if (event.data.iframeId !== runner.iframeId) return;
+      if (event.data.event === 'viewport:done') {
+        channel.removeEventListener('message', handler);
+        channel.close();
+        resolve();
+      }
+      if (event.data.event === 'viewport:fail') {
+        channel.removeEventListener('message', handler);
+        channel.close();
+        reject(new Error(event.data.error));
+      }
+    });
+  });
+}
+
 function OverlayHarness() {
   const [open, setOpen] = useState(false);
   return (
@@ -65,9 +92,30 @@ afterEach(async () => {
   setTheme('light');
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
+  await setViewport(1200, 800);
 });
 
 describe('CommandPalette', () => {
+  it('exposes a responsive Trigger with an accessible name after its visible label collapses', async () => {
+    await setViewport(375, 800);
+    const onClick = vi.fn();
+    const { container, ...screen } = await render(
+      <CommandPalette.Trigger label="Search" shortcut="⌘K" onClick={onClick} />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-cmdk-trigger')!;
+
+    await expect.element(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    expect(trigger.className).toBe('lyra-cmdk-trigger');
+    expect(trigger.querySelector('.lyra-kbd')?.textContent).toBe('⌘K');
+    expect(getComputedStyle(trigger.querySelector('.lyra-cmdk-trigger__label')!).display).toBe(
+      'none',
+    );
+    expect(getComputedStyle(trigger.querySelector('.lyra-kbd')!).display).toBe('none');
+    await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect((await axe.run(trigger)).violations).toEqual([]);
+  });
+
   for (const theme of themes) {
     it(`emits exact inline classes and is axe clean in ${theme}`, async () => {
       setTheme(theme);

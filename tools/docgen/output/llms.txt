@@ -76,6 +76,161 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 export declare function IconButton(props: IconButtonProps): JSX.Element;
 ```
 
+## Chrome
+
+### Brand
+```ts
+/** Props for {@link Brand}. */
+export interface BrandProps {
+  /** Image source used for the light theme mark. */
+  mark: string;
+  /** Optional image source used for the dark theme mark. */
+  markDark?: string;
+  /** Mark edge length in pixels. Sets `--brand-mark-size`. */
+  size?: number;
+  /** Wordmark content that gives the brand its accessible name. */
+  /** Omit the wordmark to render a mark-only brand. */
+  /** A child link or framework routing element containing the wordmark. */
+  children?: ReactNode | undefined | ReactElement;
+  /** Optional translated accessible name that overrides the wordmark text. */
+  /** Translated accessible name required when no wordmark is rendered. */
+  'aria-label'?: string;
+  /** Destination rendered as an anchor. Mutually exclusive with `asChild`. */
+  /** Destination is provided by the child element when `asChild` is enabled. */
+  href?: string | never;
+  /** Render the native anchor or span. */
+  /** Render the single child element with the brand's props and classes merged. */
+  asChild?: false | true;
+}
+export declare function Brand(props: BrandProps): JSX.Element;
+```
+
+### CodeBlock
+```ts
+/** Props for {@link CodeBlock}. */
+export interface CodeBlockProps extends HTMLAttributes<HTMLDivElement> {
+  /** Optional language badge shown in the code panel bar. */
+  language?: string;
+  /** Draw line numbers beside descendants whose class list includes `line`. */
+  lineNumbers?: boolean;
+  /** Translated visible label for the copy button. Omit with `copiedLabel` to hide copying. */
+  copyLabel?: ReactNode;
+  /** Translated visible label and polite announcement shown after a successful copy. */
+  copiedLabel?: ReactNode;
+  /** Text copied instead of the rendered text content of this code block's `<pre>`. */
+  copyText?: string;
+}
+export declare function CodeBlock(props: CodeBlockProps): JSX.Element;
+```
+
+### Footer
+```ts
+/** Props for {@link Footer}. */
+export interface FooterProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+  /** Optional brand content placed at the start of the footer row. */
+  brand?: ReactNode;
+  /** Optional supporting note placed after the brand. */
+  note?: ReactNode;
+  /** Optional resource links rendered inside the footer navigation landmark. */
+  links?: ReactNode;
+  /** Accessible name for the resource-links navigation landmark. */
+  linksLabel?: string;
+}
+export declare function Footer(props: FooterProps): JSX.Element;
+```
+
+### Navbar
+```ts
+/** Props for {@link Navbar}. */
+export interface NavbarProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+  /** Optional brand content placed at the start of the navigation row. */
+  brand?: ReactNode;
+  /** Optional primary navigation content rendered inside the navigation landmark. */
+  nav?: ReactNode;
+  /** Accessible name for the navigation landmark. */
+  navLabel?: string;
+  /** Optional controls placed at the end of the navigation row. */
+  actions?: ReactNode;
+  /** Keep the navbar fixed to the top while scrolling. Default `true`. */
+  sticky?: boolean;
+}
+export declare function Navbar(props: NavbarProps): JSX.Element;
+```
+
+### NavLink
+```ts
+/** Props for {@link NavLink}. */
+export interface NavLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  /** Marks the destination as the current page. */
+  active?: boolean;
+  /** Render the single child element instead of an `<a>`, preserving its routing behavior. */
+  asChild?: boolean;
+  /** Link content. Must be exactly one element when `asChild` is enabled. */
+  children?: ReactNode;
+}
+export declare function NavLink(props: NavLinkProps): JSX.Element;
+```
+
+### SegmentedControl
+```ts
+/** Props for {@link SegmentedControl}. */
+export interface SegmentedControlProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /** Options rendered in keyboard-navigation order. Provide at least two options. */
+  options: SegmentedControlOption[];
+  /** Currently selected option value. */
+  value: string;
+  /** Called with the next value after pointer or keyboard selection. */
+  onChange: (value: string) => void;
+  /** Translated accessible name for the radiogroup. */
+  label: string;
+}
+export declare function SegmentedControl(props: SegmentedControlProps): JSX.Element;
+```
+
+### Shell
+```ts
+/** Props for {@link Shell}. */
+export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
+  /** Optional navigation or complementary rail content. */
+  sidebar?: ReactNode;
+  /** Semantic element for the sidebar rail. Use `"nav"` when it contains primary navigation. */
+  sidebarAs?: 'aside' | 'nav';
+  /** Accessible name for the sidebar landmark. */
+  sidebarLabel?: string;
+  /** Optional top region placed before the main content. */
+  topbar?: ReactNode;
+  /** Optional complementary context rail content. */
+  aside?: ReactNode;
+  /** Semantic element for the aside rail. Use `"nav"` when it contains navigation. */
+  asideAs?: 'aside' | 'nav';
+  /** Accessible name for the aside landmark. */
+  asideLabel?: string;
+  /** Whether the document or the main region is the scroll container. Default: `"page"`. */
+  scroll?: 'page' | 'content';
+  /** Sidebar rail width in pixels. Sets `--shell-sidebar`. */
+  sidebarWidth?: number;
+  /** Complementary aside rail width in pixels. Sets `--shell-aside`. */
+  asideWidth?: number;
+  /** Sticky rail offset in pixels. Sets `--shell-top`. */
+  top?: number;
+}
+export declare function Shell(props: ShellProps): JSX.Element;
+```
+
+### TableOfContents
+```ts
+/** Props for {@link TableOfContents}. */
+export interface TableOfContentsProps extends HTMLAttributes<HTMLElement> {
+  /** In-page anchor links rendered in the contents rail. */
+  items: TableOfContentsItem[];
+  /** Id of the current in-page position. The component does not derive it from scroll state. */
+  activeId?: string;
+  /** Visible heading and accessible name for the contents navigation landmark. */
+  label: string;
+}
+export declare function TableOfContents(props: TableOfContentsProps): JSX.Element;
+```
+
 ## Data
 
 ### EmptyState

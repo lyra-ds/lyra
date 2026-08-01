@@ -3,6 +3,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 // tokens/brand.css color-mix derivation, all component CSS) and injects it as a <style> into
 // document.head. This is the fixture's stylesheet — the mechanism declared in vitest.config.ts.
 import '../styles.css';
+// brand.css is shipped source (the styles package has no CSS build step). Import it directly so
+// this structural check can distinguish the unsupported-engine fallback from the supported path.
+import brandCss from '../tokens/brand.css?raw';
 // The fixture DOM (probe elements) as raw markup, injected into document.body below.
 import fixtureHtml from './fixtures/brand-theme.html?raw';
 
@@ -44,6 +47,22 @@ function luminance(c: RGB): number {
   return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
 }
 
+/** WCAG relative luminance for the resolved sRGB channels. */
+function relativeLuminance({ r, g, b }: RGB): number {
+  const linear = [r, g, b].map((channel) => {
+    const srgb = channel / 255;
+    return srgb <= 0.03928 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+/** WCAG contrast ratio for two resolved token colors. */
+function contrast(foreground: RGB, background: RGB): number {
+  const fgLuminance = relativeLuminance(foreground);
+  const bgLuminance = relativeLuminance(background);
+  return (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
+}
+
 /**
  * Teal-family discriminator: green is (approximately) the dominant channel.
  * Acme teal (#0D9488, g=148 max) passes; indigo fallbacks (#5B5BD6, blue max) FAIL — so this
@@ -68,7 +87,10 @@ function isTealFamily(c: RGB): boolean {
 
 const RAW_ACME = parseHex('#0D9488'); // consumer brand seed, unmixed
 const LIGHT_ACCENT = parseHex('#5B5BD6'); // indigo-600 (default light --accent)
-const DARK_ACCENT = parseHex('#6E6ADE'); // indigo-500 (default dark --accent)
+const DARK_ACCENT = parseHex('#5B5BD6'); // indigo-600 (default dark --accent)
+const DARK_DANGER = parseHex('#DC2626'); // red-600 (default dark --danger)
+const LIGHT_SURFACE_PAGE = parseHex('#F8FAFC'); // slate-50
+const DARK_SURFACE_PAGE = parseHex('#0E1023'); // night-950
 
 function eqRGB(actual: RGB, expected: RGB, tol = 2): void {
   expect(Math.abs(actual.r - expected.r)).toBeLessThanOrEqual(tol);
@@ -97,6 +119,46 @@ const bg = (name: string): RGB => parseColor(getComputedStyle(probe(name)).backg
 const fg = (name: string): RGB => parseColor(getComputedStyle(probe(name)).color);
 const border = (name: string): RGB => parseColor(getComputedStyle(probe(name)).borderTopColor);
 
+const BRAND_SEEDS = [
+  '#0D9488', // teal
+  '#FACC15', // yellow
+  '#2563EB', // blue
+  '#84CC16', // lime
+  '#EC4899', // pink
+  '#1E3A8A', // navy
+  '#22D3EE', // cyan
+  '#DC2626',
+  '#7C3AED',
+  '#059669',
+  '#F97316',
+  '#0EA5E9',
+  '#A16207',
+  '#BE185D',
+  '#111827',
+  '#E11D48',
+  '#65A30D',
+] as const;
+
+type BrandTheme = 'light' | 'dark';
+type BrandSeed = (typeof BRAND_SEEDS)[number];
+
+// A crossover seed has no black-or-white choice that reaches normal-text AA in light mode.
+// This list is intentionally narrow: every listed case must still stay above 4.4:1.
+const KNOWN_BELOW_AA = new Set<`${BrandSeed}:${BrandTheme}`>(['#E11D48:light']);
+const ON_ACCENT_FALLBACK = 'var(--brand-contrast, #FFFFFF)';
+const ON_ACCENT_DERIVATION =
+  'var(--brand-contrast, oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h))';
+
+function setBrandSeed(theme: BrandTheme, seed: BrandSeed, brandContrast?: string): void {
+  root.setAttribute('data-brand', 'contrast-test');
+  root.style.setProperty('--brand', seed);
+  if (brandContrast) root.style.setProperty('--brand-contrast', brandContrast);
+  else root.style.removeProperty('--brand-contrast');
+  if (theme === 'dark') root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  void root.offsetHeight;
+}
+
 beforeAll(() => {
   document.body.innerHTML = fixtureHtml;
   root = document.getElementById('lyra-fixture-root')!;
@@ -111,14 +173,25 @@ describe('STY-03 — dark theming (no rebuild, read resolved longhands)', () => 
     eqRGB(bg('accent'), LIGHT_ACCENT);
   });
 
-  it('setting data-theme=dark switches the same probe to indigo-500 (no rebuild)', () => {
+  it('setting data-theme=dark re-derives --surface-page without rebuilding', () => {
     setPermutation('light', 'none');
-    const light = bg('accent');
+    const light = bg('surface-page');
     setPermutation('dark', 'none');
-    const dark = bg('accent');
-    eqRGB(dark, DARK_ACCENT);
+    const dark = bg('surface-page');
+    eqRGB(light, LIGHT_SURFACE_PAGE);
+    eqRGB(dark, DARK_SURFACE_PAGE);
     // The switch is a real change of the resolved longhand, not the raw custom-property string.
     expect(luminance(dark)).not.toBe(luminance(light));
+  });
+
+  it('dark solid accent and danger fills keep --on-accent at WCAG AA', () => {
+    setPermutation('dark', 'none');
+    const onAccent = fg('on-accent');
+    eqRGB(bg('accent'), DARK_ACCENT);
+    eqRGB(bg('danger'), DARK_DANGER);
+    expect(onAccent.a, '--on-accent must resolve to an opaque text color').toBeGreaterThan(0.99);
+    expect(contrast(onAccent, bg('accent'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(onAccent, bg('danger'))).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -170,12 +243,49 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     expect(isTealFamily(fg('accent-soft-text'))).toBe(true);
   });
 
-  it('dark default (no brand) --accent is indigo-500, distinct from dark-acme teal', () => {
+  it('dark default (no brand) --accent is indigo-600, distinct from dark-acme teal', () => {
     setPermutation('dark', 'none');
     eqRGB(bg('accent'), DARK_ACCENT);
     setPermutation('dark', 'acme');
     // Proves the brand path actually re-derives rather than falling through to the indigo token.
     expect(isTealFamily(bg('accent'))).toBe(true);
+  });
+});
+
+// --- white-label primary-fill contrast -----------------------------------------------------------
+
+describe('white-label --on-accent contrast guarantee', () => {
+  it('ships a valid fallback outside the relative-color @supports derivation', () => {
+    const baseRule = brandCss.match(/^\[data-brand\]\s*\{(?<declarations>[^{}]*)\}/m)?.groups
+      ?.declarations;
+    const supportedRule = brandCss.match(
+      /@supports\s*\(color:\s*oklch\(from red l c h\)\)\s*\{\s*\[data-brand\]\s*\{(?<declarations>[^{}]*)\}/s,
+    )?.groups?.declarations;
+
+    expect(baseRule).toContain(`--on-accent:        ${ON_ACCENT_FALLBACK};`);
+    expect(supportedRule).toContain(`--on-accent: ${ON_ACCENT_DERIVATION};`);
+  });
+
+  for (const theme of ['light', 'dark'] as const) {
+    for (const seed of BRAND_SEEDS) {
+      const key: `${BrandSeed}:${BrandTheme}` = `${seed}:${theme}`;
+      const isKnownBelowAA = KNOWN_BELOW_AA.has(key);
+      it(`${theme} ${seed}: primary ink is AA-large${isKnownBelowAA ? ' (known AA crossover)' : ''}`, () => {
+        setBrandSeed(theme, seed);
+        const ratio = contrast(fg('on-accent'), bg('accent'));
+        expect(ratio, `${theme} ${seed} must meet AA-large`).toBeGreaterThanOrEqual(3);
+        if (isKnownBelowAA) {
+          expect(ratio, `${theme} ${seed} must remain below normal-text AA`).toBeLessThan(4.5);
+          expect(ratio, `${theme} ${seed} must remain near AA`).toBeGreaterThanOrEqual(4.4);
+        } else
+          expect(ratio, `${theme} ${seed} must meet normal-text AA`).toBeGreaterThanOrEqual(4.5);
+      });
+    }
+  }
+
+  it('--brand-contrast overrides the automatic ink derivation', () => {
+    setBrandSeed('light', '#FACC15', '#123456');
+    eqRGB(fg('on-accent'), parseHex('#123456'));
   });
 });
 

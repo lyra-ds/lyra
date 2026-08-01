@@ -1,7 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { Container, Shell } from '@lyra-ds/react';
+import type { CSSProperties, ReactNode } from 'react';
 import { DocsSidebar } from '@/components/docs-sidebar';
 import { HtmlLang } from '@/components/html-lang';
 import { SiteFooter } from '@/components/site-footer';
@@ -15,6 +16,10 @@ export function generateStaticParams() {
 
 export const dynamicParams = false;
 
+const proseStyle: CSSProperties & { '--prose-scroll-offset'?: string } = {
+  '--prose-scroll-offset': '80px',
+};
+
 export default async function LocaleLayout({
   children,
   params,
@@ -27,17 +32,26 @@ export default async function LocaleLayout({
   if (!isLocale(lang)) notFound();
 
   setRequestLocale(lang);
-  const messages = await getMessages();
+  const [messages, t] = await Promise.all([getMessages(), getTranslations()]);
 
   return (
     <NextIntlClientProvider locale={lang} messages={messages}>
       <HtmlLang locale={lang} />
       <SiteHeader locale={lang} />
-      <div className="lw-container lw-docs">
-        <DocsSidebar locale={lang} />
-        <main className="lw-docs__content">{children}</main>
-        <TableOfContents />
-      </div>
+      <Container>
+        <Shell
+          sidebar={<DocsSidebar locale={lang} />}
+          sidebarAs="nav"
+          sidebarLabel={t('documentationNavigation')}
+          aside={<TableOfContents />}
+          asideLabel={t('onThisPage')}
+          top={84}
+        >
+          <div className="lyra-prose" style={proseStyle}>
+            {children}
+          </div>
+        </Shell>
+      </Container>
       <SiteFooter />
     </NextIntlClientProvider>
   );
