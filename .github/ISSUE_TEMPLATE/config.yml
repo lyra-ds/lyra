@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Ask a question
+    url: https://github.com/lyra-ds/lyra/discussions/categories/q-a
+    about: Usage questions belong in Discussions, where answers stay searchable for everyone.
+  - name: Share an idea
+    url: https://github.com/lyra-ds/lyra/discussions/categories/ideas
+    about: Propose and discuss a direction before it is scoped into an issue.
   - name: Report a security vulnerability
     url: https://github.com/lyra-ds/lyra/security/policy
     about: Please report security vulnerabilities privately — do not open a public issue.
