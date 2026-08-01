@@ -1,0 +1,59 @@
+---
+title: Container
+description: A centered content region whose maximum width cascades to nested containers.
+---
+
+# Container
+
+Container centers content with the system gutter. Choose the maximum reading or working width;
+`--container-max` cascades, so nested containers inherit that decision until one overrides it.
+
+## Examples
+
+<Example id="basic" title="A focused measure">
+  A narrower measure makes dense prose and forms easier to scan. Let wide application regions use
+  the stylesheet default instead of adding arbitrary page padding.
+</Example>
+
+<Example id="nested" title="A cascading maximum">
+  A nested Container does not start a competing width rule. It inherits the outer maximum, which
+  lets a page establish its measure once and reuse it inside sections.
+</Example>
+
+## When to use
+
+Use a Container around a page or a section whose content needs a predictable maximum width.
+
+`--container-max` sets that width. Its stylesheet default is `1200px`; `max` writes the property in
+pixels, and nested containers inherit it through the cascade.
+
+Reach for something else when:
+
+- **The page needs persistent navigation or context rails** — use Shell.
+- **The children need a vertical or horizontal relationship** — use Stack.
+- **The children must share column tracks** — use Grid.
+
+## Accessibility
+
+- Container renders a plain `<div>` and adds no role, keyboard model or accessible name.
+- Give the region semantics only when the surrounding page needs a landmark; avoid creating a
+  landmark solely to express width.
+- It does not manage focus. Focus order remains the DOM order of its children.
+
+## Props
+
+<PropTable name="Container" />
+
+## Plain HTML
+
+Set the custom property where the width decision begins. A nested container inherits it:
+
+```html
+<div class="lyra-container" style="--container-max: 720px">
+  <p>Page content with a 720px maximum width.</p>
+
+  <div class="lyra-container">
+    <p>This nested region keeps the same maximum width.</p>
+  </div>
+</div>
+```

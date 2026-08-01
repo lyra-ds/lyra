@@ -1,0 +1,82 @@
+---
+title: Stack
+description: Composição flexível vertical e horizontal com direção e espaçamento definidos pelo CSS.
+---
+
+# Stack
+
+Stack organiza elementos relacionados em um eixo. Escolha direção e gap; o CSS possui o layout,
+então o mesmo contrato `.lyra-stack` funciona fora do React, sem virar uma utility isolada.
+
+## Exemplos
+
+<Example id="default" title="Uma sequência vertical">
+  A folha de estilos fornece coluna e gap `--space-4` quando você omite props. Assim há uma fonte de
+  verdade: Stack não emite propriedade customizada até precisar divergir do contrato do CSS.
+</Example>
+
+<Example id="distribution" title="Direção e distribuição">
+  Uma linha é útil quando os itens compartilham uma decisão. Use `justify="space-between"` apenas
+  quando as pontas estiverem relacionadas; ele não substitui escolher um gap útil.
+</Example>
+
+## Inline
+
+<Example id="inline" title="Controles pares em uma linha que quebra">
+  Inline é o irmão horizontal de Stack. Ele define direção em linha, gap `--space-2` e quebra, para
+  que controles pares e compactos se reorganizem em vez de causar overflow numa largura estreita.
+</Example>
+
+## Quando usar
+
+Use Stack quando a ordem entre os filhos importa mais que uma trilha compartilhada em duas dimensões.
+
+As propriedades customizadas abaixo formam o contrato de HTML puro. Stack deixa cada uma ausente
+quando sua prop correspondente é omitida; a folha de estilos fornece os padrões efetivos.
+
+| Propriedade              | Padrão da folha de estilos |
+| ------------------------ | -------------------------- |
+| `--lyra-stack-direction` | `column`                   |
+| `--lyra-stack-gap`       | `var(--space-4)`           |
+| `--lyra-stack-align`     | `stretch`                  |
+| `--lyra-stack-justify`   | `flex-start`               |
+| `--lyra-stack-wrap`      | `nowrap`                   |
+
+Prefira outro componente quando:
+
+- **Os itens são pares horizontais compactos que devem quebrar** — use Inline.
+- **Os itens precisam se alinhar em linhas e colunas** — use Grid.
+- **A região precisa de uma largura máxima de conteúdo** — use Container em volta do Stack.
+
+## Acessibilidade
+
+- Stack renderiza uma `<div>` a menos que `as` escolha outro elemento nativo; ele não adiciona role.
+- Use `as="ul"` ou `as="ol"` para uma lista de verdade e mantenha cada filho como um `<li>`.
+- A direção muda o layout visual, não a ordem do DOM ou do teclado. Coloque o filho mais importante
+  primeiro no código, especialmente quando uma linha quebra.
+- Inline herda a semântica de Stack. A quebra evita controles cortados, mas cada controle ainda
+  precisa do próprio nome acessível e de foco visível.
+
+## Props
+
+<PropTable name="Stack" />
+
+## HTML puro
+
+Os wrappers React definem essas propriedades para você. Aplique a mesma classe e propriedades em
+qualquer outro framework:
+
+```html
+<div class="lyra-stack" style="--lyra-stack-gap: var(--space-4)">
+  <strong>Deploy em produção</strong>
+  <span>A versão 2.4.0 aguarda aprovação.</span>
+</div>
+
+<div
+  class="lyra-stack"
+  style="--lyra-stack-direction: row; --lyra-stack-gap: var(--space-2); --lyra-stack-align: center; --lyra-stack-wrap: wrap"
+>
+  <button class="lyra-btn lyra-btn--primary lyra-btn--sm">Salvar</button>
+  <button class="lyra-btn lyra-btn--ghost lyra-btn--sm">Cancelar</button>
+</div>
+```

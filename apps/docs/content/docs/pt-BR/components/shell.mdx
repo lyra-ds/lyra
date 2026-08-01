@@ -1,0 +1,83 @@
+---
+title: Shell
+description: Uma moldura de página ou aplicação com trilhos nomeados e scroll de documento ou conteúdo.
+---
+
+# Shell
+
+Shell compõe navegação, conteúdo principal e trilhos opcionais de contexto. Escolha primeiro o modelo
+de scroll: `page` mantém o documento rolando com trilhos sticky; `content` faz a região principal rolar.
+
+## Exemplos
+
+<Example id="docs-site" title="Um site de documentação" layout="isolated">
+  Esta é a receita de scroll da página usada pelo site de docs: um Container limita a moldura, a
+  navegação e o conteúdo são trilhos nomeados, e `top={84}` os mantém sob o cabeçalho sticky.
+</Example>
+
+<Example id="application" title="Um workspace de aplicação" layout="isolated">
+  Use `scroll="content"` para uma moldura de aplicação que controla a altura do viewport. A região
+  principal rola enquanto a navegação e a barra superior ficam no lugar.
+</Example>
+
+Estas prévias renderizam em uma largura de layout fixa de 1200px e se ajustam a esta coluna, para
+mostrar a configuração ampla de Shell sem overflow horizontal da página.
+
+## Quando usar
+
+Use Shell quando uma página precisa de navegação ou contexto persistente ao lado da tarefa principal.
+`scroll` não é uma variante visual: ele escolhe entre dois motores de layout, então uma prop `variant`
+esconderia uma decisão de comportamento que afeta scroll, posição sticky e percurso de foco.
+
+| Propriedade       | Padrão  | O que define                   |
+| ----------------- | ------- | ------------------------------ |
+| `--shell-sidebar` | `220px` | Largura do trilho lateral      |
+| `--shell-aside`   | `200px` | Largura do trilho complementar |
+| `--shell-top`     | `0px`   | Offset do trilho sticky        |
+
+Defina `top` (ou `--shell-top`) com a altura de um cabeçalho sticky. Sem isso, um trilho de scroll da
+página pode ficar escondido sob o cabeçalho. Em `1100px` o aside desaparece; em `900px` o sidebar passa
+então a ficar acima do documento. Esses breakpoints são fixos porque media queries não leem propriedades
+customizadas.
+
+Prefira outro componente quando:
+
+- **A página só precisa de uma medida de conteúdo centralizada** — use Container.
+- **O conteúdo é uma sequência linear sem trilhos persistentes** — use Stack.
+- **A identidade e as ações da página precisam de um cabeçalho** — use PageHeader dentro do conteúdo.
+
+## Acessibilidade
+
+- Shell renderiza um único `<main>` nativo. Não coloque outro landmark main nos filhos.
+- `sidebarAs` e `asideAs` escolhem `nav` ou `aside`. Dê a cada trilho um `sidebarLabel` ou
+  `asideLabel` distinto; um trilho de navegação deve usar `sidebarAs="nav"`, como na receita de docs.
+- Shell não adiciona atalhos de teclado nem armadilha de foco. Links e controles nos trilhos preservam
+  o comportamento nativo, e sua ordem no DOM continua sidebar, main, aside em todo breakpoint.
+- Em `scroll="content"`, garanta que o conteúdo principal tenha controles focalizáveis ou um alvo de
+  foco gerenciado para que usuários de teclado entrem e descubram a região rolável.
+
+## Props
+
+<PropTable name="Shell" />
+
+## HTML puro
+
+As classes expressam o modelo de scroll da página. Nomeie os dois landmarks de navegação e defina o
+offset sticky quando houver um cabeçalho fixo acima da moldura:
+
+```html
+<div
+  class="lyra-shell lyra-shell--page lyra-shell--has-sidebar lyra-shell--has-aside"
+  style="--shell-sidebar: 220px; --shell-aside: 200px; --shell-top: 84px"
+>
+  <nav class="lyra-shell__sidebar" aria-label="Navegação da documentação">
+    <a href="/components/container">Container</a>
+  </nav>
+  <main class="lyra-shell__main">
+    <div class="lyra-shell__content">Conteúdo da documentação</div>
+  </main>
+  <nav class="lyra-shell__aside" aria-label="Nesta página">
+    <a href="#accessibility">Acessibilidade</a>
+  </nav>
+</div>
+```

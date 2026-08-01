@@ -1,0 +1,70 @@
+---
+title: PageHeader
+description: Um cabeçalho de página que mantém contexto, ações e navegação secundária numa hierarquia.
+---
+
+# PageHeader
+
+PageHeader estabelece qual é a página e o que alguém pode fazer na sua borda. Coloque ações de página
+em `actions`; mantenha controles que mudam o corpo, como filtros ou tabs, em `children`.
+
+## Exemplos
+
+<Example id="basic" title="Contexto antes do título" layout="isolated">
+  Um eyebrow nomeia o escopo mais amplo; o título nomeia esta página. Omita o eyebrow quando o
+  título já for específico, pois contexto duplicado enfraquece o alvo de leitura em vez de
+  esclarecer.
+</Example>
+
+<Example id="actions" title="Ações e uma linha secundária" layout="isolated">
+  `actions` guarda uma ou duas operações que afetam a página inteira. Uma linha secundária fica sob
+  o título, onde tabs ou filtros podem mudar o corpo sem competir com ele.
+</Example>
+
+## Quando usar
+
+Use PageHeader no início de uma página ou visão de detalhe duradoura cuja identidade, contexto e
+próxima ação precisam ser lidos juntos.
+
+Prefira outro componente quando:
+
+- **O título pertence a um card ou seção** — use o título de Card ou um heading nativo.
+- **Os controles são um grupo compacto de pares dentro do conteúdo** — use Inline.
+- **A página precisa de trilhos de navegação e um modelo de scroll** — use Shell em volta do conteúdo.
+
+## Acessibilidade
+
+- PageHeader renderiza um `<header>` nativo e seu `title` como `<h1>`. Forneça o único título de
+  página que representa o documento atual.
+- `eyebrow` e `description` são texto comum, não rótulos conectados com ARIA. Não dependa deles como
+  o único nome acessível de uma ação.
+- `actions` e `children` mantêm a ordem no DOM depois do título. Use Buttons, links, Tabs ou campos
+  nativos ali, para que o comportamento de teclado e foco visível continuem intactos.
+- Um header não move o foco. Quando a navegação troca a página, a aplicação decide se o foco vai para
+  o novo `<h1>` ou para o primeiro controle da tarefa.
+
+## Props
+
+<PropTable name="PageHeader" />
+
+## HTML puro
+
+A linha do cabeçalho mantém ações da página ao lado da identidade; a linha secundária vem depois:
+
+```html
+<header class="lyra-pageheader">
+  <div class="lyra-pageheader__row">
+    <div class="lyra-pageheader__text">
+      <span class="lyra-pageheader__eyebrow">Projeto</span>
+      <h1 class="lyra-pageheader__title">Site Acme</h1>
+      <p class="lyra-pageheader__desc">Gerencie as configurações e o acesso deste projeto.</p>
+    </div>
+    <div class="lyra-pageheader__actions">
+      <button class="lyra-btn lyra-btn--primary lyra-btn--md">Salvar alterações</button>
+    </div>
+  </div>
+  <nav aria-label="Seções do projeto">
+    <a href="#overview">Visão geral</a>
+  </nav>
+</header>
+```

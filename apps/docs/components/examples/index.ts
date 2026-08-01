@@ -84,6 +84,17 @@ import { CreateWorkspaceDialogBasic } from './create-workspace-dialog/basic';
 import { CreateWorkspaceDialogCustomCopy } from './create-workspace-dialog/custom-copy';
 import { AvatarGroupPeople } from './avatar/group';
 import { WhiteLabelBrands } from './white-label/brands';
+import { ContainerBasic } from './container/basic';
+import { ContainerNested } from './container/nested';
+import { StackDefault } from './stack/default';
+import { StackDistribution } from './stack/distribution';
+import { StackInline } from './stack/inline';
+import { GridColumns } from './grid/columns';
+import { GridResponsive } from './grid/responsive';
+import { PageHeaderBasic } from './page-header/basic';
+import { PageHeaderActions } from './page-header/actions';
+import { ShellDocsSite } from './shell/docs-site';
+import { ShellApplication } from './shell/application';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -100,6 +111,27 @@ import { WhiteLabelBrands } from './white-label/brands';
  * anyway — only `next dev` (Turbopack) surfaces it, as a 500 on the page.
  */
 export const examples: Record<string, Record<string, ComponentType>> = {
+  container: {
+    basic: ContainerBasic,
+    nested: ContainerNested,
+  },
+  stack: {
+    default: StackDefault,
+    distribution: StackDistribution,
+    inline: StackInline,
+  },
+  grid: {
+    columns: GridColumns,
+    responsive: GridResponsive,
+  },
+  'page-header': {
+    basic: PageHeaderBasic,
+    actions: PageHeaderActions,
+  },
+  shell: {
+    'docs-site': ShellDocsSite,
+    application: ShellApplication,
+  },
   badge: {
     tones: BadgeTones,
     dot: BadgeDot,

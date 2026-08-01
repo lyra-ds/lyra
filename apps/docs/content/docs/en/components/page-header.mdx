@@ -1,0 +1,69 @@
+---
+title: PageHeader
+description: A page-level heading that keeps context, actions and secondary navigation in one hierarchy.
+---
+
+# PageHeader
+
+PageHeader establishes what this page is and what someone can do at its edge. Put page-level actions
+in `actions`; keep controls that change the page's body, such as filters or tabs, in `children`.
+
+## Examples
+
+<Example id="basic" title="Context before the title" layout="isolated">
+  An eyebrow names the broader scope; the title names this page. Omit the eyebrow when the title is
+  already specific, because duplicate context weakens the scan target instead of clarifying it.
+</Example>
+
+<Example id="actions" title="Actions and a secondary row" layout="isolated">
+  `actions` holds the one or two operations that affect the page as a whole. A secondary row belongs
+  below the heading, where tabs or filters can change the body without competing with the title.
+</Example>
+
+## When to use
+
+Use PageHeader at the beginning of a durable page or detail view whose identity, context and next
+action need to be read together.
+
+Reach for something else when:
+
+- **The heading belongs to one card or section** — use a Card title or a native heading.
+- **The controls are a compact peer group inside content** — use Inline.
+- **The page needs navigation rails and a scrolling model** — use Shell around the page content.
+
+## Accessibility
+
+- PageHeader renders a native `<header>` and its `title` as an `<h1>`. Supply the one page-level
+  title that represents the current document.
+- `eyebrow` and `description` are ordinary text, not labels connected with ARIA. Do not rely on them
+  as the only accessible name for an action.
+- `actions` and `children` keep their DOM order after the title. Use native Buttons, links, Tabs or
+  form controls there so their keyboard behavior and focus state remain intact.
+- A header does not move focus. When navigation replaces a page, the application must choose whether
+  focus belongs on the new `<h1>` or the first task control.
+
+## Props
+
+<PropTable name="PageHeader" />
+
+## Plain HTML
+
+The header row keeps page-wide actions beside the identity; the secondary row follows it:
+
+```html
+<header class="lyra-pageheader">
+  <div class="lyra-pageheader__row">
+    <div class="lyra-pageheader__text">
+      <span class="lyra-pageheader__eyebrow">Project</span>
+      <h1 class="lyra-pageheader__title">Acme website</h1>
+      <p class="lyra-pageheader__desc">Manage the settings and access for this project.</p>
+    </div>
+    <div class="lyra-pageheader__actions">
+      <button class="lyra-btn lyra-btn--primary lyra-btn--md">Save changes</button>
+    </div>
+  </div>
+  <nav aria-label="Project sections">
+    <a href="#overview">Overview</a>
+  </nav>
+</header>
+```
