@@ -21,7 +21,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       `.batuta/brief-6cc-landing.md` (compartilhado) + `.batuta/lot-6cc-0N-*.md`.
   - [x] Lote 1 — `apps/site`, cromo e Hero → codex, commit 5ae1075
   - [x] Lote 2 — ComponentShowcase + Frameworks → codex (1 retry), commit 60c3d5b
-  - [ ] Lote 3 — Temas/Tokens + Comunidade
+  - [x] Lote 3 — Temas/Tokens + Comunidade → codex, commit 0eaca7e
   - [ ] Lote 4 — FAQ + CTA
   - [ ] Lote 5 — CookieBanner LGPD + meta/OG + varredura final + deploy
 
@@ -453,6 +453,38 @@ família da métrica inventada, só que falha depois, na máquina do leitor.
 **A honestidade da grade de frameworks é escolha de tom, não de texto.** Trocar `warning`/
 `info` por `neutral` importa tanto quanto trocar "Beta" por "Em breve": os dois tons afirmam
 trabalho em andamento, e nada de Vue, Blade ou LiveView existe no repo.
+
+### Lote 3 — os números, e um erro que sobreviveu a duas fases
+
+As duas seções sem original no kit. O trabalho pesado foi de contagem, não de desenho.
+
+**"209 tokens semânticos" está errado três vezes ao mesmo tempo.** 209 conta _declarações_ —
+um token declarado no claro e de novo no escuro conta duas. Nomes únicos são **153**, e **43**
+deles são primitivos de paleta (`--indigo-500`, `--slate-100`), que não são semânticos.
+Semânticos de verdade: **110**. E o `--border-input` que o mapa diz levar o total a 211 **não
+existe** — segundo ponto em que o mapa erra nesta fase, depois das 16 classes que já não
+colidem. Eu tinha repetido o "211" no brief compartilhado antes de conferir; o `parity` já
+dizia 209 na minha frente desde o Lote 1.
+
+O número honesto virou a copy melhor: **110 controlam cor, tipo e espaçamento, e trocar de
+marca precisa de quatro**. Contraste verificável vende mais que número inflado.
+
+Nada é digitado: um `prebuild` deriva de `baseline.json` e `props.json`, e **estoura** se a
+fonte sumir ou a conta der zero — número zerado em silêncio é pior que o hardcoded que estamos
+tirando, porque o hardcoded ao menos era visivelmente errado.
+
+**Escrever para fora obriga a conferir.** Transformar dois itens de débito em issues públicas
+(#28, #29) pegou um erro na própria nota: ela dizia "4 asserções vácuas" no `file-manager`, e
+são **2** — as outras duas usam `querySelector`, que devolve `Element | null`, onde
+`not.toBeNull()` testa alguma coisa. Eu tinha contado ocorrências do padrão em vez de olhar o
+que cada chamada recebia.
+
+**Levantei um custo e a medição me desmentiu.** O executor foi além do pedido e adicionou teste
+ao `apps/site`, com `pretest` construindo react e site — e eu ia pedir para tirar, argumentando
+que o job `test` do CI não deve construir. Medi antes: o gate inteiro leva **27s**. Ficou, e é
+melhor assim, porque o teste afirma contra o **HTML construído** — exatamente a lição que a
+6c-b3 pagou caro. A nota que fica: ele fixa os sete números derivados, então avançar o handoff
+passa a exigir atualizar dois lugares, como já acontece com o `baseline.json`.
 
 ### Práticas de verificação que este lote acrescentou
 
