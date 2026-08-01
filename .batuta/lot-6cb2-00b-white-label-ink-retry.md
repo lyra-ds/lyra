@@ -41,12 +41,15 @@ engine supports it:
 
 ```css
 [data-brand] {
-  --on-accent: var(--brand-contrast, #FFFFFF);
+  --on-accent: var(--brand-contrast, #ffffff);
 }
 
 @supports (color: oklch(from red l c h)) {
   [data-brand] {
-    --on-accent: var(--brand-contrast, oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h));
+    --on-accent: var(
+      --brand-contrast,
+      oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h)
+    );
   }
 }
 ```

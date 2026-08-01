@@ -71,7 +71,7 @@ plain `<a>` is complete and correct — there is no router to preserve. Use `ite
 ### `useScrollSpy`
 
 ```tsx
-const activeId = useScrollSpy(ids)
+const activeId = useScrollSpy(ids);
 ```
 
 - Takes an array of element ids, returns the id currently considered active, or `undefined`
@@ -110,7 +110,7 @@ const activeId = useScrollSpy(ids)
 1. The rail and trigger classes live in `chrome.css`; `lint:css` and `pnpm parity` pass,
    baseline regenerated and its diff reported.
 2. `TableOfContents` is registered in all five places; `handoff/components/chrome/
-   TableOfContents.d.ts` exists; `node tools/docgen/generate.mjs --check` passes with
+TableOfContents.d.ts` exists; `node tools/docgen/generate.mjs --check` passes with
    `EXPECTED_COMPONENTS` raised by 1 (comment updated). Nothing else under `handoff/`
    changes.
 3. `CommandPalette.Trigger` is reachable as a static property of `CommandPalette` from the

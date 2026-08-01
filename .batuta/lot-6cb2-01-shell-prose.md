@@ -81,11 +81,11 @@ for you to solve.
 
 Custom properties, **defaults declared in the CSS only**:
 
-| Property | Default | Meaning |
-| --- | --- | --- |
-| `--shell-sidebar` | `220px` | sidebar rail width |
-| `--shell-aside` | `200px` | aside rail width |
-| `--shell-top` | `0px` | sticky offset — how far below the viewport top the rails begin |
+| Property          | Default | Meaning                                                        |
+| ----------------- | ------- | -------------------------------------------------------------- |
+| `--shell-sidebar` | `220px` | sidebar rail width                                             |
+| `--shell-aside`   | `200px` | aside rail width                                               |
+| `--shell-top`     | `0px`   | sticky offset — how far below the viewport top the rails begin |
 
 Expose them as optional props following the `Container`/`--container-max` pattern exactly
 (typed `CSSProperties &` intersection; prop `undefined` emits nothing). The docs site sets
@@ -105,10 +105,10 @@ no magic number.
 
 Two custom properties, defaults in the CSS:
 
-| Property | Default | Meaning |
-| --- | --- | --- |
-| `--prose-measure` | `760px` | max line length of the prose column |
-| `--prose-scroll-offset` | `0px` | `scroll-margin-top` on headings, for anchored links under a sticky header |
+| Property                | Default | Meaning                                                                   |
+| ----------------------- | ------- | ------------------------------------------------------------------------- |
+| `--prose-measure`       | `760px` | max line length of the prose column                                       |
+| `--prose-scroll-offset` | `0px`   | `scroll-margin-top` on headings, for anchored links under a sticky header |
 
 `760px` is the value validated in production — pixel fidelity is a locked project
 constraint, so it is the default even though a `ch`-based measure would be more
@@ -172,7 +172,7 @@ Each of these is checked against the diff, independently, by the maestro.
     drops first, then the sidebar stacks, and there is **no horizontal scroll at 375px**.
     Report what you were able to verify and what you could not.
 15. `pnpm run lint`, `pnpm --filter @lyra-ds/react run lint`, `pnpm --filter @lyra-ds/react
-    run build` and `pnpm run typecheck` all pass, with real output reported.
+run build` and `pnpm run typecheck` all pass, with real output reported.
 16. `pnpm --filter @lyra-ds/react exec size-limit` passes, with a budget entry for `Shell`.
 17. A changeset exists, minor for both packages, written for a consumer: what they can now
     build that they could not before.

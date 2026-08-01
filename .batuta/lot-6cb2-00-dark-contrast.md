@@ -17,10 +17,10 @@ new token.
 Measured with axe-core on the built docs site, dark theme, after a 1.2s settle so CSS
 transitions could not skew the sample:
 
-| pairing | ratio | AA (4.5:1) |
-| --- | --- | --- |
-| `#FFFFFF` on `--accent` (`--indigo-500` `#6E6ADE`) | **4.39** | fails |
-| `#FFFFFF` on `--danger` (`--red-500` `#EF4444`) | **3.76** | fails |
+| pairing                                            | ratio    | AA (4.5:1) |
+| -------------------------------------------------- | -------- | ---------- |
+| `#FFFFFF` on `--accent` (`--indigo-500` `#6E6ADE`) | **4.39** | fails      |
+| `#FFFFFF` on `--danger` (`--red-500` `#EF4444`)    | **3.76** | fails      |
 
 The light theme already passes — `--indigo-600` gives 5.37 and `--red-600` gives 4.83.
 
@@ -62,7 +62,7 @@ Only three rules render text on an accent fill, and one on a danger fill:
 - `packages/styles/components/buttons/buttons.css` — `.lyra-btn--primary`, and
   `.lyra-btn--danger` (which uses a literal `#fff`, not `--on-accent`)
 - `packages/styles/components/navigation/navigation.css` — `.lyra-step--active
-  .lyra-step__dot` and `.lyra-page--active`
+.lyra-step__dot` and `.lyra-page--active`
 
 Every other `background: var(--accent)` is a non-text surface (Switch track, Progress fill,
 Stepper line, Checkbox) and is unaffected by the contrast question, though it will shift
@@ -85,7 +85,7 @@ Follow that established shape. The requirement is an outcome:
 - The divergence is **enumerated and pinned to these exact four tokens**, with the handoff's
   canonical value recorded next to the approved one and a comment stating the reason
   (WCAG AA on solid fills in dark).
-- The gate still bites: a *different* token value drifting from the handoff must still fail.
+- The gate still bites: a _different_ token value drifting from the handoff must still fail.
   **Prove it** — temporarily change some other token's value (e.g. a light-theme color),
   run `pnpm parity`, confirm it fails, revert, confirm it passes. Report both outputs.
 - Regenerate `tools/parity/baseline.json` in the same commit if the gate requires it, and

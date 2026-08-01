@@ -42,10 +42,10 @@ assertions rather than being something a test trips over by accident.
 Preserving the handoff's rendering pixel by pixel is a locked project constraint. Two
 declarations changed value in the move:
 
-| | before (`.lw-docs__content :not(pre) > code`) | now (`.lyra-prose :not(pre) > code`) |
-| --- | --- | --- |
-| `font-size` | `0.9em` | `var(--text-sm)` → `13px` |
-| `padding` | `1px 5px` | `var(--space-0) var(--space-1)` → `0 4px` |
+|             | before (`.lw-docs__content :not(pre) > code`) | now (`.lyra-prose :not(pre) > code`)      |
+| ----------- | --------------------------------------------- | ----------------------------------------- |
+| `font-size` | `0.9em`                                       | `var(--text-sm)` → `13px`                 |
+| `padding`   | `1px 5px`                                     | `var(--space-0) var(--space-1)` → `0 4px` |
 
 `0.9em` of the `16px` prose paragraph is `14.4px`, so inline code shrank by 1.4px — and
 worse, `0.9em` **scaled with its context** (code inside an `h2` grew with the heading) while
@@ -63,7 +63,7 @@ that is a regression: before, the page had one unnamed `<aside>` (the nav rail) 
 accessible name**, which is what `landmark-unique` in axe exists to catch.
 
 There is also a semantics question you were asked to answer and did not: a documentation
-sidebar is *navigation*, not complementary content. `<aside>` is defensible for the
+sidebar is _navigation_, not complementary content. `<aside>` is defensible for the
 "on this page" rail; it is a weaker fit for the primary nav rail.
 
 Requirements:

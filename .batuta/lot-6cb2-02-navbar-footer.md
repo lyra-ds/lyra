@@ -35,7 +35,7 @@ Two behaviors that must survive:
 1. **The 900px reflow.** Below 900px the header row cannot hold brand + nav + five actions:
    it overflowed the viewport and scrolled the whole page sideways. The fix was to **wrap
    the nav onto its own row**, not to hide navigation. Preserve that: `flex-wrap`, `height:
-   auto`, the nav taking `order: 3` and full width. Hiding navigation on small screens is a
+auto`, the nav taking `order: 3` and full width. Hiding navigation on small screens is a
    regression, not a simplification.
 2. **Chrome links never underline.** `base.css` underlines `a:hover` globally; the chrome
    rules opt out. Carry that opt-out for the classes this lot owns.
@@ -108,7 +108,7 @@ destination is a link one row below on this specific site. It stays site chrome.
 
 1. `.lyra-navbar*`, `.lyra-navlink*` and `.lyra-footer*` rules live in
    `packages/styles/components/chrome/chrome.css`; `pnpm --filter @lyra-ds/styles run
-   lint:css` and `pnpm parity` pass, baseline regenerated and its diff reported.
+lint:css` and `pnpm parity` pass, baseline regenerated and its diff reported.
 2. `Navbar`, `NavLink` and `Footer` are each registered in all five places from the shared
    brief; `node tools/docgen/generate.mjs --check` passes with `EXPECTED_COMPONENTS`
    raised by 3 (comment updated).

@@ -25,11 +25,11 @@ The main column is 83px wide and the page scrolls sideways by 92px.
 
 Cause — media queries add **no specificity**, so the collapse rules lose to the base rules:
 
-| selector | specificity | where |
-| --- | --- | --- |
-| `.lyra-shell--has-sidebar.lyra-shell--has-aside` | 0,2,0 | base |
-| `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` | 0,3,0 | `@media (max-width: 1100px)` |
-| `.lyra-shell--page` | **0,1,0** | `@media (max-width: 900px)` |
+| selector                                                          | specificity | where                        |
+| ----------------------------------------------------------------- | ----------- | ---------------------------- |
+| `.lyra-shell--has-sidebar.lyra-shell--has-aside`                  | 0,2,0       | base                         |
+| `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` | 0,3,0       | `@media (max-width: 1100px)` |
+| `.lyra-shell--page`                                               | **0,1,0**   | `@media (max-width: 900px)`  |
 
 At 375px every one of those matches, and the winner is the 1100px rule at 0,3,0 —
 `var(--shell-sidebar) minmax(0, 1fr)`. The 900px stacking rule can never apply to a Shell
@@ -75,7 +75,7 @@ lot, and it is already covered by Lot 3's brief, which replaces that button with
 2. The both-rails Shell collapses correctly at 1100px and at 900px, each covered by a test
    that fails when the rule is removed.
 3. All previously green gates stay green: full test suite, parity + tripwire, `docgen
-   --check`, `lint:css`, eslint, typecheck, build, `size-limit`.
+--check`, `lint:css`, eslint, typecheck, build, `size-limit`.
 
 Everything else from `.batuta/lot-6cb2-01-shell-prose.md`, its first retry file and the
 shared brief still applies. Do not expand scope. Do not commit, branch or push.

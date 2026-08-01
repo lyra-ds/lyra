@@ -11,177 +11,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       worktree próprio. Briefs em `.batuta/brief-6cb2-chrome.md` (compartilhado) +
       `.batuta/lot-6cb2-0N-*.md`.
 
-  - [x] **Lote 1 — `Shell` + `.lyra-prose`** → codex (`gpt-5.6-terra`, reasoning high),
-        **três rodadas**, commit `1f26db7`. Estabeleceu a mecânica que os outros quatro
-        herdam: `components/chrome/chrome.css`, a categoria `Chrome` no docgen e o registro
-        do parity para um arquivo CSS sem contraparte no handoff (enumerado como aditivo
-        nosso, com o tripwire provado).
-
-        **O que cada rodada custou, porque é lição reaproveitável:**
-
-                                        1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
-                                        `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
-                                        rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
-                                        mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
-                                        `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
-                                        **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
-                                        `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
-                                        junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
-
-                                        2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
-                                        defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
-                                        `.lyra-shell--page` (0,1,0) e perdia para
-                                        `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
-                                        de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
-                                        375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
-                                        "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
-                                        sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
-                                        nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
-
-                                        3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
-                                        forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
-                                        colapso correto e `scrollWidth == viewport`.
-
-                                        **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
-                                        diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
-                                        Batuta existe para o mesmo brief falhando duas vezes.
-
-                                        **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
-                                        detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
-                                        estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
-                                        são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
-
-  - [x] **Lote 2 — `Navbar` + `NavLink` + `Footer`** → codex (`gpt-5.6-terra`, reasoning
-        high), **três rodadas**, commit `0628b78`. Navbar 290 B, NavLink 470 B, Footer 266 B.
-
-        **1ª — parou numa contradição do brief, e acertou em parar.** A fronteira dizia
-                            `tools/docgen/output/*` intocável; são artefatos gerados **e commitados**, então
-                            falhar o `--check` não era motivo de parada, era motivo de rodar o gerador. Eu já
-                            tinha corrigido isso no retorno do Lote 1 e **não** no brief compartilhado, que é o
-                            que os lotes 2–5 leem. Corrigido na origem: a seção de fronteiras agora separa
-                            "gerado e commitado — regenere" de "intocável de verdade".
-
-                            **2ª — `landmark-unique`.** O header ganhou nome acessível e colidiu com a trilha do
-                            `Shell`, que já se chamava "Docs": dois landmarks de navegação com nome idêntico. O
-                            componente estava certo em exigir rótulo; a fiação do docs é que reusou um nome
-                            ocupado. Resolvido com nomes de escopo nos dois idiomas.
-
-                            **3ª — classe apagada com consumidor vivo.** O `.lw-nav__link` saiu do `site.css`
-                            (correto), mas o `theme-toggle.tsx` ainda o referenciava: o botão virou `<button>`
-                            cru do navegador. Migrado para `IconButton` ghost. **Nenhum gate pega isso** — só
-                            apareceu na captura comparativa do cromo, e tinha sobrevivido também à minha
-                            primeira verificação, que olhou axe/overflow/landmarks/foco e não a aparência.
-
-  **Prática que os lotes 1 e 2 impuseram, nesta ordem de custo:**
-
-  1. **Captura comparativa do cromo entra na verificação**, não como passo opcional. Os dois
-     defeitos mais caros dos dois lotes (a sidebar que nunca empilhava e o toggle sem estilo)
-     passaram por gates verdes, testes verdes e axe limpo.
-  2. **Apagar classe exige varredura de órfãs.** Vale para o Lote 3, que remove
-     `.lw-search`, `.lw-toc*` e `.lw-code*`:
-
-     ```bash
-     for c in $(grep -rhoE 'lw-[a-z0-9_-]+' apps/docs/**/*.tsx | sort -u); do
-       grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
-     done
-     ```
-
-  3. **Não regenerar `baseline.json` sem o `handoff/` ter mudado** — `--update-baseline`
-     sobrescreve `$comment` e `handoffVersion` com defaults e apaga o registro de quais
-     grupos do handoff já entraram. Mordeu duas vezes; agora está no brief compartilhado.
-  - [x] **Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`** → codex
-        (`gpt-5.6-terra`, reasoning high), **duas rodadas**, commit `f713085`.
-  4. **Rebuildar antes de qualquer medição pós-retry.** Duas vezes nesta fase eu quase
-     reportei defeito medindo artefato velho — o build estático servido era anterior à
-     correção. O sintoma é convincente (atributo ausente, estilo faltando) e leva a um
-     retorno errado.
-  5. **Migração de componente preserva o comportamento visível, não só o comportamento.**
-     Três dos quatro lotes perderam algo que nenhum gate cobre — o toggle sem estilo (Lote
-     2), a trilha sem item ativo (Lote 3), a numeração de linha (Lote 4). Todos foram
-     defaults novos e razoáveis do componente que o consumidor precisava reativar. Ao migrar,
-     comparar a aparência **antes e depois**, não só verificar que o novo componente funciona.
-
-     **Fechou uma violação CRÍTICA que estava em produção.** Abaixo de 720px o CSS
-     escondia rótulo e atalho do `.lw-search`, e o axe reportava `button-name` — quem usa
-     leitor de tela ouvia só "botão". O `CommandPalette.Trigger` mantém o nome quando o
-     texto visível some. **O docs agora tem axe limpo em 1440/900/375 nos dois idiomas,
-     zero violações**, o que não acontecia desde o começo desta fase.
-
-            **A rodada extra foi por fronteira de scroll spy.** O observer com
-            `rootMargin: '0px 0px -70% 0px'` observa os 30% superiores da viewport, e essa faixa
-            fica vazia em duas situações: no topo, antes de qualquer título subir até lá; e no
-            fim, onde o documento acaba e os últimos títulos nunca a alcançam. A trilha ficava
-            **sem item marcado nas duas posições em que o leitor mais fica**. A implementação
-            antiga do docs driblava só a primeira, semeando o primeiro título — a segunda nunca
-            esteve coberta, nem antes. Agora responde nas três: `Examples` no topo,
-            `Accessibility` no meio, `Plain HTML` no fim.
-
-            A varredura de órfãs saiu vazia de primeira — a lição do Lote 2 pegou, e este era o
-            lote que mais apagava classe (`.lw-search*`, `.lw-toc*`, o `__kbd` duplicado).
-  - [x] **Lote 4 — `CodeBlock` + `SegmentedControl`** → codex (`gpt-5.6-terra`, reasoning
-        high), **três rodadas + uma correção do maestro**, commit `ed465e1`. CodeBlock 445 B,
-        SegmentedControl 527 B. Fecha o último dos quatro controles de cromo sem anel de foco.
-
-        **1ª — `scrollable-region-focusable`.** O `<pre>` rolável não era alcançável por
-                    teclado, e o docs estava em zero violações desde o Lote 3. Causa instrutiva: o
-                    pipeline de MDX punha `tabindex="0"` no `<pre>` (é o que Shiki e rehype-pretty-code
-                    fazem, justamente por essa regra) e o `pre.tsx` antigo repassava os props; o
-                    `CodeBlock` renderiza o próprio `<pre>` e descartava. **Corrigido no componente, não
-                    no consumidor** — a garantia deixa de depender do highlighter de cada um lembrar de
-                    um atributo.
-
-                    **2ª — asserção de teste dependente do runner.** O teste afirmava
-                    `pre.scrollLeft > 0` após uma seta, mas rolar container com seta é **ação padrão do
-                    navegador**, que o evento sintético do runner não dispara. No navegador real a mesma
-                    interação rola (medido: 0 → 40). A asserção testava o navegador, não o componente.
-                    Regra que ficou: **teste que passa por acidente do modelo de eventos do runner é pior
-                    que teste que afirma o contrato real.**
-
-                    **3ª — os números de linha sumiram.** A regra antiga do docs numerava
-                    incondicionalmente; o componente tem numeração opt-in (correto) e a migração não
-                    passou a prop. Regressão visual silenciosa, invisível a todo gate. **Aqui escalei**:
-                    depois de três rodadas, por uma prop numa linha, a escada do Batuta manda subir uma
-                    linha — e a linha acima de complex é a crítica, que é o maestro. Feito por mim, com
-                    comentário no `pre.tsx` explicando por que a prop é obrigatória ali.
-
-                    **Duas provas de mutação:** remover o `tabIndex` quebra 2 testes; remover o seletor
-                    do `<pre>` no anel de foco quebra 1.
-
-  - [x] **Lote 5 — `Brand`** → codex (`gpt-5.6-terra`), **duas rodadas**, commit `a41de53`.
-        653 B. Mata 28 linhas duplicadas entre header e rodapé, com os dois `eslint-disable`
-        que cada cópia carregava.
-
-        **O executor parou e perguntou** qual seria o default do nome acessível para uma
-                marca sem wordmark, propondo `"Brand"`. **Recusado**: um `aria-label` literal em
-                inglês _é_ saída renderizada — um leitor de tela anunciaria "Brand" numa página em
-                pt-BR. É o pior tipo de defeito de i18n, porque parece resolvido. A regra ficou: com
-                wordmark, as imagens são decorativas e o texto é o nome; sem wordmark, o consumidor
-                fornece, e isso é **erro de compilação** via união discriminada, não surpresa em
-                runtime.
-
-                A 2ª rodada foi teste, não componente: um `cleanup()` no meio do corpo de um teste
-                anterior deixava o `render` seguinte sem container, e o `querySelector(...)!`
-                transformava "elemento ausente" em `TypeError` três linhas depois. É o mesmo pé de
-                ouvido das doze asserções vácuas do Lote 08, visto pelo outro lado.
-
-                **Único lote que não perdeu um default** — a marca renderiza em 24px sem ninguém
-                passar `size`, porque o default vive como fallback do `var()`.
-
-  **Cada lote dogfooda o `apps/docs` no mesmo commit** — migra o site para o componente
-  novo e apaga do `site.css` as regras que ele substitui. É isso que prova a API (melhor
-  que uma demo sintética) e é onde o `impeccable` roda, na página real.
-
-- [ ] **6c-b3 — documentar as adições** (novo, 2026-07-30). Descoberta ao montar os lotes:
-      o manifesto do docs tem **40 entradas** e o docgen conta **46 componentes** — o 6c-b1
-      entregou `Container`, `Stack`, `Inline`, `Grid`, `PageHeader` e `ThemeProvider` **sem
-      página de documentação**, contrariando o "cada uma com página" escrito aqui. Decisão:
-      em vez de cinco lotes parciais de docs, **um lote só** cobrindo as 6 pendentes do
-      6c-b1 mais as 9 do 6c-b2 — 15 páginas de uma vez, no formato de fan-out da 6b, que é
-      onde essa forma de trabalho já se provou barata.
-
-A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
-v1.1+v1.2 (mapa completo em `.batuta/handoff-v1.2-map.md`) — a landing deixou de ser
-independente porque o kit novo dogfooda a camada de layout que ainda não existe.
+O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
 ## Next — Fase 6, na ordem de dependência
 
@@ -242,6 +72,192 @@ construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`**
 - [ ] **6c-d — favicon theme-aware** (opcional) — favicon seguir tema/dispositivo; hoje é
       `/favicon.svg` estático.
 - [ ] **6c-e — deploy Cloudflare Pages** (manual, do usuário).
+
+## 6c-b2 — o que cada lote custou
+
+### Lote 1 — `Shell` + `.lyra-prose`
+
+→ codex (`gpt-5.6-terra`, reasoning high),
+**três rodadas**, commit `1f26db7`. Estabeleceu a mecânica que os outros quatro
+herdam: `components/chrome/chrome.css`, a categoria `Chrome` no docgen e o registro
+do parity para um arquivo CSS sem contraparte no handoff (enumerado como aditivo
+nosso, com o tripwire provado).
+
+**O que cada rodada custou, porque é lição reaproveitável:**
+
+                              1ª — seis defeitos. Dois deles meus: a fronteira do brief dizia
+                              `tools/docgen/output/*` intocável e o executor obedeceu ao pé da letra em vez de
+                              rodar o gerador (são artefatos commitados; o certo é regenerar, nunca editar à
+                              mão), e o brief não pediu nome acessível para as trilhas, o que produziu **duas
+                              `<aside>` anônimas** onde antes havia uma `<aside>` mais um `<nav>` nomeado. Dele:
+                              **deriva de fidelidade** — o code inline virou `var(--text-sm)`/`0 4px` no lugar de
+                              `0.9em`/`1px 5px`, e `0.9em` **escala com o contexto** (code dentro de `h2` crescia
+                              junto), coisa que token fixo não faz. Tokenizar não é melhoria quando muda o render.
+
+                              2ª — todos os seis corrigidos, gates verdes. Mas abrir o build no navegador achou o
+                              defeito real: **bug de especificidade**. A regra de empilhamento a 900px é
+                              `.lyra-shell--page` (0,1,0) e perdia para
+                              `.lyra-shell--page.lyra-shell--has-sidebar.lyra-shell--has-aside` (0,3,0) do bloco
+                              de 1100px — media query não soma especificidade. A sidebar **nunca empilhava**: a
+                              375px a coluna de conteúdo ficava com 83px e a página vazava 92px. E o teste
+                              "stacks the sidebar at 900px" passava, porque renderizava `<Shell sidebar>`
+                              sozinho, onde o empate é decidido pela ordem no arquivo. **Teste verde provando
+                              nada, de novo** — a forma de duas trilhas, que é a do docs, não era exercida.
+
+                              3ª — corrigido enumerando os estados de trilha no bloco de 900px, com teste da
+                              forma de duas trilhas. Verificado por mim no navegador: 1440/1000/900/375 com
+                              colapso correto e `scrollWidth == viewport`.
+
+                              **Escalei? Não** — e o motivo importa: as duas falhas foram de feedbacks
+                              diferentes, e o defeito da 3ª rodada nunca esteve num retorno meu. A escada do
+                              Batuta existe para o mesmo brief falhando duas vezes.
+
+                              **Impeccable na página real** (não há MDX ainda; a 6c-b3 é que a traz): **15/20**,
+                              detector mecânico limpo. Nenhum P1 é deste lote — os dois são pré-existentes e
+                              estão anotados em Débitos abaixo. O lote **melhorou** a a11y: os landmarks agora
+                              são `nav[Docs]` e `aside[Nesta página]`, traduzidos.
+
+### Lote 2 — `Navbar` + `NavLink` + `Footer`
+
+→ codex (`gpt-5.6-terra`, reasoning
+high), **três rodadas**, commit `0628b78`. Navbar 290 B, NavLink 470 B, Footer 266 B.
+
+**1ª — parou numa contradição do brief, e acertou em parar.** A fronteira dizia
+`tools/docgen/output/*` intocável; são artefatos gerados **e commitados**, então
+falhar o `--check` não era motivo de parada, era motivo de rodar o gerador. Eu já
+tinha corrigido isso no retorno do Lote 1 e **não** no brief compartilhado, que é o
+que os lotes 2–5 leem. Corrigido na origem: a seção de fronteiras agora separa
+"gerado e commitado — regenere" de "intocável de verdade".
+
+                  **2ª — `landmark-unique`.** O header ganhou nome acessível e colidiu com a trilha do
+                  `Shell`, que já se chamava "Docs": dois landmarks de navegação com nome idêntico. O
+                  componente estava certo em exigir rótulo; a fiação do docs é que reusou um nome
+                  ocupado. Resolvido com nomes de escopo nos dois idiomas.
+
+                  **3ª — classe apagada com consumidor vivo.** O `.lw-nav__link` saiu do `site.css`
+                  (correto), mas o `theme-toggle.tsx` ainda o referenciava: o botão virou `<button>`
+                  cru do navegador. Migrado para `IconButton` ghost. **Nenhum gate pega isso** — só
+                  apareceu na captura comparativa do cromo, e tinha sobrevivido também à minha
+                  primeira verificação, que olhou axe/overflow/landmarks/foco e não a aparência.
+
+### Lote 3 — `TableOfContents` + `useScrollSpy` + `CommandPalette.Trigger`
+
+→ codex
+(`gpt-5.6-terra`, reasoning high), **duas rodadas**, commit `f713085`. 4. **Rebuildar antes de qualquer medição pós-retry.** Duas vezes nesta fase eu quase
+reportei defeito medindo artefato velho — o build estático servido era anterior à
+correção. O sintoma é convincente (atributo ausente, estilo faltando) e leva a um
+retorno errado. 5. **Migração de componente preserva o comportamento visível, não só o comportamento.**
+Três dos quatro lotes perderam algo que nenhum gate cobre — o toggle sem estilo (Lote
+2), a trilha sem item ativo (Lote 3), a numeração de linha (Lote 4). Todos foram
+defaults novos e razoáveis do componente que o consumidor precisava reativar. Ao migrar,
+comparar a aparência **antes e depois**, não só verificar que o novo componente funciona.
+
+**Fechou uma violação CRÍTICA que estava em produção.** Abaixo de 720px o CSS
+escondia rótulo e atalho do `.lw-search`, e o axe reportava `button-name` — quem usa
+leitor de tela ouvia só "botão". O `CommandPalette.Trigger` mantém o nome quando o
+texto visível some. **O docs agora tem axe limpo em 1440/900/375 nos dois idiomas,
+zero violações**, o que não acontecia desde o começo desta fase.
+
+**A rodada extra foi por fronteira de scroll spy.** O observer com
+`rootMargin: '0px 0px -70% 0px'` observa os 30% superiores da viewport, e essa faixa
+fica vazia em duas situações: no topo, antes de qualquer título subir até lá; e no
+fim, onde o documento acaba e os últimos títulos nunca a alcançam. A trilha ficava
+**sem item marcado nas duas posições em que o leitor mais fica**. A implementação
+antiga do docs driblava só a primeira, semeando o primeiro título — a segunda nunca
+esteve coberta, nem antes. Agora responde nas três: `Examples` no topo,
+`Accessibility` no meio, `Plain HTML` no fim.
+
+A varredura de órfãs saiu vazia de primeira — a lição do Lote 2 pegou, e este era o
+lote que mais apagava classe (`.lw-search*`, `.lw-toc*`, o `__kbd` duplicado).
+
+### Lote 4 — `CodeBlock` + `SegmentedControl`
+
+→ codex (`gpt-5.6-terra`, reasoning
+high), **três rodadas + uma correção do maestro**, commit `ed465e1`. CodeBlock 445 B,
+SegmentedControl 527 B. Fecha o último dos quatro controles de cromo sem anel de foco.
+
+**1ª — `scrollable-region-focusable`.** O `<pre>` rolável não era alcançável por
+teclado, e o docs estava em zero violações desde o Lote 3. Causa instrutiva: o
+pipeline de MDX punha `tabindex="0"` no `<pre>` (é o que Shiki e rehype-pretty-code
+fazem, justamente por essa regra) e o `pre.tsx` antigo repassava os props; o
+`CodeBlock` renderiza o próprio `<pre>` e descartava. **Corrigido no componente, não
+no consumidor** — a garantia deixa de depender do highlighter de cada um lembrar de
+um atributo.
+
+          **2ª — asserção de teste dependente do runner.** O teste afirmava
+          `pre.scrollLeft > 0` após uma seta, mas rolar container com seta é **ação padrão do
+          navegador**, que o evento sintético do runner não dispara. No navegador real a mesma
+          interação rola (medido: 0 → 40). A asserção testava o navegador, não o componente.
+          Regra que ficou: **teste que passa por acidente do modelo de eventos do runner é pior
+          que teste que afirma o contrato real.**
+
+          **3ª — os números de linha sumiram.** A regra antiga do docs numerava
+          incondicionalmente; o componente tem numeração opt-in (correto) e a migração não
+          passou a prop. Regressão visual silenciosa, invisível a todo gate. **Aqui escalei**:
+          depois de três rodadas, por uma prop numa linha, a escada do Batuta manda subir uma
+          linha — e a linha acima de complex é a crítica, que é o maestro. Feito por mim, com
+          comentário no `pre.tsx` explicando por que a prop é obrigatória ali.
+
+          **Duas provas de mutação:** remover o `tabIndex` quebra 2 testes; remover o seletor
+          do `<pre>` no anel de foco quebra 1.
+
+### Lote 5 — `Brand`
+
+→ codex (`gpt-5.6-terra`), **duas rodadas**, commit `a41de53`.
+653 B. Mata 28 linhas duplicadas entre header e rodapé, com os dois `eslint-disable`
+que cada cópia carregava.
+
+**O executor parou e perguntou** qual seria o default do nome acessível para uma
+marca sem wordmark, propondo `"Brand"`. **Recusado**: um `aria-label` literal em
+inglês _é_ saída renderizada — um leitor de tela anunciaria "Brand" numa página em
+pt-BR. É o pior tipo de defeito de i18n, porque parece resolvido. A regra ficou: com
+wordmark, as imagens são decorativas e o texto é o nome; sem wordmark, o consumidor
+fornece, e isso é **erro de compilação** via união discriminada, não surpresa em
+runtime.
+
+      A 2ª rodada foi teste, não componente: um `cleanup()` no meio do corpo de um teste
+      anterior deixava o `render` seguinte sem container, e o `querySelector(...)!`
+      transformava "elemento ausente" em `TypeError` três linhas depois. É o mesmo pé de
+      ouvido das doze asserções vácuas do Lote 08, visto pelo outro lado.
+
+      **Único lote que não perdeu um default** — a marca renderiza em 24px sem ninguém
+      passar `size`, porque o default vive como fallback do `var()`.
+
+**Cada lote dogfooda o `apps/docs` no mesmo commit** — migra o site para o componente
+novo e apaga do `site.css` as regras que ele substitui. É isso que prova a API (melhor
+que uma demo sintética) e é onde o `impeccable` roda, na página real.
+
+- [ ] **6c-b3 — documentar as adições** (novo, 2026-07-30). Descoberta ao montar os lotes:
+      o manifesto do docs tem **40 entradas** e o docgen conta **46 componentes** — o 6c-b1
+      entregou `Container`, `Stack`, `Inline`, `Grid`, `PageHeader` e `ThemeProvider` **sem
+      página de documentação**, contrariando o "cada uma com página" escrito aqui. Decisão:
+      em vez de cinco lotes parciais de docs, **um lote só** cobrindo as 6 pendentes do
+      6c-b1 mais as 9 do 6c-b2 — 15 páginas de uma vez, no formato de fan-out da 6b, que é
+      onde essa forma de trabalho já se provou barata.
+
+A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
+v1.1+v1.2 (mapa completo em `.batuta/handoff-v1.2-map.md`) — a landing deixou de ser
+independente porque o kit novo dogfooda a camada de layout que ainda não existe.
+
+### Práticas de verificação que esta fase impôs
+
+Nesta ordem de custo:
+
+1. **Captura comparativa do cromo entra na verificação**, não como passo opcional. Os dois
+   defeitos mais caros dos dois lotes (a sidebar que nunca empilhava e o toggle sem estilo)
+   passaram por gates verdes, testes verdes e axe limpo.
+2. **Apagar classe exige varredura de órfãs.** Vale para o Lote 3, que remove
+   `.lw-search`, `.lw-toc*` e `.lw-code*`:
+
+```bash
+for c in $(grep -rhoE 'lw-[a-z0-9_-]+' apps/docs/**/*.tsx | sort -u); do
+grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
+done
+```
+
+3. **Não regenerar `baseline.json` sem o `handoff/` ter mudado** — `--update-baseline`
+   sobrescreve `$comment` e `handoffVersion` com defaults e apaga o registro de quais
+   grupos do handoff já entraram. Mordeu duas vezes; agora está no brief compartilhado.
 
 ## Next — depois da Fase 6
 

@@ -82,7 +82,10 @@ set, applied immediately.
 
 ```tsx
 <SegmentedControl
-  options={[{ value: 'en', label: 'EN' }, { value: 'pt-BR', label: 'PT' }]}
+  options={[
+    { value: 'en', label: 'EN' },
+    { value: 'pt-BR', label: 'PT' },
+  ]}
   value={value}
   onChange={setValue}
   label="Language"
@@ -198,8 +201,14 @@ equivalent rules in `chrome.css`. `.lw-brand` belongs to Lot 5; `.lyra-sbgroup__
 `apps/docs/app/site.css` currently carries:
 
 ```css
-.lw-code__pre, .lw-code__pre span              { color: var(--shiki-light) }
-[data-theme='dark'] .lw-code__pre, … span      { color: var(--shiki-dark) }
+.lw-code__pre,
+.lw-code__pre span {
+  color: var(--shiki-light);
+}
+[data-theme='dark'] .lw-code__pre,
+… span {
+  color: var(--shiki-dark);
+}
 ```
 
 Those are the **highlighter's** concern, not the design system's. Keep them in the docs,

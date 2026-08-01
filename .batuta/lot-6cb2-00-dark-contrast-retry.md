@@ -13,7 +13,7 @@ parity divergence is well-scoped — pinned to `tokens/colors.css`, to the
 
 I also ran a **sharper tripwire probe than the one you reported**. You changed `--info`, a
 token that is not in the divergence map, so it proved little. I set the dark `--accent` to
-`var(--indigo-700)` — an *unapproved* value on a *mapped* token, which is the actual
+`var(--indigo-700)` — an _unapproved_ value on a _mapped_ token, which is the actual
 scope-creep risk — and parity failed at both levels:
 
 ```
@@ -61,7 +61,7 @@ Reviewing `packages/styles/tokens/brand.css` I found that the white-label path h
 structural problem we just fixed:
 
 ```css
-[data-theme="dark"][data-brand] {
+[data-theme='dark'][data-brand] {
   --accent: color-mix(in oklab, var(--brand), white 14%);
 }
 ```

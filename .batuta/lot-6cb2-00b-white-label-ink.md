@@ -18,15 +18,15 @@ gets legible text on primary fills in both themes — in pure CSS, with no runti
 is right only for dark brand seeds. Measured in a real browser across 7 representative
 seeds, white on the resolved `--accent`:
 
-| seed | light | dark |
-| --- | --- | --- |
-| `#0D9488` teal | 3.74 ✗ | 3.02 ✗ |
-| `#FACC15` yellow | 1.53 ✗ | 1.43 ✗ |
-| `#2563EB` blue | 5.17 ✓ | 3.90 ✗ |
-| `#84CC16` lime | 1.98 ✗ | 1.78 ✗ |
-| `#EC4899` pink | 3.53 ✗ | 2.89 ✗ |
-| `#1E3A8A` navy | 10.36 ✓ | 7.03 ✓ |
-| `#22D3EE` cyan | 1.81 ✗ | 1.65 ✗ |
+| seed             | light   | dark   |
+| ---------------- | ------- | ------ |
+| `#0D9488` teal   | 3.74 ✗  | 3.02 ✗ |
+| `#FACC15` yellow | 1.53 ✗  | 1.43 ✗ |
+| `#2563EB` blue   | 5.17 ✓  | 3.90 ✗ |
+| `#84CC16` lime   | 1.98 ✗  | 1.78 ✗ |
+| `#EC4899` pink   | 3.53 ✗  | 2.89 ✗ |
+| `#1E3A8A` navy   | 10.36 ✓ | 7.03 ✓ |
+| `#22D3EE` cyan   | 1.81 ✗  | 1.65 ✗ |
 
 **5 of 7 fail AA in light, 6 of 7 in dark.** This is not a dark-mode bug; the white-label
 path has never had a contrast guarantee.
@@ -37,8 +37,10 @@ Derive the ink from the accent's own lightness, using relative color syntax:
 
 ```css
 [data-brand] {
-  --on-accent: var(--brand-contrast,
-    oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h));
+  --on-accent: var(
+    --brand-contrast,
+    oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h)
+  );
 }
 ```
 
@@ -64,12 +66,12 @@ Three properties that made this the choice:
 `0.58` came from sweeping 18 brand seeds × 2 themes × 7 candidate thresholds:
 
 | threshold | AA (4.5) failures | worst ratio |
-| --- | --- | --- |
-| 0.50 | 7/36 | 3.48 |
-| 0.55 | 3/36 | 4.27 |
-| **0.58** | **1/36** | **4.47** |
-| 0.62 | 6/36 | 3.74 |
-| 0.65 | 9/36 | 3.09 |
+| --------- | ----------------- | ----------- |
+| 0.50      | 7/36              | 3.48        |
+| 0.55      | 3/36              | 4.27        |
+| **0.58**  | **1/36**          | **4.47**    |
+| 0.62      | 6/36              | 3.74        |
+| 0.65      | 9/36              | 3.09        |
 
 Use `0.58`. Do not "improve" it without the same measurement.
 
@@ -111,6 +113,7 @@ state and test is: **AA-large always; AA for everything except enumerated crosso
    `packages/styles/tests/brand-theme.test.ts` already has a canvas-based `parseColor` that
    resolves any color notation — including the `oklab(...)` and `color(srgb …)` forms these
    derivations compute to. Use it; a naive regex parser reads those as garbage.
+
 5. Prove the test is not vacuous: revert `--on-accent` to `var(--brand-contrast, #FFFFFF)`,
    run the styles suite, confirm it **fails** and report which seeds failed; restore, confirm
    it passes. Report both outputs.
