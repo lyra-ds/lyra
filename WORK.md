@@ -16,6 +16,15 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       achados enquanto se documentava, com `packages/` fechado naquela fase. Brief em
       `.batuta/lot-6cb4-element-overrides.md`.
 
+- [ ] **6c-c — landing de marketing.** Ciclo aberto em 2026-08-01, decisões tomadas
+      (registro em § Decisões tomadas), quebrada em 5 lotes sequenciais. Briefs em
+      `.batuta/brief-6cc-landing.md` (compartilhado) + `.batuta/lot-6cc-0N-*.md`.
+  - [x] Lote 1 — `apps/site`, cromo e Hero → codex, commit 5ae1075
+  - [ ] Lote 2 — ComponentShowcase + Frameworks
+  - [ ] Lote 3 — Temas/Tokens + Comunidade
+  - [ ] Lote 4 — FAQ + CTA
+  - [ ] Lote 5 — CookieBanner LGPD + meta/OG + varredura final + deploy
+
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
 ## Next — Fase 6, na ordem de dependência
@@ -372,6 +381,70 @@ pt-BR) — a tabela gerada aparece sozinha, mas ela diz _que_ o prop existe, nã
    contra a base morta — `git merge-tree` contra `main` mostrou zero conflito. Só restou abrir
    o #27 contra `main`. A regra daqui em diante: lote que depende de outro nasce empilhado, mas
    **antes de o pai mergear, ou se retargeta para `main`, ou já se abre contra `main`**.
+
+## 6c-c — o que cada lote custou
+
+Quatro decisões do usuário na abertura: a landing **sobe depois do release** (o que libera o
+badge do React a dizer "pronto" e torna o `npm i` da Hero verdade); ela vive em `apps/site/`
+servindo lyra-ds.dev, **separada** do `apps/docs/`; as duas seções sem código de handoff são
+desenhadas a partir da prosa do mapa; e a copy reposicionada é minha, revisada por ele.
+
+**O kit do handoff no repo é a versão anterior ao redesenho.** Traz `sections-marketing.jsx`
+com Pricing, Testimonials e Discord, e não tem `sections-community.jsx`, `docs.html` nem
+`site.css` — o CSS é um `<style>` dentro do `index.html`. "Temas/Tokens" e "Comunidade",
+que o plano descreve em prosa, **não têm original**. O que existe: Hero, showcase,
+frameworks, FAQ, CTA, header, footer e cookie banner.
+
+Daí as **sete regras de honestidade** do brief compartilhado, cada uma contra uma afirmação
+falsa que o kit traz: métricas inventadas ("3.842 estrelas", "48 mil/mês"), plano pago (3 das
+5 respostas do FAQ o citam), Discord, nome de pacote inexistente, badge de maturidade que
+promete estágio que não existe, número de inventário fixado em string e a versão "v1.0". São
+requisito duro: a landing é a primeira coisa que alguém lê antes de decidir adotar.
+
+### Lote 1 — o app, o cromo e a Hero
+
+Duas rodadas, e a primeira **não escreveu uma linha** — de propósito. O brief pedia duas
+coisas incompatíveis: "leia a versão real de `packages/react/package.json`" **e** "mostre
+v0.1.0". Os dois pacotes estão em `0.0.0`; o primeiro número de verdade só nasce quando a
+Fase 7 consumir os changesets pendentes. O executor viu que a única forma de cumprir o item
+era inventar — que é o que a regra proíbe — e parou. Foi a regra de honestidade pegando um
+erro **meu**, não dele. Resolvido tirando a versão do badge: além de não existir número para
+ler, versão em hero de marketing é fato que apodrece a cada release.
+
+**Por que app separado e não rota:** o `apps/docs` é um pipeline de conteúdo MDX com árvore
+de páginas, busca e tabelas geradas; a landing é uma página de seções compostas sem fonte de
+conteúdo. Juntos, todo build de landing carregaria o pipeline e toda rota de docs carregaria
+o cromo de marketing. Isso **não** duplica componente — `Navbar`, `Footer`, `Brand`,
+`SegmentedControl`, `ThemeProvider` e mais 18 vêm do `@lyra-ds/react`; conferi os 23 antes de
+briefar. Duplica infra: next-intl, export estático, fontes e a folha `.lw-*`.
+
+**O mapa estava desatualizado e este lote corrigiu.** Das 16 classes `.lw-*` que ele diz
+colidirem, só a família `.lw-hero*` colide hoje — as outras sumiram do `apps/docs` quando a
+6c-b2 transformou o cromo em componentes do DS. E a colisão que sobrou é real, não nominal:
+o hero do docs é alinhado à esquerda e menor (é cabeçalho de página), o da landing é
+centralizado e maior. Dois apps, duas folhas, nenhum conflito.
+
+**O `.gitignore` só cobria `apps/docs/`.** O app novo não estava contemplado, e o commit
+levaria centenas de artefatos de build. Passou a casar `apps/*/.next/` e `apps/*/out/` —
+regra por app cobre o próximo no dia em que ele nascer, não no dia em que alguém nota o lixo
+no diff. O executor não tinha como ver isso: não conseguiu construir.
+
+### Práticas de verificação que este lote acrescentou
+
+1. **Falha de verificação minha é alegação como qualquer outra.** Reportei a troca de idioma
+   quebrada duas vezes seguidas, e as duas eram do meu script: primeiro procurei `role="link"`
+   num `SegmentedControl` que emite `role="radio"`; depois esperei `networkidle`, que já estava
+   satisfeito no instante do clique e por isso retornava **antes** da navegação client-side
+   acontecer. A espera certa é pela URL. Um `debug` de 20 segundos desmentiu as duas antes de
+   qualquer re-disparo — o mesmo probe barato que o perfil já manda usar contra alegação do
+   executor vale contra a minha.
+2. **App novo no monorepo tem gate que passa sem construir nada.** `pnpm -r --if-present run
+build` ignora em silêncio um app mal formado. A prova é destrutiva: apagar `out/`, rodar o
+   build da raiz e verificar que voltou.
+3. **O executor não conseguiu rodar gate nenhum e disse isso.** `pnpm` morreu no sandbox dele
+   (`ERR_SQLITE_ERROR`, depois `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). O relatório
+   nomeou cada coisa que não rodou em vez de fingir verde — que é exatamente o contrato do
+   brief, e o que separa uma rodada honesta de uma rodada perdida.
 
 ## Next — depois da Fase 6
 
