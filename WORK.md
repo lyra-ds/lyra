@@ -227,13 +227,11 @@ runtime.
 novo e apaga do `site.css` as regras que ele substitui. É isso que prova a API (melhor
 que uma demo sintética) e é onde o `impeccable` roda, na página real.
 
-- [ ] **6c-b3 — documentar as adições** (novo, 2026-07-30). Descoberta ao montar os lotes:
-      o manifesto do docs tem **40 entradas** e o docgen conta **46 componentes** — o 6c-b1
-      entregou `Container`, `Stack`, `Inline`, `Grid`, `PageHeader` e `ThemeProvider` **sem
-      página de documentação**, contrariando o "cada uma com página" escrito aqui. Decisão:
-      em vez de cinco lotes parciais de docs, **um lote só** cobrindo as 6 pendentes do
-      6c-b1 mais as 9 do 6c-b2 — 15 páginas de uma vez, no formato de fan-out da 6b, que é
-      onde essa forma de trabalho já se provou barata.
+- [x] **6c-b3 — documentar as adições — CONCLUÍDO em 2026-08-01.** 12 páginas de componente
+      bilíngues, 4 seções em páginas de pais (`Inline`, `NavLink`, `useScrollSpy`,
+      `CommandPalette.Trigger`), a guia de prosa e dois grupos novos na sidebar (`layout`,
+      `system`). Fecha o buraco: dos 54 componentes do docgen, os 4 fora do manifesto são
+      exatamente os que documentam como seção. Detalhe em "6c-b3 — o que cada lote custou".
 
 A Fase 6 foi reordenada em 2026-07-28 depois da análise do handoff
 v1.1+v1.2 (mapa completo em `.batuta/handoff-v1.2-map.md`) — a landing deixou de ser
@@ -258,6 +256,74 @@ done
 3. **Não regenerar `baseline.json` sem o `handoff/` ter mudado** — `--update-baseline`
    sobrescreve `$comment` e `handoffVersion` com defaults e apaga o registro de quais
    grupos do handoff já entraram. Mordeu duas vezes; agora está no brief compartilhado.
+
+## 6c-b3 — o que cada lote custou
+
+Decisões do usuário antes de delegar: dois grupos novos (`layout`, `system`) em vez de um
+grupo `chrome` espelhando a arquitetura interna — a sidebar responde "o que eu preciso?", não
+"onde isso mora no repo?"; e `.lyra-prose` como guia própria, porque não tem entrada no
+`props.json` e uma página de componente renderizaria "No generated props found".
+
+### Lote 1 — layout, e o preview isolado que a fase inteira herdou
+
+Três rodadas. A primeira entregou dez páginas com duas violações de axe, e a causa era
+estrutural: **quatro componentes desta fase são de nível de página** e emitem o que a página
+de docs já tem — `PageHeader` emite `<h1>`, `Shell` emite `<main>` (que dentro de outro
+`<main>` é **HTML inválido**, não só reclamação de ferramenta), e no Lote 2 vieram `Navbar`
+com `<header>` e `Footer` com `<footer>`.
+
+Resolvido com `layout="isolated"`: o exemplo renderiza em iframe com documento próprio, folha
+de estilos injetada, `data-theme` espelhado, `title` traduzido (sem ele o axe troca uma
+violação por outra) e altura por `ResizeObserver`. O painel de código continua imprimindo
+código de consumidor — o iframe é do palco, não do exemplo.
+
+A segunda rodada foi consequência da primeira: o frame de 650px colapsava o `Shell` pelos
+breakpoints dele mesmo, e **a página que documenta três trilhas mostrava uma coluna**.
+Corrigido renderizando a 1200px internos e escalando, com a página dizendo que o preview roda
+em largura fixa.
+
+### Lote 2 — ThemeProvider, e duas armadilhas que não são óbvias
+
+O `ThemeProvider` escreve no `documentElement` **e** persiste em `localStorage`. Exemplo vivo
+inline sequestraria o tema do site inteiro. E isolar não basta: **iframe de mesma origem
+compartilha `localStorage` com a página pai**, então só `storageKey` distinto protege a
+preferência do leitor.
+
+Sobrou o conflito de dois escritores — o preview espelha `data-theme`, o provider é dono dele
+dentro do frame. Resolvido com opt-out: exemplo que traz o próprio provider é a autoridade de
+tema; os demais continuam espelhando.
+
+**Preview isolado com interação precisa de raiz React própria.** Portalar árvore do host deixa
+a propriedade de eventos no documento de origem. Este foi o primeiro exemplo interativo
+isolado — os quatro anteriores eram estáticos e nunca exercitaram esse caminho.
+
+### Lote 3 — display e form, sem isolamento
+
+Nenhum destes é de nível de página, então palco inline normal. Proibi o isolado no brief: ele
+existe para um problema que este lote não tem e cobraria do leitor um iframe à toa.
+
+### Lote 4 — a guia de prosa
+
+Único item da fase sem componente React. Documenta as duas custom properties com os defaults
+reais e três declarações que parecem arbitrárias e não são: o `--prose-scroll-offset` (header
+sticky esconde o título ao seguir âncora), o `overflow-wrap: anywhere` (medido: 375px virando
+390px) e a guarda do `.lyra-btn`.
+
+### Práticas de verificação que esta fase acrescentou
+
+1. **`axe.run(document)` não desce para dentro de iframes.** Todas as varreduras que eu
+   reportei como limpas entre o Lote 1 e o Lote 2 cobriam só a página hospedeira — os previews
+   isolados ficaram sem auditoria até eu perceber. Agora a varredura roda no host **e** dentro
+   de cada frame.
+2. **Verificação de interação é sobre o build, não sobre o `next dev`.** O overlay de dev monta
+   dentro do documento de preview e faz exemplo interativo parecer congelado. Reportei esse
+   fantasma **duas vezes** antes de testar o artefato real.
+3. **Servidor estático precisa mapear rota sem extensão para `.html`.** O `python -m
+http.server` devolve listagem de diretório para `/example-preview/...`, e foi isso que
+   escondeu o comportamento correto do build.
+4. **Em página que dogfooda o próprio componente, seletor global mede a coisa errada.** Duas
+   vezes mirei no seletor de idioma do header em vez do exemplo da página, e quase reportei
+   perda de foco que era navegação.
 
 ## Next — depois da Fase 6
 
