@@ -1,0 +1,60 @@
+---
+title: Container
+description: Uma região de conteúdo centralizada cuja largura máxima passa para containers aninhados.
+---
+
+# Container
+
+Container centraliza o conteúdo com o gutter do sistema. Escolha a largura máxima de leitura ou
+trabalho; `--container-max` passa pela cascata, então containers aninhados herdam essa decisão.
+
+## Exemplos
+
+<Example id="basic" title="Uma medida focada">
+  Uma medida menor deixa prosa densa e formulários mais fáceis de percorrer. Para regiões amplas de
+  aplicação, mantenha o padrão da folha de estilos em vez de acrescentar padding arbitrário.
+</Example>
+
+<Example id="nested" title="Uma largura máxima em cascata">
+  Um Container aninhado não inicia uma regra de largura concorrente. Ele herda o máximo externo,
+  permitindo definir a medida uma vez na página e reutilizá-la dentro das seções.
+</Example>
+
+## Quando usar
+
+Use um Container em volta de uma página ou seção cujo conteúdo precisa de uma largura máxima
+previsível.
+
+`--container-max` define essa largura. O padrão da folha de estilos é `1200px`; `max` escreve a
+propriedade em pixels, e containers aninhados a herdam pela cascata.
+
+Prefira outro componente quando:
+
+- **A página precisa de trilhos persistentes de navegação ou contexto** — use Shell.
+- **Os filhos precisam de uma relação vertical ou horizontal** — use Stack.
+- **Os filhos precisam compartilhar trilhas de coluna** — use Grid.
+
+## Acessibilidade
+
+- Container renderiza uma `<div>` simples e não acrescenta role, modelo de teclado ou nome acessível.
+- Dê semântica à região apenas quando a página ao redor precisar de um landmark; não crie um
+  landmark apenas para expressar largura.
+- Ele não gerencia foco. A ordem de foco continua sendo a ordem dos filhos no DOM.
+
+## Props
+
+<PropTable name="Container" />
+
+## HTML puro
+
+Defina a propriedade customizada onde a decisão de largura começa. Um container aninhado a herda:
+
+```html
+<div class="lyra-container" style="--container-max: 720px">
+  <p>Conteúdo da página com largura máxima de 720px.</p>
+
+  <div class="lyra-container">
+    <p>Esta região aninhada mantém a mesma largura máxima.</p>
+  </div>
+</div>
+```

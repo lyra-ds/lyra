@@ -1,0 +1,82 @@
+---
+title: Shell
+description: A page or application frame with named rails and deliberate document or content scrolling.
+---
+
+# Shell
+
+Shell composes navigation, main content and optional context rails. Choose its scroll model first:
+`page` keeps the document scrolling with sticky rails, while `content` makes the main region scroll.
+
+## Examples
+
+<Example id="docs-site" title="A documentation site" layout="isolated">
+  This is the page-scroll recipe used by the docs site: a Container bounds the frame, navigation and
+  contents are named rails, and `top={84}` keeps them below the sticky site header.
+</Example>
+
+<Example id="application" title="An application workspace" layout="isolated">
+  Use `scroll="content"` for an application frame that owns the viewport height. The main region
+  scrolls while its navigation rail and top bar stay in place.
+</Example>
+
+These previews render at a fixed 1200px layout width and scale to this column, so they show the
+wide Shell configuration without horizontal page overflow.
+
+## When to use
+
+Use Shell when a page needs persistent navigation or context beside its main task. `scroll` is not a
+visual variant: it selects between two layout engines, so a `variant` prop would hide a behavior
+decision that affects scrolling, sticky positioning and focus travel.
+
+| Property          | Default | What it sets             |
+| ----------------- | ------- | ------------------------ |
+| `--shell-sidebar` | `220px` | Sidebar rail width       |
+| `--shell-aside`   | `200px` | Complementary rail width |
+| `--shell-top`     | `0px`   | Sticky rail offset       |
+
+Set `top` (or `--shell-top`) to the height of a sticky header. Without it, a page-scroll rail can
+hide underneath that header. At `1100px` the aside disappears; at `900px` the sidebar then stacks
+above the document. These breakpoints are fixed because media queries cannot read custom properties.
+
+Reach for something else when:
+
+- **The page only needs a centered content measure** — use Container.
+- **The content is one linear sequence without persistent rails** — use Stack.
+- **The main page identity and actions need a heading** — use PageHeader inside Shell's content.
+
+## Accessibility
+
+- Shell renders one native `<main>`. Do not place another main landmark inside its children.
+- `sidebarAs` and `asideAs` choose `nav` or `aside`. Give each rail a distinct `sidebarLabel` or
+  `asideLabel`; a navigation rail should use `sidebarAs="nav"`, as the documentation recipe does.
+- Shell adds no keyboard shortcuts or focus trap. Links and controls in the rails retain native
+  keyboard behavior, and their DOM order stays sidebar, main, aside at every breakpoint.
+- In `scroll="content"`, ensure the main content contains focusable controls or a managed focus
+  target so keyboard users can enter and discover the scrollable region.
+
+## Props
+
+<PropTable name="Shell" />
+
+## Plain HTML
+
+The classes express the page-scroll model. Name both navigation landmarks and set the sticky offset
+when a fixed site header sits above the frame:
+
+```html
+<div
+  class="lyra-shell lyra-shell--page lyra-shell--has-sidebar lyra-shell--has-aside"
+  style="--shell-sidebar: 220px; --shell-aside: 200px; --shell-top: 84px"
+>
+  <nav class="lyra-shell__sidebar" aria-label="Documentation navigation">
+    <a href="/components/container">Container</a>
+  </nav>
+  <main class="lyra-shell__main">
+    <div class="lyra-shell__content">Documentation content</div>
+  </main>
+  <nav class="lyra-shell__aside" aria-label="On this page">
+    <a href="#accessibility">Accessibility</a>
+  </nav>
+</div>
+```

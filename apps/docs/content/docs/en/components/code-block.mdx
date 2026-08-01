@@ -1,0 +1,69 @@
+---
+title: CodeBlock
+description: A highlighter-agnostic code panel with optional line numbers and accessible copying.
+---
+
+# CodeBlock
+
+CodeBlock supplies the panel chrome, not syntax highlighting. Bring markup from your highlighter,
+then decide whether people need line numbers or a copy action for the snippet.
+
+## Examples
+
+<Example id="basic" title="Language and copying" layout="block">
+  `copyLabel` and `copiedLabel` enable the copy button together. The success label is also announced
+  politely, so do not use colour alone to confirm the action.
+</Example>
+
+<Example id="line-numbers" title="Line-number contract" layout="block">
+  Line numbers count child elements with the `line` class. Shiki and rehype-pretty-code emit this
+  shape; another highlighter needs to emit it too.
+</Example>
+
+<Example id="copy-text" title="Copying a canonical value" layout="block">
+  `copyText` can differ from the rendered code. Without it, the button copies the rendered text of
+  the `<pre>`, which is usually the value people expect to paste.
+</Example>
+
+## When to use
+
+Use CodeBlock when your product needs a readable, copyable code sample and you already own the
+highlighting step. Its job is a stable frame around that markup, not choosing a language grammar.
+
+Reach for something else when:
+
+- **The content is a short inline token** — use `code`, not a panel with its own scroll region.
+- **People must edit the value** — use Textarea; a code panel does not expose an editing model.
+
+## Accessibility
+
+- The copy control is a native button. Provide both `copyLabel` and `copiedLabel` so it has a name
+  and a successful copy is announced through its polite status message.
+- The `<pre>` keeps native preformatted semantics and has a Tab stop. Once focused, people can
+  scroll overflowing code with the keyboard instead of needing a mouse.
+- Line numbers are generated with CSS counters from `.line` elements. Keep them decorative; the
+  code's text, not its visual numbering, is what assistive technology needs to read.
+- CodeBlock does not highlight or sanitize markup. Your highlighter and any untrusted source remain
+  your responsibility.
+
+## Props
+
+<PropTable name="CodeBlock" />
+
+## Plain HTML
+
+The panel expects your highlighter's markup inside the `<pre>`. Add `line` to each line only when
+you enable the line-number modifier:
+
+```html
+<div class="lyra-code lyra-code--line-numbers">
+  <div class="lyra-code__bar">
+    <span class="lyra-code__lang">css</span>
+    <button class="lyra-code__copy" type="button">Copy</button>
+  </div>
+  <pre class="lyra-code__pre" tabindex="0"><code><span class="line">.notice {</span>
+<span class="line">  color: rebeccapurple;</span>
+<span class="line">}</span></code></pre>
+  <span class="lyra-code__status" role="status" aria-live="polite"></span>
+</div>
+```

@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Container, Shell } from '@lyra-ds/react';
+import { Container, Shell, ThemeProvider } from '@lyra-ds/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { DocsSidebar } from '@/components/docs-sidebar';
 import { HtmlLang } from '@/components/html-lang';
@@ -19,6 +19,7 @@ export const dynamicParams = false;
 const proseStyle: CSSProperties & { '--prose-scroll-offset'?: string } = {
   '--prose-scroll-offset': '80px',
 };
+const themeStorageKey = 'lyra-docs-theme';
 
 export default async function LocaleLayout({
   children,
@@ -35,24 +36,26 @@ export default async function LocaleLayout({
   const [messages, t] = await Promise.all([getMessages(), getTranslations()]);
 
   return (
-    <NextIntlClientProvider locale={lang} messages={messages}>
-      <HtmlLang locale={lang} />
-      <SiteHeader locale={lang} />
-      <Container>
-        <Shell
-          sidebar={<DocsSidebar locale={lang} />}
-          sidebarAs="nav"
-          sidebarLabel={t('documentationNavigation')}
-          aside={<TableOfContents />}
-          asideLabel={t('onThisPage')}
-          top={84}
-        >
-          <div className="lyra-prose" style={proseStyle}>
-            {children}
-          </div>
-        </Shell>
-      </Container>
-      <SiteFooter />
-    </NextIntlClientProvider>
+    <ThemeProvider storageKey={themeStorageKey}>
+      <NextIntlClientProvider locale={lang} messages={messages}>
+        <HtmlLang locale={lang} />
+        <SiteHeader locale={lang} />
+        <Container>
+          <Shell
+            sidebar={<DocsSidebar locale={lang} />}
+            sidebarAs="nav"
+            sidebarLabel={t('documentationNavigation')}
+            aside={<TableOfContents />}
+            asideLabel={t('onThisPage')}
+            top={84}
+          >
+            <div className="lyra-prose" style={proseStyle}>
+              {children}
+            </div>
+          </Shell>
+        </Container>
+        <SiteFooter />
+      </NextIntlClientProvider>
+    </ThemeProvider>
   );
 }

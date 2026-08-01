@@ -97,6 +97,26 @@
   border-radius: var(--radius-lg);
   background: var(--surface-sunken);
 }
+/* Page-level previews own landmarks and headings, so their document stays outside the docs page. */
+.lw-example__stage--isolated {
+  margin-top: var(--space-3);
+  overflow: hidden;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+.lw-example__frame {
+  display: block;
+  min-height: 1px;
+  border: 0;
+  transform-origin: top left;
+}
+.lw-example__frame-scaler {
+  min-height: 1px;
+}
+.lw-example__isolated-placeholder {
+  min-height: 80px;
+}
 .lw-example__toggle {
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,69 @@
+---
+title: TableOfContents
+description: A labelled in-page navigation rail with a controlled active link and a scroll-position hook.
+---
+
+# TableOfContents
+
+TableOfContents is navigation inside one document. Decide whether the caller controls `activeId` or
+derives it with useScrollSpy; the component deliberately does not observe scroll state by itself.
+
+## Examples
+
+<Example id="basic" title="A controlled current section">
+  Give the rail a label that differs from other navigation landmarks on the page. `activeId` marks
+  the current location without making the component guess which scrolling container you use.
+</Example>
+
+## useScrollSpy
+
+<Example id="scroll-spy" title="Deriving the active link">
+  `useScrollSpy(ids: string[]): string | undefined` supplies `activeId`. It chooses the first item
+  before the observation band, keeps the nearest preceding item through gaps, and keeps the last
+  item active at the document bottom.
+</Example>
+
+## When to use
+
+Use TableOfContents for a long, headed document where people need to move among sections and retain
+their position. Its items describe the document hierarchy, not the application's route hierarchy.
+
+Reach for something else when:
+
+- **The destinations change the application route** — use Navbar.
+- **The choices are peer views in the same work area** — use Tabs.
+- **The list is a sequential workflow** — use Stepper.
+
+## Accessibility
+
+- TableOfContents renders a native `<nav>` with `aria-label` from the required `label` prop. Use a
+  distinct label when another navigation landmark is present.
+- The title is visible text and the current link receives `aria-current="location"`. The active
+  marker therefore has a programmatic meaning, not only a colored border.
+- Links are ordinary anchors: Enter activates them, and focus follows the browser's native model.
+  Each item id must resolve to a real, unique heading target.
+- useScrollSpy never moves focus while scrolling. Keep the active indicator separate from keyboard
+  focus, and do not announce every scroll change as a live update.
+
+## Props
+
+<PropTable name="TableOfContents" />
+
+## Plain HTML
+
+The navigation label names the landmark; the current location is an anchor state, not a button state:
+
+```html
+<nav class="lyra-toc" aria-label="Component topics">
+  <span class="lyra-toc__title">Component topics</span>
+  <ul class="lyra-toc__list">
+    <li data-level="2"><a class="lyra-toc__link" href="#overview">Overview</a></li>
+    <li data-level="2">
+      <a class="lyra-toc__link lyra-toc__link--active" href="#accessibility" aria-current="location"
+        >Accessibility</a
+      >
+    </li>
+    <li data-level="3"><a class="lyra-toc__link" href="#keyboard">Keyboard support</a></li>
+  </ul>
+</nav>
+```

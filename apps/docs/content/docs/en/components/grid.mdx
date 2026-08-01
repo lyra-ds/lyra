@@ -1,0 +1,65 @@
+---
+title: Grid
+description: A two-dimensional layout with shared tracks, fixed columns and responsive auto-fit items.
+---
+
+# Grid
+
+Grid gives siblings shared column tracks. Choose explicit columns when comparison matters, or a
+minimum item width when the component should find its own column count as the container changes.
+
+## Examples
+
+<Example id="columns" title="Shared three-column tracks" layout="plain">
+  Fixed columns make peer destinations scan as a set. They are for equivalent items, not a default
+  way to make unrelated sections look organized.
+</Example>
+
+<Example id="responsive" title="Responsive auto-fit items" layout="plain">
+  `minItem` takes precedence over `columns`: it protects each item from becoming too narrow, then
+  lets CSS add or remove columns as space allows.
+</Example>
+
+## When to use
+
+Use Grid when children need to share row and column geometry, or when a minimum item width should
+determine the number of columns.
+
+| Property              | Stylesheet default          |
+| --------------------- | --------------------------- |
+| `--lyra-grid-columns` | `repeat(2, minmax(0, 1fr))` |
+| `--lyra-grid-gap`     | `var(--space-4)`            |
+
+Reach for something else when:
+
+- **The order is a single vertical or horizontal sequence** — use Stack.
+- **The controls are compact peers that need to wrap** — use Inline.
+- **The content needs a centered reading measure** — use Container around the Grid.
+
+## Accessibility
+
+- Grid renders a plain `<div>` and supplies no grid ARIA role or keyboard navigation.
+- Use a semantic list when the items are a list; use a table for actual tabular data rather than
+  adding `role="grid"` to a visual layout.
+- Responsive columns only change visual placement. DOM, focus and screen-reader order remain the
+  order you write, so keep that order meaningful at every width.
+- Each interactive grid item needs its own native control or link and accessible name.
+
+## Props
+
+<PropTable name="Grid" />
+
+## Plain HTML
+
+Use a fixed template for equal columns, or replace `--lyra-grid-columns` with an auto-fit template:
+
+```html
+<div
+  class="lyra-grid"
+  style="--lyra-grid-columns: repeat(3, minmax(0, 1fr)); --lyra-grid-gap: var(--space-4)"
+>
+  <article>Overview</article>
+  <article>Activity</article>
+  <article>Settings</article>
+</div>
+```

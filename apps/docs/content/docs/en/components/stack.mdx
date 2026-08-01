@@ -1,0 +1,82 @@
+---
+title: Stack
+description: Flexible vertical and horizontal composition with CSS-owned direction and spacing.
+---
+
+# Stack
+
+Stack arranges related elements along one axis. Choose direction and gap; the CSS owns the layout,
+so the same `.lyra-stack` contract works outside React instead of becoming a one-off utility.
+
+## Examples
+
+<Example id="default" title="A vertical sequence">
+  The stylesheet supplies a column and `--space-4` gap when you omit props. That leaves one source
+  of truth: Stack emits no custom property until the component must differ from the CSS contract.
+</Example>
+
+<Example id="distribution" title="Direction and distribution">
+  A row is useful when its items share one decision line. Use `justify="space-between"` only when
+  the endpoints are meaningfully paired; it is not a substitute for choosing a useful gap.
+</Example>
+
+## Inline
+
+<Example id="inline" title="Peer controls in a wrapping row">
+  Inline is Stack's horizontal sibling. It sets row direction, a `--space-2` gap and wrapping, so
+  compact peer controls can reflow rather than overflow at a narrow width.
+</Example>
+
+## When to use
+
+Use Stack when the order between children matters more than a shared two-dimensional track.
+
+The CSS custom properties below are the raw HTML contract. Stack leaves each unset when its matching
+prop is omitted, so the stylesheet provides the effective defaults rather than JavaScript.
+
+| Property                 | Stylesheet default |
+| ------------------------ | ------------------ |
+| `--lyra-stack-direction` | `column`           |
+| `--lyra-stack-gap`       | `var(--space-4)`   |
+| `--lyra-stack-align`     | `stretch`          |
+| `--lyra-stack-justify`   | `flex-start`       |
+| `--lyra-stack-wrap`      | `nowrap`           |
+
+Reach for something else when:
+
+- **The items are compact horizontal peers that should wrap** — use Inline.
+- **Items must align across both rows and columns** — use Grid.
+- **The region needs a maximum content width** — use Container around the Stack.
+
+## Accessibility
+
+- Stack renders a `<div>` unless `as` chooses another native element; it adds no ARIA role.
+- Use `as="ul"` or `as="ol"` for a real list, and keep each child a matching `<li>`.
+- Direction changes the visual layout, not DOM or keyboard order. Put the most important child first
+  in source order, especially when a row wraps.
+- Inline inherits Stack's semantics. Its wrapping prevents clipped controls, but each control still
+  needs its own accessible name and visible focus state.
+
+## Props
+
+<PropTable name="Stack" />
+
+## Plain HTML
+
+The React wrappers set these CSS properties for you. Apply the same class and properties from any
+other framework:
+
+```html
+<div class="lyra-stack" style="--lyra-stack-gap: var(--space-4)">
+  <strong>Production deployment</strong>
+  <span>Version 2.4.0 is waiting for approval.</span>
+</div>
+
+<div
+  class="lyra-stack"
+  style="--lyra-stack-direction: row; --lyra-stack-gap: var(--space-2); --lyra-stack-align: center; --lyra-stack-wrap: wrap"
+>
+  <button class="lyra-btn lyra-btn--primary lyra-btn--sm">Save</button>
+  <button class="lyra-btn lyra-btn--ghost lyra-btn--sm">Cancel</button>
+</div>
+```

@@ -1,0 +1,72 @@
+---
+title: Brand
+description: Uma marca de produto com wordmark opcional e troca CSS entre imagens clara e escura.
+---
+
+# Brand
+
+Brand combina uma marca gráfica com um wordmark opcional. Escolha um wordmark quando o texto puder
+nomear a marca; um Brand apenas com marca gráfica precisa de um nome acessível explícito.
+
+| Propriedade personalizada | Padrão | O que define                                                         |
+| ------------------------- | ------ | -------------------------------------------------------------------- |
+| `--brand-mark-size`       | `24px` | Largura e altura da marca gráfica. A prop `size` a define em pixels. |
+
+## Exemplos
+
+<Example id="wordmark" title="Marca gráfica e wordmark">
+  Um wordmark fornece o nome que as pessoas veem e a tecnologia assistiva lê. `href` torna o
+  elemento nativo uma âncora, então use-o para um destino inicial.
+</Example>
+
+<Example id="mark-only" title="Apenas marca gráfica">
+  Uma marca gráfica não se descreve sozinha. Sem wordmark, `aria-label` é obrigatório para a marca
+  ainda ter um nome acessível.
+</Example>
+
+<Example id="as-child" title="Renderizando por um link">
+  `asChild` mantém seu link de roteamento como elemento renderizado. Ele e `href` são mutuamente
+  exclusivos: o filho é dono do destino.
+</Example>
+
+## Quando usar
+
+Use Brand onde a identidade de um produto precisar de sua marca gráfica e, havendo espaço, de seu
+nome. Ele renderiza as duas imagens de tema e o CSS escolhe uma com `[data-theme]`, sem ler o tema
+em JavaScript.
+
+Prefira outro componente quando:
+
+- **A identidade é somente texto** — use texto comum ou um cabeçalho; uma imagem de marca vazia não ajuda.
+- **A marca é uma imagem decorativa no conteúdo** — use `img` com a decisão correta de `alt`.
+
+## Acessibilidade
+
+- Um wordmark fornece o nome acessível por padrão. Um Brand só com marca gráfica renderiza `role="img"`
+  e exige `aria-label`; o sistema de tipos rejeita sua ausência.
+- As imagens de Brand têm `alt` vazio porque o wordmark ou nome acessível nomeia toda a marca uma vez.
+- `href` renderiza uma âncora nativa. Com `asChild`, o filho deve continuar um link real, alcançável
+  pelo teclado, com o próprio destino.
+- As marcas clara e escura estão ambas no DOM e o CSS oculta uma. Forneça arte equivalente para a
+  troca de tema nunca mudar o nome ou significado do produto.
+
+## Props
+
+<PropTable name="Brand" />
+
+## HTML puro
+
+Os exemplos usam assets desta documentação, então seus caminhos de imagem darão 404 no seu app.
+Troque-os pelos arquivos de marca clara e escura do seu produto ao copiar este markup:
+
+```html
+<a class="lyra-brand" href="/">
+  <img class="lyra-brand__mark lyra-brand__mark--light" src="/mark.svg" alt="" />
+  <img class="lyra-brand__mark lyra-brand__mark--dark" src="/mark-light.svg" alt="" />
+  <span class="lyra-brand__word">Acme</span>
+</a>
+
+<span class="lyra-brand" role="img" aria-label="Início da Acme">
+  <img class="lyra-brand__mark" src="/mark.svg" alt="" />
+</span>
+```

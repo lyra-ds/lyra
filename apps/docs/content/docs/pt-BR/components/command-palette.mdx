@@ -21,6 +21,14 @@ incorporar com `inline`; use Dropdown quando uma lista curta de comandos pertenc
   `emptyMessage` padrão é seguido pela busca, então use uma abertura de frase como “No results for”.
 </Example>
 
+## Trigger
+
+<Example id="trigger" title="Abrindo por um gatilho">
+  `CommandPalette.Trigger` é uma propriedade estática do mesmo import. Passe o atalho que deseja
+  exibir: ele nunca detecta Command versus Ctrl durante o render, pois isso causaria hydration
+  mismatch.
+</Example>
+
 ## Quando usar
 
 Use CommandPalette quando as pessoas precisarem de um índice buscável de ações ou destinos, acessível pelo teclado.
@@ -46,6 +54,8 @@ Prefira outro componente quando:
 - O campo de busca de comandos tem o nome "Search commands" por padrão. Passe `searchLabel` para traduzi-lo.
 - `onOpen` instala o listener global Command/Ctrl+`hotkey` (`k` por padrão). Ele fica de propósito
   fora destes exemplos porque este site de documentação já é dono desse atalho.
+- Abaixo de 720px, Trigger se reduz ao ícone enquanto o rótulo visível e o atalho ficam ocultos. Ele
+  preserva o nome acessível de `label`; o ícone de busca é decorativo, então esse rótulo deve ser significativo.
 
 ## Props
 

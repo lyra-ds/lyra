@@ -1,0 +1,84 @@
+---
+title: SegmentedControl
+description: Um radiogroup controlado para uma escolha entre poucas opções visíveis.
+---
+
+# SegmentedControl
+
+SegmentedControl é um `radiogroup` controlado para uma escolha em um conjunto pequeno e visível.
+Escolha-o quando a seleção mudar a visualização ou modo atual, não quando a pessoa navegar para outro lugar.
+
+## Exemplos
+
+<Example id="basic" title="Escolhendo um intervalo">
+  `value` e `onChange` tornam a escolha atual explícita no seu estado. A opção selecionada é a única
+  parada de Tab do grupo, embora todas as opções continuem clicáveis.
+</Example>
+
+<Example id="disabled" title="Pulando escolhas indisponíveis">
+  Opções desabilitadas permanecem visíveis quando sua ausência seria surpreendente. Setas, Home e
+  End as pulam, em vez de prender o foco em uma escolha indisponível.
+</Example>
+
+## Quando usar
+
+Use SegmentedControl para uma escolha única entre poucas opções visíveis, como visualização de
+projeto ou intervalo de tempo. Mantenha os rótulos curtos para as pessoas compará-los sem rolagem.
+
+Prefira outro componente quando:
+
+- **Um campo de formulário precisa de rótulos, texto de ajuda ou descrição do grupo** — use Radio.
+- **Cada escolha navega para uma visualização ou URL par** — use Tabs.
+- **A escolha é uma configuração booleana** — use Switch.
+
+## Acessibilidade
+
+- Renderiza `role="radiogroup"` com um `label` acessível fornecido pelo consumidor; cada opção é um
+  `role="radio"` com `aria-checked`.
+- Tem uma parada de Tab via `tabIndex` móvel. As setas movem o foco e selecionam, enquanto Home e
+  End vão para e selecionam as primeiras e últimas opções habilitadas.
+- Opções desabilitadas não recebem foco e são puladas por todo movimento de teclado. Mantenha uma
+  explicação visível perto delas quando o estado indisponível não for autoexplicativo.
+- Cliques seguem o mesmo caminho de `onChange` do teclado. Mantenha `value` atualizado após cada
+  callback, ou a seleção anunciada e o estado visível ficarão divergentes.
+
+## Props
+
+<PropTable name="SegmentedControl" />
+
+## HTML puro
+
+Os botões nativos carregam a semântica de rádio. Apenas a opção habilitada e selecionada pertence à ordem de Tab:
+
+```html
+<div class="lyra-segmented" role="radiogroup" aria-label="Visualização do projeto">
+  <button
+    class="lyra-segmented__option lyra-segmented__option--active"
+    type="button"
+    role="radio"
+    aria-checked="true"
+    tabindex="0"
+  >
+    Lista
+  </button>
+  <button
+    class="lyra-segmented__option"
+    type="button"
+    role="radio"
+    aria-checked="false"
+    tabindex="-1"
+    disabled
+  >
+    Quadro
+  </button>
+  <button
+    class="lyra-segmented__option"
+    type="button"
+    role="radio"
+    aria-checked="false"
+    tabindex="-1"
+  >
+    Calendário
+  </button>
+</div>
+```

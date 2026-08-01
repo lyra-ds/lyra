@@ -1,0 +1,78 @@
+---
+title: Prosa
+description: Aplique a tipografia do Lyra a conteúdo HTML puro, sem React nem wrapper para cada elemento.
+---
+
+# Prosa
+
+`.lyra-prose` é um escopo tipográfico para conteúdo, não um componente React. Aplique a classe a
+um único contêiner quando o HTML vier de MDX, um CMS ou autores; escolha o escopo que deve ter a
+mesma largura de leitura e o mesmo tratamento de títulos.
+
+## O que `.lyra-prose` estiliza
+
+O escopo estiliza `h1`, `h2` e `h3`; parágrafos; links; `strong`; `code` inline; listas ordenadas
+e não ordenadas; citações em bloco; e elementos `hr`. Os marcadores das listas também recebem uma
+cor menos destacada.
+
+Blocos de código ficam fora desse contrato. A regra de código inline seleciona `code` fora de um
+`pre`, para que um syntax highlighter possa definir a própria marcação e as próprias cores.
+
+## Defina a largura e o deslocamento de âncora
+
+As duas custom properties pertencem ao contêiner `.lyra-prose`:
+
+| Propriedade             | Padrão  | O que controla                                                                                                                                              |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--prose-measure`       | `760px` | A largura máxima de leitura do escopo. Altere-a quando o layout ao redor pedir uma coluna mais estreita ou mais larga.                                      |
+| `--prose-scroll-offset` | `0px`   | O `scroll-margin-top` de `h1`, `h2` e `h3`. Defina a altura de um cabeçalho sticky para que um link com âncora não pare com o título escondido abaixo dele. |
+
+## Preserve as ações fora do estilo de links de prosa
+
+Links de prosa recebem o tratamento de link textual por `a:not(.lyra-btn)`. A exclusão mantém uma
+chamada para ação dentro de um artigo com aparência de botão, em vez de transformá-la em texto de
+corpo sublinhado. Use um `Button` real quando React estiver disponível; em HTML puro, use as
+classes documentadas do botão e preserve um destino significativo no link.
+
+## Evite que código inline longo alargue a página
+
+O código inline usa `overflow-wrap: anywhere`. Um subpath de pacote ou nome de classe pode ser um
+token sem ponto de quebra; sem isso, uma página de 375px pode chegar a 390px e ganhar rolagem
+horizontal.
+
+## Use fora do React
+
+A classe é somente CSS. Importe `@lyra-ds/styles`, adicione-a a um contêiner de conteúdo e escreva
+HTML comum:
+
+```html
+<article class="lyra-prose" style="--prose-scroll-offset: 60px">
+  <h1 id="install">Instale a folha de estilos</h1>
+  <p>
+    Importe <code>@lyra-ds/styles/styles.css</code> uma vez e use as classes de que sua marcação
+    precisa.
+  </p>
+  <p><a href="/guides/plain-html">Leia o guia de HTML puro</a></p>
+
+  <h2 id="content">Regras para conteúdo</h2>
+  <ul>
+    <li>Mantenha a estrutura do documento semântica.</li>
+    <li>Deixe nomes inline longos quebrarem em viewports estreitos.</li>
+  </ul>
+  <blockquote>
+    A tipografia deve facilitar a leitura de um documento, não sua manutenção.
+  </blockquote>
+  <hr />
+  <a class="lyra-btn lyra-btn--primary lyra-btn--md" href="/get-started">Começar</a>
+</article>
+```
+
+A mesma marcação funciona em templates Vue, views Blade, LiveView e HTML estático. Nenhum wrapper
+React ou JavaScript é necessário.
+
+## O que ela não faz
+
+Use este escopo para conteúdo cujos elementos individuais não devem exigir um wrapper de
+componente: MDX, corpo de CMS ou HTML escrito por usuários. Ele não substitui componentes nem
+adiciona seu comportamento. Uma ação continua sendo um `Button`, não um `<a>` de prosa feito para
+parecer um.

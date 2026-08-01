@@ -84,6 +84,35 @@ import { CreateWorkspaceDialogBasic } from './create-workspace-dialog/basic';
 import { CreateWorkspaceDialogCustomCopy } from './create-workspace-dialog/custom-copy';
 import { AvatarGroupPeople } from './avatar/group';
 import { WhiteLabelBrands } from './white-label/brands';
+import { ContainerBasic } from './container/basic';
+import { ContainerNested } from './container/nested';
+import { StackDefault } from './stack/default';
+import { StackDistribution } from './stack/distribution';
+import { StackInline } from './stack/inline';
+import { GridColumns } from './grid/columns';
+import { GridResponsive } from './grid/responsive';
+import { PageHeaderBasic } from './page-header/basic';
+import { PageHeaderActions } from './page-header/actions';
+import { ShellDocsSite } from './shell/docs-site';
+import { ShellApplication } from './shell/application';
+import { ThemeProviderToggle } from './theme-provider/toggle';
+import { ThemeProviderSystem } from './theme-provider/system';
+import { NavbarBasic } from './navbar/basic';
+import { NavbarActions } from './navbar/actions';
+import { NavbarNavLink } from './navbar/nav-link';
+import { FooterBasic } from './footer/basic';
+import { FooterLinks } from './footer/links';
+import { TableOfContentsBasic } from './table-of-contents/basic';
+import { TableOfContentsScrollSpy } from './table-of-contents/scroll-spy';
+import { CodeBlockBasic } from './code-block/basic';
+import { CodeBlockLineNumbers } from './code-block/line-numbers';
+import { CodeBlockCopyText } from './code-block/copy-text';
+import { BrandWordmark } from './brand/wordmark';
+import { BrandMarkOnly } from './brand/mark-only';
+import { BrandAsChild } from './brand/as-child';
+import { SegmentedControlBasic } from './segmented-control/basic';
+import { SegmentedControlDisabled } from './segmented-control/disabled';
+import { CommandPaletteTrigger } from './command-palette/trigger';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -100,6 +129,44 @@ import { WhiteLabelBrands } from './white-label/brands';
  * anyway — only `next dev` (Turbopack) surfaces it, as a 500 on the page.
  */
 export const examples: Record<string, Record<string, ComponentType>> = {
+  container: {
+    basic: ContainerBasic,
+    nested: ContainerNested,
+  },
+  stack: {
+    default: StackDefault,
+    distribution: StackDistribution,
+    inline: StackInline,
+  },
+  grid: {
+    columns: GridColumns,
+    responsive: GridResponsive,
+  },
+  'page-header': {
+    basic: PageHeaderBasic,
+    actions: PageHeaderActions,
+  },
+  shell: {
+    'docs-site': ShellDocsSite,
+    application: ShellApplication,
+  },
+  'theme-provider': {
+    toggle: ThemeProviderToggle,
+    system: ThemeProviderSystem,
+  },
+  navbar: {
+    basic: NavbarBasic,
+    actions: NavbarActions,
+    'nav-link': NavbarNavLink,
+  },
+  footer: {
+    basic: FooterBasic,
+    links: FooterLinks,
+  },
+  'table-of-contents': {
+    basic: TableOfContentsBasic,
+    'scroll-spy': TableOfContentsScrollSpy,
+  },
   badge: {
     tones: BadgeTones,
     dot: BadgeDot,
@@ -223,6 +290,21 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'command-palette': {
     inline: CommandPaletteInline,
     hints: CommandPaletteHints,
+    trigger: CommandPaletteTrigger,
+  },
+  'code-block': {
+    basic: CodeBlockBasic,
+    'line-numbers': CodeBlockLineNumbers,
+    'copy-text': CodeBlockCopyText,
+  },
+  brand: {
+    wordmark: BrandWordmark,
+    'mark-only': BrandMarkOnly,
+    'as-child': BrandAsChild,
+  },
+  'segmented-control': {
+    basic: SegmentedControlBasic,
+    disabled: SegmentedControlDisabled,
   },
   'workspace-switcher': {
     selection: WorkspaceSwitcherSelection,

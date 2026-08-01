@@ -1,0 +1,65 @@
+---
+title: Grid
+description: Um layout bidimensional com trilhas compartilhadas, colunas fixas e itens auto-fit responsivos.
+---
+
+# Grid
+
+Grid dá aos irmãos trilhas de coluna compartilhadas. Escolha colunas explícitas quando a comparação
+importa, ou uma largura mínima de item quando o componente deve decidir a contagem conforme o container.
+
+## Exemplos
+
+<Example id="columns" title="Trilhas compartilhadas em três colunas" layout="plain">
+  Colunas fixas fazem destinos pares serem percorridos como um conjunto. Elas servem para itens
+  equivalentes, não para dar aparência de organização a seções sem relação.
+</Example>
+
+<Example id="responsive" title="Itens auto-fit responsivos" layout="plain">
+  `minItem` tem precedência sobre `columns`: ele protege cada item de ficar estreito demais e deixa
+  o CSS adicionar ou remover colunas conforme o espaço disponível.
+</Example>
+
+## Quando usar
+
+Use Grid quando os filhos precisam compartilhar geometria de linhas e colunas, ou quando uma largura
+mínima de item deve definir a quantidade de colunas.
+
+| Propriedade           | Padrão da folha de estilos  |
+| --------------------- | --------------------------- |
+| `--lyra-grid-columns` | `repeat(2, minmax(0, 1fr))` |
+| `--lyra-grid-gap`     | `var(--space-4)`            |
+
+Prefira outro componente quando:
+
+- **A ordem é uma sequência vertical ou horizontal** — use Stack.
+- **Os controles são pares compactos que precisam quebrar** — use Inline.
+- **O conteúdo precisa de uma medida de leitura centralizada** — use Container em volta do Grid.
+
+## Acessibilidade
+
+- Grid renderiza uma `<div>` simples e não fornece role de grid nem navegação por teclado.
+- Use uma lista semântica quando os itens formam uma lista; use uma tabela para dados tabulares de
+  verdade, em vez de adicionar `role="grid"` a um layout visual.
+- Colunas responsivas mudam só a posição visual. A ordem do DOM, do foco e do leitor de tela continua
+  sendo a ordem escrita, então mantenha-a significativa em toda largura.
+- Cada item interativo do grid precisa do próprio controle ou link nativo e de nome acessível.
+
+## Props
+
+<PropTable name="Grid" />
+
+## HTML puro
+
+Use um template fixo para colunas iguais, ou substitua `--lyra-grid-columns` por um template auto-fit:
+
+```html
+<div
+  class="lyra-grid"
+  style="--lyra-grid-columns: repeat(3, minmax(0, 1fr)); --lyra-grid-gap: var(--space-4)"
+>
+  <article>Visão geral</article>
+  <article>Atividade</article>
+  <article>Configurações</article>
+</div>
+```

@@ -1,0 +1,74 @@
+---
+title: ThemeProvider
+description: Uma preferência de tema no documento, que resolve modo claro, escuro ou do sistema e a preserva.
+---
+
+# ThemeProvider
+
+ThemeProvider é dono da preferência de cores do documento. Coloque um na raiz da aplicação e decida
+entre `light`, `dark` ou `system`; um provider aninhado ainda escreve no mesmo documento.
+
+## Exemplos
+
+<Example
+  id="toggle"
+  title="Uma preferência salva"
+  layout="isolated"
+  isolatedDocument
+  mirrorTheme={false}
+>
+  Um controle deve definir uma escolha explícita, não inverter um estado desconhecido. Esta prévia
+  usa seu próprio `storageKey`, então experimentá-la não substitui a preferência salva do site de
+  documentação.
+</Example>
+
+<Example
+  id="system"
+  title="Seguindo o sistema operacional"
+  layout="isolated"
+  isolatedDocument
+  mirrorTheme={false}
+>
+  `system` é o padrão. Ele resolve um tema claro ou escuro concreto e acompanha uma mudança no
+  sistema operacional, preservando `system` como a escolha salva da pessoa.
+</Example>
+
+## Quando usar
+
+Use ThemeProvider uma vez na raiz da aplicação quando o modo de cores for uma preferência durável.
+Use o mesmo `storageKey` no script bloqueante de primeira pintura e no provider, ou a página pode
+piscar um tema antes de o React aplicar outro.
+
+Prefira outro caminho quando:
+
+- **O produto não tem modo de cores selecionável pela pessoa** — defina `data-theme` no shell do
+  documento e não adicione um controle de preferência.
+- **A identidade visual, e não o modo de cores, muda por tenant** — use o guia White-label e passe
+  `brand` pela configuração do tenant.
+
+## Acessibilidade
+
+- ThemeProvider não emite landmark, role ou atributo ARIA. Ele define `data-theme` em `<html>` e,
+  quando informado, `data-brand`.
+- Um controle de modo de cores é UI do consumidor: use um Button nativo ou outro controle nomeado,
+  mantendo-o na ordem normal de tabulação.
+- Mudar o tema não move o foco. Não substitua o controle focado ao aplicar a nova preferência.
+- Nunca use cor como único sinal do modo selecionado; exponha a escolha atual no texto ou no estado
+  do controle.
+
+## Props
+
+<PropTable name="ThemeProvider" />
+
+## HTML puro
+
+ThemeProvider é comportamento de React, mas o atributo resultante no documento é HTML puro. As
+classes da folha de estilos passam então a resolver contra o conjunto de tokens selecionado:
+
+```html
+<html data-theme="dark">
+  <body>
+    <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button">Salvar alterações</button>
+  </body>
+</html>
+```
