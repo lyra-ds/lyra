@@ -99,3 +99,68 @@ inventing a slot.
 - `apps/docs/public/*` — the mark assets stay exactly as they are.
 - `apps/docs` MDX content and `apps/docs/lib/components.ts`.
 - The shared brief's global boundaries. Do not commit, branch or push.
+
+---
+
+## Addendum — o que mudou desde que este brief foi escrito
+
+Lots 1–4 landed. This is the last lot of the batch.
+
+### 1. The docs are at **zero** axe violations — that is the bar, not a goal
+
+Lots 3 and 4 got them there and kept them there. Any new violation is a verification
+failure. Your components carry images and a possible link, so `image-alt` and link-name
+rules are the ones to watch.
+
+### 2. Three of four lots shipped a silent visual regression — do not make it four
+
+Each time, the design system component introduced a new, reasonable default that the docs
+needed to re-enable, and no gate caught it:
+
+- Lot 2: `.lw-nav__link` deleted while `theme-toggle.tsx` still used it → unstyled button.
+- Lot 3: scroll spy stopped seeding an active item → the rail highlighted nothing.
+- Lot 4: `lineNumbers` is opt-in on `CodeBlock` → code panels lost their line numbers.
+
+**Compare the header and footer before and after, visually.** Your `size` prop defaults the
+mark to 24px, which is the current value — confirm that is what actually renders, in both
+themes, rather than assuming.
+
+### 3. The touch-target block, as it stands now
+
+Lots 2, 3 and 4 took their selectors out. What remains:
+
+```
+.lyra-sbgroup__item, .lw-brand, .lw-example__toggle { min-height: 44px }
+.lyra-sbgroup__item                                 { display: flex; align-items: center }
+```
+
+**`.lw-brand` is yours** — carry its 44px floor into the equivalent rule in `chrome.css`.
+`.lyra-sbgroup__item` and `.lw-example__toggle` stay in the docs. After you are done this
+block should contain only those two.
+
+### 4. `.lw-brand--static` exists now
+
+Lot 2 replaced the footer's inline `style={{ cursor: 'default' }}` with a
+`.lw-brand--static` class. That is the non-interactive footer brand — the case your `href`-less
+form covers. It goes away with the rest of `.lw-brand*`.
+
+### 5. The orphan sweep is mandatory evidence
+
+You delete `.lw-brand`, `.lw-brand--static`, `.lw-brand__word`, `.lw-mark`,
+`.ld-mark-light` and `.ld-mark-dark`. Run it after deleting and report the output; it must
+be empty:
+
+```bash
+for c in $(grep -rhoE '(lw|ld)-[a-z0-9_-]+' apps/docs/components/*.tsx apps/docs/app/*.tsx "apps/docs/app/[lang]/layout.tsx" | sort -u); do
+  grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
+done
+```
+
+Note the pattern covers `ld-*` as well as `lw-*` — the mark-swap classes use that prefix.
+
+### 6. Verification you should expect from the maestro
+
+Gates, the orphan sweep, an axe sweep at 1440/900/375 in both locales that must stay at
+zero, and a **visual capture of the header and footer in both light and dark**, compared
+against the current state. The theme swap is the whole point of this component, so it gets
+checked in both themes, not one.

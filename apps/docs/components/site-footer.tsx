@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Footer } from '@lyra-ds/react';
+import { Brand, Footer } from '@lyra-ds/react';
 
 export function SiteFooter() {
   const t = useTranslations();
@@ -9,25 +9,9 @@ export function SiteFooter() {
   return (
     <Footer
       brand={
-        <span className="lw-brand lw-brand--static">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/lyra-mark.svg"
-            alt=""
-            className="lw-mark ld-mark-light"
-            width={24}
-            height={24}
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/lyra-mark-light.svg"
-            alt=""
-            className="lw-mark ld-mark-dark"
-            width={24}
-            height={24}
-          />
-          <span className="lw-brand__word">Lyra</span>
-        </span>
+        <Brand mark="/lyra-mark.svg" markDark="/lyra-mark-light.svg">
+          Lyra
+        </Brand>
       }
       note={t('footerNote')}
       linksLabel={t('siteName')}

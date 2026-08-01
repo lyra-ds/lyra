@@ -62,6 +62,8 @@ export { NavLink } from './nav-link';
 export type { NavLinkProps } from './nav-link';
 export { Footer } from './footer';
 export type { FooterProps } from './footer';
+export { Brand } from './brand';
+export type { BrandProps } from './brand';
 export { TableOfContents, useScrollSpy } from './table-of-contents';
 export type { TableOfContentsItem, TableOfContentsProps } from './table-of-contents';
 export { CodeBlock } from './code-block';

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon, Navbar, NavLink } from '@lyra-ds/react';
+import { Brand, Button, Icon, Navbar, NavLink } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -18,25 +18,9 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   return (
     <Navbar
       brand={
-        <Link href={`/${locale}`} className="lw-brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/lyra-mark.svg"
-            alt=""
-            className="lw-mark ld-mark-light"
-            width={24}
-            height={24}
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/lyra-mark-light.svg"
-            alt=""
-            className="lw-mark ld-mark-dark"
-            width={24}
-            height={24}
-          />
-          <span className="lw-brand__word">Lyra</span>
-        </Link>
+        <Brand asChild mark="/lyra-mark.svg" markDark="/lyra-mark-light.svg">
+          <Link href={`/${locale}`}>Lyra</Link>
+        </Brand>
       }
       navLabel={t('siteNavigation')}
       nav={

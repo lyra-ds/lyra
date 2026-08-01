@@ -4,41 +4,7 @@
  * piece still uses @lyra-ds components + tokens. No Tailwind. Namespaced `lw-*`.
  */
 
-.lw-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  padding: 0;
-  text-decoration: none;
-}
-.lw-brand--static {
-  cursor: default;
-}
-.lw-mark {
-  width: 24px;
-  height: 24px;
-}
-.ld-mark-dark {
-  display: none;
-}
-[data-theme='dark'] .ld-mark-light {
-  display: none;
-}
-[data-theme='dark'] .ld-mark-dark {
-  display: inline;
-}
-.lw-brand__word {
-  font-family: var(--font-display);
-  font-weight: var(--weight-extrabold);
-  font-size: 18px;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-}
 /* chrome links are UI controls, never underline (base.css underlines a:hover) */
-.lw-brand:hover,
 .lyra-sbgroup__item:hover {
   text-decoration: none;
 }
@@ -213,7 +179,6 @@
    case. */
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
   .lyra-sbgroup__item,
-  .lw-brand,
   .lw-example__toggle {
     min-height: 44px;
   }

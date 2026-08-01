@@ -259,6 +259,16 @@
         "default": "./dist/footer.cjs"
       }
     },
+    "./brand": {
+      "import": {
+        "types": "./dist/brand.d.ts",
+        "default": "./dist/brand.js"
+      },
+      "require": {
+        "types": "./dist/brand.d.cts",
+        "default": "./dist/brand.cjs"
+      }
+    },
     "./grid": {
       "import": {
         "types": "./dist/grid.d.ts",
@@ -580,6 +590,16 @@
       "name": "import { Footer } from '@lyra-ds/react/footer'",
       "path": "dist/footer.js",
       "import": "{ Footer }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { Brand } from '@lyra-ds/react/brand'",
+      "path": "dist/brand.js",
+      "import": "{ Brand }",
       "ignore": [
         "react",
         "react-dom"

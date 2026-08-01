@@ -78,6 +78,33 @@ export declare function IconButton(props: IconButtonProps): JSX.Element;
 
 ## Chrome
 
+### Brand
+```ts
+/** Props for {@link Brand}. */
+export interface BrandProps {
+  /** Image source used for the light theme mark. */
+  mark: string;
+  /** Optional image source used for the dark theme mark. */
+  markDark?: string;
+  /** Mark edge length in pixels. Sets `--brand-mark-size`. */
+  size?: number;
+  /** Wordmark content that gives the brand its accessible name. */
+  /** Omit the wordmark to render a mark-only brand. */
+  /** A child link or framework routing element containing the wordmark. */
+  children?: ReactNode | undefined | ReactElement;
+  /** Optional translated accessible name that overrides the wordmark text. */
+  /** Translated accessible name required when no wordmark is rendered. */
+  'aria-label'?: string;
+  /** Destination rendered as an anchor. Mutually exclusive with `asChild`. */
+  /** Destination is provided by the child element when `asChild` is enabled. */
+  href?: string | never;
+  /** Render the native anchor or span. */
+  /** Render the single child element with the brand's props and classes merged. */
+  asChild?: false | true;
+}
+export declare function Brand(props: BrandProps): JSX.Element;
+```
+
 ### CodeBlock
 ```ts
 /** Props for {@link CodeBlock}. */

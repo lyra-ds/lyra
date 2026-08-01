@@ -84,6 +84,57 @@
     ]
   },
   {
+    "name": "Brand",
+    "category": "Chrome",
+    "extends": "",
+    "description": "Props for {@link Brand}.",
+    "signature": "export declare function Brand(props: BrandProps): JSX.Element;",
+    "props": [
+      {
+        "name": "mark",
+        "type": "string",
+        "optional": false,
+        "description": "Image source used for the light theme mark."
+      },
+      {
+        "name": "markDark",
+        "type": "string",
+        "optional": true,
+        "description": "Optional image source used for the dark theme mark."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "optional": true,
+        "description": "Mark edge length in pixels. Sets `--brand-mark-size`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode | undefined | ReactElement",
+        "optional": true,
+        "description": "Wordmark content that gives the brand its accessible name.\n\nOmit the wordmark to render a mark-only brand.\n\nA child link or framework routing element containing the wordmark."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Optional translated accessible name that overrides the wordmark text.\n\nTranslated accessible name required when no wordmark is rendered."
+      },
+      {
+        "name": "href",
+        "type": "string | never",
+        "optional": true,
+        "description": "Destination rendered as an anchor. Mutually exclusive with `asChild`.\n\nDestination is provided by the child element when `asChild` is enabled."
+      },
+      {
+        "name": "asChild",
+        "type": "false | true",
+        "optional": true,
+        "description": "Render the native anchor or span.\n\nRender the single child element with the brand's props and classes merged."
+      }
+    ]
+  },
+  {
     "name": "CodeBlock",
     "category": "Chrome",
     "extends": "HTMLAttributes<HTMLDivElement>",

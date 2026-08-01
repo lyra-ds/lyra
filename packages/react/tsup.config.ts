@@ -64,6 +64,7 @@ export default defineConfig({
     navbar: 'src/navbar/index.ts',
     'nav-link': 'src/nav-link/index.ts',
     footer: 'src/footer/index.ts',
+    brand: 'src/brand/index.ts',
     'table-of-contents': 'src/table-of-contents/index.ts',
     'code-block': 'src/code-block/index.ts',
     'segmented-control': 'src/segmented-control/index.ts',
