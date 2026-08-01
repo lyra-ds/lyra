@@ -1,0 +1,74 @@
+---
+title: ThemeProvider
+description: A document-level theme preference that resolves light, dark or system mode and persists it.
+---
+
+# ThemeProvider
+
+ThemeProvider owns the document's color preference. Put one at the application root, then decide
+whether people choose `light`, `dark` or `system`; a nested provider still writes to the same document.
+
+## Examples
+
+<Example
+  id="toggle"
+  title="A saved preference"
+  layout="isolated"
+  isolatedDocument
+  mirrorTheme={false}
+>
+  A control should set an explicit choice, not invert an unknown state. This preview uses its own
+  `storageKey`, so trying it cannot replace the documentation site's saved preference.
+</Example>
+
+<Example
+  id="system"
+  title="Following the operating system"
+  layout="isolated"
+  isolatedDocument
+  mirrorTheme={false}
+>
+  `system` is the default. It resolves to a concrete light or dark theme and follows an operating
+  system change, while preserving `system` as the reader's stored choice.
+</Example>
+
+## When to use
+
+Use ThemeProvider once at an application root when color mode is a durable preference. Set the same
+`storageKey` in the blocking first-paint script and in the provider, or the page can flash one theme
+before React applies another.
+
+Reach for something else when:
+
+- **The product has no user-selectable color mode** — set `data-theme` in the document shell and do
+  not add a preference control.
+- **The visual identity, rather than the color mode, changes per tenant** — use the White-label guide
+  and pass `brand` from the tenant configuration.
+
+## Accessibility
+
+- ThemeProvider emits no landmark, role or ARIA attribute. It sets `data-theme` on `<html>` and,
+  when provided, `data-brand`.
+- A color-mode control is consumer UI: use a native Button or another named control, and keep it in
+  normal tab order.
+- Changing a theme does not move focus. Do not replace the focused control while applying the new
+  preference.
+- Never make color the only signal for a selected mode; expose the current choice in the control's
+  text or state.
+
+## Props
+
+<PropTable name="ThemeProvider" />
+
+## Plain HTML
+
+ThemeProvider is React behavior, but the resulting document attribute is plain HTML. The same
+stylesheet classes then resolve against the selected token set:
+
+```html
+<html data-theme="dark">
+  <body>
+    <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button">Save changes</button>
+  </body>
+</html>
+```

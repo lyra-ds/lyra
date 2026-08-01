@@ -1,0 +1,76 @@
+---
+title: Navbar
+description: Um cabeçalho responsivo com marca, navegação nomeada e ações que permanece visível na rolagem.
+---
+
+# Navbar
+
+Navbar é o seletor de rotas da página. Decida se ele fica `sticky`: mantenha para navegação durável
+do site ou defina `sticky={false}` quando outro shell já for dono do viewport.
+
+## Exemplos
+
+<Example id="basic" title="Marca e rota atual" layout="isolated">
+  Dê um nome explícito à navegação sempre que a página tiver outro landmark de navegação. Marque o
+  destino atual com `active`, para o estado visual e `aria-current="page"` concordarem.
+</Example>
+
+<Example id="actions" title="Uma ação na extremidade" layout="isolated">
+  `actions` serve a operações disponíveis em todas as rotas, não ao trabalho específico da página. A
+  ação principal de uma página fica no PageHeader, onde continua ligada ao título dela.
+</Example>
+
+## NavLink
+
+<Example id="nav-link" title="Âncora e link composto">
+  Use NavLink diretamente para uma âncora. Com `asChild`, o Link do seu framework continua filho,
+  preservando routing, prefetch e abrir em nova aba enquanto NavLink fornece a semântica de página
+  atual.
+</Example>
+
+## Quando usar
+
+Use Navbar para destinos do site que continuam disponíveis enquanto a pessoa navega entre páginas.
+Mantenha poucas rotas para leitura rápida; mais destinos pedem uma barra lateral, não uma linha cheia.
+
+Prefira outro componente quando:
+
+- **Os destinos são locais a um documento** — use TableOfContents.
+- **A pessoa muda entre poucas visualizações pares** — use Tabs.
+- **O controle executa trabalho em vez de navegar** — use Button.
+
+## Acessibilidade
+
+- Navbar renderiza um `<header>` e, quando há `nav`, um `<nav>` nativo. Passe `navLabel` quando o
+  documento tiver mais de um landmark de navegação.
+- NavLink renderiza uma âncora e define `aria-current="page"` para `active`. Seu anel de foco aparece
+  em `:focus-visible`; não o remova.
+- Com `asChild`, forneça exatamente um elemento de link focável com `href` real; esse filho é dono do
+  comportamento de teclado e do nome acessível.
+- Navbar não adiciona gerenciamento de foco. Mantenha marca, links de rota e ações numa ordem de DOM
+  que continue fazendo sentido depois que a linha responsiva quebrar.
+
+## Props
+
+<PropTable name="Navbar" />
+
+## HTML puro
+
+O cabeçalho é dono do landmark de página; a navegação nomeada contém âncoras reais e a rota atual se declara:
+
+```html
+<header class="lyra-navbar">
+  <div class="lyra-navbar__inner">
+    <div class="lyra-navbar__brand"><a href="/">Acme</a></div>
+    <nav class="lyra-navbar__nav" aria-label="Navegação principal">
+      <a class="lyra-navlink lyra-navlink--active" href="/overview" aria-current="page"
+        >Visão geral</a
+      >
+      <a class="lyra-navlink" href="/projects">Projetos</a>
+    </nav>
+    <div class="lyra-navbar__actions">
+      <button class="lyra-btn lyra-btn--primary lyra-btn--sm">Novo projeto</button>
+    </div>
+  </div>
+</header>
+```

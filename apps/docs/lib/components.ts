@@ -13,7 +13,15 @@
  * `display`, and `data` collects the components that render records.
  */
 export type ComponentGroup =
-  'layout' | 'action' | 'display' | 'data' | 'form' | 'navigation' | 'feedback' | 'overlay';
+  | 'layout'
+  | 'action'
+  | 'display'
+  | 'data'
+  | 'form'
+  | 'navigation'
+  | 'feedback'
+  | 'overlay'
+  | 'system';
 
 export type ComponentEntry = {
   /** Kebab-case slug — matches the MDX filename and the example registry key. */
@@ -29,6 +37,10 @@ export const components: ComponentEntry[] = [
   { slug: 'grid', name: 'Grid', group: 'layout' },
   { slug: 'page-header', name: 'PageHeader', group: 'layout' },
   { slug: 'shell', name: 'Shell', group: 'layout' },
+  { slug: 'theme-provider', name: 'ThemeProvider', group: 'system' },
+  { slug: 'navbar', name: 'Navbar', group: 'navigation' },
+  { slug: 'footer', name: 'Footer', group: 'navigation' },
+  { slug: 'table-of-contents', name: 'TableOfContents', group: 'navigation' },
   { slug: 'button', name: 'Button', group: 'action' },
   { slug: 'badge', name: 'Badge', group: 'display' },
   { slug: 'input', name: 'Input', group: 'form' },
@@ -79,6 +91,7 @@ export const groupOrder: ComponentGroup[] = [
   'navigation',
   'feedback',
   'overlay',
+  'system',
 ];
 
 /** Group → next-intl message key. Kept here so the three navs cannot drift apart. */
@@ -91,6 +104,7 @@ export const groupLabelKey: Record<ComponentGroup, string> = {
   navigation: 'groupNavigation',
   feedback: 'groupFeedback',
   overlay: 'groupOverlay',
+  system: 'groupSystem',
 };
 
 export const componentSlugs = components.map((entry) => entry.slug);

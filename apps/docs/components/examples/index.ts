@@ -95,6 +95,15 @@ import { PageHeaderBasic } from './page-header/basic';
 import { PageHeaderActions } from './page-header/actions';
 import { ShellDocsSite } from './shell/docs-site';
 import { ShellApplication } from './shell/application';
+import { ThemeProviderToggle } from './theme-provider/toggle';
+import { ThemeProviderSystem } from './theme-provider/system';
+import { NavbarBasic } from './navbar/basic';
+import { NavbarActions } from './navbar/actions';
+import { NavbarNavLink } from './navbar/nav-link';
+import { FooterBasic } from './footer/basic';
+import { FooterLinks } from './footer/links';
+import { TableOfContentsBasic } from './table-of-contents/basic';
+import { TableOfContentsScrollSpy } from './table-of-contents/scroll-spy';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -131,6 +140,23 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   shell: {
     'docs-site': ShellDocsSite,
     application: ShellApplication,
+  },
+  'theme-provider': {
+    toggle: ThemeProviderToggle,
+    system: ThemeProviderSystem,
+  },
+  navbar: {
+    basic: NavbarBasic,
+    actions: NavbarActions,
+    'nav-link': NavbarNavLink,
+  },
+  footer: {
+    basic: FooterBasic,
+    links: FooterLinks,
+  },
+  'table-of-contents': {
+    basic: TableOfContentsBasic,
+    'scroll-spy': TableOfContentsScrollSpy,
   },
   badge: {
     tones: BadgeTones,

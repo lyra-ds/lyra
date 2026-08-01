@@ -1,0 +1,69 @@
+---
+title: TableOfContents
+description: Uma navegação nomeada dentro da página, com link ativo controlado e hook de posição de rolagem.
+---
+
+# TableOfContents
+
+TableOfContents é navegação dentro de um documento. Decida se quem chama controla `activeId` ou o
+deriva com useScrollSpy; de propósito, o componente não observa o estado de rolagem sozinho.
+
+## Exemplos
+
+<Example id="basic" title="Uma seção atual controlada">
+  Dê à barra um rótulo diferente dos outros landmarks de navegação da página. `activeId` marca a
+  localização atual sem fazer o componente adivinhar qual contêiner de rolagem você usa.
+</Example>
+
+## useScrollSpy
+
+<Example id="scroll-spy" title="Derivando o link ativo">
+  `useScrollSpy(ids: string[]): string | undefined` fornece `activeId`. Ele escolhe o primeiro item
+  antes da faixa de observação, mantém o precedente mais próximo nos intervalos e deixa o último
+  ativo no fim do documento.
+</Example>
+
+## Quando usar
+
+Use TableOfContents num documento longo e com títulos, quando as pessoas precisam mover entre seções
+e manter sua posição. Os itens descrevem a hierarquia do documento, não a hierarquia de rotas da aplicação.
+
+Prefira outro componente quando:
+
+- **Os destinos mudam a rota da aplicação** — use Navbar.
+- **As escolhas são visualizações pares da mesma área de trabalho** — use Tabs.
+- **A lista é um fluxo sequencial de trabalho** — use Stepper.
+
+## Acessibilidade
+
+- TableOfContents renderiza um `<nav>` nativo com `aria-label` do `label` obrigatório. Use um rótulo
+  distinto quando houver outro landmark de navegação.
+- O título é texto visível e o link atual recebe `aria-current="location"`. Assim, o marcador ativo
+  tem significado programático, não apenas uma borda colorida.
+- Os links são âncoras comuns: Enter os ativa e o foco segue o modelo nativo do navegador. Cada id de
+  item precisa resolver para um alvo de título real e único.
+- useScrollSpy nunca move o foco durante a rolagem. Mantenha o indicador ativo separado do foco de
+  teclado e não anuncie cada mudança de rolagem como atualização ao vivo.
+
+## Props
+
+<PropTable name="TableOfContents" />
+
+## HTML puro
+
+O rótulo da navegação nomeia o landmark; a localização atual é estado de âncora, não de botão:
+
+```html
+<nav class="lyra-toc" aria-label="Tópicos do componente">
+  <span class="lyra-toc__title">Tópicos do componente</span>
+  <ul class="lyra-toc__list">
+    <li data-level="2"><a class="lyra-toc__link" href="#overview">Visão geral</a></li>
+    <li data-level="2">
+      <a class="lyra-toc__link lyra-toc__link--active" href="#accessibility" aria-current="location"
+        >Acessibilidade</a
+      >
+    </li>
+    <li data-level="3"><a class="lyra-toc__link" href="#keyboard">Suporte a teclado</a></li>
+  </ul>
+</nav>
+```

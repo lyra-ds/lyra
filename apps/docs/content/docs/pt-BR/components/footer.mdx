@@ -1,0 +1,63 @@
+---
+title: Footer
+description: Um rodapé responsivo para marca, nota de apoio e um conjunto nomeado de links de recursos.
+---
+
+# Footer
+
+Footer encerra o documento com contexto durável do produto e destinos secundários. Decida se um link
+merece essa posição global; navegação específica de rota fica perto da tarefa que ela atende.
+
+## Exemplos
+
+<Example id="basic" title="Marca e nota de apoio" layout="isolated">
+  Coloque a identidade do produto primeiro e use `note` para informação válida em todo o site. Um
+  parágrafo longo transforma o rodapé num detalhe que a pessoa precisa ler para sair da página.
+</Example>
+
+<Example id="links" title="Links de recursos" layout="isolated">
+  `links` cria um landmark de navegação, então `linksLabel` é necessário na prática quando existe
+  outra navegação na página. Agrupe aqui status, suporte e links legais, não rotas principais.
+</Example>
+
+## Quando usar
+
+Use Footer para contexto estável e de baixa prioridade do produto, além de recursos entre o fim do
+documento. Ele é um landmark de encerramento, não uma segunda barra de navegação principal.
+
+Prefira outro componente quando:
+
+- **O destino é uma rota principal** — use Navbar.
+- **O destino move dentro deste documento** — use TableOfContents.
+- **O link muda o workspace ativo** — use WorkspaceSwitcher.
+
+## Acessibilidade
+
+- Footer renderiza um `<footer>` nativo. Um documento deve ter um landmark de contentinfo de página;
+  isole rodapés incorporados ou de prévia do documento hospedeiro.
+- Quando há `links`, Footer renderiza um `<nav>`. Passe `linksLabel` para dar a essa navegação um
+  nome acessível distinto.
+- Links mantêm comportamento nativo de teclado e estilo de foco. Use `href` reais, não handlers de
+  clique que imitam navegação.
+- Footer não gerencia foco. A ordem de teclado segue marca, nota e links na ordem do DOM.
+
+## Props
+
+<PropTable name="Footer" />
+
+## HTML puro
+
+Use um landmark de rodapé uma vez e nomeie a navegação de recursos separadamente das rotas principais:
+
+```html
+<footer class="lyra-footer">
+  <div class="lyra-footer__inner">
+    <div class="lyra-footer__brand"><a href="/">Acme</a></div>
+    <div class="lyra-footer__note">Ferramentas para equipes de produto.</div>
+    <nav class="lyra-footer__links" aria-label="Recursos">
+      <a href="/status">Status</a>
+      <a href="/privacy">Privacidade</a>
+    </nav>
+  </div>
+</footer>
+```

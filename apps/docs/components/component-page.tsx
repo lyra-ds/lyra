@@ -34,11 +34,15 @@ export async function ComponentPage({ locale, slug }: { locale: Locale; slug: st
 
   function Example({
     id,
+    isolatedDocument,
+    mirrorTheme,
     title,
     layout,
     children,
   }: {
     id: string;
+    isolatedDocument?: boolean;
+    mirrorTheme?: boolean;
     title?: string;
     layout?: ExampleLayout;
     children?: ReactNode;
@@ -47,7 +51,14 @@ export async function ComponentPage({ locale, slug }: { locale: Locale; slug: st
     if (!Live) throw new Error(`Unknown example "${id}" for component "${slug}".`);
 
     return (
-      <ExampleView title={title} layout={layout} preview={createElement(Live)} source={sources[id]}>
+      <ExampleView
+        title={title}
+        layout={layout}
+        mirrorTheme={mirrorTheme}
+        preview={createElement(Live)}
+        source={sources[id]}
+        documentSrc={isolatedDocument ? `/example-preview/${slug}/${id}` : undefined}
+      >
         {children}
       </ExampleView>
     );

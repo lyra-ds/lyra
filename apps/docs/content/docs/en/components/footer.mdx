@@ -1,0 +1,64 @@
+---
+title: Footer
+description: A responsive page footer for a brand, supporting note and a named set of resource links.
+---
+
+# Footer
+
+Footer closes the document with durable product context and secondary destinations. Decide whether a
+link earns this global position; route-specific navigation belongs nearer to the task it serves.
+
+## Examples
+
+<Example id="basic" title="Brand and supporting note" layout="isolated">
+  Put the product identity first and use `note` for information that remains true across the site. A
+  long paragraph turns the footer into an afterthought that people must scan to leave the page.
+</Example>
+
+<Example id="links" title="Resource links" layout="isolated">
+  `links` creates a navigation landmark, so `linksLabel` is required in practice when another
+  navigation exists on the page. Group legal, status and support destinations here, not primary
+  routes.
+</Example>
+
+## When to use
+
+Use Footer for stable, low-priority product context and cross-site resources after the main document.
+It is a closing landmark, not a second primary navigation bar.
+
+Reach for something else when:
+
+- **The destination is a primary route** — use Navbar.
+- **The destination moves within this document** — use TableOfContents.
+- **The link changes the active workspace** — use WorkspaceSwitcher.
+
+## Accessibility
+
+- Footer renders a native `<footer>`. A document should have one page-level contentinfo landmark;
+  isolate embedded or preview footers from the host document.
+- When `links` is present, Footer renders a `<nav>`. Pass `linksLabel` to give that navigation a
+  distinct accessible name.
+- Links retain native keyboard behavior and focus styling. Use real `href` values, not click handlers
+  that imitate navigation.
+- Footer does not manage focus. Keyboard order follows brand, note and links in DOM order.
+
+## Props
+
+<PropTable name="Footer" />
+
+## Plain HTML
+
+Use a footer landmark once, then name its resource navigation separately from the site's main routes:
+
+```html
+<footer class="lyra-footer">
+  <div class="lyra-footer__inner">
+    <div class="lyra-footer__brand"><a href="/">Acme</a></div>
+    <div class="lyra-footer__note">Tools for product teams.</div>
+    <nav class="lyra-footer__links" aria-label="Resources">
+      <a href="/status">Status</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+  </div>
+</footer>
+```

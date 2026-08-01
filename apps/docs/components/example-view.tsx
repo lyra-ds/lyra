@@ -29,7 +29,17 @@ const isolatedPreviewLayoutWidth = 1200;
  * Renders page-level examples in their own document. The portal keeps the live preview and its
  * printed consumer source separate, while cloned stylesheets make the frame use the active DS theme.
  */
-function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string }) {
+function IsolatedPreview({
+  documentSrc,
+  mirrorTheme,
+  preview,
+  title,
+}: {
+  documentSrc?: string;
+  mirrorTheme: boolean;
+  preview: ReactNode;
+  title: string;
+}) {
   const [mounted, setMounted] = useState(false);
   const [frame, setFrame] = useState<HTMLIFrameElement | null>(null);
   const [frameLoadVersion, setFrameLoadVersion] = useState(0);
@@ -65,15 +75,18 @@ function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string
 
     const hostDocument = document;
     const syncDocumentAttributes = () => {
-      const theme = hostDocument.documentElement.getAttribute('data-theme');
+      if (mirrorTheme) {
+        const theme = hostDocument.documentElement.getAttribute('data-theme');
 
-      if (theme) {
-        iframeDocument.documentElement.setAttribute('data-theme', theme);
-      } else {
-        iframeDocument.documentElement.removeAttribute('data-theme');
+        if (theme) {
+          iframeDocument.documentElement.setAttribute('data-theme', theme);
+        } else {
+          iframeDocument.documentElement.removeAttribute('data-theme');
+        }
       }
 
       iframeDocument.documentElement.lang = hostDocument.documentElement.lang;
+      iframeDocument.title = title;
     };
     const syncHeight = () => {
       const height = Math.ceil(
@@ -84,11 +97,13 @@ function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string
     };
     const hostStyles = hostDocument.head.querySelectorAll('link[rel="stylesheet"], style');
 
-    hostStyles.forEach((style) => {
-      iframeDocument.head.append(style.cloneNode(true));
-    });
+    if (!documentSrc) {
+      hostStyles.forEach((style) => {
+        iframeDocument.head.append(style.cloneNode(true));
+      });
+    }
     syncDocumentAttributes();
-    setPortalTarget(iframeDocument.body);
+    setPortalTarget(documentSrc ? null : iframeDocument.body);
 
     const themeObserver = new MutationObserver(syncDocumentAttributes);
     themeObserver.observe(hostDocument.documentElement, {
@@ -111,7 +126,7 @@ function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string
       stylesheetLinks.forEach((link) => link.removeEventListener('load', syncHeight));
       setPortalTarget(null);
     };
-  }, [frame, frameLoadVersion]);
+  }, [documentSrc, frame, frameLoadVersion, mirrorTheme, title]);
 
   // SSR intentionally leaves an empty stage: the page-level preview must not enter the host DOM.
   if (!mounted) return <div className="lw-example__isolated-placeholder" aria-busy="true" />;
@@ -125,7 +140,7 @@ function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string
         ref={setFrameRef}
         className="lw-example__frame"
         onLoad={() => setFrameLoadVersion((version) => version + 1)}
-        srcDoc={isolatedDocument}
+        {...(documentSrc ? { src: documentSrc } : { srcDoc: isolatedDocument })}
         style={{
           width: isolatedPreviewLayoutWidth,
           height: contentHeight,
@@ -133,7 +148,7 @@ function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string
         }}
         title={title}
       >
-        {portalTarget ? createPortal(preview, portalTarget) : null}
+        {!documentSrc && portalTarget ? createPortal(preview, portalTarget) : null}
       </iframe>
     </div>
   );
@@ -141,13 +156,19 @@ function IsolatedPreview({ preview, title }: { preview: ReactNode; title: string
 
 export function ExampleView({
   children,
+  documentSrc,
   layout = 'row',
+  mirrorTheme = true,
   preview,
   source,
   title,
 }: {
   children?: ReactNode;
+  /** Dedicated iframe document for previews that must execute in their own window realm. */
+  documentSrc?: string;
   layout?: ExampleLayout;
+  /** Keep the isolated document's theme in sync with the documentation host. */
+  mirrorTheme?: boolean;
   preview: ReactNode;
   source: ReactNode;
   title?: string;
@@ -161,7 +182,12 @@ export function ExampleView({
       {children}
       {layout === 'isolated' ? (
         <div className="lw-example__stage--isolated">
-          <IsolatedPreview preview={preview} title={t('isolatedPreview')} />
+          <IsolatedPreview
+            documentSrc={documentSrc}
+            mirrorTheme={mirrorTheme}
+            preview={preview}
+            title={title ?? t('isolatedPreview')}
+          />
         </div>
       ) : layout === 'plain' ? (
         <div className="lw-example__stage--plain">{preview}</div>

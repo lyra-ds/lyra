@@ -4,7 +4,6 @@ import '@fontsource/plus-jakarta-sans/600.css';
 import '@fontsource/plus-jakarta-sans/800.css';
 import '@lyra-ds/styles/styles.css';
 import './site.css';
-import { ThemeProvider } from '@lyra-ds/react';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
@@ -29,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <ThemeProvider storageKey={THEME_STORAGE_KEY}>{children}</ThemeProvider>
+        {children}
       </body>
     </html>
   );

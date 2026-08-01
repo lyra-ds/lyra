@@ -1,0 +1,75 @@
+---
+title: Navbar
+description: A responsive site header with brand, named navigation and actions that remains visible while scrolling.
+---
+
+# Navbar
+
+Navbar is the page-level route chooser. Decide whether it stays `sticky`: leave it on for durable
+site navigation, or set `sticky={false}` when another shell already owns the viewport.
+
+## Examples
+
+<Example id="basic" title="Brand and current route" layout="isolated">
+  Give the navigation an explicit name whenever the page has another navigation landmark. Mark the
+  current destination with `active`, so the visual state and `aria-current="page"` agree.
+</Example>
+
+<Example id="actions" title="An action at the edge" layout="isolated">
+  `actions` belongs to operations that are available from every route, not page-specific work. A
+  page's primary action belongs in PageHeader, where it stays connected to that page's title.
+</Example>
+
+## NavLink
+
+<Example id="nav-link" title="Anchor and composed link">
+  Use NavLink directly for an anchor. With `asChild`, your framework Link remains the child, keeping
+  its routing, prefetch and open-in-new-tab behavior while NavLink supplies the active-page
+  semantics.
+</Example>
+
+## When to use
+
+Use Navbar for site-level destinations that remain available as a person moves between pages. Keep
+the route set short enough to scan; more destinations need a navigation rail rather than a crowded row.
+
+Reach for something else when:
+
+- **The destinations are local to one document** — use TableOfContents.
+- **The person moves through a small set of peer views** — use Tabs.
+- **The control performs work instead of navigation** — use Button.
+
+## Accessibility
+
+- Navbar renders a `<header>` and, when `nav` is present, a native `<nav>`. Pass `navLabel` when
+  the document has more than one navigation landmark.
+- NavLink renders an anchor and sets `aria-current="page"` for `active`. Its focus ring appears on
+  `:focus-visible`; do not remove it.
+- With `asChild`, provide exactly one focusable link element with a real `href`; that child owns its
+  keyboard behavior and accessible name.
+- Navbar adds no focus management. Keep the brand, route links and actions in a DOM order that still
+  makes sense after the responsive row wraps.
+
+## Props
+
+<PropTable name="Navbar" />
+
+## Plain HTML
+
+The header owns the page-level landmark; the named navigation holds real anchors and the current
+route declares itself:
+
+```html
+<header class="lyra-navbar">
+  <div class="lyra-navbar__inner">
+    <div class="lyra-navbar__brand"><a href="/">Acme</a></div>
+    <nav class="lyra-navbar__nav" aria-label="Main navigation">
+      <a class="lyra-navlink lyra-navlink--active" href="/overview" aria-current="page">Overview</a>
+      <a class="lyra-navlink" href="/projects">Projects</a>
+    </nav>
+    <div class="lyra-navbar__actions">
+      <button class="lyra-btn lyra-btn--primary lyra-btn--sm">New project</button>
+    </div>
+  </div>
+</header>
+```
