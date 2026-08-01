@@ -86,10 +86,19 @@ Port the **layout, spacing and CSS**. The content changes:
 
 | Kit                                             | Ship                                                                                                                 |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Badge "v1.0 · open source"                      | The real version, `v0.1.0`, read from `packages/react/package.json` — not typed in                                   |
+| Badge "v1.0 · open source"                      | **No version at all** — the badge reads "Open source · MIT". See the note below                                      |
 | "…para React, Vue, Laravel e Phoenix LiveView"  | Must not imply four shipping packages. Say what is true: the CSS works anywhere; React is the package that exists    |
 | Second CTA "npm i @lyra-ds/react"               | Keep — the landing ships after the npm release                                                                       |
 | Meta row: "3.842 estrelas", "48 mil/mês", "MIT" | **Delete the two invented metrics.** Keep MIT. Fill the row with facts you can verify from the repo, or drop the row |
+
+**Why the badge carries no version.** Both packages sit at `0.0.0` in git; the first real
+number is produced when the release consumes the pending changesets, which has not happened.
+So there is no version to read today, and typing one in would be exactly the invented claim
+the honesty rules forbid. A version on a marketing hero is also a rotting fact — it needs a
+rebuild on every release to stay true. The badge states what is permanently true instead.
+
+If a version ever does belong on this page, it is read from `packages/react/package.json` at
+build time, never typed into a string.
 
 The `<h1>` is the Hero's title and it is the page's only `<h1>`.
 
