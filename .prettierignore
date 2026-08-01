@@ -34,4 +34,4 @@ apps/docs/out/
 apps/docs/public/llms.txt
 
 # Next.js generated ambient types
-apps/docs/next-env.d.ts
+apps/*/next-env.d.ts
