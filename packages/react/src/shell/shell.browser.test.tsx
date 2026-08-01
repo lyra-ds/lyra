@@ -38,16 +38,52 @@ afterEach(async () => {
 });
 
 describe('Shell', () => {
-  it('does not render empty rail or topbar elements for omitted slots', async () => {
+  it('renders a main landmark by default and omits empty rail and topbar elements', async () => {
     const screen = await render(<Shell>Document</Shell>);
     const { container } = screen;
 
     await expect.element(screen.getByRole('main')).toBeInTheDocument();
+    expect(container.querySelector('main.lyra-shell__main')).not.toBeNull();
     expect(container.querySelector('.lyra-shell__sidebar')).toBeNull();
     expect(container.querySelector('.lyra-shell__topbar')).toBeNull();
     expect(container.querySelector('.lyra-shell__aside')).toBeNull();
     expect(container.querySelector('.lyra-shell')!.getAttribute('style')).toBeNull();
     expect((await axe.run(container)).violations).toEqual([]);
+  });
+
+  it('renders an embedded shell without a main landmark while preserving slots and attributes', async () => {
+    const screen = await render(
+      <Shell
+        mainAs="div"
+        sidebar="Navigation"
+        sidebarAs="nav"
+        sidebarLabel="Project navigation"
+        topbar="Toolbar"
+        aside="Context"
+        asideLabel="Project context"
+      >
+        Document
+      </Shell>,
+    );
+    const { container } = screen;
+    const main = container.querySelector<HTMLElement>('.lyra-shell__main')!;
+
+    await expect
+      .element(screen.getByRole('navigation', { name: 'Project navigation' }))
+      .toBeInTheDocument();
+    await expect.element(screen.getByText('Toolbar')).toBeInTheDocument();
+    await expect.element(screen.getByText('Document')).toBeInTheDocument();
+    expect(container.querySelector('main')).toBeNull();
+    expect(main.tagName).toBe('DIV');
+    expect(main.className).toBe('lyra-shell__main');
+    expect(container.querySelector('.lyra-shell__sidebar')?.getAttribute('aria-label')).toBe(
+      'Project navigation',
+    );
+    expect(container.querySelector('.lyra-shell__aside')?.getAttribute('aria-label')).toBe(
+      'Project context',
+    );
+    expect(main.querySelector('.lyra-shell__topbar')?.textContent).toBe('Toolbar');
+    expect(main.querySelector('.lyra-shell__content')?.textContent).toBe('Document');
   });
 
   it('uses stylesheet custom-property defaults and emits only supplied dimensions', async () => {

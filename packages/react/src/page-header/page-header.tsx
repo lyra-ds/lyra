@@ -8,6 +8,8 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'chil
   eyebrow?: ReactNode;
   /** Required page heading, rendered in an `<h1>`. */
   title: ReactNode;
+  /** Semantic element for the title. Use `"h2"` or `"h3"` when the header names a section; keep `"h1"` for the page title. */
+  titleAs?: 'h1' | 'h2' | 'h3';
   /** Optional text that explains the page's purpose. */
   description?: ReactNode;
   /** Optional controls aligned alongside the heading. */
@@ -18,13 +20,25 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'chil
 
 /** A page-level heading with optional context, actions, and a secondary content row. */
 export const PageHeader = /*#__PURE__*/ forwardRef<HTMLElement, PageHeaderProps>(
-  function PageHeader({ eyebrow, title, description, actions, className, children, ...rest }, ref) {
+  function PageHeader(
+    {
+      eyebrow,
+      title,
+      titleAs: TitleElement = 'h1',
+      description,
+      actions,
+      className,
+      children,
+      ...rest
+    },
+    ref,
+  ) {
     return (
       <header {...rest} ref={ref} className={cx('lyra-pageheader', className)}>
         <div className="lyra-pageheader__row">
           <div className="lyra-pageheader__text">
             {eyebrow && <span className="lyra-pageheader__eyebrow">{eyebrow}</span>}
-            <h1 className="lyra-pageheader__title">{title}</h1>
+            <TitleElement className="lyra-pageheader__title">{title}</TitleElement>
             {description && <p className="lyra-pageheader__desc">{description}</p>}
           </div>
           {actions && <div className="lyra-pageheader__actions">{actions}</div>}

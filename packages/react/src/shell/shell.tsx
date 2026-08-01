@@ -18,6 +18,8 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   sidebarLabel?: string;
   /** Optional top region placed before the main content. */
   topbar?: ReactNode;
+  /** Semantic element for the main content. Use `"div"` when the shell is nested or embedded inside a page that already owns the `<main>` landmark. */
+  mainAs?: 'main' | 'div';
   /** Optional complementary context rail content. */
   aside?: ReactNode;
   /** Semantic element for the aside rail. Use `"nav"` when it contains navigation. */
@@ -41,6 +43,7 @@ export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(functi
     sidebarAs: SidebarElement = 'aside',
     sidebarLabel,
     topbar,
+    mainAs: MainElement = 'main',
     aside,
     asideAs: AsideElement = 'aside',
     asideLabel,
@@ -82,10 +85,10 @@ export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(functi
           {sidebar}
         </SidebarElement>
       )}
-      <main className="lyra-shell__main">
+      <MainElement className="lyra-shell__main">
         {topbar != null && <div className="lyra-shell__topbar">{topbar}</div>}
         <div className="lyra-shell__content">{children}</div>
-      </main>
+      </MainElement>
       {aside != null && (
         <AsideElement className="lyra-shell__aside" aria-label={asideLabel}>
           {aside}

@@ -47,7 +47,8 @@ Reach for something else when:
 
 ## Accessibility
 
-- Shell renders one native `<main>`. Do not place another main landmark inside its children.
+- Shell renders one native `<main>` by default. For a nested or embedded shell, use `mainAs="div"`;
+  the page must still have exactly one `<main>` landmark somewhere.
 - `sidebarAs` and `asideAs` choose `nav` or `aside`. Give each rail a distinct `sidebarLabel` or
   `asideLabel`; a navigation rail should use `sidebarAs="nav"`, as the documentation recipe does.
 - Shell adds no keyboard shortcuts or focus trap. Links and controls in the rails retain native

@@ -33,8 +33,9 @@ Reach for something else when:
 
 ## Accessibility
 
-- PageHeader renders a native `<header>` and its `title` as an `<h1>`. Supply the one page-level
-  title that represents the current document.
+- PageHeader renders a native `<header>` and its `title` as an `<h1>` by default. Supply the one
+  page-level title that represents the current document; for a section header, choose `titleAs="h2"`
+  or `titleAs="h3"` while keeping the page title as the default `<h1>`.
 - `eyebrow` and `description` are ordinary text, not labels connected with ARIA. Do not rely on them
   as the only accessible name for an action.
 - `actions` and `children` keep their DOM order after the title. Use native Buttons, links, Tabs or

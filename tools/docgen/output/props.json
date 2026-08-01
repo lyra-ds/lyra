@@ -337,6 +337,12 @@
         "description": "Optional top region placed before the main content."
       },
       {
+        "name": "mainAs",
+        "type": "'main' | 'div'",
+        "optional": true,
+        "description": "Semantic element for the main content. Use `\"div\"` when the shell is nested or embedded inside a page that already owns the `<main>` landmark."
+      },
+      {
         "name": "aside",
         "type": "ReactNode",
         "optional": true,
@@ -1583,6 +1589,12 @@
         "type": "ReactNode",
         "optional": false,
         "description": "Required page heading, rendered in an `<h1>`."
+      },
+      {
+        "name": "titleAs",
+        "type": "'h1' | 'h2' | 'h3'",
+        "optional": true,
+        "description": "Semantic element for the title. Use `\"h2\"` or `\"h3\"` when the header names a section; keep `\"h1\"` for the page title."
       },
       {
         "name": "description",
