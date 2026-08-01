@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
+    "prebuild": "node scripts/derive-stats.mjs",
+    "pretest": "pnpm --filter @lyra-ds/react run build && pnpm run build",
     "build": "next build",
+    "pretypecheck": "node scripts/derive-stats.mjs",
+    "test": "node --test scripts/landing-sections.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

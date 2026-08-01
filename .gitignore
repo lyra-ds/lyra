@@ -9,6 +9,7 @@ apps/*/.next/
 apps/*/out/
 apps/docs/.source/
 apps/docs/public/llms.txt
+apps/site/lib/generated/
 
 # Vitest Browser Mode generated artifacts (failure screenshots / attachments)
 **/__screenshots__/

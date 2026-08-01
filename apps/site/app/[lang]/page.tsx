@@ -1,7 +1,9 @@
 import { Badge, Button, Icon } from '@lyra-ds/react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ComponentShowcase } from '@/components/sections/component-showcase';
+import { Community } from '@/components/sections/community';
 import { Frameworks } from '@/components/sections/frameworks';
+import { Theming } from '@/components/sections/theming';
 import { DOCS_ORIGIN } from '@/lib/links';
 
 export default async function LandingPage({ params }: { params: Promise<{ lang: string }> }) {
@@ -51,6 +53,8 @@ export default async function LandingPage({ params }: { params: Promise<{ lang: 
       </section>
       <ComponentShowcase />
       <Frameworks />
+      <Theming />
+      <Community />
     </main>
   );
 }
