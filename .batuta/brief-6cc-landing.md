@@ -176,9 +176,19 @@ costs nothing, while a false green costs a whole round.
 
 ## Method
 
-If you have a test-first or plan-first workflow available on your side, use it. Otherwise
-work directly from the acceptance criteria in your lot file, implementing first and then
-covering each criterion with a test, per this project's tests-after methodology.
+Work from the acceptance criteria in your lot file: implement first, then cover each
+criterion with a test, per this project's tests-after methodology. If you have a test-first
+workflow on your side, that is welcome too.
+
+**This run is non-interactive.** Nobody is on the other end to answer a question or approve a
+design — the lot file _is_ the approved design, and it was written to be complete enough to
+implement from. So do not pause to propose an approach or to have one confirmed.
+
+That is not a licence to guess. The stop conditions below still hold: when the code
+contradicts the brief, when the specified API turns out to be impossible, or when a fact you
+need cannot be verified, stopping with a clear report is the right move and costs nothing.
+The difference is between _stopping because the brief is wrong_ (do it) and _stopping to ask
+whether a sound plan is acceptable_ (the brief already answered that).
 
 **Test laws:** test the behavior, never the mock. A failing test means fix the code, not the
 test. No test-only flags or branches in production code.
