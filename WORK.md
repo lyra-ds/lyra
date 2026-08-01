@@ -11,6 +11,11 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       worktree próprio. Briefs em `.batuta/brief-6cb2-chrome.md` (compartilhado) +
       `.batuta/lot-6cb2-0N-*.md`.
 
+- [x] **6c-b4 — `PageHeader` e `Shell` escolhem o elemento que emitem — CONCLUÍDO em
+      2026-08-01** (PR #27, 1 commit). Lote de correção nascido da 6c-b3: dois bugs de API
+      achados enquanto se documentava, com `packages/` fechado naquela fase. Brief em
+      `.batuta/lot-6cb4-element-overrides.md`.
+
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
 ## Next — Fase 6, na ordem de dependência
@@ -324,6 +329,49 @@ http.server` devolve listagem de diretório para `/example-preview/...`, e foi i
 4. **Em página que dogfooda o próprio componente, seletor global mede a coisa errada.** Duas
    vezes mirei no seletor de idioma do header em vez do exemplo da página, e quase reportei
    perda de foco que era navegação.
+
+## 6c-b4 — o lote que a 6c-b3 gerou
+
+Lote único, um disparo, sem retry. Existe porque a 6c-b3 rodou com `packages/` fechado: a fase
+era de documentação, e documentar é o melhor detector de API ruim que existe — mas consertar
+ali teria misturado duas coisas. Os dois achados viraram este lote, com brief próprio.
+
+**Os dois bugs eram o mesmo bug.** `PageHeader` sempre emitia `<h1>` e `Shell` sempre emitia
+`<main>` — dois elementos que a página só pode ter uma vez. O efeito não é estético: quem
+quisesse a composição do `PageHeader` (sobrelinha, título, descrição, linha de ações) numa
+**seção** copiava as classes, que é exatamente a duplicação que o componente existe para
+evitar; e `<main>` dentro de `<main>` é **HTML inválido**, então `Shell` nunca podia ser
+aninhado nem embutido — foi o que a própria 6c-b3 tropeçou ao montar preview.
+
+A API seguiu a convenção que o `Shell` já tinha com `sidebarAs`/`asideAs`: nome do slot mais
+`As`. `titleAs?: 'h1' | 'h2' | 'h3'` (default `h1`) e `mainAs?: 'main' | 'div'` (default
+`main`). **Uniões fechadas de propósito** — `keyof JSX.IntrinsicElements` deixaria renderizar o
+título como `<button>`, e o ponto é escolher entre semânticas defensáveis, não permitir
+qualquer coisa. Aditivos: omitir produz a saída de hoje.
+
+**`Navbar` e `Footer` ficaram de fora, e isso foi decisão, não esquecimento.** Eles emitem
+`<header>` e `<footer>`, que uma página pode legitimamente ter mais de um. Corrigir por
+simetria adicionaria API sem problema correspondente — o brief proibiu explicitamente.
+
+Custo: 514 testes (eram 512), `size-limit` +9 B no `PageHeader` e +6 B no `Shell` (brotli),
+zero mudança de CSS, `parity` intocado (209 tokens, 269 classes, `baseline.json` sem diff),
+docgen listando os dois props. Guia em prosa nos quatro MDX (`page-header` e `shell`, EN e
+pt-BR) — a tabela gerada aparece sozinha, mas ela diz _que_ o prop existe, não _quando_ usar.
+
+### Duas coisas que este lote ensinou sobre o processo
+
+1. **O sandbox do Batuta não roda Browser Mode nem os gates de empacotamento.** O Vitest não
+   consegue abrir o listener (`listen EPERM ::1`), e `publint`/`attw`/`pack-smoke` morrem em
+   `spawnSync pnpm EPERM`. Não é defeito do código — o mesmo commit passou nos quatro jobs do
+   CI. A consequência prática é que **para esses gates a autoridade é o CI, não o relatório do
+   executor**, e o relatório tem que nomear o que não rodou em vez de silenciar.
+2. **PR aberto contra branch de feature morre quando a base é mergeada.** O #26 saiu contra
+   `feat/6cb3-docs`; o PR #25 mergeou, a branch base foi removida, e o GitHub fechou o #26
+   sozinho. Aí a armadilha: **não dá para retargetar a base de um PR fechado** (a API recusa) e
+   o reopen falha porque a base não existe mais. O `mergeable: CONFLICTING` que ele exibia era
+   contra a base morta — `git merge-tree` contra `main` mostrou zero conflito. Só restou abrir
+   o #27 contra `main`. A regra daqui em diante: lote que depende de outro nasce empilhado, mas
+   **antes de o pai mergear, ou se retargeta para `main`, ou já se abre contra `main`**.
 
 ## Next — depois da Fase 6
 
