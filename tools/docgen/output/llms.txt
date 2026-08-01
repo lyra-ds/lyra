@@ -78,6 +78,24 @@ export declare function IconButton(props: IconButtonProps): JSX.Element;
 
 ## Chrome
 
+### CodeBlock
+```ts
+/** Props for {@link CodeBlock}. */
+export interface CodeBlockProps extends HTMLAttributes<HTMLDivElement> {
+  /** Optional language badge shown in the code panel bar. */
+  language?: string;
+  /** Draw line numbers beside descendants whose class list includes `line`. */
+  lineNumbers?: boolean;
+  /** Translated visible label for the copy button. Omit with `copiedLabel` to hide copying. */
+  copyLabel?: ReactNode;
+  /** Translated visible label and polite announcement shown after a successful copy. */
+  copiedLabel?: ReactNode;
+  /** Text copied instead of the rendered text content of this code block's `<pre>`. */
+  copyText?: string;
+}
+export declare function CodeBlock(props: CodeBlockProps): JSX.Element;
+```
+
 ### Footer
 ```ts
 /** Props for {@link Footer}. */
@@ -124,6 +142,22 @@ export interface NavLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   children?: ReactNode;
 }
 export declare function NavLink(props: NavLinkProps): JSX.Element;
+```
+
+### SegmentedControl
+```ts
+/** Props for {@link SegmentedControl}. */
+export interface SegmentedControlProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /** Options rendered in keyboard-navigation order. Provide at least two options. */
+  options: SegmentedControlOption[];
+  /** Currently selected option value. */
+  value: string;
+  /** Called with the next value after pointer or keyboard selection. */
+  onChange: (value: string) => void;
+  /** Translated accessible name for the radiogroup. */
+  label: string;
+}
+export declare function SegmentedControl(props: SegmentedControlProps): JSX.Element;
 ```
 
 ### Shell

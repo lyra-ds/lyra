@@ -189,6 +189,26 @@
         "default": "./dist/card.cjs"
       }
     },
+    "./code-block": {
+      "import": {
+        "types": "./dist/code-block.d.ts",
+        "default": "./dist/code-block.js"
+      },
+      "require": {
+        "types": "./dist/code-block.d.cts",
+        "default": "./dist/code-block.cjs"
+      }
+    },
+    "./segmented-control": {
+      "import": {
+        "types": "./dist/segmented-control.d.ts",
+        "default": "./dist/segmented-control.js"
+      },
+      "require": {
+        "types": "./dist/segmented-control.d.cts",
+        "default": "./dist/segmented-control.cjs"
+      }
+    },
     "./container": {
       "import": {
         "types": "./dist/container.d.ts",
@@ -725,6 +745,26 @@
         "react-dom"
       ],
       "limit": "300 B"
+    },
+    {
+      "name": "import { CodeBlock } from '@lyra-ds/react/code-block'",
+      "path": "dist/code-block.js",
+      "import": "{ CodeBlock }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { SegmentedControl } from '@lyra-ds/react/segmented-control'",
+      "path": "dist/segmented-control.js",
+      "import": "{ SegmentedControl }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
     },
     {
       "name": "import { Grid } from '@lyra-ds/react/grid'",

@@ -84,6 +84,45 @@
     ]
   },
   {
+    "name": "CodeBlock",
+    "category": "Chrome",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link CodeBlock}.",
+    "signature": "export declare function CodeBlock(props: CodeBlockProps): JSX.Element;",
+    "props": [
+      {
+        "name": "language",
+        "type": "string",
+        "optional": true,
+        "description": "Optional language badge shown in the code panel bar."
+      },
+      {
+        "name": "lineNumbers",
+        "type": "boolean",
+        "optional": true,
+        "description": "Draw line numbers beside descendants whose class list includes `line`."
+      },
+      {
+        "name": "copyLabel",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Translated visible label for the copy button. Omit with `copiedLabel` to hide copying."
+      },
+      {
+        "name": "copiedLabel",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Translated visible label and polite announcement shown after a successful copy."
+      },
+      {
+        "name": "copyText",
+        "type": "string",
+        "optional": true,
+        "description": "Text copied instead of the rendered text content of this code block's `<pre>`."
+      }
+    ]
+  },
+  {
     "name": "Footer",
     "category": "Chrome",
     "extends": "Omit<HTMLAttributes<HTMLElement>, 'children'>",
@@ -179,6 +218,39 @@
         "type": "ReactNode",
         "optional": true,
         "description": "Link content. Must be exactly one element when `asChild` is enabled."
+      }
+    ]
+  },
+  {
+    "name": "SegmentedControl",
+    "category": "Chrome",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "description": "Props for {@link SegmentedControl}.",
+    "signature": "export declare function SegmentedControl(props: SegmentedControlProps): JSX.Element;",
+    "props": [
+      {
+        "name": "options",
+        "type": "SegmentedControlOption[]",
+        "optional": false,
+        "description": "Options rendered in keyboard-navigation order. Provide at least two options."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "optional": false,
+        "description": "Currently selected option value."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: string) => void",
+        "optional": false,
+        "description": "Called with the next value after pointer or keyboard selection."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": false,
+        "description": "Translated accessible name for the radiogroup."
       }
     ]
   },

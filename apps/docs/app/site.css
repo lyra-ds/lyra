@@ -52,108 +52,14 @@
   }
 }
 
-/* segmented language toggle */
-.lw-locale {
-  display: inline-flex;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-.lw-locale__opt {
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--text-muted);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-.lw-locale__opt:hover {
-  color: var(--text-primary);
-  background: var(--surface-sunken);
-}
-.lw-locale__opt--active {
-  color: var(--accent-soft-text);
-  background: var(--accent-soft);
-}
-
-/* code panel (Shiki) — card chrome + dual-theme token colors via CSS vars */
-.lw-code {
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-.lw-code__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--border-default);
-}
-.lw-code__lang {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
-}
-.lw-code__copy {
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
-  background: none;
-  border: 0;
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  cursor: pointer;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-.lw-code__copy:hover {
-  background: var(--surface-sunken);
-  color: var(--text-primary);
-}
-.lw-code__pre {
-  margin: 0;
-  padding: var(--space-4) var(--space-5);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  line-height: 1.7;
-  overflow-x: auto;
-  background-color: var(--surface-sunken);
-}
 /* Shiki dual theme (Lyra palette): light vars by default, dark under [data-theme=dark] */
-.lw-code__pre,
-.lw-code__pre span {
+.lyra-code__pre,
+.lyra-code__pre span {
   color: var(--shiki-light);
 }
-[data-theme='dark'] .lw-code__pre,
-[data-theme='dark'] .lw-code__pre span {
+[data-theme='dark'] .lyra-code__pre,
+[data-theme='dark'] .lyra-code__pre span {
   color: var(--shiki-dark);
-}
-/* line numbers */
-.lw-code__pre code {
-  counter-reset: step;
-  counter-increment: step 0;
-}
-.lw-code__pre .line::before {
-  content: counter(step);
-  counter-increment: step;
-  display: inline-block;
-  width: 1.25rem;
-  margin-right: var(--space-4);
-  text-align: right;
-  color: var(--text-faint);
-  user-select: none;
 }
 /* home / getting-started */
 .lw-hero {
@@ -308,18 +214,11 @@
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
   .lyra-sbgroup__item,
   .lw-brand,
-  .lw-example__toggle,
-  .lw-code__copy {
+  .lw-example__toggle {
     min-height: 44px;
   }
   .lyra-sbgroup__item {
     display: flex;
     align-items: center;
-  }
-  .lw-locale__opt {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding-inline: var(--space-3);
   }
 }

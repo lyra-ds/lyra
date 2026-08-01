@@ -147,3 +147,74 @@ set, applied immediately.
   to share an abstraction between it and `SegmentedControl` in this lot.
 - `apps/docs` MDX content and `apps/docs/lib/components.ts`.
 - The shared brief's global boundaries. Do not commit, branch or push.
+
+---
+
+## Addendum — o que mudou desde que este brief foi escrito
+
+Lots 1, 2 and 3 landed. Account for all of this.
+
+### 1. The docs currently have **zero** axe violations — do not regress that
+
+Lot 3 closed the last one. The built docs are clean at 1440px, 900px and 375px in both
+`en` and `pt-BR`. That is now the baseline your work is measured against, not an
+aspiration: any new violation is a verification failure.
+
+`.lw-locale__opt` is the last of four chrome controls that had no `:focus-visible` rule and
+fell back to the browser's default outline instead of the design system's `--shadow-focus`.
+`SegmentedControl` replaces it, so **give it the DS focus treatment** — `.lyra-btn:focus-visible`
+is the reference — and cover it with a test.
+
+### 2. Deleting a class requires the orphan sweep
+
+This bit Lot 2: `.lw-nav__link` was deleted while `theme-toggle.tsx` still referenced it, and
+the button silently fell back to unstyled browser chrome. Every gate was green. Lot 3 ran the
+sweep and came out clean.
+
+Run it after deleting `.lw-code*` and `.lw-locale*`, and report the output. It must be empty:
+
+```bash
+for c in $(grep -rhoE 'lw-[a-z0-9_-]+' apps/docs/components/*.tsx apps/docs/app/*.tsx "apps/docs/app/[lang]/layout.tsx" | sort -u); do
+  grep -qF ".$c" apps/docs/app/site.css || echo "ORPHAN: $c"
+done
+```
+
+### 3. The touch-target block, as it stands now
+
+Lots 2 and 3 already took their selectors out. What remains:
+
+```
+.lyra-sbgroup__item, .lw-brand, .lw-example__toggle, .lw-code__copy { min-height: 44px }
+.lyra-sbgroup__item                                                 { display: flex; … }
+.lw-locale__opt                                                     { min-height: 44px; … }
+```
+
+**`.lw-code__copy` and `.lw-locale__opt` are yours** — carry their 44px floor into the
+equivalent rules in `chrome.css`. `.lw-brand` belongs to Lot 5; `.lyra-sbgroup__item` and
+`.lw-example__toggle` stay in the docs. Leave those three exactly where they are.
+
+### 4. The Shiki dual-theme rules stay in the docs, retargeted
+
+`apps/docs/app/site.css` currently carries:
+
+```css
+.lw-code__pre, .lw-code__pre span              { color: var(--shiki-light) }
+[data-theme='dark'] .lw-code__pre, … span      { color: var(--shiki-dark) }
+```
+
+Those are the **highlighter's** concern, not the design system's. Keep them in the docs,
+retargeted at your new class. Do not move `--shiki-*` into `packages/styles` — the hard rule
+that `CodeBlock` ships chrome only depends on it.
+
+### 5. `.lw-example__code` and the example machinery are not yours
+
+`.lw-example*` is the docs' own MDX pipeline (stage, toggle, source panel). Only the code
+**panel** becomes a component. Leave the example wrapper classes alone.
+
+### 6. Verification you should expect from the maestro
+
+Beyond the gates: an axe sweep at 1440/900/375 in both locales (which must stay at zero),
+the orphan sweep, a **visual capture of the code panel and the language toggle compared
+against the current state**, and keyboard exercise of the segmented control — arrows, Home,
+End, wrapping, and that the group is a single Tab stop. Three lots in a row shipped a defect
+that only a screenshot or a real interaction caught; a green suite is not evidence.
