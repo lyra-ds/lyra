@@ -22,6 +22,14 @@ modal or embeds `inline`; use Dropdown instead when a short command list belongs
   for”.
 </Example>
 
+## Trigger
+
+<Example id="trigger" title="Opening from a trigger">
+  `CommandPalette.Trigger` is a static property from the same import. Pass the shortcut you want to
+  display: it never detects Command versus Ctrl at render time, which would cause a hydration
+  mismatch.
+</Example>
+
 ## When to use
 
 Use CommandPalette when people need a keyboard-reachable, searchable index of actions or destinations.
@@ -47,6 +55,8 @@ Reach for something else when:
 - The command search field is named "Search commands" by default. Pass `searchLabel` to translate it.
 - `onOpen` installs the global Command/Ctrl+`hotkey` listener (`k` by default). It is intentionally
   absent from these examples because this documentation site owns that shortcut.
+- Below 720px, Trigger collapses to its icon while its visible label and shortcut are hidden. It
+  keeps its accessible name from `label`; the search icon is decorative, so make that label meaningful.
 
 ## Props
 

@@ -1,0 +1,71 @@
+---
+title: Brand
+description: A product mark and optional wordmark, with CSS-only light and dark image swapping.
+---
+
+# Brand
+
+Brand pairs a product mark with an optional wordmark. Choose a wordmark when text can name the
+brand; a mark-only Brand needs an explicit accessible name instead.
+
+| Custom property     | Default | What it sets                                                    |
+| ------------------- | ------- | --------------------------------------------------------------- |
+| `--brand-mark-size` | `24px`  | The mark's width and height. The `size` prop sets it in pixels. |
+
+## Examples
+
+<Example id="wordmark" title="Mark and wordmark">
+  A wordmark provides the name people see and assistive technology reads. `href` makes the native
+  element an anchor, so use it for a home destination.
+</Example>
+
+<Example id="mark-only" title="Mark only">
+  A mark is not self-describing. Without a wordmark, `aria-label` is required so the brand still has
+  an accessible name.
+</Example>
+
+<Example id="as-child" title="Rendering through a link">
+  `asChild` keeps your routing link as the rendered element. It and `href` are mutually exclusive:
+  the child owns the destination.
+</Example>
+
+## When to use
+
+Use Brand wherever a product identity needs its mark and, when space allows, its name. It renders
+both theme images and CSS selects one with `[data-theme]`, so no JavaScript theme read is needed.
+
+Reach for something else when:
+
+- **The identity is only text** — use ordinary text or a heading; an empty mark image adds no value.
+- **The mark is a decorative image in content** — use an `img` with the right `alt` decision.
+
+## Accessibility
+
+- A wordmark supplies the accessible name by default. A mark-only Brand renders `role="img"` and
+  requires `aria-label`; the type system rejects its omission.
+- Brand images have empty `alt` because the wordmark or accessible name names the whole brand once.
+- `href` renders a native anchor. With `asChild`, the child must remain a real, keyboard-reachable
+  link with its own destination.
+- The light and dark marks are both in the DOM and CSS hides one. Provide equivalent artwork so a
+  theme change never changes the product name or meaning.
+
+## Props
+
+<PropTable name="Brand" />
+
+## Plain HTML
+
+The examples use documentation assets, so their image paths will 404 in your app. Replace them with
+your product's own light and dark mark files when copying this markup:
+
+```html
+<a class="lyra-brand" href="/">
+  <img class="lyra-brand__mark lyra-brand__mark--light" src="/mark.svg" alt="" />
+  <img class="lyra-brand__mark lyra-brand__mark--dark" src="/mark-light.svg" alt="" />
+  <span class="lyra-brand__word">Acme</span>
+</a>
+
+<span class="lyra-brand" role="img" aria-label="Acme home">
+  <img class="lyra-brand__mark" src="/mark.svg" alt="" />
+</span>
+```

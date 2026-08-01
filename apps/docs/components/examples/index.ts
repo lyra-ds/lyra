@@ -104,6 +104,15 @@ import { FooterBasic } from './footer/basic';
 import { FooterLinks } from './footer/links';
 import { TableOfContentsBasic } from './table-of-contents/basic';
 import { TableOfContentsScrollSpy } from './table-of-contents/scroll-spy';
+import { CodeBlockBasic } from './code-block/basic';
+import { CodeBlockLineNumbers } from './code-block/line-numbers';
+import { CodeBlockCopyText } from './code-block/copy-text';
+import { BrandWordmark } from './brand/wordmark';
+import { BrandMarkOnly } from './brand/mark-only';
+import { BrandAsChild } from './brand/as-child';
+import { SegmentedControlBasic } from './segmented-control/basic';
+import { SegmentedControlDisabled } from './segmented-control/disabled';
+import { CommandPaletteTrigger } from './command-palette/trigger';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -281,6 +290,21 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'command-palette': {
     inline: CommandPaletteInline,
     hints: CommandPaletteHints,
+    trigger: CommandPaletteTrigger,
+  },
+  'code-block': {
+    basic: CodeBlockBasic,
+    'line-numbers': CodeBlockLineNumbers,
+    'copy-text': CodeBlockCopyText,
+  },
+  brand: {
+    wordmark: BrandWordmark,
+    'mark-only': BrandMarkOnly,
+    'as-child': BrandAsChild,
+  },
+  'segmented-control': {
+    basic: SegmentedControlBasic,
+    disabled: SegmentedControlDisabled,
   },
   'workspace-switcher': {
     selection: WorkspaceSwitcherSelection,

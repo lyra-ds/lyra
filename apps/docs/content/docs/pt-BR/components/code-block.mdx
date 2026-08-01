@@ -1,0 +1,70 @@
+---
+title: CodeBlock
+description: Um painel de código agnóstico de highlighter, com linhas numeradas e cópia acessível.
+---
+
+# CodeBlock
+
+CodeBlock fornece o cromo do painel, não o realce de sintaxe. Traga o markup do seu highlighter e
+então decida se as pessoas precisam de números de linha ou de uma ação para copiar o trecho.
+
+## Exemplos
+
+<Example id="basic" title="Linguagem e cópia" layout="block">
+  `copyLabel` e `copiedLabel` habilitam juntos o botão de cópia. O rótulo de sucesso também é
+  anunciado, então não use apenas cor para confirmar a ação.
+</Example>
+
+<Example id="line-numbers" title="Contrato de numeração de linhas" layout="block">
+  Os números contam elementos filhos com a classe `line`. Shiki e rehype-pretty-code emitem esse
+  formato; outro highlighter também precisa emiti-lo.
+</Example>
+
+<Example id="copy-text" title="Copiando um valor canônico" layout="block">
+  `copyText` pode diferir do código renderizado. Sem ele, o botão copia o texto renderizado do
+  `<pre>`, que em geral é o valor que as pessoas esperam colar.
+</Example>
+
+## Quando usar
+
+Use CodeBlock quando o produto precisar de uma amostra de código legível e copiável e você já for
+responsável pelo realce. A função dele é criar uma moldura estável para esse markup, não escolher
+uma gramática de linguagem.
+
+Prefira outro componente quando:
+
+- **O conteúdo é um token curto inline** — use `code`, não um painel com região própria de rolagem.
+- **A pessoa precisa editar o valor** — use Textarea; um painel de código não oferece modelo de edição.
+
+## Acessibilidade
+
+- O controle de cópia é um botão nativo. Forneça `copyLabel` e `copiedLabel` para ele ter um nome
+  e uma cópia bem-sucedida ser anunciada pela mensagem de status polida.
+- O `<pre>` preserva a semântica nativa de conteúdo pré-formatado e tem uma parada de Tab. Depois
+  do foco, as pessoas podem rolar código que excede a largura pelo teclado, sem precisar de mouse.
+- Os números de linha são gerados por contadores CSS em elementos `.line`. Mantenha-os decorativos;
+  o texto do código, não sua numeração visual, é o que a tecnologia assistiva deve ler.
+- CodeBlock não realça nem sanitiza markup. Seu highlighter e qualquer fonte não confiável continuam
+  sob sua responsabilidade.
+
+## Props
+
+<PropTable name="CodeBlock" />
+
+## HTML puro
+
+O painel espera o markup do seu highlighter dentro do `<pre>`. Adicione `line` a cada linha apenas
+quando ativar o modificador de números de linha:
+
+```html
+<div class="lyra-code lyra-code--line-numbers">
+  <div class="lyra-code__bar">
+    <span class="lyra-code__lang">css</span>
+    <button class="lyra-code__copy" type="button">Copiar</button>
+  </div>
+  <pre class="lyra-code__pre" tabindex="0"><code><span class="line">.notice {</span>
+<span class="line">  color: rebeccapurple;</span>
+<span class="line">}</span></code></pre>
+  <span class="lyra-code__status" role="status" aria-live="polite"></span>
+</div>
+```

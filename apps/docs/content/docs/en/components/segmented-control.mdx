@@ -1,0 +1,84 @@
+---
+title: SegmentedControl
+description: A controlled radiogroup for one choice among a small, visible set of options.
+---
+
+# SegmentedControl
+
+SegmentedControl is a controlled `radiogroup` for one choice in a small, visible set. Choose it
+when selection changes the current view or mode, not when people are navigating elsewhere.
+
+## Examples
+
+<Example id="basic" title="Choosing a range">
+  `value` and `onChange` make the current choice explicit in your state. The selected option is the
+  group's one Tab stop, even though every option remains clickable.
+</Example>
+
+<Example id="disabled" title="Skipping unavailable choices">
+  Disabled options stay visible when their absence would be surprising. Arrow keys, Home and End
+  skip them rather than trapping focus on an unavailable choice.
+</Example>
+
+## When to use
+
+Use SegmentedControl for a single choice from a handful of visible options, such as a project view
+or time range. Keep the labels short enough that people can compare them without scrolling.
+
+Reach for something else when:
+
+- **A form field needs labels, help text or a group description** — use Radio.
+- **Each choice navigates to a peer view or URL** — use Tabs.
+- **The choice is a boolean setting** — use Switch.
+
+## Accessibility
+
+- Renders `role="radiogroup"` with a consumer-provided accessible `label`; each option is a
+  `role="radio"` with `aria-checked`.
+- It has one Tab stop through roving `tabIndex`. Arrow keys move focus and select, while Home and
+  End move to and select the first and last enabled options.
+- Disabled options are not focusable and are skipped by every keyboard movement. Keep a visible
+  explanation nearby when the unavailable state is not self-evident.
+- Pointer clicks follow the same `onChange` path as the keyboard. Keep `value` current after every
+  callback, or the announced selection and visible state will disagree.
+
+## Props
+
+<PropTable name="SegmentedControl" />
+
+## Plain HTML
+
+The native buttons carry radio semantics. Only the selected, enabled option belongs in the Tab order:
+
+```html
+<div class="lyra-segmented" role="radiogroup" aria-label="Project view">
+  <button
+    class="lyra-segmented__option lyra-segmented__option--active"
+    type="button"
+    role="radio"
+    aria-checked="true"
+    tabindex="0"
+  >
+    List
+  </button>
+  <button
+    class="lyra-segmented__option"
+    type="button"
+    role="radio"
+    aria-checked="false"
+    tabindex="-1"
+    disabled
+  >
+    Board
+  </button>
+  <button
+    class="lyra-segmented__option"
+    type="button"
+    role="radio"
+    aria-checked="false"
+    tabindex="-1"
+  >
+    Calendar
+  </button>
+</div>
+```
