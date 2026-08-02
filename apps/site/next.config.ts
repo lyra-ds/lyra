@@ -15,18 +15,24 @@ const nextConfig: NextConfig = {
     'dev.lynx-kelvin.ts.net',
     '*.ts.net',
   ],
-  async headers() {
-    if (process.env.NODE_ENV === 'production') return [];
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' },
-          { key: 'Pragma', value: 'no-cache' },
-        ],
-      },
-    ];
-  },
+  ...(process.env.NODE_ENV === 'production'
+    ? {}
+    : {
+        async headers() {
+          return [
+            {
+              source: '/:path*',
+              headers: [
+                {
+                  key: 'Cache-Control',
+                  value: 'no-store, no-cache, must-revalidate, max-age=0',
+                },
+                { key: 'Pragma', value: 'no-cache' },
+              ],
+            },
+          ];
+        },
+      }),
 };
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');

@@ -9,6 +9,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
 
   return (
     <Footer
+      className="lw-site-footer"
       brand={
         <Brand mark="/lyra-mark.svg" markDark="/lyra-mark-light.svg">
           {t('brandName')}
@@ -18,20 +19,33 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       linksLabel={t('siteName')}
       links={
         <>
-          <a href="https://github.com/lyra-ds" target="_blank" rel="noreferrer">
+          <a
+            className="lw-footer__link"
+            href="https://github.com/lyra-ds"
+            target="_blank"
+            rel="noreferrer"
+          >
             {t('githubLabel')}
           </a>
-          <a href="https://www.npmjs.com/org/lyra-ds" target="_blank" rel="noreferrer">
+          <a
+            className="lw-footer__link"
+            href="https://www.npmjs.com/org/lyra-ds"
+            target="_blank"
+            rel="noreferrer"
+          >
             {t('npm')}
           </a>
           <a
+            className="lw-footer__link"
             href="https://github.com/lyra-ds/lyra-ds/blob/main/CONTRIBUTING.md"
             target="_blank"
             rel="noreferrer"
           >
             {t('contributing')}
           </a>
-          <a href={`/${locale}/privacy`}>{t('privacyTitle')}</a>
+          <a className="lw-footer__link" href={`/${locale}/privacy`}>
+            {t('privacyTitle')}
+          </a>
         </>
       }
     />

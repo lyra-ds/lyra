@@ -1,4 +1,49 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
+import { isLocale } from '@/lib/i18n';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+
+  if (!isLocale(lang)) return {};
+
+  const t = await getTranslations({ locale: lang });
+  const url = `/${lang}/privacy`;
+  const languages = {
+    en: '/en/privacy',
+    'pt-BR': '/pt-BR/privacy',
+    'x-default': '/en/privacy',
+  };
+  const image = '/opengraph-image';
+
+  return {
+    title: t('privacyMetadataTitle'),
+    description: t('privacyMetadataDescription'),
+    alternates: {
+      canonical: url,
+      languages,
+    },
+    openGraph: {
+      type: 'website',
+      siteName: t('siteName'),
+      title: t('privacyMetadataTitle'),
+      description: t('privacyMetadataDescription'),
+      url,
+      locale: lang === 'en' ? 'en_US' : 'pt_BR',
+      images: [{ url: image, width: 1200, height: 630, alt: t('privacyMetadataTitle') }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('privacyMetadataTitle'),
+      description: t('privacyMetadataDescription'),
+      images: [image],
+    },
+  };
+}
 
 export default async function PrivacyPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

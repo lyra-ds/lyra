@@ -40,6 +40,7 @@ export function ComponentPreview() {
         <Card padded={false}>
           <div className="lw-show__tabs">
             <Tabs
+              className="lw-show-tabs-controls"
               items={[
                 { id: 'preview', label: t('showcasePreviewTab') },
                 { id: 'code', label: t('showcaseCodeTab') },
@@ -50,13 +51,15 @@ export function ComponentPreview() {
           </div>
           {tab === 'preview' ? (
             <div className="lw-show__stage">
-              <Button>{preview.primaryAction}</Button>
-              <Button variant="secondary">{preview.secondaryAction}</Button>
+              <Button className="lw-show__action">{preview.primaryAction}</Button>
+              <Button className="lw-show__action" variant="secondary">
+                {preview.secondaryAction}
+              </Button>
               <Badge tone="success" dot>
                 {preview.status}
               </Badge>
               <Tag>{preview.tag}</Tag>
-              <Input placeholder={preview.inputPlaceholder} size="sm" />
+              <Input className="lw-show__input" placeholder={preview.inputPlaceholder} size="sm" />
             </div>
           ) : (
             <CodeBlock

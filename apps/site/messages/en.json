@@ -1,5 +1,7 @@
 {
   "siteName": "Lyra DS",
+  "metadataTitle": "Lyra DS — CSS-first design system for SaaS products",
+  "metadataDescription": "An open source, CSS-first design system for SaaS products. Semantic tokens, white-label theming in four tokens, and thin React wrappers over a CSS core that works in any framework.",
   "brandName": "Lyra",
   "siteNavigation": "Site navigation",
   "languageLabel": "Language",
@@ -81,6 +83,8 @@
   "consentAcceptLabel": "Allow analytics",
   "consentEssentialsLabel": "Only essentials",
   "privacyTitle": "Privacy",
+  "privacyMetadataTitle": "Privacy | Lyra DS",
+  "privacyMetadataDescription": "How the Lyra DS site handles local preferences, hosting logs, and any future analytics.",
   "privacyLastUpdated": "Last updated: 1 August 2026",
   "privacyWhoResponsibleTitle": "Who is responsible.",
   "privacyWhoResponsible": "Lyra DS is maintained by Francisross Soares de Oliveira. For anything on this page, write to security@francisross.com.br, or open a thread in GitHub Discussions if your question does not need to be private.",

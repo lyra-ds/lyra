@@ -23,6 +23,7 @@ export function LocaleSwitcher({ locale, label }: { locale: Locale; label: strin
 
   return (
     <SegmentedControl
+      className="lw-locale-switcher"
       options={locales.map((option) => ({ value: option, label: shortLabel[option] }))}
       value={locale}
       onChange={(option) => go(option as Locale)}

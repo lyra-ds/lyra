@@ -136,6 +136,11 @@
   gap: var(--space-10);
 }
 
+/* The code block scrolls within this grid item instead of widening the page. */
+.lw-theming > * {
+  min-width: 0;
+}
+
 .lw-checks {
   list-style: none;
   margin: var(--space-2) 0 0;
@@ -261,5 +266,44 @@
 
   .lw-faq {
     gap: var(--space-6);
+  }
+}
+
+/* Two framework cards need 182px each, a 16px gap, and the container's 48px gutters:
+   below 429px they cannot share a row without overflowing. */
+@media (max-width: 428px) {
+  .lw-fw-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lw-site-header .lyra-navbar__nav {
+    flex-wrap: wrap;
+  }
+}
+
+/* Compact desktop chrome falls under the 44px touch-target floor. `pointer: coarse` alone
+   misses iPads in desktop mode, where a mouse reports `pointer: fine`; `any-pointer` catches
+   the touchscreen and the width clause covers that spoofed case. These selectors are scoped to
+   the landing application's own chrome, not to reusable component styling. */
+@media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
+  .lw-site-header .lyra-navlink,
+  .lw-site-header .lyra-btn,
+  .lw-locale-switcher .lyra-segmented__option,
+  .lw-show-tabs-controls .lyra-tab,
+  .lw-show__stage .lw-show__action,
+  .lw-show__stage .lw-show__input,
+  .lw-cookie-banner .lyra-btn,
+  .lw-site-footer .lw-footer__link {
+    min-height: 44px;
+  }
+
+  .lw-site-header .lw-theme-toggle {
+    min-width: 44px;
+  }
+
+  .lw-show-tabs-controls .lyra-tab,
+  .lw-site-footer .lw-footer__link {
+    display: inline-flex;
+    align-items: center;
   }
 }

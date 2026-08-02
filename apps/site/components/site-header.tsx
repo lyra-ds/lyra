@@ -13,6 +13,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   return (
     <Navbar
+      className="lw-site-header"
       brand={
         <Brand asChild mark="/lyra-mark.svg" markDark="/lyra-mark-light.svg">
           <Link href={`/${locale}`}>{t('brandName')}</Link>
@@ -40,7 +41,12 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           >
             <Icon name="github" size={18} />
           </NavLink>
-          <Button asChild size="sm" iconRight={<Icon name="arrow-right" size={16} />}>
+          <Button
+            asChild
+            className="lw-header-cta"
+            size="sm"
+            iconRight={<Icon name="arrow-right" size={16} />}
+          >
             <a href={`${DOCS_ORIGIN}/${locale}`}>{t('documentation')}</a>
           </Button>
         </>

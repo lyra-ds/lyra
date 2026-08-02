@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Lyra DS',
+  metadataBase: new URL('https://lyra-ds.dev'),
   icons: { icon: '/favicon.svg' },
 };
 

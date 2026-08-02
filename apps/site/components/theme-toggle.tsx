@@ -6,7 +6,13 @@ export function ThemeToggle({ label }: { label: string }) {
   const { dark, toggle } = useTheme();
 
   return (
-    <IconButton type="button" variant="ghost" onClick={toggle} label={label}>
+    <IconButton
+      type="button"
+      className="lw-theme-toggle"
+      variant="ghost"
+      onClick={toggle}
+      label={label}
+    >
       <Icon name={dark ? 'sun' : 'moon'} size={18} />
     </IconButton>
   );
