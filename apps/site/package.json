@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
-    "prebuild": "node scripts/derive-stats.mjs",
+    "prebuild": "node scripts/derive-stats.mjs && node scripts/generate-headers.mjs",
     "pretest": "pnpm --filter @lyra-ds/react run build && pnpm run build",
     "build": "next build",
     "pretypecheck": "node scripts/derive-stats.mjs",
-    "test": "node --test scripts/landing-sections.test.mjs scripts/consent.test.mjs scripts/metadata-deploy.test.mjs",
+    "test": "node --test scripts/landing-sections.test.mjs scripts/consent.test.mjs scripts/analytics.test.mjs scripts/metadata-deploy.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

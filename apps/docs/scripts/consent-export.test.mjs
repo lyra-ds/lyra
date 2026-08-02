@@ -35,11 +35,13 @@ test('emits localized consent copy and canonical policy links in the static expo
 test('keeps consent in one docs-specific key and reserves analytics behind the guard', () => {
   const consent = readFileSync(resolve(docsRoot, 'lib/consent.ts'), 'utf8');
   const layout = readFileSync(resolve(docsRoot, 'app/[lang]/layout.tsx'), 'utf8');
+  const analytics = readFileSync(resolve(docsRoot, 'components/consent-analytics.tsx'), 'utf8');
 
   assert.equal((consent.match(/lyra-docs-consent/g) ?? []).length, 1);
   assert.match(consent, /return readConsent\(\) === 'all';/);
   assert.match(layout, /storageKey=\{consentStorageKey\}/);
-  assert.match(layout, /must be guarded by mayLoadAnalytics\(\)/);
+  assert.match(layout, /ConsentAnalytics/);
+  assert.match(analytics, /mayLoadAnalytics\(\)/);
   assert.match(layout, /PRIVACY_POLICY_ORIGIN/);
 });
 

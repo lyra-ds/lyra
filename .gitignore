@@ -10,6 +10,8 @@ apps/*/out/
 apps/docs/.source/
 apps/docs/public/llms.txt
 apps/site/lib/generated/
+apps/site/public/_headers
+apps/docs/public/_headers
 
 # Vitest Browser Mode generated artifacts (failure screenshots / attachments)
 **/__screenshots__/

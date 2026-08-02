@@ -58,12 +58,12 @@ test('exports metadata unique to each localized privacy route', () => {
     [
       'en',
       'Privacy | Lyra DS',
-      'How the Lyra DS site handles local preferences, hosting logs, and any future analytics.',
+      'How the Lyra DS site handles local preferences, hosting logs, and consent-based analytics.',
     ],
     [
       'pt-BR',
       'Privacidade | Lyra DS',
-      'Como o site do Lyra DS lida com preferências locais, logs de hospedagem e eventuais métricas.',
+      'Como o site do Lyra DS lida com preferências locais, logs de hospedagem e métricas com consentimento.',
     ],
   ]) {
     const head = headOf(`${locale}/privacy.html`);

@@ -1,9 +1,10 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Container, CookieBanner, Shell, ThemeProvider } from '@lyra-ds/react';
+import { Container, Shell, ThemeProvider } from '@lyra-ds/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { DocsSidebar } from '@/components/docs-sidebar';
+import { ConsentAnalytics } from '@/components/consent-analytics';
 import { HtmlLang } from '@/components/html-lang';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
@@ -57,8 +58,7 @@ export default async function LocaleLayout({
           </Shell>
         </Container>
         <SiteFooter />
-        {/* Any future analytics insertion here must be guarded by mayLoadAnalytics(). */}
-        <CookieBanner
+        <ConsentAnalytics
           aria-label={t('consentLabel')}
           storageKey={consentStorageKey}
           policyHref={`${PRIVACY_POLICY_ORIGIN}/${lang}/privacy`}
@@ -67,7 +67,7 @@ export default async function LocaleLayout({
         >
           {t('consentBody')}{' '}
           <a href={`${PRIVACY_POLICY_ORIGIN}/${lang}/privacy`}>{t('privacyTitle')}</a>
-        </CookieBanner>
+        </ConsentAnalytics>
       </NextIntlClientProvider>
     </ThemeProvider>
   );

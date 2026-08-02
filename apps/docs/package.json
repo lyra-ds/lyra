@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
-    "prebuild": "node scripts/copy-llms.mjs",
+    "prebuild": "node scripts/copy-llms.mjs && node scripts/generate-headers.mjs",
     "build": "next build",
     "pretest": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/docs run build",
-    "test": "node --test scripts/consent.test.mjs scripts/consent-export.test.mjs",
+    "test": "node --test scripts/consent.test.mjs scripts/analytics.test.mjs scripts/consent-export.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
