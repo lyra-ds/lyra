@@ -16,7 +16,8 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       achados enquanto se documentava, com `packages/` fechado naquela fase. Brief em
       `.batuta/lot-6cb4-element-overrides.md`.
 
-- [ ] **6c-c — landing de marketing.** Ciclo aberto em 2026-08-01, decisões tomadas
+- [x] **6c-c — landing de marketing — CONCLUÍDA em 2026-08-01.** Ciclo aberto em 2026-08-01,
+      decisões tomadas
       (registro em § Decisões tomadas), quebrada em 5 lotes sequenciais. Briefs em
       `.batuta/brief-6cc-landing.md` (compartilhado) + `.batuta/lot-6cc-0N-*.md`.
   - [x] Lote 1 — `apps/site`, cromo e Hero → codex, commit 5ae1075
@@ -24,7 +25,8 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
   - [x] Lote 3 — Temas/Tokens + Comunidade → codex, commit 0eaca7e
   - [x] Lote 4 — FAQ + CTA → codex, commit 1e2a9d9
   - [x] Lote 5 — consentimento + política de privacidade → codex (1 retry), commit a4ca1c3
-  - [ ] Lote 6 — metadados/OG, robots, sitemap, varredura final, deploy
+  - [x] Lote 6 — metadados/OG, robots, sitemap, CSP, varredura final → codex (1 retry),
+        commit 8f75ce0
 
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
@@ -518,6 +520,33 @@ estático, porque o host registra IP, horário, página e user agent. Está lá 
 gravaria numa chave e o guard leria outra — banner eterno, ou pior, decisão que o guard nunca
 vê. O repo já tinha aprendido isso na chave de tema.
 
+### Lote 6 — o CSP que quebra o próprio design system, e a medição que faltava
+
+**Cinco defeitos apareceram de uma vez, e todos porque servi o export _com_ o `_headers`
+aplicado e medi a 375px** — duas coisas que nenhum lote anterior tinha feito.
+
+**`img-src 'self'` apagava os chevrons.** O `data:image/svg` não vem do site: vem do
+**`packages/styles`** (`navigation.css`, `forms.css`, `display.css`). Ou seja, um CSP self-only
+não quebra só esta landing — quebra o Lyra em **qualquer consumidor** que aplique essa política.
+Corrigido com `data:`, e registrado no `DEPLOY.md` como requisito do DS, não como quirk daqui.
+É a primeira vez nesta fase que dogfooding revela algo que afeta terceiros.
+
+**A página rolava de lado 114px**, com três causas distintas medidas: a grade de frameworks
+parava em duas colunas e nunca chegava a uma; o bloco de código **alargava a própria coluna em
+vez de rolar** (o mínimo automático de item de grid é o conteúdo, não zero — faltava
+`min-width: 0`, e esse é o tipo de coisa que o executor não deriva sozinho); e o nav do header
+passava da borda.
+
+**14 alvos abaixo de 44px** no toque, resolvidos espelhando a media query que o `apps/docs` já
+tinha — e deixando de fora link dentro de frase, que a WCAG isenta e cujo padding quebra a linha.
+
+**Eu acusei o executor errado.** Depois do retry sobrou um alvo de 16px, e eu declarei que a
+justificativa dele ("é link inline em prosa") era falsa, porque meu diagnóstico usou `.find()` e
+pegou o **primeiro** link "Privacy" do DOM — o do rodapé, que já estava em 44px. Existiam dois: o
+do rodapé e o de dentro da frase do banner. A alegação dele estava certa e eu quase escalei de
+lane por causa disso. A isenção agora está **codificada no verificador** (elemento `display:
+inline` cujo pai tem texto ao redor), para não depender de eu lembrar.
+
 ### Práticas de verificação que este lote acrescentou
 
 1. **Falha de verificação minha é alegação como qualquer outra.** Reportei a troca de idioma
@@ -556,6 +585,12 @@ build` ignora em silêncio um app mal formado. A prova é destrutiva: apagar `ou
    em vez de palavra.
 8. **Escrever para fora obriga a conferir o que a nota afirmava.** Transformar débito em issue
    pública corrigiu uma contagem errada que estava no `WORK.md` havia semanas.
+9. **Cabeçalho que ninguém serviu é cabeçalho que ninguém testou.** O `_headers` passou por
+   build, lint e revisão de código sem que nada notasse que ele apagava ícones — porque servidor
+   estático comum não aplica CSP. A verificação de política precisa de um servidor que a aplique.
+10. **Isenção que mora na cabeça do revisor vira acusação errada.** Eu tinha escrito no brief que
+    link em prosa é isento de 44px, e mesmo assim acusei o executor de mentir sobre exatamente
+    isso — porque medi o elemento errado. Regra que o verificador não codifica não existe.
 
 ## Next — depois da Fase 6
 
