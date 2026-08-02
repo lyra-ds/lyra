@@ -27,6 +27,8 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
   - [x] Lote 5 — consentimento + política de privacidade → codex (1 retry), commit a4ca1c3
   - [x] Lote 6 — metadados/OG, robots, sitemap, CSP, varredura final → codex (1 retry),
         commit 8f75ce0
+  - [x] Lote 7 — consentimento + política no `apps/docs` → codex (1 retry), commit d053a42
+  - [ ] Lote 8 — OpenPanel self-hosted nos dois apps (precisa da URL da instância e do `clientId`)
 
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
@@ -546,6 +548,25 @@ pegou o **primeiro** link "Privacy" do DOM — o do rodapé, que já estava em 4
 do rodapé e o de dentro da frase do banner. A alegação dele estava certa e eu quase escalei de
 lane por causa disso. A isenção agora está **codificada no verificador** (elemento `display:
 inline` cujo pai tem texto ao redor), para não depender de eu lembrar.
+
+### Lote 7 — o mesmo CSP em outro app não é o mesmo CSP
+
+A documentação ganhou banner, leitor de consentimento e `_headers`, espelhando o site. A
+política **não** foi copiada: a canônica em `lyra-ds.dev/[lang]/privacy` passou a cobrir as duas
+propriedades, com o detalhe que o leitor precisa — a escolha feita num site não vale no outro,
+porque o navegador escopa armazenamento por origem. Duas cópias divergiriam no dia do analytics.
+
+**Duas diferenças de CSP, e as duas passariam por build e lint sem um ruído.** `frame-src` tinha
+que ser `'self'` e não `'none'`, porque o docs renderiza exemplo em iframe — pinei no brief e o
+lote saiu certo de primeira. E `style-src` precisou de `'unsafe-inline'`, descoberto só no
+retry: o `apps/site` tem **zero** estilo inline, então a política dele nunca exercitou esse
+caminho; o docs tem estilos inline legítimos, e legítimos exatamente pelo único caso que a
+convenção permite — passar valor de custom property (`--prose-scroll-offset`, e a altura do
+iframe vinda do `ResizeObserver`).
+
+A lição geral: **política copiada entre apps carrega as premissas do app de origem.** O
+`DEPLOY.md` de cada um agora diz por que ele precisa do que precisa, para ninguém "endurecer" de
+volta e apagar preview ou offset de prosa.
 
 ### Práticas de verificação que este lote acrescentou
 
