@@ -28,7 +28,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
   - [x] Lote 6 — metadados/OG, robots, sitemap, CSP, varredura final → codex (1 retry),
         commit 8f75ce0
   - [x] Lote 7 — consentimento + política no `apps/docs` → codex (1 retry), commit d053a42
-  - [ ] Lote 8 — OpenPanel self-hosted nos dois apps (precisa da URL da instância e do `clientId`)
+  - [x] Lote 8 — OpenPanel self-hosted nos dois apps → codex, commit fa2223f
 
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
@@ -567,6 +567,33 @@ iframe vinda do `ResizeObserver`).
 A lição geral: **política copiada entre apps carrega as premissas do app de origem.** O
 `DEPLOY.md` de cada um agora diz por que ele precisa do que precisa, para ninguém "endurecer" de
 volta e apagar preview ou offset de prosa.
+
+### Lote 8 — o consentimento que só vale se for estado
+
+**Script da instância, não o pacote npm.** O `@openpanel/nextjs` puxa `@openpanel/web`, que puxa
+`rrweb` — session replay, 5,7 MB desempacotados. Com gravação desligada por decisão, embarcar o
+código dela para depois provar que não é usada é a troca errada; pelo script o grafo some
+inteiro, e some junto um critério de aceite frágil por natureza ("prove que o tree-shaking
+derruba").
+
+**O `_headers` virou arquivo gerado.** A pergunta do usuário — "isso não vai ficar como env no
+Cloudflare?" — revelou que sim, e que o `_headers` é servido direto pelo Cloudflare sem passar
+pelo Next, então **não interpola variável**. Fixar a origem ali criaria uma segunda fonte de
+verdade para algo que já vive na env: exatamente o defeito que custou um retry na chave de
+consentimento do Lote 5. Agora sai de um template versionado mais a env, e sem env é
+byte-idêntico ao de hoje.
+
+**Consentimento tem que ser estado, não leitura única.** Montar o script ao lado do banner e ler
+o consentimento uma vez faria quem clica em "permitir" não receber nada até recarregar — o
+pageview que motivou o consentimento se perde, e a escolha parece não ter feito nada. Pinei no
+brief e saiu certo de primeira.
+
+**A verificação foi feita contra uma instância falsa servida localmente**, com o CSP gerado
+aplicado. Isso transformou "o guard funciona" de alegação em observação: nenhuma requisição antes
+da decisão, o script aparecendo depois do clique sem reload, zero requisições no caminho "apenas
+o essencial", e nenhum erro de console — o que também descartou descasamento de hidratação na
+leitura inicial do consentimento. **Sem o stub, nada disso seria verificável**, e o lote teria
+sido aceito por leitura de código.
 
 ### Práticas de verificação que este lote acrescentou
 
