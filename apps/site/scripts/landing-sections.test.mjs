@@ -49,3 +49,67 @@ test('renders bilingual theming and community sections in the static export', ()
 
   assert.equal(existsSync(statsPath), true);
 });
+
+test('renders the FAQ and CTA sections with their locale-specific copy', () => {
+  const siteCss = readFileSync(resolve(siteRoot, 'app/site.css'), 'utf8');
+  assert.match(siteCss, /\.lw-faq\s*\{[\s\S]*grid-template-columns: 320px 1fr/);
+  assert.match(siteCss, /\.lw-cta\s*\{[\s\S]*background: var\(--indigo-950\)/);
+  assert.match(siteCss, /\.lw-cta \.lw-cta__ghost\s*\{[\s\S]*border-color: var\(--night-300\)/);
+
+  for (const [locale, faqTitle, ctaTitle, documentationLabel, githubLabel] of [
+    [
+      'en',
+      'Questions before you adopt it',
+      'Install in a minute. Use it forever.',
+      'Read the documentation',
+      'Star on GitHub',
+    ],
+    [
+      'pt-BR',
+      'Perguntas antes de adotar',
+      'Instale em um minuto. Use para sempre.',
+      'Ler a documentação',
+      'Dar uma estrela no GitHub',
+    ],
+  ]) {
+    const page = readFileSync(resolve(siteRoot, 'out', `${locale}.html`), 'utf8');
+    const messages = JSON.parse(
+      readFileSync(resolve(siteRoot, 'messages', `${locale}.json`), 'utf8'),
+    );
+
+    assert.match(page, /<section id="faq" class="lw-section lw-section--alt">/);
+    assert.match(page, /<section class="lw-cta">/);
+    assert.match(page, new RegExp(faqTitle));
+    assert.match(page, new RegExp(ctaTitle));
+    assert.match(page, new RegExp(documentationLabel));
+    assert.match(page, new RegExp(githubLabel));
+    assert.match(
+      page,
+      /Can I use it commercially, for free\?|Posso usar comercialmente sem pagar\?/,
+    );
+    assert.match(page, /aria-expanded="true"/);
+    assert.match(page, /href="https:\/\/docs\.lyra-ds\.dev"/);
+    assert.match(page, /href="https:\/\/github\.com\/lyra-ds\/lyra"/);
+    assert.match(page, /src="\/lyra-mark-light\.svg" alt=""/);
+
+    for (const key of [
+      'faqOverline',
+      'faqTitle',
+      'faqLead',
+      'faqCommercialTitle',
+      'faqCommercialContent',
+      'faqFrameworksTitle',
+      'faqFrameworksContent',
+      'faqThemingTitle',
+      'faqThemingContent',
+      'faqA11yTitle',
+      'faqA11yContent',
+      'faqMaturityTitle',
+      'faqMaturityContent',
+      'ctaTitle',
+      'ctaDocumentation',
+      'ctaGithub',
+    ])
+      assert.ok(page.includes(messages[key]), `${locale} export is missing ${key}`);
+  }
+});
