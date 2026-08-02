@@ -1,6 +1,10 @@
 .planning/research/.cache/
 node_modules/
 dist/
+
+# Compozy workspace state — a local id, a timestamp and the absolute path of the
+# checkout that created it. Machine-specific by construction; never shared.
+.compozy/
 *.tsbuildinfo
 .env*
 # Next build output — matched per app, so a new app under apps/ is covered the
