@@ -5,6 +5,16 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Fase 7 / deploy via GitHub Actions → Cloudflare (Direct Upload)** — build dos dois
+      apps sai do Cloudflare (heap do container matava o `.d.ts` do react) e passa a rodar
+      em `.github/workflows/deploy.yml`: push na main builda site+docs e publica os `out/`
+      prontos com `wrangler pages deploy` (landing antes das docs, sequencial). `DEPLOY.md`
+      da raiz reescrito para o novo fluxo (projetos Direct Upload `lyra-ds-site`/`lyra-ds-docs`,
+      secrets `CLOUDFLARE_API_TOKEN`+`CLOUDFLARE_ACCOUNT_ID`, vars OpenPanel). → claude
+      (crítico — infra de deploy/secrets), 2026-08-02. Pendências manuais do usuário:
+      recriar os projetos Pages como Direct Upload, criar o API token e configurar
+      secrets/vars no GitHub.
+
 - [x] **6c-b2 — camada de cromo (9 adições) — CONCLUÍDO em 2026-07-31.** Ciclo aberto em
       2026-07-30. APIs decididas
       (registro em § Decisões tomadas) e quebrado em 5 lotes, sequenciais, cada um com

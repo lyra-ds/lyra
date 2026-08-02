@@ -7,58 +7,18 @@ Two properties come out of this repository, both as static exports on Cloudflare
 | Marketing landing | `apps/site` | `lyra-ds.dev`      |
 | Documentation     | `apps/docs` | `docs.lyra-ds.dev` |
 
-They are two separate Cloudflare Pages projects reading the same repository. Each app has its
-own `DEPLOY.md` with the reasoning behind its Content-Security-Policy; this file is the
-operational walkthrough.
+**The build runs on GitHub Actions, not on Cloudflare.** Every push to `main` runs
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which builds both apps and
+publishes the ready-made `out/` directories to two Cloudflare Pages projects via
+`wrangler pages deploy` (Direct Upload). Cloudflare never builds anything — it only serves
+files that were built and gated here.
 
-## Before you start
+Each app has its own `DEPLOY.md` with the reasoning behind its Content-Security-Policy; this
+file is the operational walkthrough.
 
-- The domain `lyra-ds.dev` must have its DNS managed by Cloudflare.
-- Nothing here needs a secret. The two analytics variables are public by construction — a
-  client id shipped in a static bundle is readable by anyone who opens the page.
+## Why the build does not run on Cloudflare
 
-## Deploy the landing first
-
-**Order matters.** The documentation's consent banner links to the privacy policy hosted on
-`lyra-ds.dev`. If the docs go live first, that link 404s until the landing follows.
-
-## Creating a project
-
-In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**, then pick
-the `lyra-ds/lyra` repository.
-
-| Setting                | Landing                                    | Documentation                              |
-| ---------------------- | ------------------------------------------ | ------------------------------------------ |
-| Production branch      | `main`                                     | `main`                                     |
-| Framework preset       | None                                       | None                                       |
-| Root directory         | `/`                                        | `/`                                        |
-| Build command          | `pnpm --filter @lyra-ds/site... run build` | `pnpm --filter @lyra-ds/docs... run build` |
-| Build output directory | `apps/site/out`                            | `apps/docs/out`                            |
-
-Two things about the build command that look like typos and are not:
-
-- **The trailing `...` is pnpm syntax**, not an ellipsis. It means "this package _and its
-  workspace dependencies_", which is what makes `@lyra-ds/react` build before the app that
-  imports it. Without it the build fails on a missing `dist`.
-- **Root directory stays `/`.** The command is a workspace filter that only resolves from the
-  repository root. Pointing Cloudflare at `apps/site` breaks it.
-
-Node and pnpm need no configuration: `.nvmrc` pins Node 24 and `packageManager` pins
-pnpm 11.13.1, and Cloudflare reads both.
-
-## Environment variables
-
-Set these on **both** projects, for **Production and Preview**:
-
-| Variable                          | Value                                                                |
-| --------------------------------- | -------------------------------------------------------------------- |
-| `NODE_OPTIONS`                    | `--max-old-space-size=4096`                                          |
-| `NEXT_PUBLIC_OPENPANEL_URL`       | your self-hosted instance origin, e.g. `https://metrics.example.com` |
-| `NEXT_PUBLIC_OPENPANEL_CLIENT_ID` | the project's client id                                              |
-
-### `NODE_OPTIONS` is not optional
-
-Without it the build fails, and it fails in a place that looks unrelated:
+It used to be configured that way, and it failed. The failure looks unrelated to memory:
 
 ```
 packages/react build: ESM ⚡️ Build success in 2946ms
@@ -68,22 +28,64 @@ packages/react build: Error [ERR_WORKER_OUT_OF_MEMORY]:
 
 The JavaScript bundles compile in about three seconds. What runs out of memory is the
 **declaration build**: `@lyra-ds/react` has 51 entry points, one per component, and generating
-their `.d.ts` files pushes `rollup-plugin-dts` past 2 GB of heap in a worker thread. The
-default heap in the build container is smaller than that.
+their `.d.ts` files pushes `rollup-plugin-dts` past 2 GB of heap in a worker thread. Measured,
+not guessed: the build fails at 2048 MB and succeeds at 2560 MB. Cloudflare's build container
+kept failing on exactly this even after the requirement was identified, while GitHub Actions
+runners build it reliably with `NODE_OPTIONS=--max-old-space-size=4096` (set in the workflow,
+~60% headroom). Rather than fighting an opaque build container, the build moved here.
 
-Measured, not guessed: the build fails at 2048 MB and succeeds at 2560 MB, so 4096 leaves
-roughly 60% headroom. Both projects need it — the docs build `@lyra-ds/react` too.
+Building in one place also means one gate: the artifact that ships is produced by the same
+runner family that ran CI, and a Cloudflare-side build can never drift from it. If a future
+change raises the memory cost further, the workflow's `NODE_OPTIONS` value is the first thing
+to raise; the real fix is the planned move from tsup to tsdown.
 
-If a future change raises the cost further, the number is the first thing to raise. The
-underlying weight is known debt: per-entry declaration bundling is expensive by design, and the
-planned move from tsup to tsdown is the real fix.
+## Before you start
 
-One OpenPanel project covers both domains, so **the same client id goes to both Pages
-projects**. That is what makes the journey from landing to documentation show up as one path
-rather than two unrelated visits.
+- The domain `lyra-ds.dev` must have its DNS managed by Cloudflare.
+- You need a Cloudflare API token (see below) — this is the one real secret in the pipeline.
+  The two analytics variables are public by construction: a client id shipped in a static
+  bundle is readable by anyone who opens the page.
+
+## Creating the Pages projects
+
+The projects must be **Direct Upload** projects — a Pages project connected to Git cannot
+receive `wrangler pages deploy`. If the projects exist today as Git-connected builds, delete
+them (or create new ones under different names and move the domains after the first deploy).
+
+With `wrangler` authenticated against the right account:
+
+```sh
+npx wrangler pages project create lyra-ds-site --production-branch=main
+npx wrangler pages project create lyra-ds-docs --production-branch=main
+```
+
+The names `lyra-ds-site` and `lyra-ds-docs` are hardcoded in `deploy.yml`; if you pick
+different ones, change them there in the same commit.
+
+## GitHub configuration
+
+In the repository settings (**Settings → Secrets and variables → Actions**):
+
+**Secrets** — used by the deploy step only:
+
+| Secret                  | Value                                                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | An API token with the **Cloudflare Pages: Edit** permission, scoped to this account. Nothing else — least privilege holds. |
+| `CLOUDFLARE_ACCOUNT_ID` | The account id shown on the Cloudflare dashboard's overview page.                                                          |
+
+**Variables** — public by construction, so they are variables, not secrets:
+
+| Variable                          | Value                                                                |
+| --------------------------------- | -------------------------------------------------------------------- |
+| `NEXT_PUBLIC_OPENPANEL_URL`       | your self-hosted instance origin, e.g. `https://metrics.example.com` |
+| `NEXT_PUBLIC_OPENPANEL_CLIENT_ID` | the project's client id                                              |
+
+One OpenPanel project covers both domains, so **the same client id serves both properties**.
+That is what makes the journey from landing to documentation show up as one path rather than
+two unrelated visits.
 
 They are `NEXT_PUBLIC_` because a static export has no server: the values are inlined into the
-bundle at build time. Changing either one requires a redeploy.
+bundle at build time. Changing either one requires a redeploy (re-run the workflow).
 
 ### What happens if you leave them out
 
@@ -102,6 +104,13 @@ policy that forbids it. It fails closed.
 The integration derives the API endpoint as `<origin>/api`, which is what OpenPanel's
 self-hosting guide documents. If your deployment puts the API on a different host, that
 derivation is the one place to change — `apps/*/components/consent-analytics.tsx`.
+
+## Deploy order
+
+**The landing publishes before the docs, in the same workflow run.** The documentation's
+consent banner links to the privacy policy hosted on `lyra-ds.dev`; if the docs went live
+first, that link would 404 until the landing followed. The workflow encodes this — the two
+`wrangler pages deploy` steps run sequentially, landing first.
 
 ## Custom domains
 
@@ -123,8 +132,10 @@ The `*.pages.dev` URL is enough to check everything below before pointing a doma
 4. **The docs previews render.** On any component page, the isolated example iframes must show
    content. A blank frame means the CSP lost `frame-src 'self'`.
 
-## Both projects rebuild on every push
+## When deploys happen
 
-They share a repository, so a push to `main` triggers both builds. That is expected. If it
-becomes noisy, Cloudflare's build-watch paths can narrow each project to its own directory —
-but note that both apps depend on `packages/`, so any such filter has to include it.
+Every push to `main` deploys both properties — they share the library in `packages/`, so
+narrowing by path would skip real changes. The workflow can also be run by hand from the
+Actions tab (`workflow_dispatch`), which is how you redeploy after changing an analytics
+variable. Runs queue rather than cancel each other, so a deploy is never interrupted
+mid-publish; a queued run redeploys both properties from the newest commit.

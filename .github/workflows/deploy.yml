@@ -1,0 +1,69 @@
+# Deploy — builds both static exports on GitHub Actions and publishes the
+# ready-made artifacts to Cloudflare Pages via wrangler (Direct Upload).
+# The build deliberately does NOT run on Cloudflare: its build container
+# caps the heap below what @lyra-ds/react's declaration build needs
+# (measured in DEPLOY.md), so Cloudflare only ever receives files that were
+# built here. The two Pages projects are Direct Upload projects — a
+# Git-connected Pages project cannot receive wrangler deploys.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time and never cancelled mid-flight: the landing and the
+# docs publish sequentially, and a cancelled run could leave one property
+# newer than the other. A queued run always redeploys both from the newest
+# commit, so skipping intermediate pushes is safe.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # The declaration build of @lyra-ds/react needs more than 2.5 GB of
+      # heap (measured — see DEPLOY.md); 4096 leaves ~60% headroom.
+      NODE_OPTIONS: --max-old-space-size=4096
+      # Public by construction (inlined into the static bundle), so they are
+      # repository VARIABLES, not secrets. Absent values fail closed: no
+      # analytics script, no analytics origin in the generated CSP.
+      NEXT_PUBLIC_OPENPANEL_URL: ${{ vars.NEXT_PUBLIC_OPENPANEL_URL }}
+      NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ${{ vars.NEXT_PUBLIC_OPENPANEL_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Build the shared library once; both apps consume its dist. Building
+      # the apps directly (no `...` filter) avoids rebuilding react twice.
+      - run: pnpm --filter @lyra-ds/react run build
+      - run: pnpm --filter @lyra-ds/site run build
+      - run: pnpm --filter @lyra-ds/docs run build
+      # Landing first — the docs consent banner links to the privacy policy
+      # hosted on lyra-ds.dev (DEPLOY.md, "Deploy the landing first").
+      # --commit-dirty=true: the tree is legitimately dirty at this point
+      # (generated `public/_headers` and `out/` are not committed); the flag
+      # only silences wrangler's dirty-tree warning.
+      - name: Publish landing to Cloudflare Pages
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.118.0'
+          command: pages deploy apps/site/out --project-name=lyra-ds-site --branch=main --commit-dirty=true
+      - name: Publish docs to Cloudflare Pages
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.118.0'
+          command: pages deploy apps/docs/out --project-name=lyra-ds-docs --branch=main --commit-dirty=true
