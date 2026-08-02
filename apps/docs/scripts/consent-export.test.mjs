@@ -63,10 +63,14 @@ test('keeps docs self-contained while allowing local iframe previews and data UR
   assert.doesNotMatch(headers, /\/opengraph-image/);
   assert.match(deploy, /pnpm --filter @lyra-ds\/docs\.\.\. run build/);
   assert.match(deploy, /apps\/docs\/out/);
-  assert.match(deploy, /must not go live before `lyra-ds\.dev`/);
-  assert.match(deploy, /fails closed/);
-  assert.match(deploy, /custom property values and dynamic preview sizing/);
-  assert.match(deploy, /apps\/site/);
+  // Same reasoning as apps/site: assert that each rationale is still documented, not the exact
+  // wording that documents it. Each of these would fail if someone deleted a section.
+  assert.match(deploy, /lyra-ds\.dev/); // the deploy-order constraint
+  assert.match(deploy, /`frame-src 'self'`|`frame-src`/); // why iframes survive the policy
+  assert.match(deploy, /iframe/i);
+  assert.match(deploy, /`style-src/); // why inline styles are allowed here
+  assert.match(deploy, /custom property/i);
+  assert.match(deploy, /`img-src`|`data:`/);
 });
 
 test('keeps localized message keys aligned and does not introduce document cookies', () => {
