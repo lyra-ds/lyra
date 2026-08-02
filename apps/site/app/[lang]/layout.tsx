@@ -1,10 +1,11 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { ThemeProvider } from '@lyra-ds/react';
+import { CookieBanner, ThemeProvider } from '@lyra-ds/react';
 import type { ReactNode } from 'react';
 import { HtmlLang } from '@/components/html-lang';
 import { SiteFooter } from '@/components/site-footer';
+import { consentStorageKey } from '@/lib/consent';
 import { SiteHeader } from '@/components/site-header';
 import { isLocale, locales } from '@/lib/i18n';
 
@@ -28,7 +29,7 @@ export default async function LocaleLayout({
   if (!isLocale(lang)) notFound();
 
   setRequestLocale(lang);
-  const messages = await getMessages();
+  const [messages, t] = await Promise.all([getMessages(), getTranslations()]);
 
   return (
     <ThemeProvider storageKey={themeStorageKey}>
@@ -36,7 +37,17 @@ export default async function LocaleLayout({
         <HtmlLang locale={lang} />
         <SiteHeader locale={lang} />
         {children}
-        <SiteFooter />
+        <SiteFooter locale={lang} />
+        {/* Initialise analytics here only after mayLoadAnalytics() returns true. */}
+        <CookieBanner
+          aria-label={t('consentLabel')}
+          storageKey={consentStorageKey}
+          policyHref={`/${lang}/privacy`}
+          essentialsLabel={t('consentEssentialsLabel')}
+          acceptLabel={t('consentAcceptLabel')}
+        >
+          {t('consentBody')} <a href={`/${lang}/privacy`}>{t('privacyTitle')}</a>
+        </CookieBanner>
       </NextIntlClientProvider>
     </ThemeProvider>
   );

@@ -2,8 +2,9 @@
 
 import { Brand, Footer } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
+import type { Locale } from '@/lib/i18n';
 
-export function SiteFooter() {
+export function SiteFooter({ locale }: { locale: Locale }) {
   const t = useTranslations();
 
   return (
@@ -30,6 +31,7 @@ export function SiteFooter() {
           >
             {t('contributing')}
           </a>
+          <a href={`/${locale}/privacy`}>{t('privacyTitle')}</a>
         </>
       }
     />
