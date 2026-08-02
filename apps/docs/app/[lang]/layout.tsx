@@ -4,11 +4,14 @@ import { notFound } from 'next/navigation';
 import { Container, Shell, ThemeProvider } from '@lyra-ds/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { DocsSidebar } from '@/components/docs-sidebar';
+import { ConsentAnalytics } from '@/components/consent-analytics';
 import { HtmlLang } from '@/components/html-lang';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { TableOfContents } from '@/components/toc';
+import { consentStorageKey } from '@/lib/consent';
 import { isLocale, locales } from '@/lib/i18n';
+import { PRIVACY_POLICY_ORIGIN } from '@/lib/links';
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -55,6 +58,16 @@ export default async function LocaleLayout({
           </Shell>
         </Container>
         <SiteFooter />
+        <ConsentAnalytics
+          aria-label={t('consentLabel')}
+          storageKey={consentStorageKey}
+          policyHref={`${PRIVACY_POLICY_ORIGIN}/${lang}/privacy`}
+          essentialsLabel={t('consentEssentialsLabel')}
+          acceptLabel={t('consentAcceptLabel')}
+        >
+          {t('consentBody')}{' '}
+          <a href={`${PRIVACY_POLICY_ORIGIN}/${lang}/privacy`}>{t('privacyTitle')}</a>
+        </ConsentAnalytics>
       </NextIntlClientProvider>
     </ThemeProvider>
   );

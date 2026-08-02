@@ -1,13 +1,14 @@
 {
-  "name": "@lyra-ds/docs",
+  "name": "@lyra-ds/site",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
-    "prebuild": "node scripts/copy-llms.mjs && node scripts/generate-headers.mjs",
+    "prebuild": "node scripts/derive-stats.mjs && node scripts/generate-headers.mjs",
+    "pretest": "pnpm --filter @lyra-ds/react run build && pnpm run build",
     "build": "next build",
-    "pretest": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/docs run build",
-    "test": "node --test scripts/consent.test.mjs scripts/analytics.test.mjs scripts/consent-export.test.mjs",
+    "pretypecheck": "node scripts/derive-stats.mjs",
+    "test": "node --test scripts/landing-sections.test.mjs scripts/consent.test.mjs scripts/analytics.test.mjs scripts/metadata-deploy.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,8 +16,6 @@
     "@fontsource/plus-jakarta-sans": "5.2.8",
     "@lyra-ds/react": "workspace:*",
     "@lyra-ds/styles": "workspace:*",
-    "fumadocs-core": "16.11.5",
-    "fumadocs-mdx": "15.2.0",
     "next": "16.2.10",
     "next-intl": "4.13.2",
     "react": "19.2.7",

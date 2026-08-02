@@ -51,5 +51,10 @@
   "hideCode": "Ocultar código",
   "groupAction": "Ações",
   "groupData": "Dados",
-  "overview": "Visão geral"
+  "overview": "Visão geral",
+  "consentLabel": "Preferências de privacidade",
+  "consentBody": "Este site guarda sua escolha de tema no seu navegador. Você também pode permitir métricas de uso anônimas, que serviriam apenas para saber quais páginas ajudam. Nenhuma das duas é necessária para ler nada aqui.",
+  "consentAcceptLabel": "Permitir métricas",
+  "consentEssentialsLabel": "Apenas o essencial",
+  "privacyTitle": "Privacidade"
 }

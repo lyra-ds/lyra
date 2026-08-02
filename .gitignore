@@ -3,10 +3,15 @@ node_modules/
 dist/
 *.tsbuildinfo
 .env*
-apps/docs/.next/
+# Next build output — matched per app, so a new app under apps/ is covered the
+# day it is created rather than the day someone notices its artifacts in a diff.
+apps/*/.next/
+apps/*/out/
 apps/docs/.source/
-apps/docs/out/
 apps/docs/public/llms.txt
+apps/site/lib/generated/
+apps/site/public/_headers
+apps/docs/public/_headers
 
 # Vitest Browser Mode generated artifacts (failure screenshots / attachments)
 **/__screenshots__/

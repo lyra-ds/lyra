@@ -1,0 +1,309 @@
+/* Marketing-page composition only. Visual UI comes from @lyra-ds/styles. */
+.lw-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.lw-section {
+  padding: var(--space-16) 0;
+}
+
+.lw-section--alt {
+  background: var(--surface-card);
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.lw-overline {
+  font: var(--overline-font);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--accent-soft-text);
+}
+
+.lw-h2 {
+  font: var(--h1-font);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-primary);
+  margin: var(--space-2) 0;
+}
+
+.lw-section__sub {
+  max-width: 560px;
+  margin: 0 0 var(--space-8);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+}
+
+.lw-hero {
+  padding: var(--space-20) 0 var(--space-16);
+  background: var(--surface-page);
+}
+
+.lw-hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.lw-hero__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-5xl);
+  font-weight: var(--weight-extrabold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+.lw-hero__sub {
+  max-width: 560px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+}
+
+.lw-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.lw-hero__meta {
+  display: flex;
+  gap: var(--space-6);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.lw-hero__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.lw-show__tabs {
+  padding: var(--space-4) var(--space-6) 0;
+}
+
+.lw-show__stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+}
+
+.lw-fw-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.lw-fw {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lw-fw__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.lw-fw__name {
+  color: var(--text-primary);
+  font-weight: var(--weight-bold);
+}
+
+.lw-fw__pkg {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.lw-theming {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+  align-items: center;
+  gap: var(--space-10);
+}
+
+/* The code block scrolls within this grid item instead of widening the page. */
+.lw-theming > * {
+  min-width: 0;
+}
+
+.lw-checks {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lw-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.lw-check > :first-child {
+  color: var(--success);
+}
+
+.lw-check--muted {
+  color: var(--text-faint);
+}
+
+.lw-check--muted > :first-child {
+  color: var(--text-faint);
+}
+
+.lw-comm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.lw-comm {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: inherit;
+  text-decoration: none;
+}
+
+.lw-comm__icon {
+  display: grid;
+  width: var(--space-10);
+  height: var(--space-10);
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.lw-comm__title {
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--h3-font);
+}
+
+.lw-comm__desc {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.lw-faq {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.lw-cta {
+  padding: var(--space-16) 0;
+  background: var(--indigo-950);
+}
+
+.lw-cta__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.lw-cta__mark {
+  width: 40px;
+  height: 40px;
+}
+
+.lw-cta__title {
+  margin: 0;
+  color: var(--night-100);
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-extrabold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+.lw-cta .lw-cta__ghost {
+  background: transparent;
+  color: var(--night-100);
+  border-color: var(--night-300);
+}
+
+.lw-cta .lw-cta__ghost:hover {
+  background: var(--night-800);
+  border-color: var(--night-300);
+}
+
+@media (max-width: 900px) {
+  .lw-fw-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lw-theming,
+  .lw-comm-grid,
+  .lw-faq {
+    grid-template-columns: 1fr;
+  }
+
+  .lw-faq {
+    gap: var(--space-6);
+  }
+}
+
+/* Two framework cards need 182px each, a 16px gap, and the container's 48px gutters:
+   below 429px they cannot share a row without overflowing. */
+@media (max-width: 428px) {
+  .lw-fw-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lw-site-header .lyra-navbar__nav {
+    flex-wrap: wrap;
+  }
+}
+
+/* Compact desktop chrome falls under the 44px touch-target floor. `pointer: coarse` alone
+   misses iPads in desktop mode, where a mouse reports `pointer: fine`; `any-pointer` catches
+   the touchscreen and the width clause covers that spoofed case. These selectors are scoped to
+   the landing application's own chrome, not to reusable component styling. */
+@media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
+  .lw-site-header .lyra-navlink,
+  .lw-site-header .lyra-btn,
+  .lw-locale-switcher .lyra-segmented__option,
+  .lw-show-tabs-controls .lyra-tab,
+  .lw-show__stage .lw-show__action,
+  .lw-show__stage .lw-show__input,
+  .lw-cookie-banner .lyra-btn,
+  .lw-site-footer .lw-footer__link {
+    min-height: 44px;
+  }
+
+  .lw-site-header .lw-theme-toggle {
+    min-width: 44px;
+  }
+
+  .lw-show-tabs-controls .lyra-tab,
+  .lw-site-footer .lw-footer__link {
+    display: inline-flex;
+    align-items: center;
+  }
+}

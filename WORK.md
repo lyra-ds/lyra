@@ -11,6 +11,25 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       worktree próprio. Briefs em `.batuta/brief-6cb2-chrome.md` (compartilhado) +
       `.batuta/lot-6cb2-0N-*.md`.
 
+- [x] **6c-b4 — `PageHeader` e `Shell` escolhem o elemento que emitem — CONCLUÍDO em
+      2026-08-01** (PR #27, 1 commit). Lote de correção nascido da 6c-b3: dois bugs de API
+      achados enquanto se documentava, com `packages/` fechado naquela fase. Brief em
+      `.batuta/lot-6cb4-element-overrides.md`.
+
+- [x] **6c-c — landing de marketing — CONCLUÍDA em 2026-08-01.** Ciclo aberto em 2026-08-01,
+      decisões tomadas
+      (registro em § Decisões tomadas), quebrada em 5 lotes sequenciais. Briefs em
+      `.batuta/brief-6cc-landing.md` (compartilhado) + `.batuta/lot-6cc-0N-*.md`.
+  - [x] Lote 1 — `apps/site`, cromo e Hero → codex, commit 5ae1075
+  - [x] Lote 2 — ComponentShowcase + Frameworks → codex (1 retry), commit 60c3d5b
+  - [x] Lote 3 — Temas/Tokens + Comunidade → codex, commit 0eaca7e
+  - [x] Lote 4 — FAQ + CTA → codex, commit 1e2a9d9
+  - [x] Lote 5 — consentimento + política de privacidade → codex (1 retry), commit a4ca1c3
+  - [x] Lote 6 — metadados/OG, robots, sitemap, CSP, varredura final → codex (1 retry),
+        commit 8f75ce0
+  - [x] Lote 7 — consentimento + política no `apps/docs` → codex (1 retry), commit d053a42
+  - [x] Lote 8 — OpenPanel self-hosted nos dois apps → codex, commit fa2223f
+
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
 ## Next — Fase 6, na ordem de dependência
@@ -325,6 +344,302 @@ http.server` devolve listagem de diretório para `/example-preview/...`, e foi i
    vezes mirei no seletor de idioma do header em vez do exemplo da página, e quase reportei
    perda de foco que era navegação.
 
+## 6c-b4 — o lote que a 6c-b3 gerou
+
+Lote único, um disparo, sem retry. Existe porque a 6c-b3 rodou com `packages/` fechado: a fase
+era de documentação, e documentar é o melhor detector de API ruim que existe — mas consertar
+ali teria misturado duas coisas. Os dois achados viraram este lote, com brief próprio.
+
+**Os dois bugs eram o mesmo bug.** `PageHeader` sempre emitia `<h1>` e `Shell` sempre emitia
+`<main>` — dois elementos que a página só pode ter uma vez. O efeito não é estético: quem
+quisesse a composição do `PageHeader` (sobrelinha, título, descrição, linha de ações) numa
+**seção** copiava as classes, que é exatamente a duplicação que o componente existe para
+evitar; e `<main>` dentro de `<main>` é **HTML inválido**, então `Shell` nunca podia ser
+aninhado nem embutido — foi o que a própria 6c-b3 tropeçou ao montar preview.
+
+A API seguiu a convenção que o `Shell` já tinha com `sidebarAs`/`asideAs`: nome do slot mais
+`As`. `titleAs?: 'h1' | 'h2' | 'h3'` (default `h1`) e `mainAs?: 'main' | 'div'` (default
+`main`). **Uniões fechadas de propósito** — `keyof JSX.IntrinsicElements` deixaria renderizar o
+título como `<button>`, e o ponto é escolher entre semânticas defensáveis, não permitir
+qualquer coisa. Aditivos: omitir produz a saída de hoje.
+
+**`Navbar` e `Footer` ficaram de fora, e isso foi decisão, não esquecimento.** Eles emitem
+`<header>` e `<footer>`, que uma página pode legitimamente ter mais de um. Corrigir por
+simetria adicionaria API sem problema correspondente — o brief proibiu explicitamente.
+
+Custo: 514 testes (eram 512), `size-limit` +9 B no `PageHeader` e +6 B no `Shell` (brotli),
+zero mudança de CSS, `parity` intocado (209 tokens, 269 classes, `baseline.json` sem diff),
+docgen listando os dois props. Guia em prosa nos quatro MDX (`page-header` e `shell`, EN e
+pt-BR) — a tabela gerada aparece sozinha, mas ela diz _que_ o prop existe, não _quando_ usar.
+
+### Duas coisas que este lote ensinou sobre o processo
+
+1. **O sandbox do Batuta não roda Browser Mode nem os gates de empacotamento.** O Vitest não
+   consegue abrir o listener (`listen EPERM ::1`), e `publint`/`attw`/`pack-smoke` morrem em
+   `spawnSync pnpm EPERM`. Não é defeito do código — o mesmo commit passou nos quatro jobs do
+   CI. A consequência prática é que **para esses gates a autoridade é o CI, não o relatório do
+   executor**, e o relatório tem que nomear o que não rodou em vez de silenciar.
+2. **PR aberto contra branch de feature morre quando a base é mergeada.** O #26 saiu contra
+   `feat/6cb3-docs`; o PR #25 mergeou, a branch base foi removida, e o GitHub fechou o #26
+   sozinho. Aí a armadilha: **não dá para retargetar a base de um PR fechado** (a API recusa) e
+   o reopen falha porque a base não existe mais. O `mergeable: CONFLICTING` que ele exibia era
+   contra a base morta — `git merge-tree` contra `main` mostrou zero conflito. Só restou abrir
+   o #27 contra `main`. A regra daqui em diante: lote que depende de outro nasce empilhado, mas
+   **antes de o pai mergear, ou se retargeta para `main`, ou já se abre contra `main`**.
+
+## 6c-c — o que cada lote custou
+
+Quatro decisões do usuário na abertura: a landing **sobe depois do release** (o que libera o
+badge do React a dizer "pronto" e torna o `npm i` da Hero verdade); ela vive em `apps/site/`
+servindo lyra-ds.dev, **separada** do `apps/docs/`; as duas seções sem código de handoff são
+desenhadas a partir da prosa do mapa; e a copy reposicionada é minha, revisada por ele.
+
+**O kit do handoff no repo é a versão anterior ao redesenho.** Traz `sections-marketing.jsx`
+com Pricing, Testimonials e Discord, e não tem `sections-community.jsx`, `docs.html` nem
+`site.css` — o CSS é um `<style>` dentro do `index.html`. "Temas/Tokens" e "Comunidade",
+que o plano descreve em prosa, **não têm original**. O que existe: Hero, showcase,
+frameworks, FAQ, CTA, header, footer e cookie banner.
+
+Daí as **sete regras de honestidade** do brief compartilhado, cada uma contra uma afirmação
+falsa que o kit traz: métricas inventadas ("3.842 estrelas", "48 mil/mês"), plano pago (3 das
+5 respostas do FAQ o citam), Discord, nome de pacote inexistente, badge de maturidade que
+promete estágio que não existe, número de inventário fixado em string e a versão "v1.0". São
+requisito duro: a landing é a primeira coisa que alguém lê antes de decidir adotar.
+
+### Lote 1 — o app, o cromo e a Hero
+
+Duas rodadas, e a primeira **não escreveu uma linha** — de propósito. O brief pedia duas
+coisas incompatíveis: "leia a versão real de `packages/react/package.json`" **e** "mostre
+v0.1.0". Os dois pacotes estão em `0.0.0`; o primeiro número de verdade só nasce quando a
+Fase 7 consumir os changesets pendentes. O executor viu que a única forma de cumprir o item
+era inventar — que é o que a regra proíbe — e parou. Foi a regra de honestidade pegando um
+erro **meu**, não dele. Resolvido tirando a versão do badge: além de não existir número para
+ler, versão em hero de marketing é fato que apodrece a cada release.
+
+**Por que app separado e não rota:** o `apps/docs` é um pipeline de conteúdo MDX com árvore
+de páginas, busca e tabelas geradas; a landing é uma página de seções compostas sem fonte de
+conteúdo. Juntos, todo build de landing carregaria o pipeline e toda rota de docs carregaria
+o cromo de marketing. Isso **não** duplica componente — `Navbar`, `Footer`, `Brand`,
+`SegmentedControl`, `ThemeProvider` e mais 18 vêm do `@lyra-ds/react`; conferi os 23 antes de
+briefar. Duplica infra: next-intl, export estático, fontes e a folha `.lw-*`.
+
+**O mapa estava desatualizado e este lote corrigiu.** Das 16 classes `.lw-*` que ele diz
+colidirem, só a família `.lw-hero*` colide hoje — as outras sumiram do `apps/docs` quando a
+6c-b2 transformou o cromo em componentes do DS. E a colisão que sobrou é real, não nominal:
+o hero do docs é alinhado à esquerda e menor (é cabeçalho de página), o da landing é
+centralizado e maior. Dois apps, duas folhas, nenhum conflito.
+
+**O `.gitignore` só cobria `apps/docs/`.** O app novo não estava contemplado, e o commit
+levaria centenas de artefatos de build. Passou a casar `apps/*/.next/` e `apps/*/out/` —
+regra por app cobre o próximo no dia em que ele nascer, não no dia em que alguém nota o lixo
+no diff. O executor não tinha como ver isso: não conseguiu construir.
+
+### Lote 2 — showcase e frameworks, e o gate que eu mesmo convidava
+
+**Três disparos sem uma linha escrita, e a culpa era do brief.** O codex parou duas vezes
+pedindo confirmação de design. A lição do perfil manda re-disparar verbatim — e não resolveu,
+porque o convite estava no texto que o re-disparo reentregava: a seção `Method` do brief
+compartilhado dizia _"se você tem um workflow test-first ou **plan-first**, use"_, e o contrato
+do plan-first (o `brainstorming` do superpowers, do lado do executor) é justamente parar e
+pedir aprovação humana. A correção não é encher o prompt de "APPROVED" — isso já
+**alimentou** o gate numa fase anterior — é declarar o que é fato: a rodada é não-interativa,
+não há quem aprove, e o lot file **é** o design aprovado. As stop conditions ficaram intactas,
+com a distinção nomeada: parar porque o brief está errado é certo; parar para perguntar se um
+plano correto serve, não.
+
+**Dois defeitos que nenhum gate automático enxerga.** O `CodeBlock` numera linha por contador
+CSS, e o `counter-reset` mora em `.lyra-code__pre code`. Os `span.line` tinham ficado soltos
+no `<pre>`, então o contador nunca reiniciava e **toda linha imprimia "1"**. Build, typecheck,
+eslint, 514 testes e o axe passaram verdes por cima disso — número errado não é erro de tipo
+nem de contraste. E o snippet trazia `className="lw-show__stage"`, classe privada deste site:
+quem copiasse levaria um `div` com classe inexistente e um layout diferente do que viu. Mesma
+família da métrica inventada, só que falha depois, na máquina do leitor.
+
+**A honestidade da grade de frameworks é escolha de tom, não de texto.** Trocar `warning`/
+`info` por `neutral` importa tanto quanto trocar "Beta" por "Em breve": os dois tons afirmam
+trabalho em andamento, e nada de Vue, Blade ou LiveView existe no repo.
+
+### Lote 3 — os números, e um erro que sobreviveu a duas fases
+
+As duas seções sem original no kit. O trabalho pesado foi de contagem, não de desenho.
+
+**"209 tokens semânticos" está errado três vezes ao mesmo tempo.** 209 conta _declarações_ —
+um token declarado no claro e de novo no escuro conta duas. Nomes únicos são **153**, e **43**
+deles são primitivos de paleta (`--indigo-500`, `--slate-100`), que não são semânticos.
+Semânticos de verdade: **110**. E o `--border-input` que o mapa diz levar o total a 211 **não
+existe** — segundo ponto em que o mapa erra nesta fase, depois das 16 classes que já não
+colidem. Eu tinha repetido o "211" no brief compartilhado antes de conferir; o `parity` já
+dizia 209 na minha frente desde o Lote 1.
+
+O número honesto virou a copy melhor: **110 controlam cor, tipo e espaçamento, e trocar de
+marca precisa de quatro**. Contraste verificável vende mais que número inflado.
+
+Nada é digitado: um `prebuild` deriva de `baseline.json` e `props.json`, e **estoura** se a
+fonte sumir ou a conta der zero — número zerado em silêncio é pior que o hardcoded que estamos
+tirando, porque o hardcoded ao menos era visivelmente errado.
+
+**Escrever para fora obriga a conferir.** Transformar dois itens de débito em issues públicas
+(#28, #29) pegou um erro na própria nota: ela dizia "4 asserções vácuas" no `file-manager`, e
+são **2** — as outras duas usam `querySelector`, que devolve `Element | null`, onde
+`not.toBeNull()` testa alguma coisa. Eu tinha contado ocorrências do padrão em vez de olhar o
+que cada chamada recebia.
+
+**Levantei um custo e a medição me desmentiu.** O executor foi além do pedido e adicionou teste
+ao `apps/site`, com `pretest` construindo react e site — e eu ia pedir para tirar, argumentando
+que o job `test` do CI não deve construir. Medi antes: o gate inteiro leva **27s**. Ficou, e é
+melhor assim, porque o teste afirma contra o **HTML construído** — exatamente a lição que a
+6c-b3 pagou caro. A nota que fica: ele fixa os sete números derivados, então avançar o handoff
+passa a exigir atualizar dois lugares, como já acontece com o `baseline.json`.
+
+### Lotes 4 e 5 — a copy que não dava para adaptar, e o banner que quase virou teatro
+
+**Três das cinco respostas do FAQ do kit vendem plano Pro**, o subtítulo manda para o Discord
+e a quinta pergunta é "posso cancelar o Pro". Reescrito, não adaptado; do kit ficaram só o
+layout de duas colunas e a faixa escura do CTA. Cada resposta tem fonte apontada no brief
+(`LICENSE`, `brand.css`, `colors.css`, os 50 arquivos que exercitam axe, os três motores do
+contraste, `.changeset/`), com ordem de **parar e reportar** em vez de suavizar a frase.
+
+A resposta sobre produção foi reescrita antes de despachar: a primeira versão explicava como
+se proteger sem responder a pergunta. Quem pergunta "está pronto?" quer o sinal.
+
+**O cookie banner ia ser teatro de consentimento.** O site não usa cookie nenhum: sem
+analytics, sem script de terceiro, e o único armazenamento é a preferência de tema, que é
+funcional e a LGPD não exige consentimento para usar. Pedir consentimento para o que não
+acontece é a mesma família de desonestidade que a fase vinha tirando — levantei antes de
+construir. **O usuário decidiu manter o banner e escrever a política**, e a decisão ficou certa
+por um motivo que eu não tinha: analytics (OpenPanel) vem na sequência. Sem o banner primeiro,
+a decisão de consentimento chegaria depois do rastreamento.
+
+Daí o desenho: zero analytics neste lote, **proibido nomear o provedor** em código ou copy, e o
+ponto de montagem marcado em comentário — componente que renderiza nada é código morto fingindo
+estrutura. `mayLoadAnalytics()` é função, não booleano guardado: leitor que relê não fica velho
+quando o visitante muda de ideia.
+
+**A política diz o que quase toda política omite.** "Não coletamos nada" é falso em site
+estático, porque o host registra IP, horário, página e user agent. Está lá com todas as letras.
+
+**Retry:** `consentStorageKey` estava declarado duas vezes. Se um mudasse sozinho, o banner
+gravaria numa chave e o guard leria outra — banner eterno, ou pior, decisão que o guard nunca
+vê. O repo já tinha aprendido isso na chave de tema.
+
+### Lote 6 — o CSP que quebra o próprio design system, e a medição que faltava
+
+**Cinco defeitos apareceram de uma vez, e todos porque servi o export _com_ o `_headers`
+aplicado e medi a 375px** — duas coisas que nenhum lote anterior tinha feito.
+
+**`img-src 'self'` apagava os chevrons.** O `data:image/svg` não vem do site: vem do
+**`packages/styles`** (`navigation.css`, `forms.css`, `display.css`). Ou seja, um CSP self-only
+não quebra só esta landing — quebra o Lyra em **qualquer consumidor** que aplique essa política.
+Corrigido com `data:`, e registrado no `DEPLOY.md` como requisito do DS, não como quirk daqui.
+É a primeira vez nesta fase que dogfooding revela algo que afeta terceiros.
+
+**A página rolava de lado 114px**, com três causas distintas medidas: a grade de frameworks
+parava em duas colunas e nunca chegava a uma; o bloco de código **alargava a própria coluna em
+vez de rolar** (o mínimo automático de item de grid é o conteúdo, não zero — faltava
+`min-width: 0`, e esse é o tipo de coisa que o executor não deriva sozinho); e o nav do header
+passava da borda.
+
+**14 alvos abaixo de 44px** no toque, resolvidos espelhando a media query que o `apps/docs` já
+tinha — e deixando de fora link dentro de frase, que a WCAG isenta e cujo padding quebra a linha.
+
+**Eu acusei o executor errado.** Depois do retry sobrou um alvo de 16px, e eu declarei que a
+justificativa dele ("é link inline em prosa") era falsa, porque meu diagnóstico usou `.find()` e
+pegou o **primeiro** link "Privacy" do DOM — o do rodapé, que já estava em 44px. Existiam dois: o
+do rodapé e o de dentro da frase do banner. A alegação dele estava certa e eu quase escalei de
+lane por causa disso. A isenção agora está **codificada no verificador** (elemento `display:
+inline` cujo pai tem texto ao redor), para não depender de eu lembrar.
+
+### Lote 7 — o mesmo CSP em outro app não é o mesmo CSP
+
+A documentação ganhou banner, leitor de consentimento e `_headers`, espelhando o site. A
+política **não** foi copiada: a canônica em `lyra-ds.dev/[lang]/privacy` passou a cobrir as duas
+propriedades, com o detalhe que o leitor precisa — a escolha feita num site não vale no outro,
+porque o navegador escopa armazenamento por origem. Duas cópias divergiriam no dia do analytics.
+
+**Duas diferenças de CSP, e as duas passariam por build e lint sem um ruído.** `frame-src` tinha
+que ser `'self'` e não `'none'`, porque o docs renderiza exemplo em iframe — pinei no brief e o
+lote saiu certo de primeira. E `style-src` precisou de `'unsafe-inline'`, descoberto só no
+retry: o `apps/site` tem **zero** estilo inline, então a política dele nunca exercitou esse
+caminho; o docs tem estilos inline legítimos, e legítimos exatamente pelo único caso que a
+convenção permite — passar valor de custom property (`--prose-scroll-offset`, e a altura do
+iframe vinda do `ResizeObserver`).
+
+A lição geral: **política copiada entre apps carrega as premissas do app de origem.** O
+`DEPLOY.md` de cada um agora diz por que ele precisa do que precisa, para ninguém "endurecer" de
+volta e apagar preview ou offset de prosa.
+
+### Lote 8 — o consentimento que só vale se for estado
+
+**Script da instância, não o pacote npm.** O `@openpanel/nextjs` puxa `@openpanel/web`, que puxa
+`rrweb` — session replay, 5,7 MB desempacotados. Com gravação desligada por decisão, embarcar o
+código dela para depois provar que não é usada é a troca errada; pelo script o grafo some
+inteiro, e some junto um critério de aceite frágil por natureza ("prove que o tree-shaking
+derruba").
+
+**O `_headers` virou arquivo gerado.** A pergunta do usuário — "isso não vai ficar como env no
+Cloudflare?" — revelou que sim, e que o `_headers` é servido direto pelo Cloudflare sem passar
+pelo Next, então **não interpola variável**. Fixar a origem ali criaria uma segunda fonte de
+verdade para algo que já vive na env: exatamente o defeito que custou um retry na chave de
+consentimento do Lote 5. Agora sai de um template versionado mais a env, e sem env é
+byte-idêntico ao de hoje.
+
+**Consentimento tem que ser estado, não leitura única.** Montar o script ao lado do banner e ler
+o consentimento uma vez faria quem clica em "permitir" não receber nada até recarregar — o
+pageview que motivou o consentimento se perde, e a escolha parece não ter feito nada. Pinei no
+brief e saiu certo de primeira.
+
+**A verificação foi feita contra uma instância falsa servida localmente**, com o CSP gerado
+aplicado. Isso transformou "o guard funciona" de alegação em observação: nenhuma requisição antes
+da decisão, o script aparecendo depois do clique sem reload, zero requisições no caminho "apenas
+o essencial", e nenhum erro de console — o que também descartou descasamento de hidratação na
+leitura inicial do consentimento. **Sem o stub, nada disso seria verificável**, e o lote teria
+sido aceito por leitura de código.
+
+### Práticas de verificação que este lote acrescentou
+
+1. **Falha de verificação minha é alegação como qualquer outra.** Reportei a troca de idioma
+   quebrada duas vezes seguidas, e as duas eram do meu script: primeiro procurei `role="link"`
+   num `SegmentedControl` que emite `role="radio"`; depois esperei `networkidle`, que já estava
+   satisfeito no instante do clique e por isso retornava **antes** da navegação client-side
+   acontecer. A espera certa é pela URL. Um `debug` de 20 segundos desmentiu as duas antes de
+   qualquer re-disparo — o mesmo probe barato que o perfil já manda usar contra alegação do
+   executor vale contra a minha.
+2. **App novo no monorepo tem gate que passa sem construir nada.** `pnpm -r --if-present run
+build` ignora em silêncio um app mal formado. A prova é destrutiva: apagar `out/`, rodar o
+   build da raiz e verificar que voltou.
+3. **O executor não conseguiu rodar gate nenhum e disse isso.** `pnpm` morreu no sandbox dele
+   (`ERR_SQLITE_ERROR`, depois `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). O relatório
+   nomeou cada coisa que não rodou em vez de fingir verde — que é exatamente o contrato do
+   brief, e o que separa uma rodada honesta de uma rodada perdida.
+4. **Gate rodado antes do build não vê o que o build cria.** No Lote 1 o `pnpm run lint` passou
+   porque o `next-env.d.ts` do site ainda não existia — ele nasce no primeiro `next build`, e
+   depois eu mesmo commitei o arquivo gerado, que o prettier reprova (aspas duplas, e um "should
+   not be edited" no topo). O `.prettierignore` isentava só o do `apps/docs`. Corrigido em
+   `apps/*/next-env.d.ts`, mesma generalização e mesmo motivo do `.gitignore` no Lote 1: **regra
+   presa a um app é regra que o próximo app não herda.** Depois de construir, o lint volta a valer.
+5. **Verde em tudo que é automatizável não diz nada sobre o que a tela mostra.** Os dois defeitos
+   do Lote 2 — numeração toda "1" e uma classe privada dentro do snippet — sobreviveram a build,
+   tipos, lint, 573 testes e oito varreduras de axe. O que os pegou foi abrir a aba e ler.
+6. **O que some depois de um clique é o que nunca é auditado.** Aba fechada no Lote 2, painel
+   recolhido do acordeão no Lote 4, banner de consentimento no Lote 5 — os três precisam de
+   varredura no estado que o visitante encontra **e** no estado seguinte. É a mesma lição do
+   iframe da 6c-b3 numa forma nova.
+7. **Cinco alarmes falsos meus nesta fase, todos por medir a coisa errada:** seletor de `link`
+   num `radiogroup`, `networkidle` que já estava satisfeito antes da navegação, literal de cor
+   chutado numa expressão sem parênteses, palavra proibida sem contexto (a copy dizia "no
+   component behind a paywall", uma negação), e chave de tema esperada sem ninguém ter escolhido
+   tema. **A verificação do maestro precisa do mesmo rigor que o brief exige do executor** —
+   medir contraste em vez de comparar string, esperar a condição em vez do proxy, e casar frase
+   em vez de palavra.
+8. **Escrever para fora obriga a conferir o que a nota afirmava.** Transformar débito em issue
+   pública corrigiu uma contagem errada que estava no `WORK.md` havia semanas.
+9. **Cabeçalho que ninguém serviu é cabeçalho que ninguém testou.** O `_headers` passou por
+   build, lint e revisão de código sem que nada notasse que ele apagava ícones — porque servidor
+   estático comum não aplica CSP. A verificação de política precisa de um servidor que a aplique.
+10. **Isenção que mora na cabeça do revisor vira acusação errada.** Eu tinha escrito no brief que
+    link em prosa é isento de 44px, e mesmo assim acusei o executor de mentir sobre exatamente
+    isso — porque medi o elemento errado. Regra que o verificador não codifica não existe.
+
 ## Next — depois da Fase 6
 
 - [ ] **Fase 7 — Release Pipeline & Launch** (`.batuta/plan-07-release-pipeline-launch.md`)
@@ -566,7 +881,8 @@ se paga porque há conteúdo real.
 - **Alvos de toque de 27px nos rótulos de grupo da sidebar.** A media query de toque do
   `apps/docs/app/site.css` cobre `.lyra-sbgroup__item`, mas nunca cobriu
   `.lyra-sbgroup__label--btn` (os títulos colapsáveis). Pré-existente, escapou da primeira
-  rodada de impeccable. 25 alvos abaixo de 44px a 375px, a maioria por esta causa.
+  rodada de impeccable. 25 alvos abaixo de 44px a 375px, a maioria por esta causa. Aberto
+  como [#29](https://github.com/lyra-ds/lyra/issues/29).
 
 - ~~**Anel de foco do cromo do site**~~ e ~~**`button-name` no `.lw-search`**~~ —
   **resolvidos** pelos Lotes 2 e 3 (`0628b78`, `f713085`), como previsto: as classes viraram
@@ -594,9 +910,12 @@ se paga porque há conteúdo real.
   nada renderiza `.lyra-actionbar`. Resolver com divergência documentada quando o `ActionBar`
   ganhar wrapper.
 
-- 4 asserções vácuas pré-existentes no `file-manager.browser.test.tsx`
-  (`expect(...).not.toBeNull()` nunca falha no Browser Mode) — de lotes antigos, fora do
-  escopo do Lote 09.
+- **2** asserções vácuas pré-existentes no `file-manager.browser.test.tsx` — linhas 152 e 279,
+  onde `expect(screen.getByRole(...)).not.toBeNull()` recebe um Locator preguiçoso, que é
+  objeto sempre. **Este item dizia "4", e estava errado:** as linhas 129 e 144 usam
+  `screen.container.querySelector(...)`, que é API do DOM e devolve `Element | null` — ali
+  `not.toBeNull()` é asserção legítima. Contado de verdade em 2026-08-01, ao transformar o
+  débito em issue. Aberto como [#28](https://github.com/lyra-ds/lyra/issues/28).
 - `BottomSheet` e `Dropzone` estão documentados no `llms.txt` do handoff novo mas **não
   têm código** (o `BottomSheet` é importado pelo `DatePicker`/`DateRangePicker` e bloqueia
   o caminho mobile deles). `BottomNav`, `PersonCell` e `DiffCard` têm CSS e contrato, só
