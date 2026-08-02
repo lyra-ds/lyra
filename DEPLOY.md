@@ -52,8 +52,31 @@ Set these on **both** projects, for **Production and Preview**:
 
 | Variable                          | Value                                                                |
 | --------------------------------- | -------------------------------------------------------------------- |
+| `NODE_OPTIONS`                    | `--max-old-space-size=4096`                                          |
 | `NEXT_PUBLIC_OPENPANEL_URL`       | your self-hosted instance origin, e.g. `https://metrics.example.com` |
 | `NEXT_PUBLIC_OPENPANEL_CLIENT_ID` | the project's client id                                              |
+
+### `NODE_OPTIONS` is not optional
+
+Without it the build fails, and it fails in a place that looks unrelated:
+
+```
+packages/react build: ESM ⚡️ Build success in 2946ms
+packages/react build: Error [ERR_WORKER_OUT_OF_MEMORY]:
+  Worker terminated due to reaching memory limit: JS heap out of memory
+```
+
+The JavaScript bundles compile in about three seconds. What runs out of memory is the
+**declaration build**: `@lyra-ds/react` has 51 entry points, one per component, and generating
+their `.d.ts` files pushes `rollup-plugin-dts` past 2 GB of heap in a worker thread. The
+default heap in the build container is smaller than that.
+
+Measured, not guessed: the build fails at 2048 MB and succeeds at 2560 MB, so 4096 leaves
+roughly 60% headroom. Both projects need it — the docs build `@lyra-ds/react` too.
+
+If a future change raises the cost further, the number is the first thing to raise. The
+underlying weight is known debt: per-entry declaration bundling is expensive by design, and the
+planned move from tsup to tsdown is the real fix.
 
 One OpenPanel project covers both domains, so **the same client id goes to both Pages
 projects**. That is what makes the journey from landing to documentation show up as one path
