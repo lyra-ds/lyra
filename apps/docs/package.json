@@ -6,6 +6,8 @@
     "dev": "next dev -H 127.0.0.1",
     "prebuild": "node scripts/copy-llms.mjs",
     "build": "next build",
+    "pretest": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/docs run build",
+    "test": "node --test scripts/consent.test.mjs scripts/consent-export.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -51,5 +51,10 @@
   "hideCode": "Hide code",
   "groupAction": "Actions",
   "groupData": "Data",
-  "overview": "Overview"
+  "overview": "Overview",
+  "consentLabel": "Privacy preferences",
+  "consentBody": "This site keeps your theme choice in your browser. You can also allow anonymous usage analytics, which would only ever tell us which pages help people. Neither is needed to read anything here.",
+  "consentAcceptLabel": "Allow analytics",
+  "consentEssentialsLabel": "Only essentials",
+  "privacyTitle": "Privacy"
 }
