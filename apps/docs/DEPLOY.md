@@ -1,25 +1,43 @@
-# Cloudflare Pages deployment
+# `apps/docs` — deployment notes
+
+The step-by-step for creating the Cloudflare Pages project, its environment variables and its
+domain lives in [`DEPLOY.md`](../../DEPLOY.md) at the repository root, because both properties
+share almost all of it. This file holds only what is specific to this app.
 
 - **Build command:** `pnpm --filter @lyra-ds/docs... run build`
 - **Output directory:** `apps/docs/out`
-- **Node version:** `24` (the repository requires `>=24 <25`)
-- **Environment variables:** none.
 
-The trailing `...` includes the docs workspace dependencies, so it builds
-`@lyra-ds/react` before the docs consume its generated distribution. This command was
-verified from a clean state with no prior `.next`, `out`, or workspace build output.
+Verified from a clean state, with no prior `.next`, `out`, or workspace build output.
 
-This property must not go live before `lyra-ds.dev`: the docs consent banner links to the
-privacy policy hosted there.
+## Do not publish this before `lyra-ds.dev`
 
-If analytics is introduced, extend the Content-Security-Policy with its self-hosted origin
-first. Adding the script without extending the policy fails closed.
+The consent banner links to the privacy policy, and that policy is hosted on the landing site —
+one document covers both properties, so there is no second copy here to drift. Until
+`lyra-ds.dev` is live, that link 404s.
 
-Lyra UI needs `data:` in `img-src`: its own component CSS embeds a few SVG masks and
-background images as data URIs. This does not permit an external image origin.
+## `_headers` is generated, not committed
 
-Unlike `apps/site`, this app needs `'unsafe-inline'` in `style-src` for legitimate inline
-custom property values and dynamic preview sizing: the prose wrapper supplies its scroll
-offset, while isolated example iframes receive measured height and scale values. These values
-cannot be static classes. Keep this exception so CSP does not blank the prose offset or preview
-frames; it does not add an external origin.
+Same mechanism as the landing: `scripts/generate-headers.mjs` runs during `prebuild` and writes
+`public/_headers` from `scripts/_headers.template` plus the environment. The template is
+committed; the output is not. See the site's notes for why the origin cannot be hardcoded there.
+
+## Why the policy looks the way it does
+
+Two directives differ from the landing's, and both were found by serving the export with the
+policy actually applied. Neither shows up in a build, a lint, or a type check.
+
+**`frame-src 'self'`, not `'none'`.** Component examples render inside iframes — the isolated
+preview machinery in `components/example-view.tsx`. With `'none'`, every one of those frames
+goes blank while the page around it looks perfectly fine.
+
+**`style-src 'unsafe-inline'`.** This app has legitimate inline styles, and they are legitimate
+because of the single case the project's conventions allow: passing a custom property value.
+The prose wrapper supplies its own scroll offset, and isolated preview iframes receive a
+measured height and scale from a `ResizeObserver`. Those are dynamic numbers; they cannot be
+static classes. Removing this exception blanks the previews and breaks anchor scrolling.
+
+**`img-src` allows `data:`** for the same reason as the landing: Lyra's component CSS embeds
+SVG data URIs, and without it icons vanish silently.
+
+Do not "harden" any of the three away without serving the build with the new policy and opening
+a component page.

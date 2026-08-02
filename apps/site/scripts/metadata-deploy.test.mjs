@@ -137,7 +137,14 @@ test('keeps the site layout contained and its chrome touch-safe on narrow viewpo
     /@media \(pointer: coarse\), \(any-pointer: coarse\), \(max-width: 1180px\)[\s\S]*?\.lw-site-footer \.lw-footer__link[\s\S]*?min-height: 44px;/,
   );
   assert.match(css, /\.lw-show__stage \.lw-show__input/);
-  assert.match(deploy, /Lyra UI needs `data:` in `img-src`/);
+
+  // Assert the RATIONALE survives, not the sentence that carries it. A regex on prose makes
+  // documentation immutable: rewording it breaks CI while the guard's real purpose — that
+  // nobody strips the explanation and later "hardens" the directive away — is untouched.
+  assert.match(deploy, /`img-src`/);
+  assert.match(deploy, /`data:`/);
+  assert.match(deploy, /`script-src`/);
+  assert.match(deploy, /'unsafe-inline'/);
 });
 
 test('keeps the English and Brazilian Portuguese message key sets identical', () => {

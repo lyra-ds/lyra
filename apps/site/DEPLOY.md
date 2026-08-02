@@ -1,19 +1,35 @@
-# Cloudflare Pages deployment
+# `apps/site` — deployment notes
+
+The step-by-step for creating the Cloudflare Pages project, its environment variables and its
+domain lives in [`DEPLOY.md`](../../DEPLOY.md) at the repository root, because both properties
+share almost all of it. This file holds only what is specific to this app.
 
 - **Build command:** `pnpm --filter @lyra-ds/site... run build`
 - **Output directory:** `apps/site/out`
-- **Node version:** `24` (the repository requires `>=24 <25`)
-- **Environment variables:** none.
 
-The trailing `...` includes the site's workspace dependencies, so it builds
-`@lyra-ds/react` before the site consumes its generated distribution. This command was
-verified in a fresh working copy with no prior `.next`, `out`, or workspace build output.
-In this sandbox only, pnpm needed `--config.verify-deps-before-run=ignore` after the locked
-dependency tree was materialized, because its global store is read-only. Cloudflare Pages
-installs dependencies normally and uses the command above unchanged.
+Verified from a clean state, with no prior `.next`, `out`, or workspace build output.
 
-If analytics is introduced, extend the Content-Security-Policy with the self-hosted
-OpenPanel origin first. Adding its script without extending the policy fails closed.
+## `_headers` is generated, not committed
 
-Lyra UI needs `data:` in `img-src`: its own component CSS embeds a few SVG masks and
-background images as data URIs. This does not permit an external image origin.
+`public/_headers` is produced by `scripts/generate-headers.mjs` during `prebuild`, from
+`scripts/_headers.template` plus the environment. The template is committed; the output is not.
+
+The reason is that Cloudflare serves `_headers` directly — Next never processes it, so it
+cannot interpolate an environment variable. Hardcoding the analytics origin there would create
+a second source of truth for something that already lives in the environment, and the two would
+drift the first time one changed.
+
+With no `NEXT_PUBLIC_OPENPANEL_URL`, the generated file is byte-identical to the template. With
+one, that exact origin is added to `script-src` and `connect-src`, and to nothing else.
+
+## Why the policy looks the way it does
+
+**`img-src` allows `data:`.** Lyra's own component CSS embeds a few SVG masks and background
+images as data URIs. Without this, chevrons and select arrows silently disappear — the icons
+are simply not painted, with no error a build would catch. It permits no external image origin.
+
+**`script-src` allows `'unsafe-inline'`.** Next's hydration bootstrap is an inline script and a
+static export cannot carry a nonce. It permits no external script origin.
+
+**`style-src` does not need `'unsafe-inline'` here.** This app has no inline styles. The docs
+app does, for legitimate reasons — see its own notes.
