@@ -22,8 +22,9 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
   - [x] Lote 1 — `apps/site`, cromo e Hero → codex, commit 5ae1075
   - [x] Lote 2 — ComponentShowcase + Frameworks → codex (1 retry), commit 60c3d5b
   - [x] Lote 3 — Temas/Tokens + Comunidade → codex, commit 0eaca7e
-  - [ ] Lote 4 — FAQ + CTA
-  - [ ] Lote 5 — CookieBanner LGPD + meta/OG + varredura final + deploy
+  - [x] Lote 4 — FAQ + CTA → codex, commit 1e2a9d9
+  - [x] Lote 5 — consentimento + política de privacidade → codex (1 retry), commit a4ca1c3
+  - [ ] Lote 6 — metadados/OG, robots, sitemap, varredura final, deploy
 
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
@@ -486,6 +487,37 @@ melhor assim, porque o teste afirma contra o **HTML construído** — exatamente
 6c-b3 pagou caro. A nota que fica: ele fixa os sete números derivados, então avançar o handoff
 passa a exigir atualizar dois lugares, como já acontece com o `baseline.json`.
 
+### Lotes 4 e 5 — a copy que não dava para adaptar, e o banner que quase virou teatro
+
+**Três das cinco respostas do FAQ do kit vendem plano Pro**, o subtítulo manda para o Discord
+e a quinta pergunta é "posso cancelar o Pro". Reescrito, não adaptado; do kit ficaram só o
+layout de duas colunas e a faixa escura do CTA. Cada resposta tem fonte apontada no brief
+(`LICENSE`, `brand.css`, `colors.css`, os 50 arquivos que exercitam axe, os três motores do
+contraste, `.changeset/`), com ordem de **parar e reportar** em vez de suavizar a frase.
+
+A resposta sobre produção foi reescrita antes de despachar: a primeira versão explicava como
+se proteger sem responder a pergunta. Quem pergunta "está pronto?" quer o sinal.
+
+**O cookie banner ia ser teatro de consentimento.** O site não usa cookie nenhum: sem
+analytics, sem script de terceiro, e o único armazenamento é a preferência de tema, que é
+funcional e a LGPD não exige consentimento para usar. Pedir consentimento para o que não
+acontece é a mesma família de desonestidade que a fase vinha tirando — levantei antes de
+construir. **O usuário decidiu manter o banner e escrever a política**, e a decisão ficou certa
+por um motivo que eu não tinha: analytics (OpenPanel) vem na sequência. Sem o banner primeiro,
+a decisão de consentimento chegaria depois do rastreamento.
+
+Daí o desenho: zero analytics neste lote, **proibido nomear o provedor** em código ou copy, e o
+ponto de montagem marcado em comentário — componente que renderiza nada é código morto fingindo
+estrutura. `mayLoadAnalytics()` é função, não booleano guardado: leitor que relê não fica velho
+quando o visitante muda de ideia.
+
+**A política diz o que quase toda política omite.** "Não coletamos nada" é falso em site
+estático, porque o host registra IP, horário, página e user agent. Está lá com todas as letras.
+
+**Retry:** `consentStorageKey` estava declarado duas vezes. Se um mudasse sozinho, o banner
+gravaria numa chave e o guard leria outra — banner eterno, ou pior, decisão que o guard nunca
+vê. O repo já tinha aprendido isso na chave de tema.
+
 ### Práticas de verificação que este lote acrescentou
 
 1. **Falha de verificação minha é alegação como qualquer outra.** Reportei a troca de idioma
@@ -511,6 +543,19 @@ build` ignora em silêncio um app mal formado. A prova é destrutiva: apagar `ou
 5. **Verde em tudo que é automatizável não diz nada sobre o que a tela mostra.** Os dois defeitos
    do Lote 2 — numeração toda "1" e uma classe privada dentro do snippet — sobreviveram a build,
    tipos, lint, 573 testes e oito varreduras de axe. O que os pegou foi abrir a aba e ler.
+6. **O que some depois de um clique é o que nunca é auditado.** Aba fechada no Lote 2, painel
+   recolhido do acordeão no Lote 4, banner de consentimento no Lote 5 — os três precisam de
+   varredura no estado que o visitante encontra **e** no estado seguinte. É a mesma lição do
+   iframe da 6c-b3 numa forma nova.
+7. **Cinco alarmes falsos meus nesta fase, todos por medir a coisa errada:** seletor de `link`
+   num `radiogroup`, `networkidle` que já estava satisfeito antes da navegação, literal de cor
+   chutado numa expressão sem parênteses, palavra proibida sem contexto (a copy dizia "no
+   component behind a paywall", uma negação), e chave de tema esperada sem ninguém ter escolhido
+   tema. **A verificação do maestro precisa do mesmo rigor que o brief exige do executor** —
+   medir contraste em vez de comparar string, esperar a condição em vez do proxy, e casar frase
+   em vez de palavra.
+8. **Escrever para fora obriga a conferir o que a nota afirmava.** Transformar débito em issue
+   pública corrigiu uma contagem errada que estava no `WORK.md` havia semanas.
 
 ## Next — depois da Fase 6
 
