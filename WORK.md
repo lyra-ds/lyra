@@ -5,7 +5,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-- [ ] **Fase 7 / publicação npm** — pipeline changesets pronto:
+- [x] **Fase 7 / publicação npm — 0.1.0 PÚBLICO em 2026-08-03.** `@lyra-ds/styles@0.1.0`
+      e `@lyra-ds/react@0.1.0` no npm público via pipeline changesets (Version PR #38 →
+      merge → publish no run 30820566516), tags + GitHub Releases criados. Prova final:
+      install fresco do registry público + SSR render com classes `.lyra-*`. Tropeços da
+      estreia, todos resolvidos: org sem permissão de Actions criar PR (habilitado org+repo
+      via API); `ERR_PNPM_OTP_NON_INTERACTIVE` (política 2FA — usuário recriou o token);
+      provenance NÃO anexou no 0.1.0 (`pnpm publish` ignora `publishConfig.provenance` —
+      fix via env `NPM_CONFIG_PROVENANCE` no workflow, vale a partir do 0.1.1). Próximo da
+      fase: trusted publishers + troca para OIDC, vitrine da org (avatar/README/social) e
+      checklist de launch. → claude (crítico), 2026-08-03.
+
+- [x] **Fase 7 / publicação npm (desenho do pipeline, concluído junto)** — pipeline changesets:
       `.github/workflows/release.yml` (changesets/action v1.9.0 pinado) mantém o
       Version Packages PR enquanto houver changesets (42 pendentes → 0.1.0 fixado nos
       dois pacotes) e, no merge dele, builda o react e publica com `changeset publish` +
