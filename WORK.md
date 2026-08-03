@@ -5,6 +5,21 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fix: OpenPanel nunca enviava eventos (realtime vazio) — 2026-08-03.** Causa raiz
+      provada em browser real: `op1.js` não define `window.op` (expõe `window.openpanel`)
+      e consome a fila do stub do snippet oficial, que a integração tinha pulado — o
+      `onLoad` caía em `if (!window.op) return` e o init nunca rodava, silenciosamente.
+      O E2E da fase 6 passou porque o mock definia `window.op` (gap mock vs. produção,
+      lição: teste o contrato do script real). Fix nos dois apps: stub tipado criado no
+      efeito (gate de consentimento intacto) + init pela fila + script depois; testes
+      pinam o contrato real e rejeitam `onLoad=`. → codex (`gpt-5.6-terra`, worktree,
+      1 re-disparo verbatim por gate de aprovação), verificação e prova de regressão do
+      maestro, PR #40 (0c18be8). Verificado ao vivo pós-deploy: `POST /api/track → 200`
+      na landing e nas docs. Bônus da investigação: beacon do Cloudflare Web Analytics
+      era injeção automática bloqueada pelo CSP (usuário desativou nos dois projetos).
+- [x] **Fix: link Contribuir dos footers apontava para `lyra-ds/lyra-ds` (404)** →
+      `lyra-ds/lyra`. → kimi (`opencode/kimi-k2.7-code`), PR #41 (939388a), 2026-08-03.
+
 - [x] **Fase 7 / publicação npm — 0.1.0 PÚBLICO em 2026-08-03.** `@lyra-ds/styles@0.1.0`
       e `@lyra-ds/react@0.1.0` no npm público via pipeline changesets (Version PR #38 →
       merge → publish no run 30820566516), tags + GitHub Releases criados. Prova final:
