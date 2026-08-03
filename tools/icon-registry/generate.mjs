@@ -6,7 +6,7 @@
  * surface. It derives the COMPLETE handoff icon inventory (literal AND dynamic uses)
  * by a FOUR-pass, dynamic-use-aware scan of handoff/components/** + handoff/ui_kits/**
  * (.jsx/.html/.tsx/.ts), then emits the committed module
- * packages/react/src/icon/icon-registry.ts: 69 static PascalCase lucide-react named
+ * packages/react/src/icon/icon-registry.ts: 78 static PascalCase lucide-react named
  * imports + one vendored `github` icon (createLucideIcon, brand icons were removed in
  * lucide 1.0) + the `IconName` literal union (D-04). Same pattern as tools/parity —
  * generated + committed + CI drift-guarded (D-01/D-02).
@@ -70,11 +70,11 @@ const REACT_PKG = join(REPO, 'packages', 'react');
 const OUT_FILE = join(REACT_PKG, 'src', 'icon', 'icon-registry.ts');
 const FIXTURES = join(__dirname, 'fixtures');
 
-const EXPECTED_ICONS = 70; // 69 lucide-resolvable + 1 vendored (github)
+const EXPECTED_ICONS = 79; // 78 lucide-resolvable + 1 vendored (github) — +9 from the v1.1/v1.2 handoff delta (2026-08-03)
 
 // The planning-time approved canonical inventory (03-03 objective). The four-pass scan
 // must reproduce this EXACT set; deltas (added/missing) are reported by name. `github`
-// is vendored (removed from lucide 1.0); the other 69 are lucide-react 1.25.0 exports.
+// is vendored (removed from lucide 1.0); the other 78 are lucide-react 1.25.0 exports.
 const CANONICAL_INVENTORY = [
   'archive',
   'arrow-left',
@@ -86,11 +86,15 @@ const CANONICAL_INVENTORY = [
   'chart-line',
   'check',
   'chevron-down',
+  'chevron-left',
   'chevron-right',
+  'chevrons-left',
+  'chevrons-right',
   'chevrons-up-down',
   'circle',
   'circle-alert',
   'circle-check',
+  'circle-dot',
   'circle-x',
   'cloud-upload',
   'code',
@@ -110,6 +114,7 @@ const CANONICAL_INVENTORY = [
   'folder',
   'folder-open',
   'github',
+  'globe',
   'hard-drive',
   'heart',
   'house',
@@ -123,9 +128,11 @@ const CANONICAL_INVENTORY = [
   'lock',
   'log-out',
   'mail',
+  'message-circle',
   'minus',
   'moon',
   'music',
+  'package',
   'pencil',
   'plus',
   'rocket',
@@ -134,10 +141,12 @@ const CANONICAL_INVENTORY = [
   'send',
   'settings',
   'shield',
+  'sliders-horizontal',
   'sparkles',
   'star',
   'sun',
   'terminal',
+  'timer',
   'trash-2',
   'triangle-alert',
   'upload',
@@ -176,6 +185,9 @@ const SOURCE_MANIFEST = [
   { rel: 'components/files/FileManager.jsx', rule: 'resolver', arg: 'fmIconFor' },
   // (4) the `icon: "…"` string nav-data properties feeding `<Icon name={n.icon}>`.
   { rel: 'ui_kits/dashboard/shell.jsx', rule: 'dataprop', arg: 'icon' },
+  // (5) the `icon: "…"` community-card data props feeding `<Icon name={it.icon}>`
+  //     (website kit, v1.2 delta).
+  { rel: 'ui_kits/website/sections-community.jsx', rule: 'dataprop', arg: 'icon' },
 ];
 
 // ALLOWED_PASSTHROUGH — Icon-element `name={expr}` sites whose feeding literals are
@@ -190,6 +202,8 @@ const ALLOWED_PASSTHROUGH = new Set([
   'ui_kits/dashboard/screens.jsx',
   'components/files/FileUpload.jsx',
   'components/files/FileManager.jsx',
+  'ui_kits/website/sections-community.jsx',
+  'components/system/ToastProvider.jsx',
 ]);
 
 const errors = [];
@@ -420,11 +434,11 @@ function emit(sortedNames) {
     '// Regenerate: `node tools/icon-registry/generate.mjs`  (drift-guarded by `--check`).',
   );
   lines.push(
-    '// RCT-05: curated, tree-shakable, no-CDN icon surface (69 lucide-react imports + 1 vendored).',
+    '// RCT-05: curated, tree-shakable, no-CDN icon surface (78 lucide-react imports + 1 vendored).',
   );
   lines.push('');
 
-  // Named lucide-react imports (69), sorted, then the custom-icon factory + type.
+  // Named lucide-react imports (78), sorted, then the custom-icon factory + type.
   lines.push('import {');
   for (const n of lucideNames) lines.push(`  ${toPascal(n)},`);
   lines.push('  createLucideIcon,');
@@ -478,7 +492,7 @@ function deriveCanonicalSet() {
   }
   if (derived.length !== EXPECTED_ICONS) {
     fail(
-      `Icon count boundary: derived ${derived.length} unique names, expected ${EXPECTED_ICONS} (69 lucide + 1 vendored github)`,
+      `Icon count boundary: derived ${derived.length} unique names, expected ${EXPECTED_ICONS} (78 lucide + 1 vendored github)`,
     );
   }
   if (!derivedSet.has(VENDORED_GITHUB.name)) {

@@ -642,7 +642,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "8 kB"
+      "limit": "8.25 kB"
     },
     {
       "name": "import { Button } from '@lyra-ds/react/button'",
@@ -655,7 +655,7 @@
       "limit": "800 B"
     },
     {
-      "name": "import { Icon } from '@lyra-ds/react/icon' (70-icon registry, lucide measured)",
+      "name": "import { Icon } from '@lyra-ds/react/icon' (79-icon registry, lucide measured)",
       "path": "dist/icon.js",
       "import": "{ Icon }",
       "ignore": [
@@ -732,7 +732,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "9 kB"
+      "limit": "9.25 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",
@@ -752,7 +752,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "8 kB"
+      "limit": "8.25 kB"
     },
     {
       "name": "import { Card } from '@lyra-ds/react/card'",
@@ -982,7 +982,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "8 kB"
+      "limit": "8.25 kB"
     },
     {
       "name": "import { Table } from '@lyra-ds/react/table'",
@@ -1033,7 +1033,7 @@
         "react-dom",
         "react-dom/client"
       ],
-      "limit": "9 kB"
+      "limit": "9.5 kB"
     },
     {
       "name": "import { ThemeProvider } from '@lyra-ds/react/theme-provider'",
