@@ -5,6 +5,14 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **0.3.0 PUBLICADO via OIDC — 2026-08-03 (autorizado pelo usuário: "quando a
+      onda 3 fechar").** Version PR #64 verificado (título + conteúdo: 5 changesets
+      das ondas 1b–3) antes do merge; run 30857749858 verde; provenance SLSA nos
+      dois pacotes; tags + GitHub Releases. O catálogo público sai de 59 para 68
+      componentes num release só: DataTable/PersonCell/ActionBar, Popover,
+      Calendar, BottomSheet, TimePicker/DatePicker/DateRangePicker.
+      → claude (crítico), 2026-08-03.
+
 - [x] **Fase 8 / Onda 3c — TimePicker, DatePicker, DateRangePicker — ONDA 3 COMPLETA
       (2026-08-03).** Os três compõem Calendar+Popover+BottomSheet (proibido
       reimplementar), caminho ≤640px em sheet, i18n pelo precedente do Calendar.

@@ -26,9 +26,9 @@ disso `handoff/` volta a ser a única referência.
       ActionBar, delta de 2 linhas do SidebarGroup. (Separator e Fieldset/
       FormRow da Onda 0 do mapa também entram aqui — o resto da Onda 0 já
       saiu na Fase 6.)
-- [ ] **Onda 2**: Popover sobre `useFlipPlacement` (decisões 1–6 do mapa,
+- [x] **Onda 2** (PR #66): Popover sobre `useFlipPlacement` (decisões 1–6 do mapa,
       § "Popover sobre o useFlipPlacement"), + eixo horizontal no hook.
-- [ ] **Onda 3**: Calendar, TimePicker, BottomSheet (variante do Drawer —
+- [x] **Onda 3** (PRs #68/#70/#71; 0.3.0 publicado): Calendar, TimePicker, BottomSheet (variante do Drawer —
       componente ausente do pacote), DatePicker, DateRangePicker.
 - [ ] **Onda 4**: AppSidebar (aceitando `children` como o SidebarGroup —
       armadilha pinada no mapa), BottomNav.
