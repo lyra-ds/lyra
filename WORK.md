@@ -5,6 +5,17 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 6a — SegmentedRing e TimeInput (2026-08-03).** As folhas do
+      scheduling, com as armadilhas nº 1 de cada uma fechadas por teste: o ring com
+      fonte acessível única (svg+legenda aria-hidden, span oculto anuncia — remover
+      o aria-hidden duplicaria a leitura) e o parse() de três retornos do TimeInput
+      (null limpa, undefined preserva o texto errado, string commita). Cross-review
+      rendeu 3 MED de robustez aceitos (grammar com contagem de campos — 9:5:99
+      normalizava em vez de invalidar; clamp de segmento acima do total; guard de
+      não-finito) e 2 rejeitados (dígitos árabes fora do contrato; filtro de
+      color-contrast é padrão herdado da suíte — ANOTADO COMO DÉBITO para varredura
+      única). Docgen 71→73. → codex (`gpt-5.6-terra`, high, worktree, 1 retry).
+
 - [x] **Fase 8 / Onda 5 — ToastProvider + useToast (2026-08-03).** Camada sobre
       Toast/ToastStack com as 4 armadilhas do mapa fechadas: SVGs de tom inline (zero
       import do registry — 866 B), id SSR-safe, clearTimeout completo (incluindo o

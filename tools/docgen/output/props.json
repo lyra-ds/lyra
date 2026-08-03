@@ -2070,6 +2070,93 @@
     ]
   },
   {
+    "name": "TimeInput",
+    "category": "Forms",
+    "extends": "Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'defaultValue' | 'onChange' | 'size' | 'min' | 'max' | 'step'>",
+    "description": "Props for TimeInput.",
+    "signature": "export declare function TimeInput(props: TimeInputProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the input and connected with htmlFor."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the input. Replaced by error when present."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that enables error styling and replaces hint."
+      },
+      {
+        "name": "value",
+        "type": "string | null",
+        "optional": true,
+        "description": "Controlled 24-hour HH:mm value, or null for no selected time."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial 24-hour HH:mm value in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(time: string | null) => void",
+        "optional": true,
+        "description": "Called with a normalized HH:mm value, or null after the field is cleared."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "optional": true,
+        "description": "Minutes added or subtracted by the steppers and Arrow keys. Default: 15."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive HH:mm lower limit. Values below it are clamped."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive HH:mm upper limit. Values above it are clamped."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "optional": true,
+        "description": "Control height. Default: \"md\"."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "optional": true,
+        "description": "Enables invalid styling and aria-invalid without an error message."
+      },
+      {
+        "name": "labels",
+        "type": "TimeInputLabels",
+        "optional": true,
+        "description": "Translatable accessible labels, merged over the English defaults."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the input and steppers."
+      }
+    ]
+  },
+  {
     "name": "TimePicker",
     "category": "Forms",
     "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>",
@@ -2957,6 +3044,57 @@
         "type": "ReactNode",
         "optional": false,
         "description": "Content rendered in the panel."
+      }
+    ]
+  },
+  {
+    "name": "SegmentedRing",
+    "category": "Scheduling",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for SegmentedRing.",
+    "signature": "export declare function SegmentedRing(props: SegmentedRingProps): JSX.Element;",
+    "props": [
+      {
+        "name": "segments",
+        "type": "RingSegment[]",
+        "optional": true,
+        "description": "Named segments that make up the ring."
+      },
+      {
+        "name": "total",
+        "type": "number",
+        "optional": true,
+        "description": "Ring denominator. Defaults to the sum of positive segments."
+      },
+      {
+        "name": "centerValue",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Large value rendered in the center, for example \"5 of 8\"."
+      },
+      {
+        "name": "centerLabel",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Small label rendered below the center value, for example \"Sessions\"."
+      },
+      {
+        "name": "size",
+        "type": "'md' | 'lg'",
+        "optional": true,
+        "description": "Ring diameter. Default: \"lg\" (160px); \"md\" is 96px."
+      },
+      {
+        "name": "stacked",
+        "type": "boolean",
+        "optional": true,
+        "description": "Stacks the legend below the ring. Default: false."
+      },
+      {
+        "name": "showLegend",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether to render the visual legend. Default: true."
       }
     ]
   },

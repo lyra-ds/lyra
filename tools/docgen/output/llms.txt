@@ -1012,6 +1012,40 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
 export declare function Textarea(props: TextareaProps): JSX.Element;
 ```
 
+### TimeInput
+```ts
+/** Props for TimeInput. */
+export interface TimeInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'defaultValue' | 'onChange' | 'size' | 'min' | 'max' | 'step'> {
+  /** Label rendered above the input and connected with htmlFor. */
+  label?: string;
+  /** Helper text rendered below the input. Replaced by error when present. */
+  hint?: string;
+  /** Error message that enables error styling and replaces hint. */
+  error?: string;
+  /** Controlled 24-hour HH:mm value, or null for no selected time. */
+  value?: string | null;
+  /** Initial 24-hour HH:mm value in uncontrolled mode. */
+  defaultValue?: string;
+  /** Called with a normalized HH:mm value, or null after the field is cleared. */
+  onChange?: (time: string | null) => void;
+  /** Minutes added or subtracted by the steppers and Arrow keys. Default: 15. */
+  step?: number;
+  /** Inclusive HH:mm lower limit. Values below it are clamped. */
+  min?: string;
+  /** Inclusive HH:mm upper limit. Values above it are clamped. */
+  max?: string;
+  /** Control height. Default: "md". */
+  size?: 'sm' | 'md' | 'lg';
+  /** Enables invalid styling and aria-invalid without an error message. */
+  invalid?: boolean;
+  /** Translatable accessible labels, merged over the English defaults. */
+  labels?: TimeInputLabels;
+  /** Disables the input and steppers. */
+  disabled?: boolean;
+}
+export declare function TimeInput(props: TimeInputProps): JSX.Element;
+```
+
 ### TimePicker
 ```ts
 /** Props for {@link TimePicker}. */
@@ -1449,6 +1483,30 @@ export interface PopoverProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
 }
 export declare function Popover(props: PopoverProps): JSX.Element;
+```
+
+## Scheduling
+
+### SegmentedRing
+```ts
+/** Props for SegmentedRing. */
+export interface SegmentedRingProps extends HTMLAttributes<HTMLDivElement> {
+  /** Named segments that make up the ring. */
+  segments?: RingSegment[];
+  /** Ring denominator. Defaults to the sum of positive segments. */
+  total?: number;
+  /** Large value rendered in the center, for example "5 of 8". */
+  centerValue?: ReactNode;
+  /** Small label rendered below the center value, for example "Sessions". */
+  centerLabel?: ReactNode;
+  /** Ring diameter. Default: "lg" (160px); "md" is 96px. */
+  size?: 'md' | 'lg';
+  /** Stacks the legend below the ring. Default: false. */
+  stacked?: boolean;
+  /** Whether to render the visual legend. Default: true. */
+  showLegend?: boolean;
+}
+export declare function SegmentedRing(props: SegmentedRingProps): JSX.Element;
 ```
 
 ## System
