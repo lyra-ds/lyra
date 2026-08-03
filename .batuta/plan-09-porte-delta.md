@@ -12,7 +12,7 @@ disso `handoff/` volta a ser a única referência.
 
 ## Lotes
 
-- [ ] **09-0 Infra** (codex, worktree): overlay dos deltas em `handoff/`
+- [x] **09-0 Infra** (PR #60) — (codex, worktree): overlay dos deltas em `handoff/`
       (renomeando `.txt`), porte integral do CSS novo para `packages/styles`
       (layout.css, primitives.css, scheduling.css novos; appends de
       data/forms/navigation com **re-anexação dos blocos aditivos do repo**;
@@ -22,7 +22,7 @@ disso `handoff/` volta a ser a única referência.
       com os 3 imports novos, `pnpm parity --update-baseline` com diff
       revisado pelo maestro. CI inteiro verde ao final (sem React novo —
       docgen segue em 54).
-- [ ] **Onda 1**: RadioGroup, CheckboxGroup, DataTable + PersonCell,
+- [x] **Onda 1** (PRs #61, #63; 0.2.0 saiu no incidente do WORK.md): RadioGroup, CheckboxGroup, DataTable + PersonCell,
       ActionBar, delta de 2 linhas do SidebarGroup. (Separator e Fieldset/
       FormRow da Onda 0 do mapa também entram aqui — o resto da Onda 0 já
       saiu na Fase 6.)

@@ -5,7 +5,17 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-- [ ] **Fase 8 / Onda 1b — DataTable + PersonCell, ActionBar, delta do SidebarGroup
+- [x] **INCIDENTE — 0.2.0 publicado sem autorização (2026-08-03).** A cadeia em
+      background do merge da onda 1b referenciava o PR pelo número PREVISTO (#62);
+      o bot de changesets abriu o Version Packages primeiro, tomou o #62, e a cadeia
+      o mergeou com --admin — publicando 0.2.0 (conteúdo: onda 1a, íntegro e
+      verificado; o defeito foi de autorização, que era do usuário). Cancelamento
+      tentado, run já completo. Prevenções adotadas: número de PR sempre capturado
+      da saída do `gh pr create`, nunca previsto; cadeia automática verifica o
+      título e ABORTA em "version packages" — Version PR é sempre do usuário.
+      Registradas no profile. → claude (incidente próprio, relatado na hora).
+
+- [x] **Fase 8 / Onda 1b — DataTable + PersonCell, ActionBar, delta do SidebarGroup
       (2026-08-03).** 3 componentes novos (docgen 59→62) + tooltip do SidebarGroup;
       i18n por props (o `selectRow` do DataTable virou `string | (row) => string` —
       o handoff dava o MESMO nome acessível a toda checkbox de linha). Ciclo cheio:
@@ -21,7 +31,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       silenciosamente não-aplicado pós-prettier quase o deixou fraco. → codex
       (`gpt-5.6-terra`, high, worktree, 2 re-disparos + 1 retry) + claude (HIGH).
 
-- [ ] **Fase 8 / Onda 1a — RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator
+- [x] **Fase 8 / Onda 1a — RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator
       (2026-08-03).** 5 exports novos (54→59 no docgen, guard bumpado), i18n por props,
       changeset minor. 1 retry por doutrina: FormRow veio com `gridTemplateColumns`
       inline (fiel ao handoff, que erra igual em Stack/Grid) → corrigido para o padrão
@@ -30,7 +40,7 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       Cross-review: Skeptic/Architect zero; 1 LOW aceito (screenshots órfãos de rodada
       falhada, removidos). → codex (`gpt-5.6-terra`, high, worktree, 1 retry).
 
-- [ ] **Fase 8 / 09-0 — infra do porte do delta v1.1+v1.2 (2026-08-03).** Handoff
+- [x] **Fase 8 / 09-0 — infra do porte do delta v1.1+v1.2 (2026-08-03).** Handoff
       avançado para v1.2 no repo (76 arquivos, staging do maestro; `command cp -f`
       porque o alias interativo mordeu de novo), CSS integral portado (layout/
       primitives/scheduling novos + appends com blocos aditivos re-anexados; keyframes
