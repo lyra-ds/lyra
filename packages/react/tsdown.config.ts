@@ -82,6 +82,8 @@ const entries = {
   'person-cell': 'src/person-cell/index.ts',
   'action-bar': 'src/action-bar/index.ts',
   'sidebar-group': 'src/sidebar-group/index.ts',
+  'app-sidebar': 'src/app-sidebar/index.ts',
+  'bottom-nav': 'src/bottom-nav/index.ts',
   toast: 'src/toast/index.ts',
   'cookie-banner': 'src/cookie-banner/index.ts',
   'command-palette': 'src/command-palette/index.ts',

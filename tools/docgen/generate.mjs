@@ -22,6 +22,7 @@ const PROPS_FILE = join(OUTPUT, 'props.json');
 // .d.ts file. Keep those reconstruction exceptions explicit so category inference remains strict.
 const CATEGORY_OVERRIDES = new Map([
   ['BottomSheet', 'Feedback'],
+  ['BottomNav', 'Navigation'],
   ['PersonCell', 'Data'],
 ]);
 
@@ -315,11 +316,11 @@ function extractComponents() {
   // NavLink, and Footer moved it from 47 to 50; TableOfContents moved it from 50 to 51; CodeBlock
   // SegmentedControl move it from 51 to 53, and Brand moves it from 53 to 54; wave 1a of the v1.2
   // delta port (RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator) moves it to 59; DataTable,
-  // PersonCell, and ActionBar move it to 62; Popover moves it to 63; Calendar moves it to 64; BottomSheet moves it to 65; TimePicker, DatePicker, and DateRangePicker move it to 68. The guard's job is
+  // PersonCell, and ActionBar move it to 62; Popover moves it to 63; Calendar moves it to 64; BottomSheet moves it to 65; TimePicker, DatePicker, and DateRangePicker move it to 68; AppSidebar and BottomNav move it to 70. The guard's job is
   // catching a stale or partial dist (which yields FEWER), so it is maintained by hand: bump it in
   // the same commit that adds a component, and the mismatch message tells you the number it
   // actually found.
-  const EXPECTED_COMPONENTS = 68;
+  const EXPECTED_COMPONENTS = 70;
   if (components.length !== EXPECTED_COMPONENTS) {
     throw new Error(
       `Expected exactly ${EXPECTED_COMPONENTS} exported component Props interfaces from packages/react/dist; extracted ${components.length}. Rebuild @lyra-ds/react or fix the declaration exports.`,
