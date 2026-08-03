@@ -5,6 +5,16 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **08-1 — migração tsup→tsdown no `@lyra-ds/react`** → codex (`gpt-5.6-terra`,
+      reasoning high, worktree `batuta/08-1-tsdown`; 1 re-disparo verbatim — a 1ª rodada
+      morreu por "model at capacity" no meio da edição; worktree resetado antes do retry).
+      Delegado em 2026-08-03.
+
+- [x] **Espaçamento do grid de cards do índice de componentes (docs) — 2026-08-03.**
+      `.lw-index__grid` de `gap: var(--space-2)` para `var(--space-4)`: cards interativos
+      estavam quase colados (medido 4px em produção). → kimi (`opencode/kimi-k2.7-code`),
+      1 rodada limpa.
+
 - [x] **6c-d — favicon theme-aware — CONCLUÍDO em 2026-08-03.** Os dois `favicon.svg`
       (docs e site, antes tile indigo + estrela branca, estáticos) viraram a estrela da
       Lyra sem tile com `@media (prefers-color-scheme: dark)` embutida no SVG — espelha
