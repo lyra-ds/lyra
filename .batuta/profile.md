@@ -296,3 +296,16 @@ ficam com grep e git)
   `.vitest-attachments/`, `tools/docgen/output/*`,
   `packages/react/src/icon/icon-registry.ts` (gerados — mude a fonte e rode o
   gerador).
+
+## Automação de PR — regras pós-incidente 0.2.0 (2026-08-03)
+
+- **Número de PR nunca é previsto.** Toda cadeia usa o número capturado da saída
+  do `gh pr create` (ou `--json number`). O incidente: o bot de changesets tomou
+  o número que a cadeia previa e um `--admin merge` publicou 0.2.0 sem o usuário.
+- **Cadeia automática nunca mergeia Version Packages.** Verificar o título antes
+  do merge e abortar se contiver "version packages" — release é gatilho do
+  usuário, sempre.
+- **Stats da landing acompanham qualquer mudança de inventário** (componentes,
+  tokens, classes): re-derivar e atualizar o pino no MESMO commit; o gate é
+  `pnpm run test` completo com exit code — filtros de tail/grep já esconderam
+  falha duas vezes.
