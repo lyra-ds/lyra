@@ -5,6 +5,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 2 — Popover sobre `useFlipPlacement` (2026-08-03).** O hook
+      interno passa a devolver `{ side, align }` com `gap` configurável (default 6
+      preserva Combobox/Dropdown/WorkspaceSwitcher — testes deles intocados como
+      harness de regressão); `Popover` novo carrega o comportamento de overlay
+      extraído (outside-click, Escape com foco restaurado, fusão via Slot, trio
+      ARIA), em fluxo, sem portal, pelas 6 decisões do mapa. Docgen 62→63. Ciclo:
+      1 fix trivial do maestro (asserção do harness concatenava o texto do âncora),
+      1 retry por findings aceitos do cross-review — o real era o gap 6px do hook
+      vs. 8px do CSS (recorte de 2px na borda inferior) + cobertura de re-medição
+      em scroll; trigger não-interativo rejeitado como defeito (paridade com o
+      Dropdown, virou JSDoc). → codex (`gpt-5.6-terra`, high, worktree, 1 retry) + claude (fix trivial).
+
 - [x] **INCIDENTE — 0.2.0 publicado sem autorização (2026-08-03).** A cadeia em
       background do merge da onda 1b referenciava o PR pelo número PREVISTO (#62);
       o bot de changesets abriu o Version Packages primeiro, tomou o #62, e a cadeia

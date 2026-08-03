@@ -2415,6 +2415,69 @@
     ]
   },
   {
+    "name": "Popover",
+    "category": "Primitives",
+    "extends": "HTMLAttributes<HTMLSpanElement>",
+    "description": "Props for {@link Popover}.",
+    "signature": "export declare function Popover(props: PopoverProps): JSX.Element;",
+    "props": [
+      {
+        "name": "trigger",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Interactive element that opens and closes the panel. It receives the panel's keyboard and\nARIA semantics directly, so pass a focusable control such as a `<button>` or `Button`."
+      },
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the panel is open in controlled mode."
+      },
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the panel is initially open in uncontrolled mode. Default: `false`."
+      },
+      {
+        "name": "onOpenChange",
+        "type": "(open: boolean) => void",
+        "optional": true,
+        "description": "Called whenever the requested open state changes."
+      },
+      {
+        "name": "side",
+        "type": "'auto' | 'bottom' | 'top'",
+        "optional": true,
+        "description": "Preferred vertical side. Default: automatic placement; `\"top\"` and `\"bottom\"` keep the\npanel on that explicit side."
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'end' | 'center'",
+        "optional": true,
+        "description": "Preferred horizontal alignment. Default: automatic placement; an explicit value overrides\nit."
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "optional": true,
+        "description": "Fixed panel width in CSS pixels."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the non-modal dialog panel. Default: `\"Popover\"`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Content rendered in the panel."
+      }
+    ]
+  },
+  {
     "name": "ThemeProvider",
     "category": "System",
     "extends": "",

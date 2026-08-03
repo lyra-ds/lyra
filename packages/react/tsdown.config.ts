@@ -70,6 +70,7 @@ const entries = {
   tooltip: 'src/tooltip/index.ts',
   select: 'src/select/index.ts',
   dropdown: 'src/dropdown/index.ts',
+  popover: 'src/popover/index.ts',
   combobox: 'src/combobox/index.ts',
   table: 'src/table/index.ts',
   'data-table': 'src/data-table/index.ts',

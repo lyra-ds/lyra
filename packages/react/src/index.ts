@@ -119,6 +119,8 @@ export { Select } from './select';
 export type { SelectProps } from './select';
 export { Dropdown } from './dropdown';
 export type { DropdownItem, DropdownProps } from './dropdown';
+export { Popover } from './popover';
+export type { PopoverProps } from './popover';
 export { Combobox } from './combobox';
 export type { ComboboxOption, ComboboxProps } from './combobox';
 

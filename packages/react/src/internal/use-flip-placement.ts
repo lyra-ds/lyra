@@ -1,11 +1,16 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import type { RefObject } from 'react';
 
-/** Which side of the anchor a popup is rendered on. */
-export type FlipPlacement = 'down' | 'up';
+/** The side and alignment that keep a popup within the visual viewport when possible. */
+export interface FlipPlacement {
+  /** Which vertical side of the anchor a popup is rendered on. */
+  side: 'down' | 'up';
+  /** Which horizontal edge of the anchor the popup is aligned to. */
+  align: 'start' | 'end';
+}
 
-/** Matches the `calc(100% + 6px)` offset the popup recipes use. */
-const GAP = 6;
+/** Default offset used by the existing popup recipes. */
+const DEFAULT_GAP = 6;
 
 /**
  * `useLayoutEffect` warns when it runs on the server. Popups only ever measure in a browser, so
@@ -21,20 +26,22 @@ const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : us
  * is more room above it. Measured when `open` flips, then again while open on scroll (captured, so
  * scrollable ancestors count) and resize.
  *
- * @param open Whether the popup is currently rendered. Placement resets to `"down"` when closed.
+ * @param open Whether the popup is currently rendered. Placement resets to down/start when closed.
  * @param anchorRef The element the popup is positioned against — usually the trigger.
  * @param popRef The popup itself. Must be in the DOM whenever `open` is true.
+ * @param gap The rendered gap between anchor and popup, in CSS pixels. Default: `6`.
  */
 export function useFlipPlacement(
   open: boolean,
   anchorRef: RefObject<HTMLElement | null>,
   popRef: RefObject<HTMLElement | null>,
+  gap = DEFAULT_GAP,
 ): FlipPlacement {
-  const [placement, setPlacement] = useState<FlipPlacement>('down');
+  const [placement, setPlacement] = useState<FlipPlacement>({ side: 'down', align: 'start' });
 
   useIsomorphicLayoutEffect(() => {
     if (!open) {
-      setPlacement('down');
+      setPlacement({ side: 'down', align: 'start' });
       return;
     }
 
@@ -44,15 +51,23 @@ export function useFlipPlacement(
       if (!anchor || !pop) return;
       const rect = anchor.getBoundingClientRect();
       const height = pop.offsetHeight;
+      const width = pop.offsetWidth;
       // getBoundingClientRect is relative to the layout viewport, which on iOS Safari extends
       // behind the dynamic toolbar and ignores pinch zoom. Measure against the visual viewport
       // instead, or the popup "fits" below while being off-screen for the reader.
       const vv = window.visualViewport;
       const top = vv ? vv.offsetTop : 0;
       const bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
-      const roomBelow = bottom - rect.bottom - GAP;
-      const roomAbove = rect.top - top - GAP;
-      setPlacement(height <= roomBelow || roomAbove <= roomBelow ? 'down' : 'up');
+      const left = vv ? vv.offsetLeft : 0;
+      const right = vv ? vv.offsetLeft + vv.width : window.innerWidth;
+      const roomBelow = bottom - rect.bottom - gap;
+      const roomAbove = rect.top - top - gap;
+      const roomRight = right - rect.left;
+      const roomLeft = rect.right - left;
+      setPlacement({
+        side: height <= roomBelow || roomAbove <= roomBelow ? 'down' : 'up',
+        align: width <= roomRight || roomLeft <= roomRight ? 'start' : 'end',
+      });
     };
 
     measure();
@@ -68,7 +83,7 @@ export function useFlipPlacement(
       window.visualViewport?.removeEventListener('resize', measure);
       window.visualViewport?.removeEventListener('scroll', measure);
     };
-  }, [open, anchorRef, popRef]);
+  }, [open, anchorRef, popRef, gap]);
 
   return placement;
 }

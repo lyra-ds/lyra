@@ -188,7 +188,11 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
         <div
           ref={menuRef}
           id={menuId}
-          className={cx('lyra-menu', `lyra-menu--${align}`, placement === 'up' && 'lyra-menu--up')}
+          className={cx(
+            'lyra-menu',
+            `lyra-menu--${align}`,
+            placement.side === 'up' && 'lyra-menu--up',
+          )}
           role="menu"
         >
           {items.map((item, index) => {

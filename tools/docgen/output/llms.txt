@@ -1207,6 +1207,43 @@ export interface WorkspaceSwitcherProps extends Omit<HTMLAttributes<HTMLDivEleme
 export declare function WorkspaceSwitcher(props: WorkspaceSwitcherProps): JSX.Element;
 ```
 
+## Primitives
+
+### Popover
+```ts
+/** Props for {@link Popover}. */
+export interface PopoverProps extends HTMLAttributes<HTMLSpanElement> {
+  /**
+   * Interactive element that opens and closes the panel. It receives the panel's keyboard and
+   * ARIA semantics directly, so pass a focusable control such as a `<button>` or `Button`.
+  */
+  trigger: ReactNode;
+  /** Whether the panel is open in controlled mode. */
+  open?: boolean;
+  /** Whether the panel is initially open in uncontrolled mode. Default: `false`. */
+  defaultOpen?: boolean;
+  /** Called whenever the requested open state changes. */
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * Preferred vertical side. Default: automatic placement; `"top"` and `"bottom"` keep the
+   * panel on that explicit side.
+  */
+  side?: 'auto' | 'bottom' | 'top';
+  /**
+   * Preferred horizontal alignment. Default: automatic placement; an explicit value overrides
+   * it.
+  */
+  align?: 'start' | 'end' | 'center';
+  /** Fixed panel width in CSS pixels. */
+  width?: number;
+  /** Accessible name for the non-modal dialog panel. Default: `"Popover"`. */
+  ariaLabel?: string;
+  /** Content rendered in the panel. */
+  children: ReactNode;
+}
+export declare function Popover(props: PopoverProps): JSX.Element;
+```
+
 ## System
 
 ### ThemeProvider

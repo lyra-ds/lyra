@@ -208,7 +208,10 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
         {open && (
           <div
             ref={popRef}
-            className={cx('lyra-combobox__pop', placement === 'up' && 'lyra-combobox__pop--up')}
+            className={cx(
+              'lyra-combobox__pop',
+              placement.side === 'up' && 'lyra-combobox__pop--up',
+            )}
           >
             <div className="lyra-combobox__search">
               <Icon name="search" size={15} color="var(--text-faint)" />
