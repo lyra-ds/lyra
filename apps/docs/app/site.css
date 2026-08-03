@@ -199,10 +199,12 @@
    case. */
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
   .lyra-sbgroup__item,
+  .lyra-sbgroup__label--btn,
   .lw-example__toggle {
     min-height: 44px;
   }
-  .lyra-sbgroup__item {
+  .lyra-sbgroup__item,
+  .lyra-sbgroup__label--btn {
     display: flex;
     align-items: center;
   }
