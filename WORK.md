@@ -5,10 +5,19 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-- [ ] **08-1 — migração tsup→tsdown no `@lyra-ds/react`** → codex (`gpt-5.6-terra`,
-      reasoning high, worktree `batuta/08-1-tsdown`; 1 re-disparo verbatim — a 1ª rodada
-      morreu por "model at capacity" no meio da edição; worktree resetado antes do retry).
-      Delegado em 2026-08-03.
+- [x] **08-1 — migração tsup→tsdown no `@lyra-ds/react` — CONCLUÍDO em 2026-08-03**
+      (PR #54, b4cc3bc). tsdown 0.22.14 pinado, tsup removido; 52 configs por entry
+      (zero chunks, `codeSplitting: false` explícito), dts por condição (attw node16
+      🟢), orçamentos do size-limit intactos, suíte + smoke/pack-smoke verdes. O
+      cross-review pagou o custo: 2 findings aceitos, e o HIGH era real e invisível
+      aos gates — o `onSuccess` do tsdown é fire-and-forget com builds concorrentes,
+      então o prepend do `use client` via hook era uma corrida que passava por sorte
+      de timing; virou passo pós-build determinístico (`scripts/use-client.mjs`).
+      Lição nova de condução: alegação de reviewer citando fonte de node_modules se
+      verifica em 30 segundos com `sed` — verificar antes de julgar. → codex
+      (`gpt-5.6-terra`, reasoning high, worktree; 1 re-disparo por "model at capacity",
+      1 retry por findings do cross-review). Changeset patch a bordo → Version
+      Packages PR do 0.1.1 (08-2).
 
 - [x] **Espaçamento do grid de cards do índice de componentes (docs) — 2026-08-03, em
       dois atos.** O PR #52 (`gap` de `--space-2` para `--space-4`) não mudou nada em
