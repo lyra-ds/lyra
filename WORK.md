@@ -5,6 +5,29 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Issue #29 fechada — alvos de toque da sidebar das docs (2026-08-03).**
+      `.lyra-sbgroup__label--btn` entrou nas duas regras do bloco de 44px do `site.css`.
+      Aceite medido no navegador a 375px: 67 alvos, todos 44px. → kimi
+      (`opencode/kimi-k2.7-code`), PR #46. Issue #28 deixada aberta de propósito como
+      good first issue para a comunidade (decisão do usuário; se ninguém pegar em
+      algumas semanas, fechamos).
+
+- [x] **Preview do WhatsApp consertado em 3 atos (2026-08-03).** GitHub renderizava o
+      card, WhatsApp nunca — três defeitos somados, todos invisíveis para crawlers
+      tolerantes: (1) `og:image` sem extensão e com query hash (`/opengraph-image?...`)
+      → PR #47 (→ codex, worktree): card movido para route handler `force-static` em
+      `/og.png`, file convention removida (ela tem PRIORIDADE sobre metadata config —
+      se ficar, reinjecta a URL hasheada); (2) imagem servida sem `Content-Length` →
+      resolvido de graça pelo mesmo PR (arquivo estático .png sai com CL); (3) a RAIZ
+      `lyra-ds.dev` — a URL que se compartilha — nunca teve `<title>` nem `og:title`
+      (página de redirect nua; WhatsApp não renderiza prévia sem título) → PR #48
+      (correção do maestro, achada na verificação em produção pós-#47): fallback
+      completo de metadata no layout root + teste sobre o `index.html` exportado.
+      Antes disso, PR #44 tinha posto a estrela da Lyra no card (era só tipografia).
+      Verificado em produção: raiz serve title + og + `/og.png` (200, image/png,
+      CL 44850). Lição de condução: o watcher de deploy pegou "o último run" e
+      reportou sucesso do run ANTERIOR — esperar sempre o run do SHA exato.
+
 - [x] **FASE 7 COMPLETA — v1 LANÇADO (2026-08-03).** Fechamento dos itens finais:
       **OIDC** (PR #43): trusted publishers configurados pelo usuário nos dois pacotes;
       release sem segredo npm — publish em step top-level (npm/cli#8976), setup-node sem
