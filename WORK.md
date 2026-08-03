@@ -141,65 +141,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 O detalhe de cada lote está em "6c-b2 — o que cada lote custou", mais abaixo.
 
-## Next — Fase 6, na ordem de dependência
+## Next — Marco 08: Adoção + dívidas (definido 2026-08-03)
 
-Fundamento dos itens abaixo — decisão do usuário, 2026-07-28: _"a ideia é que
-tanto a landing quanto as docs usem componentes do Lyra, porque eles podem ser
-reaproveitados por outros usuários"_. O site é a primeira prova de que o DS serve para
-construir um produto real. **Todo o CSS e os tokens moram em `packages/styles`** — o
-`apps/docs` importa, nunca define.
+Plano completo em `.batuta/plan-08-adocao-dividas.md`. Duas trilhas: dívidas de
+release em ordem (tsdown → 0.1.1 via OIDC → revogar NPM_TOKEN) e adoção em
+paralelo (templates de contribuição, good first issues, anúncio via Discussion
+fixada + dev.to, starters `lyra-ds/starter-vite`/`starter-next` como repos da
+org, snapshot releases). Zag.js e o satélite Vue ficam para o marco seguinte,
+escolhido com o sinal da divulgação.
 
-- [ ] **6c-b2 — construir a camada de cromo** (8 adições, ~3–4 lotes). Não têm handoff:
-      são design nosso a partir do CSS já validado em produção no `apps/docs`. Cada uma
-      com changeset, teste e página de documentação. Inventário completo das 76 classes
-      `.lw-*` em `.batuta/handoff-v1.2-map.md`.
-
-  - **`Shell`** — slots `sidebar`/`topbar`/`aside` + `scroll="page" | "content"`.
-    **Absorve o `AppShell` do delta**, que deixa de ser portado (docs = sidebar + main +
-    aside com `scroll="page"`; app = sidebar + topbar + main com `scroll="content"`). O
-    colapso para rail de 64px fica no `AppSidebar`, não aqui.
-  - **`Navbar`** (+ `NavLink`, slots brand/nav/actions) e **`Footer`** (slots
-    note/links). Só valem como **shells com slots** — um `Navbar` que só serve à barra do
-    Lyra é dívida com cara de componente.
-  - **`TableOfContents`**, **`CodeBlock`** (só o cromo; o HTML destacado entra como
-    children — o DS **não** pode depender de Shiki), **`SegmentedControl`** (o toggle
-    EN|PT generalizado), **`CommandPalette.Trigger`**.
-  - **`.lyra-prose`** — camada CSS sem React, o item mais CSS-first da lista: funciona
-    nos quatro frameworks sem uma linha de JS.
-  - Menores, a decidir caso a caso: `IconTile`, `CheckList`, `Brand`/`ThemedMark`.
-
-- [ ] **6c-c — landing de marketing** (`ui_kits/website` do handoff v1.2). Seções na
-      ordem: hero → showcase (tabs preview/código) → frameworks → **temas/tokens** →
-      **comunidade** → FAQ → CTA → cookie banner LGPD. **Sem pricing, sem depoimentos,
-      sem Discord** — o posicionamento virou 100% open source (MIT), comunidade via
-      GitHub issues + Discussions.
-
-  - **Critério de corte do `.lw-*`**: fica só o que é genuinamente específico deste site
-    (composição de página, hero, CTA, cromo de marketing). Tudo que outro produto
-    reusaria vira componente do DS. A pergunta antes de escrever qualquer classe nova é
-    "um consumidor do Lyra ia querer isto?".
-  - Reconciliar as **16 classes `.lw-*` que colidem** entre o `site.css` oficial do
-    handoff e o `apps/docs/app/site.css` que inventamos — mesmo nome não garante mesma
-    definição, comparar regra a regra.
-  - Tirar de fonte única os números que a copy fixa ("209 tokens" vira 211; "55+
-    componentes" vira 75).
-  - **Status dos frameworks (decisão do usuário, 2026-07-30):** só o **React** aparece como
-    pronto; **Vue, Blade e LiveView vão como "Em breve"** — não como "Beta"/"Em dev", que é o
-    que o kit do handoff traz e que promete um estágio de maturidade inexistente (nenhum dos
-    três existe no repo). Nada publicado hoje promete demais: os guias só afirmam que as
-    classes `.lyra-*` funcionam nesses frameworks, o que é verdade e não diz que há pacote.
-    Dois detalhes a resolver ao portar a seção:
-    - **Não mostrar o nome do pacote** ao lado dos três "Em breve" (`@lyra-ds/vue`,
-      `lyra/blade`, `lyra_liveview`). Nome de pacote é um convite a rodar `npm i` e receber 404. Mostrar só o nome do framework até existir o que instalar.
-    - **O badge do React precisa casar com a realidade na data em que a landing subir.** A
-      6c-c vem **antes** da Fase 7, que é quando o pacote é publicado no npm — então, na
-      janela entre as duas, nem `@lyra-ds/react` é instalável. Ou a landing sobe depois do
-      release, ou o rótulo do React reflete o pré-lançamento. Decidir junto com a ordem de
-      6c-e (deploy) e Fase 7.
-
-- [ ] **6c-d — favicon theme-aware** (opcional) — favicon seguir tema/dispositivo; hoje é
-      `/favicon.svg` estático.
-- [ ] **6c-e — deploy Cloudflare Pages** (manual, do usuário).
+A Fase 6 que vivia nesta seção foi concluída por inteiro (6c-b2, 6c-b3, 6c-b4,
+6c-c, 6c-d, 6c-e — registros em In progress/Done acima); o detalhamento antigo
+saiu daqui em 2026-08-03.
 
 ## 6c-b2 — o que cada lote custou
 
