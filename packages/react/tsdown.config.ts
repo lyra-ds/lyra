@@ -85,6 +85,7 @@ const entries = {
   'app-sidebar': 'src/app-sidebar/index.ts',
   'bottom-nav': 'src/bottom-nav/index.ts',
   toast: 'src/toast/index.ts',
+  'toast-provider': 'src/toast-provider/index.ts',
   'cookie-banner': 'src/cookie-banner/index.ts',
   'command-palette': 'src/command-palette/index.ts',
 };

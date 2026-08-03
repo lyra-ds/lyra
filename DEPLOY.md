@@ -31,7 +31,7 @@ The JavaScript bundles compile in about three seconds. What runs out of memory i
 their `.d.ts` files pushes `rollup-plugin-dts` past 2 GB of heap in a worker thread. Measured,
 not guessed: the build fails at 2048 MB and succeeds at 2560 MB. Cloudflare's build container
 kept failing on exactly this even after the requirement was identified, while GitHub Actions
-runners build it reliably with `NODE_OPTIONS=--max-old-space-size=4096` (set in the workflow,
+runners build it reliably with `NODE_OPTIONS=--max-old-space-size=8192` (set in the workflow,
 ~60% headroom). Rather than fighting an opaque build container, the build moved here.
 
 Building in one place also means one gate: the artifact that ships is produced by the same
@@ -139,3 +139,6 @@ narrowing by path would skip real changes. The workflow can also be run by hand 
 Actions tab (`workflow_dispatch`), which is how you redeploy after changing an analytics
 variable. Runs queue rather than cancel each other, so a deploy is never interrupted
 mid-publish; a queued run redeploys both properties from the newest commit.
+
+> Note: the react build script uses a POSIX inline env assignment (`NODE_OPTIONS='...' tsdown`).
+> Windows contributors should build via WSL; the repo tooling is Linux-first.

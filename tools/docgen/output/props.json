@@ -2992,5 +2992,32 @@
         "description": ""
       }
     ]
+  },
+  {
+    "name": "ToastProvider",
+    "category": "System",
+    "extends": "",
+    "description": "Props for {@link ToastProvider}.",
+    "signature": "export declare function ToastProvider(props: ToastProviderProps): JSX.Element;",
+    "props": [
+      {
+        "name": "duration",
+        "type": "number",
+        "optional": true,
+        "description": "Default auto-dismiss delay in milliseconds. `0` disables auto-dismiss. Default: `4000`."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name passed to every composed Toast close button. Default: `\"Close notification\"`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": ""
+      }
+    ]
   }
 ]
