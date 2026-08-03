@@ -3,16 +3,21 @@
 # left), it builds and publishes @lyra-ds/styles + @lyra-ds/react to npm and
 # creates the GitHub Releases from the changelogs.
 #
-# Auth is a granular NPM_TOKEN (repo secret) for now — a DELIBERATE choice,
-# not an oversight: npm trusted publishing (OIDC) cannot perform a package's
-# FIRST publish, because a trusted publisher can only be configured on a
-# package that already exists (npm/cli#8544). Provenance still comes from
-# `publishConfig.provenance: true` in each package (the repo is public).
-# After 0.1.0 exists: configure trusted publishers for both packages on
-# npmjs.com, then swap this workflow to OIDC — add `id-token: write`, drop
-# `registry-url`/NODE_AUTH_TOKEN, and mind npm/cli#8976 (publish must run
-# from a top-level step, not nested through the action) — recorded in
-# WORK.md so the swap is not improvised.
+# Auth is npm trusted publishing (OIDC) — configured on npmjs.com for both
+# packages (org lyra-ds, repo lyra, workflow release.yml, no environment).
+# The 0.1.0 release used a granular NPM_TOKEN because OIDC cannot perform a
+# package's FIRST publish (npm/cli#8544); with both packages existing, the
+# token is retired. Two npm/cli#8976 lessons are load-bearing here:
+#   1. The publish runs in a TOP-LEVEL step, not through changesets/action's
+#      `publish` input — the OIDC env vars (ACTIONS_ID_TOKEN_REQUEST_*) do
+#      not survive the action's nested command chain.
+#   2. setup-node has NO `registry-url` input — it would write an .npmrc
+#      routing auth through NODE_AUTH_TOKEN, which npm prefers over the OIDC
+#      exchange and 404s.
+# If an OIDC publish ever fails, the recorded fallback is: re-add
+# `registry-url: https://registry.npmjs.org` to setup-node and
+# `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` to the publish step, with a
+# fresh granular token.
 #
 # The Version Packages PR is opened with CHANGESETS_PAT (a fine-grained PAT:
 # Contents + Pull requests, this repo only) instead of GITHUB_TOKEN. This is
@@ -31,6 +36,7 @@ on:
 permissions:
   contents: write # push the version branch, tags, GitHub Releases
   pull-requests: write # open/update the Version Packages PR
+  id-token: write # npm trusted publishing (OIDC exchange)
 
 concurrency:
   group: release
@@ -55,27 +61,59 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          # Writes the .npmrc that routes npm auth through NODE_AUTH_TOKEN.
-          # REMOVE this input when swapping to OIDC — with it present, npm
-          # prefers the (then-empty) token over the OIDC exchange and 404s.
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - name: Version PR or publish
+      - name: Version PR
+        id: changesets
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           # With changesets pending: open/refresh the Version Packages PR.
+          # No `publish` input — see the npm/cli#8976 note in the header.
           version: pnpm exec changeset version
-          # Without changesets (version PR just merged): build react's dist
-          # and publish both packages; the action then pushes the git tags
-          # and creates the GitHub Releases from CHANGELOG.md entries.
-          publish: pnpm run release
           commit: 'chore(release): version packages'
           title: 'chore(release): version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESETS_PAT || secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # changesets delegates to `pnpm publish`, which ignored the
-          # `publishConfig.provenance` field on the 0.1.0 release (no
-          # attestation was created). The env var is read by npm and pnpm
-          # alike, so provenance no longer depends on which client publishes.
+      # Cheap guard so ordinary pushes to main (docs, site, CI) skip the
+      # build+publish machinery: only proceed when the local version is not
+      # on the registry yet. `changeset publish` is idempotent anyway — this
+      # only saves the pointless react build on every unrelated push.
+      - name: Check for unpublished versions
+        id: unpublished
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          local_version=$(node -p "require('./packages/styles/package.json').version")
+          published=$(npm view @lyra-ds/styles version 2>/dev/null || echo "none")
+          echo "local=$local_version published=$published"
+          if [ "$local_version" != "$published" ]; then
+            echo "pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pending=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish to npm (OIDC)
+        if: steps.unpublished.outputs.pending == 'true'
+        # Top-level `run` on purpose — the OIDC exchange needs the step's own
+        # env (npm/cli#8976). Provenance: explicit because changesets
+        # delegates to `pnpm publish`, which ignored publishConfig.provenance
+        # on 0.1.0; the env var is honored by npm and pnpm alike.
+        run: pnpm run release
+        env:
           NPM_CONFIG_PROVENANCE: 'true'
+      - name: Push tags and create GitHub Releases
+        if: steps.unpublished.outputs.pending == 'true'
+        # `changeset publish` created the local tags; the release notes are
+        # the version's own section in each package CHANGELOG.md (the same
+        # content changesets/action would have published).
+        run: |
+          git push origin --tags
+          for pkg in packages/styles packages/react; do
+            name=$(node -p "require('./$pkg/package.json').name")
+            version=$(node -p "require('./$pkg/package.json').version")
+            tag="$name@$version"
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              continue
+            fi
+            awk -v v="$version" '$0 == "## " v {flag=1; next} /^## / {flag=0} flag' "$pkg/CHANGELOG.md" > /tmp/notes.md
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes-file /tmp/notes.md
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
