@@ -1,5 +1,19 @@
 # @lyra-ds/react
 
+## 0.3.0
+
+### Minor Changes
+
+- [#68](https://github.com/lyra-ds/lyra/pull/68) [`6734448`](https://github.com/lyra-ds/lyra/commit/67344483060a6336f6bb65e59ea6dd51826769df) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the Calendar component with locale-aware local-date and range selection.
+
+- [#66](https://github.com/lyra-ds/lyra/pull/66) [`371e431`](https://github.com/lyra-ds/lyra/commit/371e431b59c5267c26d9444913a43e933490ce04) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the Popover primitive with automatic viewport-aware placement.
+
+- [#63](https://github.com/lyra-ds/lyra/pull/63) [`b608c61`](https://github.com/lyra-ds/lyra/commit/b608c6115851991cace5a62247b742f6396bee6f) Thanks [@franciscpd](https://github.com/franciscpd)! - Add DataTable, PersonCell, and ActionBar wrappers, and add SidebarGroup item tooltips.
+
+- [#71](https://github.com/lyra-ds/lyra/pull/71) [`39ba3aa`](https://github.com/lyra-ds/lyra/commit/39ba3aa3bf044b6787c65ef478bdc3dd6e8e99c6) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the TimePicker, DatePicker, and DateRangePicker components.
+
+- [#70](https://github.com/lyra-ds/lyra/pull/70) [`aa8a3e4`](https://github.com/lyra-ds/lyra/commit/aa8a3e4c5e969bbba52a61a5a0121c5cbd43efc3) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the BottomSheet modal overlay component.
+
 ## 0.2.0
 
 ### Minor Changes
