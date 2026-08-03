@@ -496,6 +496,16 @@
         "default": "./dist/dropdown.cjs"
       }
     },
+    "./popover": {
+      "import": {
+        "types": "./dist/popover.d.ts",
+        "default": "./dist/popover.js"
+      },
+      "require": {
+        "types": "./dist/popover.d.cts",
+        "default": "./dist/popover.cjs"
+      }
+    },
     "./combobox": {
       "import": {
         "types": "./dist/combobox.d.ts",
@@ -842,7 +852,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "9.25 kB"
+      "limit": "9.5 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",
@@ -1083,6 +1093,16 @@
         "react-dom"
       ],
       "limit": "2 kB"
+    },
+    {
+      "name": "import { Popover } from '@lyra-ds/react/popover'",
+      "path": "dist/popover.js",
+      "import": "{ Popover }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "3 kB"
     },
     {
       "name": "Combobox (curated icon registry)",

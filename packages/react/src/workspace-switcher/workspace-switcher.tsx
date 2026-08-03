@@ -178,7 +178,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           <div
             ref={popoverRef}
             id={listboxId}
-            className={cx('lyra-wssw__pop', placement === 'up' && 'lyra-wssw__pop--up')}
+            className={cx('lyra-wssw__pop', placement.side === 'up' && 'lyra-wssw__pop--up')}
             role="listbox"
             aria-labelledby={listboxLabelId}
           >

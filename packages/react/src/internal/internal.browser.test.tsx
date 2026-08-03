@@ -3,10 +3,12 @@
 // Runs in the "browser" vitest project (real chromium) so CSS animations, computed padding,
 // and layout actually resolve — none of which jsdom can provide.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { useRef } from 'react';
 import { render, renderHook, cleanup } from 'vitest-browser-react';
 import { usePresence } from './use-presence';
 import { useScrollLock } from './use-scroll-lock';
 import { useControllableState } from './use-controllable-state';
+import { useFlipPlacement } from './use-flip-placement';
 
 // Real keyframes so onAnimationEnd fires for the presence walk. The panel animation is longer
 // than the child so the child's (bubbled) animationend arrives first and must be IGNORED.
@@ -178,5 +180,71 @@ describe('useControllableState', () => {
     setValue(9);
     await vi.waitFor(() => expect(onChange).toHaveBeenCalledWith(9));
     expect(result.current[0]).toBe(5);
+  });
+});
+
+// --- useFlipPlacement ----------------------------------------------------------------------
+
+function FlipPlacementHarness(): React.JSX.Element {
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const placement = useFlipPlacement(true, anchorRef, popoverRef);
+
+  return (
+    <>
+      <button ref={anchorRef} type="button" style={{ position: 'fixed', bottom: 4, right: 4 }}>
+        Anchor
+      </button>
+      <div ref={popoverRef} style={{ position: 'fixed', width: 240, height: 80 }}>
+        {placement.side}/{placement.align}
+      </div>
+    </>
+  );
+}
+
+function FlipPlacementGapHarness({ gap }: { gap: number }): React.JSX.Element {
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const placement = useFlipPlacement(true, anchorRef, popoverRef, gap);
+
+  return (
+    <>
+      <button
+        ref={anchorRef}
+        type="button"
+        style={{
+          position: 'fixed',
+          top: 'calc(100vh - 106px)',
+          width: 20,
+          height: 20,
+          padding: 0,
+          border: 0,
+        }}
+      >
+        Anchor
+      </button>
+      <div ref={popoverRef} style={{ position: 'fixed', width: 80, height: 80 }} data-gap={gap}>
+        {placement.side}
+      </div>
+    </>
+  );
+}
+
+describe('useFlipPlacement', () => {
+  it('returns a vertical side and horizontal alignment that keep a wide popup in the viewport', async () => {
+    const { container } = await render(<FlipPlacementHarness />);
+    await vi.waitFor(() => {
+      expect(container.querySelector('div')!.textContent).toBe('up/end');
+    });
+  });
+
+  it("accounts for each popup recipe's rendered gap at the placement boundary", async () => {
+    const sixPixelGap = await render(<FlipPlacementGapHarness gap={6} />);
+    const eightPixelGap = await render(<FlipPlacementGapHarness gap={8} />);
+
+    await vi.waitFor(() => {
+      expect(sixPixelGap.container.querySelector('[data-gap="6"]')!.textContent).toBe('down');
+      expect(eightPixelGap.container.querySelector('[data-gap="8"]')!.textContent).toBe('up');
+    });
   });
 });
