@@ -21,6 +21,18 @@ export type { CheckboxProps } from './checkbox';
 export { Radio } from './radio';
 export type { RadioProps } from './radio';
 
+export { RadioGroup } from './radio-group';
+export type { RadioGroupOption, RadioGroupProps } from './radio-group';
+
+export { CheckboxGroup } from './checkbox-group';
+export type { CheckboxGroupOption, CheckboxGroupProps } from './checkbox-group';
+
+export { Fieldset, FormRow } from './fieldset';
+export type { FieldsetProps, FormRowProps } from './fieldset';
+
+export { Separator } from './separator';
+export type { SeparatorProps } from './separator';
+
 export { Switch } from './switch';
 export type { SwitchProps } from './switch';
 

@@ -76,6 +76,46 @@
         "default": "./dist/radio.cjs"
       }
     },
+    "./radio-group": {
+      "import": {
+        "types": "./dist/radio-group.d.ts",
+        "default": "./dist/radio-group.js"
+      },
+      "require": {
+        "types": "./dist/radio-group.d.cts",
+        "default": "./dist/radio-group.cjs"
+      }
+    },
+    "./checkbox-group": {
+      "import": {
+        "types": "./dist/checkbox-group.d.ts",
+        "default": "./dist/checkbox-group.js"
+      },
+      "require": {
+        "types": "./dist/checkbox-group.d.cts",
+        "default": "./dist/checkbox-group.cjs"
+      }
+    },
+    "./fieldset": {
+      "import": {
+        "types": "./dist/fieldset.d.ts",
+        "default": "./dist/fieldset.js"
+      },
+      "require": {
+        "types": "./dist/fieldset.d.cts",
+        "default": "./dist/fieldset.cjs"
+      }
+    },
+    "./separator": {
+      "import": {
+        "types": "./dist/separator.d.ts",
+        "default": "./dist/separator.js"
+      },
+      "require": {
+        "types": "./dist/separator.d.cts",
+        "default": "./dist/separator.cjs"
+      }
+    },
     "./switch": {
       "import": {
         "types": "./dist/switch.d.ts",
@@ -698,6 +738,46 @@
       "name": "import { Radio } from '@lyra-ds/react/radio'",
       "path": "dist/radio.js",
       "import": "{ Radio }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "500 B"
+    },
+    {
+      "name": "import { RadioGroup } from '@lyra-ds/react/radio-group'",
+      "path": "dist/radio-group.js",
+      "import": "{ RadioGroup }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { CheckboxGroup } from '@lyra-ds/react/checkbox-group'",
+      "path": "dist/checkbox-group.js",
+      "import": "{ CheckboxGroup }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "import { Fieldset, FormRow } from '@lyra-ds/react/fieldset'",
+      "path": "dist/fieldset.js",
+      "import": "{ Fieldset, FormRow }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "700 B"
+    },
+    {
+      "name": "import { Separator } from '@lyra-ds/react/separator'",
+      "path": "dist/separator.js",
+      "import": "{ Separator }",
       "ignore": [
         "react",
         "react-dom"

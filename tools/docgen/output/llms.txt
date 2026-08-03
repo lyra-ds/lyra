@@ -637,6 +637,30 @@ export interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
 export declare function Checkbox(props: CheckboxProps): JSX.Element;
 ```
 
+### CheckboxGroup
+```ts
+/** Props for {@link CheckboxGroup}. */
+export interface CheckboxGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /** Label rendered above the group. */
+  label?: ReactNode;
+  /** Helper text rendered below the group when no error is present. */
+  hint?: ReactNode;
+  /** Error message rendered below the group in place of `hint`. */
+  error?: ReactNode;
+  /** Checkbox options rendered by the group. Default: `[]`. */
+  options?: CheckboxGroupOption[];
+  /** Selected values in controlled mode. */
+  value?: string[];
+  /** Initially selected values in uncontrolled mode. Default: `[]`. */
+  defaultValue?: string[];
+  /** Called with the next selected values. */
+  onChange?: (value: string[]) => void;
+  /** Layout direction for the options. Default: `"column"`. */
+  direction?: 'column' | 'row';
+}
+export declare function CheckboxGroup(props: CheckboxGroupProps): JSX.Element;
+```
+
 ### Combobox
 ```ts
 /** Props for {@link Combobox}. */
@@ -671,6 +695,32 @@ export interface ComboboxProps {
   className?: string;
 }
 export declare function Combobox(props: ComboboxProps): JSX.Element;
+```
+
+### Fieldset
+```ts
+/** Props for {@link Fieldset}. */
+export interface FieldsetProps extends FieldsetHTMLAttributes<HTMLFieldSetElement> {
+  /** Legend rendered for the semantic fieldset. */
+  legend?: ReactNode;
+  /** Description rendered beneath the legend. */
+  description?: ReactNode;
+  /** Fields grouped by this fieldset. */
+  children: ReactNode;
+}
+export declare function Fieldset(props: FieldsetProps): JSX.Element;
+```
+
+### FormRow
+```ts
+/** Props for {@link FormRow}. */
+export interface FormRowProps extends HTMLAttributes<HTMLDivElement> {
+  /** Number of equal-width columns. Defaults to the number of children. */
+  columns?: number;
+  /** Fields arranged in the row. */
+  children: ReactNode;
+}
+export declare function FormRow(props: FormRowProps): JSX.Element;
 ```
 
 ### Input
@@ -709,6 +759,32 @@ export interface RadioProps extends InputHTMLAttributes<HTMLInputElement> {
   name?: string;
 }
 export declare function Radio(props: RadioProps): JSX.Element;
+```
+
+### RadioGroup
+```ts
+/** Props for {@link RadioGroup}. */
+export interface RadioGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /** Label rendered above the group. */
+  label?: ReactNode;
+  /** Helper text rendered below the group when no error is present. */
+  hint?: ReactNode;
+  /** Error message rendered below the group in place of `hint`. */
+  error?: ReactNode;
+  /** Radio options rendered by the group. Default: `[]`. */
+  options?: RadioGroupOption[];
+  /** Selected value in controlled mode. */
+  value?: string;
+  /** Initially selected value in uncontrolled mode. */
+  defaultValue?: string;
+  /** Called with the selected option value. */
+  onChange?: (value: string) => void;
+  /** Shared native name for the radio controls. Generated automatically when omitted. */
+  name?: string;
+  /** Layout direction for the options. Default: `"column"`. */
+  direction?: 'column' | 'row';
+}
+export declare function RadioGroup(props: RadioGroupProps): JSX.Element;
 ```
 
 ### Select
@@ -836,6 +912,18 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'chil
   children?: ReactNode;
 }
 export declare function PageHeader(props: PageHeaderProps): JSX.Element;
+```
+
+### Separator
+```ts
+/** Props for {@link Separator}. */
+export interface SeparatorProps extends HTMLAttributes<HTMLElement> {
+  /** Separator direction. Default: `"horizontal"`. */
+  orientation?: 'horizontal' | 'vertical';
+  /** Centered label, such as `"or"`. Always renders a horizontal separator. */
+  label?: ReactNode;
+}
+export declare function Separator(props: SeparatorProps): JSX.Element;
 ```
 
 ### Stack

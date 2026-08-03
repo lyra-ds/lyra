@@ -5,6 +5,15 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Fase 8 / Onda 1a — RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator
+      (2026-08-03).** 5 exports novos (54→59 no docgen, guard bumpado), i18n por props,
+      changeset minor. 1 retry por doutrina: FormRow veio com `gridTemplateColumns`
+      inline (fiel ao handoff, que erra igual em Stack/Grid) → corrigido para o padrão
+      `--lyra-formrow-columns` + classe aditiva, e o teste passou a assertar a custom
+      property verbatim em vez do serializador do navegador (`0`→`0px` era a falha).
+      Cross-review: Skeptic/Architect zero; 1 LOW aceito (screenshots órfãos de rodada
+      falhada, removidos). → codex (`gpt-5.6-terra`, high, worktree, 1 retry).
+
 - [ ] **Fase 8 / 09-0 — infra do porte do delta v1.1+v1.2 (2026-08-03).** Handoff
       avançado para v1.2 no repo (76 arquivos, staging do maestro; `command cp -f`
       porque o alias interativo mordeu de novo), CSS integral portado (layout/

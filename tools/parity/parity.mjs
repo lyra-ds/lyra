@@ -351,6 +351,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-combobox__trigger',
       'lyra-combobox__option',
       'lyra-input--sm',
+      'lyra-formrow',
     ],
     keyframes: [],
   },
