@@ -24,7 +24,7 @@ Decisões do usuário (2026-08-03):
       determinístico de `'use client'` vive no `onSuccess` do tsup e precisa
       de equivalente; exports map == entries == basenames do dist continua lei.
       Gera changeset patch (é a mudança de build que o 0.1.1 precisa).
-- [ ] **08-2 Release 0.1.1 via OIDC** — merge do Version Packages PR prova o
+- [x] **08-2 Release 0.1.1 via OIDC** (2026-08-03, run 30838899789, provenance SLSA nos dois pacotes) — — merge do Version Packages PR prova o
       caminho trusted publishing de ponta a ponta (provenance por default).
       Primeiro release desde a migração do PR #43.
 - [ ] **08-3 Revogar `NPM_TOKEN`** (manual, usuário) — destravado pelo
@@ -64,3 +64,8 @@ Decisões do usuário (2026-08-03):
 - Fase 2 travada: camada de comportamento Zag.js nos wrappers interativos.
 - Satélite `@lyra-ds/vue` (primeiro "Em breve" a cair).
 - TS 7 (depende de 08-1 maturar), preset Tailwind satélite.
+- **Família de componentes de data e afins** (DatePicker, Calendar, TimePicker,
+  DateRangePicker; Slider, Rating, ColorPicker): não existem e não estavam no
+  handoff. Dependem fortemente de comportamento — candidatos naturais a
+  primeiros frutos do marco Zag.js, não a construção manual antes dele
+  (registrado de conversa com o usuário, 2026-08-03).
