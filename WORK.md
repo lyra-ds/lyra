@@ -5,6 +5,24 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **FASE 7 COMPLETA — v1 LANÇADO (2026-08-03).** Fechamento dos itens finais:
+      **OIDC** (PR #43): trusted publishers configurados pelo usuário nos dois pacotes;
+      release sem segredo npm — publish em step top-level (npm/cli#8976), setup-node sem
+      `registry-url`, tags+GitHub Releases explícitos (notes extraídas do CHANGELOG por
+      versão, awk testado contra o 0.1.0 real), guard `npm view` vs. versão local pula
+      builds em push comum (provado verde no primeiro run). Caminho OIDC se prova no
+      próximo release real; fallback NPM_TOKEN documentado no cabeçalho do workflow —
+      manter o secret até o primeiro release OIDC verde. **Vitrine** (quase tudo já
+      existia da criação da org): avatar/bio ✓; website da org, homepage e 7 topics do
+      repo configurados via API; profile README do `.github` atualizado ("coming soon" →
+      links reais). **OG image com a marca** (PR #44, → claude crítico por iteração
+      visual): estrela em indigo à direita, verificado em produção. Prévia no WhatsApp
+      não carregava por cache deles (servidor limpo com UAs de crawler; furar com `?v=N`).
+      **Checklist de launch**: 12/12 com evidência (gates permanentes do CI + install real
+      do npm público + llms.txt/bilingue ao vivo). Pendências manuais do usuário: social
+      preview do repo (upload manual, usar o og novo) e revogar NPM_TOKEN pós-primeiro
+      release OIDC. → claude (crítico), 2026-08-03.
+
 - [x] **Fix: OpenPanel nunca enviava eventos (realtime vazio) — 2026-08-03.** Causa raiz
       provada em browser real: `op1.js` não define `window.op` (expõe `window.openpanel`)
       e consome a fila do stub do snippet oficial, que a integração tinha pulado — o
