@@ -5,6 +5,16 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Debugging pendente — CodeBlock na tela de visualização não quebra o
+      conteúdo** (estoura a página). Reportado pelo usuário em 2026-08-03;
+      abrir sessão de debugging dedicada depois da Onda 3.
+
+- [x] **Sidebar/índice/⌘K em ordem alfabética (2026-08-03).** O manifesto
+      (`apps/docs/lib/components.ts`) exportava em ordem de inserção; o export
+      agora sai ordenado por nome num ponto só, e a posição autoral deixa de
+      importar (comentário atualizado). → kimi (`opencode/kimi-k2.7-code`),
+      1 rodada limpa.
+
 - [x] **Fase 8 / Onda 3a — Calendar (2026-08-03).** Grade com navegação de teclado
       (roving tabindex), single/range, três visões (dias/meses/anos), `locale` por
       `Intl` (zero strings de data hardcoded — o handoff trazia pt-BR fixo), dias

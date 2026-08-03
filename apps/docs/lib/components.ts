@@ -1,8 +1,9 @@
 /**
  * Single source of truth for the documented components.
  *
- * Adding a component page is additive: append one entry here, drop a
- * `content/docs/{en,pt-BR}/components/<slug>.mdx` pair, and add example files
+ * Adding a component page is additive: append one entry here (the exported
+ * `components` array is name-sorted, so authored position does not matter); drop
+ * a `content/docs/{en,pt-BR}/components/<slug>.mdx` pair, and add example files
  * under `components/examples/<slug>/` registered in `components/examples`. The
  * route, static params, prop table and nav all derive from this manifest — no
  * central switch to edit.
@@ -31,7 +32,7 @@ export type ComponentEntry = {
   group: ComponentGroup;
 };
 
-export const components: ComponentEntry[] = [
+const manifest: ComponentEntry[] = [
   { slug: 'container', name: 'Container', group: 'layout' },
   { slug: 'stack', name: 'Stack', group: 'layout' },
   { slug: 'grid', name: 'Grid', group: 'layout' },
@@ -83,6 +84,10 @@ export const components: ComponentEntry[] = [
   { slug: 'drawer', name: 'Drawer', group: 'overlay' },
   { slug: 'create-workspace-dialog', name: 'CreateWorkspaceDialog', group: 'overlay' },
 ];
+
+export const components: ComponentEntry[] = [...manifest].sort((a, b) =>
+  a.name.localeCompare(b.name),
+);
 
 /** Group order used by the sidebar, the index page and the ⌘K palette alike. */
 export const groupOrder: ComponentGroup[] = [
