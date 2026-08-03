@@ -1509,6 +1509,44 @@ export interface SegmentedRingProps extends HTMLAttributes<HTMLDivElement> {
 export declare function SegmentedRing(props: SegmentedRingProps): JSX.Element;
 ```
 
+### TimeZonePicker
+```ts
+/** Props for {@link TimeZonePicker}. */
+export interface TimeZonePickerProps {
+  /** Controlled IANA zone identifier, for example `"America/Sao_Paulo"`. */
+  value?: string;
+  /** Initial IANA zone identifier in uncontrolled mode. */
+  defaultValue?: string;
+  /** Called with the selected IANA zone identifier. */
+  onChange?: (zone: string) => void;
+  /** Date used to derive the displayed GMT offset. Defaults to the current time. */
+  referenceDate?: string | Date;
+  /** IANA zones pinned under the recent-zones heading. */
+  recentZones?: string[];
+  /** IANA zone pinned under the detected-zone heading. */
+  detectedZone?: string;
+  /** Replaces the curated default zone list. */
+  zones?: TimeZoneOption[];
+  /** BCP 47 locale used for each option's live local time. Default: `"en-US"`. */
+  locale?: string;
+  /** Label rendered above the picker. */
+  label?: string;
+  /** Helper text rendered below the picker. */
+  hint?: string;
+  /** Error message that replaces `hint` and enables error styling. */
+  error?: string;
+  /** Trigger text when no zone is selected. Defaults to `labels.placeholder`. */
+  placeholder?: string;
+  /** Translatable visible and accessible labels, merged over English defaults. */
+  labels?: TimeZonePickerLabels;
+  /** Disables the picker trigger. */
+  disabled?: boolean;
+  /** Additional class name appended to `.lyra-tzpicker`. */
+  className?: string;
+}
+export declare function TimeZonePicker(props: TimeZonePickerProps): JSX.Element;
+```
+
 ## System
 
 ### ThemeProvider
