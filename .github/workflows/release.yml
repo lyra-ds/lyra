@@ -14,12 +14,14 @@
 # from a top-level step, not nested through the action) — recorded in
 # WORK.md so the swap is not improvised.
 #
-# The Version Packages PR is opened by GITHUB_TOKEN, so GitHub deliberately
-# does NOT trigger the CI workflow on it (anti-recursion rule) — its 4
-# required checks never report and the merge needs the admin override, same
-# as this repo's normal flow. The publish itself only ships content that was
-# CI-gated when it landed on main; the version PR only touches versions and
-# changelogs.
+# The Version Packages PR is opened with CHANGESETS_PAT (a fine-grained PAT:
+# Contents + Pull requests, this repo only) instead of GITHUB_TOKEN. This is
+# what makes CI run on that PR at all — GitHub never triggers workflows for
+# events caused by GITHUB_TOKEN (anti-recursion rule), so a bot-created PR
+# would sit with its 4 required checks forever unreported and need an admin
+# override to merge. With the PAT, the version PR is gated like any other.
+# The PAT expires (owner: franciscpd); when it does, the action falls back
+# to GITHUB_TOKEN and the only symptom is version PRs with no checks again.
 name: Release
 
 on:
@@ -70,5 +72,5 @@ jobs:
           commit: 'chore(release): version packages'
           title: 'chore(release): version packages'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CHANGESETS_PAT || secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
