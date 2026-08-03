@@ -49,6 +49,9 @@ export type { DialogProps } from './dialog';
 export { Drawer } from './drawer';
 export type { DrawerProps } from './drawer';
 
+export { BottomSheet } from './bottom-sheet';
+export type { BottomSheetProps } from './bottom-sheet';
+
 export { CreateWorkspaceDialog } from './create-workspace-dialog';
 export type { CreateWorkspaceDialogProps } from './create-workspace-dialog';
 

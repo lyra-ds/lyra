@@ -318,6 +318,14 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-drawer--closing',
       'lyra-drawer-overlay--closing',
       'lyra-cookies--closing',
+      'lyra-bottomsheet-overlay',
+      'lyra-bottomsheet',
+      'lyra-bottomsheet__header',
+      'lyra-bottomsheet__title',
+      'lyra-bottomsheet__body',
+      'lyra-bottomsheet__close',
+      'lyra-bottomsheet--closing',
+      'lyra-bottomsheet-overlay--closing',
     ],
     keyframes: [
       'lyra-fade-out',
@@ -327,6 +335,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-cookies-in',
       'lyra-slide-out',
       'lyra-cookies-out',
+      'lyra-bottomsheet-in',
+      'lyra-bottomsheet-out',
     ],
   },
   'components/display/display.css': {

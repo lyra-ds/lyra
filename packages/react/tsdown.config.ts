@@ -36,6 +36,7 @@ const entries = {
   calendar: 'src/calendar/index.ts',
   dialog: 'src/dialog/index.ts',
   drawer: 'src/drawer/index.ts',
+  'bottom-sheet': 'src/bottom-sheet/index.ts',
   'create-workspace-dialog': 'src/create-workspace-dialog/index.ts',
   'workspace-switcher': 'src/workspace-switcher/index.ts',
   icon: 'src/icon/index.ts',
