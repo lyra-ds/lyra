@@ -6,8 +6,9 @@
 # Auth is npm trusted publishing (OIDC) — configured on npmjs.com for both
 # packages (org lyra-ds, repo lyra, workflow release.yml, no environment).
 # The 0.1.0 release used a granular NPM_TOKEN because OIDC cannot perform a
-# package's FIRST publish (npm/cli#8544); with both packages existing, the
-# token is retired. Two npm/cli#8976 lessons are load-bearing here:
+# package's FIRST publish (npm/cli#8544). OIDC was proven end-to-end on the
+# 0.1.1 release (SLSA provenance on both packages); the token and the
+# NPM_TOKEN repo secret were revoked on 2026-08-03. Two npm/cli#8976 lessons are load-bearing here:
 #   1. The publish runs in a TOP-LEVEL step, not through changesets/action's
 #      `publish` input — the OIDC env vars (ACTIONS_ID_TOKEN_REQUEST_*) do
 #      not survive the action's nested command chain.
