@@ -74,3 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESETS_PAT || secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # changesets delegates to `pnpm publish`, which ignored the
+          # `publishConfig.provenance` field on the 0.1.0 release (no
+          # attestation was created). The env var is read by npm and pnpm
+          # alike, so provenance no longer depends on which client publishes.
+          NPM_CONFIG_PROVENANCE: 'true'
