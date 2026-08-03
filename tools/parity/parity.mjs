@@ -352,6 +352,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-combobox__option',
       'lyra-input--sm',
       'lyra-formrow',
+      'lyra-cal__day',
     ],
     keyframes: [],
   },

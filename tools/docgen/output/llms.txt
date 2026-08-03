@@ -685,6 +685,40 @@ export declare function FileUpload(props: FileUploadProps): JSX.Element;
 
 ## Forms
 
+### Calendar
+```ts
+/** Props for {@link Calendar}. */
+export interface CalendarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> {
+  /** Whether selection is a date range. Default: `false`. */
+  range?: boolean;
+  /** Controlled selected local date, ISO `YYYY-MM-DD` string, or range. */
+  value?: Date | string | CalendarRange | null;
+  /** Initial selected local date, ISO `YYYY-MM-DD` string, or range when uncontrolled. */
+  defaultValue?: Date | string | CalendarRange;
+  /** Called after a date or range is selected. */
+  onChange?: (value: Date | CalendarRange) => void;
+  /** Inclusive lower selection limit as a local date or ISO `YYYY-MM-DD` string. */
+  min?: Date | string;
+  /** Inclusive upper selection limit as a local date or ISO `YYYY-MM-DD` string. */
+  max?: Date | string;
+  /** Returns whether a local date cannot be selected. Disabled dates remain visible. */
+  isDateDisabled?: (date: Date) => boolean;
+  /** Renders extra content inside each day cell, such as a `.lyra-cal__dot` availability marker. */
+  renderDayMarker?: (date: Date) => ReactNode;
+  /** First weekday, where `0` is Sunday and `6` is Saturday. Default: `0`. */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Calendar cell size. Default: `"sm"`. */
+  size?: 'sm' | 'md';
+  /** Whether to render the today shortcut. Default: `false`. */
+  todayButton?: boolean;
+  /** BCP 47 locale used for month names, weekday headings, and date labels. Default: `"en-US"`. */
+  locale?: string;
+  /** Translatable control labels, merged over the English defaults. */
+  labels?: CalendarLabels;
+}
+export declare function Calendar(props: CalendarProps): JSX.Element;
+```
+
 ### Checkbox
 ```ts
 /** Props for {@link Checkbox}. */

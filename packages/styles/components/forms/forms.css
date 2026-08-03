@@ -420,3 +420,12 @@ button.lyra-datepicker__btn svg { color: var(--text-muted); flex: none; }
 .lyra-formrow {
   grid-template-columns: var(--lyra-formrow-columns, 1fr);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): Calendar disabled dates follow the APG
+   focusable-but-unavailable pattern, so the wrapper uses `aria-disabled` rather than the native
+   `disabled` attribute. Re-declare the canonical disabled-day declarations for that state. */
+.lyra-cal__day[aria-disabled='true'] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent;
+}

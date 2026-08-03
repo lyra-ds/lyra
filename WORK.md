@@ -5,6 +5,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 3a — Calendar (2026-08-03).** Grade com navegação de teclado
+      (roving tabindex), single/range, três visões (dias/meses/anos), `locale` por
+      `Intl` (zero strings de data hardcoded — o handoff trazia pt-BR fixo), dias
+      desabilitados focáveis por `aria-disabled` (divergência declarada: o `.d.ts` e
+      o APG vencem o `disabled` nativo do JSX de referência; CSS aditivo espelhando o
+      esmaecimento, registrado no parity). Docgen 63→64. Ciclo: 1 retry (o CSS da
+      divergência), 1 fix mecânico do maestro (force-click em alvo intencionalmente
+      desabilitado — o Playwright trata aria-disabled como not-enabled) e 1 finding
+      real do cross-review corrigido na lane crítica (botões de navegação anunciavam
+      "month" nas visões de ano/bloco — rótulos por visão + teste). → codex
+      (`gpt-5.6-terra`, high, worktree, 1 retry) + claude (2 fixes).
+
 - [x] **Respiro título→grid no índice de componentes (2026-08-03).** Sequela do modelo
       de prosa (margem-topo por elemento): o bloco do grid zerava a própria margem e o
       título ficava colado nos cards (0px medido em produção). Fix: margem-topo de

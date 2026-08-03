@@ -146,6 +146,16 @@
         "default": "./dist/file-manager.cjs"
       }
     },
+    "./calendar": {
+      "import": {
+        "types": "./dist/calendar.d.ts",
+        "default": "./dist/calendar.js"
+      },
+      "require": {
+        "types": "./dist/calendar.d.cts",
+        "default": "./dist/calendar.cjs"
+      }
+    },
     "./dialog": {
       "import": {
         "types": "./dist/dialog.d.ts",
@@ -853,6 +863,16 @@
         "react-dom"
       ],
       "limit": "9.5 kB"
+    },
+    {
+      "name": "import { Calendar } from '@lyra-ds/react/calendar'",
+      "path": "dist/calendar.js",
+      "import": "{ Calendar }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "3 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",
