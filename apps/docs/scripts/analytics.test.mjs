@@ -55,12 +55,21 @@ test('the consent owner loads OpenPanel once after all consent without replay or
   assert.match(source, /consent === 'all' && mayLoadAnalytics\(\)/);
   assert.match(source, /onAccept=\{\(\) => setConsent\('all'\)\}/);
   assert.match(source, /onEssentials=\{\(\) => setConsent\('essentials'\)\}/);
+  assert.match(source, /const \[shouldLoadOpenPanel, setShouldLoadOpenPanel\] = useState\(false\)/);
+  assert.match(source, /if \(!canLoad \|\| !openPanelOrigin \|\| initialized\.current\) return/);
+  assert.match(source, /window\.op \|\|\s+function \(\.\.\.args: OpenPanelCommand\)/);
+  assert.match(source, /\(op\.q = op\.q \|\| \[\]\)\.push\(args\)/);
+  assert.match(source, /window\.op = op/);
+  assert.match(source, /op\('init', \{/);
+  assert.match(source, /setShouldLoadOpenPanel\(true\)/);
+  assert.match(source, /canLoad && openPanelOrigin && shouldLoadOpenPanel/);
   assert.match(source, /id="openpanel"/);
   assert.match(source, /src=\{`\$\{openPanelOrigin\}\/op1\.js`\}/);
   assert.match(source, /apiUrl: `\$\{openPanelOrigin\}\/api`/);
   assert.match(source, /sessionReplay: \{ enabled: false \}/);
   assert.match(source, /trackScreenViews: true/);
   assert.match(source, /initialized\.current/);
+  assert.doesNotMatch(source, /onLoad=/);
   assert.doesNotMatch(source, /identify|trackOutgoingLinks|trackAttributes/);
 });
 
