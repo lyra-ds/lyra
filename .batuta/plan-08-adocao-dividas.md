@@ -48,6 +48,17 @@ Decisões do usuário (2026-08-03):
       `seek-oss/changesets-snapshot` (`0.0.0-snapshot-*`) para contribuidor
       testar PR sem release real.
 
+## Trilha 3 — governança (pedido do usuário, 2026-08-03)
+
+- [ ] **08-9 Documentação do projeto em inglês** — revisitar as regras para que
+      toda documentação voltada ao público (README, CONTRIBUTING, templates,
+      changesets, comentários) seja em inglês, por ser open source. Decidir o
+      destino da prosa interna (WORK.md, `.batuta/`) junto com o usuário antes
+      de converter qualquer coisa.
+- [ ] **08-10 Limpeza de `.batuta/` e `WORK.md`** — arquivar briefs de lotes já
+      entregues, condensar o histórico do WORK.md (as lições migram para o
+      profile ou para um arquivo de lições), remover planos concluídos.
+
 ## Fora deste marco (registrado para o próximo)
 
 - Fase 2 travada: camada de comportamento Zag.js nos wrappers interativos.
