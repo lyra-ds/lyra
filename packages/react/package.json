@@ -156,6 +156,36 @@
         "default": "./dist/calendar.cjs"
       }
     },
+    "./time-picker": {
+      "import": {
+        "types": "./dist/time-picker.d.ts",
+        "default": "./dist/time-picker.js"
+      },
+      "require": {
+        "types": "./dist/time-picker.d.cts",
+        "default": "./dist/time-picker.cjs"
+      }
+    },
+    "./date-picker": {
+      "import": {
+        "types": "./dist/date-picker.d.ts",
+        "default": "./dist/date-picker.js"
+      },
+      "require": {
+        "types": "./dist/date-picker.d.cts",
+        "default": "./dist/date-picker.cjs"
+      }
+    },
+    "./date-range-picker": {
+      "import": {
+        "types": "./dist/date-range-picker.d.ts",
+        "default": "./dist/date-range-picker.js"
+      },
+      "require": {
+        "types": "./dist/date-range-picker.d.cts",
+        "default": "./dist/date-range-picker.cjs"
+      }
+    },
     "./dialog": {
       "import": {
         "types": "./dist/dialog.d.ts",
@@ -893,6 +923,36 @@
         "react-dom"
       ],
       "limit": "3 kB"
+    },
+    {
+      "name": "import { TimePicker } from '@lyra-ds/react/time-picker'",
+      "path": "dist/time-picker.js",
+      "import": "{ TimePicker }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "4 kB"
+    },
+    {
+      "name": "import { DatePicker } from '@lyra-ds/react/date-picker'",
+      "path": "dist/date-picker.js",
+      "import": "{ DatePicker }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "5 kB"
+    },
+    {
+      "name": "import { DateRangePicker } from '@lyra-ds/react/date-range-picker'",
+      "path": "dist/date-range-picker.js",
+      "import": "{ DateRangePicker }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "5 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",

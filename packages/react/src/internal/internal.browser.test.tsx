@@ -6,6 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
 import { render, renderHook, cleanup } from 'vitest-browser-react';
 import { usePresence } from './use-presence';
+import { Slot } from './slot';
 import { useScrollLock } from './use-scroll-lock';
 import { useControllableState } from './use-controllable-state';
 import { useFlipPlacement } from './use-flip-placement';
@@ -246,5 +247,17 @@ describe('useFlipPlacement', () => {
       expect(sixPixelGap.container.querySelector('[data-gap="6"]')!.textContent).toBe('down');
       expect(eightPixelGap.container.querySelector('[data-gap="8"]')!.textContent).toBe('up');
     });
+  });
+  it('does not let an explicitly-undefined child handler erase the slot handler', async () => {
+    const onSlotClick = vi.fn();
+    const { container } = await render(
+      <Slot onClick={onSlotClick}>
+        <button type="button" onClick={undefined}>
+          Fused
+        </button>
+      </Slot>,
+    );
+    container.querySelector('button')!.click();
+    expect(onSlotClick).toHaveBeenCalledTimes(1);
   });
 });

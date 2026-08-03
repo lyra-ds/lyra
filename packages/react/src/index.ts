@@ -42,6 +42,12 @@ export { FileManager } from './file-manager';
 export type { FileManagerLabels, FileManagerProps, ManagedFile } from './file-manager';
 export { Calendar } from './calendar';
 export type { CalendarLabels, CalendarProps, CalendarRange } from './calendar';
+export { TimePicker } from './time-picker';
+export type { TimePickerLabels, TimePickerProps } from './time-picker';
+export { DatePicker } from './date-picker';
+export type { DatePickerLabels, DatePickerProps } from './date-picker';
+export { DateRangePicker } from './date-range-picker';
+export type { DateRange, DateRangePickerLabels, DateRangePickerProps } from './date-range-picker';
 
 export { Dialog } from './dialog';
 export type { DialogProps } from './dialog';

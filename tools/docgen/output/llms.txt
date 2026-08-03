@@ -813,6 +813,73 @@ export interface ComboboxProps {
 export declare function Combobox(props: ComboboxProps): JSX.Element;
 ```
 
+### DatePicker
+```ts
+/** Props for {@link DatePicker}. */
+export interface DatePickerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> {
+  /** Label rendered above the picker trigger. */
+  label?: string;
+  /** Helper text rendered below the picker. Replaced by `error` when set. */
+  hint?: string;
+  /** Error message that enables error styling and replaces `hint`. */
+  error?: string;
+  /** Controlled local date or ISO `YYYY-MM-DD` date-only string, or `null` with no date selected. */
+  value?: Date | string | null;
+  /** Initial local date or ISO `YYYY-MM-DD` date-only string in uncontrolled mode. */
+  defaultValue?: Date | string;
+  /** Called after the user selects a local date. */
+  onChange?: (date: Date) => void;
+  /** Trigger text when no date is selected. Defaults to `labels.placeholder`. */
+  placeholder?: string;
+  /** Inclusive lower selection limit as a local date or ISO `YYYY-MM-DD` string. */
+  min?: Date | string;
+  /** Inclusive upper selection limit as a local date or ISO `YYYY-MM-DD` string. */
+  max?: Date | string;
+  /** BCP 47 locale used to format the selected date and compose Calendar. Default: `"en-US"`. */
+  locale?: string;
+  /** Translatable visible and accessible labels, merged over the English defaults. */
+  labels?: DatePickerLabels;
+  /** Disables the picker trigger. */
+  disabled?: boolean;
+}
+export declare function DatePicker(props: DatePickerProps): JSX.Element;
+```
+
+### DateRangePicker
+```ts
+/** Props for {@link DateRangePicker}. */
+export interface DateRangePickerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> {
+  /** Label rendered above the picker trigger. */
+  label?: string;
+  /** Helper text rendered below the picker. Replaced by `error` when set. */
+  hint?: string;
+  /** Error message that enables error styling and replaces `hint`. */
+  error?: string;
+  /** Controlled local-date range, or `null` with no range selected. */
+  value?: DateRange | null;
+  /** Initial local-date range. ISO `YYYY-MM-DD` strings are accepted for convenience. */
+  defaultValue?: DateRange | {
+    start: Date | string;
+    end: Date | string;
+  };
+  /** Called after the user selects either bound of the local-date range. */
+  onChange?: (range: DateRange) => void;
+  /** Trigger text when no range is selected. Defaults to `labels.placeholder`. */
+  placeholder?: string;
+  /** Inclusive lower selection limit as a local date or ISO `YYYY-MM-DD` string. */
+  min?: Date | string;
+  /** Inclusive upper selection limit as a local date or ISO `YYYY-MM-DD` string. */
+  max?: Date | string;
+  /** BCP 47 locale used to format selected dates and compose Calendar. Default: `"en-US"`. */
+  locale?: string;
+  /** Translatable visible and accessible labels, merged over the English defaults. */
+  labels?: DateRangePickerLabels;
+  /** Disables the picker trigger. */
+  disabled?: boolean;
+}
+export declare function DateRangePicker(props: DateRangePickerProps): JSX.Element;
+```
+
 ### Fieldset
 ```ts
 /** Props for {@link Fieldset}. */
@@ -943,6 +1010,40 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   error?: string;
 }
 export declare function Textarea(props: TextareaProps): JSX.Element;
+```
+
+### TimePicker
+```ts
+/** Props for {@link TimePicker}. */
+export interface TimePickerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> {
+  /** Label rendered above the picker trigger. */
+  label?: string;
+  /** Helper text rendered below the picker. Replaced by `error` when set. */
+  hint?: string;
+  /** Error message that enables error styling and replaces `hint`. */
+  error?: string;
+  /** Controlled 24-hour `HH:mm` time, or `null` with no selected time. */
+  value?: string | null;
+  /** Initial 24-hour `HH:mm` time in uncontrolled mode. */
+  defaultValue?: string;
+  /** Called after the user selects a 24-hour `HH:mm` time. */
+  onChange?: (time: string) => void;
+  /** Trigger text when no time is selected. Defaults to `labels.placeholder`. */
+  placeholder?: string;
+  /** Minutes between generated options. Default: `30`. */
+  step?: number;
+  /** Inclusive 24-hour `HH:mm` lower limit. Default: `"00:00"`. */
+  min?: string;
+  /** Inclusive 24-hour `HH:mm` upper limit. Default: `"23:59"`. */
+  max?: string;
+  /** BCP 47 locale used to display each time. Default: `"en-US"`. */
+  locale?: string;
+  /** Translatable visible and accessible labels, merged over the English defaults. */
+  labels?: TimePickerLabels;
+  /** Disables the picker trigger. */
+  disabled?: boolean;
+}
+export declare function TimePicker(props: TimePickerProps): JSX.Element;
 ```
 
 ## Icons
