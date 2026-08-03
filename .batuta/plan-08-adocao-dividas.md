@@ -17,7 +17,7 @@ Decisões do usuário (2026-08-03):
 
 ## Trilha 1 — dívidas de release (sequencial, nesta ordem)
 
-- [ ] **08-1 tsup → tsdown** no `@lyra-ds/react`. Caminho sancionado pelo
+- [x] **08-1 tsup → tsdown** (PR #54, 2026-08-03) — no `@lyra-ds/react`. Caminho sancionado pelo
       próprio tsup; usar `migrate-from-tsup`. Prova de equivalência do dist é
       o job build do CI (publint, attw, size-limit, pack-smoke, dist-scan,
       smoke) — os gates existem exatamente para isso. Atenção: o prepend
