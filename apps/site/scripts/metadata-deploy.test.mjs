@@ -7,7 +7,8 @@ const repoRoot = resolve(import.meta.dirname, '../../..');
 const siteRoot = resolve(repoRoot, 'apps/site');
 const outRoot = resolve(siteRoot, 'out');
 const origin = 'https://lyra-ds.dev';
-const imageUrl = `${origin}/opengraph-image`;
+const imageUrl = `${origin}/og.png`;
+const imageAlt = 'Lyra DS — CSS-first design system for SaaS products';
 
 function readExport(path) {
   return readFileSync(resolve(outRoot, path), 'utf8');
@@ -46,10 +47,18 @@ test('exports localized canonical, hreflang, Open Graph, and Twitter metadata', 
     assert.ok(head.includes(`<meta property="og:url" content="${origin}/${locale}"/>`));
     assert.ok(head.includes(`<meta property="og:locale" content="${openGraphLocale}"/>`));
     assert.ok(head.includes(`<meta property="og:image" content="${imageUrl}"/>`));
+    assert.ok(head.includes('<meta property="og:image:width" content="1200"/>'));
+    assert.ok(head.includes('<meta property="og:image:height" content="630"/>'));
+    assert.ok(head.includes('<meta property="og:image:type" content="image/png"/>'));
+    assert.ok(head.includes(`<meta property="og:image:alt" content="${imageAlt}"/>`));
     assert.ok(head.includes('<meta name="twitter:card" content="summary_large_image"/>'));
     assert.ok(head.includes(`<meta name="twitter:title" content="${title}"/>`));
     assert.ok(head.includes(`<meta name="twitter:description" content="${description}"/>`));
     assert.ok(head.includes(`<meta name="twitter:image" content="${imageUrl}"/>`));
+    assert.ok(head.includes('<meta name="twitter:image:width" content="1200"/>'));
+    assert.ok(head.includes('<meta name="twitter:image:height" content="630"/>'));
+    assert.ok(head.includes('<meta name="twitter:image:type" content="image/png"/>'));
+    assert.ok(head.includes(`<meta name="twitter:image:alt" content="${imageAlt}"/>`));
   }
 });
 
@@ -81,7 +90,7 @@ test('exports metadata unique to each localized privacy route', () => {
 });
 
 test('emits a 1200 by 630 PNG Open Graph image', () => {
-  const imagePath = resolve(outRoot, 'opengraph-image');
+  const imagePath = resolve(outRoot, 'og.png');
   const image = readFileSync(imagePath);
 
   assert.equal(existsSync(imagePath), true);
@@ -116,7 +125,7 @@ test('emits crawler discovery files and a self-only hosting policy', () => {
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
   assert.match(headers, /Permissions-Policy:/);
-  assert.match(headers, /\/opengraph-image\n  Content-Type: image\/png/);
+  assert.match(headers, /\/og\.png\n  Content-Type: image\/png/);
 });
 
 test('keeps the site layout contained and its chrome touch-safe on narrow viewports', () => {
