@@ -1353,6 +1353,93 @@
     ]
   },
   {
+    "name": "Calendar",
+    "category": "Forms",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>",
+    "description": "Props for {@link Calendar}.",
+    "signature": "export declare function Calendar(props: CalendarProps): JSX.Element;",
+    "props": [
+      {
+        "name": "range",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether selection is a date range. Default: `false`."
+      },
+      {
+        "name": "value",
+        "type": "Date | string | CalendarRange | null",
+        "optional": true,
+        "description": "Controlled selected local date, ISO `YYYY-MM-DD` string, or range."
+      },
+      {
+        "name": "defaultValue",
+        "type": "Date | string | CalendarRange",
+        "optional": true,
+        "description": "Initial selected local date, ISO `YYYY-MM-DD` string, or range when uncontrolled."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: Date | CalendarRange) => void",
+        "optional": true,
+        "description": "Called after a date or range is selected."
+      },
+      {
+        "name": "min",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive lower selection limit as a local date or ISO `YYYY-MM-DD` string."
+      },
+      {
+        "name": "max",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive upper selection limit as a local date or ISO `YYYY-MM-DD` string."
+      },
+      {
+        "name": "isDateDisabled",
+        "type": "(date: Date) => boolean",
+        "optional": true,
+        "description": "Returns whether a local date cannot be selected. Disabled dates remain visible."
+      },
+      {
+        "name": "renderDayMarker",
+        "type": "(date: Date) => ReactNode",
+        "optional": true,
+        "description": "Renders extra content inside each day cell, such as a `.lyra-cal__dot` availability marker."
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+        "optional": true,
+        "description": "First weekday, where `0` is Sunday and `6` is Saturday. Default: `0`."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "optional": true,
+        "description": "Calendar cell size. Default: `\"sm\"`."
+      },
+      {
+        "name": "todayButton",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether to render the today shortcut. Default: `false`."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for month names, weekday headings, and date labels. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "CalendarLabels",
+        "optional": true,
+        "description": "Translatable control labels, merged over the English defaults."
+      }
+    ]
+  },
+  {
     "name": "Checkbox",
     "category": "Forms",
     "extends": "InputHTMLAttributes<HTMLInputElement>",
