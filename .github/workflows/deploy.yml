@@ -50,20 +50,20 @@ jobs:
       - run: pnpm --filter @lyra-ds/docs run build
       # Landing first — the docs consent banner links to the privacy policy
       # hosted on lyra-ds.dev (DEPLOY.md, "Deploy the landing first").
+      # wrangler runs via the pinned lockfile devDep (`pnpm exec`), never a
+      # floating npx and not cloudflare/wrangler-action: the action's install
+      # step runs a bare `pnpm add wrangler` that a pnpm workspace root
+      # rejects (ERR_PNPM_ADDING_TO_ROOT — observed in run 30813009987).
       # --commit-dirty=true: the tree is legitimately dirty at this point
       # (generated `public/_headers` and `out/` are not committed); the flag
       # only silences wrangler's dirty-tree warning.
       - name: Publish landing to Cloudflare Pages
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.118.0'
-          command: pages deploy apps/site/out --project-name=lyra-ds-site --branch=main --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler pages deploy apps/site/out --project-name=lyra-ds-site --branch=main --commit-dirty=true
       - name: Publish docs to Cloudflare Pages
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.118.0'
-          command: pages deploy apps/docs/out --project-name=lyra-ds-docs --branch=main --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler pages deploy apps/docs/out --project-name=lyra-ds-docs --branch=main --commit-dirty=true

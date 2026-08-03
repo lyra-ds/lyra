@@ -17,8 +17,11 @@ packages:
 # native binary from platform-specific optionalDependencies, so the install/postinstall build
 # script is unnecessary — same posture as esbuild. Verified: `next build` (static export) is green
 # with all three ignored. Flip to true only if a future platform lacks a prebuilt binary.
+# workerd: false — wrangler's local Workers runtime, only exercised by `wrangler dev`. The deploy
+# workflow only runs `wrangler pages deploy` (a pure upload), verified green with the build ignored.
 allowBuilds:
   '@parcel/watcher': false
   '@swc/core': false
   esbuild: false
   sharp: false
+  workerd: false
