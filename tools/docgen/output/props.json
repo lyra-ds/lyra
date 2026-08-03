@@ -870,6 +870,57 @@
     ]
   },
   {
+    "name": "BottomSheet",
+    "category": "Feedback",
+    "extends": "",
+    "description": "Props for {@link BottomSheet}.",
+    "signature": "export declare function BottomSheet(props: BottomSheetProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": false,
+        "description": "Controls visibility. `true` mounts the portaled overlay and bottom sheet."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the user dismisses the sheet with Escape, the backdrop, or the close button."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the close button. Default: `\"Close\"`."
+      },
+      {
+        "name": "container",
+        "type": "HTMLElement",
+        "optional": true,
+        "description": "Portal host. Defaults to `document.body`."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Bottom sheet body content."
+      },
+      {
+        "name": "title",
+        "type": "Exclude<ReactNode, boolean | null | undefined> | undefined",
+        "optional": true,
+        "description": "Heading rendered in the sheet header and used as its accessible name.\n\nOmit the heading when the sheet has no visible title."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "never | string",
+        "optional": true,
+        "description": "The visible heading supplies the accessible name in this branch.\n\nTranslated accessible name required when no heading is rendered."
+      }
+    ]
+  },
+  {
     "name": "CookieBanner",
     "category": "Feedback",
     "extends": "HTMLAttributes<HTMLDivElement>",

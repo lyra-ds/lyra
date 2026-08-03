@@ -5,6 +5,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 3b — BottomSheet (2026-08-03).** O único componente da fase sem
+      handoff nenhum: contrato do llms.txt, maquinaria do Drawer (portal, trap, saída
+      animada, closeLabel/container por paridade), CSS `.lyra-bottomsheet*` aditivo
+      nosso no feedback. O cross-review rendeu onde o risco morava: 9 findings, 7
+      aceitos — 2 HIGH (foco perdido em reopen-durante-saída; backdrop sem o guard de
+      origem do mousedown que o Dialog tem) + 3 MED de robustez iOS/foco + 2 LOW de
+      cobertura; 2 rejeitados por precedente (closeLabel/container são do Drawer;
+      união no llms.txt renderiza igual no Brand — débito do docgen anotado). 2 fixes
+      mecânicos do maestro no teste novo (locator exact; controle de remoção movido
+      para DENTRO do sheet — a cópia na página ficava sob o overlay, inclicável).
+      Docgen 64→65. → codex (`gpt-5.6-terra`, high, worktree, 1 retry) + claude.
+
 - [ ] **Debugging pendente — CodeBlock na tela de visualização não quebra o
       conteúdo** (estoura a página). Reportado pelo usuário em 2026-08-03;
       abrir sessão de debugging dedicada depois da Onda 3.

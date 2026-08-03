@@ -176,6 +176,16 @@
         "default": "./dist/drawer.cjs"
       }
     },
+    "./bottom-sheet": {
+      "import": {
+        "types": "./dist/bottom-sheet.d.ts",
+        "default": "./dist/bottom-sheet.js"
+      },
+      "require": {
+        "types": "./dist/bottom-sheet.d.cts",
+        "default": "./dist/bottom-sheet.cjs"
+      }
+    },
     "./create-workspace-dialog": {
       "import": {
         "types": "./dist/create-workspace-dialog.d.ts",
@@ -708,6 +718,16 @@
       "name": "import { Drawer } from '@lyra-ds/react/drawer'",
       "path": "dist/drawer.js",
       "import": "{ Drawer }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { BottomSheet } from '@lyra-ds/react/bottom-sheet'",
+      "path": "dist/bottom-sheet.js",
+      "import": "{ BottomSheet }",
       "ignore": [
         "react",
         "react-dom"

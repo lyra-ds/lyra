@@ -488,6 +488,101 @@
 .lyra-cookies--closing {
   animation: lyra-cookies-out var(--duration-base) var(--ease-out) forwards;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): BottomSheet is the mobile modal variant with
+   no handoff CSS. Its panel stays flush with the viewport bottom, preserving the same overlay,
+   surface, border, and dark-theme elevation treatment as the existing dialog primitives. */
+.lyra-bottomsheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: var(--z-overlay);
+  animation: lyra-fade-in var(--duration-base) var(--ease-out);
+}
+.lyra-bottomsheet {
+  position: fixed;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100vh - var(--space-8));
+  max-height: calc(100dvh - var(--space-8));
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  color: var(--text-secondary);
+  z-index: var(--z-dialog);
+  animation: lyra-bottomsheet-in var(--duration-slow) var(--ease-out);
+}
+[data-theme="dark"] .lyra-bottomsheet { box-shadow: none; }
+.lyra-bottomsheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-default);
+}
+.lyra-bottomsheet__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+}
+.lyra-bottomsheet__body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-6);
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+.lyra-bottomsheet__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  margin: -8px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.lyra-bottomsheet__close:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-bottomsheet__close:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-bottomsheet--closing {
+  animation: lyra-bottomsheet-out var(--duration-base) var(--ease-out) forwards;
+}
+.lyra-bottomsheet-overlay--closing {
+  animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
+}
+@keyframes lyra-bottomsheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes lyra-bottomsheet-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lyra-bottomsheet-overlay,
+  .lyra-bottomsheet,
+  .lyra-bottomsheet-overlay--closing,
+  .lyra-bottomsheet--closing {
+    animation: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .lyra-drawer-overlay,
   .lyra-drawer,
