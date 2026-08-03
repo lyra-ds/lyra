@@ -6,7 +6,14 @@ import '@lyra-ds/styles/styles.css';
 import { SidebarGroup } from './index';
 
 const items = [
-  { id: 'inbox', label: 'Inbox', icon: <span aria-hidden="true">I</span>, badge: 2, active: true },
+  {
+    id: 'inbox',
+    label: 'Inbox',
+    title: 'Open inbox',
+    icon: <span aria-hidden="true">I</span>,
+    badge: 2,
+    active: true,
+  },
   { id: 'archive', label: 'Archive' },
 ];
 
@@ -25,9 +32,8 @@ describe('SidebarGroup', () => {
       setTheme(theme);
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       try {
-        const { container } = await render(
-          <SidebarGroup label="Projects" items={items} collapsible />,
-        );
+        const screen = await render(<SidebarGroup label="Projects" items={items} collapsible />);
+        const { container } = screen;
         expect(container.querySelector('.lyra-sbgroup')!.className).toBe('lyra-sbgroup');
         expect(container.querySelector('.lyra-sbgroup__label')!.className).toBe(
           'lyra-sbgroup__label lyra-sbgroup__label--btn',
@@ -38,6 +44,9 @@ describe('SidebarGroup', () => {
         expect(container.querySelector('.lyra-sbgroup__item')!.getAttribute('aria-current')).toBe(
           'page',
         );
+        const inboxItem = screen.getByRole('button', { name: 'Inbox' });
+        await expect.element(inboxItem).toBeInTheDocument();
+        await expect.element(inboxItem).toHaveAttribute('title', 'Open inbox');
         expect(error).not.toHaveBeenCalled();
         expect(
           (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),

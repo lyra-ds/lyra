@@ -52,3 +52,12 @@ Never touch: `handoff/`, `packages/styles/`, `apps/`, `tools/**` source
 ## Report contract
 
 Files touched; each gate run with actual output tail; uncertainty declared.
+
+## Adendo (2026-08-03, após a Onda 1a)
+
+- The docgen guard bump in `tools/docgen/generate.mjs` (`EXPECTED_COMPONENTS`,
+  with a line added to its history comment) is INSIDE the boundary for wave
+  lots — bump it in the same change that adds components.
+- The landing stats pin (`apps/site/scripts/landing-sections.test.mjs`) is the
+  MAESTRO's follow-through — do not touch `apps/`; just report the final
+  docgen count so the maestro re-derives.

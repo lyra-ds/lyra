@@ -235,6 +235,50 @@ export declare function TableOfContents(props: TableOfContentsProps): JSX.Elemen
 
 ## Data
 
+### DataTable
+```ts
+/** Props for {@link DataTable}. */
+export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
+  /** Columns rendered in the supplied order. */
+  columns: DataTableColumn[];
+  /** Row records whose values may be any renderable React node. An `id` value is used for keys and selection. */
+  rows: RowShape[];
+  /** Controlled sorting state. Pass `null` for unsorted rows. */
+  sorting?: DataTableSorting | null;
+  /** Initial sorting state when uncontrolled. Default: `null`. */
+  defaultSorting?: DataTableSorting | null;
+  /** Called after sorting changes. */
+  onSortChange?: (sorting: DataTableSorting | null) => void;
+  /** Whether to render row and select-all checkboxes. */
+  selectable?: boolean;
+  /** Controlled selected row identifiers. */
+  selected?: Array<string | number>;
+  /** Initial selected row identifiers when uncontrolled. */
+  defaultSelected?: Array<string | number>;
+  /** Called after the selected row identifiers change. */
+  onSelectionChange?: (selected: Array<string | number>) => void;
+  /** Whether the header remains visible while the table scrolls. */
+  stickyHeader?: boolean;
+  /** Maximum height for the scrollable table area. */
+  maxHeight?: number | string;
+  /** Row density. Default: `"comfortable"`. */
+  density?: 'comfortable' | 'compact';
+  /** Whether to render loading placeholders, or the number of placeholder rows. */
+  loading?: boolean | number;
+  /** Content shown instead of the default empty-state label. */
+  empty?: ReactNode;
+  /** Content rendered below the scrollable table area. */
+  footer?: ReactNode;
+  /** Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied. */
+  hover?: boolean;
+  /** Called when a data row is clicked. */
+  onRowClick?: (row: RowShape) => void;
+  /** Labels for controls and the default empty state. Merged over the English defaults. */
+  labels?: DataTableLabels;
+}
+export declare function DataTable(props: DataTableProps): JSX.Element;
+```
+
 ### EmptyState
 ```ts
 /** Props for {@link EmptyState}. */
@@ -249,6 +293,20 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
   action?: ReactNode;
 }
 export declare function EmptyState(props: EmptyStateProps): JSX.Element;
+```
+
+### PersonCell
+```ts
+/** Props for {@link PersonCell}. */
+export interface PersonCellProps extends HTMLAttributes<HTMLDivElement> {
+  /** Primary person name. */
+  name: ReactNode;
+  /** Optional secondary detail, such as an email address or role. */
+  detail?: ReactNode;
+  /** Avatar image URL. When absent, string names render Avatar initials. */
+  src?: string;
+}
+export declare function PersonCell(props: PersonCellProps): JSX.Element;
 ```
 
 ### Stat
@@ -855,6 +913,26 @@ export declare function Icon(props: IconProps): JSX.Element;
 ```
 
 ## Layout
+
+### ActionBar
+```ts
+/** Props for {@link ActionBar}. */
+export interface ActionBarProps extends HTMLAttributes<HTMLDivElement> {
+  /** Whether the bar may render. Default: `true`. */
+  open?: boolean;
+  /** Number of selected items. A value of `0` hides the bar. */
+  count?: number;
+  /** Content displayed after the selection count. Default: `"selected"`. */
+  label?: ReactNode;
+  /** Action controls rendered at the end of the bar. */
+  actions?: ReactNode;
+  /** Called when the clear-selection button is pressed. Its presence renders that button. */
+  onClear?: () => void;
+  /** Accessible name for the clear-selection button. Default: `"Clear selection"`. */
+  clearLabel?: string;
+}
+export declare function ActionBar(props: ActionBarProps): JSX.Element;
+```
 
 ### Container
 ```ts

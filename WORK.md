@@ -5,6 +5,22 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Fase 8 / Onda 1b — DataTable + PersonCell, ActionBar, delta do SidebarGroup
+      (2026-08-03).** 3 componentes novos (docgen 59→62) + tooltip do SidebarGroup;
+      i18n por props (o `selectRow` do DataTable virou `string | (row) => string` —
+      o handoff dava o MESMO nome acessível a toda checkbox de linha). Ciclo cheio:
+      2 travamentos no gate interno do codex (desarmados com o bloco de
+      follow-through no brief, sem nomear o gate), 1 retry (locator ambíguo +
+      a11y por linha), e o cross-review achou um HIGH real que o retry já usado
+      mandou para a lane crítica: com linhas sem `id`, o fallback usava índice
+      ORDENADO na renderização e original no select-all — seleção pulava de linha
+      ao reordenar. Fix do maestro (mapa estável por linha), skeleton composto em
+      vez de span inline, e o teste de regressão PROVADO POR MUTAÇÃO nas duas
+      direções — a 1ª versão dele passava com o bug (exibição autoconsistente
+      dentro da mesma ordenação; só o ciclo completo de sort expõe), e um replace
+      silenciosamente não-aplicado pós-prettier quase o deixou fraco. → codex
+      (`gpt-5.6-terra`, high, worktree, 2 re-disparos + 1 retry) + claude (HIGH).
+
 - [ ] **Fase 8 / Onda 1a — RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator
       (2026-08-03).** 5 exports novos (54→59 no docgen, guard bumpado), i18n por props,
       changeset minor. 1 retry por doutrina: FormRow veio com `gridTemplateColumns`

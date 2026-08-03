@@ -18,6 +18,10 @@ const OUTPUT = join(__dirname, 'output');
 const LLMS_FILE = join(OUTPUT, 'llms.txt');
 const PROPS_FILE = join(OUTPUT, 'props.json');
 
+// Some handoff components have a contract in handoff/llms.txt and canonical CSS but no standalone
+// .d.ts file. Keep those reconstruction exceptions explicit so category inference remains strict.
+const CATEGORY_OVERRIDES = new Map([['PersonCell', 'Data']]);
+
 const CATEGORY_ORDER = [
   'Buttons',
   'Chrome',
@@ -269,7 +273,7 @@ function extractComponents() {
         throw new Error(`${file}: ${propsName} is exported, but ${name} is not.`);
       }
 
-      const category = categoryByName.get(name) ?? ownerCategory;
+      const category = categoryByName.get(name) ?? ownerCategory ?? CATEGORY_OVERRIDES.get(name);
       if (!category || !CATEGORY_ORDER.includes(category)) {
         throw new Error(`${file}: no handoff category for ${name}.`);
       }
@@ -306,11 +310,12 @@ function extractComponents() {
   // the four layout wrappers moved this from 40 to 45, Shell moved it from 46 to 47, and Navbar,
   // NavLink, and Footer moved it from 47 to 50; TableOfContents moved it from 50 to 51; CodeBlock
   // SegmentedControl move it from 51 to 53, and Brand moves it from 53 to 54; wave 1a of the v1.2
-  // delta port (RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator) moves it to 59. The guard's job is
+  // delta port (RadioGroup, CheckboxGroup, Fieldset+FormRow, Separator) moves it to 59; DataTable,
+  // PersonCell, and ActionBar move it to 62. The guard's job is
   // catching a stale or partial dist (which yields FEWER), so it is maintained by hand: bump it in
   // the same commit that adds a component, and the mismatch message tells you the number it
   // actually found.
-  const EXPECTED_COMPONENTS = 59;
+  const EXPECTED_COMPONENTS = 62;
   if (components.length !== EXPECTED_COMPONENTS) {
     throw new Error(
       `Expected exactly ${EXPECTED_COMPONENTS} exported component Props interfaces from packages/react/dist; extracted ${components.length}. Rebuild @lyra-ds/react or fix the declaration exports.`,

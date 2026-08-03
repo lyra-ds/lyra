@@ -8,6 +8,8 @@ export interface SidebarGroupItem {
   id: string;
   /** Text displayed for the item. */
   label: string;
+  /** Native tooltip shown when the sidebar is displayed as an icon rail. */
+  title?: string;
   /** Optional icon displayed before the item label. */
   icon?: ReactNode;
   /** Optional count or status displayed after the item label. */
@@ -105,6 +107,7 @@ export const SidebarGroup = /*#__PURE__*/ forwardRef<HTMLDivElement, SidebarGrou
                 type="button"
                 className={cx('lyra-sbgroup__item', item.active && 'lyra-sbgroup__item--active')}
                 aria-current={item.active ? 'page' : undefined}
+                title={item.title}
                 onClick={() => {
                   item.onSelect?.();
                   onSelect?.(item.id, item);

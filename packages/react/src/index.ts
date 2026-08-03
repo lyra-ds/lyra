@@ -124,6 +124,17 @@ export type { ComboboxOption, ComboboxProps } from './combobox';
 
 export { Table } from './table';
 export type { TableColumn, TableProps } from './table';
+export { DataTable } from './data-table';
+export type {
+  DataTableColumn,
+  DataTableLabels,
+  DataTableProps,
+  DataTableSorting,
+} from './data-table';
+export { PersonCell } from './person-cell';
+export type { PersonCellProps } from './person-cell';
+export { ActionBar } from './action-bar';
+export type { ActionBarProps } from './action-bar';
 export { SidebarGroup } from './sidebar-group';
 export type { SidebarGroupItem, SidebarGroupProps } from './sidebar-group';
 export { Toast, ToastStack } from './toast';
