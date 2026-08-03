@@ -1,5 +1,11 @@
 # @lyra-ds/react
 
+## 0.2.0
+
+### Minor Changes
+
+- [#61](https://github.com/lyra-ds/lyra/pull/61) [`512e3d6`](https://github.com/lyra-ds/lyra/commit/512e3d648093ff577a0c30d8ae9e186e07dd556e) Thanks [@franciscpd](https://github.com/franciscpd)! - Add RadioGroup, CheckboxGroup, Fieldset, FormRow, and Separator wrappers.
+
 ## 0.1.1
 
 ### Patch Changes

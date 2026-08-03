@@ -1,6 +1,6 @@
 {
   "name": "@lyra-ds/styles",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Lyra DS — CSS-first design tokens + component styles (209 tokens, 40 components), zero JS.",
   "license": "MIT",
   "homepage": "https://lyra-ds.dev",
