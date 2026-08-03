@@ -35,7 +35,13 @@ export async function generateMetadata({
     'pt-BR': '/pt-BR',
     'x-default': '/en',
   };
-  const image = '/opengraph-image';
+  const image = {
+    alt: 'Lyra DS — CSS-first design system for SaaS products',
+    height: 630,
+    type: 'image/png',
+    url: '/og.png',
+    width: 1200,
+  };
 
   return {
     title: t('metadataTitle'),
@@ -51,7 +57,7 @@ export async function generateMetadata({
       description: t('metadataDescription'),
       url,
       locale: lang === 'en' ? 'en_US' : 'pt_BR',
-      images: [{ url: image, width: 1200, height: 630, alt: t('metadataTitle') }],
+      images: [image],
     },
     twitter: {
       card: 'summary_large_image',
