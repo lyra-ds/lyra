@@ -544,7 +544,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown && node scripts/use-client.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
