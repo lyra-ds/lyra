@@ -62,6 +62,17 @@ test('exports localized canonical, hreflang, Open Graph, and Twitter metadata', 
   }
 });
 
+test('the bare-domain redirect page carries the shareable metadata fallback', () => {
+  const head = headOf('index.html');
+
+  assert.ok(head.includes('<title>Lyra DS — CSS-first design system for SaaS products</title>'));
+  assert.ok(head.includes(`<meta property="og:image" content="${imageUrl}"/>`));
+  assert.ok(head.includes(`<meta property="og:title" content="${imageAlt}"/>`));
+  assert.ok(head.includes('<meta property="og:site_name" content="Lyra DS"/>'));
+  assert.ok(head.includes('<meta name="twitter:card" content="summary_large_image"/>'));
+  assert.ok(head.includes(`<meta name="twitter:image" content="${imageUrl}"/>`));
+});
+
 test('exports metadata unique to each localized privacy route', () => {
   for (const [locale, title, description] of [
     [
