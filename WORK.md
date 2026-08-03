@@ -5,6 +5,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 5 — ToastProvider + useToast (2026-08-03).** Camada sobre
+      Toast/ToastStack com as 4 armadilhas do mapa fechadas: SVGs de tom inline (zero
+      import do registry — 866 B), id SSR-safe, clearTimeout completo (incluindo o
+      edge do cross-review: referência retida de toast() chamada pós-unmount vira
+      no-op guardado), closeLabel exposto. Docgen 70→71. O lote também pagou uma
+      conta de infra: com 71 entries os per-entry dts builds do tsdown estouram 4
+      GiB — heap 8192 embutido no script de build + workflows, concorrência 2, e o
+      débito de arquitetura registrado no plano (passe único de declarações como
+      candidato). DEPLOY.md atualizado (dizia 51 entries/4096 — doc que faria um
+      operador reverter o fix). → codex (`gpt-5.6-terra`, high, worktree) + claude
+      (guard de unmount, infra de build, docs).
+
 - [x] **Fase 8 / Onda 4 — AppSidebar e BottomNav (2026-08-03).** AppSidebar com as
       duas portas (children preservando `<Link>` — o requisito do mapa — e
       `groups[]` como conveniência), rail de 64px com tooltips nativas via o delta

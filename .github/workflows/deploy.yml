@@ -29,7 +29,7 @@ jobs:
     env:
       # The declaration build of @lyra-ds/react needs more than 2.5 GB of
       # heap (measured — see DEPLOY.md); 4096 leaves ~60% headroom.
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=8192
       # Public by construction (inlined into the static bundle), so they are
       # repository VARIABLES, not secrets. Absent values fail closed: no
       # analytics script, no analytics origin in the generated CSP.

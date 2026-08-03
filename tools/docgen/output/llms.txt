@@ -1467,3 +1467,16 @@ export interface ThemeProviderProps {
 }
 export declare function ThemeProvider(props: ThemeProviderProps): JSX.Element;
 ```
+
+### ToastProvider
+```ts
+/** Props for {@link ToastProvider}. */
+export interface ToastProviderProps {
+  /** Default auto-dismiss delay in milliseconds. `0` disables auto-dismiss. Default: `4000`. */
+  duration?: number;
+  /** Accessible name passed to every composed Toast close button. Default: `"Close notification"`. */
+  closeLabel?: string;
+  children: ReactNode;
+}
+export declare function ToastProvider(props: ToastProviderProps): JSX.Element;
+```

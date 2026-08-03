@@ -646,6 +646,16 @@
         "default": "./dist/toast.cjs"
       }
     },
+    "./toast-provider": {
+      "import": {
+        "types": "./dist/toast-provider.d.ts",
+        "default": "./dist/toast-provider.js"
+      },
+      "require": {
+        "types": "./dist/toast-provider.d.cts",
+        "default": "./dist/toast-provider.cjs"
+      }
+    },
     "./cookie-banner": {
       "import": {
         "types": "./dist/cookie-banner.d.ts",
@@ -694,7 +704,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsdown && node scripts/use-client.mjs",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsdown --concurrency 2 && node scripts/use-client.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
@@ -1313,6 +1323,16 @@
         "react-dom"
       ],
       "limit": "700 B"
+    },
+    {
+      "name": "import { ToastProvider } from '@lyra-ds/react/toast-provider'",
+      "path": "dist/toast-provider.js",
+      "import": "{ ToastProvider }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1.5 kB"
     },
     {
       "name": "import { CookieBanner } from '@lyra-ds/react/cookie-banner'",

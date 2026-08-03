@@ -161,6 +161,8 @@ export { BottomNav } from './bottom-nav';
 export type { BottomNavItem, BottomNavProps } from './bottom-nav';
 export { Toast, ToastStack } from './toast';
 export type { ToastProps, ToastStackProps } from './toast';
+export { ToastProvider, useToast } from './toast-provider';
+export type { ToastApi, ToastOptions, ToastProviderProps } from './toast-provider';
 export { CookieBanner } from './cookie-banner';
 export type { CookieBannerProps } from './cookie-banner';
 

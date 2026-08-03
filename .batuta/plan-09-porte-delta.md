@@ -48,3 +48,11 @@ Regras que valem em TODO lote (do mapa e do profile): i18n por props
 traduzíveis desde o primeiro componente (nada de pt-BR hardcoded);
 componente de bloco com teste da forma real; asserção de existência com
 `expect.element`; impeccable na página de demonstração de cada componente.
+
+## Débito de arquitetura registrado (2026-08-03, Onda 5)
+
+O desenho de 08-1 (um config tsdown por entry, cada um emitindo o próprio
+`.d.ts`) não escala: com 71 entries o build estoura 4 GiB de heap. Mitigação
+aplicada: `--concurrency 2` no script de build + `NODE_OPTIONS=8192` nos 3
+workflows. Solução real a avaliar pós-fase: passe único de declarações
+(`tsc --emitDeclarationOnly`) ou o dts worker do tsdown quando maduro.

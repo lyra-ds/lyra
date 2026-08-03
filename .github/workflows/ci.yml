@@ -21,6 +21,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# The react package's per-entry dts builds (71 entries) need >4 GB of heap;
+# tsdown concurrency is capped in the package build script, the heap is raised here.
+env:
+  NODE_OPTIONS: --max-old-space-size=8192
+
 jobs:
   lint:
     runs-on: ubuntu-latest
