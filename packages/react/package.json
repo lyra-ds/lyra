@@ -516,6 +516,36 @@
         "default": "./dist/table.cjs"
       }
     },
+    "./data-table": {
+      "import": {
+        "types": "./dist/data-table.d.ts",
+        "default": "./dist/data-table.js"
+      },
+      "require": {
+        "types": "./dist/data-table.d.cts",
+        "default": "./dist/data-table.cjs"
+      }
+    },
+    "./person-cell": {
+      "import": {
+        "types": "./dist/person-cell.d.ts",
+        "default": "./dist/person-cell.js"
+      },
+      "require": {
+        "types": "./dist/person-cell.d.cts",
+        "default": "./dist/person-cell.cjs"
+      }
+    },
+    "./action-bar": {
+      "import": {
+        "types": "./dist/action-bar.d.ts",
+        "default": "./dist/action-bar.js"
+      },
+      "require": {
+        "types": "./dist/action-bar.d.cts",
+        "default": "./dist/action-bar.cjs"
+      }
+    },
     "./sidebar-group": {
       "import": {
         "types": "./dist/sidebar-group.d.ts",
@@ -1068,6 +1098,36 @@
       "name": "import { Table } from '@lyra-ds/react/table'",
       "path": "dist/table.js",
       "import": "{ Table }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "700 B"
+    },
+    {
+      "name": "import { DataTable } from '@lyra-ds/react/data-table'",
+      "path": "dist/data-table.js",
+      "import": "{ DataTable }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2.25 kB"
+    },
+    {
+      "name": "import { PersonCell } from '@lyra-ds/react/person-cell'",
+      "path": "dist/person-cell.js",
+      "import": "{ PersonCell }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "800 B"
+    },
+    {
+      "name": "import { ActionBar } from '@lyra-ds/react/action-bar'",
+      "path": "dist/action-bar.js",
+      "import": "{ ActionBar }",
       "ignore": [
         "react",
         "react-dom"

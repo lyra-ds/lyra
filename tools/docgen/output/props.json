@@ -414,6 +414,123 @@
     ]
   },
   {
+    "name": "DataTable",
+    "category": "Data",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link DataTable}.",
+    "signature": "export declare function DataTable(props: DataTableProps): JSX.Element;",
+    "props": [
+      {
+        "name": "columns",
+        "type": "DataTableColumn[]",
+        "optional": false,
+        "description": "Columns rendered in the supplied order."
+      },
+      {
+        "name": "rows",
+        "type": "RowShape[]",
+        "optional": false,
+        "description": "Row records whose values may be any renderable React node. An `id` value is used for keys and selection."
+      },
+      {
+        "name": "sorting",
+        "type": "DataTableSorting | null",
+        "optional": true,
+        "description": "Controlled sorting state. Pass `null` for unsorted rows."
+      },
+      {
+        "name": "defaultSorting",
+        "type": "DataTableSorting | null",
+        "optional": true,
+        "description": "Initial sorting state when uncontrolled. Default: `null`."
+      },
+      {
+        "name": "onSortChange",
+        "type": "(sorting: DataTableSorting | null) => void",
+        "optional": true,
+        "description": "Called after sorting changes."
+      },
+      {
+        "name": "selectable",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether to render row and select-all checkboxes."
+      },
+      {
+        "name": "selected",
+        "type": "Array<string | number>",
+        "optional": true,
+        "description": "Controlled selected row identifiers."
+      },
+      {
+        "name": "defaultSelected",
+        "type": "Array<string | number>",
+        "optional": true,
+        "description": "Initial selected row identifiers when uncontrolled."
+      },
+      {
+        "name": "onSelectionChange",
+        "type": "(selected: Array<string | number>) => void",
+        "optional": true,
+        "description": "Called after the selected row identifiers change."
+      },
+      {
+        "name": "stickyHeader",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the header remains visible while the table scrolls."
+      },
+      {
+        "name": "maxHeight",
+        "type": "number | string",
+        "optional": true,
+        "description": "Maximum height for the scrollable table area."
+      },
+      {
+        "name": "density",
+        "type": "'comfortable' | 'compact'",
+        "optional": true,
+        "description": "Row density. Default: `\"comfortable\"`."
+      },
+      {
+        "name": "loading",
+        "type": "boolean | number",
+        "optional": true,
+        "description": "Whether to render loading placeholders, or the number of placeholder rows."
+      },
+      {
+        "name": "empty",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Content shown instead of the default empty-state label."
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Content rendered below the scrollable table area."
+      },
+      {
+        "name": "hover",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied."
+      },
+      {
+        "name": "onRowClick",
+        "type": "(row: RowShape) => void",
+        "optional": true,
+        "description": "Called when a data row is clicked."
+      },
+      {
+        "name": "labels",
+        "type": "DataTableLabels",
+        "optional": true,
+        "description": "Labels for controls and the default empty state. Merged over the English defaults."
+      }
+    ]
+  },
+  {
     "name": "EmptyState",
     "category": "Data",
     "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'title'>",
@@ -443,6 +560,33 @@
         "type": "ReactNode",
         "optional": true,
         "description": "Optional action, normally a `<Button>`."
+      }
+    ]
+  },
+  {
+    "name": "PersonCell",
+    "category": "Data",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link PersonCell}.",
+    "signature": "export declare function PersonCell(props: PersonCellProps): JSX.Element;",
+    "props": [
+      {
+        "name": "name",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Primary person name."
+      },
+      {
+        "name": "detail",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional secondary detail, such as an email address or role."
+      },
+      {
+        "name": "src",
+        "type": "string",
+        "optional": true,
+        "description": "Avatar image URL. When absent, string names render Avatar initials."
       }
     ]
   },
@@ -1673,6 +1817,51 @@
         "type": "CSSProperties",
         "optional": true,
         "description": ""
+      }
+    ]
+  },
+  {
+    "name": "ActionBar",
+    "category": "Layout",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link ActionBar}.",
+    "signature": "export declare function ActionBar(props: ActionBarProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the bar may render. Default: `true`."
+      },
+      {
+        "name": "count",
+        "type": "number",
+        "optional": true,
+        "description": "Number of selected items. A value of `0` hides the bar."
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Content displayed after the selection count. Default: `\"selected\"`."
+      },
+      {
+        "name": "actions",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Action controls rendered at the end of the bar."
+      },
+      {
+        "name": "onClear",
+        "type": "() => void",
+        "optional": true,
+        "description": "Called when the clear-selection button is pressed. Its presence renders that button."
+      },
+      {
+        "name": "clearLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the clear-selection button. Default: `\"Clear selection\"`."
       }
     ]
   },
