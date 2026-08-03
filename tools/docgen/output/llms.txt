@@ -920,9 +920,9 @@ export interface CreateWorkspaceDialogProps {
   onClose?: () => void;
   /** Receives the trimmed workspace name and its URL-safe slug after submission. */
   onCreate?: (data: {
-        name: string;
-        slug: string;
-    }) => void;
+    name: string;
+    slug: string;
+  }) => void;
   /** Dialog heading. Default `"Create workspace"`. */
   title?: string;
   /** Text rendered before the editable slug. Default `"lyra.dev/"`. */

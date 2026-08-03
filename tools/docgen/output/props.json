@@ -1790,7 +1790,7 @@
       },
       {
         "name": "onCreate",
-        "type": "(data: {\n        name: string;\n        slug: string;\n    }) => void",
+        "type": "(data: {\n    name: string;\n    slug: string;\n  }) => void",
         "optional": true,
         "description": "Receives the trimmed workspace name and its URL-safe slug after submission."
       },
