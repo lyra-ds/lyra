@@ -5,6 +5,16 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 6b — extensão do Combobox + TimeZonePicker (2026-08-03).** O
+      delta que bloqueava o picker: `group` (headers pulados pelo teclado, incluindo
+      Home/End em lista filtrada), `trailing` e `keywords` (busca invisível com
+      folding de diacríticos — cafe acha café), tudo aditivo com os testes
+      existentes intocados como harness. TimeZonePicker com IANA sempre, GMT
+      derivado da referenceDate (DST nas duas metades + Kolkata +5:30),
+      recentZones deduplicado, e a divergência onChange decidida pelo `.d.ts`
+      (precedente da fase). Docgen 73→74. → codex (`gpt-5.6-terra`, high,
+      worktree, 1 retry pelos 4 findings aceitos do cross-review).
+
 - [x] **Fase 8 / Onda 6a — SegmentedRing e TimeInput (2026-08-03).** As folhas do
       scheduling, com as armadilhas nº 1 de cada uma fechadas por teste: o ring com
       fonte acessível única (svg+legenda aria-hidden, span oculto anuncia — remover

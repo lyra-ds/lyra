@@ -138,6 +138,8 @@ export { Popover } from './popover';
 export type { PopoverProps } from './popover';
 export { Combobox } from './combobox';
 export type { ComboboxOption, ComboboxProps } from './combobox';
+export { TimeZonePicker } from './time-zone-picker';
+export type { TimeZoneOption, TimeZonePickerLabels, TimeZonePickerProps } from './time-zone-picker';
 
 export { Table } from './table';
 export type { TableColumn, TableProps } from './table';

@@ -586,6 +586,16 @@
         "default": "./dist/combobox.cjs"
       }
     },
+    "./time-zone-picker": {
+      "import": {
+        "types": "./dist/time-zone-picker.d.ts",
+        "default": "./dist/time-zone-picker.js"
+      },
+      "require": {
+        "types": "./dist/time-zone-picker.d.cts",
+        "default": "./dist/time-zone-picker.cjs"
+      }
+    },
     "./table": {
       "import": {
         "types": "./dist/table.d.ts",
@@ -1282,7 +1292,17 @@
         "react",
         "react-dom"
       ],
-      "limit": "8.25 kB"
+      "limit": "8.5 kB"
+    },
+    {
+      "name": "TimeZonePicker (Combobox composition)",
+      "path": "dist/time-zone-picker.js",
+      "import": "{ TimeZonePicker }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "10 kB"
     },
     {
       "name": "import { Table } from '@lyra-ds/react/table'",

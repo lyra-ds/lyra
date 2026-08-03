@@ -79,6 +79,7 @@ const entries = {
   dropdown: 'src/dropdown/index.ts',
   popover: 'src/popover/index.ts',
   combobox: 'src/combobox/index.ts',
+  'time-zone-picker': 'src/time-zone-picker/index.ts',
   table: 'src/table/index.ts',
   'data-table': 'src/data-table/index.ts',
   'person-cell': 'src/person-cell/index.ts',

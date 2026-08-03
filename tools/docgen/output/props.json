@@ -3099,6 +3099,105 @@
     ]
   },
   {
+    "name": "TimeZonePicker",
+    "category": "Scheduling",
+    "extends": "",
+    "description": "Props for {@link TimeZonePicker}.",
+    "signature": "export declare function TimeZonePicker(props: TimeZonePickerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "optional": true,
+        "description": "Controlled IANA zone identifier, for example `\"America/Sao_Paulo\"`."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial IANA zone identifier in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(zone: string) => void",
+        "optional": true,
+        "description": "Called with the selected IANA zone identifier."
+      },
+      {
+        "name": "referenceDate",
+        "type": "string | Date",
+        "optional": true,
+        "description": "Date used to derive the displayed GMT offset. Defaults to the current time."
+      },
+      {
+        "name": "recentZones",
+        "type": "string[]",
+        "optional": true,
+        "description": "IANA zones pinned under the recent-zones heading."
+      },
+      {
+        "name": "detectedZone",
+        "type": "string",
+        "optional": true,
+        "description": "IANA zone pinned under the detected-zone heading."
+      },
+      {
+        "name": "zones",
+        "type": "TimeZoneOption[]",
+        "optional": true,
+        "description": "Replaces the curated default zone list."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for each option's live local time. Default: `\"en-US\"`."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the picker."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the picker."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that replaces `hint` and enables error styling."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no zone is selected. Defaults to `labels.placeholder`."
+      },
+      {
+        "name": "labels",
+        "type": "TimeZonePickerLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over English defaults."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the picker trigger."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Additional class name appended to `.lyra-tzpicker`."
+      }
+    ]
+  },
+  {
     "name": "ThemeProvider",
     "category": "System",
     "extends": "",

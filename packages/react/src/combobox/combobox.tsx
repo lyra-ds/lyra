@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { Fragment, forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { Icon } from '../icon';
 import { cx } from '../internal/cx';
@@ -15,6 +15,12 @@ export interface ComboboxOption {
   icon?: ReactNode;
   /** Optional secondary text rendered after the label. */
   hint?: string;
+  /** Optional presentational heading for this contiguous option group. */
+  group?: string;
+  /** Optional content aligned to the option's trailing edge. */
+  trailing?: ReactNode;
+  /** Optional search terms that are matched but never rendered. */
+  keywords?: string;
 }
 
 /** Props for {@link Combobox}. */
@@ -52,6 +58,13 @@ export interface ComboboxProps {
 interface IndexedOption {
   option: ComboboxOption;
   index: number;
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
 }
 
 /**
@@ -98,11 +111,14 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
     const popRef = useRef<HTMLDivElement>(null);
     const placement = useFlipPlacement(open, triggerRef, popRef);
 
+    const normalizedQuery = normalizeSearchText(query);
     const filtered: IndexedOption[] = options
       .map((option, index) => ({ option, index }))
       .filter(
         ({ option }) =>
-          !query || option.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+          !normalizedQuery ||
+          normalizeSearchText(option.label).includes(normalizedQuery) ||
+          normalizeSearchText(option.keywords ?? '').includes(normalizedQuery),
       );
     const selected = options.find((option) => option.value === current);
     const active = filtered[activeIndex];
@@ -164,6 +180,12 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         if (filtered.length > 0) setActiveIndex((index) => Math.max(index - 1, 0));
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        if (filtered.length > 0) setActiveIndex(0);
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        if (filtered.length > 0) setActiveIndex(filtered.length - 1);
       } else if (event.key === 'Enter') {
         event.preventDefault();
         if (active) pick(active.option);
@@ -237,31 +259,41 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
                 <span className="lyra-combobox__empty">{emptyMessage}</span>
               )}
               {filtered.map(({ option, index }, filteredIndex) => (
-                <button
-                  key={option.value}
-                  id={`${triggerId}-option-${index}`}
-                  type="button"
-                  role="option"
-                  tabIndex={-1}
-                  aria-selected={option.value === current}
-                  className={cx(
-                    'lyra-combobox__option',
-                    filteredIndex === activeIndex && 'lyra-combobox__option--active',
+                <Fragment key={option.value}>
+                  {option.group && filtered[filteredIndex - 1]?.option.group !== option.group && (
+                    <span className="lyra-combobox__group" role="presentation">
+                      {option.group}
+                    </span>
                   )}
-                  onMouseEnter={() => setActiveIndex(filteredIndex)}
-                  onClick={() => pick(option)}
-                >
-                  {option.icon}
-                  <span className="lyra-combobox__option-label">
-                    {option.label}
-                    {option.hint && (
-                      <span className="lyra-combobox__option-hint">{option.hint}</span>
+                  <button
+                    key={option.value}
+                    id={`${triggerId}-option-${index}`}
+                    type="button"
+                    role="option"
+                    tabIndex={-1}
+                    aria-selected={option.value === current}
+                    className={cx(
+                      'lyra-combobox__option',
+                      filteredIndex === activeIndex && 'lyra-combobox__option--active',
                     )}
-                  </span>
-                  {option.value === current && (
-                    <Icon name="check" size={15} color="var(--accent)" />
-                  )}
-                </button>
+                    onMouseEnter={() => setActiveIndex(filteredIndex)}
+                    onClick={() => pick(option)}
+                  >
+                    {option.icon}
+                    <span className="lyra-combobox__option-label">
+                      {option.label}
+                      {option.hint && (
+                        <span className="lyra-combobox__option-hint">{option.hint}</span>
+                      )}
+                    </span>
+                    {option.trailing && (
+                      <span className="lyra-combobox__trailing">{option.trailing}</span>
+                    )}
+                    {option.value === current && (
+                      <Icon name="check" size={15} color="var(--accent)" />
+                    )}
+                  </button>
+                </Fragment>
               ))}
             </div>
           </div>
