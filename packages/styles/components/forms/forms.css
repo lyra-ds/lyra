@@ -15,7 +15,7 @@
   font-size: var(--text-base);
   color: var(--text-primary);
   background: var(--surface-raised);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-input, var(--border-default));
   border-radius: var(--radius-md);
   height: var(--control-md);
   padding: 0 var(--space-4);
@@ -25,6 +25,7 @@
 }
 .lyra-input::placeholder { color: var(--text-faint); }
 .lyra-input:hover:not(:disabled):not(:focus) { border-color: var(--border-strong); }
+@media (pointer: coarse) { .lyra-input { font-size: var(--text-md); } } /* anti-zoom iOS */
 .lyra-input:focus {
   outline: none;
   border-color: var(--border-accent);
@@ -145,6 +146,13 @@
   cursor: pointer;
 }
 .lyra-combobox__option--active { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-combobox__group {
+  font-size: 10px; font-weight: var(--weight-semibold);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-faint);
+  padding: var(--space-2) var(--space-3) var(--space-1);
+}
+.lyra-combobox__trailing { margin-left: auto; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); flex: none; }
 .lyra-combobox__option-label {
   flex: 1;
   display: flex;
@@ -225,6 +233,151 @@
 .lyra-switch input:checked + .lyra-switch__track { background: var(--accent); }
 .lyra-switch input:checked + .lyra-switch__track::after { left: 20px; }
 .lyra-switch input:disabled + .lyra-switch__track { opacity: 0.5; }
+
+/* fieldset + form row */
+.lyra-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.lyra-fieldset__legend { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-primary); padding: 0; }
+.lyra-fieldset__desc { margin: var(--space-1) 0 0; font-size: var(--text-xs); color: var(--text-muted); }
+.lyra-fieldset__legend + .lyra-fieldset__fields, .lyra-fieldset__desc + .lyra-fieldset__fields { margin-top: var(--space-3); }
+.lyra-fieldset__fields { display: flex; flex-direction: column; gap: var(--space-4); }
+.lyra-formrow { display: grid; gap: var(--space-4); }
+@media (max-width: 560px) { .lyra-formrow { grid-template-columns: 1fr !important; } }
+
+/* radio/checkbox groups */
+.lyra-choicegroup { display: flex; flex-direction: column; gap: var(--space-2); }
+/* stylelint-disable-next-line declaration-block-no-redundant-longhand-properties -- direction and
+   wrapping remain independently overridable by consumers. */
+.lyra-choicegroup--row { flex-direction: row; flex-wrap: wrap; gap: var(--space-4); }
+.lyra-choice { display: flex; flex-direction: column; gap: 1px; }
+.lyra-choice__hint { font-size: var(--text-xs); color: var(--text-muted); font-weight: var(--weight-regular); }
+
+/* calendar */
+.lyra-cal { width: 252px; user-select: none; }
+.lyra-cal--md { width: 308px; }
+.lyra-cal--md .lyra-cal__day { height: 40px; }
+.lyra-cal__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
+.lyra-cal__month { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.lyra-cal__label {
+  border: 0; background: transparent; cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.lyra-cal__label:hover { background: var(--surface-sunken); }
+.lyra-cal__label:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-cal__nav {
+  width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: var(--radius-sm);
+  color: var(--text-muted); cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-cal__nav:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-cal__nav:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.lyra-cal__wd { font-size: 10px; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-faint); text-align: center; padding: var(--space-1) 0; }
+.lyra-cal__day {
+  position: relative;
+  height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: var(--radius-sm);
+  font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-cal__day:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-cal__day:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-cal__day--out { color: var(--text-faint); }
+.lyra-cal__day--today { box-shadow: inset 0 0 0 1px var(--border-strong); font-weight: var(--weight-semibold); }
+.lyra-cal__day--selected, .lyra-cal__day--selected:hover { background: var(--accent); color: var(--on-accent); font-weight: var(--weight-semibold); }
+.lyra-cal__day:disabled { opacity: 0.35; cursor: not-allowed; background: transparent; }
+.lyra-cal__day--in-range, .lyra-cal__day--in-range:hover { background: var(--accent-soft); color: var(--accent-soft-text); }
+.lyra-cal__dot { position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: var(--radius-full); background: var(--accent); }
+.lyra-cal__day--selected .lyra-cal__dot { background: var(--on-accent); }
+.lyra-cal__foot { display: flex; justify-content: center; border-top: 1px solid var(--border-default); margin-top: var(--space-2); padding-top: var(--space-2); }
+.lyra-cal__today {
+  border: 0; background: transparent; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--accent-soft-text);
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.lyra-cal__today:hover { background: var(--accent-soft); }
+.lyra-cal__today:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-cal__mgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.lyra-cal__mcell {
+  height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: var(--radius-sm);
+  font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-cal__mcell:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-cal__mcell:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-cal__mcell--selected, .lyra-cal__mcell--selected:hover { background: var(--accent); color: var(--on-accent); font-weight: var(--weight-semibold); }
+.lyra-cal--sheet .lyra-cal { width: 100%; }
+.lyra-cal--sheet .lyra-cal__day { height: 44px; }
+.lyra-cal--sheet .lyra-cal__mcell { height: 48px; }
+
+/* date picker */
+.lyra-datepicker { display: flex; width: 100%; }
+.lyra-datepicker .lyra-popover { min-width: 0; }
+.lyra-datepicker > span { width: 100%; }
+button.lyra-datepicker__btn {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; cursor: pointer; text-align: left;
+  color: var(--text-primary);
+}
+button.lyra-datepicker__btn svg { color: var(--text-muted); flex: none; }
+.lyra-datepicker__ph { color: var(--text-muted); }
+
+/* time picker */
+.lyra-timelist {
+  width: 104px;
+  max-height: 224px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: calc(-1 * var(--space-2));
+}
+.lyra-timelist__item {
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  cursor: pointer;
+  flex: none;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-timelist__item:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-timelist__item:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-timelist__item--selected, .lyra-timelist__item--selected:hover { background: var(--accent); color: var(--on-accent); font-weight: var(--weight-semibold); }
+
+/* time input (máscara HH:mm + stepper) */
+.lyra-timeinput { position: relative; display: inline-flex; align-items: center; width: 100%; }
+.lyra-timeinput .lyra-input { font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding-right: 34px; }
+.lyra-timeinput__steppers {
+  position: absolute; right: 5px; top: 5px; bottom: 5px;
+  display: flex; flex-direction: column; width: 24px;
+  border-left: 1px solid var(--border-default);
+}
+.lyra-timeinput__step {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center;
+  border: 0; background: transparent; color: var(--text-muted); cursor: pointer;
+  border-radius: var(--radius-xs); padding: 0;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-timeinput__step:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-timeinput__step:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-timeinput__step:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .lyra-combobox__pop--up {
   top: auto;
   bottom: calc(100% + 6px);
@@ -251,4 +404,10 @@
 .lyra-combobox__trigger:active,
 .lyra-combobox__option:active {
   transform: translateY(0.5px);
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the canonical coarse-pointer rule precedes
+   the small-input modifier, so its 16px anti-zoom size is otherwise overwritten at 13px. */
+@media (pointer: coarse) {
+  .lyra-input--sm { font-size: var(--text-md); }
 }

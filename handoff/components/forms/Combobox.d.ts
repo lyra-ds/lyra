@@ -9,6 +9,12 @@ export interface ComboboxOption {
   icon?: React.ReactNode;
   /** Texto secundário à direita do label */
   hint?: string;
+  /** Cabeçalho de grupo — opções contíguas com o mesmo group ganham um título */
+  group?: string;
+  /** Conteúdo alinhado à direita (ex.: hora atual do fuso) */
+  trailing?: React.ReactNode;
+  /** Termos extras de busca invisíveis (ex.: "gmt-3 brasilia sao paulo") */
+  keywords?: string;
 }
 export interface ComboboxProps {
   /** Rótulo acima do campo */

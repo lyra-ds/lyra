@@ -4,7 +4,7 @@ import { Icon } from "../icons/Icon.jsx";
 /**
  * Combobox — select com busca. Abre um popover com campo de filtro e lista
  * de opções navegável por teclado (↑ ↓ ↵ esc).
- * options: [{ value, label, icon?, hint? }]
+ * options: [{ value, label, icon?, hint?, group?, trailing? }]
  */
 export function Combobox({
   label,
@@ -33,7 +33,7 @@ export function Combobox({
   const listRef = React.useRef(null);
 
   const filtered = options.filter(
-    (o) => !query || o.label.toLowerCase().includes(query.toLowerCase())
+    (o) => !query || o.label.toLowerCase().includes(query.toLowerCase()) || (o.keywords && o.keywords.toLowerCase().includes(query.toLowerCase()))
   );
   const selected = options.find((o) => o.value === current);
 
@@ -77,9 +77,9 @@ export function Combobox({
   };
 
   React.useEffect(() => {
-    const el = listRef.current && listRef.current.children[active];
-    if (el && el.offsetTop !== undefined && listRef.current) {
-      const list = listRef.current;
+    const list = listRef.current;
+    const el = list && list.querySelectorAll("[data-cbx-option]")[active];
+    if (el && list) {
       if (el.offsetTop < list.scrollTop) list.scrollTop = el.offsetTop;
       else if (el.offsetTop + el.offsetHeight > list.scrollTop + list.clientHeight)
         list.scrollTop = el.offsetTop + el.offsetHeight - list.clientHeight;
@@ -123,25 +123,31 @@ export function Combobox({
           <div className="lyra-combobox__list" role="listbox" ref={listRef}>
             {filtered.length === 0 && <span className="lyra-combobox__empty">{emptyMessage}</span>}
             {filtered.map((opt, i) => (
-              <button
-                type="button"
-                key={opt.value}
-                role="option"
-                aria-selected={opt.value === current}
-                className={[
-                  "lyra-combobox__option",
-                  i === active && "lyra-combobox__option--active",
-                ].filter(Boolean).join(" ")}
-                onMouseEnter={() => setActive(i)}
-                onClick={() => pick(opt)}
-              >
-                {opt.icon}
-                <span className="lyra-combobox__option-label">
-                  {opt.label}
-                  {opt.hint && <span className="lyra-combobox__option-hint">{opt.hint}</span>}
-                </span>
-                {opt.value === current && <Icon name="check" size={15} color="var(--accent)" />}
-              </button>
+              <React.Fragment key={opt.value}>
+                {opt.group && (i === 0 || filtered[i - 1].group !== opt.group) && (
+                  <span className="lyra-combobox__group" role="presentation">{opt.group}</span>
+                )}
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={opt.value === current}
+                  data-cbx-option
+                  className={[
+                    "lyra-combobox__option",
+                    i === active && "lyra-combobox__option--active",
+                  ].filter(Boolean).join(" ")}
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => pick(opt)}
+                >
+                  {opt.icon}
+                  <span className="lyra-combobox__option-label">
+                    {opt.label}
+                    {opt.hint && <span className="lyra-combobox__option-hint">{opt.hint}</span>}
+                  </span>
+                  {opt.trailing && <span className="lyra-combobox__trailing">{opt.trailing}</span>}
+                  {opt.value === current && <Icon name="check" size={15} color="var(--accent)" />}
+                </button>
+              </React.Fragment>
             ))}
           </div>
         </div>

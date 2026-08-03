@@ -1,0 +1,63 @@
+<!-- @dsCard group="Components" viewport="880x560" name="Scheduling · Primitivos" subtitle="TimeInput · TimeZonePicker · RecurrenceSelector · SegmentedRing" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-page); margin: 0; padding: 24px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { TimeInput, TimeZonePicker, RecurrenceSelector, SegmentedRing, Card, Grid, Stack, Inline } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  const [start, setStart] = React.useState("09:00");
+  const [end, setEnd] = React.useState("17:30");
+  return (
+    <Grid columns="1fr 1fr" gap={4}>
+      <Card title="TimeInput">
+        <Stack gap={3}>
+        <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>Máscara HH:mm + stepper — ↑↓ ±15min, Shift ±1h</span>
+        <Inline gap={2}>
+          <div style={{ width: 110 }}><TimeInput label="Início" value={start} onChange={setStart} /></div>
+          <span style={{ color: "var(--text-faint)", paddingTop: 26 }}>–</span>
+          <div style={{ width: 110 }}><TimeInput label="Fim" value={end} onChange={setEnd} min={start} invalid={Boolean(end && end <= start)} /></div>
+        </Inline>
+        </Stack>
+      </Card>
+      <Card title="TimeZonePicker">
+        <Stack gap={3}>
+        <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>IANA · busca · hora ao vivo por opção</span>
+        <TimeZonePicker label="Fuso horário" defaultValue="America/Sao_Paulo" detectedZone="America/Sao_Paulo" recentZones={["Europe/Lisbon"]} />
+        </Stack>
+      </Card>
+      <Card title="RecurrenceSelector">
+        <Stack gap={3}>
+        <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>Presets + resumo em linguagem natural</span>
+        <RecurrenceSelector defaultValue={{ freq: "weekly", interval: 1, byWeekday: [3], end: { type: "count", count: 8 } }} startDate="2026-08-05" defaultEndCount={8} />
+        </Stack>
+      </Card>
+      <Card title="SegmentedRing">
+        <Stack gap={3}>
+        <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>Progresso decomposto — legenda obrigatória</span>
+        <SegmentedRing
+          size="md" total={8} centerValue="5 de 8" centerLabel="Sessão"
+          segments={[
+            { value: 5, label: "Consumidas", tone: "success" },
+            { value: 2, label: "Agendadas", tone: "accent" },
+            { value: 1, label: "Disponíveis", tone: "neutral" },
+          ]}
+        />
+        </Stack>
+      </Card>
+    </Grid>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

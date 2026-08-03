@@ -1,20 +1,9 @@
 /* Lyra Dashboard UI kit — telas admin: Membros e Cobrança */
 const {
-  Card, Table, Badge, Button, IconButton, Icon, Input, Select, Textarea,
-  Avatar, Dropdown, Drawer, Tabs, Progress, Radio, Alert, Tooltip, Combobox,
+  Card, Table, DataTable, ActionBar, PersonCell, Badge, Button, IconButton, Icon, Input, Select, Textarea,
+  Avatar, Dropdown, Drawer, Tabs, Progress, Radio, Alert, Tooltip, Combobox, DatePicker, ToastProvider,
 } = window.LyraDesignSystem_e82d95;
-
-function MemberCell({ name, email }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
-      <Avatar name={name} />
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <span className="lyra-table__primary">{name}</span>
-        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>{email}</span>
-      </div>
-    </div>
-  );
-}
+const useToastAdm = ToastProvider.useToast;
 
 function RowMenu({ danger }) {
   return (
@@ -33,12 +22,24 @@ function RowMenu({ danger }) {
 
 function MembersScreen() {
   const [invite, setInvite] = React.useState(false);
-  const members = [
-    { id: 1, who: <MemberCell name="Ana Souza" email="ana@lyra.dev" />, role: <Badge tone="accent">Owner</Badge>, status: <Badge tone="success" dot>Ativa</Badge>, seen: "agora", menu: <RowMenu /> },
-    { id: 2, who: <MemberCell name="Léo Lima" email="leo@lyra.dev" />, role: <Badge>Admin</Badge>, status: <Badge tone="success" dot>Ativo</Badge>, seen: "há 1h", menu: <RowMenu /> },
-    { id: 3, who: <MemberCell name="Bia Reis" email="bia@lyra.dev" />, role: <Badge>Dev</Badge>, status: <Badge tone="success" dot>Ativa</Badge>, seen: "ontem", menu: <RowMenu /> },
-    { id: 4, who: <MemberCell name="Caio Melo" email="caio@exemplo.dev" />, role: <Badge>Dev</Badge>, status: <Badge tone="warning" dot>Convite pendente</Badge>, seen: "—", menu: <RowMenu /> },
+  const [selected, setSelected] = React.useState([]);
+  const toast = useToastAdm();
+  const data = [
+    { id: 1, name: "Ana Souza", email: "ana@lyra.dev", role: ["accent", "Owner"], status: ["success", "Ativa"], seen: "agora" },
+    { id: 2, name: "Léo Lima", email: "leo@lyra.dev", role: ["neutral", "Admin"], status: ["success", "Ativo"], seen: "há 1h" },
+    { id: 3, name: "Bia Reis", email: "bia@lyra.dev", role: ["neutral", "Dev"], status: ["success", "Ativa"], seen: "ontem" },
+    { id: 4, name: "Caio Melo", email: "caio@exemplo.dev", role: ["neutral", "Dev"], status: ["warning", "Convite pendente"], seen: "—" },
   ];
+  const members = data.map((m) => ({
+    id: m.id,
+    _name: m.name,
+    _role: m.role[1],
+    who: <PersonCell name={m.name} detail={m.email} />,
+    role: <Badge tone={m.role[0]}>{m.role[1]}</Badge>,
+    status: <Badge tone={m.status[0]} dot>{m.status[1]}</Badge>,
+    seen: m.seen,
+    menu: <RowMenu />,
+  }));
   return (
     <div className="ld-stack">
       <div className="ld-toolbar">
@@ -51,16 +52,29 @@ function MembersScreen() {
           <Button iconLeft={<Icon name="user-plus" size={16} />} onClick={() => setInvite(true)}>Convidar</Button>
         </div>
       </div>
-      <Table
-        hover
+      <DataTable
+        selectable
+        selected={selected}
+        onSelectionChange={setSelected}
         columns={[
-          { key: "who", label: "Membro" },
-          { key: "role", label: "Papel" },
+          { key: "who", label: "Membro", sortable: true, sortValue: (r) => r._name },
+          { key: "role", label: "Papel", sortable: true, sortValue: (r) => r._role },
           { key: "status", label: "Status" },
           { key: "seen", label: "Visto por último" },
           { key: "menu", label: "", align: "right" },
         ]}
         rows={members}
+      />
+      <ActionBar
+        count={selected.length}
+        label={selected.length === 1 ? "membro selecionado" : "membros selecionados"}
+        onClear={() => setSelected([])}
+        actions={
+          <React.Fragment>
+            <Button size="sm" variant="secondary" iconLeft={<Icon name="shield" size={15} />}>Alterar papel</Button>
+            <Button size="sm" variant="danger" iconLeft={<Icon name="trash-2" size={15} />}>Remover</Button>
+          </React.Fragment>
+        }
       />
       <Drawer
         open={invite}
@@ -69,7 +83,7 @@ function MembersScreen() {
         footer={
           <React.Fragment>
             <Button variant="secondary" onClick={() => setInvite(false)}>Cancelar</Button>
-            <Button iconLeft={<Icon name="send" size={16} />} onClick={() => setInvite(false)}>Enviar convites</Button>
+            <Button iconLeft={<Icon name="send" size={16} />} onClick={() => { setInvite(false); toast.success("Convites enviados."); }}>Enviar convites</Button>
           </React.Fragment>
         }
       >
@@ -84,7 +98,7 @@ function MembersScreen() {
               { value: "viewer", label: "Viewer", hint: "somente leitura" },
             ]}
           />
-          <Alert tone="info" icon={<Icon name="info" size={18} />}>Convites expiram em 7 dias.</Alert>
+          <DatePicker label="Convites expiram em" defaultValue={new Date(Date.now() + 7 * 864e5)} min={new Date()} hint="Padrão: 7 dias." />
         </div>
       </Drawer>
     </div>

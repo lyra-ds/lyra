@@ -1,10 +1,12 @@
 # UI kit · Lyra Website
 
-Landing page + docs do próprio Lyra DS.
+Site do próprio Lyra DS, em duas páginas com domínios distintos:
 
-- `index.html` — site interativo com duas páginas: **Landing** (hero, showcase com tabs preview/código, frameworks, pricing Community/Pro com ciclo mensal/anual + dialog de checkout, comparação de recursos, depoimentos, FAQ em Accordion, CTA final e banner de cookies LGPD) e **Docs** (sidebar de tópicos + conteúdo). Tema claro/escuro persistente.
+- `index.html` — **Landing (lyra-ds.dev)**: apresenta o Lyra sem área comercial — hero, showcase com tabs preview/código, frameworks, seção de temas/tokens (white-label), comunidade (GitHub, Discussions, docs), FAQ e CTA final. Header enxuto: só GitHub + CTA "Documentação"; dark mode via ThemeProvider.
+- `docs.html` — **Docs (docs.lyra-ds.dev)**: referência do site de documentação — header próprio (busca, link de volta para lyra-ds.dev), sidebar com grupos, conteúdo com breadcrumb, blocos de código e navegação anterior/próxima.
+- `site.css` — estilos compartilhados das duas páginas.
 - `sections.jsx` — `SiteHeader`, `Hero`, `Frameworks`, `ComponentShowcase`, `SiteFooter`.
-- `sections-marketing.jsx` — `PricingSection`, `Testimonials`, `FAQSection`, `CTASection`.
-- `docs.jsx` — `DocsPage` (sidebar + conteúdo).
+- `sections-community.jsx` — `ThemingSection`, `CommunitySection`, `FAQSection`, `CTASection`.
+- `docs.jsx` — `DocsHeader`, `DocsPage`, `DocsFooter`.
 
-Composto com os primitivos de `components/` via `window.LyraDesignSystem_e82d95`.
+Sem pricing/plano Pro e sem Discord: o posicionamento é 100% open source (MIT), comunidade via GitHub (issues + Discussions). O site dogfooda os componentes do DS — layout com `Container`/`Stack`/`Inline`/`Grid`, tema com `ThemeProvider` — e o CSS próprio (`site.css`) cobre só o visual das seções. Links "Documentação" apontam para `docs.html` (em produção, `https://docs.lyra-ds.dev`).

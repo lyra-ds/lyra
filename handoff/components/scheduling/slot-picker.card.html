@@ -1,0 +1,44 @@
+<!-- @dsCard group="Components" viewport="780x560" name="Scheduling · SlotPicker" subtitle="Booking público — calendário com marcadores, slots no fuso do visitante, hold" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-page); margin: 0; padding: 24px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { SlotPicker, Card, Stack, Badge } = window.LyraDesignSystem_e82d95;
+const slots = [];
+const base = new Date();
+for (let d = 1; d <= 14; d++) {
+  if ([0, 6].includes((base.getDay() + d) % 7) || d === 3) continue;
+  for (const h of [13, 14, 16, 17, 19]) {
+    const s = new Date(base); s.setDate(s.getDate() + d); s.setUTCHours(h, 0, 0, 0);
+    const e = new Date(s); e.setUTCHours(h + 1);
+    slots.push({ start: s.toISOString(), end: e.toISOString() });
+  }
+}
+function Demo() {
+  const [tz, setTz] = React.useState("America/Sao_Paulo");
+  return (
+    <Card padded>
+      <SlotPicker slots={slots} timezone={tz} onTimezoneChange={setTz} detectedZone="America/Sao_Paulo" min={new Date()} onConfirm={(s) => alert("Reservar " + s.start)}>
+        <Stack gap={1}>
+          <Badge tone="accent">Mentoria 1:1</Badge>
+          <strong style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", color: "var(--text-primary)" }}>Sessão de carreira</strong>
+          <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>60 min · R$ 280</span>
+        </Stack>
+      </SlotPicker>
+    </Card>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

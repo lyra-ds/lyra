@@ -1,0 +1,44 @@
+<!-- @dsCard group="Components" viewport="560x360" name="System" subtitle="ThemeProvider · useTheme · ToastProvider · useToast" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-page); margin: 0; padding: 24px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { ThemeProvider, ToastProvider, Card, Button, Switch, Icon } = window.LyraDesignSystem_e82d95;
+const useTheme = ThemeProvider.useTheme;
+const useToast = ToastProvider.useToast;
+function Demo() {
+  const { dark, toggle } = useTheme();
+  const toast = useToast();
+  return (
+    <Card title="System">
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
+        <Switch label="Tema escuro" checked={dark} onChange={toggle} />
+        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+          <Button size="sm" onClick={() => toast.success("Alterações salvas.")}>Toast de sucesso</Button>
+          <Button size="sm" variant="secondary" onClick={() => toast.info("Sincronizando workspace…")}>Toast de info</Button>
+          <Button size="sm" variant="danger" onClick={() => toast.error("Falha ao publicar release.")}>Toast de erro</Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <ThemeProvider storageKey="lyra-system-card-theme">
+    <ToastProvider>
+      <Demo />
+    </ToastProvider>
+  </ThemeProvider>
+);
+</script>
+</body>
+</html>

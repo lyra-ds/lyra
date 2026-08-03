@@ -1,0 +1,69 @@
+<!-- @dsCard group="Components" viewport="860x560" name="DataTable" subtitle="Sort · seleção · sticky · ActionBar" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-page); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { DataTable, PersonCell, Badge, Pagination, ActionBar, Button } = window.LyraDesignSystem_e82d95;
+const people = [
+  { id: 1, n: "Ana Souza", e: "ana@lyra.dev", role: "Admin", status: ["success", "Ativa"], commits: 312 },
+  { id: 2, n: "Bruno Lima", e: "bruno@lyra.dev", role: "Mantenedor", status: ["success", "Ativa"], commits: 204 },
+  { id: 3, n: "Carla Reis", e: "carla@lyra.dev", role: "Contribuidora", status: ["warning", "Pendente"], commits: 87 },
+  { id: 4, n: "Diego Alves", e: "diego@lyra.dev", role: "Contribuidor", status: ["neutral", "Inativa"], commits: 41 },
+  { id: 5, n: "Elisa Prado", e: "elisa@lyra.dev", role: "Mantenedora", status: ["success", "Ativa"], commits: 158 },
+];
+const rows = people.map((p) => ({
+  id: p.id,
+  _name: p.n, _commits: p.commits, _role: p.role,
+  member: <PersonCell name={p.n} detail={p.e} />,
+  role: p.role,
+  status: <Badge tone={p.status[0]} dot>{p.status[1]}</Badge>,
+  commits: p.commits,
+}));
+function Demo() {
+  const [selected, setSelected] = React.useState([2, 3]);
+  return (
+    <React.Fragment>
+      <DataTable
+        selectable
+        selected={selected}
+        onSelectionChange={setSelected}
+        defaultSorting={{ key: "commits", dir: "desc" }}
+        stickyHeader
+        maxHeight={380}
+        columns={[
+          { key: "member", label: "Membro", sortable: true, sortValue: (r) => r._name },
+          { key: "role", label: "Papel", sortable: true, sortValue: (r) => r._role },
+          { key: "status", label: "Status" },
+          { key: "commits", label: "Commits", align: "right", sortable: true, sortValue: (r) => r._commits },
+        ]}
+        rows={rows}
+        footer={
+          <React.Fragment>
+            <span>Mostrando 5 de 214 membros</span>
+            <Pagination page={1} total={43} />
+          </React.Fragment>
+        }
+      />
+      <ActionBar count={selected.length} label="membros selecionados" onClear={() => setSelected([])} actions={
+        <React.Fragment>
+          <Button size="sm" variant="secondary">Exportar</Button>
+          <Button size="sm" variant="danger">Remover</Button>
+        </React.Fragment>
+      } />
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

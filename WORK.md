@@ -5,6 +5,20 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Fase 8 / 09-0 — infra do porte do delta v1.1+v1.2 (2026-08-03).** Handoff
+      avançado para v1.2 no repo (76 arquivos, staging do maestro; `command cp -f`
+      porque o alias interativo mordeu de novo), CSS integral portado (layout/
+      primitives/scheduling novos + appends com blocos aditivos re-anexados; keyframes
+      transform-only por override same-name aditivo; fix do bug `--sm` na media coarse),
+      baseline 211 tokens/433 classes/18 imports com metadado v1.2 restaurado à mão
+      (o `--update-baseline` reseta — 3ª mordida, agora avisada no próprio $comment).
+      Consequências do maestro: registry de ícones 70→79 (2 fontes dinâmicas novas no
+      manifest), orçamentos dos 5 carregadores +0,25 kB, tripwire do teste 70→79.
+      Cross-review: Skeptic/Architect zero defeitos; 4 MED rejeitados (follow-through
+      do maestro, não deriva) com split em 2 commits; 1 LOW aceito (rótulo do baseline).
+      → codex (`gpt-5.6-terra`, high, worktree) + claude (consequências), plano em
+      `.batuta/plan-09-porte-delta.md`.
+
 - [x] **08-3 — NPM_TOKEN revogado — CONCLUÍDO em 2026-08-03.** Usuário revogou o token
       no npmjs.com; secret `NPM_TOKEN` removido do repo (`gh secret delete`, confirmado
       ausente) e cabeçalho do `release.yml` atualizado para registrar a revogação. A

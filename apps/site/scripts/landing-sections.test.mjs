@@ -11,11 +11,11 @@ const statsPath = outputPath;
 test('derives honest inventory counts from the parity and docgen sources', () => {
   return deriveStats().then(() => {
     assert.deepEqual(JSON.parse(readFileSync(statsPath, 'utf8')), {
-      tokenDeclarations: 209,
-      tokenNames: 153,
+      tokenDeclarations: 211,
+      tokenNames: 154,
       palettePrimitives: 43,
-      semanticTokens: 110,
-      cssClasses: 269,
+      semanticTokens: 111,
+      cssClasses: 433,
       documentedComponents: 54,
       whiteLabelInputs: 4,
     });
@@ -42,7 +42,7 @@ test('renders bilingual theming and community sections in the static export', ()
     assert.match(page, /id="community"/);
     assert.match(page, new RegExp(themingTitle));
     assert.match(page, new RegExp(communityTitle));
-    assert.match(page, /110 semantic tokens|110 tokens semânticos/);
+    assert.match(page, /111 semantic tokens|111 tokens semânticos/);
     assert.match(page, /html\[data-brand='harbor'\]/);
     assert.match(page, /github\.com\/lyra-ds\/lyra\/discussions/);
   }

@@ -24,11 +24,11 @@ afterEach(async () => {
   setTheme('light');
 });
 
-// --- Registry smoke: all 70 icons render, light + dark, zero axe violations ------------------
+// --- Registry smoke: all 79 icons render, light + dark, zero axe violations ------------------
 
 describe('Icon — registry smoke (light + dark)', () => {
-  it('the curated registry holds exactly 70 icons', () => {
-    expect(NAMES.length).toBe(70);
+  it('the curated registry holds exactly 79 icons', () => {
+    expect(NAMES.length).toBe(79);
   });
 
   for (const theme of THEMES) {

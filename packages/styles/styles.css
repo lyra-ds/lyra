@@ -1,4 +1,4 @@
-/* @lyra-ds/styles — aggregate entry (all 209 tokens + 40 components) · MIT */
+/* @lyra-ds/styles — aggregate entry (all 211 tokens + 75 components) · MIT */
 
 @import "./tokens/fonts.css";
 @import "./tokens/colors.css";
@@ -15,4 +15,6 @@
 @import "./components/files/files.css";
 @import "./components/data/data.css";
 @import "./components/layout/layout.css";
+@import "./components/primitives/primitives.css";
+@import "./components/scheduling/scheduling.css";
 @import "./components/chrome/chrome.css";

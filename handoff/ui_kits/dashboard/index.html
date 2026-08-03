@@ -193,6 +193,8 @@
 <script type="text/babel" src="screens-admin.jsx"></script>
 <script type="text/babel" src="screens-files.jsx"></script>
 <script type="text/babel">
+const { ThemeProvider, ToastProvider } = window.LyraDesignSystem_e82d95;
+const useTheme = ThemeProvider.useTheme;
 const TITLES = {
   overview: "Visão geral",
   projects: "Projetos",
@@ -207,13 +209,9 @@ function App() {
     const saved = localStorage.getItem("lyra-dash-screen");
     return TITLES[saved] ? saved : "overview";
   });
-  const [dark, setDark] = React.useState(() => localStorage.getItem("lyra-dash-theme") === "dark");
+  const { dark, toggle } = useTheme();
   const [palette, setPalette] = React.useState(false);
 
-  React.useEffect(() => {
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    localStorage.setItem("lyra-dash-theme", dark ? "dark" : "light");
-  }, [dark]);
   React.useEffect(() => {
     localStorage.setItem("lyra-dash-screen", screen);
   }, [screen]);
@@ -225,7 +223,7 @@ function App() {
         <LyraTopbar
           title={TITLES[screen]}
           dark={dark}
-          onToggleTheme={() => setDark(!dark)}
+          onToggleTheme={toggle}
           onNavigate={setScreen}
           onOpenPalette={() => setPalette(true)}
         />
@@ -247,7 +245,13 @@ function App() {
     </div>
   );
 }
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <ThemeProvider storageKey="lyra-dash-theme">
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  </ThemeProvider>
+);
 </script>
 </body>
 </html>

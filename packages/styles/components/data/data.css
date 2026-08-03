@@ -98,6 +98,93 @@
 }
 .lyra-empty__action { margin-top: var(--space-3); }
 
+/* table footer */
+.lyra-table__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  background: var(--surface-card);
+}
+
+/* person cell */
+.lyra-personcell { display: flex; align-items: center; gap: var(--space-3); }
+.lyra-personcell__text { display: flex; flex-direction: column; line-height: var(--leading-snug); }
+.lyra-personcell__name { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-primary); }
+.lyra-personcell__detail { font-size: var(--text-xs); color: var(--text-muted); }
+
+/* stat card variant */
+.lyra-stat--card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5) var(--space-5);
+}
+.lyra-stat--sm { gap: 2px; }
+.lyra-stat--sm.lyra-stat--card { padding: var(--space-4); }
+.lyra-stat--sm .lyra-stat__value { font-size: var(--text-2xl); }
+
+/* diff card */
+.lyra-diff { display: flex; flex-direction: column; gap: var(--space-3); container-type: inline-size; }
+.lyra-diff__pair { display: flex; align-items: stretch; gap: var(--space-3); }
+.lyra-diff__arrow { color: var(--text-faint); align-self: center; flex: none; }
+.lyra-diff__block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+.lyra-diff__block--current { background: var(--surface-sunken); border: 1px solid var(--border-default); }
+.lyra-diff__block--proposed { background: var(--accent-soft); border: 1px solid var(--border-accent); }
+.lyra-diff__overline { font-size: 10px; font-weight: var(--weight-extrabold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--text-muted); }
+.lyra-diff__block--proposed .lyra-diff__overline { color: var(--accent-soft-text); }
+.lyra-diff__value { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); overflow-wrap: anywhere; }
+.lyra-diff__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+@container (max-width: 420px) {
+  .lyra-diff__pair { flex-direction: column; }
+  .lyra-diff__arrow { transform: rotate(90deg); align-self: flex-start; margin-left: var(--space-4); }
+}
+
+/* data table */
+.lyra-table-scroll { overflow: auto; }
+.lyra-table--sticky thead th { position: sticky; top: 0; z-index: 1; }
+.lyra-table__sortbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  border-radius: var(--radius-xs);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.lyra-table__sortbtn:hover { color: var(--text-primary); }
+.lyra-table__sortbtn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-table__sortbtn svg { opacity: 0.45; flex: none; }
+.lyra-table__sortbtn--active { color: var(--text-primary); }
+.lyra-table__sortbtn--active svg { opacity: 1; color: var(--accent); }
+.lyra-table th.lyra-table__check, .lyra-table td.lyra-table__check { width: 36px; padding-right: var(--space-2); }
+.lyra-table__check .lyra-checkbox { vertical-align: middle; }
+.lyra-table__row--selected td { background: color-mix(in oklab, var(--accent-soft) 55%, transparent); }
+.lyra-table--compact th { padding: var(--space-2) var(--space-3); }
+.lyra-table--compact td { padding: var(--space-2) var(--space-3); }
+.lyra-table--compact td:first-child, .lyra-table--compact th:first-child { padding-left: var(--space-4); }
+.lyra-table--compact td:last-child, .lyra-table--compact th:last-child { padding-right: var(--space-4); }
+.lyra-table__emptycell { text-align: center; padding: var(--space-10) var(--space-6); color: var(--text-muted); }
+.lyra-table-scroll + .lyra-table__footer { border-top: 1px solid var(--border-default); }
+
 /* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
    extension (see tools/parity/parity.mjs, ADDITIVE_EXTENSIONS). The package's CSS must stay a
    declaration-level copy of the handoff, so an override cannot edit the original rule: it has to

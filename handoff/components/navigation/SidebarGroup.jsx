@@ -37,6 +37,7 @@ export function SidebarGroup({
               key={item.id}
               className={["lyra-sbgroup__item", item.active && "lyra-sbgroup__item--active"].filter(Boolean).join(" ")}
               aria-current={item.active ? "page" : undefined}
+              title={item.title}
               onClick={() => { item.onSelect && item.onSelect(); onSelect && onSelect(item.id, item); }}
             >
               {item.icon && <span className="lyra-sbgroup__item-icon">{item.icon}</span>}
