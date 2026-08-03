@@ -64,8 +64,16 @@ Decisões do usuário (2026-08-03):
 - Fase 2 travada: camada de comportamento Zag.js nos wrappers interativos.
 - Satélite `@lyra-ds/vue` (primeiro "Em breve" a cair).
 - TS 7 (depende de 08-1 maturar), preset Tailwind satélite.
-- **Família de componentes de data e afins** (DatePicker, Calendar, TimePicker,
-  DateRangePicker; Slider, Rating, ColorPicker): não existem e não estavam no
-  handoff. Dependem fortemente de comportamento — candidatos naturais a
-  primeiros frutos do marco Zag.js, não a construção manual antes dele
-  (registrado de conversa com o usuário, 2026-08-03).
+- **Fase 8 — porte do delta do handoff v1.1+v1.2** (~28 componentes restantes,
+  TODOS com handoff completo: JSX de referência + `.d.ts` + CSS): scheduling
+  inteiro (CalendarView, SlotPicker, TimeZonePicker, WeeklyScheduleEditor,
+  RecurrenceSelector, SegmentedRing), forms de data (Calendar, DatePicker,
+  DateRangePicker, TimePicker, TimeInput) + RadioGroup/CheckboxGroup/Fieldset/
+  FormRow, primitives (Popover, Portal, VisuallyHidden), data (DataTable,
+  PersonCell, DiffCard), AppSidebar, BottomNav, BottomSheet, Dropzone,
+  ToastProvider e as extensões do Combobox (bloqueiam o TimeZonePicker). Mapa
+  e ondas em `.batuta/handoff-v1.2-map.md`; fonte em
+  `~/Documents/design_handoff_lyra_v1_2` (copiar para `handoff/` ao abrir a
+  fase, regenerando o parity baseline). CORREÇÃO 2026-08-03: uma nota anterior
+  aqui dizia que a família de data "não estava no handoff" — estava, no delta
+  v1.2; o registro errado foi substituído por este.
