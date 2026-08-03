@@ -5,6 +5,13 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **08-3 — NPM_TOKEN revogado — CONCLUÍDO em 2026-08-03.** Usuário revogou o token
+      no npmjs.com; secret `NPM_TOKEN` removido do repo (`gh secret delete`, confirmado
+      ausente) e cabeçalho do `release.yml` atualizado para registrar a revogação. A
+      receita de fallback FICOU no cabeçalho de propósito: ela já manda gerar um token
+      novo, então não depende do secret existir — apagar documentação de recuperação
+      seria perda, não limpeza. Trilha 1 do marco 08 fechada. → claude (crítico).
+
 - [x] **08-2 — release 0.1.1 via OIDC — PROVADO em 2026-08-03.** Version Packages PR
       #55 mergeado (autorização do usuário), run 30838899789 verde: `@lyra-ds/react@0.1.1`
       e `@lyra-ds/styles@0.1.1` no npm com **provenance SLSA anexada** (a atestação que o

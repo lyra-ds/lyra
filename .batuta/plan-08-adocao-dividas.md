@@ -27,7 +27,7 @@ Decisões do usuário (2026-08-03):
 - [x] **08-2 Release 0.1.1 via OIDC** (2026-08-03, run 30838899789, provenance SLSA nos dois pacotes) — — merge do Version Packages PR prova o
       caminho trusted publishing de ponta a ponta (provenance por default).
       Primeiro release desde a migração do PR #43.
-- [ ] **08-3 Revogar `NPM_TOKEN`** (manual, usuário) — destravado pelo
+- [x] **08-3 Revogar `NPM_TOKEN`** (2026-08-03, secret removido, header atualizado) — (manual, usuário) — destravado pelo
       release OIDC verde. Remover o fallback documentado no cabeçalho do
       workflow no mesmo PR que registrar a revogação.
 
