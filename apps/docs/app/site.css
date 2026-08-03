@@ -176,7 +176,7 @@
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   list-style: none;
-  margin: 0;
+  margin: var(--space-3) 0 0;
   padding: 0;
 }
 /* the card surface is the affordance — no link color, no hover underline */

@@ -5,6 +5,12 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Respiro título→grid no índice de componentes (2026-08-03).** Sequela do modelo
+      de prosa (margem-topo por elemento): o bloco do grid zerava a própria margem e o
+      título ficava colado nos cards (0px medido em produção). Fix: margem-topo de
+      12px (`--space-3`) no bloco prefixado; prova de cascata em navegador real.
+      → kimi (`opencode/kimi-k2.7-code`), 1 rodada limpa.
+
 - [x] **Fase 8 / Onda 2 — Popover sobre `useFlipPlacement` (2026-08-03).** O hook
       interno passa a devolver `{ side, align }` com `gap` configurável (default 6
       preserva Combobox/Dropdown/WorkspaceSwitcher — testes deles intocados como
