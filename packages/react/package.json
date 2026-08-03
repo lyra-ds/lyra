@@ -166,6 +166,16 @@
         "default": "./dist/time-picker.cjs"
       }
     },
+    "./time-input": {
+      "import": {
+        "types": "./dist/time-input.d.ts",
+        "default": "./dist/time-input.js"
+      },
+      "require": {
+        "types": "./dist/time-input.d.cts",
+        "default": "./dist/time-input.cjs"
+      }
+    },
     "./date-picker": {
       "import": {
         "types": "./dist/date-picker.d.ts",
@@ -444,6 +454,16 @@
       "require": {
         "types": "./dist/progress.d.cts",
         "default": "./dist/progress.cjs"
+      }
+    },
+    "./segmented-ring": {
+      "import": {
+        "types": "./dist/segmented-ring.d.ts",
+        "default": "./dist/segmented-ring.js"
+      },
+      "require": {
+        "types": "./dist/segmented-ring.d.cts",
+        "default": "./dist/segmented-ring.cjs"
       }
     },
     "./stat": {
@@ -965,6 +985,16 @@
       "limit": "4 kB"
     },
     {
+      "name": "import { TimeInput } from '@lyra-ds/react/time-input'",
+      "path": "dist/time-input.js",
+      "import": "{ TimeInput }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
       "name": "import { DatePicker } from '@lyra-ds/react/date-picker'",
       "path": "dist/date-picker.js",
       "import": "{ DatePicker }",
@@ -1123,6 +1153,16 @@
         "react-dom"
       ],
       "limit": "500 B"
+    },
+    {
+      "name": "import { SegmentedRing } from '@lyra-ds/react/segmented-ring'",
+      "path": "dist/segmented-ring.js",
+      "import": "{ SegmentedRing }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1 kB"
     },
     {
       "name": "import { Stat } from '@lyra-ds/react/stat'",
