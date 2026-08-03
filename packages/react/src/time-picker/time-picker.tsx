@@ -195,6 +195,7 @@ export const TimePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, TimePickerPro
         className="lyra-timelist"
         role="listbox"
         aria-label={labels.timeOptions}
+        tabIndex={-1}
         onKeyDown={onListKeyDown}
       >
         {options.map((time) => (
