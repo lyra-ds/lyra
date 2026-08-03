@@ -1185,6 +1185,54 @@ export declare function Stack(props: StackProps): JSX.Element;
 
 ## Navigation
 
+### AppSidebar
+```ts
+/** Props for {@link AppSidebar}. */
+export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSelect'> {
+  /** Optional brand content placed above the navigation groups. */
+  brand?: ReactNode;
+  /**
+   * Convenience data mode. Each group is composed through {@link SidebarGroup} and renders its
+   * items as buttons.
+  */
+  groups?: AppSidebarGroup[];
+  /** Optional utility links or user content separated below the navigation groups. */
+  footer?: ReactNode;
+  /** Sidebar width in pixels while expanded. Default: `260`. */
+  width?: number;
+  /** Whether to render a control that switches between expanded and icon-rail modes. */
+  collapsible?: boolean;
+  /** Controlled icon-rail state. */
+  collapsed?: boolean;
+  /** Initial icon-rail state when uncontrolled. */
+  defaultCollapsed?: boolean;
+  /** Called whenever the icon-rail state changes. */
+  onCollapsedChange?: (collapsed: boolean) => void;
+  /** Called after an item-level callback in data mode. */
+  onSelect?: (id: string, item: AppSidebarGroupItem) => void;
+  /** Localized labels for the collapse control. */
+  labels?: AppSidebarLabels;
+  /**
+   * Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve
+   * their original element type and routing behavior instead of using data-mode buttons.
+  */
+  children?: ReactNode;
+}
+export declare function AppSidebar(props: AppSidebarProps): JSX.Element;
+```
+
+### BottomNav
+```ts
+/** Props for {@link BottomNav}. */
+export interface BottomNavProps extends Omit<HTMLAttributes<HTMLElement>, 'onSelect'> {
+  /** Navigation items, typically three to five destinations. */
+  items: BottomNavItem[];
+  /** Called after an item-level callback with the selected item. */
+  onSelect?: (id: string, item: BottomNavItem) => void;
+}
+export declare function BottomNav(props: BottomNavProps): JSX.Element;
+```
+
 ### Breadcrumb
 ```ts
 /** Props for {@link Breadcrumb}. */

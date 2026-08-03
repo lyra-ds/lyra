@@ -2427,6 +2427,102 @@
     ]
   },
   {
+    "name": "AppSidebar",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'onSelect'>",
+    "description": "Props for {@link AppSidebar}.",
+    "signature": "export declare function AppSidebar(props: AppSidebarProps): JSX.Element;",
+    "props": [
+      {
+        "name": "brand",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional brand content placed above the navigation groups."
+      },
+      {
+        "name": "groups",
+        "type": "AppSidebarGroup[]",
+        "optional": true,
+        "description": "Convenience data mode. Each group is composed through {@link SidebarGroup} and renders its\nitems as buttons."
+      },
+      {
+        "name": "footer",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional utility links or user content separated below the navigation groups."
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "optional": true,
+        "description": "Sidebar width in pixels while expanded. Default: `260`."
+      },
+      {
+        "name": "collapsible",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether to render a control that switches between expanded and icon-rail modes."
+      },
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "optional": true,
+        "description": "Controlled icon-rail state."
+      },
+      {
+        "name": "defaultCollapsed",
+        "type": "boolean",
+        "optional": true,
+        "description": "Initial icon-rail state when uncontrolled."
+      },
+      {
+        "name": "onCollapsedChange",
+        "type": "(collapsed: boolean) => void",
+        "optional": true,
+        "description": "Called whenever the icon-rail state changes."
+      },
+      {
+        "name": "onSelect",
+        "type": "(id: string, item: AppSidebarGroupItem) => void",
+        "optional": true,
+        "description": "Called after an item-level callback in data mode."
+      },
+      {
+        "name": "labels",
+        "type": "AppSidebarLabels",
+        "optional": true,
+        "description": "Localized labels for the collapse control."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve\ntheir original element type and routing behavior instead of using data-mode buttons."
+      }
+    ]
+  },
+  {
+    "name": "BottomNav",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLElement>, 'onSelect'>",
+    "description": "Props for {@link BottomNav}.",
+    "signature": "export declare function BottomNav(props: BottomNavProps): JSX.Element;",
+    "props": [
+      {
+        "name": "items",
+        "type": "BottomNavItem[]",
+        "optional": false,
+        "description": "Navigation items, typically three to five destinations."
+      },
+      {
+        "name": "onSelect",
+        "type": "(id: string, item: BottomNavItem) => void",
+        "optional": true,
+        "description": "Called after an item-level callback with the selected item."
+      }
+    ]
+  },
+  {
     "name": "Breadcrumb",
     "category": "Navigation",
     "extends": "HTMLAttributes<HTMLElement>",

@@ -150,6 +150,15 @@ export { ActionBar } from './action-bar';
 export type { ActionBarProps } from './action-bar';
 export { SidebarGroup } from './sidebar-group';
 export type { SidebarGroupItem, SidebarGroupProps } from './sidebar-group';
+export { AppSidebar } from './app-sidebar';
+export type {
+  AppSidebarGroup,
+  AppSidebarGroupItem,
+  AppSidebarLabels,
+  AppSidebarProps,
+} from './app-sidebar';
+export { BottomNav } from './bottom-nav';
+export type { BottomNavItem, BottomNavProps } from './bottom-nav';
 export { Toast, ToastStack } from './toast';
 export type { ToastProps, ToastStackProps } from './toast';
 export { CookieBanner } from './cookie-banner';

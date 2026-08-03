@@ -616,6 +616,26 @@
         "default": "./dist/sidebar-group.cjs"
       }
     },
+    "./app-sidebar": {
+      "import": {
+        "types": "./dist/app-sidebar.d.ts",
+        "default": "./dist/app-sidebar.js"
+      },
+      "require": {
+        "types": "./dist/app-sidebar.d.cts",
+        "default": "./dist/app-sidebar.cjs"
+      }
+    },
+    "./bottom-nav": {
+      "import": {
+        "types": "./dist/bottom-nav.d.ts",
+        "default": "./dist/bottom-nav.js"
+      },
+      "require": {
+        "types": "./dist/bottom-nav.d.cts",
+        "default": "./dist/bottom-nav.cjs"
+      }
+    },
     "./toast": {
       "import": {
         "types": "./dist/toast.d.ts",
@@ -1263,6 +1283,26 @@
         "react-dom"
       ],
       "limit": "900 B"
+    },
+    {
+      "name": "import { AppSidebar } from '@lyra-ds/react/app-sidebar'",
+      "path": "dist/app-sidebar.js",
+      "import": "{ AppSidebar }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    },
+    {
+      "name": "import { BottomNav } from '@lyra-ds/react/bottom-nav'",
+      "path": "dist/bottom-nav.js",
+      "import": "{ BottomNav }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "700 B"
     },
     {
       "name": "import { Toast } from '@lyra-ds/react/toast'",

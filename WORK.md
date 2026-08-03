@@ -5,6 +5,17 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 4 — AppSidebar e BottomNav (2026-08-03).** AppSidebar com as
+      duas portas (children preservando `<Link>` — o requisito do mapa — e
+      `groups[]` como conveniência), rail de 64px com tooltips nativas via o delta
+      do SidebarGroup, largura por custom property. BottomNav reconstruído do
+      contrato do llms.txt (sem JSX, como o PersonCell). Docgen 68→70. Ciclo: 1 fix
+      mecânico do maestro (o teste media width durante a transição — waitFor) e 1
+      retry pelos findings do cross-review: `label` do item de dados estreitado
+      para `string` (a decisão que o mapa já recomendava — ReactNode deixava botão
+      do rail sem nome; rótulo rico é caso da porta children) + cobertura do modo
+      controlado. → codex (`gpt-5.6-terra`, high, worktree, 1 retry) + claude.
+
 - [x] **0.3.0 PUBLICADO via OIDC — 2026-08-03 (autorizado pelo usuário: "quando a
       onda 3 fechar").** Version PR #64 verificado (título + conteúdo: 5 changesets
       das ondas 1b–3) antes do merge; run 30857749858 verde; provenance SLSA nos
