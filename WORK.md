@@ -5,6 +5,13 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **08-2 — release 0.1.1 via OIDC — PROVADO em 2026-08-03.** Version Packages PR
+      #55 mergeado (autorização do usuário), run 30838899789 verde: `@lyra-ds/react@0.1.1`
+      e `@lyra-ds/styles@0.1.1` no npm com **provenance SLSA anexada** (a atestação que o
+      0.1.0 não teve), tags + GitHub Releases criados, sem segredo npm no workflow.
+      **08-3 destravado**: revogar o `NPM_TOKEN` (manual do usuário) e remover o fallback
+      documentado do cabeçalho do release.yml no mesmo PR. → claude (crítico), 2026-08-03.
+
 - [x] **08-1 — migração tsup→tsdown no `@lyra-ds/react` — CONCLUÍDO em 2026-08-03**
       (PR #54, b4cc3bc). tsdown 0.22.14 pinado, tsup removido; 52 configs por entry
       (zero chunks, `codeSplitting: false` explícito), dts por condição (attw node16
