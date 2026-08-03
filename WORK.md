@@ -10,10 +10,15 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       morreu por "model at capacity" no meio da edição; worktree resetado antes do retry).
       Delegado em 2026-08-03.
 
-- [x] **Espaçamento do grid de cards do índice de componentes (docs) — 2026-08-03.**
-      `.lw-index__grid` de `gap: var(--space-2)` para `var(--space-4)`: cards interativos
-      estavam quase colados (medido 4px em produção). → kimi (`opencode/kimi-k2.7-code`),
-      1 rodada limpa.
+- [x] **Espaçamento do grid de cards do índice de componentes (docs) — 2026-08-03, em
+      dois atos.** O PR #52 (`gap` de `--space-2` para `--space-4`) não mudou nada em
+      produção: `.lyra-prose :is(ul, ol)` (0,1,1, `chrome.css`) vencia `.lw-index__grid`
+      (0,1,0) e impunha `display: flex` + `gap: 4px` — o grid nunca tinha sido grid, e a
+      medição de 4px vs. 8px da fonte era o sinal, descartado rápido demais na 1ª rodada.
+      PR #53 prefixa o seletor (`.lyra-prose ul.lw-index__grid`, 0,2,1) e a prova passou a
+      ser a cascata computada em navegador real (grid + 16px), não o diff. É a armadilha de
+      especificidade já registrada no profile ("prefixe quando precisar sobrescrever").
+      → kimi (`opencode/kimi-k2.7-code`), 2 ciclos.
 
 - [x] **6c-d — favicon theme-aware — CONCLUÍDO em 2026-08-03.** Os dois `favicon.svg`
       (docs e site, antes tile indigo + estrela branca, estáticos) viraram a estrela da
