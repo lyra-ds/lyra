@@ -411,3 +411,12 @@ button.lyra-datepicker__btn svg { color: var(--text-muted); flex: none; }
 @media (pointer: coarse) {
   .lyra-input--sm { font-size: var(--text-md); }
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the handoff's FormRow puts its arbitrary
+   column template in a React-only inline `gridTemplateColumns` style. That leaves non-React
+   adapters unable to reuse the public `.lyra-formrow` class without recreating the layout
+   declaration. Keep the declaration in the shared CSS layer and expose only its dynamic value
+   through a custom property, consistent with Stack and Grid. */
+.lyra-formrow {
+  grid-template-columns: var(--lyra-formrow-columns, 1fr);
+}

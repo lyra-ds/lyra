@@ -1224,6 +1224,63 @@
     ]
   },
   {
+    "name": "CheckboxGroup",
+    "category": "Forms",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "description": "Props for {@link CheckboxGroup}.",
+    "signature": "export declare function CheckboxGroup(props: CheckboxGroupProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Label rendered above the group."
+      },
+      {
+        "name": "hint",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Helper text rendered below the group when no error is present."
+      },
+      {
+        "name": "error",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Error message rendered below the group in place of `hint`."
+      },
+      {
+        "name": "options",
+        "type": "CheckboxGroupOption[]",
+        "optional": true,
+        "description": "Checkbox options rendered by the group. Default: `[]`."
+      },
+      {
+        "name": "value",
+        "type": "string[]",
+        "optional": true,
+        "description": "Selected values in controlled mode."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string[]",
+        "optional": true,
+        "description": "Initially selected values in uncontrolled mode. Default: `[]`."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: string[]) => void",
+        "optional": true,
+        "description": "Called with the next selected values."
+      },
+      {
+        "name": "direction",
+        "type": "'column' | 'row'",
+        "optional": true,
+        "description": "Layout direction for the options. Default: `\"column\"`."
+      }
+    ]
+  },
+  {
     "name": "Combobox",
     "category": "Forms",
     "extends": "",
@@ -1317,6 +1374,54 @@
     ]
   },
   {
+    "name": "Fieldset",
+    "category": "Forms",
+    "extends": "FieldsetHTMLAttributes<HTMLFieldSetElement>",
+    "description": "Props for {@link Fieldset}.",
+    "signature": "export declare function Fieldset(props: FieldsetProps): JSX.Element;",
+    "props": [
+      {
+        "name": "legend",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Legend rendered for the semantic fieldset."
+      },
+      {
+        "name": "description",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Description rendered beneath the legend."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Fields grouped by this fieldset."
+      }
+    ]
+  },
+  {
+    "name": "FormRow",
+    "category": "Forms",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for {@link FormRow}.",
+    "signature": "export declare function FormRow(props: FormRowProps): JSX.Element;",
+    "props": [
+      {
+        "name": "columns",
+        "type": "number",
+        "optional": true,
+        "description": "Number of equal-width columns. Defaults to the number of children."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Fields arranged in the row."
+      }
+    ]
+  },
+  {
     "name": "Input",
     "category": "Forms",
     "extends": "Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>",
@@ -1373,6 +1478,69 @@
         "type": "string",
         "optional": true,
         "description": "Group radio buttons by giving them the same name."
+      }
+    ]
+  },
+  {
+    "name": "RadioGroup",
+    "category": "Forms",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "description": "Props for {@link RadioGroup}.",
+    "signature": "export declare function RadioGroup(props: RadioGroupProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Label rendered above the group."
+      },
+      {
+        "name": "hint",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Helper text rendered below the group when no error is present."
+      },
+      {
+        "name": "error",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Error message rendered below the group in place of `hint`."
+      },
+      {
+        "name": "options",
+        "type": "RadioGroupOption[]",
+        "optional": true,
+        "description": "Radio options rendered by the group. Default: `[]`."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "optional": true,
+        "description": "Selected value in controlled mode."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initially selected value in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: string) => void",
+        "optional": true,
+        "description": "Called with the selected option value."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "Shared native name for the radio controls. Generated automatically when omitted."
+      },
+      {
+        "name": "direction",
+        "type": "'column' | 'row'",
+        "optional": true,
+        "description": "Layout direction for the options. Default: `\"column\"`."
       }
     ]
   },
@@ -1613,6 +1781,27 @@
         "type": "ReactNode",
         "optional": true,
         "description": "Optional secondary row, such as tabs or filters, rendered below the header row."
+      }
+    ]
+  },
+  {
+    "name": "Separator",
+    "category": "Layout",
+    "extends": "HTMLAttributes<HTMLElement>",
+    "description": "Props for {@link Separator}.",
+    "signature": "export declare function Separator(props: SeparatorProps): JSX.Element;",
+    "props": [
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "optional": true,
+        "description": "Separator direction. Default: `\"horizontal\"`."
+      },
+      {
+        "name": "label",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Centered label, such as `\"or\"`. Always renders a horizontal separator."
       }
     ]
   },
