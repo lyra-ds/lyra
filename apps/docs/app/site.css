@@ -170,7 +170,8 @@
 .lw-index__group {
   margin-top: var(--space-6);
 }
-.lw-index__grid {
+.lw-index__grid,
+.lyra-prose ul.lw-index__grid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
