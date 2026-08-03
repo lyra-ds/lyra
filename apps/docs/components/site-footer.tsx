@@ -24,7 +24,7 @@ export function SiteFooter() {
             npm
           </a>
           <a
-            href="https://github.com/lyra-ds/lyra-ds/blob/main/CONTRIBUTING.md"
+            href="https://github.com/lyra-ds/lyra/blob/main/CONTRIBUTING.md"
             target="_blank"
             rel="noreferrer"
           >
