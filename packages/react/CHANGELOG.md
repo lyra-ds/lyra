@@ -1,5 +1,11 @@
 # @lyra-ds/react
 
+## 0.1.1
+
+### Patch Changes
+
+- [#54](https://github.com/lyra-ds/lyra/pull/54) [`b4cc3bc`](https://github.com/lyra-ds/lyra/commit/b4cc3bc33e50698142159e0b0e2a8503d7bbee2a) Thanks [@franciscpd](https://github.com/franciscpd)! - Migrate the build from tsup to tsdown (Rolldown) while preserving the dist contract with no API changes.
+
 ## 0.1.0
 
 ### Minor Changes
