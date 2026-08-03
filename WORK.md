@@ -5,6 +5,16 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **6c-d — favicon theme-aware — CONCLUÍDO em 2026-08-03.** Os dois `favicon.svg`
+      (docs e site, antes tile indigo + estrela branca, estáticos) viraram a estrela da
+      Lyra sem tile com `@media (prefers-color-scheme: dark)` embutida no SVG — espelha
+      exatamente o par `lyra-mark`/`lyra-mark-light` que o header já usa; zero JS, segue
+      o tema do dispositivo (a aba do navegador segue o SO, não o toggle do site). Prova
+      em chromium real: computed fill `#5B5BD6` no claro, `#EEF0FE` no escuro. Nota: os
+      3 `favicon-*.png` órfãos do docs seguem sem referência (fora do escopo, anotado).
+      → kimi (`opencode/kimi-k2.7-code`, 1 re-disparo por stop condition mal escrito no
+      brief — untracked do próprio `.batuta/` disparou a regra; corrigido na origem).
+
 - [x] **Issue #29 fechada — alvos de toque da sidebar das docs (2026-08-03).**
       `.lyra-sbgroup__label--btn` entrou nas duas regras do bloco de 44px do `site.css`.
       Aceite medido no navegador a 375px: 67 alvos, todos 44px. → kimi
