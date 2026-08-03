@@ -5,15 +5,19 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
-- [ ] **Fase 7 / deploy via GitHub Actions → Cloudflare (Direct Upload)** — build dos dois
-      apps sai do Cloudflare (heap do container matava o `.d.ts` do react) e passa a rodar
-      em `.github/workflows/deploy.yml`: push na main builda site+docs e publica os `out/`
-      prontos com `wrangler pages deploy` (landing antes das docs, sequencial). `DEPLOY.md`
-      da raiz reescrito para o novo fluxo (projetos Direct Upload `lyra-ds-site`/`lyra-ds-docs`,
-      secrets `CLOUDFLARE_API_TOKEN`+`CLOUDFLARE_ACCOUNT_ID`, vars OpenPanel). → claude
-      (crítico — infra de deploy/secrets), 2026-08-02. Pendências manuais do usuário:
-      recriar os projetos Pages como Direct Upload, criar o API token e configurar
-      secrets/vars no GitHub.
+- [x] **Fase 7 / deploy via GitHub Actions → Cloudflare (Direct Upload) — CONCLUÍDO em
+      2026-08-03.** Build dos dois apps saiu do Cloudflare (heap do container matava o
+      `.d.ts` do react) e roda em `.github/workflows/deploy.yml`: push na main builda
+      site+docs e publica os `out/` prontos com `wrangler pages deploy` (landing antes das
+      docs). `DEPLOY.md` da raiz reescrito. → claude (crítico), PR #34 (34b30fb) + fix
+      PR #35 (8ad6d39: wrangler-action não funciona em workspace pnpm —
+      ERR_PNPM_ADDING_TO_ROOT — trocada por `pnpm exec wrangler` com devDep pinado;
+      `workerd: false` na policy de builds). Duas rodadas de config do usuário guiadas:
+      `NEXT_PUBLIC_OPENPANEL_URL` com `/api` no valor (a validação fail-closed pegou) e
+      API token sem a permissão Account→Pages→Edit (code 10000). E2E provado: run
+      30813760052 verde, CSP com a origem do analytics servido nos dois `*.pages.dev`.
+      Restam no dashboard: Custom domains (`lyra-ds.dev`/`docs.lyra-ds.dev`) e desconectar
+      o Workers Builds `lyra` antigo (check vermelho em todo push até lá).
 
 - [x] **6c-b2 — camada de cromo (9 adições) — CONCLUÍDO em 2026-07-31.** Ciclo aberto em
       2026-07-30. APIs decididas
