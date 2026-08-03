@@ -5,6 +5,19 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 3c — TimePicker, DatePicker, DateRangePicker — ONDA 3 COMPLETA
+      (2026-08-03).** Os três compõem Calendar+Popover+BottomSheet (proibido
+      reimplementar), caminho ≤640px em sheet, i18n pelo precedente do Calendar.
+      Docgen 65→68. Fix sistêmico no ciclo: o Slot copiava prop undefined explícita
+      do filho por cima do handler do slot — um onClick condicional de mobile matava
+      o clique de abrir do Popover; guard no merge, provado por mutação (7 falhas
+      sem ele, 592 verdes com ele). Também: testes de picker fixam matchMedia nos
+      DOIS caminhos (o iframe do runner é <640px — o desktop "real" era mobile), e
+      do cross-review vieram as setas/Home/End no listbox do TimePicker (role
+      implica o contrato de teclado) e o separador de range como label. → codex
+      (`gpt-5.6-terra`, high, worktree, 1 retry) + claude (Slot, viewport, listbox,
+      separador).
+
 - [x] **Fase 8 / Onda 3b — BottomSheet (2026-08-03).** O único componente da fase sem
       handoff nenhum: contrato do llms.txt, maquinaria do Drawer (portal, trap, saída
       animada, closeLabel/container por paridade), CSS `.lyra-bottomsheet*` aditivo

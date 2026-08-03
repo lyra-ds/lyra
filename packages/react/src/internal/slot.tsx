@@ -45,6 +45,9 @@ export const Slot = /*#__PURE__*/ forwardRef<HTMLElement, SlotProps>(function Sl
   const mergedProps: SlotElementProps = { ...slotProps };
 
   for (const [name, childValue] of Object.entries(childProps)) {
+    // An explicitly-undefined child prop (e.g. `onClick={mobile ? fn : undefined}`)
+    // is absence, not intent — copying it would erase the Slot's own handler.
+    if (childValue === undefined) continue;
     const slotValue = slotProps[name];
     if (isEventHandler(name, childValue) && isEventHandler(name, slotValue)) {
       mergedProps[name] = (...args: unknown[]) => {

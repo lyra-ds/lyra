@@ -1656,6 +1656,168 @@
     ]
   },
   {
+    "name": "DatePicker",
+    "category": "Forms",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>",
+    "description": "Props for {@link DatePicker}.",
+    "signature": "export declare function DatePicker(props: DatePickerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the picker trigger."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the picker. Replaced by `error` when set."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that enables error styling and replaces `hint`."
+      },
+      {
+        "name": "value",
+        "type": "Date | string | null",
+        "optional": true,
+        "description": "Controlled local date or ISO `YYYY-MM-DD` date-only string, or `null` with no date selected."
+      },
+      {
+        "name": "defaultValue",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Initial local date or ISO `YYYY-MM-DD` date-only string in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(date: Date) => void",
+        "optional": true,
+        "description": "Called after the user selects a local date."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no date is selected. Defaults to `labels.placeholder`."
+      },
+      {
+        "name": "min",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive lower selection limit as a local date or ISO `YYYY-MM-DD` string."
+      },
+      {
+        "name": "max",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive upper selection limit as a local date or ISO `YYYY-MM-DD` string."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used to format the selected date and compose Calendar. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "DatePickerLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over the English defaults."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the picker trigger."
+      }
+    ]
+  },
+  {
+    "name": "DateRangePicker",
+    "category": "Forms",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>",
+    "description": "Props for {@link DateRangePicker}.",
+    "signature": "export declare function DateRangePicker(props: DateRangePickerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the picker trigger."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the picker. Replaced by `error` when set."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that enables error styling and replaces `hint`."
+      },
+      {
+        "name": "value",
+        "type": "DateRange | null",
+        "optional": true,
+        "description": "Controlled local-date range, or `null` with no range selected."
+      },
+      {
+        "name": "defaultValue",
+        "type": "DateRange | {\n    start: Date | string;\n    end: Date | string;\n  }",
+        "optional": true,
+        "description": "Initial local-date range. ISO `YYYY-MM-DD` strings are accepted for convenience."
+      },
+      {
+        "name": "onChange",
+        "type": "(range: DateRange) => void",
+        "optional": true,
+        "description": "Called after the user selects either bound of the local-date range."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no range is selected. Defaults to `labels.placeholder`."
+      },
+      {
+        "name": "min",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive lower selection limit as a local date or ISO `YYYY-MM-DD` string."
+      },
+      {
+        "name": "max",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive upper selection limit as a local date or ISO `YYYY-MM-DD` string."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used to format selected dates and compose Calendar. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "DateRangePickerLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over the English defaults."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the picker trigger."
+      }
+    ]
+  },
+  {
     "name": "Fieldset",
     "category": "Forms",
     "extends": "FieldsetHTMLAttributes<HTMLFieldSetElement>",
@@ -1904,6 +2066,93 @@
         "type": "string",
         "optional": true,
         "description": "Error message that enables error styling and `aria-invalid`."
+      }
+    ]
+  },
+  {
+    "name": "TimePicker",
+    "category": "Forms",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>",
+    "description": "Props for {@link TimePicker}.",
+    "signature": "export declare function TimePicker(props: TimePickerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Label rendered above the picker trigger."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Helper text rendered below the picker. Replaced by `error` when set."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Error message that enables error styling and replaces `hint`."
+      },
+      {
+        "name": "value",
+        "type": "string | null",
+        "optional": true,
+        "description": "Controlled 24-hour `HH:mm` time, or `null` with no selected time."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial 24-hour `HH:mm` time in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(time: string) => void",
+        "optional": true,
+        "description": "Called after the user selects a 24-hour `HH:mm` time."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no time is selected. Defaults to `labels.placeholder`."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "optional": true,
+        "description": "Minutes between generated options. Default: `30`."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive 24-hour `HH:mm` lower limit. Default: `\"00:00\"`."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive 24-hour `HH:mm` upper limit. Default: `\"23:59\"`."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used to display each time. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "TimePickerLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over the English defaults."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the picker trigger."
       }
     ]
   },
