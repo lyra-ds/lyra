@@ -5,6 +5,24 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Fase 7 / publicação npm** — pipeline changesets pronto:
+      `.github/workflows/release.yml` (changesets/action v1.9.0 pinado) mantém o
+      Version Packages PR enquanto houver changesets (42 pendentes → 0.1.0 fixado nos
+      dois pacotes) e, no merge dele, builda o react e publica com `changeset publish` +
+      GitHub Releases. Auth do primeiro release é `NPM_TOKEN` granular **de propósito**:
+      OIDC não faz primeiro publish de pacote inexistente (npm/cli#8544); provenance vem
+      de `publishConfig.provenance: true` (repo público). Pós-0.1.0: configurar trusted
+      publishers nos dois pacotes e trocar para OIDC (add `id-token: write`, remover
+      `registry-url`/`NODE_AUTH_TOKEN`; cuidado com npm/cli#8976 — publish em step
+      top-level). `repository`/`homepage`/`bugs` adicionados aos package.json (url sem
+      `git+`, exigência do matching OIDC; publint sugere o contrário — ignorar). Dry-run
+      gate rodado: tarballs inspecionados (styles 21 arquivos só CSS; react só dist/),
+      pack-smoke + smoke (Vite e Next) verdes. → claude (crítico), 2026-08-03.
+      Pendências manuais: criar org npm `lyra-ds`, gerar token granular write
+      escopado na org e salvar como secret `NPM_TOKEN`. Nota: o Version Packages PR
+      não recebe checks (PR de GITHUB_TOKEN não dispara CI — anti-recursão do GitHub);
+      merge com override de admin é o esperado.
+
 - [x] **Fase 7 / deploy via GitHub Actions → Cloudflare (Direct Upload) — CONCLUÍDO em
       2026-08-03.** Build dos dois apps saiu do Cloudflare (heap do container matava o
       `.d.ts` do react) e roda em `.github/workflows/deploy.yml`: push na main builda
