@@ -1,5 +1,47 @@
-/* Lyra Website UI kit — página de docs */
-const { Button, Badge, Icon, Alert, Breadcrumb } = window.LyraDesignSystem_e82d95;
+/* Lyra Website UI kit — site de documentação (docs.lyra-ds.dev) */
+const { Button, Badge, Icon, Alert, Breadcrumb, Input, Container, Stack, Inline, Grid, ThemeProvider } = window.LyraDesignSystem_e82d95;
+const useDocsTheme = ThemeProvider.useTheme;
+
+function DocsHeader() {
+  const { dark, toggle } = useDocsTheme();
+  return (
+    <header className="lw-header">
+      <Container className="lw-header__inner">
+        <a className="lw-brand" href="index.html" title="lyra-ds.dev">
+          <img src="../../assets/lyra-mark.svg" alt="" className="lw-mark ld-mark-light" />
+          <img src="../../assets/lyra-mark-light.svg" alt="" className="lw-mark ld-mark-dark" />
+          <span className="lw-brand__word">Lyra</span>
+          <span className="lw-brand__sub">docs</span>
+        </a>
+        <nav className="lw-nav" style={{ marginRight: "auto" }}>
+          <a className="lw-nav__link" href="index.html" title="lyra-ds.dev">lyra-ds.dev <Icon name="arrow-up-right" size={14} /></a>
+        </nav>
+        <Inline gap={2}>
+          <Input placeholder="Buscar nas docs…" size="sm" iconLeft={<Icon name="search" size={16} />} style={{ width: 220 }} />
+          <button className="lw-nav__link" onClick={toggle} aria-label="Alternar tema">
+            <Icon name={dark ? "sun" : "moon"} size={18} />
+          </button>
+          <Button variant="secondary" size="sm" iconLeft={<Icon name="github" size={16} />}>GitHub</Button>
+        </Inline>
+      </Container>
+    </header>
+  );
+}
+
+function DocsFooter() {
+  return (
+    <footer className="lw-footer">
+      <Container className="lw-footer__inner">
+        <span className="lw-footer__note">docs.lyra-ds.dev · conteúdo sob licença MIT, escrito pela comunidade.</span>
+        <Inline gap={4} className="lw-footer__links">
+          <a href="index.html">lyra-ds.dev</a>
+          <a href="#">GitHub</a>
+          <a href="#">npm</a>
+        </Inline>
+      </Container>
+    </footer>
+  );
+}
 
 function DocsSidebar({ active, onSelect }) {
   const groups = [
@@ -7,9 +49,9 @@ function DocsSidebar({ active, onSelect }) {
     { title: "Componentes", items: ["Button", "Input", "Card", "Dialog", "Table"] },
   ];
   return (
-    <aside className="lw-docs__side">
+    <Stack as="aside" gap={5} className="lw-docs__side">
       {groups.map((g) => (
-        <div key={g.title} className="lw-docs__group">
+        <Stack key={g.title} gap="2px">
           <span className="lw-docs__group-title">{g.title}</span>
           {g.items.map((it) => (
             <button
@@ -20,15 +62,15 @@ function DocsSidebar({ active, onSelect }) {
               {it}
             </button>
           ))}
-        </div>
+        </Stack>
       ))}
-    </aside>
+    </Stack>
   );
 }
 
 function DocsContent({ topic }) {
   return (
-    <article className="lw-docs__content">
+    <Stack as="article" gap={4} className="lw-docs__content">
       <Breadcrumb items={[{ label: "Docs", href: "#" }, { label: topic }]} />
       <h1 className="lw-docs__title">{topic}</h1>
       {topic === "Instalação" ? (
@@ -56,22 +98,24 @@ import "@lyra-ds/styles/styles.css";`}</pre>
           </Alert>
         </React.Fragment>
       )}
-      <div className="lw-docs__foot">
+      <Inline justify="space-between" className="lw-docs__foot">
         <Button variant="ghost" size="sm" iconLeft={<Icon name="arrow-left" size={14} />}>Anterior</Button>
         <Button variant="ghost" size="sm" iconRight={<Icon name="arrow-right" size={14} />}>Próxima</Button>
-      </div>
-    </article>
+      </Inline>
+    </Stack>
   );
 }
 
 function DocsPage() {
   const [topic, setTopic] = React.useState("Instalação");
   return (
-    <div className="lw-container lw-docs">
-      <DocsSidebar active={topic} onSelect={setTopic} />
-      <DocsContent topic={topic} />
-    </div>
+    <Container>
+      <Grid columns="220px 1fr" gap={10} style={{ alignItems: "start", padding: "var(--space-8) 0 var(--space-16)" }}>
+        <DocsSidebar active={topic} onSelect={setTopic} />
+        <DocsContent topic={topic} />
+      </Grid>
+    </Container>
   );
 }
 
-Object.assign(window, { DocsPage });
+Object.assign(window, { DocsPage, DocsHeader, DocsFooter });

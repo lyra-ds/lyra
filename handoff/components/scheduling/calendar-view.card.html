@@ -1,0 +1,52 @@
+<!-- @dsCard group="Components" viewport="880x620" name="Scheduling · CalendarView" subtitle="Agenda dia/semana/mês — disponibilidade, linha agora, chips tipados, popover" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>body { background: var(--surface-page); margin: 0; padding: 20px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { CalendarView, Button, Icon, Badge, Stack, Inline } = window.LyraDesignSystem_e82d95;
+const monday = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; })();
+const at = (day, h, m = 0) => { const d = new Date(monday); d.setDate(d.getDate() + day); d.setHours(h, m, 0, 0); return d; };
+function Demo() {
+  return (
+    <CalendarView
+      defaultView="week"
+      defaultDate={monday}
+      startHour={8}
+      endHour={19}
+      availability={{ 1: [{ start: "09:00", end: "18:00" }], 2: [{ start: "09:00", end: "18:00" }], 3: [{ start: "09:00", end: "13:00" }], 4: [{ start: "09:00", end: "18:00" }], 5: [{ start: "10:00", end: "16:00" }] }}
+      events={[
+        { id: 1, kind: "session", start: at(0, 10), end: at(0, 11), title: "Ana Lima" },
+        { id: 2, kind: "program-session", start: at(1, 14), end: at(1, 15), title: "Bruno Sá · 3/8" },
+        { id: 3, kind: "pending", start: at(2, 9, 30), end: at(2, 10, 30), title: "Aguardando confirmação" },
+        { id: 4, kind: "block", start: at(3, 12), end: at(3, 13, 30), title: "Almoço" },
+        { id: 5, kind: "external", start: at(4, 11), end: at(4, 12), title: "Consulta médica" },
+        { id: 6, kind: "session", start: at(3, 15), end: at(3, 16), title: "Carla Reis" },
+      ]}
+      renderEventPopover={(evt, close) => (
+        <Stack gap={2}>
+          <strong style={{ fontSize: "var(--text-base)", color: "var(--text-primary)" }}>{evt.title}</strong>
+          <Badge tone={evt.kind === "pending" ? "warning" : "accent"} dot>{evt.kind === "pending" ? "Pendente" : "Confirmada"}</Badge>
+          <Inline gap={2}>
+            <Button size="sm" variant="secondary" onClick={close}>Fechar</Button>
+            <Button size="sm">Abrir</Button>
+          </Inline>
+        </Stack>
+      )}
+      toolbarActions={<Button size="sm" iconLeft={<Icon name="plus" size={15} />}>Nova sessão</Button>}
+    />
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

@@ -2,7 +2,9 @@
 const {
   Card, Stat, Table, Badge, Button, Icon, Tabs, Tag, Avatar, AvatarGroup,
   Input, Select, Switch, Checkbox, Progress, EmptyState, Alert, Dialog, Textarea,
+  FormRow, RadioGroup, ToastProvider,
 } = window.LyraDesignSystem_e82d95;
+const useToastSet = ToastProvider.useToast;
 
 /* --- mini bar chart (dados fake, desenhado com divs) --- */
 function BarChart() {
@@ -158,14 +160,15 @@ function ProjectsScreen() {
 }
 
 function SettingsScreen() {
+  const toast = useToastSet();
   return (
     <div className="ld-settings">
       <Card title="Perfil">
         <div className="ld-stack" style={{ gap: "var(--space-4)" }}>
-          <div className="ld-grid-2" style={{ gap: "var(--space-4)" }}>
+          <FormRow>
             <Input label="Nome" defaultValue="Ana Souza" />
             <Input label="E-mail" defaultValue="ana@lyra.dev" hint="Usado para notificações." />
-          </div>
+          </FormRow>
           <Input label="GitHub" defaultValue="github.com/anasouza" iconLeft={<Icon name="github" size={16} />} />
         </div>
       </Card>
@@ -177,6 +180,18 @@ function SettingsScreen() {
           <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "var(--space-3)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
             <Checkbox label="Participar do programa beta" defaultChecked />
             <Checkbox label="Compartilhar telemetria anônima" />
+          </div>
+          <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "var(--space-3)" }}>
+            <RadioGroup
+              label="Frequência do resumo"
+              direction="row"
+              defaultValue="weekly"
+              options={[
+                { value: "realtime", label: "Tempo real" },
+                { value: "daily", label: "Diário" },
+                { value: "weekly", label: "Semanal" },
+              ]}
+            />
           </div>
         </div>
       </Card>
@@ -190,8 +205,8 @@ function SettingsScreen() {
         </div>
       </Card>
       <div className="ld-settings__save">
-        <Button variant="secondary">Descartar</Button>
-        <Button iconLeft={<Icon name="check" size={16} />}>Salvar alterações</Button>
+        <Button variant="secondary" onClick={() => toast.info("Alterações descartadas.")}>Descartar</Button>
+        <Button iconLeft={<Icon name="check" size={16} />} onClick={() => toast.success("Alterações salvas.")}>Salvar alterações</Button>
       </div>
     </div>
   );

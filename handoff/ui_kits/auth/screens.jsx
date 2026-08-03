@@ -1,6 +1,6 @@
 /* Lyra Auth UI kit — telas de login, cadastro e recuperação */
 const {
-  Button, Input, Checkbox, Select, Icon, Alert, Stepper, Badge, Avatar, Progress,
+  Button, Input, Checkbox, Select, Icon, Alert, Stepper, Badge, Avatar, Progress, Separator,
 } = window.LyraDesignSystem_e82d95;
 
 function BrandPanel() {
@@ -37,7 +37,7 @@ function LoginScreen({ go }) {
       <h1 className="la-title">Entrar no Lyra</h1>
       <p className="la-sub">Bem-vindo de volta. Acesse seu workspace.</p>
       <Button variant="secondary" full iconLeft={<Icon name="github" size={18} />}>Continuar com GitHub</Button>
-      <div className="la-divider"><span>ou com e-mail</span></div>
+      <Separator label="ou com e-mail" style={{ color: "var(--text-faint)" }} />
       <form className="la-form" onSubmit={submit}>
         <Input label="E-mail" type="email" placeholder="voce@exemplo.dev" required />
         <div>

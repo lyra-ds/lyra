@@ -120,3 +120,11 @@
   grid-template-columns: var(--lyra-grid-columns, repeat(2, minmax(0, 1fr)));
   gap: var(--lyra-grid-gap, var(--space-4));
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the handoff's entry keyframe starts at
+   opacity 0, which violates the project-wide transform-only entrance-motion constraint. The
+   package override keeps the canonical name so ActionBar consumers need no API change. */
+@keyframes lyra-actionbar-in {
+  from { transform: translate(-50%, 8px); }
+  to { transform: translate(-50%, 0); }
+}

@@ -17,7 +17,7 @@ function LyraSidebar({ active, onNavigate }) {
       { id: "files", label: "Arquivos", icon: "hard-drive" },
       { id: "members", label: "Membros", icon: "users" },
     ]},
-    { label: "Administração", items: [
+    { label: "Administração", collapsed: true, items: [
       { id: "billing", label: "Cobrança", icon: "credit-card" },
       { id: "settings", label: "Configurações", icon: "settings" },
     ]},
@@ -50,6 +50,8 @@ function LyraSidebar({ active, onNavigate }) {
           <SidebarGroup
             key={g.label}
             label={g.label}
+            collapsible
+            defaultCollapsed={g.collapsed && active !== "billing" && active !== "settings"}
             items={g.items.map((n) => ({
               id: n.id,
               label: n.label,

@@ -30,6 +30,7 @@ estilos compostos p/ shorthand font: --display-font, --h1-font, --h2-font, --h3-
 
 Efeitos: --shadow-{xs,sm,md,lg,focus}; --duration-{fast,base,slow}; --ease-{out,in-out};
 z-index --z-{dropdown,sticky,overlay,dialog,toast,tooltip}.
+Novo (v1.2): --border-input — borda de campos com contraste >=3:1 (WCAG 1.4.11); os inputs a usam por padrão.
 
 ## API dos componentes React (@lyra-ds/react)
 
@@ -76,6 +77,80 @@ export declare function IconButton(props: IconButtonProps): JSX.Element;
 
 ## Data
 
+### DataTable
+```ts
+/**
+ * Tabela de dados completa — ordenação, seleção múltipla, header sticky,
+ * densidade, loading e vazio. Pareia com ActionBar e Pagination.
+ */
+export interface DataTableColumn {
+  /** Chave do valor em cada row */
+  key: string;
+  label: React.ReactNode;
+  align?: "left" | "center" | "right";
+  /** Habilita ordenação (ciclo asc → desc → sem ordem) */
+  sortable?: boolean;
+  /** Valor usado na comparação — obrigatório quando a célula é ReactNode */
+  sortValue?: (row: Record<string, any>) => string | number | null;
+  /** Largura CSS da coluna */
+  width?: number | string;
+}
+export interface DataTableSorting {
+  key: string;
+  dir: "asc" | "desc";
+}
+export interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
+  columns: DataTableColumn[];
+  /** Objetos com valores ReactNode; `id` opcional como key/seleção */
+  rows: Array<Record<string, React.ReactNode>>;
+  /** Ordenação controlada (null = sem ordem) */
+  sorting?: DataTableSorting | null;
+  defaultSorting?: DataTableSorting | null;
+  onSortChange?: (sorting: DataTableSorting | null) => void;
+  /** Coluna de checkboxes + selecionar tudo (com indeterminate) */
+  selectable?: boolean;
+  /** Ids selecionados (modo controlado) */
+  selected?: Array<string | number>;
+  defaultSelected?: Array<string | number>;
+  onSelectionChange?: (selected: Array<string | number>) => void;
+  /** Header fixo ao rolar (use com maxHeight) */
+  stickyHeader?: boolean;
+  /** Altura máxima da área rolável, em px ou CSS */
+  maxHeight?: number | string;
+  /** Padrão "comfortable" */
+  density?: "comfortable" | "compact";
+  /** true ou nº de linhas skeleton */
+  loading?: boolean | number;
+  /** Conteúdo quando rows está vazio (ex. <EmptyState>) */
+  empty?: React.ReactNode;
+  /** Rodapé: "Mostrando X de Y" + Pagination */
+  footer?: React.ReactNode;
+  /** Realce de linha no hover (implícito com onRowClick) */
+  hover?: boolean;
+  onRowClick?: (row: Record<string, React.ReactNode>) => void;
+}
+export declare function DataTable(props: DataTableProps): JSX.Element;
+```
+
+### DiffCard
+```ts
+/**
+ * Par "valor atual → valor proposto" para filas de revisão/aprovação.
+ * Depois de decidido, substitua as ações por Badge + link "Desfazer".
+ */
+export interface DiffCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  current: React.ReactNode;
+  proposed: React.ReactNode;
+  /** Padrão "Atual" */
+  currentLabel?: React.ReactNode;
+  /** Padrão "Proposto" */
+  proposedLabel?: React.ReactNode;
+  onApprove?: () => void;
+  onReject?: () => void;
+}
+export declare function DiffCard(props: DiffCardProps): JSX.Element;
+```
+
 ### EmptyState
 ```ts
 /**
@@ -92,6 +167,21 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
 export declare function EmptyState(props: EmptyStateProps): JSX.Element;
 ```
 
+### PersonCell
+```ts
+/**
+ * Célula de pessoa para Table — avatar + nome + linha secundária.
+ */
+export interface PersonCellProps extends React.HTMLAttributes<HTMLDivElement> {
+  name: React.ReactNode;
+  /** Linha secundária (email, papel…) */
+  detail?: React.ReactNode;
+  /** Foto; sem src, o Avatar usa iniciais do name */
+  src?: string;
+}
+export declare function PersonCell(props: PersonCellProps): JSX.Element;
+```
+
 ### Stat
 ```ts
 /**
@@ -105,6 +195,10 @@ export interface StatProps extends React.HTMLAttributes<HTMLDivElement> {
   delta?: React.ReactNode;
   /** Colore e escolhe a seta. Padrão "flat" */
   direction?: "up" | "down" | "flat";
+  /** Variante em card (borda, raio 14px, sombra) para dashboards */
+  card?: boolean;
+  /** Padrão "md"; "sm" reduz padding e valor (22px) */
+  size?: "md" | "sm";
 }
 export declare function Stat(props: StatProps): JSX.Element;
 ```
@@ -126,6 +220,8 @@ export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   rows: Array<Record<string, React.ReactNode>>;
   /** Realce de linha no hover */
   hover?: boolean;
+  /** Rodapé: "Mostrando X de Y" + Pagination */
+  footer?: React.ReactNode;
 }
 export declare function Table(props: TableProps): JSX.Element;
 ```
@@ -187,6 +283,10 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: "neutral" | "accent" | "success" | "warning" | "danger" | "info";
   /** Ponto de status à esquerda */
   dot?: boolean;
+  /** Padrão "md" */
+  size?: "sm" | "md" | "lg";
+  /** Pulsa o dot (processo em andamento) */
+  pulse?: boolean;
   children: React.ReactNode;
 }
 export declare function Badge(props: BadgeProps): JSX.Element;
@@ -244,6 +344,20 @@ export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
 export declare function Alert(props: AlertProps): JSX.Element;
 ```
 
+### BottomSheet
+```ts
+/**
+ * Painel ancorado ao rodapé (mobile) — variante do Dialog.
+ */
+export interface BottomSheetProps extends React.HTMLAttributes<HTMLDivElement> {
+  open: boolean;
+  onClose?: () => void;
+  title?: React.ReactNode;
+  children: React.ReactNode;
+}
+export declare function BottomSheet(props: BottomSheetProps): JSX.Element;
+```
+
 ### CookieBanner
 ```ts
 /**
@@ -293,6 +407,8 @@ export interface DrawerProps extends React.HTMLAttributes<HTMLDivElement> {
   title: React.ReactNode;
   /** Ações fixas no rodapé */
   footer?: React.ReactNode;
+  /** Largura em px. Padrão 440 */
+  width?: number;
   children: React.ReactNode;
 }
 export declare function Drawer(props: DrawerProps): JSX.Element | null;
@@ -377,6 +493,27 @@ export declare function Tooltip(props: TooltipProps): JSX.Element;
 
 ## Files
 
+### Dropzone
+```ts
+/**
+ * Alvo de soltar arquivos (complementa o FileUpload, que cobre fila/progresso).
+ */
+export interface DropzoneProps extends React.HTMLAttributes<HTMLElement> {
+  /** Lista `accept` do input (ex.: ".csv,.xlsx") */
+  accept?: string;
+  /** Formatos e limite, ex.: "CSV ou XLSX · até 10 MB" */
+  hint?: React.ReactNode;
+  /** Nome do ícone Lucide central. Padrão "upload" */
+  icon?: string;
+  /** Se definido, mostra a variante compacta "arquivo selecionado" */
+  file?: { name: React.ReactNode; meta?: React.ReactNode };
+  onFiles?: (files: File[]) => void;
+  /** Botão × na variante selecionada */
+  onClear?: () => void;
+}
+export declare function Dropzone(props: DropzoneProps): JSX.Element;
+```
+
 ### FileManager
 ```ts
 /**
@@ -460,6 +597,41 @@ export declare function FileUpload(props: FileUploadProps): JSX.Element;
 
 ## Forms
 
+### Calendar
+```ts
+/**
+ * Calendário de mês — data única ou intervalo, navegação por mês/ano
+ * (clique no título), min/max, dias desabilitados por função, marcador
+ * por dia (ex.: ponto de disponibilidade) e início de semana por locale.
+ */
+export interface CalendarRange {
+  start: Date | null;
+  end: Date | null;
+}
+export interface CalendarProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Modo intervalo — value/onChange usam { start, end }. Padrão false */
+  range?: boolean;
+  /** Data (Date ou "AAAA-MM-DD") ou intervalo — modo controlado */
+  value?: Date | string | CalendarRange | null;
+  defaultValue?: Date | string | CalendarRange;
+  onChange?: (value: Date | CalendarRange) => void;
+  /** Limites de seleção (Date ou "AAAA-MM-DD") */
+  min?: Date | string;
+  max?: Date | string;
+  /** Desabilita dias específicos (ex.: sem horários livres) — recebem foco e são anunciados, não somem */
+  isDateDisabled?: (date: Date) => boolean;
+  /** Nó extra dentro da célula (ex.: <span className="lyra-cal__dot"/> para dia com disponibilidade) */
+  renderDayMarker?: (date: Date) => React.ReactNode;
+  /** Primeiro dia da semana: 0=dom … 6=sáb. Padrão 0 */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** "sm" (células 30px, cabe no popover) ou "md" (40px, painel). Padrão "sm" */
+  size?: "sm" | "md";
+  /** Rodapé com atalho "Hoje". Padrão false */
+  todayButton?: boolean;
+}
+export declare function Calendar(props: CalendarProps): JSX.Element;
+```
+
 ### Checkbox
 ```ts
 /**
@@ -470,6 +642,33 @@ export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElemen
   label?: React.ReactNode;
 }
 export declare function Checkbox(props: CheckboxProps): JSX.Element;
+```
+
+### CheckboxGroup
+```ts
+/**
+ * Grupo de checkboxes — valor é array de strings.
+ */
+export interface CheckboxGroupOption {
+  value: string;
+  label: React.ReactNode;
+  /** Descrição menor abaixo do label */
+  hint?: React.ReactNode;
+  disabled?: boolean;
+}
+export interface CheckboxGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  label?: React.ReactNode;
+  hint?: React.ReactNode;
+  error?: React.ReactNode;
+  options?: CheckboxGroupOption[];
+  /** Valores marcados (modo controlado) */
+  value?: string[];
+  defaultValue?: string[];
+  onChange?: (value: string[]) => void;
+  /** Padrão "column" */
+  direction?: "column" | "row";
+}
+export declare function CheckboxGroup(props: CheckboxGroupProps): JSX.Element;
 ```
 
 ### Combobox
@@ -485,6 +684,12 @@ export interface ComboboxOption {
   icon?: React.ReactNode;
   /** Texto secundário à direita do label */
   hint?: string;
+  /** Cabeçalho de grupo — opções contíguas com o mesmo group ganham um título */
+  group?: string;
+  /** Conteúdo alinhado à direita (ex.: hora atual do fuso) */
+  trailing?: React.ReactNode;
+  /** Termos extras de busca invisíveis (ex.: "gmt-3 brasilia sao paulo") */
+  keywords?: string;
 }
 export interface ComboboxProps {
   /** Rótulo acima do campo */
@@ -512,6 +717,80 @@ export interface ComboboxProps {
   className?: string;
 }
 export declare function Combobox(props: ComboboxProps): JSX.Element;
+```
+
+### DatePicker
+```ts
+/**
+ * Campo de data — trigger no estilo Input + Popover com Calendar.
+ * Formato pt-BR (dd/mm/aaaa). Em telas ≤640px abre em BottomSheet.
+ */
+export interface DatePickerProps extends React.HTMLAttributes<HTMLDivElement> {
+  label?: string;
+  hint?: string;
+  /** Mensagem de erro — ativa o estilo de erro e substitui o hint */
+  error?: string;
+  /** Data (Date ou "AAAA-MM-DD") — modo controlado */
+  value?: Date | string | null;
+  defaultValue?: Date | string;
+  onChange?: (date: Date) => void;
+  /** Padrão "Selecionar data" */
+  placeholder?: string;
+  min?: Date | string;
+  max?: Date | string;
+  disabled?: boolean;
+}
+export declare function DatePicker(props: DatePickerProps): JSX.Element;
+```
+
+### DateRangePicker
+```ts
+/**
+ * Campo de intervalo de datas — Calendar em modo range; fecha ao completar
+ * o intervalo. Em telas ≤640px abre em BottomSheet.
+ */
+export interface DateRange {
+  start: Date | null;
+  end: Date | null;
+}
+export interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
+  label?: string;
+  hint?: string;
+  error?: string;
+  /** Intervalo — modo controlado */
+  value?: DateRange | null;
+  defaultValue?: DateRange | { start: Date | string; end: Date | string };
+  onChange?: (range: DateRange) => void;
+  /** Padrão "Selecionar período" */
+  placeholder?: string;
+  min?: Date | string;
+  max?: Date | string;
+  disabled?: boolean;
+}
+export declare function DateRangePicker(props: DateRangePickerProps): JSX.Element;
+```
+
+### Fieldset / FormRow
+```ts
+/**
+ * Fieldset semântico — legenda, descrição e pilha de campos.
+ */
+export interface FieldsetProps extends React.FieldsetHTMLAttributes<HTMLFieldSetElement> {
+  legend?: React.ReactNode;
+  description?: React.ReactNode;
+  children: React.ReactNode;
+}
+export declare function Fieldset(props: FieldsetProps): JSX.Element;
+
+/**
+ * Linha de formulário — campos lado a lado, colapsa no mobile (560px).
+ */
+export interface FormRowProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Nº de colunas. Padrão: nº de filhos */
+  columns?: number;
+  children: React.ReactNode;
+}
+export declare function FormRow(props: FormRowProps): JSX.Element;
 ```
 
 ### Input
@@ -546,6 +825,35 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> 
   name?: string;
 }
 export declare function Radio(props: RadioProps): JSX.Element;
+```
+
+### RadioGroup
+```ts
+/**
+ * Grupo de radios com label, hint/erro e opções com descrição.
+ */
+export interface RadioGroupOption {
+  value: string;
+  label: React.ReactNode;
+  /** Descrição menor abaixo do label */
+  hint?: React.ReactNode;
+  disabled?: boolean;
+}
+export interface RadioGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  label?: React.ReactNode;
+  hint?: React.ReactNode;
+  error?: React.ReactNode;
+  options?: RadioGroupOption[];
+  /** Valor controlado */
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  /** name compartilhado dos radios (auto se omitido) */
+  name?: string;
+  /** Padrão "column" */
+  direction?: "column" | "row";
+}
+export declare function RadioGroup(props: RadioGroupProps): JSX.Element;
 ```
 
 ### Select
@@ -589,6 +897,63 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export declare function Textarea(props: TextareaProps): JSX.Element;
 ```
 
+### TimeInput
+```ts
+/**
+ * Entrada de horário "HH:mm" com digitação mascarada + stepper (▲▼).
+ * Aceita "9", "09", "0930", "9:5" e normaliza no blur/Enter; nunca limpa
+ * o valor digitado ao errar a máscara. ↑/↓ = ±step, Shift+↑/↓ = ±1h.
+ * Preferir ao TimePicker em pares início–fim (comparação visual).
+ */
+export interface TimeInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "defaultValue" | "onChange" | "size" | "min" | "max" | "step"> {
+  label?: string;
+  hint?: string;
+  /** Mensagem de erro — ativa o estilo de erro e substitui o hint */
+  error?: string;
+  /** Hora "HH:mm" (24h) ou null — modo controlado */
+  value?: string | null;
+  defaultValue?: string;
+  onChange?: (time: string | null) => void;
+  /** Passo do stepper e das setas, em minutos. Padrão 15 */
+  step?: number;
+  /** Limites "HH:mm" — valores fora são grampeados */
+  min?: string;
+  max?: string;
+  /** Padrão "md" */
+  size?: "sm" | "md" | "lg";
+  /** Liga aria-invalid + borda de erro sem mensagem (ex.: fim ≤ início) */
+  invalid?: boolean;
+  disabled?: boolean;
+}
+export declare function TimeInput(props: TimeInputProps): JSX.Element;
+```
+
+### TimePicker
+```ts
+/**
+ * Campo de hora — trigger no estilo Input + lista rolável de horários.
+ * Valor é string "HH:mm" (24h).
+ */
+export interface TimePickerProps extends React.HTMLAttributes<HTMLDivElement> {
+  label?: string;
+  hint?: string;
+  error?: string;
+  /** Hora "HH:mm" — modo controlado */
+  value?: string | null;
+  defaultValue?: string;
+  onChange?: (time: string) => void;
+  /** Padrão "Selecionar hora" */
+  placeholder?: string;
+  /** Intervalo entre opções, em minutos. Padrão 30 */
+  step?: number;
+  /** Limites "HH:mm". Padrão "00:00"–"23:59" */
+  min?: string;
+  max?: string;
+  disabled?: boolean;
+}
+export declare function TimePicker(props: TimePickerProps): JSX.Element;
+```
+
 ## Icons
 
 ### Icon
@@ -611,7 +976,178 @@ export interface IconProps {
 export declare function Icon(props: IconProps): JSX.Element;
 ```
 
+## Layout
+
+### ActionBar
+```ts
+/**
+ * Barra flutuante de ações em massa (bottom-center).
+ */
+export interface ActionBarProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Some quando false. Padrão true */
+  open?: boolean;
+  /** Nº de itens selecionados — 0 esconde a barra */
+  count?: number;
+  /** Texto após o número. Padrão "selecionados" */
+  label?: React.ReactNode;
+  /** Botões de ação (ex. <Button size="sm">) */
+  actions?: React.ReactNode;
+  /** Mostra o × de limpar seleção */
+  onClear?: () => void;
+}
+export declare function ActionBar(props: ActionBarProps): JSX.Element | null;
+```
+
+### AppShell
+```ts
+/**
+ * Casca de app — sidebar + topbar + conteúdo rolável.
+ */
+export interface AppShellProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Normalmente <AppSidebar> */
+  sidebar?: React.ReactNode;
+  /** Barra superior (breadcrumb, busca, avatar) */
+  topbar?: React.ReactNode;
+  /** Padding do conteúdo via --content-gutter. Padrão true */
+  padded?: boolean;
+  children: React.ReactNode;
+}
+export declare function AppShell(props: AppShellProps): JSX.Element;
+```
+
+### Container
+```ts
+/**
+ * Container central de conteúdo — max-width tokenizada + gutter lateral.
+ */
+export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Sobrepõe var(--container-max), em px */
+  max?: number;
+}
+export declare function Container(props: ContainerProps): JSX.Element;
+```
+
+### Grid
+```ts
+/**
+ * Grid de layout — colunas fixas ou responsivas.
+ */
+export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Nº de colunas iguais ou template CSS (ex. "2fr 1fr"). Padrão 2 */
+  columns?: number | string;
+  /** Largura mínima por item em px — ativa auto-fit responsivo e ignora columns */
+  minItem?: number;
+  /** Passo da escala de espaço ou string CSS. Padrão 4 */
+  gap?: number | string;
+}
+export declare function Grid(props: GridProps): JSX.Element;
+```
+
+### PageHeader
+```ts
+/**
+ * Cabeçalho de página com título, descrição e ações.
+ */
+export interface PageHeaderProps extends React.HTMLAttributes<HTMLElement> {
+  /** Rótulo em caps acima do título */
+  eyebrow?: React.ReactNode;
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  /** Botões alinhados à direita */
+  actions?: React.ReactNode;
+  /** Linha extra abaixo (Tabs, filtros) */
+  children?: React.ReactNode;
+}
+export declare function PageHeader(props: PageHeaderProps): JSX.Element;
+```
+
+### Separator
+```ts
+/**
+ * Divisor de conteúdo.
+ */
+export interface SeparatorProps extends React.HTMLAttributes<HTMLElement> {
+  /** Padrão "horizontal" */
+  orientation?: "horizontal" | "vertical";
+  /** Texto central (ex. "ou") — sempre horizontal */
+  label?: React.ReactNode;
+}
+export declare function Separator(props: SeparatorProps): JSX.Element;
+```
+
+### Stack / Inline
+```ts
+/**
+ * Pilha flex — espaçamento sempre por token da escala --space-N.
+ */
+export interface StackProps extends React.HTMLAttributes<HTMLElement> {
+  /** Padrão "column" */
+  direction?: "row" | "column";
+  /** Passo da escala de espaço (4 → var(--space-4)) ou string CSS. Padrão 4 */
+  gap?: number | string;
+  align?: React.CSSProperties["alignItems"];
+  justify?: React.CSSProperties["justifyContent"];
+  /** flex-wrap: wrap */
+  wrap?: boolean;
+  /** Elemento a renderizar. Padrão "div" */
+  as?: keyof JSX.IntrinsicElements;
+}
+export declare function Stack(props: StackProps): JSX.Element;
+
+/** Linha flex com wrap e itens centralizados (chips, tags, botões). */
+export interface InlineProps extends StackProps {}
+export declare function Inline(props: InlineProps): JSX.Element;
+```
+
 ## Navigation
+
+### AppSidebar
+```ts
+/**
+ * Casca de navegação lateral de app. Compõe SidebarGroup por baixo.
+ */
+export interface AppSidebarGroup {
+  heading?: React.ReactNode;
+  /** Itens no formato do SidebarGroup: { id, label, icon?, badge?, active?, onSelect? } */
+  items: Array<{ id: string; label: React.ReactNode; icon?: React.ReactNode; badge?: React.ReactNode; active?: boolean; onSelect?: () => void }>;
+}
+export interface AppSidebarProps extends React.HTMLAttributes<HTMLElement> {
+  /** Logo/nome no topo */
+  brand?: React.ReactNode;
+  groups?: AppSidebarGroup[];
+  /** Links utilitários e/ou card de usuário, separado por borda superior */
+  footer?: React.ReactNode;
+  /** Padrão 260 */
+  width?: number;
+  /** Mostra o botão de recolher para modo rail (64px, só ícones + tooltip) */
+  collapsible?: boolean;
+  /** Modo rail controlado */
+  collapsed?: boolean;
+  defaultCollapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  onSelect?: (id: string, item: object) => void;
+}
+export declare function AppSidebar(props: AppSidebarProps): JSX.Element;
+```
+
+### BottomNav
+```ts
+/**
+ * Barra de navegação inferior (mobile) — 3 a 5 itens, toque ≥ 44px.
+ */
+export interface BottomNavItem {
+  id: string;
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  active?: boolean;
+  onClick?: () => void;
+}
+export interface BottomNavProps extends React.HTMLAttributes<HTMLElement> {
+  items: BottomNavItem[];
+  onSelect?: (id: string, item: BottomNavItem) => void;
+}
+export declare function BottomNav(props: BottomNavProps): JSX.Element;
+```
 
 ### Breadcrumb
 ```ts
@@ -825,4 +1361,363 @@ export interface WorkspaceSwitcherProps {
   className?: string;
 }
 export declare function WorkspaceSwitcher(props: WorkspaceSwitcherProps): JSX.Element;
+```
+
+## Primitives
+
+### Popover / Portal
+```ts
+/**
+ * Popover primitivo — painel ancorado ao trigger. Base de Dropdown,
+ * Combobox, DatePicker e filtros.
+ */
+export interface PopoverProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Elemento que abre/fecha o painel */
+  trigger: React.ReactNode;
+  /** Modo controlado */
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Lado do painel. Padrão "bottom" */
+  side?: "bottom" | "top";
+  /** Alinhamento em relação ao trigger. Padrão "start" */
+  align?: "start" | "end" | "center";
+  /** Largura fixa do painel em px */
+  width?: number;
+  children: React.ReactNode;
+}
+export declare function Popover(props: PopoverProps): JSX.Element;
+
+/** Portal para document.body. */
+export interface PortalProps { children: React.ReactNode; }
+export declare function Portal(props: PortalProps): JSX.Element;
+```
+
+### VisuallyHidden
+```ts
+/**
+ * Conteúdo visível apenas para leitores de tela.
+ */
+export interface VisuallyHiddenProps extends React.HTMLAttributes<HTMLElement> {
+  /** Elemento a renderizar. Padrão "span" */
+  as?: keyof JSX.IntrinsicElements;
+  children: React.ReactNode;
+}
+export declare function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element;
+```
+
+## Scheduling
+
+### CalendarView
+```ts
+/**
+ * Agenda dia/semana/mês — grade de horas com janelas de disponibilidade
+ * (fundo claro dentro, escuro fora), linha "agora", chips tipados por
+ * forma+cor (sólido, tracejado, hachura, contorno — nunca só cor) e
+ * popover de resumo antes de qualquer ação.
+ */
+export type CalendarViewKind = "session" | "program-session" | "pending" | "block" | "external";
+export interface CalendarViewEvent {
+  id: string | number;
+  /** Padrão "session". pending = tracejado; block = hachura; external = contorno */
+  kind?: CalendarViewKind;
+  /** ISO local ou Date */
+  start: string | Date;
+  end: string | Date;
+  title: string;
+  /** Dados extras ficam disponíveis no popover/callbacks */
+  [key: string]: unknown;
+}
+export interface CalendarViewProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Modo controlado. Padrão interno "week" */
+  view?: "day" | "week" | "month";
+  defaultView?: "day" | "week" | "month";
+  onViewChange?: (view: "day" | "week" | "month") => void;
+  /** Âncora do período "AAAA-MM-DD" — modo controlado */
+  date?: string | Date;
+  defaultDate?: string | Date;
+  onDateChange?: (isoDate: string) => void;
+  events?: CalendarViewEvent[];
+  /** Janelas semanais { 0(dom)–6: [{ start, end }] } — pinta dentro/fora */
+  availability?: Record<number, { start: string; end: string }[]>;
+  /** Faixa de horas da grade. Padrão 7–21 */
+  startHour?: number;
+  endHour?: number;
+  /** Padrão 1 (segunda) */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Clique num chip (além do popover embutido) */
+  onEventOpen?: (event: CalendarViewEvent) => void;
+  /** Conteúdo do popover de resumo; close() fecha */
+  renderEventPopover?: (event: CalendarViewEvent, close: () => void) => React.ReactNode;
+  /** Clique em área vazia da grade (snap em slotStep) */
+  onSlotCreate?: (start: Date) => void;
+  /** Minutos do snap. Padrão 30 */
+  slotStep?: number;
+  /** Nó extra à direita da toolbar (ex.: botão "Nova sessão") */
+  toolbarActions?: React.ReactNode;
+  /** Padrão "pt-BR" */
+  locale?: string;
+}
+export declare function CalendarView(props: CalendarViewProps): JSX.Element;
+```
+
+### RecurrenceSelector
+```ts
+/**
+ * Seletor de recorrência — presets primeiro, editor personalizado
+ * (frequência, dias da semana, término Nunca/Após N/Em data) e resumo
+ * em linguagem natural sempre visível, anunciado por aria-live.
+ */
+export interface RecurrenceEnd {
+  type: "never" | "count" | "date";
+  count?: number;
+  date?: Date | string | null;
+}
+export interface RecurrenceRule {
+  freq: "none" | "weekly" | "monthly";
+  /** A cada N semanas/meses. Padrão 1 */
+  interval?: number;
+  /** 0(dom)–6(sáb) — só para freq semanal */
+  byWeekday?: number[];
+  end?: RecurrenceEnd;
+}
+export interface RecurrenceConflict {
+  date: string;
+  reason?: string;
+}
+export interface RecurrenceSelectorProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+  /** Modo controlado. { freq: "none" } = não se repete */
+  value?: RecurrenceRule | null;
+  defaultValue?: RecurrenceRule;
+  onChange?: (rule: RecurrenceRule) => void;
+  /** Base dos presets ("Toda semana (qua)"). Padrão hoje */
+  startDate?: Date | string;
+  /** Pré-preenche o término "Após N vezes" (ex.: nº de sessões de um pacote) */
+  defaultEndCount?: number;
+  /** Ocorrências em horários indisponíveis — avisa, não bloqueia */
+  conflicts?: RecurrenceConflict[];
+}
+export declare function RecurrenceSelector(props: RecurrenceSelectorProps): JSX.Element;
+/** Frase da regra em linguagem natural (a mesma do resumo interno) */
+export declare function describeRecurrence(rule: RecurrenceRule | null, startDate: Date | string): string;
+```
+
+### SegmentedRing
+```ts
+/**
+ * Anel de progresso segmentado — categorias nomeadas somando um total.
+ * Complementa o Progress (barra 0–100): use o anel como bloco herói de
+ * uma tela de progresso; na lista/cartão, prefira Progress + legenda.
+ * O anel é decorativo (aria-hidden) — o equivalente textual embutido é
+ * a fonte da informação; a legenda nunca deve ser omitida em telas.
+ */
+export interface RingSegment {
+  value: number;
+  label: string;
+  /** Cor semântica do segmento */
+  tone?: "success" | "accent" | "danger" | "warning" | "neutral";
+  /** Cor CSS custom (sobrepõe tone) */
+  color?: string;
+}
+export interface SegmentedRingProps extends React.HTMLAttributes<HTMLDivElement> {
+  segments?: RingSegment[];
+  /** Denominador do anel. Padrão: soma dos segmentos */
+  total?: number;
+  /** Texto grande no centro (ex.: "5 de 8") */
+  centerValue?: React.ReactNode;
+  /** Rótulo pequeno sob o número (ex.: "Sessão") */
+  centerLabel?: React.ReactNode;
+  /** "md" 96px · "lg" 160px. Padrão "lg" */
+  size?: "md" | "lg";
+  /** Legenda abaixo em vez de ao lado (mobile). Padrão false */
+  stacked?: boolean;
+  /** Padrão true — não omitir em telas (exigência de acessibilidade) */
+  showLegend?: boolean;
+}
+export declare function SegmentedRing(props: SegmentedRingProps): JSX.Element;
+```
+
+### SlotPicker
+```ts
+/**
+ * Escolha de data + horário para páginas públicas de agendamento.
+ * Slots em UTC exibidos no fuso do visitante (IANA); seleção em dois
+ * passos (slot → Confirmar); skeleton no loading; dia vazio com pulo
+ * para o próximo horário livre; contagem visível de reserva temporária.
+ * O resumo do que está sendo agendado entra via children (coluna esquerda).
+ */
+export interface Slot {
+  /** Início em UTC ISO, ex. "2026-08-03T13:00:00Z" */
+  start: string;
+  /** Fim em UTC ISO */
+  end: string;
+}
+export interface SlotPickerProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Slots livres em UTC — o componente agrupa por dia no fuso ativo */
+  slots?: Slot[];
+  /** Dia visível "AAAA-MM-DD" — modo controlado. Padrão: primeiro dia com slots */
+  date?: string;
+  defaultDate?: string;
+  onDateChange?: (isoDate: string) => void;
+  /** Fuso IANA do visitante. Padrão: detectado do navegador */
+  timezone?: string;
+  onTimezoneChange?: (zone: string) => void;
+  /** Fuso mostrado como "Detectado" no TimeZonePicker embutido */
+  detectedZone?: string;
+  /** Chamado no clique em Confirmar — revalide no servidor */
+  onConfirm?: (slot: Slot) => void;
+  /** Padrão "Confirmar" */
+  confirmLabel?: string;
+  /** ISO do fim da reserva temporária — liga a contagem visível */
+  holdExpiresAt?: string;
+  /** "AAAA-MM-DD" — CTA de pulo quando o dia visível está vazio */
+  nextAvailableDate?: string;
+  /** Skeleton de 6 pills (nunca spinner) */
+  loading?: boolean;
+  emptyMessage?: string;
+  /** Estado sem nenhum slot em nenhum dia */
+  fullMessage?: string;
+  /** Padrão "pt-BR" */
+  locale?: string;
+  /** Limites do calendário (ex.: hoje → horizonte de agendamento) */
+  min?: Date | string;
+  max?: Date | string;
+}
+export declare function SlotPicker(props: SlotPickerProps): JSX.Element;
+```
+
+### TimeZonePicker
+```ts
+/**
+ * Seletor de fuso horário sobre o Combobox — busca por cidade/país/sigla
+ * nos dois idiomas, grupos por região + "Detectado"/"Recentes" no topo,
+ * offset GMT±X calculado na data de referência (horário de verão correto)
+ * e hora atual ao vivo em cada opção. Valores sempre IANA.
+ */
+export interface TimeZoneOption {
+  /** IANA, ex. "America/Sao_Paulo" */
+  value: string;
+  label: string;
+  region: string;
+  /** Termos extras de busca (siglas, cidades cobertas) */
+  keywords?: string;
+}
+export interface TimeZonePickerProps {
+  /** IANA (ex. "America/Sao_Paulo") — modo controlado */
+  value?: string;
+  defaultValue?: string;
+  onChange?: (zone: string) => void;
+  /** Data usada para calcular o GMT±X exibido (ex.: data da sessão). Padrão: agora */
+  referenceDate?: string | Date;
+  /** Zonas fixadas no topo, grupo "Recentes" */
+  recentZones?: string[];
+  /** Zona fixada no topo, grupo "Detectado" */
+  detectedZone?: string;
+  /** Sobrepõe a lista curada padrão (TimeZonePicker.ZONES) */
+  zones?: TimeZoneOption[];
+  /** Locale da hora ao vivo. Padrão "pt-BR" */
+  locale?: string;
+  label?: string;
+  hint?: string;
+  error?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}
+export declare function TimeZonePicker(props: TimeZonePickerProps): JSX.Element;
+```
+
+### WeeklyScheduleEditor
+```ts
+/**
+ * Editor de janelas semanais de disponibilidade — toggle por dia,
+ * pares início–fim (TimeInput), múltiplos intervalos por dia,
+ * "Copiar para…" (o atalho que faz o setup levar minutos) e exceções
+ * por data. Genérico: agenda de atendimento, horário de funcionamento,
+ * escala de plantão. Horários no fuso do dono da agenda.
+ */
+export interface TimeRange {
+  /** "HH:mm" */
+  start: string;
+  end: string;
+}
+/** Chaves 0(dom)–6(sáb); dia sem janelas = indisponível */
+export type WeeklySchedule = Record<number, TimeRange[]>;
+export interface DateException {
+  /** "AAAA-MM-DD" — sobrescreve o dia da semana */
+  date: string;
+  /** Vazio = indisponível o dia todo */
+  ranges: TimeRange[];
+}
+export interface WeeklyScheduleEditorProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+  /** Modo controlado */
+  value?: WeeklySchedule;
+  defaultValue?: WeeklySchedule;
+  onChange?: (value: WeeklySchedule) => void;
+  exceptions?: DateException[];
+  onExceptionsChange?: (exceptions: DateException[]) => void;
+  /** Intervalo criado ao ligar um dia. Padrão 09:00–17:00 */
+  defaultRange?: TimeRange;
+  /** Primeiro dia exibido: 0=dom … 6=sáb. Padrão 1 (segunda) */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Seção de exceções por data. Padrão true */
+  showExceptions?: boolean;
+}
+export declare function WeeklyScheduleEditor(props: WeeklyScheduleEditorProps): JSX.Element;
+```
+
+## System
+
+### ThemeProvider / useTheme
+```ts
+/**
+ * Provider de tema — aplica data-theme no <html> e persiste a escolha.
+ * No bundle do preview, o hook está em ThemeProvider.useTheme.
+ */
+export interface ThemeProviderProps {
+  /** Padrão "light" */
+  defaultTheme?: "light" | "dark";
+  /** Chave do localStorage. Padrão "lyra-theme" */
+  storageKey?: string;
+  /** Fixa data-brand (white-label) */
+  brand?: string;
+  children: React.ReactNode;
+}
+export declare function ThemeProvider(props: ThemeProviderProps): JSX.Element;
+
+export interface ThemeApi {
+  theme: "light" | "dark";
+  dark: boolean;
+  setTheme: (theme: "light" | "dark") => void;
+  toggle: () => void;
+}
+export declare function useTheme(): ThemeApi;
+```
+
+### ToastProvider / useToast
+```ts
+/**
+ * Provider de toasts — renderiza a ToastStack e expõe a API via useToast().
+ * No bundle do preview, o hook está em ToastProvider.useToast.
+ */
+export interface ToastProviderProps {
+  /** Auto-dismiss em ms; 0 desliga. Padrão 4000 */
+  duration?: number;
+  children: React.ReactNode;
+}
+export declare function ToastProvider(props: ToastProviderProps): JSX.Element;
+
+export interface ToastOptions {
+  tone?: "info" | "success" | "danger";
+  icon?: React.ReactNode;
+  duration?: number;
+}
+export interface ToastApi {
+  toast: (message: React.ReactNode, options?: ToastOptions) => number;
+  success: (message: React.ReactNode, options?: ToastOptions) => number;
+  error: (message: React.ReactNode, options?: ToastOptions) => number;
+  info: (message: React.ReactNode, options?: ToastOptions) => number;
+  dismiss: (id: number) => void;
+}
+export declare function useToast(): ToastApi;
 ```

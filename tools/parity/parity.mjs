@@ -292,7 +292,13 @@ const ADDITIVE_EXTENSIONS = {
     // the declarations into the CSS layer, with custom properties for the parts that cannot be
     // modifier classes (gap, direction, alignment, column template).
     classes: ['lyra-stack', 'lyra-grid'],
-    keyframes: [],
+    keyframes: ['lyra-actionbar-in'],
+  },
+  'components/primitives/primitives.css': {
+    // The handoff's Popover entrance fades from opacity 0; the package deliberately redefines this
+    // exact keyframe after the canonical region to meet the transform-only entrance-motion constraint.
+    classes: [],
+    keyframes: ['lyra-popover-in'],
   },
   'components/feedback/feedback.css': {
     classes: [
@@ -340,7 +346,12 @@ const ADDITIVE_EXTENSIONS = {
   'components/forms/forms.css': {
     // Popup flip modifier: the handoff recipe only opens downward, which forces a page scroll
     // when the trigger sits near the bottom of the viewport.
-    classes: ['lyra-combobox__pop--up', 'lyra-combobox__trigger', 'lyra-combobox__option'],
+    classes: [
+      'lyra-combobox__pop--up',
+      'lyra-combobox__trigger',
+      'lyra-combobox__option',
+      'lyra-input--sm',
+    ],
     keyframes: [],
   },
   'components/navigation/navigation.css': {

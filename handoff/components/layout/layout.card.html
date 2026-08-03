@@ -1,0 +1,73 @@
+<!-- @dsCard group="Components" viewport="960x600" name="Layout" subtitle="AppShell · PageHeader · Grid · ActionBar · sidebar rail" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>html, body, #root { height: 100%; } body { margin: 0; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { AppShell, AppSidebar, PageHeader, Grid, Stack, ActionBar, Stat, Button, Icon, Breadcrumb, Avatar } = window.LyraDesignSystem_e82d95;
+function Demo() {
+  const [collapsed, setCollapsed] = React.useState(false);
+  return (
+    <AppShell
+      sidebar={
+        <AppSidebar
+          collapsible
+          collapsed={collapsed}
+          onCollapsedChange={setCollapsed}
+          brand={
+            <Stack direction="row" gap={2} align="center">
+              <span style={{ width: 24, height: 24, flex: "none", borderRadius: 6, background: "var(--accent)", color: "var(--on-accent)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name="sparkles" size={14} /></span>
+              {!collapsed && <strong style={{ fontSize: 14, color: "var(--text-primary)" }}>Lyra</strong>}
+            </Stack>
+          }
+          groups={[{ items: [
+            { id: "home", label: "Visão geral", icon: <Icon name="layout-dashboard" size={17} />, active: true },
+            { id: "pkgs", label: "Pacotes", icon: <Icon name="package" size={17} />, badge: 12 },
+            { id: "issues", label: "Issues", icon: <Icon name="circle-dot" size={17} /> },
+            { id: "settings", label: "Configurações", icon: <Icon name="settings" size={17} /> },
+          ] }]}
+        />
+      }
+      topbar={
+        <React.Fragment>
+          <Breadcrumb items={[{ label: "Workspace" }, { label: "Visão geral" }]} />
+          <span style={{ flex: 1 }}></span>
+          <Avatar name="Ana Souza" size="sm" />
+        </React.Fragment>
+      }
+    >
+      <Stack gap={6}>
+        <PageHeader
+          eyebrow="Workspace"
+          title="Visão geral"
+          description="Métricas dos pacotes publicados neste workspace."
+          actions={<Button size="sm" iconLeft={<Icon name="plus" size={15} />}>Novo pacote</Button>}
+        />
+        <Grid minItem={180} gap={4}>
+          <Stat card label="Downloads" value="48.210" delta="12,4%" direction="up" />
+          <Stat card label="Issues abertas" value="37" delta="3 esta semana" direction="down" />
+          <Stat card label="Contribuidores" value="214" delta="estável" direction="flat" />
+        </Grid>
+      </Stack>
+      <ActionBar count={3} label="pacotes selecionados" onClear={() => {}} actions={
+        <React.Fragment>
+          <Button size="sm" variant="secondary">Arquivar</Button>
+          <Button size="sm" variant="danger">Excluir</Button>
+        </React.Fragment>
+      } />
+    </AppShell>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+/* @lyra-ds/styles — primitives: popover, visually hidden · MIT */
+
+.lyra-popover-anchor { position: relative; display: inline-flex; }
+.lyra-popover {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  min-width: 220px;
+  box-sizing: border-box;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-4);
+  animation: lyra-popover-in var(--duration-fast) var(--ease-out);
+}
+.lyra-popover--bottom { top: calc(100% + var(--space-2)); }
+.lyra-popover--top { bottom: calc(100% + var(--space-2)); }
+.lyra-popover--align-start { left: 0; }
+.lyra-popover--align-end { right: 0; }
+.lyra-popover--align-center { left: 50%; transform: translateX(-50%); }
+@keyframes lyra-popover-in { from { opacity: 0; } to { opacity: 1; } }
+
+.lyra-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  /* stylelint-disable-next-line property-no-deprecated -- this clipping recipe is the canonical
+     broadly supported visually-hidden pattern. */
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the canonical entry keyframe starts at
+   opacity 0; this transform-only override satisfies the project motion constraint. */
+@keyframes lyra-popover-in { from { transform: translateY(4px); } to { transform: translateY(0); } }

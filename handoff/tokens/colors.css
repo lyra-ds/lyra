@@ -80,6 +80,7 @@
   /* ---- semantic · borders ---- */
   --border-default: var(--slate-200);
   --border-strong:  var(--slate-300);
+  --border-input:   var(--slate-400);
   --border-accent:  var(--indigo-600);
 
   /* ---- semantic · status ---- */
@@ -121,6 +122,7 @@
 
   --border-default: var(--night-600);
   --border-strong:  #3A3F6E;
+  --border-input:   #575E9B;
   --border-accent:  var(--indigo-400);
 
   --success:      var(--green-500);

@@ -1,0 +1,213 @@
+/* Lyra DS — scheduling (agendamento) */
+
+/* ---- SlotPicker ---- */
+.lyra-slotpicker { display: flex; gap: var(--space-8); align-items: flex-start; }
+.lyra-slotpicker__side { display: flex; flex-direction: column; gap: var(--space-4); }
+.lyra-slotpicker__tz { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+.lyra-slotpicker__tz button {
+  border: 0; background: none; cursor: pointer; padding: 0;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--text-link); text-decoration: underline; text-underline-offset: 2px;
+}
+.lyra-slotpicker__main { display: flex; flex-direction: column; gap: var(--space-3); min-width: 232px; flex: 1; }
+.lyra-slotpicker__daylabel { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.lyra-slotpicker__slots { display: flex; flex-direction: column; gap: var(--space-2); max-height: 336px; overflow-y: auto; padding-right: 2px; }
+.lyra-slotpicker__slot {
+  height: 44px; width: 100%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-input, var(--border-strong));
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  font-family: var(--font-mono); font-size: var(--text-base); font-variant-numeric: tabular-nums;
+  color: var(--text-primary); cursor: pointer; flex: none;
+  transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+.lyra-slotpicker__slot:hover { border-color: var(--accent); }
+.lyra-slotpicker__slot:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-slotpicker__pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); flex: none; }
+.lyra-slotpicker__pair .lyra-slotpicker__slot { border-color: var(--accent); background: var(--accent); color: var(--on-accent); font-weight: var(--weight-semibold); cursor: default; }
+.lyra-slotpicker__skeleton { height: 44px; border-radius: var(--radius-md); background: var(--surface-sunken); animation: lyra-slot-pulse 1.2s ease-in-out infinite; flex: none; }
+@keyframes lyra-slot-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.lyra-slotpicker__empty {
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-6) 0; font-size: var(--text-base); color: var(--text-secondary);
+}
+.lyra-slotpicker__hold { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ---- WeeklyScheduleEditor ---- */
+.lyra-sched { display: flex; flex-direction: column; }
+.lyra-sched__row {
+  display: grid; grid-template-columns: 148px 1fr auto;
+  gap: var(--space-4); align-items: start;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-default);
+}
+.lyra-sched__row:last-child { border-bottom: 0; }
+.lyra-sched__daycell { padding-top: 6px; }
+.lyra-sched__ranges { display: flex; flex-direction: column; gap: var(--space-2); }
+.lyra-sched__range { display: flex; align-items: center; gap: var(--space-2); }
+.lyra-sched__range > div { width: 108px; }
+.lyra-sched__dash { color: var(--text-faint); }
+.lyra-sched__off { font-size: var(--text-base); color: var(--text-faint); padding-top: 8px; }
+.lyra-sched__actions { display: flex; gap: var(--space-1); padding-top: 4px; }
+.lyra-sched__ghostbtn {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; background: transparent; border-radius: var(--radius-sm);
+  color: var(--text-muted); cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-sched__ghostbtn:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-sched__ghostbtn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-sched__addrange {
+  align-self: flex-start;
+  border: 0; background: none; cursor: pointer; padding: var(--space-1) 0;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--text-link);
+}
+.lyra-sched__copy { display: flex; flex-direction: column; gap: var(--space-2); min-width: 180px; }
+.lyra-sched__copy-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.lyra-sched__error { font-size: var(--text-xs); color: var(--danger-text); }
+.lyra-sched__exc { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4); }
+.lyra-sched__exc-row { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-base); color: var(--text-secondary); }
+.lyra-sched__exc-date { font-weight: var(--weight-semibold); color: var(--text-primary); min-width: 110px; }
+
+/* ---- RecurrenceSelector ---- */
+.lyra-recur { display: flex; flex-direction: column; gap: var(--space-3); }
+.lyra-recur__summary {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); color: var(--text-secondary);
+  background: var(--surface-sunken); border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+.lyra-recur__custom {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.lyra-recur__freqrow { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-base); color: var(--text-secondary); flex-wrap: wrap; }
+.lyra-recur__freqrow .lyra-input { width: 64px; text-align: center; }
+.lyra-recur__freqrow select.lyra-input { width: auto; text-align: left; }
+.lyra-recur__days { display: flex; gap: var(--space-1); }
+.lyra-recur__day {
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-input, var(--border-strong)); border-radius: var(--radius-full);
+  background: var(--surface-card);
+  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  color: var(--text-secondary); cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-recur__day:hover { border-color: var(--accent); }
+.lyra-recur__day:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-recur__day--on, .lyra-recur__day--on:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.lyra-recur__endrow { display: flex; align-items: center; gap: var(--space-2); }
+.lyra-recur__endrow .lyra-input { width: 72px; text-align: center; }
+.lyra-recur__endrow > .lyra-recur__enddate { width: 180px; }
+
+/* ---- SegmentedRing ---- */
+.lyra-ring { display: flex; align-items: center; gap: var(--space-6); }
+.lyra-ring--stacked { flex-direction: column; gap: var(--space-4); }
+.lyra-ring__wrap { position: relative; flex: none; }
+.lyra-ring__center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  pointer-events: none;
+}
+.lyra-ring__num { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-extrabold); letter-spacing: var(--tracking-heading); color: var(--text-primary); line-height: 1; }
+.lyra-ring--md .lyra-ring__num { font-size: var(--text-lg); }
+.lyra-ring__cap { font-size: var(--text-xs); color: var(--text-muted); }
+.lyra-ring__legend { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.lyra-ring__li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-secondary); }
+.lyra-ring__swatch { width: 10px; height: 10px; border-radius: var(--radius-full); flex: none; }
+.lyra-ring__val { margin-left: auto; font-weight: var(--weight-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+/* ---- CalendarView ---- */
+.lyra-calview { border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-card); overflow: hidden; display: flex; flex-direction: column; }
+.lyra-calview__toolbar { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border-default); }
+.lyra-calview__title { font-family: var(--font-display); font-size: var(--text-md); font-weight: var(--weight-bold); color: var(--text-primary); margin-right: auto; }
+.lyra-calview__seg { display: inline-flex; border: 1px solid var(--border-default); border-radius: var(--radius-md); overflow: hidden; }
+.lyra-calview__seg button {
+  border: 0; background: transparent; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--text-secondary); padding: var(--space-1) var(--space-3); height: 30px;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-calview__seg button + button { border-left: 1px solid var(--border-default); }
+.lyra-calview__seg button:hover { background: var(--surface-sunken); }
+.lyra-calview__seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-soft-text); font-weight: var(--weight-semibold); }
+.lyra-calview__nav {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: 0; background: transparent; border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
+}
+.lyra-calview__nav:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-calview__nav:focus-visible, .lyra-calview__seg button:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-calview__head { display: grid; border-bottom: 1px solid var(--border-default); }
+.lyra-calview__head-cell { padding: var(--space-2); text-align: center; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.lyra-calview__head-cell strong { display: block; font-family: var(--font-display); font-size: var(--text-md); color: var(--text-primary); letter-spacing: 0; }
+.lyra-calview__head-cell--today strong { color: var(--accent-soft-text); }
+.lyra-calview__scroll { overflow-y: auto; max-height: 520px; position: relative; }
+.lyra-calview__grid { display: grid; }
+.lyra-calview__ruler { position: relative; }
+.lyra-calview__hour {
+  position: absolute; right: var(--space-2); transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-faint);
+}
+.lyra-calview__col {
+  position: relative;
+  border-left: 1px solid var(--border-default);
+  background: var(--surface-sunken);
+  background-image: linear-gradient(var(--border-default) 1px, transparent 1px);
+}
+.lyra-calview__avail { position: absolute; left: 0; right: 0; background: var(--surface-card); }
+.lyra-calview__now { position: absolute; left: 0; right: 0; height: 2px; background: var(--danger); z-index: 3; pointer-events: none; }
+.lyra-calview__now::before { content: ""; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+.lyra-calview__evt {
+  position: absolute; left: 3px; right: 3px; z-index: 2;
+  border-radius: var(--radius-sm);
+  padding: 3px var(--space-2) 3px 9px;
+  font-family: var(--font-sans); font-size: var(--text-xs); text-align: left;
+  border: 1px solid transparent; cursor: pointer; overflow: hidden;
+  display: flex; flex-direction: column; gap: 0;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+.lyra-calview__evt::before { content: ""; position: absolute; left: 2px; top: 3px; bottom: 3px; width: 3px; border-radius: var(--radius-full); }
+.lyra-calview__evt:hover { box-shadow: var(--shadow-md); z-index: 4; }
+.lyra-calview__evt:focus-visible { outline: none; box-shadow: var(--shadow-focus); z-index: 4; }
+.lyra-calview__evt-time { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 10px; opacity: 0.85; }
+.lyra-calview__evt-title { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lyra-calview__evt--session { background: var(--accent-soft); color: var(--accent-soft-text); }
+.lyra-calview__evt--session::before { background: var(--accent); }
+.lyra-calview__evt--program-session { background: var(--success-soft); color: var(--success-text); }
+.lyra-calview__evt--program-session::before { background: var(--success); }
+.lyra-calview__evt--pending { background: var(--surface-card); color: var(--text-secondary); border: 1.5px dashed var(--border-strong); }
+.lyra-calview__evt--pending::before { background: var(--text-faint); }
+.lyra-calview__evt--block {
+  background: repeating-linear-gradient(-45deg, var(--surface-sunken), var(--surface-sunken) 4px, var(--surface-card) 4px, var(--surface-card) 8px);
+  color: var(--text-muted);
+}
+.lyra-calview__evt--block::before { background: var(--text-faint); }
+.lyra-calview__evt--external { background: transparent; color: var(--text-muted); border: 1px solid var(--border-strong); }
+.lyra-calview__evt--external::before { background: var(--border-strong); }
+.lyra-calview__pop {
+  position: absolute; z-index: var(--z-dropdown);
+  min-width: 220px; max-width: 280px;
+  background: var(--surface-card); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+  padding: var(--space-3);
+  animation: lyra-pop-in var(--duration-fast) var(--ease-out);
+}
+/* month view */
+.lyra-calview__mgrid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.lyra-calview__mcell {
+  min-height: 96px; border-left: 1px solid var(--border-default); border-top: 1px solid var(--border-default);
+  padding: var(--space-1); display: flex; flex-direction: column; gap: 2px;
+  font-size: var(--text-xs); background: var(--surface-card); cursor: pointer; border-right: 0; border-bottom: 0;
+  text-align: left;
+}
+.lyra-calview__mcell:hover { background: var(--surface-sunken); }
+.lyra-calview__mcell--out { background: var(--surface-sunken); color: var(--text-faint); }
+.lyra-calview__mday { font-weight: var(--weight-semibold); color: var(--text-secondary); padding: 2px; }
+.lyra-calview__mcell--today .lyra-calview__mday { color: var(--accent-soft-text); }
+.lyra-calview__mevt { border-radius: var(--radius-xs); padding: 1px var(--space-1); font-size: 10px; font-weight: var(--weight-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lyra-calview__more { font-size: 10px; color: var(--text-muted); padding: 0 var(--space-1); }

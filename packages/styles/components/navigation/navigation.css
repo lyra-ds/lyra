@@ -467,6 +467,79 @@
 .lyra-page--active:hover:not(:disabled) { background: var(--accent-hover); color: var(--on-accent); }
 .lyra-page--gap { cursor: default; color: var(--text-faint); }
 
+/* app sidebar */
+.lyra-appsidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-default);
+  padding: var(--space-5) var(--space-3) var(--space-4);
+  box-sizing: border-box;
+}
+.lyra-appsidebar__brand { padding: 0 var(--space-2) var(--space-4); }
+.lyra-appsidebar__groups { flex: 1; display: flex; flex-direction: column; gap: var(--space-5); overflow-y: auto; min-height: 0; }
+.lyra-appsidebar__footer { border-top: 1px solid var(--border-default); margin-top: var(--space-3); padding-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.lyra-appsidebar__user { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2); }
+.lyra-appsidebar__user-name { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-primary); }
+.lyra-appsidebar__user-role { font-size: var(--text-xs); color: var(--text-muted); }
+
+/* app sidebar — modo rail (colapsada) */
+/* stylelint-disable-next-line no-duplicate-selectors -- the handoff's rail variant extends the
+   preceding canonical sidebar rule without repeating its full declaration set. */
+.lyra-appsidebar { transition: width var(--duration-base) var(--ease-out); }
+.lyra-appsidebar--rail .lyra-appsidebar__brand { display: flex; justify-content: center; overflow: hidden; }
+.lyra-appsidebar--rail .lyra-sbgroup__label { display: none; }
+.lyra-appsidebar--rail .lyra-sbgroup__item { justify-content: center; padding-inline: 0; }
+.lyra-appsidebar--rail .lyra-sbgroup__item-label,
+.lyra-appsidebar--rail .lyra-sbgroup__item-badge { display: none; }
+.lyra-appsidebar--rail .lyra-appsidebar__user { justify-content: center; }
+.lyra-appsidebar--rail .lyra-appsidebar__user-name,
+.lyra-appsidebar--rail .lyra-appsidebar__user-role { display: none; }
+.lyra-appsidebar__toggle {
+  margin-top: var(--space-3);
+  align-self: flex-end;
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.lyra-appsidebar__toggle:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-appsidebar__toggle:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.lyra-appsidebar--rail .lyra-appsidebar__toggle { align-self: center; }
+
+/* bottom nav (mobile) */
+.lyra-bottomnav {
+  display: flex;
+  align-items: stretch;
+  height: 64px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--border-default);
+}
+.lyra-bottomnav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.lyra-bottomnav__icon { display: flex; }
+.lyra-bottomnav__label { font-size: 10px; font-weight: var(--weight-semibold); letter-spacing: 0.01em; }
+.lyra-bottomnav__item--active { color: var(--accent); }
+.lyra-bottomnav__item--active .lyra-bottomnav__label { font-weight: var(--weight-extrabold); }
+
 .lyra-dropdown__trigger { display: inline-flex; }
 
 /* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive

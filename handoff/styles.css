@@ -12,3 +12,6 @@
 @import "./components/feedback/feedback.css";
 @import "./components/files/files.css";
 @import "./components/data/data.css";
+@import "./components/layout/layout.css";
+@import "./components/primitives/primitives.css";
+@import "./components/scheduling/scheduling.css";
