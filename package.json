@@ -15,7 +15,8 @@
     "parity": "node tools/parity/parity.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "release": "pnpm --filter @lyra-ds/react run build && changeset publish"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
