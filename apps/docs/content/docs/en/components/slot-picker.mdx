@@ -1,0 +1,68 @@
+---
+title: SlotPicker
+description: A timezone-aware two-step picker for confirming a free UTC booking slot.
+---
+
+# SlotPicker
+
+SlotPicker accepts free slots as UTC ISO timestamps and groups them by day in the active IANA display zone.
+Choose it for public booking; use TimePicker when the application is collecting a local time rather than showing
+availability that already exists as instants.
+
+## Examples
+
+<Example id="basic" title="Choose then confirm a slot">
+  Slots stay UTC at the API boundary, but the calendar day and clock time shown here are computed in
+  `timezone`. Selecting a time reveals a separate confirmation action, where the server should
+  revalidate it.
+</Example>
+
+<Example id="localized-time-zone" title="Translate the embedded zone picker">
+  `labels.timeZonePicker` is forwarded directly to the embedded TimeZonePicker. Keep those nested
+  labels with the SlotPicker translation so the change-time-zone path does not fall back to English.
+</Example>
+
+## When to use
+
+Use SlotPicker when a person needs to browse finite, server-provided availability and confirm one slot.
+
+Reach for something else when:
+
+- **The person is entering an arbitrary local time** — use TimePicker or TimeInput.
+- **The application is defining availability** — use WeeklyScheduleEditor before producing bookable instants.
+- **The application is showing a broader calendar of events** — use CalendarView.
+
+## Accessibility
+
+- Available times are a named `role="listbox"`; each time is a native button with `role="option"` and
+  `aria-selected`. A selected slot is followed by the native confirmation button.
+- The changing availability area is `aria-live="polite"`, including its loading skeleton and empty states.
+  The embedded TimeZonePicker retains its searchable combobox keyboard behavior.
+- Calendar days with availability receive a visual marker and unavailable days are disabled. Visible and
+  accessible date, time, hold and time-zone strings are configurable through `locale` and `labels`.
+
+## Props
+
+<PropTable name="SlotPicker" />
+
+## Plain HTML
+
+Without React, group UTC instants using the chosen display zone before rendering these classes:
+
+```html
+<div class="lyra-slotpicker">
+  <div class="lyra-slotpicker__side">August 3, 2026 · New York</div>
+  <div class="lyra-slotpicker__main" aria-live="polite">
+    <span class="lyra-slotpicker__daylabel">Monday, August 3</span>
+    <div
+      class="lyra-slotpicker__slots"
+      role="listbox"
+      aria-label="Available times for Monday, August 3"
+    >
+      <button class="lyra-slotpicker__slot" type="button" role="option" aria-selected="false">
+        09:00 AM
+      </button>
+    </div>
+  </div>
+</div>
+```

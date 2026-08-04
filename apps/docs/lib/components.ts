@@ -102,6 +102,11 @@ const manifest: ComponentEntry[] = [
   { slug: 'time-picker', name: 'TimePicker', group: 'form' },
   { slug: 'date-picker', name: 'DatePicker', group: 'form' },
   { slug: 'date-range-picker', name: 'DateRangePicker', group: 'form' },
+  { slug: 'time-zone-picker', name: 'TimeZonePicker', group: 'form' },
+  { slug: 'recurrence-selector', name: 'RecurrenceSelector', group: 'form' },
+  { slug: 'weekly-schedule-editor', name: 'WeeklyScheduleEditor', group: 'form' },
+  { slug: 'slot-picker', name: 'SlotPicker', group: 'form' },
+  { slug: 'calendar-view', name: 'CalendarView', group: 'data' },
 ];
 
 export const components: ComponentEntry[] = [...manifest].sort((a, b) =>

@@ -1,0 +1,69 @@
+---
+title: SlotPicker
+description: Um seletor de duas etapas, sensível ao fuso, para confirmar um slot UTC disponível.
+---
+
+# SlotPicker
+
+SlotPicker recebe slots livres como timestamps ISO UTC e os agrupa por dia no fuso IANA ativo de exibição.
+Escolha-o para reservas públicas; use TimePicker quando a aplicação coleta um horário local, em vez de mostrar
+disponibilidade que já existe como instantes.
+
+## Exemplos
+
+<Example id="basic" title="Escolher e confirmar um slot">
+  Os slots permanecem UTC no limite da API, mas o dia de calendário e o horário mostrados aqui são
+  calculados em `timezone`. Selecionar um horário mostra uma ação de confirmação separada, na qual o
+  servidor deve revalidar o slot.
+</Example>
+
+<Example id="localized-time-zone" title="Traduzir o seletor de fuso incorporado">
+  `labels.timeZonePicker` é encaminhado diretamente ao TimeZonePicker incorporado. Mantenha esses
+  labels aninhados com a tradução de SlotPicker para que o caminho de alterar fuso não volte ao
+  inglês.
+</Example>
+
+## Quando usar
+
+Use SlotPicker quando uma pessoa precisa navegar por disponibilidade finita fornecida pelo servidor e confirmar um slot.
+
+Prefira outro componente quando:
+
+- **A pessoa digita um horário local arbitrário** — use TimePicker ou TimeInput.
+- **A aplicação está definindo disponibilidade** — use WeeklyScheduleEditor antes de produzir instantes reserváveis.
+- **A aplicação mostra um calendário mais amplo de eventos** — use CalendarView.
+
+## Acessibilidade
+
+- Horários disponíveis formam uma `role="listbox"` nomeada; cada horário é um botão nativo com `role="option"`
+  e `aria-selected`. Um slot selecionado é seguido pelo botão nativo de confirmação.
+- A área de disponibilidade que muda é `aria-live="polite"`, incluindo skeleton de carregamento e estados
+  vazios. O TimeZonePicker incorporado preserva o comportamento de teclado de seu combobox pesquisável.
+- Dias de calendário com disponibilidade recebem um marcador visual, e dias indisponíveis são desabilitados.
+  Strings visíveis e acessíveis de data, horário, reserva e fuso são configuráveis por `locale` e `labels`.
+
+## Props
+
+<PropTable name="SlotPicker" />
+
+## HTML puro
+
+Sem React, agrupe instantes UTC com o fuso de exibição escolhido antes de renderizar estas classes:
+
+```html
+<div class="lyra-slotpicker">
+  <div class="lyra-slotpicker__side">3 de agosto de 2026 · Nova York</div>
+  <div class="lyra-slotpicker__main" aria-live="polite">
+    <span class="lyra-slotpicker__daylabel">segunda-feira, 3 de agosto</span>
+    <div
+      class="lyra-slotpicker__slots"
+      role="listbox"
+      aria-label="Horários disponíveis para segunda-feira, 3 de agosto"
+    >
+      <button class="lyra-slotpicker__slot" type="button" role="option" aria-selected="false">
+        09:00
+      </button>
+    </div>
+  </div>
+</div>
+```

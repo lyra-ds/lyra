@@ -263,3 +263,10 @@
     align-items: center;
   }
 }
+
+/* Wide scheduling examples scroll inside their own stage instead of widening the page:
+   the components carry intrinsic min-widths (day columns) that cannot fit a phone. */
+.lw-example-scroll {
+  width: 100%;
+  overflow-x: auto;
+}

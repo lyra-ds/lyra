@@ -1,0 +1,79 @@
+---
+title: RecurrenceSelector
+description: A preset-first editor for local weekly and monthly recurrence rules.
+---
+
+# RecurrenceSelector
+
+RecurrenceSelector edits a local-time, RRULE-like rule without making people assemble recurrence syntax.
+Choose it for a repeating appointment or availability pattern; use WeeklyScheduleEditor when the task is
+editing many independent weekly availability windows rather than one series.
+
+## Examples
+
+<Example id="basic" title="Start with a familiar preset">
+  The preset control covers no repeat, weekly, every two weeks and monthly. Choosing Custom reveals
+  the interval, weekdays and end condition while retaining a complete rule in `onChange`.
+</Example>
+
+<Example id="weekly-ending" title="A bounded biweekly series">
+  Seed `defaultValue` with the whole local rule when an existing series is being edited. Conflicts
+  are non-blocking warnings: they identify affected occurrences without changing the rule.
+</Example>
+
+## When to use
+
+Use RecurrenceSelector for one repeated event whose weekly or monthly cadence is part of the event itself.
+
+Reach for something else when:
+
+- **The person is declaring usual availability by weekday** — use WeeklyScheduleEditor, which supports
+  several windows and date-specific overrides.
+- **Each occurrence needs separate scheduling and status** — use CalendarView or an application-owned list
+  of concrete events.
+- **The only choice is a single date or time** — use DatePicker and TimePicker.
+
+## Accessibility
+
+- The preset, frequency and end controls are native selects; number fields expose their supplied accessible
+  labels. The custom weekday buttons form a named group and expose their state with `aria-pressed`.
+- The natural-language recurrence summary is an `aria-live="polite"` region, so changes are announced without
+  interrupting the editor. Conflict copy is a separate `role="status"` message.
+- The end-date path uses DatePicker with the recurrence start date as its minimum, preventing a date before
+  the series starts. All visible and accessible strings come from `labels`.
+
+## Props
+
+<PropTable name="RecurrenceSelector" />
+
+### describeRecurrence
+
+`describeRecurrence(rule, startDate, labels?)` is a public export that returns the complete localized summary
+used by the selector. Supply the same complete-sentence templates in `labels` that the selector receives:
+it picks a template for each frequency, interval and end-condition combination, then fills its placeholders.
+It never concatenates recurrence fragments, so translation controls word order and grammar.
+
+## Plain HTML
+
+Without React, own the rule state and keep the summary synchronized with it:
+
+```html
+<div class="lyra-recur">
+  <span class="lyra-select-wrap"
+    ><select class="lyra-input" aria-label="Recurrence">
+      <option>Every week (Monday)</option>
+    </select></span
+  >
+  <div class="lyra-recur__custom">
+    <div class="lyra-recur__freqrow">
+      Repeat every <input class="lyra-input" type="number" value="2" /> weeks
+    </div>
+    <div class="lyra-recur__days" role="group" aria-label="Days of the week">
+      <button class="lyra-recur__day lyra-recur__day--on" type="button" aria-pressed="true">
+        Mon
+      </button>
+    </div>
+  </div>
+  <span class="lyra-recur__summary" aria-live="polite">Repeats every 2 weeks on Monday</span>
+</div>
+```

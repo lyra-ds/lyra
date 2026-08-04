@@ -1,0 +1,66 @@
+---
+title: WeeklyScheduleEditor
+description: An editor for recurring local availability windows and date-specific overrides.
+---
+
+# WeeklyScheduleEditor
+
+WeeklyScheduleEditor records when someone is available in their local wall-clock time. Choose it for an
+availability policy that stays expressed as `HH:mm` windows and local `YYYY-MM-DD` exceptions; convert to
+UTC only at the consumer boundary, where the applicable time zone is known.
+
+## Examples
+
+<Example id="basic" title="A regular work week">
+  Each enabled weekday has one or more local time ranges. Add another interval for a split day, or
+  use the copy control to clone a day's ranges to selected weekdays.
+</Example>
+
+<Example id="exceptions" title="Override a specific date">
+  Exceptions override their weekday. An empty `ranges` array makes that entire local date
+  unavailable; a non-empty array replaces the normal weekday windows for that date.
+</Example>
+
+## When to use
+
+Use WeeklyScheduleEditor to define a person's ordinary weekly local-time availability with occasional date overrides.
+
+Reach for something else when:
+
+- **One event repeats on a schedule** — use RecurrenceSelector, which describes a single recurring series.
+- **People are choosing a bookable UTC slot** — use SlotPicker, which converts those instants for display.
+- **The application needs to visualize concrete events** — use CalendarView.
+
+## Accessibility
+
+- Every weekday switch has its weekday as its label. Enabled ranges expose labelled start and end TimeInput
+  controls, and an invalid end time is marked invalid with an inline explanation.
+- The copy action opens Popover as a labelled dialog. Its checkboxes are reachable by keyboard and Apply is
+  disabled until a destination is selected.
+- The exception picker cannot add a date before today. Its add and remove controls, along with all weekday and
+  range strings, come from `labels`.
+
+## Props
+
+<PropTable name="WeeklyScheduleEditor" />
+
+## Plain HTML
+
+Without React, own range validation, copying and the exception override rules yourself:
+
+```html
+<div class="lyra-sched">
+  <div class="lyra-sched__row">
+    <div class="lyra-sched__daycell">
+      <label>Monday <input type="checkbox" checked /></label>
+    </div>
+    <div class="lyra-sched__ranges">
+      <div class="lyra-sched__range">
+        <input class="lyra-input" value="09:00" /><span class="lyra-sched__dash">–</span
+        ><input class="lyra-input" value="17:00" />
+      </div>
+      <button class="lyra-sched__addrange" type="button">+ Add interval</button>
+    </div>
+  </div>
+</div>
+```

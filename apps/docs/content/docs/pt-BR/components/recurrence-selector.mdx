@@ -1,0 +1,81 @@
+---
+title: RecurrenceSelector
+description: Um editor orientado a presets para regras locais de recorrência semanal e mensal.
+---
+
+# RecurrenceSelector
+
+RecurrenceSelector edita uma regra local, semelhante a RRULE, sem fazer a pessoa montar sintaxe de
+recorrência. Escolha-o para um compromisso ou padrão de disponibilidade recorrente; use
+WeeklyScheduleEditor quando a tarefa for editar várias janelas semanais independentes, não uma série.
+
+## Exemplos
+
+<Example id="basic" title="Começar por um preset conhecido">
+  O controle de preset cobre sem repetição, semanal, quinzenal e mensal. Escolher Custom mostra
+  intervalo, dias da semana e condição de término, mantendo uma regra completa em `onChange`.
+</Example>
+
+<Example id="weekly-ending" title="Uma série quinzenal com término">
+  Inicialize `defaultValue` com a regra local inteira ao editar uma série existente. Conflitos são
+  avisos não bloqueantes: eles identificam ocorrências afetadas sem alterar a regra.
+</Example>
+
+## Quando usar
+
+Use RecurrenceSelector para um evento recorrente cuja cadência semanal ou mensal pertence ao próprio evento.
+
+Prefira outro componente quando:
+
+- **A pessoa declara a disponibilidade usual por dia da semana** — use WeeklyScheduleEditor, que suporta
+  várias janelas e exceções por data.
+- **Cada ocorrência precisa de agendamento e status próprios** — use CalendarView ou uma lista de eventos
+  concretos controlada pela aplicação.
+- **A escolha é apenas uma data ou horário** — use DatePicker e TimePicker.
+
+## Acessibilidade
+
+- Os controles de preset, frequência e término são selects nativos; os campos numéricos expõem os rótulos
+  acessíveis fornecidos. Os botões de dias formam um grupo nomeado e expõem seu estado com `aria-pressed`.
+- O resumo da recorrência em linguagem natural é uma região `aria-live="polite"`, então mudanças são anunciadas
+  sem interromper a edição. O texto de conflitos é uma mensagem `role="status"` separada.
+- O caminho de data de término usa DatePicker com a data inicial da recorrência como mínimo, impedindo uma
+  data anterior ao início da série. Todas as strings visíveis e acessíveis vêm de `labels`.
+
+## Props
+
+<PropTable name="RecurrenceSelector" />
+
+### describeRecurrence
+
+`describeRecurrence(rule, startDate, labels?)` é uma exportação pública que retorna o resumo localizado
+completo usado pelo seletor. Forneça em `labels` os mesmos templates de frase completa usados pelo seletor:
+a função escolhe um template para cada combinação de frequência, intervalo e término, depois preenche seus
+placeholders. Ela nunca concatena fragmentos de recorrência; a tradução controla ordem e gramática.
+
+## HTML puro
+
+Sem React, controle o estado da regra e mantenha o resumo sincronizado com ele:
+
+```html
+<div class="lyra-recur">
+  <span class="lyra-select-wrap"
+    ><select class="lyra-input" aria-label="Recorrência">
+      <option>Toda semana (segunda-feira)</option>
+    </select></span
+  >
+  <div class="lyra-recur__custom">
+    <div class="lyra-recur__freqrow">
+      Repetir a cada <input class="lyra-input" type="number" value="2" /> semanas
+    </div>
+    <div class="lyra-recur__days" role="group" aria-label="Dias da semana">
+      <button class="lyra-recur__day lyra-recur__day--on" type="button" aria-pressed="true">
+        Seg
+      </button>
+    </div>
+  </div>
+  <span class="lyra-recur__summary" aria-live="polite"
+    >Repete a cada 2 semanas na segunda-feira</span
+  >
+</div>
+```

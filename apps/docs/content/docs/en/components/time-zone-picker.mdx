@@ -1,0 +1,86 @@
+---
+title: TimeZonePicker
+description: A searchable IANA time-zone selector that shows the offset for the date that matters.
+---
+
+# TimeZonePicker
+
+TimeZonePicker selects an IANA zone such as `America/Sao_Paulo`, not a fixed GMT offset. Choose it
+when an appointment, availability rule or booking needs a durable zone identifier; choose Combobox
+when the choices are not time zones and do not need daylight-saving-aware offsets.
+
+## Examples
+
+<Example id="basic" title="Store an IANA zone">
+  The selected value is the IANA identifier, while the trigger presents a readable city label and
+  its current offset. Keep the identifier in application state rather than persisting a display
+  string.
+</Example>
+
+<Example id="dst-and-search" title="Offsets for a meeting date">
+  Set `referenceDate` to the date being planned. The displayed GMT offset is derived for that date,
+  so a zone such as New York correctly differs between winter and summer. Recent zones are
+  deduplicated and removed from their regional list.
+</Example>
+
+## When to use
+
+Use TimeZonePicker whenever a person chooses the location whose local clock gives a scheduled value meaning.
+
+Reach for something else when:
+
+- **The list is an unrelated set of searchable records** — use Combobox and supply its own options.
+- **The time zone is already known from the account or event** — show the resolved local time instead of
+  asking for a second choice.
+- **The task is choosing a time within a known zone** — use TimePicker or TimeInput alongside the known zone.
+
+## Accessibility
+
+- TimeZonePicker composes Combobox. Its trigger exposes listbox state; when opened, focus moves to the
+  search input, which uses `aria-activedescendant` to identify the active option.
+- Arrow Up/Down, Home and End move the active result; Enter selects it; Escape closes the popup and
+  returns focus to the trigger. The regional, detected and recent headings are presentational group labels.
+- `label` names the search input. `hint` or `error` describes both controls, and `error` replaces the hint.
+- Search folds diacritics in both labels and keywords: `cafe` can find `café`. Options also match their
+  IANA identifier and displayed offset even though those search terms need not be visible.
+
+## Props
+
+<PropTable name="TimeZonePicker" />
+
+## Plain HTML
+
+Without React, use the Combobox structure and derive the zone's offset for the intended date yourself:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" id="time-zone-label" for="time-zone">Time zone</label>
+  <span class="lyra-combobox lyra-tzpicker">
+    <button
+      class="lyra-input lyra-combobox__trigger"
+      id="time-zone"
+      type="button"
+      aria-haspopup="listbox"
+      aria-expanded="true"
+      aria-controls="time-zone-listbox"
+    >
+      <span class="lyra-combobox__value">New York (GMT-5)</span>
+    </button>
+    <div class="lyra-combobox__pop">
+      <div class="lyra-combobox__search">
+        <input
+          role="combobox"
+          aria-labelledby="time-zone-label"
+          aria-controls="time-zone-listbox"
+        />
+      </div>
+      <div class="lyra-combobox__list" id="time-zone-listbox" role="listbox">
+        <span class="lyra-combobox__group" role="presentation">Americas</span>
+        <button class="lyra-combobox__option" type="button" role="option" aria-selected="true">
+          New York (GMT-5)
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

@@ -1,0 +1,85 @@
+---
+title: TimeZonePicker
+description: Um seletor pesquisável de fuso IANA que mostra o offset da data relevante.
+---
+
+# TimeZonePicker
+
+TimeZonePicker seleciona um fuso IANA, como `America/Sao_Paulo`, e não um offset GMT fixo. Escolha-o
+quando um agendamento, regra de disponibilidade ou reserva precisa de um identificador de fuso durável;
+escolha Combobox quando as opções não forem fusos e não precisarem de offsets corretos para horário de verão.
+
+## Exemplos
+
+<Example id="basic" title="Armazenar um fuso IANA">
+  O valor selecionado é o identificador IANA, enquanto o trigger apresenta uma cidade legível e seu
+  offset atual. Mantenha o identificador no estado da aplicação em vez de persistir uma string de
+  exibição.
+</Example>
+
+<Example id="dst-and-search" title="Offsets para a data da reunião">
+  Defina `referenceDate` como a data planejada. O offset GMT exibido é calculado para essa data,
+  então um fuso como Nova York muda corretamente entre inverno e verão. Fusos recentes são
+  deduplicados e removidos da lista regional.
+</Example>
+
+## Quando usar
+
+Use TimeZonePicker sempre que a pessoa escolher o local cujo relógio local dá sentido a um valor agendado.
+
+Prefira outro componente quando:
+
+- **A lista é de registros pesquisáveis sem relação com fusos** — use Combobox e forneça suas próprias opções.
+- **O fuso já é conhecido pela conta ou evento** — mostre o horário local resolvido, em vez de pedir outra escolha.
+- **A tarefa é escolher um horário em um fuso conhecido** — use TimePicker ou TimeInput junto do fuso conhecido.
+
+## Acessibilidade
+
+- TimeZonePicker compõe Combobox. Seu trigger expõe o estado da listbox; ao abrir, o foco vai para o input
+  de busca, que usa `aria-activedescendant` para identificar a opção ativa.
+- Arrow Up/Down, Home e End movem o resultado ativo; Enter seleciona; Escape fecha o popup e devolve o foco
+  ao trigger. Os títulos regional, detectado e recente são rótulos de grupo apresentacionais.
+- `label` nomeia o input de busca. `hint` ou `error` descreve ambos os controles, e `error` substitui `hint`.
+- A busca remove diacríticos de labels e keywords: `cafe` encontra `café`. As opções também encontram o
+  identificador IANA e o offset exibido, ainda que esses termos não precisem ficar visíveis.
+
+## Props
+
+<PropTable name="TimeZonePicker" />
+
+## HTML puro
+
+Sem React, use a estrutura de Combobox e calcule você o offset do fuso para a data pretendida:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" id="time-zone-label" for="time-zone">Fuso horário</label>
+  <span class="lyra-combobox lyra-tzpicker">
+    <button
+      class="lyra-input lyra-combobox__trigger"
+      id="time-zone"
+      type="button"
+      aria-haspopup="listbox"
+      aria-expanded="true"
+      aria-controls="time-zone-listbox"
+    >
+      <span class="lyra-combobox__value">Nova York (GMT-5)</span>
+    </button>
+    <div class="lyra-combobox__pop">
+      <div class="lyra-combobox__search">
+        <input
+          role="combobox"
+          aria-labelledby="time-zone-label"
+          aria-controls="time-zone-listbox"
+        />
+      </div>
+      <div class="lyra-combobox__list" id="time-zone-listbox" role="listbox">
+        <span class="lyra-combobox__group" role="presentation">Américas</span>
+        <button class="lyra-combobox__option" type="button" role="option" aria-selected="true">
+          Nova York (GMT-5)
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

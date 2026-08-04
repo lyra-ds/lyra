@@ -1,0 +1,76 @@
+---
+title: CalendarView
+description: A local-time day, week and month view for scheduling events and availability.
+---
+
+# CalendarView
+
+CalendarView renders local-time event schedules as a day, week or month view. Choose it when people need to
+inspect event placement and availability; choose Calendar when the task is selecting dates rather than reading
+a schedule.
+
+## Examples
+
+<Example id="week" title="Week and hour grid" layout="block">
+  Event chips are measured against the real scroll container so an optional event popover is
+  positioned beside the chip. The five event kinds use a distinct color and shape treatment: solid
+  session, solid program session, dashed pending, hatched block and outlined external.
+</Example>
+
+<Example id="month" title="Month overview" layout="block">
+  Month cells show up to three events and then a remaining-count indicator. Selecting a day switches
+  to its day view, keeping the date anchored in local time.
+</Example>
+
+## When to use
+
+Use CalendarView to browse concrete local events, availability windows and open hour-grid space.
+
+> **Limitations:** overlapping events on one day are stacked at full width; CalendarView does not pack them into
+> columns. An event that crosses midnight renders only on its local start day. Event dragging and roving grid
+> keyboard navigation are application-owned.
+
+Reach for something else when:
+
+- **The person is selecting one date or date range** — use Calendar or DatePicker.
+- **People need to reserve one available instant** — use SlotPicker.
+- **The task is defining repeated availability** — use WeeklyScheduleEditor.
+
+## Accessibility
+
+- Previous, Today and next are labelled native buttons. Day, Week and Month are buttons in a named group and
+  expose the active view with `aria-pressed`.
+- Event chips are native buttons with localized date, time and title in their accessible name. An optional
+  popover is a named dialog; it closes on Escape, outside pointer interaction or resize to avoid stale measured
+  positioning.
+- Clicking empty hour-grid space is deliberately pointer-only and calls `onSlotCreate` with a snapped local
+  Date. Event chips and all toolbar controls remain keyboard-accessible.
+- CalendarView emits no page landmark or heading, so it can sit inside the consuming page's document outline.
+  Use `labels` and `locale` to translate controls and date formatting.
+
+## Props
+
+<PropTable name="CalendarView" />
+
+## Plain HTML
+
+Without React, calculate local event placement and own view navigation, popover positioning and slot creation:
+
+```html
+<div class="lyra-calview">
+  <div class="lyra-calview__toolbar">
+    <button class="lyra-calview__nav" type="button" aria-label="Previous period">‹</button>
+    <span class="lyra-calview__title">August 2026</span>
+    <span class="lyra-calview__seg" role="group" aria-label="Calendar view"
+      ><button type="button" aria-pressed="true">Week</button></span
+    >
+  </div>
+  <div class="lyra-calview__grid">
+    <div class="lyra-calview__col">
+      <button class="lyra-calview__evt lyra-calview__evt--pending" type="button">
+        10:00–11:00 Awaiting approval
+      </button>
+    </div>
+  </div>
+</div>
+```
