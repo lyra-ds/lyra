@@ -1,0 +1,75 @@
+---
+title: Popover
+description: Um diálogo não modal em fluxo, ancorado ao gatilho, para conteúdo contextual compacto.
+---
+
+# Popover
+
+Popover mantém um conteúdo contextual compacto ligado ao seu gatilho. Escolha-o para filtro, picker
+ou painel pequeno de detalhes; escolha Dropdown para uma lista de comandos com semântica de menu.
+
+## Exemplos
+
+<Example id="basic" title="Detalhes ligados a um controle">
+  Dê ao painel um `ariaLabel` que descreva seu conteúdo. O Button interativo continua sendo o único
+  gatilho e a única parada de Tab para abrir ou fechar o painel.
+</Example>
+
+<Example id="controlled" title="Um painel de filtro controlado">
+  Controle `open` quando o restante da interface precisar reagir à abertura ou ao fechamento do
+  painel. Use `align="end"` para manter a borda direita do painel junto ao gatilho.
+</Example>
+
+## Quando usar
+
+Use Popover para um painel curto e não modal, ancorado ao controle que o abre.
+
+Prefira outro componente quando:
+
+- **O painel é uma lista curta de comandos** — use Dropdown, que oferece semântica de menu e
+  menuitem, além de foco pelo teclado.
+- **O conteúdo é só uma dica breve em hover ou foco** — use Tooltip.
+- **A tarefa precisa de foco bloqueante ou de uma decisão maior** — use Dialog.
+
+## Acessibilidade
+
+- Passe um `trigger` interativo e focável, como `<button>` nativo ou Button. Ele recebe
+  diretamente `aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`, clique e tratamento de
+  Enter/Espaço, preservando um único elemento interativo e uma parada de Tab.
+- O painel aberto é um `role="dialog"` em fluxo, nomeado por `ariaLabel`; não usa portal nem é modal,
+  então não move nem retém foco.
+- Um mousedown fora do componente fecha o painel e deixa o foco onde a pessoa clicou. Escape fecha
+  e devolve o foco ao gatilho.
+- Com `side="auto"`, o posicionamento é medido em relação ao gatilho e ao painel e pode virar para
+  cima. `top` e `bottom` escolhem um lado vertical explícito.
+
+## Props
+
+<PropTable name="Popover" />
+
+## HTML puro
+
+Sem React, mantenha o painel dentro de sua âncora posicionada e controle abertura, clique externo e
+Escape:
+
+```html
+<span class="lyra-popover-anchor">
+  <button
+    class="lyra-btn lyra-btn--secondary lyra-btn--md"
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="true"
+    aria-controls="project-details"
+  >
+    Ver detalhes
+  </button>
+  <div
+    class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+    id="project-details"
+    role="dialog"
+    aria-label="Detalhes do projeto"
+  >
+    Atlas está dentro do prazo para o lançamento de junho.
+  </div>
+</span>
+```

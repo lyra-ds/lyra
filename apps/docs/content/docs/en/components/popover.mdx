@@ -1,0 +1,75 @@
+---
+title: Popover
+description: An in-flow, trigger-anchored non-modal dialog for compact contextual content.
+---
+
+# Popover
+
+Popover keeps compact contextual content attached to its trigger. Choose it for a filter, picker or
+small detail panel; choose Dropdown for a list of commands with menu semantics.
+
+## Examples
+
+<Example id="basic" title="Details attached to a control">
+  Give the panel an `ariaLabel` that describes its content. The interactive Button remains the one
+  trigger and one tab stop for opening or closing the panel.
+</Example>
+
+<Example id="controlled" title="A controlled filter panel">
+  Control `open` when the rest of the interface must react to a panel opening or closing. Use
+  `align="end"` to keep the panel's right edge with its trigger.
+</Example>
+
+## When to use
+
+Use Popover for a short, non-modal panel anchored to the control that opens it.
+
+Reach for something else when:
+
+- **The panel is a short list of commands** — use Dropdown, which supplies menu and menuitem
+  semantics plus roving keyboard focus.
+- **The content is only a brief hover or focus hint** — use Tooltip.
+- **The task needs blocking focus management or a larger decision** — use Dialog.
+
+## Accessibility
+
+- Pass an interactive, focusable `trigger`, such as a native `<button>` or Button. It receives
+  `aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`, click handling and Enter/Space
+  handling directly, preserving one interactive element and one tab stop.
+- The open panel is an in-flow `role="dialog"` named by `ariaLabel`; it is not portaled and is not
+  modal, so it does not move or trap focus.
+- A mousedown outside the component closes the panel and lets focus remain where the person clicked.
+  Escape closes it and returns focus to the trigger.
+- With `side="auto"`, placement is measured against the trigger and panel and can flip above the
+  trigger. `top` and `bottom` choose an explicit vertical side.
+
+## Props
+
+<PropTable name="Popover" />
+
+## Plain HTML
+
+Without React, put the panel inside its positioned anchor and own toggle, outside-click and Escape
+behavior:
+
+```html
+<span class="lyra-popover-anchor">
+  <button
+    class="lyra-btn lyra-btn--secondary lyra-btn--md"
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="true"
+    aria-controls="project-details"
+  >
+    View details
+  </button>
+  <div
+    class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+    id="project-details"
+    role="dialog"
+    aria-label="Project details"
+  >
+    Atlas is on track for its June release.
+  </div>
+</span>
+```

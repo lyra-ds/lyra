@@ -1,0 +1,62 @@
+---
+title: PersonCell
+description: Uma célula compacta de identidade de pessoa, com avatar, nome e detalhe secundário opcional.
+---
+
+# PersonCell
+
+PersonCell mantém a identidade de uma pessoa consistente em visualizações compactas de dados.
+Escolha-o para uma coluna de pessoas em DataTable; escolha Avatar sozinho quando o restante da
+interface já fornecer o nome da pessoa.
+
+## Exemplos
+
+<Example id="basic" title="Nome com cargo">
+  Passe um `name` string para que Avatar derive as iniciais e use `detail` para um cargo, e-mail ou
+  outro identificador secundário curto.
+</Example>
+
+<Example id="in-data-table" title="Pessoas em uma tabela de dados" layout="block">
+  Coloque PersonCell diretamente no valor de uma linha de DataTable quando uma coluna de pessoas
+  precisar do mesmo tratamento compacto de identidade em todos os registros.
+</Example>
+
+## Quando usar
+
+Use PersonCell em uma tabela ou lista compacta quando alguém precisar identificar uma pessoa e um
+detalhe de apoio rapidamente.
+
+Prefira outro componente quando:
+
+- **Só é preciso um marcador visual de identidade** — use Avatar.
+- **A linha precisa de ordenação, seleção ou estado de carregamento** — use DataTable e renderize
+  PersonCell em uma de suas colunas.
+- **A pessoa precisa de resumo completo de perfil ou ações** — use uma visualização de perfil, em
+  vez de concentrar tudo em uma célula.
+
+## Acessibilidade
+
+- PersonCell é uma composição `<div>` de apresentação: Avatar, um span de nome e um span opcional
+  de detalhe. Ela não acrescenta semântica de botão, link ou célula de tabela.
+- Um `name` string é passado para Avatar, para que ele renderize iniciais quando `src` estiver
+  ausente. Um nome como nó React ainda aparece, mas não pode fornecer iniciais para Avatar.
+- `detail` só é renderizado quando não é `null` nem `undefined`; use-o para texto de apoio, não no
+  lugar do `name` principal.
+
+## Props
+
+<PropTable name="PersonCell" />
+
+## HTML puro
+
+Componha PersonCell com as classes de Avatar e da célula de pessoa:
+
+```html
+<div class="lyra-personcell">
+  <span class="lyra-avatar lyra-avatar--md">MC</span>
+  <span class="lyra-personcell__text">
+    <span class="lyra-personcell__name">Maya Chen</span>
+    <span class="lyra-personcell__detail">Líder de design</span>
+  </span>
+</div>
+```

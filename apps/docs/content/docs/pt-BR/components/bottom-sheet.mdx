@@ -1,0 +1,69 @@
+---
+title: BottomSheet
+description: Um painel modal controlado, pensado primeiro para mobile e ancorado ao fim da viewport.
+---
+
+# BottomSheet
+
+BottomSheet apresenta uma tarefa focada a partir da borda inferior da viewport. Escolha-o para uma
+tarefa secundária pensada primeiro para mobile; escolha Drawer para um painel lateral adequado a um
+fluxo desktop.
+
+## Exemplos
+
+<Example id="basic" title="Detalhes do projeto">
+  Forneça um `title` visível tanto para o cabeçalho quanto para o nome acessível do painel. Passe
+  `closeLabel` sempre que o nome padrão em inglês do botão de fechar não for adequado ao produto.
+</Example>
+
+<Example id="labelled-without-title" title="Um painel de ações sem título visível">
+  Quando o painel não tiver `title` visível, `aria-label` é obrigatório para nomear o diálogo modal.
+  O `closeLabel` localizado continua nomeando o botão de fechar.
+</Example>
+
+## Quando usar
+
+Use BottomSheet para uma tarefa curta, pensada primeiro para mobile, ou detalhes que devem surgir
+da parte inferior da visualização atual.
+
+Prefira outro componente quando:
+
+- **A tarefa pertence a um painel lateral, especialmente no desktop** — use Drawer.
+- **Uma decisão bloqueante precisa de um modal central e explícito** — use Dialog.
+- **O conteúdo é ancorado a um controle pequeno e não deve bloquear a página** — use Popover.
+
+## Acessibilidade
+
+- BottomSheet é um `role="dialog"` portado, com `aria-modal="true"`. Um `title` visível o nomeia com
+  `aria-labelledby`; sem título, um `aria-label` traduzido é obrigatório.
+- Na abertura, o foco vai para o primeiro elemento focável do painel, ou para o próprio painel, e fica
+  retido nela. A rolagem de fundo fica bloqueada, e o foco volta ao gatilho depois que `open` fecha.
+- Escape, o botão de fechar e um clique genuíno no backdrop chamam `onClose`. O backdrop registra
+  onde o mousedown começou, então arrastar do painel para o backdrop não pode fechá-lo.
+- O painel usa portal para `document.body`, a menos que `container` forneça outro host de portal. Ele
+  continua montada durante a saída animada; preferências de movimento reduzido desativam a animação.
+- O botão de fechar usa por padrão o nome acessível em inglês "Close". Passe `closeLabel` para
+  traduzi-lo.
+
+## Props
+
+<PropTable name="BottomSheet" />
+
+## HTML puro
+
+Sem React, componha as mesmas classes — estado de abertura, posição de portal, retenção de foco,
+bloqueio de rolagem, Escape e o fechamento protegido pelo backdrop ficam com você:
+
+```html
+<div class="lyra-bottomsheet-overlay">
+  <div class="lyra-bottomsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="lyra-bottomsheet__header">
+      <h2 class="lyra-bottomsheet__title" id="sheet-title">Detalhes do projeto</h2>
+      <button class="lyra-bottomsheet__close" type="button" aria-label="Fechar">×</button>
+    </div>
+    <div class="lyra-bottomsheet__body">
+      Revise o último marco, responsáveis e atividade antes de continuar.
+    </div>
+  </div>
+</div>
+```

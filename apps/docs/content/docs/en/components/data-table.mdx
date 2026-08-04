@@ -1,0 +1,92 @@
+---
+title: DataTable
+description: An operational data grid with sorting, row selection, loading placeholders and empty states.
+---
+
+# DataTable
+
+DataTable adds operational behavior to a set of records. Choose it when people need to sort, select
+or act on rows; choose Table when the records only need a simple, comparable tabular presentation.
+
+## Examples
+
+<Example id="basic" title="Operational records" layout="block">
+  Start with stable column keys and row `id` values. `hover` gives rows a scanning affordance while
+  keeping the record data in real table cells.
+</Example>
+
+<Example id="sortable-selectable" title="Sorting and row selection" layout="block">
+  Mark only the fields that support a useful order as `sortable`, and provide `labels.selectRow` as
+  a function when each checkbox needs to announce the person or record it selects.
+</Example>
+
+<Example id="loading" title="Loading rows" layout="block">
+  Pass a number to `loading` when the expected result has a known density. It keeps the table's
+  shape while records are being fetched instead of replacing the data region with a spinner.
+</Example>
+
+## When to use
+
+Use DataTable for operational record sets that people need to sort, select, scan in a fixed area or
+open from a row.
+
+Reach for something else when:
+
+- **The records only need aligned fields for comparison** — use Table, the simpler static table.
+- **The records are files people need to browse and act on** — use FileManager.
+- **There are no records to show after loading** — use EmptyState for a full-page absence, or
+  DataTable's `empty` content when the table itself remains useful context.
+
+## Accessibility
+
+- DataTable renders a real `<table>` with table headings and cells. A sortable heading is a button,
+  and the active heading reports `aria-sort` as ascending or descending.
+- With `selectable`, it renders native checkboxes for each row and a select-all checkbox. The
+  select-all checkbox becomes indeterminate when only part of the set is selected.
+- `labels.selectRow` defaults to the repeated English name "Select row". Pass a string or a function
+  such as `(row) => 'Select ' + row.name` to give every row checkbox a translated,
+  distinguishable accessible name.
+- A row's `id` is used for its React key and selection. If a row has no string or numeric `id`, its
+  fallback comes from its original input position, so selection stays with that row after sorting.
+- When `onRowClick` is present, hover styling is enabled automatically, but the row is still not a
+  keyboard-operable control. Put a real button or link in a cell for a keyboard action.
+
+## Props
+
+<PropTable name="DataTable" />
+
+## Plain HTML
+
+Without React, compose the table classes — you own sorting, selected-row state, checkbox labels and
+the loading transition:
+
+```html
+<div class="lyra-table-wrap">
+  <div class="lyra-table-scroll">
+    <table class="lyra-table lyra-table--hover">
+      <thead>
+        <tr>
+          <th class="lyra-table__check">
+            <input class="lyra-checkbox" type="checkbox" aria-label="Select all" />
+          </th>
+          <th aria-sort="ascending">
+            <button class="lyra-table__sortbtn lyra-table__sortbtn--active" type="button">
+              Project
+            </button>
+          </th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="lyra-table__row--selected">
+          <td class="lyra-table__check">
+            <input class="lyra-checkbox" type="checkbox" aria-label="Select Atlas" checked />
+          </td>
+          <td class="lyra-table__primary">Atlas</td>
+          <td>Healthy</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+```

@@ -94,6 +94,10 @@ const manifest: ComponentEntry[] = [
   { slug: 'bottom-nav', name: 'BottomNav', group: 'navigation' },
   { slug: 'action-bar', name: 'ActionBar', group: 'data' },
   { slug: 'toast-provider', name: 'ToastProvider', group: 'feedback' },
+  { slug: 'data-table', name: 'DataTable', group: 'data' },
+  { slug: 'person-cell', name: 'PersonCell', group: 'data' },
+  { slug: 'popover', name: 'Popover', group: 'overlay' },
+  { slug: 'bottom-sheet', name: 'BottomSheet', group: 'overlay' },
 ];
 
 export const components: ComponentEntry[] = [...manifest].sort((a, b) =>
