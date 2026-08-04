@@ -83,6 +83,7 @@ const entries = {
   'recurrence-selector': 'src/recurrence-selector/index.ts',
   'weekly-schedule-editor': 'src/weekly-schedule-editor/index.ts',
   'slot-picker': 'src/slot-picker/index.ts',
+  'calendar-view': 'src/calendar-view/index.ts',
   table: 'src/table/index.ts',
   'data-table': 'src/data-table/index.ts',
   'person-cell': 'src/person-cell/index.ts',

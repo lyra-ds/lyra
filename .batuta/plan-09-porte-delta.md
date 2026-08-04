@@ -30,10 +30,10 @@ disso `handoff/` volta a ser a única referência.
       § "Popover sobre o useFlipPlacement"), + eixo horizontal no hook.
 - [x] **Onda 3** (PRs #68/#70/#71; 0.3.0 publicado): Calendar, TimePicker, BottomSheet (variante do Drawer —
       componente ausente do pacote), DatePicker, DateRangePicker.
-- [ ] **Onda 4**: AppSidebar (aceitando `children` como o SidebarGroup —
+- [x] **Onda 4** (PR #73): AppSidebar (aceitando `children` como o SidebarGroup —
       armadilha pinada no mapa), BottomNav.
-- [ ] **Onda 5**: ToastProvider (inlinar os 3 SVGs; SSR-safe; `closeLabel`).
-- [ ] **Onda 6**: SegmentedRing e TimeInput → extensão do Combobox
+- [x] **Onda 5** (PR #75): ToastProvider (inlinar os 3 SVGs; SSR-safe; `closeLabel`).
+- [x] **Onda 6** (PRs #76/#77/#78 + CalendarView): SegmentedRing e TimeInput → extensão do Combobox
       (`group`/`keywords`/`trailing`) → TimeZonePicker → RecurrenceSelector
       → WeeklyScheduleEditor → SlotPicker → CalendarView (sozinho, o mais
       caro; testes só em Browser Mode).
