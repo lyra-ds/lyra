@@ -1,0 +1,72 @@
+---
+title: RadioGroup
+description: Um grupo rotulado de escolhas Radio visíveis para uma única seleção mutuamente exclusiva.
+---
+
+# RadioGroup
+
+RadioGroup renderiza um conjunto completo e rotulado de controles Radio a partir de opções. Escolha-o
+quando uma decisão precisa de tratamento de campo compartilhado; use Radio avulso para uma composição
+personalizada ou Select quando a lista conhecida funciona melhor recolhida.
+
+## Exemplos
+
+<Example id="basic" title="Uma escolha visível">
+  `defaultValue` define uma seleção inicial não controlada, enquanto cada opção pode adicionar um
+  `hint` curto quando só o rótulo não basta para deixar clara a diferença.
+</Example>
+
+<Example id="row" title="Uma linha compacta">
+  Defina `direction="row"` apenas quando os rótulos forem curtos e comparáveis. As opções ainda
+  compartilham um `name` nativo, então o navegador preserva a exclusão mútua e a navegação por
+  setas.
+</Example>
+
+## Quando usar
+
+Use RadioGroup para uma escolha em uma lista curta e visível que se beneficia de rótulo, texto de
+ajuda ou mensagem de validação compartilhados.
+
+Prefira outro componente quando:
+
+- **Os controles precisam de composição ou posicionamento personalizados** — use Radio avulso e dê
+  o mesmo `name` a cada item.
+- **A lista funciona melhor recolhida ou é longa demais para varrer** — use Select para uma lista
+  conhecida, ou Combobox quando a pessoa precisa filtrar.
+- **Mais de uma escolha pode ser verdadeira** — use CheckboxGroup em vez de forçar uma resposta única.
+
+## Acessibilidade
+
+- Renderiza uma `div` com `role="radiogroup"`; quando existe `label`, seu id gerado entra em
+  `aria-labelledby` junto de qualquer id fornecido.
+- Os controles compostos são inputs radio nativos com um `name` compartilhado (gerado quando `name`
+  é omitido). As setas nativas percorrem o grupo e selecionar um limpa os demais.
+- `hint` e `error` são mensagens visíveis abaixo das opções. `error` substitui `hint`; este componente
+  não conecta nenhum dos dois programaticamente ao radiogroup.
+- Um `value` controlado continua sob controle de quem chama. Atualize-o em `onChange` depois que o
+  componente informar a nova string selecionada.
+
+## Props
+
+<PropTable name="RadioGroup" />
+
+## HTML puro
+
+Sem React, use um wrapper radiogroup, um `name` nativo compartilhado e as mesmas classes de campo:
+
+```html
+<div class="lyra-field" role="radiogroup" aria-labelledby="contact-preference">
+  <span class="lyra-label" id="contact-preference">Contact preference</span>
+  <div class="lyra-choicegroup">
+    <label class="lyra-check-row">
+      <input class="lyra-radio" type="radio" name="contact" value="email" checked />
+      <span>Email</span>
+    </label>
+    <label class="lyra-check-row">
+      <input class="lyra-radio" type="radio" name="contact" value="phone" />
+      <span>Phone</span>
+    </label>
+  </div>
+  <span class="lyra-hint">Choose the best way to reach you.</span>
+</div>
+```

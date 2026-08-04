@@ -1,0 +1,69 @@
+---
+title: Separator
+description: A small visual or semantic divider for content, toolbar sections and labelled breaks.
+---
+
+# Separator
+
+Separator divides adjacent content without adding a new container. Choose it for a real boundary in a
+reading flow or toolbar; use spacing alone when there is no relationship to communicate.
+
+## Examples
+
+<Example id="basic" title="A horizontal content break">
+  The default is a native horizontal rule. Use it where the content changes topic or section, not to
+  decorate every gap between nearby elements.
+</Example>
+
+<Example id="label" title="A labelled alternative">
+  `label` creates a horizontal separator with text at its centre, which works well for an alternate
+  path such as a different sign-in method.
+</Example>
+
+<Example id="vertical" title="A vertical toolbar divider">
+  Set `orientation="vertical"` for a compact divider between toolbar sections. Give it an accessible
+  name only when the separation itself communicates something useful.
+</Example>
+
+## When to use
+
+Use Separator to communicate a boundary between related groups of content or controls.
+
+Reach for something else when:
+
+- **Only whitespace is needed** — use Stack, Grid or the parent component's gap rather than a line
+  that suggests a division.
+- **The content needs a named, navigable section** — use a heading and semantic sectioning instead of
+  a separator.
+- **The UI is a set of selectable views** — use Tabs rather than lines that do not provide a control.
+
+## Accessibility
+
+- The default horizontal form is an `<hr>`, which carries the native horizontal separator semantics.
+- `orientation="vertical"` renders a `span` with `role="separator"` and
+  `aria-orientation="vertical"`.
+- A `label` renders a `div` with `role="separator"` and is always horizontal, regardless of
+  `orientation`.
+- The component does not decide whether a divider is decorative. For a purely visual line, pass
+  `aria-hidden="true"`; otherwise leave the emitted semantic separator available to assistive
+  technology.
+
+## Props
+
+<PropTable name="Separator" />
+
+## Plain HTML
+
+Use the element that matches the separator's meaning, then apply the matching Lyra class:
+
+```html
+<hr class="lyra-separator" />
+
+<span
+  class="lyra-separator lyra-separator--vertical"
+  role="separator"
+  aria-orientation="vertical"
+></span>
+
+<div class="lyra-separator--label" role="separator">or continue with</div>
+```

@@ -1,0 +1,73 @@
+---
+title: SegmentedRing
+description: A segmented progress ring for named portions of a total.
+---
+
+# SegmentedRing
+
+SegmentedRing shows how named categories contribute to a total. Choose it when the composition is as
+important as the progress; use Progress when one completed fraction is the only value that matters.
+
+## Examples
+
+<Example id="basic" title="A named session summary" layout="plain">
+  Give every segment a readable `label` and a semantic `tone`. `centerValue` and `centerLabel`
+  provide the visual summary while the legend explains each part.
+</Example>
+
+<Example id="compact" title="A compact ring without a legend" layout="plain">
+  `size="md"` suits a smaller surface. `showLegend={false}` removes only the visual legend; the
+  accessible textual summary remains available.
+</Example>
+
+## When to use
+
+Use SegmentedRing to show a small number of named, positive portions whose relative shares should be
+understood at a glance.
+
+Reach for something else when:
+
+- **Only one known fraction needs to be tracked** — use Progress, which presents a single completion
+  value more directly.
+- **The value is indeterminate** — use Spinner rather than implying a measurable share of work.
+- **People need to compare many categories precisely** — use a table or another data view with exact
+  values instead of asking a ring to carry dense information.
+
+## Accessibility
+
+- The SVG, the visual centre value and the visual legend are all hidden with `aria-hidden="true"` so
+  the same numbers are not announced multiple times.
+- One `.lyra-visually-hidden` text summary is the component's only accessible source. It includes the
+  centre label/value when present, then every positive, finite segment as its value and label.
+- `showLegend={false}` removes the visible list only. It does not remove or change that hidden summary.
+- Segment colour is visual context, not the accessible name. Give every segment a useful `label` and do
+  not rely on a `tone` or custom `color` alone to communicate meaning.
+
+## Props
+
+<PropTable name="SegmentedRing" />
+
+## Plain HTML
+
+Without React, draw the SVG arcs yourself but keep one textual equivalent and hide duplicate visual
+content from assistive technology:
+
+```html
+<div class="lyra-ring">
+  <span class="lyra-ring__wrap" aria-hidden="true">
+    <svg width="160" height="160" viewBox="0 0 160 160" aria-hidden="true">
+      <circle cx="80" cy="80" r="74" fill="none" stroke="var(--surface-sunken)" stroke-width="12" />
+    </svg>
+    <span class="lyra-ring__center">
+      <span class="lyra-ring__num">5 of 8</span>
+      <span class="lyra-ring__cap">Sessions</span>
+    </span>
+  </span>
+  <span class="lyra-visually-hidden">Sessions 5 of 8 — 3 Completed, 2 Scheduled</span>
+  <ul class="lyra-ring__legend" aria-hidden="true">
+    <li class="lyra-ring__li">
+      <span class="lyra-ring__swatch"></span>Completed <span class="lyra-ring__val">3</span>
+    </li>
+  </ul>
+</div>
+```

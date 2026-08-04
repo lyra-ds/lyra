@@ -1,0 +1,80 @@
+---
+title: Fieldset
+description: Um fieldset semântico para controles relacionados, com linhas responsivas para layouts compactos de formulário.
+---
+
+# Fieldset
+
+Fieldset dá a controles relacionados uma fronteira semântica, legend e descrição opcional. Escolha-o
+para uma decisão de formulário feita a partir de vários campos; use um container de layout simples
+quando o conteúdo não representa um único conceito de formulário.
+
+## Exemplos
+
+<Example id="basic" title="Campos de contato relacionados" layout="block">
+  `legend` nomeia o grupo tanto para pessoas vendo a tela quanto para tecnologias assistivas.
+  Coloque o contexto de apoio em `description`, depois use FormRow somente onde os campos realmente
+  pertencem lado a lado.
+</Example>
+
+<Example id="columns" title="Uma contagem explícita de colunas" layout="block">
+  FormRow normalmente conta seus filhos. Passe `columns` quando uma linha precisar de uma grade fixa
+  com larguras iguais; ela ainda colapsa para uma coluna em telas pequenas.
+</Example>
+
+## Quando usar
+
+Use Fieldset quando vários controles respondem a uma pergunta nomeada no formulário, como dados de
+contato, endereço ou preferências de entrega.
+
+Prefira outro componente quando:
+
+- **Os controles não formam uma pergunta semântica** — use Stack ou Grid para layout visual sem
+  implicar uma relação para tecnologias assistivas.
+- **Um valor precisa de rótulo e texto de ajuda** — use o componente de campo individual em vez de
+  adicionar um fieldset apenas por espaçamento.
+- **Uma escolha é feita entre alternativas visíveis** — use RadioGroup ou CheckboxGroup, que fornecem
+  os controles de opção e o tratamento de campo compartilhado.
+
+## Acessibilidade
+
+- Renderiza um `<fieldset>` nativo e, quando fornecido, um `<legend>` nativo. Esse é o nome semântico
+  do grupo anunciado com seus controles descendentes.
+- `description` é um parágrafo visível abaixo da legend. O componente não o conecta com
+  `aria-describedby`; adicione essa relação quando ela for necessária para um controle específico.
+- FormRow é apenas uma grade responsiva em uma `div`. Não adiciona semântica de landmark ou grupo;
+  Fieldset fornece a fronteira semântica nestes exemplos.
+
+## Props
+
+<PropTable name="Fieldset" />
+
+### FormRow
+
+FormRow organiza campos relacionados em colunas de mesma largura e usa a quantidade de filhos quando
+`columns` é omitido.
+
+<PropTable name="FormRow" />
+
+## HTML puro
+
+Sem React, mantenha o fieldset nativo e defina `--lyra-formrow-columns` para cada linha de largura igual:
+
+```html
+<fieldset class="lyra-fieldset">
+  <legend class="lyra-fieldset__legend">Contact details</legend>
+  <p class="lyra-fieldset__desc">How we can reach you about this order.</p>
+  <div class="lyra-fieldset__fields">
+    <div class="lyra-formrow" style="--lyra-formrow-columns: repeat(2, minmax(0, 1fr));">
+      <div class="lyra-field">
+        <label class="lyra-label" for="first-name">First name</label>
+        <input class="lyra-input" id="first-name" />
+      </div>
+      <div class="lyra-field">
+        <label class="lyra-label" for="last-name">Last name</label>
+        <input class="lyra-input" id="last-name" />
+      </div>
+    </div>
+  </div>
+</fieldset>
+```
