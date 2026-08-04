@@ -1,0 +1,67 @@
+---
+title: BottomNav
+description: A compact mobile navigation bar for three to five primary destinations.
+---
+
+# BottomNav
+
+BottomNav gives mobile applications a compact, persistent route chooser. Use it for a few primary
+destinations; use AppSidebar when the application needs grouped navigation and room for labels.
+
+## Examples
+
+<Example id="basic" title="Current mobile destination" layout="block">
+  Keep the item set short and use `active` for the view currently shown. `onSelect` receives the
+  selected item after its own callback, so surrounding content can change with the navigation.
+</Example>
+
+<Example id="rich-label" title="A ReactNode label" layout="block">
+  `label` accepts ReactNode, not just a string. Use that flexibility for concise, meaningful label
+  content, while keeping the complete button name clear when its icon and text are read together.
+</Example>
+
+## When to use
+
+Use BottomNav for three to five top-level mobile destinations that people switch between often.
+
+Reach for something else when:
+
+- **The application has groups, utilities or many destinations** — use AppSidebar.
+- **The destinations are views within the current page** — use Tabs.
+- **The control opens a temporary list of actions** — use Dropdown.
+
+## Accessibility
+
+- BottomNav renders a native `<nav>` containing native buttons. Each button's visible label is part
+  of its accessible name; provide an icon and label that describe the same destination.
+- `active` adds `aria-current="page"` to the current item's button. Keep that state synchronized with
+  the view your application shows.
+- An item's `onClick` runs before the navigation-level `onSelect(id, item)`. Use either callback to
+  update routing or view state; the component does not navigate by itself.
+- The component does not add an accessible name to the navigation landmark. Pass `aria-label` when
+  there is more than one navigation landmark on the page.
+
+## Props
+
+<PropTable name="BottomNav" />
+
+## Plain HTML
+
+Use buttons for the component's selection model and mark the current destination:
+
+```html
+<nav class="lyra-bottomnav" aria-label="Primary navigation">
+  <button
+    class="lyra-bottomnav__item lyra-bottomnav__item--active"
+    type="button"
+    aria-current="page"
+  >
+    <span class="lyra-bottomnav__icon" aria-hidden="true">⌂</span>
+    <span class="lyra-bottomnav__label">Home</span>
+  </button>
+  <button class="lyra-bottomnav__item" type="button">
+    <span class="lyra-bottomnav__icon" aria-hidden="true">◔</span>
+    <span class="lyra-bottomnav__label">Activity</span>
+  </button>
+</nav>
+```

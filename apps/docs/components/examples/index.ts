@@ -128,6 +128,16 @@ import { TimeInputRange } from './time-input/range';
 import { TimeInputLabels } from './time-input/labels';
 import { SegmentedRingBasic } from './segmented-ring/basic';
 import { SegmentedRingCompact } from './segmented-ring/compact';
+import { NavLinkBasic } from './nav-link/basic';
+import { NavLinkAsChild } from './nav-link/as-child';
+import { AppSidebarComposition } from './app-sidebar/composition';
+import { AppSidebarGroups } from './app-sidebar/groups';
+import { BottomNavBasic } from './bottom-nav/basic';
+import { BottomNavRichLabel } from './bottom-nav/rich-label';
+import { ActionBarSelection } from './action-bar/selection';
+import { ActionBarCustomActions } from './action-bar/custom-actions';
+import { ToastProviderBasic } from './toast-provider/basic';
+import { ToastProviderDuration } from './toast-provider/duration';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -173,6 +183,26 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     basic: NavbarBasic,
     actions: NavbarActions,
     'nav-link': NavbarNavLink,
+  },
+  'nav-link': {
+    basic: NavLinkBasic,
+    'as-child': NavLinkAsChild,
+  },
+  'app-sidebar': {
+    composition: AppSidebarComposition,
+    groups: AppSidebarGroups,
+  },
+  'bottom-nav': {
+    basic: BottomNavBasic,
+    'rich-label': BottomNavRichLabel,
+  },
+  'action-bar': {
+    selection: ActionBarSelection,
+    'custom-actions': ActionBarCustomActions,
+  },
+  'toast-provider': {
+    basic: ToastProviderBasic,
+    duration: ToastProviderDuration,
   },
   footer: {
     basic: FooterBasic,

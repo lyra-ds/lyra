@@ -1,0 +1,73 @@
+---
+title: AppSidebar
+description: An application navigation rail with composed links or convenient button-based groups.
+---
+
+# AppSidebar
+
+AppSidebar keeps an application's destinations in view. Choose its `children` door when links must
+keep their router behavior; choose `groups` for a quick, button-based selection interface.
+
+## Examples
+
+<Example id="composition" title="Composed links and an icon rail" layout="block">
+  Pass SidebarGroup children when your app owns routing. On collapse, the sidebar becomes a 64px
+  rail and supplies native tooltips and accessible names to its link descendants from their text.
+</Example>
+
+<Example id="groups" title="Convenience groups" layout="block">
+  `groups` turns each item into a button and reports its `id` through `onSelect`. Its `label` is a
+  string on purpose, so the rail can always name the button and show a native tooltip.
+</Example>
+
+## When to use
+
+Use AppSidebar for grouped, persistent destinations in an application shell.
+
+Reach for something else when:
+
+- **A short row of site-level routes is enough** — use Navbar.
+- **The destinations are peer views inside the current page** — use Tabs.
+- **You only need one navigation section** — use SidebarGroup.
+
+## Accessibility
+
+- AppSidebar renders a native `<nav>`. Pass `aria-label` through to it when the page has more than
+  one navigation landmark.
+- In `groups` mode, items are native buttons; an active item receives `aria-current="page"`. An
+  item callback runs before the sidebar-level `onSelect(id, item)` callback.
+- In composition mode, children remain their original elements. Use real anchors for routes; when
+  rail mode is active, link descendants get a `title` and `aria-label` from an explicit label, title,
+  or their text content.
+- The collapse control is a native button whose accessible name and tooltip come from `labels`. In
+  rail mode, group labels, item text and badges are visually hidden, while the control and item names
+  remain available.
+
+## Props
+
+<PropTable name="AppSidebar" />
+
+## Plain HTML
+
+The composed-link door is ordinary navigation markup. Supply the collapse behavior, rail labels and
+selection handling yourself outside React:
+
+```html
+<nav class="lyra-appsidebar" aria-label="Workspace navigation">
+  <div class="lyra-appsidebar__brand"><strong>Acme</strong></div>
+  <div class="lyra-appsidebar__groups">
+    <div class="lyra-sbgroup">
+      <div class="lyra-sbgroup__label">Workspace</div>
+      <div class="lyra-sbgroup__items">
+        <a
+          class="lyra-sbgroup__item lyra-sbgroup__item--active"
+          href="/overview"
+          aria-current="page"
+        >
+          <span class="lyra-sbgroup__item-label">Overview</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+```

@@ -1,0 +1,63 @@
+---
+title: ActionBar
+description: A fixed toolbar for actions on the current selection.
+---
+
+# ActionBar
+
+ActionBar collects operations for selected records without taking over the page. Pair it with a
+DataTable selection; use a page action when the operation does not depend on selected items.
+
+## Examples
+
+<Example id="selection" title="Selection actions">
+  Pass the selected `count` and put operations in `actions`. A count of `0` removes the bar
+  entirely, so clear selection when there is no longer a meaningful bulk action.
+</Example>
+
+<Example id="custom-actions" title="Several bulk actions">
+  Use `open` when the surrounding interface needs to suppress the bar independently of the count.
+  Keep controls in `actions` focused on the whole selection, not on an individual row.
+</Example>
+
+## When to use
+
+Use ActionBar after someone selects one or more records and can act on that set together.
+
+Reach for something else when:
+
+- **The operation applies to the page regardless of selection** — use a PageHeader action.
+- **The action belongs to a single record** — place it in that record's row or detail view.
+- **The person must choose from a short contextual menu first** — use Dropdown.
+
+## Accessibility
+
+- The rendered bar is `role="toolbar"`; it is absent when `open` is false or `count` is `0`.
+- When present, the count is a polite `role="status"` live region. Update it to communicate a real
+  selection change, rather than using it as the only feedback for another action.
+- The clear button appears only with `onClear`. Its accessible name defaults to "Clear selection";
+  pass `clearLabel` when the selection needs more specific or localized wording.
+- `actions` and children are rendered controls. Give each action its own accessible name and preserve
+  a sensible keyboard order. The bar is fixed near the bottom of the viewport and can cover content.
+
+## Props
+
+<PropTable name="ActionBar" />
+
+## Plain HTML
+
+The fixed bar is a toolbar; you own the selected-count updates and the clear action:
+
+```html
+<div class="lyra-actionbar" role="toolbar">
+  <span class="lyra-actionbar__count" role="status" aria-live="polite"
+    ><strong>3</strong> projects selected</span
+  >
+  <span class="lyra-actionbar__actions">
+    <button class="lyra-btn lyra-btn--primary lyra-btn--sm" type="button">Archive</button>
+    <button class="lyra-actionbar__clear" type="button" aria-label="Clear selected projects">
+      ×
+    </button>
+  </span>
+</div>
+```

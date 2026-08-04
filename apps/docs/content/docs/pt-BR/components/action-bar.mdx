@@ -1,0 +1,63 @@
+---
+title: ActionBar
+description: Uma barra de ferramentas fixa para ações sobre a seleção atual.
+---
+
+# ActionBar
+
+ActionBar reúne operações para registros selecionados sem tomar a página. Combine-o com uma seleção de
+DataTable; use uma ação de página quando a operação não depender de itens selecionados.
+
+## Exemplos
+
+<Example id="selection" title="Ações da seleção">
+  Passe o `count` selecionado e coloque operações em `actions`. Uma contagem de `0` remove a barra
+  por inteiro, então limpe a seleção quando não houver mais uma ação em massa significativa.
+</Example>
+
+<Example id="custom-actions" title="Várias ações em massa">
+  Use `open` quando a interface ao redor precisar ocultar a barra independentemente da contagem.
+  Mantenha em `actions` controles voltados à seleção inteira, não a uma linha individual.
+</Example>
+
+## Quando usar
+
+Use ActionBar depois que alguém selecionar um ou mais registros e puder agir sobre esse conjunto.
+
+Prefira outro componente quando:
+
+- **A operação se aplica à página, independente da seleção** — use uma ação de PageHeader.
+- **A ação pertence a um único registro** — coloque-a na linha ou na visualização de detalhe dele.
+- **A pessoa precisa escolher primeiro em um menu contextual curto** — use Dropdown.
+
+## Acessibilidade
+
+- A barra renderizada tem `role="toolbar"`; ela não existe quando `open` é falso ou `count` é `0`.
+- Quando presente, a contagem é uma região ao vivo `role="status"` polida. Atualize-a para comunicar
+  uma alteração real de seleção, em vez de usá-la como único feedback de outra ação.
+- O botão de limpar só aparece com `onClear`. Seu nome acessível padrão é "Clear selection"; passe
+  `clearLabel` quando a seleção precisar de termos mais específicos ou localizados.
+- `actions` e children são controles renderizados. Dê a cada ação seu próprio nome acessível e mantenha
+  uma ordem de teclado coerente. A barra é fixa perto do fim do viewport e pode cobrir conteúdo.
+
+## Props
+
+<PropTable name="ActionBar" />
+
+## HTML puro
+
+A barra fixa é uma toolbar; as atualizações da contagem selecionada e a ação de limpar são suas:
+
+```html
+<div class="lyra-actionbar" role="toolbar">
+  <span class="lyra-actionbar__count" role="status" aria-live="polite"
+    ><strong>3</strong> projetos selecionados</span
+  >
+  <span class="lyra-actionbar__actions">
+    <button class="lyra-btn lyra-btn--primary lyra-btn--sm" type="button">Arquivar</button>
+    <button class="lyra-actionbar__clear" type="button" aria-label="Limpar projetos selecionados">
+      ×
+    </button>
+  </span>
+</div>
+```

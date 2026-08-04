@@ -1,0 +1,75 @@
+---
+title: AppSidebar
+description: Uma barra lateral de navegação da aplicação, com links compostos ou grupos convenientes baseados em botões.
+---
+
+# AppSidebar
+
+AppSidebar mantém os destinos de uma aplicação à vista. Escolha a porta de `children` quando os links
+precisarem preservar o comportamento do router; escolha `groups` para uma interface rápida de seleção
+baseada em botões.
+
+## Exemplos
+
+<Example id="composition" title="Links compostos e trilho de ícones" layout="block">
+  Passe filhos SidebarGroup quando a aplicação for dona do routing. Ao recolher, a barra vira um
+  trilho de 64px e fornece tooltips nativos e nomes acessíveis a seus descendentes de link a partir
+  do texto.
+</Example>
+
+<Example id="groups" title="Grupos convenientes" layout="block">
+  `groups` transforma cada item em botão e informa seu `id` por `onSelect`. Seu `label` é uma string
+  de propósito, para que o trilho sempre possa nomear o botão e mostrar um tooltip nativo.
+</Example>
+
+## Quando usar
+
+Use AppSidebar para destinos agrupados e persistentes no shell de uma aplicação.
+
+Prefira outro componente quando:
+
+- **Uma linha curta de rotas no nível do site é suficiente** — use Navbar.
+- **Os destinos são visualizações pares na página atual** — use Tabs.
+- **Você precisa de apenas uma seção de navegação** — use SidebarGroup.
+
+## Acessibilidade
+
+- AppSidebar renderiza um `<nav>` nativo. Passe `aria-label` para ele quando a página tiver mais de
+  um landmark de navegação.
+- No modo `groups`, os itens são botões nativos; um item ativo recebe `aria-current="page"`. O
+  callback do item roda antes do callback `onSelect(id, item)` da barra lateral.
+- No modo de composição, os filhos permanecem seus elementos originais. Use âncoras reais para rotas;
+  no modo trilho, descendentes de link recebem `title` e `aria-label` de um rótulo explícito, título
+  ou de seu conteúdo textual.
+- O controle de recolhimento é um botão nativo cujo nome acessível e tooltip vêm de `labels`. No modo
+  trilho, rótulos de grupo, texto de item e badges ficam visualmente ocultos, enquanto os nomes dos
+  controles e itens continuam disponíveis.
+
+## Props
+
+<PropTable name="AppSidebar" />
+
+## HTML puro
+
+A porta de links compostos é uma marcação de navegação comum. Fora do React, implemente o
+recolhimento, os rótulos do trilho e a seleção:
+
+```html
+<nav class="lyra-appsidebar" aria-label="Navegação do espaço de trabalho">
+  <div class="lyra-appsidebar__brand"><strong>Acme</strong></div>
+  <div class="lyra-appsidebar__groups">
+    <div class="lyra-sbgroup">
+      <div class="lyra-sbgroup__label">Espaço de trabalho</div>
+      <div class="lyra-sbgroup__items">
+        <a
+          class="lyra-sbgroup__item lyra-sbgroup__item--active"
+          href="/overview"
+          aria-current="page"
+        >
+          <span class="lyra-sbgroup__item-label">Visão geral</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+```

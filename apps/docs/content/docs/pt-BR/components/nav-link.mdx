@@ -1,0 +1,56 @@
+---
+title: NavLink
+description: Um link de navegação compacto com semântica de página atual e composição opcional com links do framework.
+---
+
+# NavLink
+
+NavLink é o link que preenche um Navbar ou outra lista compacta de rotas. Escolha-o para um destino;
+escolha Button quando o controle executa trabalho em vez de levar a pessoa a algum lugar.
+
+## Exemplos
+
+<Example id="basic" title="Destino atual">
+  Defina `active` somente para a rota exibida. Ele dá ao link o tratamento selecionado e mantém
+  `aria-current="page"` alinhado ao que a pessoa vê.
+</Example>
+
+<Example id="as-child" title="Link composto do framework">
+  Use `asChild` quando o router precisar ser dono da âncora. NavLink então fornece suas classes e a
+  semântica de página atual sem substituir routing, prefetching ou o comportamento de
+  modifier-click.
+</Example>
+
+## Quando usar
+
+Use NavLink para um conjunto curto e persistente de destinos de página, especialmente dentro de Navbar.
+
+Prefira outro componente quando:
+
+- **O seletor de rotas precisa de marca, ações e estrutura de página** — use Navbar; NavLink
+  preenche seu slot de navegação.
+- **Os destinos são visualizações pares na página atual** — use Tabs.
+- **O controle inicia ou confirma trabalho** — use Button.
+
+## Acessibilidade
+
+- Por padrão, NavLink renderiza uma `<a>` nativa. Dê a ela um `href` real e um nome que identifique o
+  destino.
+- `active` adiciona `aria-current="page"`. Defina-o em um link da página atual, não em um destino
+  futuro ou pendente.
+- Seu indicador de foco aparece em `:focus-visible`; não o remova.
+- Com `asChild`, forneça exatamente um elemento de link válido. Esse filho mantém a responsabilidade
+  por `href`, comportamento de teclado e nome acessível.
+
+## Props
+
+<PropTable name="NavLink" />
+
+## HTML puro
+
+Use uma âncora para cada destino e declare diretamente a página atual:
+
+```html
+<a class="lyra-navlink lyra-navlink--active" href="/overview" aria-current="page">Visão geral</a>
+<a class="lyra-navlink" href="/projects">Projetos</a>
+```

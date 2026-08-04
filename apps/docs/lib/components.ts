@@ -89,6 +89,11 @@ const manifest: ComponentEntry[] = [
   { slug: 'separator', name: 'Separator', group: 'layout' },
   { slug: 'time-input', name: 'TimeInput', group: 'form' },
   { slug: 'segmented-ring', name: 'SegmentedRing', group: 'display' },
+  { slug: 'nav-link', name: 'NavLink', group: 'navigation' },
+  { slug: 'app-sidebar', name: 'AppSidebar', group: 'navigation' },
+  { slug: 'bottom-nav', name: 'BottomNav', group: 'navigation' },
+  { slug: 'action-bar', name: 'ActionBar', group: 'data' },
+  { slug: 'toast-provider', name: 'ToastProvider', group: 'feedback' },
 ];
 
 export const components: ComponentEntry[] = [...manifest].sort((a, b) =>
