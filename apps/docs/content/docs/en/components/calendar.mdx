@@ -1,0 +1,98 @@
+---
+title: Calendar
+description: A local-date grid for choosing one day or a date range.
+---
+
+# Calendar
+
+Calendar is the date-grid primitive for a date field or range. Choose it when the date grid belongs
+in your layout; choose DatePicker or DateRangePicker when the grid should open from a compact field.
+
+## Examples
+
+<Example id="basic" title="A selected date and today shortcut">
+  Use a date-only ISO string for an initial local date. `todayButton` adds a shortcut that selects
+  today and returns the grid to its month.
+</Example>
+
+<Example id="range" title="A complete range">
+  Set `range` to let the first selection start a range and the second complete it. Selecting a date
+  before the start reverses the bounds, so the resulting range is always in chronological order.
+</Example>
+
+<Example id="pt-br-locale" title="Brazilian Portuguese dates">
+  `locale="pt-BR"` uses `Intl` for the month name, weekday headings and spoken date labels. Pass
+  `labels` as well when the calendar controls need translated strings.
+</Example>
+
+## When to use
+
+Use Calendar when a visible date grid is the right part of the surrounding form or scheduling
+interface, including when a person needs to compare nearby dates before choosing one.
+
+Reach for something else when:
+
+- **The grid should stay hidden until a field is activated** — use DatePicker for one date or
+  DateRangePicker for a start and end date.
+- **A person knows the exact date and must type it quickly** — use a text input with clear
+  validation instead of requiring navigation through a grid.
+- **Only a time is being selected** — use TimePicker for an available-time list or TimeInput for
+  typed 24-hour entry.
+
+## Accessibility
+
+- The active day cell is the single tab stop in the grid: all other day buttons use roving
+  `tabIndex="-1"`. Arrow keys move by day or week; Home and End move to the current week's edges;
+  PageUp and PageDown move by month.
+- Every day has a locale-formatted accessible name. Weekday headings expose the full weekday name,
+  while their visible text is the locale's narrow form.
+- The selected start and end days use `aria-pressed`. The header button cycles days, months and
+  years; month and year selection returns to the next more specific view.
+- Disabled dates intentionally remain focusable and use `aria-disabled="true"` rather than native
+  `disabled`. This lets keyboard users discover unavailable dates and continue arrow-key navigation;
+  activation does not change the selection.
+- `labels` provides the navigation, view-change and today strings. Date formatting uses `Intl`, so
+  there are no hardcoded month, weekday or date strings in the grid.
+
+## Props
+
+<PropTable name="Calendar" />
+
+## Plain HTML
+
+Without React, compose the calendar classes and implement local-date parsing, roving focus,
+selection and view changes yourself:
+
+```html
+<div class="lyra-cal">
+  <div class="lyra-cal__head">
+    <button class="lyra-cal__nav" type="button" aria-label="Previous month">‹</button>
+    <button class="lyra-cal__label" type="button" aria-label="Change month or year">
+      August 2026
+    </button>
+    <button class="lyra-cal__nav" type="button" aria-label="Next month">›</button>
+  </div>
+  <div class="lyra-cal__grid">
+    <span class="lyra-cal__wd" aria-label="Sunday">S</span>
+    <button
+      class="lyra-cal__day"
+      type="button"
+      tabindex="0"
+      aria-label="Tuesday, August 4, 2026"
+      aria-pressed="true"
+    >
+      4
+    </button>
+    <button
+      class="lyra-cal__day"
+      type="button"
+      tabindex="-1"
+      aria-disabled="true"
+      aria-label="Wednesday, August 5, 2026"
+    >
+      5
+    </button>
+  </div>
+  <div class="lyra-cal__foot"><button class="lyra-cal__today" type="button">Today</button></div>
+</div>
+```

@@ -1,0 +1,89 @@
+---
+title: DateRangePicker
+description: Um campo único que seleciona e mostra um intervalo de datas locais.
+---
+
+# DateRangePicker
+
+DateRangePicker combina um trigger com seleção de intervalo em Calendar. Escolha-o quando data
+inicial e final descrevem um período; escolha dois DatePickers apenas quando as datas tiverem
+significados ou regras distintos.
+
+## Exemplos
+
+<Example id="basic" title="Um período de viagem completo">
+  O trigger mostra data inicial e final selecionadas como um valor único. Selecionar o segundo
+  limite no Calendar composto completa o intervalo e fecha o picker.
+</Example>
+
+<Example id="labels" title="Texto de intervalo traduzido">
+  `labels.rangeSeparator` e `labels.incompleteRange` controlam o texto entre data inicial e final e
+  o marcador mostrado quando só existe a inicial. Eles mantêm esse estado visível do intervalo no
+  mesmo modelo de i18n por props dos outros labels de picker.
+</Example>
+
+## Quando usar
+
+Use DateRangePicker quando uma pessoa precisa escolher um período contínuo de datas locais, como
+viagem, disponibilidade ou uma janela de relatório.
+
+Prefira outro componente quando:
+
+- **Só uma data importa** — use DatePicker.
+- **As duas datas têm labels, validação ou etapas de fluxo distintos** — use DatePickers separados.
+- **A grade de datas pertence permanentemente à página** — use Calendar diretamente.
+
+## Acessibilidade
+
+- O trigger é um botão nativo associado ao `label` por `htmlFor`. No desktop, ele é o trigger de
+  Popover, com semântica de diálogo não modal, fechamento por Escape e retorno de foco.
+- O Calendar composto funciona em modo de intervalo. Ele mantém foco rotativo e navegação por
+  teclado; a primeira seleção inicia o intervalo, a seguinte o conclui, e um intervalo completo
+  fecha o picker.
+- O valor visível do trigger é uma única string formatada: data inicial, `labels.rangeSeparator` e a
+  data final ou `labels.incompleteRange`. Forneça os dois labels ao traduzir esse estado.
+- `error` substitui `hint`; `disabled` desabilita o trigger.
+- Em viewports de 640px ou menos, o caminho de Popover passa a BottomSheet com Calendar. Título e
+  nome de fechar vêm de `label`/`labels.sheetTitle` e `labels.close`. Aqui é apenas texto porque o
+  stage não redimensiona o viewport.
+
+## Props
+
+<PropTable name="DateRangePicker" />
+
+## HTML puro
+
+Sem React, componha um trigger com classes de Popover e Calendar e implemente estado do intervalo,
+movimento de foco e a alternativa de folha mobile:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="travel-dates">Datas da viagem</label>
+  <span class="lyra-datepicker lyra-popover-anchor">
+    <button
+      class="lyra-input lyra-datepicker__btn"
+      id="travel-dates"
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded="true"
+    >
+      <span>11/08/2026 – 15/08/2026</span>
+    </button>
+    <div
+      class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+      role="dialog"
+      aria-label="Seletor de intervalo"
+    >
+      <div class="lyra-cal">
+        <button class="lyra-cal__day lyra-cal__day--selected" type="button" aria-pressed="true">
+          11
+        </button>
+        <button class="lyra-cal__day lyra-cal__day--in-range" type="button">12</button>
+        <button class="lyra-cal__day lyra-cal__day--selected" type="button" aria-pressed="true">
+          15
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

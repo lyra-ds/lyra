@@ -98,6 +98,10 @@ const manifest: ComponentEntry[] = [
   { slug: 'person-cell', name: 'PersonCell', group: 'data' },
   { slug: 'popover', name: 'Popover', group: 'overlay' },
   { slug: 'bottom-sheet', name: 'BottomSheet', group: 'overlay' },
+  { slug: 'calendar', name: 'Calendar', group: 'form' },
+  { slug: 'time-picker', name: 'TimePicker', group: 'form' },
+  { slug: 'date-picker', name: 'DatePicker', group: 'form' },
+  { slug: 'date-range-picker', name: 'DateRangePicker', group: 'form' },
 ];
 
 export const components: ComponentEntry[] = [...manifest].sort((a, b) =>

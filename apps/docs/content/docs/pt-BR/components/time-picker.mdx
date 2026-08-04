@@ -1,0 +1,92 @@
+---
+title: TimePicker
+description: Um campo que escolhe um horário de 24 horas disponível em uma lista.
+---
+
+# TimePicker
+
+TimePicker abre, a partir de um campo, uma lista de horários de 24 horas gerados. Escolha-o quando
+a pessoa deve navegar pelos horários disponíveis; escolha TimeInput quando digitar é mais rápido ou
+necessário.
+
+## Exemplos
+
+<Example id="basic" title="Um horário inicial selecionado">
+  `defaultValue` é mantido como um valor `HH:mm` de 24 horas, enquanto o trigger o formata para o
+  locale escolhido. Selecionar uma opção fecha o picker.
+</Example>
+
+<Example id="available-times" title="Uma janela de horários disponíveis">
+  Use `min`, `max` e `step` para gerar apenas os horários que a pessoa pode escolher. Este exemplo
+  apresenta opções de 15 minutos entre 09:00 e 12:00, com formatação de horário do Reino Unido.
+</Example>
+
+## Quando usar
+
+Use TimePicker quando os horários relevantes formam uma lista limitada que a pessoa pode examinar e
+selecionar.
+
+Prefira outro componente quando:
+
+- **A pessoa precisa digitar um horário conhecido ou incomum** — use TimeInput, que suporta entrada
+  de 24 horas digitada e ajuste por teclado.
+- **Data e horário precisam ser escolhidos juntos** — combine DatePicker e TimePicker, mantendo cada
+  valor e sua validação explícitos.
+- **As opções são comandos, não horários** — use Dropdown, cuja semântica de menu corresponde a ações.
+
+## Acessibilidade
+
+- O trigger é um botão nativo. No desktop, ele é o trigger de Popover; portanto recebe a semântica
+  de diálogo do Popover e pode abrir com Enter ou Space.
+- O contêiner de opções é `role="listbox"` e cada horário é `role="option"`. A opção selecionada usa
+  `aria-selected="true"`; ArrowUp, ArrowDown, Home e End movem o foco pelas opções.
+- `label` conecta-se ao trigger por `htmlFor`. Quando há `error`, ele substitui `hint` e aplica a
+  aparência de erro ao input.
+- Em viewports de 640px ou menos, o caminho de Popover passa a ser um BottomSheet. Seu título usa
+  `label` ou `labels.sheetTitle`, e o botão de fechar usa `labels.close`. Esse comportamento não é
+  demonstrado ao vivo porque o stage da documentação não redimensiona o viewport.
+- `labels` traduz placeholder, nome da listbox, nome do Popover e strings da folha; `locale` controla
+  a formatação visível do horário.
+
+## Props
+
+<PropTable name="TimePicker" />
+
+## HTML puro
+
+Sem React, use as classes do picker e implemente abertura, fechamento externo, foco da listbox e
+estado de seleção:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="start-time">Horário inicial</label>
+  <span class="lyra-datepicker lyra-popover-anchor">
+    <button
+      class="lyra-input lyra-datepicker__btn"
+      id="start-time"
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded="true"
+    >
+      <span>09:30</span>
+    </button>
+    <div
+      class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+      role="dialog"
+      aria-label="Seletor de horário"
+    >
+      <div class="lyra-timelist" role="listbox" aria-label="Opções de horário">
+        <button class="lyra-timelist__item" type="button" role="option">09:00</button>
+        <button
+          class="lyra-timelist__item lyra-timelist__item--selected"
+          type="button"
+          role="option"
+          aria-selected="true"
+        >
+          09:30
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

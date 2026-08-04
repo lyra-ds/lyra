@@ -1,0 +1,90 @@
+---
+title: TimePicker
+description: A field that chooses an available 24-hour time from a list.
+---
+
+# TimePicker
+
+TimePicker opens a list of generated 24-hour times from a field. Choose it when people should browse
+available slots; choose TimeInput when typed time entry is faster or necessary.
+
+## Examples
+
+<Example id="basic" title="A selected start time">
+  `defaultValue` is kept as a 24-hour `HH:mm` value, while the trigger formats it for the chosen
+  locale. Selecting an option closes the picker.
+</Example>
+
+<Example id="available-times" title="A limited appointment window">
+  Use `min`, `max` and `step` to generate only the times a person can choose. This example presents
+  15-minute options from 09:00 through 12:00 with UK time formatting.
+</Example>
+
+## When to use
+
+Use TimePicker when the relevant times are a bounded list that people can scan and select.
+
+Reach for something else when:
+
+- **People need to type a known or unusual time** — use TimeInput, which supports typed 24-hour
+  entry and keyboard adjustment.
+- **A date and time must be chosen together** — pair DatePicker with TimePicker, keeping each value
+  and its validation explicit.
+- **The options are commands rather than times** — use Dropdown, whose menu semantics match actions.
+
+## Accessibility
+
+- The trigger is a native button. On desktop it is the Popover trigger, so it receives the Popover
+  dialog semantics and can be opened with Enter or Space.
+- The options container is `role="listbox"` and each time is `role="option"`. The selected option
+  has `aria-selected="true"`; ArrowUp, ArrowDown, Home and End move focus through the options.
+- `label` connects to the trigger through `htmlFor`. When `error` is present, it replaces `hint` and
+  applies the input error styling.
+- At viewports of 640px or less, the Popover path becomes a BottomSheet. Its title uses `label` or
+  `labels.sheetTitle`, and its close button uses `labels.close`. This behavior is not demonstrated
+  live because the documentation stage cannot resize its viewport.
+- `labels` translates the placeholder, listbox name, Popover name and sheet strings; `locale`
+  controls the visible time formatting.
+
+## Props
+
+<PropTable name="TimePicker" />
+
+## Plain HTML
+
+Without React, use the picker classes and implement opening, outside dismissal, listbox focus and
+selection state:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="start-time">Start time</label>
+  <span class="lyra-datepicker lyra-popover-anchor">
+    <button
+      class="lyra-input lyra-datepicker__btn"
+      id="start-time"
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded="true"
+    >
+      <span>09:30</span>
+    </button>
+    <div
+      class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+      role="dialog"
+      aria-label="Time picker"
+    >
+      <div class="lyra-timelist" role="listbox" aria-label="Time options">
+        <button class="lyra-timelist__item" type="button" role="option">09:00</button>
+        <button
+          class="lyra-timelist__item lyra-timelist__item--selected"
+          type="button"
+          role="option"
+          aria-selected="true"
+        >
+          09:30
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```
