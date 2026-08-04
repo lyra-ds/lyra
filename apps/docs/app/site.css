@@ -113,6 +113,7 @@
    shrink to their content and leave the stage half empty. Give them the full width instead. */
 .lw-example__stage--block {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: var(--space-4);
 }
@@ -120,6 +121,7 @@
    material. Drop the chrome and let the example be the only surface on screen. */
 .lw-example__stage--plain {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: var(--space-4);
   margin-top: var(--space-3);
@@ -172,6 +174,26 @@
 }
 .lw-example__code {
   margin-top: var(--space-2);
+}
+
+/* Skeleton example layout classes */
+.lw-skeleton-card {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 22rem;
+}
+.lw-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 20rem;
+}
+.lw-skeleton-row__lines {
+  display: grid;
+  flex: 1;
+  gap: var(--space-2);
 }
 
 /* white-label guide: only the three-card comparison layout lives in the docs chrome */
