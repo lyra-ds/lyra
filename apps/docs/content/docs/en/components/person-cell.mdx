@@ -1,0 +1,61 @@
+---
+title: PersonCell
+description: A compact person identity cell with an avatar, name and optional secondary detail.
+---
+
+# PersonCell
+
+PersonCell keeps a person's identity consistent in compact data views. Choose it for a people column
+in DataTable; choose Avatar alone when the surrounding UI already supplies the person's name.
+
+## Examples
+
+<Example id="basic" title="Name with a role">
+  Pass a string `name` to let the embedded Avatar derive initials, then use `detail` for a role,
+  email address or another short secondary identifier.
+</Example>
+
+<Example id="in-data-table" title="People in a data table" layout="block">
+  Put PersonCell directly in a DataTable row value when a people column needs the same compact
+  identity treatment for every record.
+</Example>
+
+## When to use
+
+Use PersonCell in a table or compact list when someone must identify a person and one supporting
+detail at a glance.
+
+Reach for something else when:
+
+- **Only a visual identity marker is needed** — use Avatar.
+- **The row needs sorting, selection or loading behavior** — use DataTable and render PersonCell in
+  one of its columns.
+- **The person needs a full profile summary or actions** — use a dedicated profile view rather than
+  packing it into a cell.
+
+## Accessibility
+
+- PersonCell is a presentational `<div>` composition: Avatar, a name span and an optional detail
+  span. It does not add button, link or table-cell semantics.
+- A string `name` is passed to Avatar so Avatar can render initials when `src` is absent. A rich
+  React node name is still displayed, but cannot supply initials to Avatar.
+- `detail` is rendered only when it is not `null` or `undefined`; use it for supporting text rather
+  than replacing the primary `name`.
+
+## Props
+
+<PropTable name="PersonCell" />
+
+## Plain HTML
+
+Compose PersonCell with the Avatar and person-cell classes:
+
+```html
+<div class="lyra-personcell">
+  <span class="lyra-avatar lyra-avatar--md">MC</span>
+  <span class="lyra-personcell__text">
+    <span class="lyra-personcell__name">Maya Chen</span>
+    <span class="lyra-personcell__detail">Design lead</span>
+  </span>
+</div>
+```

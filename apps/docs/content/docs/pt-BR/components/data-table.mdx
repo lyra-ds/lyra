@@ -1,0 +1,97 @@
+---
+title: DataTable
+description: Uma grade operacional de dados com ordenação, seleção de linhas, placeholders de carregamento e estados vazios.
+---
+
+# DataTable
+
+DataTable adiciona comportamento operacional a um conjunto de registros. Escolha-o quando as pessoas
+precisarem ordenar, selecionar ou agir sobre linhas; escolha Table quando os registros só precisarem
+de uma apresentação tabular simples e comparável.
+
+## Exemplos
+
+<Example id="basic" title="Registros operacionais" layout="block">
+  Comece com chaves estáveis de coluna e valores `id` nas linhas. `hover` dá uma pista para
+  percorrer as linhas, mantendo os dados do registro em células de tabela reais.
+</Example>
+
+<Example id="sortable-selectable" title="Ordenação e seleção de linhas" layout="block">
+  Marque como `sortable` apenas os campos com uma ordem útil e forneça `labels.selectRow` como
+  função quando cada checkbox precisar anunciar a pessoa ou o registro que seleciona.
+</Example>
+
+<Example id="loading" title="Linhas em carregamento" layout="block">
+  Passe um número para `loading` quando o resultado esperado tiver uma densidade conhecida. Isso
+  mantém a forma da tabela enquanto os registros carregam, em vez de trocar a região de dados por um
+  spinner.
+</Example>
+
+## Quando usar
+
+Use DataTable para conjuntos operacionais de registros que as pessoas precisam ordenar, selecionar,
+percorrer em uma área fixa ou abrir a partir de uma linha.
+
+Prefira outro componente quando:
+
+- **Os registros só precisam de campos alinhados para comparação** — use Table, a tabela estática
+  mais simples.
+- **Os registros são arquivos que alguém precisa navegar e manipular** — use FileManager.
+- **Não há registros para mostrar após o carregamento** — use EmptyState para uma ausência de página
+  inteira, ou o conteúdo `empty` de DataTable quando a tabela ainda for um contexto útil.
+
+## Acessibilidade
+
+- DataTable renderiza uma `<table>` real, com cabeçalhos e células. Um cabeçalho ordenável é um
+  botão, e o cabeçalho ativo informa `aria-sort` como crescente ou decrescente.
+- Com `selectable`, ela renderiza checkboxes nativos para cada linha e um checkbox de selecionar
+  todos. O checkbox geral fica indeterminado quando apenas parte do conjunto está selecionada.
+- `labels.selectRow` usa por padrão o nome repetido em inglês "Select row". Passe uma string ou uma
+  função como `(row) => 'Select ' + row.name` para dar a cada checkbox um nome acessível
+  traduzido e distinguível.
+- O `id` da linha é usado como chave React e para seleção. Se uma linha não tiver `id` string ou
+  numérico, seu fallback vem da posição original de entrada, então a seleção continua nessa linha
+  depois da ordenação.
+- Quando `onRowClick` está presente, o estilo de hover é ligado automaticamente, mas a linha ainda
+  não é um controle operável pelo teclado. Coloque um botão ou link real em uma célula para uma ação
+  pelo teclado.
+
+## Props
+
+<PropTable name="DataTable" />
+
+## HTML puro
+
+Sem React, componha as classes da tabela — estado de ordenação e seleção, rótulos dos checkboxes e
+a transição de carregamento ficam com você:
+
+```html
+<div class="lyra-table-wrap">
+  <div class="lyra-table-scroll">
+    <table class="lyra-table lyra-table--hover">
+      <thead>
+        <tr>
+          <th class="lyra-table__check">
+            <input class="lyra-checkbox" type="checkbox" aria-label="Selecionar todos" />
+          </th>
+          <th aria-sort="ascending">
+            <button class="lyra-table__sortbtn lyra-table__sortbtn--active" type="button">
+              Projeto
+            </button>
+          </th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="lyra-table__row--selected">
+          <td class="lyra-table__check">
+            <input class="lyra-checkbox" type="checkbox" aria-label="Selecionar Atlas" checked />
+          </td>
+          <td class="lyra-table__primary">Atlas</td>
+          <td>Saudável</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+```

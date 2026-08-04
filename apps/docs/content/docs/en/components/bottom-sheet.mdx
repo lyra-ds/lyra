@@ -1,0 +1,68 @@
+---
+title: BottomSheet
+description: A controlled mobile-first modal sheet anchored to the bottom of the viewport.
+---
+
+# BottomSheet
+
+BottomSheet presents a focused task from the bottom edge of the viewport. Choose it for a
+mobile-first secondary task; choose Drawer for a side panel that fits a desktop workflow.
+
+## Examples
+
+<Example id="basic" title="Project details">
+  Provide a visible `title` for both the header and the sheet's accessible name. Pass `closeLabel`
+  whenever the default English close-button name is not appropriate for the product.
+</Example>
+
+<Example id="labelled-without-title" title="An action sheet without a visible heading">
+  When the sheet has no visible `title`, `aria-label` is required to name the modal dialog. The
+  localized `closeLabel` still names the close button.
+</Example>
+
+## When to use
+
+Use BottomSheet for a short, mobile-first task or details that should rise from the bottom of the
+current view.
+
+Reach for something else when:
+
+- **The task belongs in a side panel, especially on desktop** — use Drawer.
+- **A blocking decision needs a centred, explicit modal** — use Dialog.
+- **The content is anchored to a small control and should not block the page** — use Popover.
+
+## Accessibility
+
+- BottomSheet is a portaled `role="dialog"` with `aria-modal="true"`. A visible `title` labels it
+  with `aria-labelledby`; without a title, a translated `aria-label` is required.
+- On open, focus moves to the first focusable element in the sheet, or the sheet itself, and stays
+  trapped there. Background scroll is locked, and focus returns to the opener after `open` closes.
+- Escape, the close button and a genuine backdrop click call `onClose`. The backdrop records where
+  mousedown began, so dragging from the sheet onto the backdrop cannot dismiss it.
+- The sheet is portaled to `document.body` unless `container` supplies another portal host. It
+  remains mounted for its animated exit; reduced-motion preferences disable the animation.
+- The close button defaults to the English accessible name "Close". Pass `closeLabel` to translate
+  it.
+
+## Props
+
+<PropTable name="BottomSheet" />
+
+## Plain HTML
+
+Without React, compose the same classes — you own open state, portal placement, focus trapping,
+scroll locking, Escape and the guarded backdrop-close behavior:
+
+```html
+<div class="lyra-bottomsheet-overlay">
+  <div class="lyra-bottomsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="lyra-bottomsheet__header">
+      <h2 class="lyra-bottomsheet__title" id="sheet-title">Project details</h2>
+      <button class="lyra-bottomsheet__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="lyra-bottomsheet__body">
+      Review the latest milestone, owners and activity before you continue.
+    </div>
+  </div>
+</div>
+```

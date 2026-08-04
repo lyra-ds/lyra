@@ -138,6 +138,15 @@ import { ActionBarSelection } from './action-bar/selection';
 import { ActionBarCustomActions } from './action-bar/custom-actions';
 import { ToastProviderBasic } from './toast-provider/basic';
 import { ToastProviderDuration } from './toast-provider/duration';
+import { DataTableBasic } from './data-table/basic';
+import { DataTableSortableSelectable } from './data-table/sortable-selectable';
+import { DataTableLoading } from './data-table/loading';
+import { PersonCellBasic } from './person-cell/basic';
+import { PersonCellInDataTable } from './person-cell/in-data-table';
+import { PopoverBasic } from './popover/basic';
+import { PopoverControlled } from './popover/controlled';
+import { BottomSheetBasic } from './bottom-sheet/basic';
+import { BottomSheetLabelledWithoutTitle } from './bottom-sheet/labelled-without-title';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -203,6 +212,23 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'toast-provider': {
     basic: ToastProviderBasic,
     duration: ToastProviderDuration,
+  },
+  'data-table': {
+    basic: DataTableBasic,
+    'sortable-selectable': DataTableSortableSelectable,
+    loading: DataTableLoading,
+  },
+  'person-cell': {
+    basic: PersonCellBasic,
+    'in-data-table': PersonCellInDataTable,
+  },
+  popover: {
+    basic: PopoverBasic,
+    controlled: PopoverControlled,
+  },
+  'bottom-sheet': {
+    basic: BottomSheetBasic,
+    'labelled-without-title': BottomSheetLabelledWithoutTitle,
   },
   footer: {
     basic: FooterBasic,
