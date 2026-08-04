@@ -140,6 +140,24 @@ export { Combobox } from './combobox';
 export type { ComboboxOption, ComboboxProps } from './combobox';
 export { TimeZonePicker } from './time-zone-picker';
 export type { TimeZoneOption, TimeZonePickerLabels, TimeZonePickerProps } from './time-zone-picker';
+export { RecurrenceSelector, describeRecurrence } from './recurrence-selector';
+export type {
+  RecurrenceConflict,
+  RecurrenceEnd,
+  RecurrenceRule,
+  RecurrenceSelectorLabels,
+  RecurrenceSelectorProps,
+} from './recurrence-selector';
+export { WeeklyScheduleEditor } from './weekly-schedule-editor';
+export type {
+  DateException,
+  TimeRange,
+  WeeklySchedule,
+  WeeklyScheduleEditorLabels,
+  WeeklyScheduleEditorProps,
+} from './weekly-schedule-editor';
+export { SlotPicker } from './slot-picker';
+export type { Slot, SlotPickerLabels, SlotPickerProps } from './slot-picker';
 
 export { Table } from './table';
 export type { TableColumn, TableProps } from './table';

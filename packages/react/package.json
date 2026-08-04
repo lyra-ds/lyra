@@ -596,6 +596,36 @@
         "default": "./dist/time-zone-picker.cjs"
       }
     },
+    "./recurrence-selector": {
+      "import": {
+        "types": "./dist/recurrence-selector.d.ts",
+        "default": "./dist/recurrence-selector.js"
+      },
+      "require": {
+        "types": "./dist/recurrence-selector.d.cts",
+        "default": "./dist/recurrence-selector.cjs"
+      }
+    },
+    "./weekly-schedule-editor": {
+      "import": {
+        "types": "./dist/weekly-schedule-editor.d.ts",
+        "default": "./dist/weekly-schedule-editor.js"
+      },
+      "require": {
+        "types": "./dist/weekly-schedule-editor.d.cts",
+        "default": "./dist/weekly-schedule-editor.cjs"
+      }
+    },
+    "./slot-picker": {
+      "import": {
+        "types": "./dist/slot-picker.d.ts",
+        "default": "./dist/slot-picker.js"
+      },
+      "require": {
+        "types": "./dist/slot-picker.d.cts",
+        "default": "./dist/slot-picker.cjs"
+      }
+    },
     "./table": {
       "import": {
         "types": "./dist/table.d.ts",
@@ -1424,6 +1454,36 @@
         "react-dom"
       ],
       "limit": "0.7 kB"
+    },
+    {
+      "name": "RecurrenceSelector (DatePicker composition)",
+      "path": "dist/recurrence-selector.js",
+      "import": "{ RecurrenceSelector }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "7 kB"
+    },
+    {
+      "name": "WeeklyScheduleEditor (Popover and local inputs)",
+      "path": "dist/weekly-schedule-editor.js",
+      "import": "{ WeeklyScheduleEditor }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "14.5 kB"
+    },
+    {
+      "name": "SlotPicker (Calendar and TimeZonePicker composition)",
+      "path": "dist/slot-picker.js",
+      "import": "{ SlotPicker }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "14 kB"
     }
   ]
 }

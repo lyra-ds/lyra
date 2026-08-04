@@ -19,7 +19,7 @@ function Controls() {
       <button type="button" onClick={() => error('Save failed')}>
         Error
       </button>
-      <button type="button" onClick={() => toast('Per-toast timeout', { duration: 20 })}>
+      <button type="button" onClick={() => toast('Per-toast timeout', { duration: 300 })}>
         Per-toast timeout
       </button>
       <button
@@ -56,7 +56,9 @@ afterEach(async () => {
 
 describe('ToastProvider', () => {
   it('auto-dismisses a queued toast after its configured duration', async () => {
-    const screen = await render(<ToastHarness duration={20} />);
+    // 20ms raced the presence assertion (the toast could dismiss before the
+    // locator's first poll saw it) — 300ms is still fast and race-free.
+    const screen = await render(<ToastHarness duration={300} />);
     await userEvent.click(screen.container.querySelector<HTMLButtonElement>('button')!);
 
     await expect.element(screen.getByRole('status')).toHaveTextContent('Information saved');
