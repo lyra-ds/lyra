@@ -541,3 +541,10 @@
     padding-right: 0;
   }
 }
+
+/* Opt-in soft wrapping keeps long code tokens inside the panel without changing default scrolling. */
+.lyra-code--wrap .lyra-code__pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+}

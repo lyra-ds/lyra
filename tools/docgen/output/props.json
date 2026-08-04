@@ -154,6 +154,12 @@
         "description": "Draw line numbers beside descendants whose class list includes `line`."
       },
       {
+        "name": "wrap",
+        "type": "boolean",
+        "optional": true,
+        "description": "Soft-wrap code lines and break long tokens instead of allowing horizontal overflow."
+      },
+      {
         "name": "copyLabel",
         "type": "ReactNode",
         "optional": true,

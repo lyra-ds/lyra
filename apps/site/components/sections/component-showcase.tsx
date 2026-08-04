@@ -65,6 +65,7 @@ export function ComponentPreview() {
             <CodeBlock
               language="tsx"
               lineNumbers
+              wrap
               copyLabel={t('showcaseCopy')}
               copiedLabel={t('showcaseCopied')}
               copyText={code}

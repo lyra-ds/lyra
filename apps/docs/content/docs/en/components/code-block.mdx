@@ -20,6 +20,12 @@ then decide whether people need line numbers or a copy action for the snippet.
   shape; another highlighter needs to emit it too.
 </Example>
 
+<Example id="wrap" title="Wrapping long lines" layout="block">
+  Add `wrap` when code appears in a narrow space and long lines should remain visible instead of
+  scrolling horizontally. It preserves intentional line breaks while breaking long tokens when
+  needed.
+</Example>
+
 <Example id="copy-text" title="Copying a canonical value" layout="block">
   `copyText` can differ from the rendered code. Without it, the button copies the rendered text of
   the `<pre>`, which is usually the value people expect to paste.

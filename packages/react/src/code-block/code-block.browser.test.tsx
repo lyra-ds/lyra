@@ -77,6 +77,31 @@ describe('CodeBlock', () => {
     expect(getComputedStyle(pre).boxShadow).not.toBe('none');
   });
 
+  it('soft-wraps long code only when wrap is enabled', async () => {
+    const longLine = 'constverylongidentifierthatmustbreakratherthanoverflowthecodepanel'.repeat(
+      20,
+    );
+    const withWrap = await render(
+      <CodeBlock wrap style={{ width: 120 }}>
+        {longLine}
+      </CodeBlock>,
+    );
+    const wrappedPre = withWrap.container.querySelector<HTMLPreElement>('.lyra-code__pre')!;
+
+    await expect.element(wrappedPre).toBeInTheDocument();
+    expect(getComputedStyle(wrappedPre).whiteSpace).toBe('pre-wrap');
+    expect(wrappedPre.scrollWidth).toBeLessThanOrEqual(wrappedPre.clientWidth);
+    expect(wrappedPre.hasAttribute('tabindex')).toBe(false);
+    await cleanup();
+
+    const withoutWrap = await render(<CodeBlock style={{ width: 120 }}>{longLine}</CodeBlock>);
+    const defaultPre = withoutWrap.container.querySelector<HTMLPreElement>('.lyra-code__pre')!;
+
+    await expect.element(defaultPre).toBeInTheDocument();
+    expect(getComputedStyle(defaultPre).whiteSpace).toBe('pre');
+    expect(defaultPre.scrollWidth).toBeGreaterThan(defaultPre.clientWidth);
+  });
+
   it('copies its rendered pre text and announces the copied label', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
