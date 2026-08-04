@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { CommandMenu } from './command-menu';
 import { LocaleSwitcher } from './locale-switcher';
+import { MobileNav } from './mobile-nav';
 import { ThemeToggle } from './theme-toggle';
 
 export function SiteHeader({ locale }: { locale: Locale }) {
@@ -25,6 +26,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       navLabel={t('siteNavigation')}
       nav={
         <>
+          <MobileNav locale={locale} />
           <NavLink asChild active={!onComponents}>
             <Link href={`/${locale}`}>{t('navDocs')}</Link>
           </NavLink>
