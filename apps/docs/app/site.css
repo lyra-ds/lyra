@@ -9,11 +9,42 @@
   text-decoration: none;
 }
 
+/* The documentation rail moves into a Drawer below the Shell stacking breakpoint. */
+.lw-mobile-nav__trigger {
+  display: none;
+}
+
 /* Below 900px the header row cannot hold brand + nav + five actions: it overflowed the viewport and
    scrolled the whole page sideways. Wrap the nav onto its own row instead of hiding navigation, and
    drop the CTA, whose only destination is the Components link one row below. */
 @media (max-width: 900px) {
   .lw-header__cta {
+    display: none;
+  }
+
+  .lyra-navbar__nav .lw-mobile-nav__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .lyra-navbar__nav .lw-mobile-nav__trigger:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .lyra-navbar__nav .lw-mobile-nav__trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+
+  .lyra-shell--page .lyra-shell__sidebar {
     display: none;
   }
 }

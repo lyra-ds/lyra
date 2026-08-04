@@ -26,8 +26,12 @@ function itemClass(active: boolean) {
  */
 function useRevealActiveEntry() {
   useEffect(() => {
-    const active = document.querySelector<HTMLElement>('.lyra-sbgroup__item--active');
-    const node = active?.closest<HTMLElement>('.lyra-shell__sidebar');
+    // Both the hidden Shell rail and the mobile Drawer can hold a copy of this list; reveal the
+    // visible one (offsetParent is null inside display: none).
+    const active = [...document.querySelectorAll<HTMLElement>('.lyra-sbgroup__item--active')].find(
+      (entry) => entry.offsetParent !== null,
+    );
+    const node = active?.closest<HTMLElement>('.lyra-shell__sidebar, .lyra-drawer__body');
     if (!node || !active) return;
 
     const visible = node.clientHeight;
