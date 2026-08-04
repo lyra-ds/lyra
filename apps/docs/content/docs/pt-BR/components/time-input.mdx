@@ -1,0 +1,87 @@
+---
+title: TimeInput
+description: Um input de hora em texto de 24 horas com ajustes por teclado e stepper.
+---
+
+# TimeInput
+
+TimeInput aceita uma hora de 24 horas sem abrir um picker. Escolha-o quando digitar um valor preciso
+for o caminho eficiente; use TimePicker quando a pessoa precisar navegar por uma lista de horários
+disponíveis.
+
+## Exemplos
+
+<Example id="basic" title="Uma hora de 24 horas normalizada">
+  A pessoa pode digitar `9`, `0930` ou `9:5`. Blur ou Enter interpreta uma entrada válida, normaliza
+  para `HH:mm` e chama `onChange` com esse valor.
+</Example>
+
+<Example id="range" title="Limites e incrementos">
+  `min` e `max` limitam valores confirmados e ajustados. As setas e os steppers avançam por `step`;
+  mantenha Shift com uma seta para avançar uma hora.
+</Example>
+
+<Example id="labels" title="Controles falados traduzidos">
+  Use `labels` para substituir os nomes ingleses dos steppers e fornecer o `aria-valuetext` falado
+  de uma hora selecionada. Labels não especificados mantêm os padrões em inglês.
+</Example>
+
+## Quando usar
+
+Use TimeInput quando a pessoa conhece ou consegue digitar com eficiência uma única hora de 24 horas.
+
+Prefira outro componente quando:
+
+- **Os horários disponíveis precisam ser navegados em uma lista** — use TimePicker, feito para esse
+  fluxo de seleção.
+- **Só é necessária uma data** — use um controle específico de data em vez de aceitar uma hora ambígua.
+- **Uma duração está sendo informada** — use campos de duração separados ou um controle que nomeia
+  unidades, em vez de tratá-la como uma hora do relógio.
+
+## Acessibilidade
+
+- Renderiza um input de texto com `role="spinbutton"`, input mode numérico e `aria-valuemin`,
+  `aria-valuemax` e `aria-valuenow` em minutos. Um `label` fornecido é conectado por `htmlFor`.
+- Os dois botões de stepper para mouse saem da ordem de tabulação; quem usa teclado ajusta o input em
+  foco com ArrowUp e ArrowDown. Shift mais uma seta move uma hora.
+- Um valor selecionado recebe `aria-valuetext` de `labels.valueText`; use `labels` para traduzir os
+  nomes ingleses padrão dos steppers e o valor falado.
+- Texto inválido é preservado intencionalmente em blur ou Enter, marcado como inválido e não chama
+  `onChange`. Um valor válido é normalizado e confirmado; um valor vazio intencional confirma `null`.
+- `error` substitui `hint`, é conectado por `aria-describedby` e define `aria-invalid`. `invalid` pode
+  definir a aparência de inválido sem uma mensagem de erro visível.
+
+## Props
+
+<PropTable name="TimeInput" />
+
+## HTML puro
+
+Sem React, use a mesma estrutura e implemente interpretação, limite e comportamento de teclado:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="start-time">Start time</label>
+  <span class="lyra-timeinput">
+    <input
+      class="lyra-input"
+      id="start-time"
+      type="text"
+      role="spinbutton"
+      inputmode="numeric"
+      aria-valuemin="0"
+      aria-valuemax="1439"
+      aria-valuenow="570"
+      aria-valuetext="9 hours and 30 minutes"
+      value="09:30"
+    />
+    <span class="lyra-timeinput__steppers">
+      <button class="lyra-timeinput__step" type="button" tabindex="-1" aria-label="Later">▲</button>
+      <button class="lyra-timeinput__step" type="button" tabindex="-1" aria-label="Earlier">
+        ▼
+      </button>
+    </span>
+  </span>
+  <span class="lyra-hint">Enter a 24-hour time.</span>
+</div>
+```

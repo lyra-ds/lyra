@@ -1,0 +1,70 @@
+---
+title: CheckboxGroup
+description: Um grupo rotulado de escolhas Checkbox para seleções que podem ser combinadas.
+---
+
+# CheckboxGroup
+
+CheckboxGroup renderiza um conjunto completo e rotulado de controles Checkbox a partir de opções.
+Escolha-o quando a pessoa puder selecionar qualquer combinação de uma decisão; use RadioGroup quando
+exatamente uma resposta for permitida.
+
+## Exemplos
+
+<Example id="basic" title="Várias escolhas independentes">
+  `defaultValue` inicia um grupo não controlado com valores selecionados. Um `hint` por opção dá
+  contexto a uma escolha individual sem separá-la de seu rótulo.
+</Example>
+
+<Example id="row-and-error" title="Um grupo compacto com validação">
+  Uma linha funciona para rótulos curtos. `error` substitui `hint`, e uma opção desabilitada
+  continua visível quando sua ausência deixaria os formatos disponíveis confusos.
+</Example>
+
+## Quando usar
+
+Use CheckboxGroup para um conjunto relacionado de opções em que zero, um ou vários valores podem ser
+selecionados e o conjunto todo precisa de um rótulo ou mensagem de validação.
+
+Prefira outro componente quando:
+
+- **Exatamente uma opção deve ser selecionada** — use RadioGroup para deixar explícito o modelo de
+  seleção.
+- **Cada escolha precisa de posição ou conteúdo ao redor próprios** — componha itens Checkbox avulsos.
+- **A mudança tem efeito imediato** — use Switch para uma única configuração aplicada ao ser alternada.
+
+## Acessibilidade
+
+- Renderiza uma `div` com `role="group"`; um `label` fornecido é conectado por `aria-labelledby`
+  gerado, combinado com qualquer id fornecido.
+- Os controles compostos são inputs checkbox nativos. Espaço alterna o checkbox em foco e cada opção
+  permanece selecionada de forma independente.
+- `hint` e `error` aparecem visivelmente abaixo das escolhas, com precedência de `error`. O componente
+  não conecta nenhuma das mensagens com `aria-describedby`.
+- No modo controlado, `onChange` informa o próximo `string[]` completo; quem chama deve atualizar
+  `value` para refletir a mudança.
+
+## Props
+
+<PropTable name="CheckboxGroup" />
+
+## HTML puro
+
+Sem React, componha checkboxes nativos nas classes compartilhadas de campo e grupo de escolhas:
+
+```html
+<div class="lyra-field" role="group" aria-labelledby="notification-channels">
+  <span class="lyra-label" id="notification-channels">Notification channels</span>
+  <div class="lyra-choicegroup">
+    <label class="lyra-check-row">
+      <input class="lyra-checkbox" type="checkbox" name="channels" value="email" checked />
+      <span>Email</span>
+    </label>
+    <label class="lyra-check-row">
+      <input class="lyra-checkbox" type="checkbox" name="channels" value="push" />
+      <span>Push notifications</span>
+    </label>
+  </div>
+  <span class="lyra-hint">Choose every channel you want to use.</span>
+</div>
+```

@@ -1,0 +1,71 @@
+---
+title: RadioGroup
+description: A labelled group of visible radio choices for one mutually exclusive selection.
+---
+
+# RadioGroup
+
+RadioGroup renders a complete, labelled set of Radio controls from options. Choose it when one
+decision needs shared field treatment; use standalone Radio for custom composition, or Select when
+the known list is better collapsed.
+
+## Examples
+
+<Example id="basic" title="One visible choice">
+  `defaultValue` seeds an uncontrolled selection, while each option can add a short `hint` where the
+  label alone is not enough to make the trade-off clear.
+</Example>
+
+<Example id="row" title="A compact row">
+  Set `direction="row"` only when the labels stay short and comparable. The options still share one
+  native name, so the browser preserves mutual exclusion and arrow-key navigation.
+</Example>
+
+## When to use
+
+Use RadioGroup for one choice from a short, visible list that benefits from a shared label, help text
+or validation message.
+
+Reach for something else when:
+
+- **The controls need custom composition or placement** — use standalone Radio and give every item
+  the same `name`.
+- **The list is better collapsed or is too long to scan** — use Select for a known list, or Combobox
+  when people need filtering.
+- **More than one choice can be true** — use CheckboxGroup rather than forcing a single answer.
+
+## Accessibility
+
+- Renders a `div` with `role="radiogroup"`; when `label` is present, its generated label id is added
+  to `aria-labelledby` alongside any id you provide.
+- Its composed controls are native radio inputs with one shared `name` (generated when `name` is
+  omitted). Native arrow keys move through the group and selecting one clears the others.
+- `hint` and `error` are visible messages below the options. `error` replaces `hint`; neither is
+  programmatically connected to the radiogroup by this component.
+- A controlled `value` stays owned by the caller. Update it in `onChange` after the component reports
+  the newly selected string.
+
+## Props
+
+<PropTable name="RadioGroup" />
+
+## Plain HTML
+
+Without React, use a radiogroup wrapper, a shared native name and the same field classes:
+
+```html
+<div class="lyra-field" role="radiogroup" aria-labelledby="contact-preference">
+  <span class="lyra-label" id="contact-preference">Contact preference</span>
+  <div class="lyra-choicegroup">
+    <label class="lyra-check-row">
+      <input class="lyra-radio" type="radio" name="contact" value="email" checked />
+      <span>Email</span>
+    </label>
+    <label class="lyra-check-row">
+      <input class="lyra-radio" type="radio" name="contact" value="phone" />
+      <span>Phone</span>
+    </label>
+  </div>
+  <span class="lyra-hint">Choose the best way to reach you.</span>
+</div>
+```

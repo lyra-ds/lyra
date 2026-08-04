@@ -83,6 +83,12 @@ const manifest: ComponentEntry[] = [
   { slug: 'cookie-banner', name: 'CookieBanner', group: 'feedback' },
   { slug: 'drawer', name: 'Drawer', group: 'overlay' },
   { slug: 'create-workspace-dialog', name: 'CreateWorkspaceDialog', group: 'overlay' },
+  { slug: 'radio-group', name: 'RadioGroup', group: 'form' },
+  { slug: 'checkbox-group', name: 'CheckboxGroup', group: 'form' },
+  { slug: 'fieldset', name: 'Fieldset', group: 'form' },
+  { slug: 'separator', name: 'Separator', group: 'layout' },
+  { slug: 'time-input', name: 'TimeInput', group: 'form' },
+  { slug: 'segmented-ring', name: 'SegmentedRing', group: 'display' },
 ];
 
 export const components: ComponentEntry[] = [...manifest].sort((a, b) =>

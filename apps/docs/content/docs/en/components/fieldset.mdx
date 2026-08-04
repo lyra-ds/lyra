@@ -1,0 +1,79 @@
+---
+title: Fieldset
+description: A semantic fieldset for related controls, with responsive rows for compact form layouts.
+---
+
+# Fieldset
+
+Fieldset gives related controls one semantic boundary, legend and optional description. Choose it for
+one form decision made from several fields; use a plain layout container when the content is not a
+single form concept.
+
+## Examples
+
+<Example id="basic" title="Related contact fields" layout="block">
+  `legend` names the group for both sighted and assistive-technology users. Put the supporting
+  context in `description`, then use FormRow only where fields genuinely belong side by side.
+</Example>
+
+<Example id="columns" title="An explicit column count" layout="block">
+  FormRow normally counts its children. Pass `columns` when a row needs a fixed equal-width grid,
+  and it still collapses to one column on small screens.
+</Example>
+
+## When to use
+
+Use Fieldset when several controls answer one named form question, such as contact details, an address
+or delivery preferences.
+
+Reach for something else when:
+
+- **The controls do not form one semantic question** — use Stack or Grid for visual layout without
+  implying a relationship to assistive technology.
+- **One value needs a label and help text** — use the individual field component rather than adding a
+  fieldset just for spacing.
+- **One choice is made from visible alternatives** — use RadioGroup or CheckboxGroup, which supplies
+  the option controls and shared field treatment.
+
+## Accessibility
+
+- Renders a native `<fieldset>` and, when supplied, a native `<legend>`. That is the semantic group
+  name announced with its descendant controls.
+- `description` is a visible paragraph below the legend. It is not connected with `aria-describedby`
+  by the component, so add that relationship yourself when it is required for a particular control.
+- FormRow is only a responsive `div` grid. It adds no landmark or group semantics; Fieldset provides
+  the semantic boundary in these examples.
+
+## Props
+
+<PropTable name="Fieldset" />
+
+### FormRow
+
+FormRow places related form fields in equal-width columns and uses the number of children when
+`columns` is omitted.
+
+<PropTable name="FormRow" />
+
+## Plain HTML
+
+Without React, retain the native fieldset and set `--lyra-formrow-columns` for each equal-width row:
+
+```html
+<fieldset class="lyra-fieldset">
+  <legend class="lyra-fieldset__legend">Contact details</legend>
+  <p class="lyra-fieldset__desc">How we can reach you about this order.</p>
+  <div class="lyra-fieldset__fields">
+    <div class="lyra-formrow" style="--lyra-formrow-columns: repeat(2, minmax(0, 1fr));">
+      <div class="lyra-field">
+        <label class="lyra-label" for="first-name">First name</label>
+        <input class="lyra-input" id="first-name" />
+      </div>
+      <div class="lyra-field">
+        <label class="lyra-label" for="last-name">Last name</label>
+        <input class="lyra-input" id="last-name" />
+      </div>
+    </div>
+  </div>
+</fieldset>
+```

@@ -1,0 +1,74 @@
+---
+title: SegmentedRing
+description: Um anel de progresso segmentado para partes nomeadas de um total.
+---
+
+# SegmentedRing
+
+SegmentedRing mostra como categorias nomeadas contribuem para um total. Escolha-o quando a composição
+for tão importante quanto o progresso; use Progress quando uma única fração concluída for o único
+valor relevante.
+
+## Exemplos
+
+<Example id="basic" title="Um resumo de sessões nomeado" layout="plain">
+  Dê a cada segmento um `label` legível e um `tone` semântico. `centerValue` e `centerLabel`
+  oferecem o resumo visual enquanto a legenda explica cada parte.
+</Example>
+
+<Example id="compact" title="Um anel compacto sem legenda" layout="plain">
+  `size="md"` é adequado para uma superfície menor. `showLegend={false}` remove somente a legenda
+  visual; o resumo textual acessível continua disponível.
+</Example>
+
+## Quando usar
+
+Use SegmentedRing para mostrar um número pequeno de partes positivas e nomeadas cujas proporções devem
+ser compreendidas rapidamente.
+
+Prefira outro componente quando:
+
+- **Só uma fração conhecida precisa ser acompanhada** — use Progress, que apresenta um único valor de
+  conclusão de modo mais direto.
+- **O valor é indeterminado** — use Spinner em vez de sugerir uma parte mensurável do trabalho.
+- **As pessoas precisam comparar muitas categorias com precisão** — use uma tabela ou outra visualização
+  de dados com valores exatos, em vez de exigir que um anel carregue informação densa.
+
+## Acessibilidade
+
+- O SVG, o valor visual central e a legenda visual ficam todos ocultos com `aria-hidden="true"` para
+  que os mesmos números não sejam anunciados várias vezes.
+- Um resumo textual `.lyra-visually-hidden` é a única fonte acessível do componente. Ele inclui o
+  rótulo/valor central quando presentes e, depois, cada segmento positivo e finito como valor e rótulo.
+- `showLegend={false}` remove apenas a lista visível. Não remove nem altera esse resumo oculto.
+- A cor do segmento é contexto visual, não o nome acessível. Dê a cada segmento um `label` útil e não
+  dependa somente de um `tone` ou `color` personalizado para comunicar significado.
+
+## Props
+
+<PropTable name="SegmentedRing" />
+
+## HTML puro
+
+Sem React, desenhe os arcos SVG, mas mantenha um único equivalente textual e oculte conteúdo visual
+duplicado de tecnologias assistivas:
+
+```html
+<div class="lyra-ring">
+  <span class="lyra-ring__wrap" aria-hidden="true">
+    <svg width="160" height="160" viewBox="0 0 160 160" aria-hidden="true">
+      <circle cx="80" cy="80" r="74" fill="none" stroke="var(--surface-sunken)" stroke-width="12" />
+    </svg>
+    <span class="lyra-ring__center">
+      <span class="lyra-ring__num">5 of 8</span>
+      <span class="lyra-ring__cap">Sessions</span>
+    </span>
+  </span>
+  <span class="lyra-visually-hidden">Sessions 5 of 8 — 3 Completed, 2 Scheduled</span>
+  <ul class="lyra-ring__legend" aria-hidden="true">
+    <li class="lyra-ring__li">
+      <span class="lyra-ring__swatch"></span>Completed <span class="lyra-ring__val">3</span>
+    </li>
+  </ul>
+</div>
+```

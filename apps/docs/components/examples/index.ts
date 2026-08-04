@@ -114,6 +114,20 @@ import { BrandAsChild } from './brand/as-child';
 import { SegmentedControlBasic } from './segmented-control/basic';
 import { SegmentedControlDisabled } from './segmented-control/disabled';
 import { CommandPaletteTrigger } from './command-palette/trigger';
+import { RadioGroupBasic } from './radio-group/basic';
+import { RadioGroupRow } from './radio-group/row';
+import { CheckboxGroupBasic } from './checkbox-group/basic';
+import { CheckboxGroupRowAndError } from './checkbox-group/row-and-error';
+import { FieldsetBasic } from './fieldset/basic';
+import { FieldsetColumns } from './fieldset/columns';
+import { SeparatorBasic } from './separator/basic';
+import { SeparatorLabel } from './separator/label';
+import { SeparatorVertical } from './separator/vertical';
+import { TimeInputBasic } from './time-input/basic';
+import { TimeInputRange } from './time-input/range';
+import { TimeInputLabels } from './time-input/labels';
+import { SegmentedRingBasic } from './segmented-ring/basic';
+import { SegmentedRingCompact } from './segmented-ring/compact';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -307,6 +321,32 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'segmented-control': {
     basic: SegmentedControlBasic,
     disabled: SegmentedControlDisabled,
+  },
+  'radio-group': {
+    basic: RadioGroupBasic,
+    row: RadioGroupRow,
+  },
+  'checkbox-group': {
+    basic: CheckboxGroupBasic,
+    'row-and-error': CheckboxGroupRowAndError,
+  },
+  fieldset: {
+    basic: FieldsetBasic,
+    columns: FieldsetColumns,
+  },
+  separator: {
+    basic: SeparatorBasic,
+    label: SeparatorLabel,
+    vertical: SeparatorVertical,
+  },
+  'time-input': {
+    basic: TimeInputBasic,
+    range: TimeInputRange,
+    labels: TimeInputLabels,
+  },
+  'segmented-ring': {
+    basic: SegmentedRingBasic,
+    compact: SegmentedRingCompact,
   },
   'workspace-switcher': {
     selection: WorkspaceSwitcherSelection,

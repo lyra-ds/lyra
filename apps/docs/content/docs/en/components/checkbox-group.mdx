@@ -1,0 +1,70 @@
+---
+title: CheckboxGroup
+description: A labelled group of checkbox choices for selections that can be combined.
+---
+
+# CheckboxGroup
+
+CheckboxGroup renders a complete, labelled set of Checkbox controls from options. Choose it when
+people can select any combination from one decision; use RadioGroup when exactly one answer is
+allowed.
+
+## Examples
+
+<Example id="basic" title="Several independent choices">
+  `defaultValue` starts an uncontrolled group with selected values. Option-level `hint` gives
+  context to an individual choice without separating it from its label.
+</Example>
+
+<Example id="row-and-error" title="A compact group with validation">
+  A row works for short labels. `error` replaces `hint`, and a disabled option remains visible when
+  its absence would make the available formats confusing.
+</Example>
+
+## When to use
+
+Use CheckboxGroup for a related set of options where zero, one or many values can be selected and the
+whole set needs one label or validation message.
+
+Reach for something else when:
+
+- **Exactly one option must be selected** — use RadioGroup so the selection model is explicit.
+- **Each choice needs its own position or surrounding content** — compose standalone Checkbox items.
+- **The change takes effect immediately** — use Switch for a single setting that is applied as it is
+  toggled.
+
+## Accessibility
+
+- Renders a `div` with `role="group"`; a supplied `label` is connected through generated
+  `aria-labelledby`, combined with any id you provide.
+- Its composed controls are native checkbox inputs. Space toggles the focused checkbox and every
+  option remains independently checked.
+- `hint` and `error` render visibly below the choices, with `error` taking precedence. The component
+  does not attach either message with `aria-describedby`.
+- In controlled mode, `onChange` reports the full next `string[]`; the caller must update `value` to
+  reflect the change.
+
+## Props
+
+<PropTable name="CheckboxGroup" />
+
+## Plain HTML
+
+Without React, compose native checkboxes in the shared field and choice-group classes:
+
+```html
+<div class="lyra-field" role="group" aria-labelledby="notification-channels">
+  <span class="lyra-label" id="notification-channels">Notification channels</span>
+  <div class="lyra-choicegroup">
+    <label class="lyra-check-row">
+      <input class="lyra-checkbox" type="checkbox" name="channels" value="email" checked />
+      <span>Email</span>
+    </label>
+    <label class="lyra-check-row">
+      <input class="lyra-checkbox" type="checkbox" name="channels" value="push" />
+      <span>Push notifications</span>
+    </label>
+  </div>
+  <span class="lyra-hint">Choose every channel you want to use.</span>
+</div>
+```

@@ -1,0 +1,86 @@
+---
+title: TimeInput
+description: A 24-hour text time input with keyboard and stepper adjustments.
+---
+
+# TimeInput
+
+TimeInput accepts a 24-hour time without opening a picker. Choose it when typing a precise value is
+the efficient path; use TimePicker when people need to browse a set of available times.
+
+## Examples
+
+<Example id="basic" title="A normalised 24-hour time">
+  People can type `9`, `0930` or `9:5`. Blur or Enter parses a valid entry, normalises it to `HH:mm`
+  and calls `onChange` with that value.
+</Example>
+
+<Example id="range" title="Bounds and increments">
+  `min` and `max` clamp committed and stepped values. Arrow keys and the steppers move by `step`;
+  hold Shift with an arrow key to move by one hour.
+</Example>
+
+<Example id="labels" title="Translated spoken controls">
+  Use `labels` to replace the English stepper names and to provide the spoken `aria-valuetext` for a
+  selected time. Unspecified labels keep their English defaults.
+</Example>
+
+## When to use
+
+Use TimeInput when a person knows or can efficiently type a single 24-hour time.
+
+Reach for something else when:
+
+- **The available times need to be browsed from a list** — use TimePicker, which is designed for that
+  selection flow.
+- **Only a date is needed** — use a date-specific control rather than accepting an ambiguous time.
+- **A duration is being entered** — use separate duration fields or a control that names units instead
+  of treating it as a clock time.
+
+## Accessibility
+
+- Renders a text input with `role="spinbutton"`, numeric input mode and `aria-valuemin`,
+  `aria-valuemax` and `aria-valuenow` in minutes. A supplied `label` is connected through `htmlFor`.
+- The two mouse stepper buttons are removed from the tab order; keyboard users adjust the focused input
+  with ArrowUp and ArrowDown. Shift plus an arrow moves one hour.
+- A selected value receives `aria-valuetext` from `labels.valueText`; use `labels` to translate the
+  default English stepper names and spoken value.
+- Invalid text is deliberately preserved on blur or Enter, marked invalid, and does not call
+  `onChange`. A valid value is normalised and committed; an intentional empty value commits `null`.
+- `error` replaces `hint`, is connected through `aria-describedby`, and sets `aria-invalid`. `invalid`
+  can set invalid styling without a visible error message.
+
+## Props
+
+<PropTable name="TimeInput" />
+
+## Plain HTML
+
+Without React, use the same structure and implement parsing, clamping and keyboard behaviour yourself:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="start-time">Start time</label>
+  <span class="lyra-timeinput">
+    <input
+      class="lyra-input"
+      id="start-time"
+      type="text"
+      role="spinbutton"
+      inputmode="numeric"
+      aria-valuemin="0"
+      aria-valuemax="1439"
+      aria-valuenow="570"
+      aria-valuetext="9 hours and 30 minutes"
+      value="09:30"
+    />
+    <span class="lyra-timeinput__steppers">
+      <button class="lyra-timeinput__step" type="button" tabindex="-1" aria-label="Later">▲</button>
+      <button class="lyra-timeinput__step" type="button" tabindex="-1" aria-label="Earlier">
+        ▼
+      </button>
+    </span>
+  </span>
+  <span class="lyra-hint">Enter a 24-hour time.</span>
+</div>
+```
