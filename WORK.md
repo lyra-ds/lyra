@@ -5,6 +5,18 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 6c — RecurrenceSelector, WeeklyScheduleEditor, SlotPicker
+      (2026-08-03).** As três armadilhas nº 1 do mapa fechadas por teste: frases
+      inteiras por template no describeRecurrence (concatenação proibida — e o
+      cross-review pegou a matriz freq×interval incompleta: mensal com intervalo
+      colapsava para "every month"), o truque en-CA de agrupamento UTC preservado
+      com teste de fronteira de dia nas duas direções, e UTC/local nunca
+      misturados. Locale atravessa até o TimeZonePicker embutido (2º finding).
+      Carona: deflake dos dois testes temporizados do ToastProvider (20ms corria
+      contra o primeiro poll do locator — 300ms; 5 runs verdes seguidos).
+      Docgen 74→77. → codex (`gpt-5.6-terra`, high, worktree, 1 retry) + claude
+      (2 fixes mecânicos de teste + deflake).
+
 - [x] **Fase 8 / Onda 6b — extensão do Combobox + TimeZonePicker (2026-08-03).** O
       delta que bloqueava o picker: `group` (headers pulados pelo teclado, incluindo
       Home/End em lista filtrada), `trailing` e `keywords` (busca invisível com

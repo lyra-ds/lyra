@@ -3048,6 +3048,57 @@
     ]
   },
   {
+    "name": "RecurrenceSelector",
+    "category": "Scheduling",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>",
+    "description": "Props for RecurrenceSelector.",
+    "signature": "export declare function RecurrenceSelector(props: RecurrenceSelectorProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "RecurrenceRule | null",
+        "optional": true,
+        "description": "Controlled recurrence rule; a none frequency does not repeat."
+      },
+      {
+        "name": "defaultValue",
+        "type": "RecurrenceRule",
+        "optional": true,
+        "description": "Initial recurrence rule in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(rule: RecurrenceRule) => void",
+        "optional": true,
+        "description": "Called with the complete local-time recurrence rule after a change."
+      },
+      {
+        "name": "startDate",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Local date used as the base for recurrence presets. Default: today."
+      },
+      {
+        "name": "defaultEndCount",
+        "type": "number",
+        "optional": true,
+        "description": "Initial occurrence count when a count-bounded rule is selected."
+      },
+      {
+        "name": "conflicts",
+        "type": "RecurrenceConflict[]",
+        "optional": true,
+        "description": "Non-blocking unavailable occurrence warnings."
+      },
+      {
+        "name": "labels",
+        "type": "RecurrenceSelectorLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over English defaults."
+      }
+    ]
+  },
+  {
     "name": "SegmentedRing",
     "category": "Scheduling",
     "extends": "HTMLAttributes<HTMLDivElement>",
@@ -3095,6 +3146,129 @@
         "type": "boolean",
         "optional": true,
         "description": "Whether to render the visual legend. Default: true."
+      }
+    ]
+  },
+  {
+    "name": "SlotPicker",
+    "category": "Scheduling",
+    "extends": "HTMLAttributes<HTMLDivElement>",
+    "description": "Props for SlotPicker.",
+    "signature": "export declare function SlotPicker(props: SlotPickerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "slots",
+        "type": "Slot[]",
+        "optional": true,
+        "description": "Free slots in UTC. The component groups them by active display-zone day."
+      },
+      {
+        "name": "date",
+        "type": "string",
+        "optional": true,
+        "description": "Controlled visible local YYYY-MM-DD day."
+      },
+      {
+        "name": "defaultDate",
+        "type": "string",
+        "optional": true,
+        "description": "Initial visible local YYYY-MM-DD day."
+      },
+      {
+        "name": "onDateChange",
+        "type": "(isoDate: string) => void",
+        "optional": true,
+        "description": "Called after the visible local day changes."
+      },
+      {
+        "name": "timezone",
+        "type": "string",
+        "optional": true,
+        "description": "Controlled IANA display zone. Defaults to the browser-detected zone."
+      },
+      {
+        "name": "onTimezoneChange",
+        "type": "(zone: string) => void",
+        "optional": true,
+        "description": "Called after the active IANA display zone changes."
+      },
+      {
+        "name": "detectedZone",
+        "type": "string",
+        "optional": true,
+        "description": "IANA zone shown as detected in the embedded TimeZonePicker."
+      },
+      {
+        "name": "onConfirm",
+        "type": "(slot: Slot) => void",
+        "optional": true,
+        "description": "Called after a user confirms a selected slot. Revalidate on the server."
+      },
+      {
+        "name": "confirmLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Confirmation button text. Default: Confirm."
+      },
+      {
+        "name": "holdExpiresAt",
+        "type": "string",
+        "optional": true,
+        "description": "UTC ISO temporary-hold expiry. Its remaining duration is visible."
+      },
+      {
+        "name": "nextAvailableDate",
+        "type": "string",
+        "optional": true,
+        "description": "Local YYYY-MM-DD target for an empty-day shortcut."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "optional": true,
+        "description": "Renders six slot pills while availability loads."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Empty visible-day message."
+      },
+      {
+        "name": "fullMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Message when no slots exist in any day."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for display times and dates. Default: en-US."
+      },
+      {
+        "name": "min",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive local calendar lower limit."
+      },
+      {
+        "name": "max",
+        "type": "Date | string",
+        "optional": true,
+        "description": "Inclusive local calendar upper limit."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Summary content rendered above the calendar."
+      },
+      {
+        "name": "labels",
+        "type": "SlotPickerLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over English defaults."
       }
     ]
   },
@@ -3194,6 +3368,69 @@
         "type": "string",
         "optional": true,
         "description": "Additional class name appended to `.lyra-tzpicker`."
+      }
+    ]
+  },
+  {
+    "name": "WeeklyScheduleEditor",
+    "category": "Scheduling",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>",
+    "description": "Props for WeeklyScheduleEditor.",
+    "signature": "export declare function WeeklyScheduleEditor(props: WeeklyScheduleEditorProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "WeeklySchedule",
+        "optional": true,
+        "description": "Controlled weekly local-time availability."
+      },
+      {
+        "name": "defaultValue",
+        "type": "WeeklySchedule",
+        "optional": true,
+        "description": "Initial weekly local-time availability in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: WeeklySchedule) => void",
+        "optional": true,
+        "description": "Called after a weekday availability change."
+      },
+      {
+        "name": "exceptions",
+        "type": "DateException[]",
+        "optional": true,
+        "description": "Controlled date exceptions."
+      },
+      {
+        "name": "onExceptionsChange",
+        "type": "(exceptions: DateException[]) => void",
+        "optional": true,
+        "description": "Called after date exceptions change."
+      },
+      {
+        "name": "defaultRange",
+        "type": "TimeRange",
+        "optional": true,
+        "description": "Range created when enabling a weekday. Default: 09:00–17:00."
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+        "optional": true,
+        "description": "First displayed weekday, where 0 is Sunday. Default: 1."
+      },
+      {
+        "name": "showExceptions",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether to render date exceptions. Default: true."
+      },
+      {
+        "name": "labels",
+        "type": "WeeklyScheduleEditorLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over English defaults."
       }
     ]
   },

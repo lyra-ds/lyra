@@ -1487,6 +1487,28 @@ export declare function Popover(props: PopoverProps): JSX.Element;
 
 ## Scheduling
 
+### RecurrenceSelector
+```ts
+/** Props for RecurrenceSelector. */
+export interface RecurrenceSelectorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
+  /** Controlled recurrence rule; a none frequency does not repeat. */
+  value?: RecurrenceRule | null;
+  /** Initial recurrence rule in uncontrolled mode. */
+  defaultValue?: RecurrenceRule;
+  /** Called with the complete local-time recurrence rule after a change. */
+  onChange?: (rule: RecurrenceRule) => void;
+  /** Local date used as the base for recurrence presets. Default: today. */
+  startDate?: Date | string;
+  /** Initial occurrence count when a count-bounded rule is selected. */
+  defaultEndCount?: number;
+  /** Non-blocking unavailable occurrence warnings. */
+  conflicts?: RecurrenceConflict[];
+  /** Translatable visible and accessible labels, merged over English defaults. */
+  labels?: RecurrenceSelectorLabels;
+}
+export declare function RecurrenceSelector(props: RecurrenceSelectorProps): JSX.Element;
+```
+
 ### SegmentedRing
 ```ts
 /** Props for SegmentedRing. */
@@ -1507,6 +1529,52 @@ export interface SegmentedRingProps extends HTMLAttributes<HTMLDivElement> {
   showLegend?: boolean;
 }
 export declare function SegmentedRing(props: SegmentedRingProps): JSX.Element;
+```
+
+### SlotPicker
+```ts
+/** Props for SlotPicker. */
+export interface SlotPickerProps extends HTMLAttributes<HTMLDivElement> {
+  /** Free slots in UTC. The component groups them by active display-zone day. */
+  slots?: Slot[];
+  /** Controlled visible local YYYY-MM-DD day. */
+  date?: string;
+  /** Initial visible local YYYY-MM-DD day. */
+  defaultDate?: string;
+  /** Called after the visible local day changes. */
+  onDateChange?: (isoDate: string) => void;
+  /** Controlled IANA display zone. Defaults to the browser-detected zone. */
+  timezone?: string;
+  /** Called after the active IANA display zone changes. */
+  onTimezoneChange?: (zone: string) => void;
+  /** IANA zone shown as detected in the embedded TimeZonePicker. */
+  detectedZone?: string;
+  /** Called after a user confirms a selected slot. Revalidate on the server. */
+  onConfirm?: (slot: Slot) => void;
+  /** Confirmation button text. Default: Confirm. */
+  confirmLabel?: string;
+  /** UTC ISO temporary-hold expiry. Its remaining duration is visible. */
+  holdExpiresAt?: string;
+  /** Local YYYY-MM-DD target for an empty-day shortcut. */
+  nextAvailableDate?: string;
+  /** Renders six slot pills while availability loads. */
+  loading?: boolean;
+  /** Empty visible-day message. */
+  emptyMessage?: string;
+  /** Message when no slots exist in any day. */
+  fullMessage?: string;
+  /** BCP 47 locale used for display times and dates. Default: en-US. */
+  locale?: string;
+  /** Inclusive local calendar lower limit. */
+  min?: Date | string;
+  /** Inclusive local calendar upper limit. */
+  max?: Date | string;
+  /** Summary content rendered above the calendar. */
+  children?: ReactNode;
+  /** Translatable visible and accessible labels, merged over English defaults. */
+  labels?: SlotPickerLabels;
+}
+export declare function SlotPicker(props: SlotPickerProps): JSX.Element;
 ```
 
 ### TimeZonePicker
@@ -1545,6 +1613,32 @@ export interface TimeZonePickerProps {
   className?: string;
 }
 export declare function TimeZonePicker(props: TimeZonePickerProps): JSX.Element;
+```
+
+### WeeklyScheduleEditor
+```ts
+/** Props for WeeklyScheduleEditor. */
+export interface WeeklyScheduleEditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
+  /** Controlled weekly local-time availability. */
+  value?: WeeklySchedule;
+  /** Initial weekly local-time availability in uncontrolled mode. */
+  defaultValue?: WeeklySchedule;
+  /** Called after a weekday availability change. */
+  onChange?: (value: WeeklySchedule) => void;
+  /** Controlled date exceptions. */
+  exceptions?: DateException[];
+  /** Called after date exceptions change. */
+  onExceptionsChange?: (exceptions: DateException[]) => void;
+  /** Range created when enabling a weekday. Default: 09:00–17:00. */
+  defaultRange?: TimeRange;
+  /** First displayed weekday, where 0 is Sunday. Default: 1. */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Whether to render date exceptions. Default: true. */
+  showExceptions?: boolean;
+  /** Translatable visible and accessible labels, merged over English defaults. */
+  labels?: WeeklyScheduleEditorLabels;
+}
+export declare function WeeklyScheduleEditor(props: WeeklyScheduleEditorProps): JSX.Element;
 ```
 
 ## System
