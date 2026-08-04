@@ -1,0 +1,69 @@
+---
+title: ToastProvider
+description: A provider and hook for adding transient notifications from anywhere in a React subtree.
+---
+
+# ToastProvider
+
+ToastProvider owns a queue of short, non-blocking confirmations. Choose it when a descendant needs to
+announce an outcome without threading notification state through every intermediate component; use
+Toast and ToastStack directly when you already own that presentation state.
+
+## Examples
+
+<Example id="basic" title="Send a confirmation">
+  Wrap the part of the application that needs notifications, then call `success` from a descendant.
+  The provider supplies the icon, close control and fixed stack for each queued toast.
+</Example>
+
+<Example id="duration" title="A per-toast duration">
+  `duration` sets the provider default, while the options passed to `toast` override it for one
+  notification. Pass `0` for a notification that remains until the person dismisses it.
+</Example>
+
+## When to use
+
+Use ToastProvider when several descendants need one shared, imperative notification API.
+
+Reach for something else when:
+
+- **You already manage the list of visible notifications** — use the low-level Toast and ToastStack
+  components directly.
+- **The message belongs next to page content** — use Alert.
+- **Someone must decide before continuing** — use Dialog.
+
+## Accessibility
+
+- ToastProvider composes Toast, whose messages are polite `role="status"` live regions. A brief toast
+  can be missed, so it must not be the only place for important information.
+- Each queued toast receives a close button whose accessible name comes from `closeLabel`, defaulting
+  to "Close notification". Provide localized copy when needed.
+- The provider's ToastStack is fixed at the bottom-right of the viewport. Keep messages brief and do
+  not let the stack become a substitute for persistent status.
+
+## Props
+
+<PropTable name="ToastProvider" />
+
+### useToast
+
+Call `useToast` only below a ToastProvider; outside one, the hook throws. It returns `toast`, `success`,
+`error` and `info`, each of which queues a message and returns a provider-local numeric id. Call
+`dismiss(id)` to remove one before its timer expires. The optional `duration` in a call overrides the
+provider default for that toast, and `0` disables its auto-dismiss timer. Retained API methods called
+after the provider unmounts are safe no-ops: they return an id but do not queue state or leave a timer.
+
+## Plain HTML
+
+ToastProvider is React state and timing, so plain HTML uses the output primitives. Own the queue,
+auto-dismiss timers and close behavior yourself:
+
+```html
+<div class="lyra-toast-stack">
+  <div class="lyra-toast" role="status">
+    <span class="lyra-toast__icon lyra-toast__icon--success" aria-hidden="true">✓</span>
+    <span>Project published</span>
+    <button class="lyra-toast__close" type="button" aria-label="Close notification">×</button>
+  </div>
+</div>
+```

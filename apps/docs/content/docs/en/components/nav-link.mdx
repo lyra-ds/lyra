@@ -1,0 +1,55 @@
+---
+title: NavLink
+description: A small navigation link with active-page semantics and optional framework-link composition.
+---
+
+# NavLink
+
+NavLink is the link that fills a Navbar or another compact route list. Choose it for a destination;
+choose Button when the control performs work instead of taking someone somewhere.
+
+## Examples
+
+<Example id="basic" title="Current destination">
+  Set `active` only for the route currently shown. It gives the link its selected treatment and
+  keeps `aria-current="page"` aligned with what a person sees.
+</Example>
+
+<Example id="as-child" title="A composed framework link">
+  Use `asChild` when your router needs to own the anchor. NavLink then supplies its classes and
+  active-page semantics without replacing routing, prefetching or modifier-click behavior.
+</Example>
+
+## When to use
+
+Use NavLink for a short, persistent set of page destinations, especially inside Navbar.
+
+Reach for something else when:
+
+- **The route chooser needs brand, actions and page-level structure** — use Navbar; NavLink fills
+  its navigation slot.
+- **The destinations are peer views in the current page** — use Tabs.
+- **The control starts or confirms work** — use Button.
+
+## Accessibility
+
+- By default, NavLink renders a native `<a>`. Give it a real `href` and a label that identifies the
+  destination.
+- `active` adds `aria-current="page"`. Set it on one link for the current page, not on a future or
+  pending destination.
+- Its focus indicator appears on `:focus-visible`; do not remove it.
+- With `asChild`, provide exactly one valid link element. That child keeps responsibility for its
+  `href`, keyboard behavior and accessible name.
+
+## Props
+
+<PropTable name="NavLink" />
+
+## Plain HTML
+
+Use an anchor for each destination and declare the current page directly:
+
+```html
+<a class="lyra-navlink lyra-navlink--active" href="/overview" aria-current="page">Overview</a>
+<a class="lyra-navlink" href="/projects">Projects</a>
+```

@@ -1,0 +1,71 @@
+---
+title: ToastProvider
+description: Um provider e hook para adicionar notificações transitórias de qualquer ponto de uma subárvore React.
+---
+
+# ToastProvider
+
+ToastProvider é dono de uma fila de confirmações curtas e não bloqueantes. Escolha-o quando um descendente
+precisar anunciar um resultado sem propagar estado de notificação por todos os componentes intermediários;
+use Toast e ToastStack diretamente quando esse estado de apresentação já for seu.
+
+## Exemplos
+
+<Example id="basic" title="Enviar uma confirmação">
+  Envolva a parte da aplicação que precisa de notificações e então chame `success` em um
+  descendente. O provider fornece ícone, controle de fechar e pilha fixa para cada toast
+  enfileirado.
+</Example>
+
+<Example id="duration" title="Duração por toast">
+  `duration` define o padrão do provider, enquanto as opções passadas a `toast` o sobrescrevem para
+  uma notificação. Passe `0` para uma notificação que permanece até a pessoa dispensá-la.
+</Example>
+
+## Quando usar
+
+Use ToastProvider quando vários descendentes precisarem de uma API imperativa compartilhada de notificações.
+
+Prefira outro componente quando:
+
+- **Você já controla a lista de notificações visíveis** — use diretamente os componentes de baixo nível
+  Toast e ToastStack.
+- **A mensagem pertence ao conteúdo da página** — use Alert.
+- **Alguém precisa decidir antes de continuar** — use Dialog.
+
+## Acessibilidade
+
+- ToastProvider compõe Toast, cujas mensagens são regiões ao vivo polidas com `role="status"`. Um
+  toast breve pode passar despercebido, portanto não pode ser o único lugar para informação importante.
+- Cada toast enfileirado recebe um botão de fechar cujo nome acessível vem de `closeLabel`, com padrão
+  "Close notification". Forneça uma cópia localizada quando necessário.
+- O ToastStack do provider fica fixo no canto inferior direito do viewport. Mantenha mensagens breves
+  e não deixe a pilha substituir um status persistente.
+
+## Props
+
+<PropTable name="ToastProvider" />
+
+### useToast
+
+Chame `useToast` somente abaixo de ToastProvider; fora dele, o hook lança um erro. Ele retorna `toast`,
+`success`, `error` e `info`, e cada um enfileira uma mensagem e retorna um id numérico local ao provider.
+Chame `dismiss(id)` para remover uma notificação antes de seu timer expirar. A `duration` opcional de uma
+chamada sobrescreve o padrão do provider para aquele toast, e `0` desativa seu timer de auto-dismiss.
+Métodos da API mantidos depois que o provider desmonta são no-ops seguros: retornam um id, mas não colocam
+estado na fila nem deixam um timer.
+
+## HTML puro
+
+ToastProvider é estado e temporização React; em HTML puro, use os primitives resultantes. A fila, timers
+de auto-dismiss e o comportamento de fechar ficam com você:
+
+```html
+<div class="lyra-toast-stack">
+  <div class="lyra-toast" role="status">
+    <span class="lyra-toast__icon lyra-toast__icon--success" aria-hidden="true">✓</span>
+    <span>Projeto publicado</span>
+    <button class="lyra-toast__close" type="button" aria-label="Fechar notificação">×</button>
+  </div>
+</div>
+```
