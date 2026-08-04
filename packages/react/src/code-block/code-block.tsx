@@ -10,6 +10,8 @@ export interface CodeBlockProps extends HTMLAttributes<HTMLDivElement> {
   language?: string;
   /** Draw line numbers beside descendants whose class list includes `line`. */
   lineNumbers?: boolean;
+  /** Soft-wrap code lines and break long tokens instead of allowing horizontal overflow. */
+  wrap?: boolean;
   /** Translated visible label for the copy button. Omit with `copiedLabel` to hide copying. */
   copyLabel?: ReactNode;
   /** Translated visible label and polite announcement shown after a successful copy. */
@@ -26,7 +28,7 @@ export interface CodeBlockProps extends HTMLAttributes<HTMLDivElement> {
  */
 export const CodeBlock = /*#__PURE__*/ forwardRef<HTMLDivElement, CodeBlockProps>(
   function CodeBlock(
-    { language, lineNumbers, copyLabel, copiedLabel, copyText, className, children, ...rest },
+    { language, lineNumbers, wrap, copyLabel, copiedLabel, copyText, className, children, ...rest },
     ref,
   ) {
     const preRef = useRef<HTMLPreElement>(null);
@@ -59,7 +61,12 @@ export const CodeBlock = /*#__PURE__*/ forwardRef<HTMLDivElement, CodeBlockProps
       <div
         {...rest}
         ref={ref}
-        className={cx('lyra-code', lineNumbers && 'lyra-code--line-numbers', className)}
+        className={cx(
+          'lyra-code',
+          lineNumbers && 'lyra-code--line-numbers',
+          wrap && 'lyra-code--wrap',
+          className,
+        )}
       >
         <div className="lyra-code__bar">
           {language === undefined ? (
@@ -73,9 +80,9 @@ export const CodeBlock = /*#__PURE__*/ forwardRef<HTMLDivElement, CodeBlockProps
             </button>
           )}
         </div>
-        {/* A scrolling native pre needs a keyboard tab stop; it deliberately keeps native semantics. */}
+        {/* A scrolling native pre needs a keyboard tab stop; wrapped panels never scroll, so they skip it. */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- overflow is keyboard-scrollable once focused. */}
-        <pre ref={preRef} className="lyra-code__pre" tabIndex={0}>
+        <pre ref={preRef} className="lyra-code__pre" tabIndex={wrap ? undefined : 0}>
           {children}
         </pre>
         {canCopy && (

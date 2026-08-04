@@ -113,6 +113,8 @@ export interface CodeBlockProps extends HTMLAttributes<HTMLDivElement> {
   language?: string;
   /** Draw line numbers beside descendants whose class list includes `line`. */
   lineNumbers?: boolean;
+  /** Soft-wrap code lines and break long tokens instead of allowing horizontal overflow. */
+  wrap?: boolean;
   /** Translated visible label for the copy button. Omit with `copiedLabel` to hide copying. */
   copyLabel?: ReactNode;
   /** Translated visible label and polite announcement shown after a successful copy. */

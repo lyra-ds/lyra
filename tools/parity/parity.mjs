@@ -272,6 +272,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-toc__link--active',
       'lyra-code',
       'lyra-code--line-numbers',
+      'lyra-code--wrap',
       'lyra-code__bar',
       'lyra-code__lang',
       'lyra-code__copy',

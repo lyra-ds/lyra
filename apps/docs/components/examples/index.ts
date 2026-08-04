@@ -107,6 +107,7 @@ import { TableOfContentsScrollSpy } from './table-of-contents/scroll-spy';
 import { CodeBlockBasic } from './code-block/basic';
 import { CodeBlockLineNumbers } from './code-block/line-numbers';
 import { CodeBlockCopyText } from './code-block/copy-text';
+import { CodeBlockWrap } from './code-block/wrap';
 import { BrandWordmark } from './brand/wordmark';
 import { BrandMarkOnly } from './brand/mark-only';
 import { BrandAsChild } from './brand/as-child';
@@ -296,6 +297,7 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     basic: CodeBlockBasic,
     'line-numbers': CodeBlockLineNumbers,
     'copy-text': CodeBlockCopyText,
+    wrap: CodeBlockWrap,
   },
   brand: {
     wordmark: BrandWordmark,
