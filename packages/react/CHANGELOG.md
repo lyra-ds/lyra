@@ -1,5 +1,23 @@
 # @lyra-ds/react
 
+## 0.4.0
+
+### Minor Changes
+
+- [#79](https://github.com/lyra-ds/lyra/pull/79) [`a34541a`](https://github.com/lyra-ds/lyra/commit/a34541ad1f018f517086a03c45bdac91935c9da4) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the CalendarView local-time scheduling component.
+
+- [#76](https://github.com/lyra-ds/lyra/pull/76) [`f0bb8f9`](https://github.com/lyra-ds/lyra/commit/f0bb8f98c02684a5a68e35fe633c3232c9bbf03f) Thanks [@franciscpd](https://github.com/franciscpd)! - Add SegmentedRing and TimeInput React components.
+
+- [#80](https://github.com/lyra-ds/lyra/pull/80) [`7dabe79`](https://github.com/lyra-ds/lyra/commit/7dabe794b1bd9a170ed3f97bd992d417ec0b8eb7) Thanks [@franciscpd](https://github.com/franciscpd)! - Add an opt-in CodeBlock wrap mode for long code lines.
+
+- [#77](https://github.com/lyra-ds/lyra/pull/77) [`b287e3e`](https://github.com/lyra-ds/lyra/commit/b287e3e467e444869fe756d420913ce179ecbd95) Thanks [@franciscpd](https://github.com/franciscpd)! - Extend Combobox options with grouping, trailing content, and keyword search, and add TimeZonePicker.
+
+- [#78](https://github.com/lyra-ds/lyra/pull/78) [`d4b5eea`](https://github.com/lyra-ds/lyra/commit/d4b5eea8bc717b09918bb89f8e93310e8e93f12c) Thanks [@franciscpd](https://github.com/franciscpd)! - Add RecurrenceSelector, WeeklyScheduleEditor, and SlotPicker React components.
+
+- [#73](https://github.com/lyra-ds/lyra/pull/73) [`9c776ed`](https://github.com/lyra-ds/lyra/commit/9c776ede6259a2ec0519173d55d8640ee02b852b) Thanks [@franciscpd](https://github.com/franciscpd)! - Add AppSidebar and BottomNav React components.
+
+- [#75](https://github.com/lyra-ds/lyra/pull/75) [`523d282`](https://github.com/lyra-ds/lyra/commit/523d2826d18037d1b3c89f7dff6e05eb5c1b49ab) Thanks [@franciscpd](https://github.com/franciscpd)! - Add ToastProvider and useToast for queued, auto-dismissing notifications.
+
 ## 0.3.0
 
 ### Minor Changes
