@@ -1,0 +1,75 @@
+---
+title: CalendarView
+description: Uma visualização local de dia, semana e mês para eventos e disponibilidade.
+---
+
+# CalendarView
+
+CalendarView renderiza agendas de eventos no horário local como visualização de dia, semana ou mês. Escolha-o
+quando pessoas precisam inspecionar posição de eventos e disponibilidade; escolha Calendar quando a tarefa é
+selecionar datas, não ler uma agenda.
+
+## Exemplos
+
+<Example id="week" title="Grade semanal e de horas" layout="block">
+  Chips de evento são medidos em relação ao contêiner de scroll real, para que um popover opcional
+  seja posicionado ao lado do chip. Os cinco tipos usam cor e forma distintas: sessão sólida, sessão
+  de programa sólida, pendente tracejado, bloqueio hachurado e externo contornado.
+</Example>
+
+<Example id="month" title="Visão geral mensal" layout="block">
+  Células mensais mostram até três eventos e depois um indicador de quantidade restante. Selecionar
+  um dia muda para sua visualização diária, mantendo a data ancorada no horário local.
+</Example>
+
+## Quando usar
+
+Use CalendarView para navegar por eventos locais concretos, janelas de disponibilidade e espaço livre na grade de horas.
+
+> **Limitações:** eventos sobrepostos no mesmo dia ficam empilhados em largura total; CalendarView não os
+> organiza em colunas. Um evento que cruza meia-noite é renderizado apenas no seu dia local de início.
+> Arrastar eventos e a navegação de grade por teclado pertencem à aplicação.
+
+Prefira outro componente quando:
+
+- **A pessoa seleciona uma data ou intervalo de datas** — use Calendar ou DatePicker.
+- **Pessoas precisam reservar um instante disponível** — use SlotPicker.
+- **A tarefa é definir disponibilidade recorrente** — use WeeklyScheduleEditor.
+
+## Acessibilidade
+
+- Anterior, Hoje e próximo são botões nativos nomeados. Dia, Semana e Mês são botões em um grupo nomeado e
+  expõem a visualização ativa com `aria-pressed`.
+- Chips de evento são botões nativos com data, hora e título localizados no nome acessível. Um popover opcional
+  é um diálogo nomeado; ele fecha com Escape, interação de ponteiro fora ou resize para não manter medições antigas.
+- Clicar no espaço vazio da grade de horas é deliberadamente apenas para ponteiro e chama `onSlotCreate` com
+  um Date local ajustado. Chips de evento e todos os controles da toolbar permanecem acessíveis por teclado.
+- CalendarView não emite landmark de página nem heading, portanto pode ficar dentro do outline do documento da
+  página consumidora. Use `labels` e `locale` para traduzir controles e formatação de datas.
+
+## Props
+
+<PropTable name="CalendarView" />
+
+## HTML puro
+
+Sem React, calcule a posição local dos eventos e controle navegação de visualização, posição do popover e criação de slots:
+
+```html
+<div class="lyra-calview">
+  <div class="lyra-calview__toolbar">
+    <button class="lyra-calview__nav" type="button" aria-label="Período anterior">‹</button>
+    <span class="lyra-calview__title">agosto de 2026</span>
+    <span class="lyra-calview__seg" role="group" aria-label="Visualização do calendário"
+      ><button type="button" aria-pressed="true">Semana</button></span
+    >
+  </div>
+  <div class="lyra-calview__grid">
+    <div class="lyra-calview__col">
+      <button class="lyra-calview__evt lyra-calview__evt--pending" type="button">
+        10:00–11:00 Aguardando aprovação
+      </button>
+    </div>
+  </div>
+</div>
+```

@@ -156,6 +156,16 @@ import { DateRangePickerBasic } from './date-range-picker/basic';
 import { DateRangePickerLabels } from './date-range-picker/labels';
 import { TimePickerAvailableTimes } from './time-picker/available-times';
 import { TimePickerBasic } from './time-picker/basic';
+import { TimeZonePickerBasic } from './time-zone-picker/basic';
+import { TimeZonePickerDstAndSearch } from './time-zone-picker/dst-and-search';
+import { RecurrenceSelectorBasic } from './recurrence-selector/basic';
+import { RecurrenceSelectorWeeklyEnding } from './recurrence-selector/weekly-ending';
+import { WeeklyScheduleEditorBasic } from './weekly-schedule-editor/basic';
+import { WeeklyScheduleEditorExceptions } from './weekly-schedule-editor/exceptions';
+import { SlotPickerBasic } from './slot-picker/basic';
+import { SlotPickerLocalizedTimeZone } from './slot-picker/localized-time-zone';
+import { CalendarViewWeek } from './calendar-view/week';
+import { CalendarViewMonth } from './calendar-view/month';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -255,6 +265,26 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'date-range-picker': {
     basic: DateRangePickerBasic,
     labels: DateRangePickerLabels,
+  },
+  'time-zone-picker': {
+    basic: TimeZonePickerBasic,
+    'dst-and-search': TimeZonePickerDstAndSearch,
+  },
+  'recurrence-selector': {
+    basic: RecurrenceSelectorBasic,
+    'weekly-ending': RecurrenceSelectorWeeklyEnding,
+  },
+  'weekly-schedule-editor': {
+    basic: WeeklyScheduleEditorBasic,
+    exceptions: WeeklyScheduleEditorExceptions,
+  },
+  'slot-picker': {
+    basic: SlotPickerBasic,
+    'localized-time-zone': SlotPickerLocalizedTimeZone,
+  },
+  'calendar-view': {
+    week: CalendarViewWeek,
+    month: CalendarViewMonth,
   },
   footer: {
     basic: FooterBasic,

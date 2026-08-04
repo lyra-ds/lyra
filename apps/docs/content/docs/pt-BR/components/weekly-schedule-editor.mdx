@@ -1,0 +1,66 @@
+---
+title: WeeklyScheduleEditor
+description: Um editor para janelas locais de disponibilidade recorrente e exceções por data.
+---
+
+# WeeklyScheduleEditor
+
+WeeklyScheduleEditor registra quando alguém está disponível no horário de parede local. Escolha-o para uma
+política de disponibilidade que permanece em janelas `HH:mm` e exceções locais `YYYY-MM-DD`; converta para
+UTC somente no limite do consumer, onde o fuso aplicável é conhecido.
+
+## Exemplos
+
+<Example id="basic" title="Uma semana de trabalho regular">
+  Cada dia habilitado tem um ou mais intervalos locais. Adicione outro intervalo para um dia
+  dividido ou use o controle de cópia para clonar os intervalos de um dia nos dias escolhidos.
+</Example>
+
+<Example id="exceptions" title="Substituir uma data específica">
+  Exceções substituem seu dia da semana. Um array `ranges` vazio torna toda aquela data local
+  indisponível; um array não vazio substitui as janelas normais do dia da semana para aquela data.
+</Example>
+
+## Quando usar
+
+Use WeeklyScheduleEditor para definir a disponibilidade semanal local habitual de uma pessoa, com exceções ocasionais.
+
+Prefira outro componente quando:
+
+- **Um evento se repete em uma agenda** — use RecurrenceSelector, que descreve uma única série recorrente.
+- **Pessoas escolhem um slot UTC reservável** — use SlotPicker, que converte esses instantes para exibição.
+- **A aplicação precisa visualizar eventos concretos** — use CalendarView.
+
+## Acessibilidade
+
+- Cada switch de dia da semana tem o respectivo dia como label. Intervalos habilitados expõem controles
+  TimeInput de início e fim nomeados, e um fim inválido recebe marcação de inválido e explicação inline.
+- A ação de cópia abre Popover como diálogo nomeado. Suas checkboxes são alcançáveis por teclado e Apply fica
+  desabilitado até que exista um destino selecionado.
+- O seletor de exceção não adiciona uma data anterior a hoje. Os controles de adicionar e remover, assim como
+  strings de dias e intervalos, vêm de `labels`.
+
+## Props
+
+<PropTable name="WeeklyScheduleEditor" />
+
+## HTML puro
+
+Sem React, você controla a validação de intervalos, a cópia e as regras de substituição por exceção:
+
+```html
+<div class="lyra-sched">
+  <div class="lyra-sched__row">
+    <div class="lyra-sched__daycell">
+      <label>Segunda-feira <input type="checkbox" checked /></label>
+    </div>
+    <div class="lyra-sched__ranges">
+      <div class="lyra-sched__range">
+        <input class="lyra-input" value="09:00" /><span class="lyra-sched__dash">–</span
+        ><input class="lyra-input" value="17:00" />
+      </div>
+      <button class="lyra-sched__addrange" type="button">+ Adicionar intervalo</button>
+    </div>
+  </div>
+</div>
+```
