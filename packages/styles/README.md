@@ -1,6 +1,6 @@
 # @lyra-ds/styles
 
-CSS-first design tokens and component styles for the Lyra Design System — 209 tokens and 40 components, zero JavaScript. The look of every Lyra component lives in `.lyra-*` classes, so the same CSS is reusable across any framework.
+CSS-first design tokens and component styles for the Lyra Design System — 211 tokens and 78 components, zero JavaScript. The look of every Lyra component lives in `.lyra-*` classes, so the same CSS is reusable across any framework.
 
 ## Install
 
@@ -22,7 +22,7 @@ or, from a stylesheet:
 @import '@lyra-ds/styles';
 ```
 
-Both resolve to `styles.css`, which `@import`s the 7 token layers followed by the 7 component layers in the canonical handoff order. The literal subpath also works if you prefer to be explicit:
+Both resolve to `styles.css`, which `@import`s the 7 token layers followed by the 11 component layers in the canonical handoff order. The literal subpath also works if you prefer to be explicit:
 
 ```js
 import '@lyra-ds/styles/styles.css';

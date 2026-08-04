@@ -4,6 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![CI](https://github.com/lyra-ds/lyra/actions/workflows/ci.yml/badge.svg)](https://github.com/lyra-ds/lyra/actions/workflows/ci.yml)
+[![npm @lyra-ds/styles](https://img.shields.io/npm/v/@lyra-ds/styles?label=%40lyra-ds%2Fstyles)](https://www.npmjs.com/package/@lyra-ds/styles)
+[![npm @lyra-ds/react](https://img.shields.io/npm/v/@lyra-ds/react?label=%40lyra-ds%2Freact)](https://www.npmjs.com/package/@lyra-ds/react)
 
 > Open source, CSS-first design system. Semantic tokens, white-label theming, thin React wrappers — Vue, Svelte and Web Components on the same CSS core.
 
@@ -11,10 +13,10 @@ Lyra keeps every visual decision in CSS custom properties and `.lyra-*` classes 
 framework adapters are thin wrappers on top of the same core. Rebrand an entire
 app by setting four tokens.
 
-- **209 semantic tokens** — light and dark built in, no manual dark styles.
+- **211 semantic tokens** — light and dark built in, no manual dark styles.
 - **White-label** — brands define `--brand`, `--brand-contrast`, `--brand-radius`,
   and `--brand-font`; everything else is derived via `color-mix`.
-- **`@lyra-ds/react`** — 40 components as thin wrappers; Vue, Svelte and Web
+- **`@lyra-ds/react`** — 78 components as thin wrappers; Vue, Svelte and Web
   Components adapters on the roadmap (Zag.js), plus a shadcn-style component
   registry.
 - **shadcn interop** — an opt-in compat layer maps `--background`, `--primary`,
@@ -28,13 +30,6 @@ app by setting four tokens.
 | ----------------- | ------------------------------- |
 | `@lyra-ds/styles` | Tokens + component CSS, zero JS |
 | `@lyra-ds/react`  | React 18+ components            |
-
-## Pre-release status
-
-Lyra DS is in active development and is **not yet published to npm**. The install
-and usage instructions below describe the intended, documented target state — the
-`@lyra-ds/*` packages become installable when they are first published (Phase 7).
-Until then, treat the commands below as a preview, not a working install.
 
 ## Installation
 
