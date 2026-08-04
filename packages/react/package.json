@@ -626,6 +626,16 @@
         "default": "./dist/slot-picker.cjs"
       }
     },
+    "./calendar-view": {
+      "import": {
+        "types": "./dist/calendar-view.d.ts",
+        "default": "./dist/calendar-view.js"
+      },
+      "require": {
+        "types": "./dist/calendar-view.d.cts",
+        "default": "./dist/calendar-view.cjs"
+      }
+    },
     "./table": {
       "import": {
         "types": "./dist/table.d.ts",
@@ -1484,6 +1494,16 @@
         "react-dom"
       ],
       "limit": "14 kB"
+    },
+    {
+      "name": "CalendarView (local scheduling grid)",
+      "path": "dist/calendar-view.js",
+      "import": "{ CalendarView }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "9.5 kB"
     }
   ]
 }

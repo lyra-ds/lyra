@@ -5,6 +5,19 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **Fase 8 / Onda 6d — CalendarView — PORTE DO DELTA COMPLETO (2026-08-03).**
+      O componente mais caro, sozinho: mês + grade de horas com chips por medição
+      de DOM real (testes só em Browser Mode), os 5 tipos distintos por forma+cor
+      (assertado por tipo), fonte única de mapeamento de tipo (o mapa JS duplicado
+      da referência morreu), hora local, drag/roving não inventados. Cross-review:
+      2 HIGH REJEITADOS por paridade com a referência (sobreposição sem column
+      packing; travessia de meia-noite só no dia inicial) e convertidos em
+      limitações JSDoc + backlog do marco de comportamento; 5 aceitos (popover
+      fecha em resize, clamp de left negativo, teste do +N more, skip vácuo
+      virou asserção, debris de plano removido). Docgen 77→**78 — o catálogo
+      completo do handoff v1.2**. → codex (`gpt-5.6-terra`, high, worktree,
+      1 retry).
+
 - [x] **Fase 8 / Onda 6c — RecurrenceSelector, WeeklyScheduleEditor, SlotPicker
       (2026-08-03).** As três armadilhas nº 1 do mapa fechadas por teste: frases
       inteiras por template no describeRecurrence (concatenação proibida — e o

@@ -158,6 +158,14 @@ export type {
 } from './weekly-schedule-editor';
 export { SlotPicker } from './slot-picker';
 export type { Slot, SlotPickerLabels, SlotPickerProps } from './slot-picker';
+export { CalendarView } from './calendar-view';
+export type {
+  CalendarViewAvailability,
+  CalendarViewEvent,
+  CalendarViewKind,
+  CalendarViewLabels,
+  CalendarViewProps,
+} from './calendar-view';
 
 export { Table } from './table';
 export type { TableColumn, TableProps } from './table';

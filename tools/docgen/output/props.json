@@ -3048,6 +3048,123 @@
     ]
   },
   {
+    "name": "CalendarView",
+    "category": "Scheduling",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>",
+    "description": "Props for {@link CalendarView}.",
+    "signature": "export declare function CalendarView(props: CalendarViewProps): JSX.Element;",
+    "props": [
+      {
+        "name": "view",
+        "type": "'day' | 'week' | 'month'",
+        "optional": true,
+        "description": "Controlled displayed view. Default: `\"week\"`."
+      },
+      {
+        "name": "defaultView",
+        "type": "'day' | 'week' | 'month'",
+        "optional": true,
+        "description": "Initial displayed view when uncontrolled. Default: `\"week\"`."
+      },
+      {
+        "name": "onViewChange",
+        "type": "(view: 'day' | 'week' | 'month') => void",
+        "optional": true,
+        "description": "Called after the displayed view changes."
+      },
+      {
+        "name": "date",
+        "type": "string | Date",
+        "optional": true,
+        "description": "Controlled local period anchor as a Date or `YYYY-MM-DD` string."
+      },
+      {
+        "name": "defaultDate",
+        "type": "string | Date",
+        "optional": true,
+        "description": "Initial local period anchor as a Date or `YYYY-MM-DD` string."
+      },
+      {
+        "name": "onDateChange",
+        "type": "(isoDate: string) => void",
+        "optional": true,
+        "description": "Called with the local `YYYY-MM-DD` anchor after it changes."
+      },
+      {
+        "name": "events",
+        "type": "CalendarViewEvent[]",
+        "optional": true,
+        "description": "Events rendered in the visible local day, week, or month."
+      },
+      {
+        "name": "availability",
+        "type": "Record<number, CalendarViewAvailability[]>",
+        "optional": true,
+        "description": "Weekly local availability windows keyed by `0` (Sunday) through `6` (Saturday)."
+      },
+      {
+        "name": "startHour",
+        "type": "number",
+        "optional": true,
+        "description": "First visible hour in day and week grids. Default: `7`."
+      },
+      {
+        "name": "endHour",
+        "type": "number",
+        "optional": true,
+        "description": "Hour at which the day and week grids end. Default: `21`."
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+        "optional": true,
+        "description": "First weekday, where `0` is Sunday and `6` is Saturday. Default: `1`."
+      },
+      {
+        "name": "onEventOpen",
+        "type": "(event: CalendarViewEvent) => void",
+        "optional": true,
+        "description": "Called when an event chip is opened."
+      },
+      {
+        "name": "renderEventPopover",
+        "type": "(event: CalendarViewEvent, close: () => void) => ReactNode",
+        "optional": true,
+        "description": "Renders the optional event-summary popover. Receives a close callback."
+      },
+      {
+        "name": "onSlotCreate",
+        "type": "(start: Date) => void",
+        "optional": true,
+        "description": "Called with a snapped local Date after an empty hour-grid area is clicked."
+      },
+      {
+        "name": "slotStep",
+        "type": "number",
+        "optional": true,
+        "description": "Local-minute increment for empty-grid clicks. Default: `30`."
+      },
+      {
+        "name": "toolbarActions",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Extra content rendered at the end of the toolbar."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for all weekday and month formatting. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "CalendarViewLabels",
+        "optional": true,
+        "description": "Translatable visible and accessible labels, merged over English defaults."
+      }
+    ]
+  },
+  {
     "name": "RecurrenceSelector",
     "category": "Scheduling",
     "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>",
