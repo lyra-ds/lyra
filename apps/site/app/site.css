@@ -281,6 +281,14 @@
   }
 }
 
+/* At 360px the navbar actions row (locale 80px + theme 44px + github 42px + CTA 148px + 3×8px gaps)
+   overflows the page by 2–3px; shrink the gaps to reclaim that width. */
+@media (max-width: 380px) {
+  .lw-site-header .lyra-navbar__actions {
+    gap: var(--space-1);
+  }
+}
+
 /* Compact desktop chrome falls under the 44px touch-target floor. `pointer: coarse` alone
    misses iPads in desktop mode, where a mouse reports `pointer: fine`; `any-pointer` catches
    the touchscreen and the width clause covers that spoofed case. These selectors are scoped to
