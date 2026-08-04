@@ -147,6 +147,15 @@ import { PopoverBasic } from './popover/basic';
 import { PopoverControlled } from './popover/controlled';
 import { BottomSheetBasic } from './bottom-sheet/basic';
 import { BottomSheetLabelledWithoutTitle } from './bottom-sheet/labelled-without-title';
+import { CalendarBasic } from './calendar/basic';
+import { CalendarPtBrLocale } from './calendar/pt-br-locale';
+import { CalendarRange } from './calendar/range';
+import { DatePickerAvailableDates } from './date-picker/available-dates';
+import { DatePickerBasic } from './date-picker/basic';
+import { DateRangePickerBasic } from './date-range-picker/basic';
+import { DateRangePickerLabels } from './date-range-picker/labels';
+import { TimePickerAvailableTimes } from './time-picker/available-times';
+import { TimePickerBasic } from './time-picker/basic';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -229,6 +238,23 @@ export const examples: Record<string, Record<string, ComponentType>> = {
   'bottom-sheet': {
     basic: BottomSheetBasic,
     'labelled-without-title': BottomSheetLabelledWithoutTitle,
+  },
+  calendar: {
+    basic: CalendarBasic,
+    range: CalendarRange,
+    'pt-br-locale': CalendarPtBrLocale,
+  },
+  'time-picker': {
+    basic: TimePickerBasic,
+    'available-times': TimePickerAvailableTimes,
+  },
+  'date-picker': {
+    basic: DatePickerBasic,
+    'available-dates': DatePickerAvailableDates,
+  },
+  'date-range-picker': {
+    basic: DateRangePickerBasic,
+    labels: DateRangePickerLabels,
   },
   footer: {
     basic: FooterBasic,

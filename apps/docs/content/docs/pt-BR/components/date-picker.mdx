@@ -1,0 +1,89 @@
+---
+title: DatePicker
+description: Um campo compacto de data local que abre um Calendar.
+---
+
+# DatePicker
+
+DatePicker combina um trigger de campo de data com Calendar. Escolha-o quando uma data local cabe
+em um campo compacto de formulário; escolha Calendar quando a grade deve permanecer visível no
+layout.
+
+## Exemplos
+
+<Example id="basic" title="Uma data inicial selecionada">
+  Use uma string ISO `YYYY-MM-DD` para um valor inicial só de data. O campo formata a data local
+  selecionada com `locale`, e Calendar usa o mesmo locale.
+</Example>
+
+<Example id="available-dates" title="Uma janela de entrega">
+  `min` e `max` seguem para o Calendar composto e impedem a seleção fora da janela de datas locais
+  permitida. Adicione `hint` quando a restrição precisar de uma explicação curta.
+</Example>
+
+## Quando usar
+
+Use DatePicker para uma única data local que deve ocupar um campo compacto de formulário.
+
+Prefira outro componente quando:
+
+- **São necessárias data inicial e final** — use DateRangePicker, que seleciona o intervalo em um
+  Calendar e o mostra em um trigger.
+- **A grade de datas deve permanecer visível** — use Calendar diretamente.
+- **A data faz parte da escolha de um horário** — combine DatePicker e TimePicker, em vez de pedir
+  que um controle de data represente um horário.
+
+## Acessibilidade
+
+- O trigger é um botão nativo com o `label` visível associado por `htmlFor`. No desktop, ele é
+  passado a Popover, que fornece a semântica de trigger de diálogo, Escape e retorno de foco.
+- O Calendar composto fornece foco rotativo nos dias, navegação de datas por teclado e labels de
+  datas formatados pelo locale. A data selecionada volta ao campo e fecha o picker.
+- `error` substitui `hint` e aplica aparência de erro ao trigger. `disabled` desabilita o trigger.
+- Em viewports de 640px ou menos, o Popover do desktop é substituído por um BottomSheet com Calendar.
+  O título vem de `label` ou `labels.sheetTitle`; `labels.close` nomeia o botão de fechar. Esse
+  caminho é documentado apenas em texto, pois o stage não redimensiona o viewport.
+- `labels.calendar` encaminha os controles traduzidos de Calendar, enquanto `locale` formata as
+  datas do trigger e do Calendar.
+
+## Props
+
+<PropTable name="DatePicker" />
+
+## HTML puro
+
+Sem React, componha as classes do trigger, Popover e Calendar e controle a data local, o diálogo e
+o comportamento de teclado:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="start-date">Data inicial</label>
+  <span class="lyra-datepicker lyra-popover-anchor">
+    <button
+      class="lyra-input lyra-datepicker__btn"
+      id="start-date"
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded="true"
+    >
+      <span>04/08/2026</span>
+    </button>
+    <div
+      class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+      role="dialog"
+      aria-label="Seletor de data"
+    >
+      <div class="lyra-cal">
+        <div class="lyra-cal__head">
+          <button class="lyra-cal__nav" type="button">‹</button
+          ><button class="lyra-cal__label" type="button">Agosto de 2026</button
+          ><button class="lyra-cal__nav" type="button">›</button>
+        </div>
+        <button class="lyra-cal__day lyra-cal__day--selected" type="button" aria-pressed="true">
+          4
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```

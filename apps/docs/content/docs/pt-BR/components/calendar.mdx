@@ -1,0 +1,99 @@
+---
+title: Calendar
+description: Uma grade de datas locais para escolher um dia ou um intervalo.
+---
+
+# Calendar
+
+Calendar é a primitiva de grade de datas para um campo de data ou intervalo. Escolha-o quando a
+grade pertence ao layout; use DatePicker ou DateRangePicker quando ela deve abrir a partir de um
+campo compacto.
+
+## Exemplos
+
+<Example id="basic" title="Uma data selecionada e atalho para hoje">
+  Use uma string ISO só de data para uma data local inicial. `todayButton` adiciona um atalho que
+  seleciona hoje e retorna a grade ao mês correspondente.
+</Example>
+
+<Example id="range" title="Um intervalo completo">
+  Defina `range` para que a primeira seleção inicie o intervalo e a segunda o conclua. Selecionar
+  uma data anterior ao início inverte os limites, mantendo o resultado em ordem cronológica.
+</Example>
+
+<Example id="pt-br-locale" title="Datas em português do Brasil">
+  `locale="pt-BR"` usa `Intl` para o nome do mês, os cabeçalhos dos dias da semana e os labels de
+  data falados. Passe também `labels` quando os controles do calendário precisarem de tradução.
+</Example>
+
+## Quando usar
+
+Use Calendar quando uma grade de datas visível é a parte certa do formulário ou da interface de
+agenda, inclusive quando a pessoa precisa comparar datas próximas antes de escolher uma.
+
+Prefira outro componente quando:
+
+- **A grade deve ficar oculta até a ativação de um campo** — use DatePicker para uma data ou
+  DateRangePicker para data inicial e final.
+- **A pessoa conhece a data exata e precisa digitá-la rapidamente** — use um input de texto com
+  validação clara, em vez de exigir navegação pela grade.
+- **A seleção é apenas de horário** — use TimePicker para uma lista de horários disponíveis ou
+  TimeInput para entrada de 24 horas digitada.
+
+## Acessibilidade
+
+- A célula do dia ativo é a única parada de tabulação da grade: os outros botões de dia usam
+  `tabIndex="-1"`. As setas movem por dia ou semana; Home e End movem para as extremidades da
+  semana atual; PageUp e PageDown movem por mês.
+- Cada dia tem um nome acessível formatado pelo locale. Os cabeçalhos dos dias expõem o nome
+  completo, enquanto o texto visível usa a forma curta do locale.
+- Os dias inicial e final selecionados usam `aria-pressed`. O botão de cabeçalho alterna entre dias,
+  meses e anos; a seleção de mês ou ano retorna à próxima visualização mais específica.
+- Datas indisponíveis permanecem focáveis intencionalmente e usam `aria-disabled="true"`, em vez do
+  `disabled` nativo. Assim, quem usa teclado descobre datas indisponíveis e continua a navegação por
+  setas; a ativação não altera a seleção.
+- `labels` fornece as strings de navegação, troca de visualização e hoje. A formatação de datas usa
+  `Intl`, portanto a grade não tem strings fixas de mês, dia da semana ou data.
+
+## Props
+
+<PropTable name="Calendar" />
+
+## HTML puro
+
+Sem React, componha as classes do calendário e implemente interpretação de data local, foco
+rotativo, seleção e mudanças de visualização:
+
+```html
+<div class="lyra-cal">
+  <div class="lyra-cal__head">
+    <button class="lyra-cal__nav" type="button" aria-label="Mês anterior">‹</button>
+    <button class="lyra-cal__label" type="button" aria-label="Alterar mês ou ano">
+      Agosto de 2026
+    </button>
+    <button class="lyra-cal__nav" type="button" aria-label="Próximo mês">›</button>
+  </div>
+  <div class="lyra-cal__grid">
+    <span class="lyra-cal__wd" aria-label="Domingo">D</span>
+    <button
+      class="lyra-cal__day"
+      type="button"
+      tabindex="0"
+      aria-label="terça-feira, 4 de agosto de 2026"
+      aria-pressed="true"
+    >
+      4
+    </button>
+    <button
+      class="lyra-cal__day"
+      type="button"
+      tabindex="-1"
+      aria-disabled="true"
+      aria-label="quarta-feira, 5 de agosto de 2026"
+    >
+      5
+    </button>
+  </div>
+  <div class="lyra-cal__foot"><button class="lyra-cal__today" type="button">Hoje</button></div>
+</div>
+```

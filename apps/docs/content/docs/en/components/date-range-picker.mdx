@@ -1,0 +1,87 @@
+---
+title: DateRangePicker
+description: A single field that selects and displays a local-date range.
+---
+
+# DateRangePicker
+
+DateRangePicker combines one trigger with Calendar range selection. Choose it when a start and end
+date describe one period; choose two DatePickers only when the dates have separate meaning or rules.
+
+## Examples
+
+<Example id="basic" title="A complete travel period">
+  The trigger displays the selected start and end date as one value. Selecting the second bound in
+  the composed Calendar completes the range and closes the picker.
+</Example>
+
+<Example id="labels" title="Translated range text">
+  `labels.rangeSeparator` and `labels.incompleteRange` control the text between a start and end date
+  and the marker shown while only the start exists. They keep this visible range state in the same
+  i18n-by-props model as the other picker labels.
+</Example>
+
+## When to use
+
+Use DateRangePicker when one person needs to choose a contiguous local-date period, such as travel,
+availability or a reporting window.
+
+Reach for something else when:
+
+- **Only one date matters** — use DatePicker.
+- **The two dates have distinct labels, validation or workflow steps** — use separate DatePickers.
+- **The date grid belongs permanently in the page** — use Calendar directly.
+
+## Accessibility
+
+- The trigger is a native button associated with `label` through `htmlFor`. On desktop it is the
+  Popover trigger, with its non-modal dialog semantics, Escape dismissal and focus return.
+- The composed Calendar runs in range mode. It retains roving day focus and keyboard navigation;
+  the first selection starts a range, the next finishes it, and a completed range closes the picker.
+- The trigger's visible value is a single formatted string: start date, `labels.rangeSeparator`, then
+  the end date or `labels.incompleteRange`. Supply both labels when translating the range state.
+- `error` replaces `hint`; `disabled` disables the trigger.
+- At viewports of 640px or less, the Popover path becomes a BottomSheet containing Calendar. Its
+  title and close name come from `label`/`labels.sheetTitle` and `labels.close`. It is prose only in
+  these docs because the stage cannot resize its viewport.
+
+## Props
+
+<PropTable name="DateRangePicker" />
+
+## Plain HTML
+
+Without React, compose one trigger with Popover and Calendar classes, then implement range state,
+focus movement and the mobile sheet alternative yourself:
+
+```html
+<div class="lyra-field">
+  <label class="lyra-label" for="travel-dates">Travel dates</label>
+  <span class="lyra-datepicker lyra-popover-anchor">
+    <button
+      class="lyra-input lyra-datepicker__btn"
+      id="travel-dates"
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded="true"
+    >
+      <span>08/11/2026 – 08/15/2026</span>
+    </button>
+    <div
+      class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
+      role="dialog"
+      aria-label="Date range picker"
+    >
+      <div class="lyra-cal">
+        <button class="lyra-cal__day lyra-cal__day--selected" type="button" aria-pressed="true">
+          11
+        </button>
+        <button class="lyra-cal__day lyra-cal__day--in-range" type="button">12</button>
+        <button class="lyra-cal__day lyra-cal__day--selected" type="button" aria-pressed="true">
+          15
+        </button>
+      </div>
+    </div>
+  </span>
+</div>
+```
