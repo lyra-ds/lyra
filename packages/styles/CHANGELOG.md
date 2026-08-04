@@ -1,5 +1,11 @@
 # @lyra-ds/styles
 
+## 0.4.0
+
+### Minor Changes
+
+- [#80](https://github.com/lyra-ds/lyra/pull/80) [`7dabe79`](https://github.com/lyra-ds/lyra/commit/7dabe794b1bd9a170ed3f97bd992d417ec0b8eb7) Thanks [@franciscpd](https://github.com/franciscpd)! - Add an opt-in CodeBlock wrap mode for long code lines.
+
 ## 0.3.0
 
 ## 0.2.0

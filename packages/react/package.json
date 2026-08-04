@@ -1,6 +1,6 @@
 {
   "name": "@lyra-ds/react",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Lyra DS — thin, tree-shakable React wrappers over @lyra-ds/styles. All appearance comes from .lyra-* classes; zero runtime CSS-in-JS.",
   "license": "MIT",
   "homepage": "https://lyra-ds.dev",
