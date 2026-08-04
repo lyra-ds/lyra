@@ -4,6 +4,8 @@
 
 [![Licença: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![CI](https://github.com/lyra-ds/lyra/actions/workflows/ci.yml/badge.svg)](https://github.com/lyra-ds/lyra/actions/workflows/ci.yml)
+[![npm @lyra-ds/styles](https://img.shields.io/npm/v/@lyra-ds/styles?label=%40lyra-ds%2Fstyles)](https://www.npmjs.com/package/@lyra-ds/styles)
+[![npm @lyra-ds/react](https://img.shields.io/npm/v/@lyra-ds/react?label=%40lyra-ds%2Freact)](https://www.npmjs.com/package/@lyra-ds/react)
 
 > Design system open source, CSS-first. Tokens semânticos, temas white-label e wrappers React finos — Vue, Svelte e Web Components sobre o mesmo core em CSS.
 
@@ -11,10 +13,10 @@ O Lyra mantém cada decisão visual em CSS custom properties e classes `.lyra-*`
 adapters de framework são wrappers finos sobre o mesmo core. Faça o rebrand de um
 app inteiro definindo quatro tokens.
 
-- **209 tokens semânticos** — light e dark embutidos, sem estilos de dark manuais.
+- **211 tokens semânticos** — light e dark embutidos, sem estilos de dark manuais.
 - **White-label** — as marcas definem `--brand`, `--brand-contrast`,
   `--brand-radius` e `--brand-font`; todo o resto é derivado via `color-mix`.
-- **`@lyra-ds/react`** — 40 componentes como wrappers finos; adapters para Vue,
+- **`@lyra-ds/react`** — 78 componentes como wrappers finos; adapters para Vue,
   Svelte e Web Components no roadmap (Zag.js), além de um registry de componentes
   no estilo shadcn.
 - **Interoperabilidade com shadcn** — uma camada de compatibilidade opt-in mapeia
@@ -28,14 +30,6 @@ app inteiro definindo quatro tokens.
 | ----------------- | ------------------------------------- |
 | `@lyra-ds/styles` | Tokens + CSS dos componentes, zero JS |
 | `@lyra-ds/react`  | Componentes para React 18+            |
-
-## Status de pré-lançamento
-
-O Lyra DS está em desenvolvimento ativo e **ainda não foi publicado no npm**. As
-instruções de instalação e uso abaixo descrevem o estado-alvo documentado — os
-pacotes `@lyra-ds/*` ficam instaláveis quando forem publicados pela primeira vez
-(Fase 7). Até lá, trate os comandos abaixo como uma prévia, não como uma
-instalação funcional.
 
 ## Instalação
 

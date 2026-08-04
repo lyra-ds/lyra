@@ -1,7 +1,17 @@
 {
   "name": "@lyra-ds/styles",
   "version": "0.4.0",
-  "description": "Lyra DS — CSS-first design tokens + component styles (209 tokens, 40 components), zero JS.",
+  "description": "Lyra DS — CSS-first design tokens + component styles (211 tokens, 78 components), zero JS.",
+  "keywords": [
+    "design-system",
+    "css",
+    "design-tokens",
+    "white-label",
+    "theming",
+    "dark-mode",
+    "ui",
+    "components"
+  ],
   "license": "MIT",
   "homepage": "https://lyra-ds.dev",
   "repository": {
