@@ -113,6 +113,7 @@
    shrink to their content and leave the stage half empty. Give them the full width instead. */
 .lw-example__stage--block {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: var(--space-4);
 }
@@ -120,6 +121,7 @@
    material. Drop the chrome and let the example be the only surface on screen. */
 .lw-example__stage--plain {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: var(--space-4);
   margin-top: var(--space-3);
