@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { components, groupLabelKey, groupOrder } from '@/lib/components';
+import { publishedFoundations } from '@/lib/foundations';
 import type { Locale } from '@/lib/i18n';
 
 /**
@@ -41,6 +42,14 @@ export function CommandMenu({ locale }: { locale: Locale }) {
         { id: 'home', label: t('gettingStarted'), onSelect: () => go(`/${locale}`) },
         { id: 'components', label: t('components'), onSelect: () => go(`/${locale}/components`) },
       ],
+    },
+    {
+      label: t('foundations'),
+      items: publishedFoundations.map((foundation) => ({
+        id: foundation.slug,
+        label: t(foundation.titleKey),
+        onSelect: () => go(`/${locale}/foundations/${foundation.slug}`),
+      })),
     },
     ...componentGroups,
   ];

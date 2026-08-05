@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { components, groupLabelKey, groupOrder } from '@/lib/components';
+import { publishedFoundations } from '@/lib/foundations';
 import { guides } from '@/lib/guides';
 import type { Locale } from '@/lib/i18n';
 
@@ -67,6 +68,16 @@ export function DocsSidebar({ locale }: { locale: Locale }) {
         <Link href={componentsHref} className={itemClass(pathname === componentsHref)}>
           {t('components')}
         </Link>
+      </SidebarGroup>
+      <SidebarGroup label={t('foundations')} collapsible>
+        {publishedFoundations.map((foundation) => {
+          const href = `/${locale}/foundations/${foundation.slug}`;
+          return (
+            <Link key={foundation.slug} href={href} className={itemClass(pathname === href)}>
+              {t(foundation.titleKey)}
+            </Link>
+          );
+        })}
       </SidebarGroup>
       {groupOrder.map((group) => {
         const items = components.filter((entry) => entry.group === group);

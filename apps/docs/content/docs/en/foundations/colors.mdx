@@ -1,0 +1,54 @@
+---
+title: Colors
+description: The primitive scales and semantic color layer behind every Lyra surface.
+---
+
+# Colors
+
+Lyra separates fixed primitive scales from semantic tokens. Use semantic tokens in components and
+application CSS; primitives are the palette that defines those meanings, not a second API for
+product code.
+
+## Primary — Indigo
+
+Indigo is Lyra's accent scale. `--accent` resolves to indigo 600 in the default light theme, with
+nearby steps reserved for hover, active, soft and readable soft-text states. Consume those semantic
+names instead of choosing a scale step directly.
+
+<Example id="primary" title="Indigo 50–950" layout="block">
+  The full scale is fixed across themes. Its token names are useful when defining the semantic
+  layer, but components should use `--accent`, `--accent-hover` and related semantic tokens.
+</Example>
+
+## Neutrals
+
+Slate provides the cool-neutral ramp for surfaces, borders and text. The light theme maps its
+semantic layer to this scale, so `--surface-card`, `--border-default` and `--text-primary` continue
+to express purpose even if their underlying primitive changes.
+
+<Example id="neutrals" title="Slate 50–900" layout="block">
+  Use the semantic surface, border and text tokens in product UI. Reach for a slate primitive only
+  while authoring or maintaining the token layer itself.
+</Example>
+
+## Semantic colors
+
+Success, warning, danger and info each provide a strong token for emphasis, a soft token for a
+subtle background, and a text token for readable ink on that background. This pairing keeps status
+states consistent across components.
+
+<Example id="semantic" title="Intent tokens" layout="block">
+  Pair `--*-soft` with its matching `--*-text`; use `--success`, `--warning`, `--danger` or `--info`
+  for the strong signal. Do not substitute green, amber, red or blue primitives in a component.
+</Example>
+
+## Dark mode
+
+`[data-theme="dark"]` replaces semantic surfaces, text, borders and intent values while the indigo,
+slate and status primitives remain fixed. A component that consumes only semantic tokens therefore
+adapts automatically, including inside a dark theme island.
+
+<Example id="dark" title="Dark semantic layer" layout="block">
+  The nested sample applies `data-theme="dark"` locally. Its surface tokens resolve to the night
+  scale, while the accent treatment moves toward lighter indigo steps for contrast.
+</Example>
