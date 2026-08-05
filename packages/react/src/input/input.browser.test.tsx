@@ -1,7 +1,7 @@
 // FORM-component test template (D-25) — the shape Phase 4 copies for every stateful,
 // value-carrying wrapper. Runs in the "browser" vitest project (real chromium) because a
 // CSS-first DS needs real rendering: jsdom applies zero CSS, so focus-visible states,
-// dark-theme token cascades and axe's color-contrast rule are all untestable there. This
+// dark-theme token cascades and axe accessibility checks are all untestable there. This
 // template adds what Button's SIMPLE template does not: the D-14 controlled/uncontrolled
 // contract exercised with real browser typing, and the field-chrome a11y wiring.
 //
@@ -10,7 +10,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { render, cleanup } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Input } from './index';
 
@@ -32,21 +32,6 @@ function setTheme(theme: (typeof THEMES)[number]): void {
   if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
   else document.documentElement.removeAttribute('data-theme');
   void document.documentElement.offsetHeight; // force style recalc
-}
-
-// Frozen brand tokens (@lyra-ds/styles, Phase 2) carry a known dark-theme color-contrast gap
-// tracked in .planning/…/deferred-items.md. The smoke matrix allows ONLY that `color-contrast`
-// finding while enforcing every other axe rule at full strength; structural/aria/name
-// violations still fail. Dedicated a11y fixtures assert attributes directly.
-async function expectNoViolations(
-  container: Element,
-  opts: { allowFrozenTokenContrast?: boolean } = {},
-): Promise<void> {
-  const results = await axe.run(container as HTMLElement);
-  const violations = opts.allowFrozenTokenContrast
-    ? results.violations.filter((v) => v.id !== 'color-contrast')
-    : results.violations;
-  expect(violations).toEqual([]);
 }
 
 afterEach(async () => {
@@ -257,7 +242,7 @@ describe('Input — smoke matrix (light + dark)', () => {
             <Input label="Email" hint="We never share it" size={size} placeholder="you@ex.dev" />,
           );
           expect(errorSpy).not.toHaveBeenCalled();
-          await expectNoViolations(container, { allowFrozenTokenContrast: true });
+          await expectNoAxeViolations(container);
         } finally {
           errorSpy.mockRestore();
         }
@@ -267,7 +252,7 @@ describe('Input — smoke matrix (light + dark)', () => {
     it(`error state in ${theme}: zero axe violations`, async () => {
       setTheme(theme);
       const { container } = await render(<Input label="Email" error="Email is required" />);
-      await expectNoViolations(container, { allowFrozenTokenContrast: true });
+      await expectNoAxeViolations(container);
     });
 
     it(`iconLeft in ${theme}: zero axe violations`, async () => {
@@ -275,7 +260,7 @@ describe('Input — smoke matrix (light + dark)', () => {
       const { container } = await render(
         <Input label="Search" iconLeft={<svg aria-hidden="true" width="16" height="16" />} />,
       );
-      await expectNoViolations(container, { allowFrozenTokenContrast: true });
+      await expectNoAxeViolations(container);
     });
   }
 });

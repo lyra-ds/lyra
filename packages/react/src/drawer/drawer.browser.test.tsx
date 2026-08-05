@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { useState } from 'react';
 import { Drawer } from './index';
@@ -61,9 +61,7 @@ describe('Drawer', () => {
         expect(panel.querySelector('.lyra-drawer__body')!.className).toBe('lyra-drawer__body');
         expect(panel.querySelector('.lyra-drawer__footer')!.className).toBe('lyra-drawer__footer');
         expect(panel.querySelector('.lyra-drawer__close')!.className).toBe('lyra-drawer__close');
-        expect(
-          (await axe.run(document.body)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(document.body);
         expect(errorSpy).not.toHaveBeenCalled();
       } finally {
         errorSpy.mockRestore();

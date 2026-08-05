@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { SidebarGroup } from './index';
 
@@ -48,9 +48,7 @@ describe('SidebarGroup', () => {
         await expect.element(inboxItem).toBeInTheDocument();
         await expect.element(inboxItem).toHaveAttribute('title', 'Open inbox');
         expect(error).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         error.mockRestore();
       }
@@ -58,18 +56,12 @@ describe('SidebarGroup', () => {
   }
 
   for (const theme of ['light', 'dark'] as const) {
-    it(`clears color-contrast on the section label in ${theme}`, async () => {
+    it(`is axe clean on the section label in ${theme}`, async () => {
       setTheme(theme);
       const { container } = await render(
         <SidebarGroup label="Workspace" items={[{ id: 'home', label: 'Home' }]} />,
       );
-      expect(
-        (
-          await axe.run(container.querySelector<HTMLElement>('.lyra-sbgroup__label')!, {
-            runOnly: ['color-contrast'],
-          })
-        ).violations,
-      ).toEqual([]);
+      await expectNoAxeViolations(container.querySelector<HTMLElement>('.lyra-sbgroup__label')!);
     });
   }
 

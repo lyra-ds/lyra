@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Tooltip } from './index';
 const themes = ['light', 'dark'] as const;
@@ -35,9 +35,7 @@ describe('Tooltip', () => {
         expect(root.getAttribute('data-tip')).toBe('More information');
         expect(trigger.getAttribute('aria-describedby')).toBe(tooltip.id);
         expect(spy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         spy.mockRestore();
       }

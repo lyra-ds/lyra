@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { WorkspaceSwitcher } from './index';
 
@@ -42,9 +42,7 @@ describe('WorkspaceSwitcher', () => {
         expect(root.querySelector('.lyra-wssw__create-label')!.className).toBe(
           'lyra-wssw__create-label',
         );
-        expect(
-          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
         expect(errorSpy).not.toHaveBeenCalled();
       } finally {
         errorSpy.mockRestore();

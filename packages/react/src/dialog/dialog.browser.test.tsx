@@ -2,20 +2,20 @@
 // focus-trap + presence overlay (Drawer, CommandPalette, Toast). Runs in the "browser" vitest
 // project (real chromium) because none of what this proves survives jsdom: real focus movement,
 // Tab/Shift+Tab trap wrapping, CSS exit animations (animationName reads), computed scroll-lock
-// padding, and axe's color-contrast rule ALL require a real engine.
+// padding, and axe accessibility checks ALL require a real engine.
 //
 // The @lyra-ds/styles entry CSS is imported IN THIS TEST (never in src, RCT-03). Vite resolves
 // its @import graph and injects it as a <style> — this is the fixture stylesheet, and it carries
 // the .lyra-dialog--closing / lyra-overlay-out exit keyframe the presence assertions read.
 //
 // Dialog renders through a Portal into document.body, so the assertions query document.* (NOT
-// the render container) and axe.run targets document.body — the tree the portal actually lands
+// the render container) and the shared axe helper targets document.body — the tree the portal actually lands
 // in. Dark theme is toggled on document.documentElement so the body-level portal inherits it.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState, type ReactNode } from 'react';
 import { render, cleanup } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Dialog, type DialogProps } from './index';
 
@@ -30,20 +30,6 @@ function setTheme(theme: (typeof THEMES)[number]): void {
   if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
   else document.documentElement.removeAttribute('data-theme');
   void document.documentElement.offsetHeight; // force style recalc
-}
-
-// Frozen brand tokens carry a known dark-theme color-contrast gap tracked in the phase
-// deferred-items log. The axe matrix allows ONLY that `color-contrast` finding while enforcing
-// every other rule at full strength; structural/aria/name violations still fail.
-async function expectNoViolations(
-  root: Element,
-  opts: { allowFrozenTokenContrast?: boolean } = {},
-): Promise<void> {
-  const results = await axe.run(root as HTMLElement);
-  const violations = opts.allowFrozenTokenContrast
-    ? results.violations.filter((v) => v.id !== 'color-contrast')
-    : results.violations;
-  expect(violations).toEqual([]);
 }
 
 // --- DOM accessors (portal target is document.body, not the render container) ----------------
@@ -452,7 +438,7 @@ describe('Dialog — custom container', () => {
       // Initial focus still landed inside the panel.
       expect(panel(host)!.contains(document.activeElement)).toBe(true);
       // axe scoped to the container.
-      await expectNoViolations(host, { allowFrozenTokenContrast: true });
+      await expectNoAxeViolations(host);
 
       await userEvent.keyboard('{Escape}');
       await vi.waitFor(() => expect(panel(host)).toBeNull(), { timeout: 500 });
@@ -508,7 +494,7 @@ describe('Dialog — axe (light + dark)', () => {
           </button>
         ),
       });
-      await expectNoViolations(document.body, { allowFrozenTokenContrast: true });
+      await expectNoAxeViolations(document.body);
     });
   }
 });

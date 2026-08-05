@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { CheckboxGroup } from './index';
 
@@ -42,7 +42,7 @@ describe('CheckboxGroup', () => {
       expect(container.querySelector('.lyra-hint--error')!.textContent).toBe(
         'Choose at least one channel.',
       );
-      expect((await axe.run(container)).violations).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 

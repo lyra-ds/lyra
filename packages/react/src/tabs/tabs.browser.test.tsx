@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Tabs } from './index';
 
@@ -15,11 +15,6 @@ const items = [
 function setTheme(theme: (typeof themes)[number]): void {
   if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
   else document.documentElement.removeAttribute('data-theme');
-}
-async function expectAxe(root: Element): Promise<void> {
-  expect(
-    (await axe.run(root as HTMLElement)).violations.filter((v) => v.id !== 'color-contrast'),
-  ).toEqual([]);
 }
 afterEach(async () => {
   await cleanup();
@@ -41,7 +36,7 @@ describe('Tabs', () => {
         expect(container.querySelector('[role=tab]')!.className).toBe('lyra-tab lyra-tab--active');
         expect(container.querySelector('.lyra-tab__count')!.className).toBe('lyra-tab__count');
         expect(spy).not.toHaveBeenCalled();
-        await expectAxe(container);
+        await expectNoAxeViolations(container);
       } finally {
         spy.mockRestore();
       }

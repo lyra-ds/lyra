@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { PageHeader } from './index';
 
@@ -18,7 +18,7 @@ describe('PageHeader', () => {
     expect(container.querySelector('.lyra-pageheader__eyebrow')).toBeNull();
     expect(container.querySelector('.lyra-pageheader__desc')).toBeNull();
     expect(container.querySelector('.lyra-pageheader__actions')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('renders a section title with its existing classes, attributes, and slots', async () => {
@@ -81,6 +81,6 @@ describe('PageHeader', () => {
       .element(screen.getByRole('navigation', { name: 'Project sections' }))
       .toBeInTheDocument();
     expect(header.lastElementChild?.tagName).toBe('NAV');
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 });

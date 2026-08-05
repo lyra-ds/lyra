@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { CreateWorkspaceDialog } from './index';
 
@@ -33,9 +33,7 @@ describe('CreateWorkspaceDialog', () => {
         expect(root.querySelector('.lyra-wscreate__slug-input')!.className).toBe(
           'lyra-wscreate__slug-input',
         );
-        expect(
-          (await axe.run(document.body)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(document.body);
         expect(errorSpy).not.toHaveBeenCalled();
       } finally {
         errorSpy.mockRestore();

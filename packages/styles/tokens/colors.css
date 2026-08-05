@@ -65,7 +65,7 @@
   --text-primary:   var(--slate-900);
   --text-secondary: var(--slate-600);
   --text-muted:     var(--slate-500);
-  --text-faint:     var(--slate-400);
+  --text-faint:     var(--slate-500);
   --text-inverse:   #FFFFFF;
   --text-link:      var(--indigo-600);
 

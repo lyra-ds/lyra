@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Inline, Stack } from './index';
 
@@ -16,7 +16,7 @@ describe('Stack', () => {
     const stack = container.querySelector<HTMLElement>('.lyra-stack')!;
 
     expect(stack.getAttribute('style')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it.each([
@@ -56,6 +56,6 @@ describe('Inline', () => {
     expect(inline.style.getPropertyValue('--lyra-stack-gap')).toBe('var(--space-2)');
     expect(inline.style.getPropertyValue('--lyra-stack-align')).toBe('center');
     expect(inline.style.getPropertyValue('--lyra-stack-wrap')).toBe('wrap');
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 });

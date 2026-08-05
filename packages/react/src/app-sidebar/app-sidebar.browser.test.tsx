@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { AppSidebar } from './index';
 import { SidebarGroup } from '../sidebar-group';
@@ -60,7 +60,7 @@ describe('AppSidebar', () => {
           container.querySelector('.lyra-sbgroup__item--active')?.getAttribute('aria-current'),
         ).toBe('page');
         expect(error).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         error.mockRestore();
       }
@@ -90,7 +90,7 @@ describe('AppSidebar', () => {
     expect(
       container.querySelector('.lyra-sbgroup__item + .lyra-sbgroup__item')?.getAttribute('title'),
     ).toBe('Settings');
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('reports a controlled toggle without changing its own collapsed state', async () => {
@@ -143,6 +143,6 @@ describe('AppSidebar', () => {
     const link = screen.getByRole('link', { name: 'Guides' });
     await expect.element(link).toHaveAttribute('title', 'Guides');
     await expect.element(link).toHaveAttribute('aria-label', 'Guides');
-    expect((await axe.run(screen.container)).violations).toEqual([]);
+    await expectNoAxeViolations(screen.container);
   });
 });

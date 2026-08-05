@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { FileUpload } from './index';
 
@@ -34,7 +34,7 @@ describe('FileUpload', () => {
         expect(container.querySelector('.lyra-upload__list')!.className).toBe('lyra-upload__list');
         expect(container.querySelector('.lyra-upload__item')!.className).toBe('lyra-upload__item');
         expect(errorSpy).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         errorSpy.mockRestore();
       }

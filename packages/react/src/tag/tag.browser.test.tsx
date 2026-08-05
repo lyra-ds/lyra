@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Tag } from './index';
 afterEach(cleanup);
@@ -15,7 +15,7 @@ describe('Tag', () => {
       (container.querySelector('button') as HTMLButtonElement).click();
       expect(remove).toHaveBeenCalledOnce();
       expect(error).not.toHaveBeenCalled();
-      expect((await axe.run(container)).violations).toEqual([]);
+      await expectNoAxeViolations(container);
       error.mockRestore();
     });
 

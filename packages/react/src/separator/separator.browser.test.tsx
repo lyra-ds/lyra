@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Separator } from './index';
 
@@ -34,7 +34,7 @@ describe('Separator', () => {
       const labelled = container.querySelector<HTMLElement>('.lyra-separator--label')!;
       expect(labelled.className).toBe('lyra-separator--label');
       await expect.element(labelled).toBeInTheDocument();
-      expect((await axe.run(container)).violations).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 });

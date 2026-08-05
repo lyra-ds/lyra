@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Popover } from './index';
 import { Button } from '../button';
@@ -43,9 +43,7 @@ describe('Popover', () => {
         expect(trigger.getAttribute('aria-controls')).toBe(panel.id);
         await expect.element(panel).toBeInTheDocument();
         expect(errorSpy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         errorSpy.mockRestore();
       }

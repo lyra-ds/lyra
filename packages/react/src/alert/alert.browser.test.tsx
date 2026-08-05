@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Alert } from './index';
 afterEach(cleanup);
@@ -19,7 +19,7 @@ describe('Alert', () => {
           `lyra-alert lyra-alert--${tone}`,
         );
         expect(error).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations).toEqual([]);
+        await expectNoAxeViolations(container);
         error.mockRestore();
       });
 });

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Select } from './index';
 const themes = ['light', 'dark'] as const;
@@ -31,9 +31,7 @@ describe('Select', () => {
           container.querySelector('.lyra-hint')!.id,
         );
         expect(spy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         spy.mockRestore();
       }

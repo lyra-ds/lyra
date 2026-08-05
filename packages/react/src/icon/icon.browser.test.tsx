@@ -3,7 +3,7 @@
 // IN THIS TEST (never in src, RCT-03); Vite resolves its @import graph into a <style>.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, cleanup } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import { Camera } from 'lucide-react';
 import '@lyra-ds/styles/styles.css';
 import { Icon } from './index';
@@ -49,8 +49,7 @@ describe('Icon — registry smoke (light + dark)', () => {
         expect(svg.getAttribute('height')).toBe('20');
         expect(svg.getAttribute('aria-hidden')).toBe('true');
       });
-      const results = await axe.run(container as HTMLElement);
-      expect(results.violations).toEqual([]);
+      await expectNoAxeViolations(container as HTMLElement);
     });
   }
 });
@@ -147,8 +146,7 @@ describe('Icon — a11y', () => {
       expect(named.getAttribute('role')).toBe('img');
       expect(named.getAttribute('aria-label')).toBe('Settings');
       expect(named.hasAttribute('aria-hidden')).toBe(false);
-      let results = await axe.run(labelled.container as HTMLElement);
-      expect(results.violations).toEqual([]);
+      await expectNoAxeViolations(labelled.container as HTMLElement);
       await cleanup();
 
       const decorative = await render(<Icon name="settings" />);
@@ -156,8 +154,7 @@ describe('Icon — a11y', () => {
       expect(deco.getAttribute('aria-hidden')).toBe('true');
       expect(deco.hasAttribute('role')).toBe(false);
       expect(deco.hasAttribute('aria-label')).toBe(false);
-      results = await axe.run(decorative.container as HTMLElement);
-      expect(results.violations).toEqual([]);
+      await expectNoAxeViolations(decorative.container as HTMLElement);
     });
   }
 });

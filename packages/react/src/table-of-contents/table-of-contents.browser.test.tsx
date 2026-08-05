@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { TableOfContents, useScrollSpy } from './index';
 
@@ -93,7 +93,7 @@ describe('TableOfContents', () => {
     expect(activeLink.getAttribute('aria-current')).toBe('location');
     expect(activeLink.closest('li')?.getAttribute('data-level')).toBe('3');
     expect(container.querySelector('a[href="#overview"]')!.getAttribute('aria-current')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('merges a consumer className after the TableOfContents class', async () => {

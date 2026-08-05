@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Accordion } from './index';
 
@@ -31,9 +31,7 @@ describe('Accordion', () => {
         );
         expect(container.querySelector('.lyra-acc__trigger')!.className).toBe('lyra-acc__trigger');
         expect(spy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         spy.mockRestore();
       }
@@ -64,9 +62,7 @@ describe('Accordion', () => {
     expect(openWrap.getBoundingClientRect().height).toBeGreaterThan(0);
 
     // A collapsed panel that is still in the DOM must not be reachable by assistive technology.
-    expect((await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast')).toEqual(
-      [],
-    );
+    await expectNoAxeViolations(container);
   });
 
   it('animates the panel height instead of snapping it open', async () => {

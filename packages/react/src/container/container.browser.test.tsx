@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Container } from './index';
 
@@ -12,7 +12,7 @@ describe('Container', () => {
     const content = container.querySelector<HTMLElement>('.lyra-container')!;
 
     expect(content.getAttribute('style')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('sets max as the cascading container custom property', async () => {

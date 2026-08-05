@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Card } from './index';
 afterEach(cleanup);
@@ -23,7 +23,7 @@ describe('Card', () => {
       // Actions are grouped by the .lyra-card__actions class, not an inline flex style.
       expect(container.querySelector('.lyra-card__actions')).not.toBeNull();
       expect(error).not.toHaveBeenCalled();
-      expect((await axe.run(container)).violations).toEqual([]);
+      await expectNoAxeViolations(container);
       error.mockRestore();
     });
 
@@ -39,7 +39,7 @@ describe('Card', () => {
     expect(anchor.className).toBe('lyra-card lyra-card--interactive lyra-card--padded');
     expect(anchor.getAttribute('href')).toBe('/components/card');
     expect(error).not.toHaveBeenCalled();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
     error.mockRestore();
   });
 });

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { useState } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { SegmentedControl, type SegmentedControlOption } from './index';
 
@@ -121,8 +121,6 @@ describe('SegmentedControl', () => {
 
   it('is axe clean', async () => {
     const { container } = await render(<Harness />);
-    expect(
-      (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-    ).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 });

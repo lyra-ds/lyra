@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Combobox } from './index';
 
@@ -68,9 +68,7 @@ describe('Combobox', () => {
           'lyra-combobox__option-hint',
         );
         expect(errorSpy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         errorSpy.mockRestore();
       }

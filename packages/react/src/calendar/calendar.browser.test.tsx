@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Calendar } from './index';
 
@@ -32,9 +32,7 @@ describe('Calendar', () => {
         'lyra-cal__day',
       );
       expect(container.querySelector('.lyra-cal__foot')!.className).toBe('lyra-cal__foot');
-      expect(
-        (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 

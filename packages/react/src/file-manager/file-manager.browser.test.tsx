@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { FileManager } from './index';
 
@@ -58,9 +58,7 @@ describe('FileManager', () => {
         expect(more.getAttribute('aria-haspopup')).toBe('menu');
         expect(more.getAttribute('aria-label')).toBe('Actions for Projects');
         expect(errorSpy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         errorSpy.mockRestore();
       }
@@ -79,22 +77,15 @@ describe('FileManager', () => {
         'lyra-fm__icon lyra-fm__icon--big lyra-fm__icon--folder',
       );
       expect(container.querySelector('.lyra-fm__card-meta')!.className).toBe('lyra-fm__card-meta');
-      expect(
-        (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 
   for (const theme of themes) {
-    it(`clears color-contrast on the column headings in ${theme}`, async () => {
+    it(`is axe clean on the column headings in ${theme}`, async () => {
       setTheme(theme);
       const { container } = await render(<FileManager files={files} />);
-      const violations = (
-        await axe.run(container.querySelector<HTMLElement>('.lyra-fm__head')!, {
-          runOnly: ['color-contrast'],
-        })
-      ).violations;
-      expect(violations).toEqual([]);
+      await expectNoAxeViolations(container.querySelector<HTMLElement>('.lyra-fm__head')!);
     });
   }
 

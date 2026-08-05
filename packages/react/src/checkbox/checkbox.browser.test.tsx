@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Checkbox } from './index';
 
@@ -27,7 +27,7 @@ describe('Checkbox', () => {
         expect(wrapper.className).toBe('lyra-check-row');
         expect(wrapper.querySelector('span')!.textContent).toBe('Accept terms');
         expect(errorSpy).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         errorSpy.mockRestore();
       }

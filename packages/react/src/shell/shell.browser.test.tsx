@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Shell } from './index';
 
@@ -48,7 +48,7 @@ describe('Shell', () => {
     expect(container.querySelector('.lyra-shell__topbar')).toBeNull();
     expect(container.querySelector('.lyra-shell__aside')).toBeNull();
     expect(container.querySelector('.lyra-shell')!.getAttribute('style')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('renders an embedded shell without a main landmark while preserving slots and attributes', async () => {
@@ -133,7 +133,7 @@ describe('Shell', () => {
       expect(getComputedStyle(rail).overflowY).toBe('auto');
       expect(getComputedStyle(rail).overscrollBehaviorY).toBe('contain');
     }
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('hides the aside and collapses its grid track at 1100px', async () => {

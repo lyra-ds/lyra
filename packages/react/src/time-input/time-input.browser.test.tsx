@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { TimeInput } from './index';
 
@@ -121,9 +121,7 @@ describe('TimeInput', () => {
       const { container } = await render(
         <TimeInput label="Start time" hint="Use a 24-hour time" defaultValue="09:00" />,
       );
-      expect(
-        (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 });

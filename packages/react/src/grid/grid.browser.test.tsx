@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Grid } from './index';
 
@@ -12,7 +12,7 @@ describe('Grid', () => {
     const grid = container.querySelector<HTMLElement>('.lyra-grid')!;
 
     expect(grid.getAttribute('style')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('maps numeric columns and gap steps to custom properties', async () => {
