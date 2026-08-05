@@ -202,6 +202,18 @@ const DARK_FILL_CONTRAST_DIVERGENCES = new Map([
   ['--danger', { handoff: 'var(--red-500)', package: 'var(--red-600)' }],
 ]);
 
+// Approved light-theme text contrast repair (2026-08-04 axe color-contrast sweep). The handoff's
+// `--text-faint: var(--slate-400)` measures 2.34–2.56:1 against the light surfaces it colors
+// (placeholders, group labels, CalendarView hour rail, Calendar outside-month days) — far below
+// the 4.5:1 AA floor for normal-size text. Raised one palette step to slate-500 (4.76:1 on white),
+// deliberately collapsing the light-theme faint/muted distinction: text that only "worked" below
+// 3:1 was noise, not hierarchy. The dark-theme `--text-faint` (#6C739E, 3.9–4.2:1) is unchanged —
+// borderline, accepted and allowlisted in the Browser Mode axe suites. Same exact-pin contract as
+// the dark map above: any other light-token drift remains a parity failure.
+const LIGHT_TEXT_CONTRAST_DIVERGENCES = new Map([
+  ['--text-faint', { handoff: 'var(--slate-400)', package: 'var(--slate-500)' }],
+]);
+
 // Approved white-label ink derivation. The handoff's valid white default must remain outside
 // @supports so engines without relative-color syntax do not inherit the page text color. Inside
 // the exact support guard, this derivation chooses neutral black or white from the resolved accent
@@ -772,7 +784,8 @@ function isAllowedTokenDivergence(name, handoffValues, packageValues) {
     );
   }
 
-  const divergence = DARK_FILL_CONTRAST_DIVERGENCES.get(name);
+  const divergence =
+    DARK_FILL_CONTRAST_DIVERGENCES.get(name) ?? LIGHT_TEXT_CONTRAST_DIVERGENCES.get(name);
   if (divergence === undefined) return false;
 
   const expectedPackageValues = [...handoffValues];
@@ -847,6 +860,17 @@ function isAllowedDivergence(relPath, hd, pd) {
     hd.blockPath.at(-1) === '[data-theme="dark"]' &&
     hd.val === darkFill.handoff &&
     pd.val === darkFill.package
+  ) {
+    return true;
+  }
+
+  const lightText = LIGHT_TEXT_CONTRAST_DIVERGENCES.get(hd.prop);
+  if (
+    relPath === 'tokens/colors.css' &&
+    lightText !== undefined &&
+    hd.blockPath.at(-1) === ':root' &&
+    hd.val === lightText.handoff &&
+    pd.val === lightText.package
   ) {
     return true;
   }
