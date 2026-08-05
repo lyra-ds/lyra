@@ -28,11 +28,26 @@
 # override to merge. With the PAT, the version PR is gated like any other.
 # The PAT expires (owner: franciscpd); when it does, the action falls back
 # to GITHUB_TOKEN and the only symptom is version PRs with no checks again.
+#
+# The `snapshot` job lives in THIS file on purpose: npm allows only ONE
+# trusted publisher per package, and the registration is scoped to a single
+# workflow filename — a separate snapshot workflow could never publish via
+# OIDC without replacing (and breaking) the release registration. Dispatching
+# this workflow manually runs ONLY the snapshot job; pushes to main run ONLY
+# the release job. Snapshot versions are throwaway `0.0.0-snapshot-*` builds
+# on the npm `snapshot` dist-tag so contributors can test a ref without a
+# real release; nothing is committed, tagged, or released on GitHub.
 name: Release
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref-note:
+        description: Optional note about the selected ref; shown in the logs.
+        required: false
+        type: string
 
 permissions:
   contents: write # push the version branch, tags, GitHub Releases
@@ -46,7 +61,8 @@ concurrency:
 jobs:
   release:
     # Never run on forks — they have no secrets and must not try to publish.
-    if: github.repository == 'lyra-ds/lyra'
+    # Manual dispatches belong to the snapshot job below.
+    if: github.repository == 'lyra-ds/lyra' && github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
       # @lyra-ds/react's declaration build needs >4 GB of heap with 71 per-entry dts builds (measured —
@@ -118,3 +134,56 @@ jobs:
           done
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  snapshot:
+    # Manual dispatch only. Publishes 0.0.0-snapshot-* to the `snapshot`
+    # dist-tag so contributors can test the selected ref; no commits, no
+    # tags, no GitHub Releases.
+    if: github.repository == 'lyra-ds/lyra' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC exchange)
+    env:
+      # Same heap requirement as the release job (see DEPLOY.md).
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # changesets needs history to compute the changelog links.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Describe snapshot
+        run: |
+          printf 'Snapshot ref: %s\n' "$GITHUB_SHA"
+          printf 'Reference note: %s\n' "${REF_NOTE:-<none>}"
+        env:
+          REF_NOTE: ${{ inputs.ref-note }}
+      - name: Check for changesets
+        run: |
+          changesets=(.changeset/*.md)
+          for changeset in "${changesets[@]}"; do
+            if [ "$changeset" != '.changeset/README.md' ] && [ -f "$changeset" ]; then
+              exit 0
+            fi
+          done
+          echo '::error::No changeset files were found for this ref. Add a changeset before dispatching a snapshot.'
+          exit 1
+      - name: Version packages for snapshot
+        run: pnpm changeset version --snapshot snapshot
+      - run: pnpm run build
+      - name: Publish @lyra-ds/styles snapshot (OIDC)
+        working-directory: packages/styles
+        # Top-level `run` on purpose — the OIDC exchange needs the step's own
+        # env (npm/cli#8976).
+        run: pnpm publish --tag snapshot --no-git-checks
+      - name: Publish @lyra-ds/react snapshot (OIDC)
+        working-directory: packages/react
+        # Top-level `run` on purpose — the OIDC exchange needs the step's own
+        # env (npm/cli#8976).
+        run: pnpm publish --tag snapshot --no-git-checks
