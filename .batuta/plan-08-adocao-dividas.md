@@ -1,79 +1,75 @@
-# Plano 08 — Adoção + dívidas (marco pós-v1)
+# Plan 08 — Adoption + debt (post-v1 milestone)
 
-Definido em 2026-08-03 com o usuário, logo após o fechamento da Fase 7 (v1
-lançado) e do 6c-d (favicon theme-aware, PR #50). Racional: a janela de
-lançamento perece; Zag.js (fase 2 travada) e o satélite Vue não. A escolha
-entre eles fica para o marco seguinte, informada pelo sinal que a divulgação
-trouxer (pedidos de Vue → satélite; bugs de interação → Zag).
+Defined with the user on 2026-08-03, immediately after the close of Phase 7
+(v1 released) and 6c-d (theme-aware favicon, PR #50). Rationale: the release
+window expires; Zag.js (blocked phase 2) and the Vue satellite do not. The
+choice between them belongs to the next milestone, informed by the signal
+promotion brings (Vue requests → satellite; interaction bugs → Zag).
 
-Decisões do usuário (2026-08-03):
+User decisions (2026-08-03):
 
-- **Anúncio/blog**: sem infra nova — GitHub Discussion fixada como anúncio
-  canônico + cross-post em dev.to com link canonical. Blog próprio só se a
-  cadência justificar depois.
-- **Starter templates**: repos separados na org (`lyra-ds/starter-vite`,
-  `lyra-ds/starter-next`) — clonáveis direto e visíveis na org. Custo aceito:
-  manter dois repos em sincronia com os releases.
+- **Announcement/blog**: no new infrastructure — a pinned GitHub Discussion as
+  the canonical announcement + a dev.to cross-post with canonical link. A
+  dedicated blog only if the cadence later justifies it.
+- **Starter templates**: separate repositories in the org
+  (`lyra-ds/starter-vite`, `lyra-ds/starter-next`) — directly cloneable and
+  visible in the org. Accepted cost: keep two repositories in sync with releases.
 
-## Trilha 1 — dívidas de release (sequencial, nesta ordem)
+## Track 1 — release debt (sequential, in this order)
 
-- [x] **08-1 tsup → tsdown** (PR #54, 2026-08-03) — no `@lyra-ds/react`. Caminho sancionado pelo
-      próprio tsup; usar `migrate-from-tsup`. Prova de equivalência do dist é
-      o job build do CI (publint, attw, size-limit, pack-smoke, dist-scan,
-      smoke) — os gates existem exatamente para isso. Atenção: o prepend
-      determinístico de `'use client'` vive no `onSuccess` do tsup e precisa
-      de equivalente; exports map == entries == basenames do dist continua lei.
-      Gera changeset patch (é a mudança de build que o 0.1.1 precisa).
-- [x] **08-2 Release 0.1.1 via OIDC** (2026-08-03, run 30838899789, provenance SLSA nos dois pacotes) — — merge do Version Packages PR prova o
-      caminho trusted publishing de ponta a ponta (provenance por default).
-      Primeiro release desde a migração do PR #43.
-- [x] **08-3 Revogar `NPM_TOKEN`** (2026-08-03, secret removido, header atualizado) — (manual, usuário) — destravado pelo
-      release OIDC verde. Remover o fallback documentado no cabeçalho do
-      workflow no mesmo PR que registrar a revogação.
+- [x] **08-1 tsup → tsdown** (PR #54, 2026-08-03) — in `@lyra-ds/react`. The
+      path sanctioned by tsup itself; use `migrate-from-tsup`. The CI build job
+      proves dist equivalence (publint, attw, size-limit, pack-smoke, dist-scan,
+      smoke) — the gates exist precisely for that. Attention: tsup's deterministic
+      `'use client'` prepend lives in `onSuccess` and needs an equivalent; exports
+      map == entries == dist basenames remains law. Generates a patch changeset
+      (this is the build change needed by 0.1.1).
+- [x] **08-2 Release 0.1.1 via OIDC** (2026-08-03, run 30838899789, SLSA
+      provenance on both packages) — merging the Version Packages PR proves the
+      trusted-publishing path end to end (provenance by default). First release
+      since the PR #43 migration.
+- [x] **08-3 Revoke `NPM_TOKEN`** (2026-08-03, secret removed, header updated)
+      — (manual, user) — unblocked by the green OIDC release. Remove the fallback
+      documented in the workflow header in the same PR that records the revocation.
 
-## Trilha 2 — adoção (independente da trilha 1, qualquer ordem)
+## Track 2 — adoption (independent of track 1, any order)
 
-- [ ] **08-4 Templates de contribuição** — issue forms (bug, feature, docs),
-      PR template, labels curados. CONTRIBUTING.md e CoC já existem.
-- [ ] **08-5 Good first issues curadas** — 3 a 5 issues no molde da #28
-      (contexto, arquivos, critério de aceite, sem solução mastigada).
-- [ ] **08-6 Conteúdo de lançamento** — texto do anúncio (Discussion fixada,
-      bilíngue) + drafts de divulgação para o usuário postar: Show HN,
-      r/reactjs, dev.to (canonical → Discussion), X/Bluesky.
-- [ ] **08-7 Starter templates** — `lyra-ds/starter-vite` e
-      `lyra-ds/starter-next`: mínimos, instalando as versões públicas do npm,
-      demonstrando styles + react + white-label em 4 tokens + dark mode.
-      Criação dos repos é manual do usuário (guiada); conteúdo vem daqui.
-- [ ] **08-8 Snapshot releases** — workflow `workflow_dispatch` com
-      `seek-oss/changesets-snapshot` (`0.0.0-snapshot-*`) para contribuidor
-      testar PR sem release real.
+- [ ] **08-4 Contribution templates** — issue forms (bug, feature, docs), PR
+      template, curated labels. CONTRIBUTING.md and CoC already exist.
+- [ ] **08-5 Curated good first issues** — 3 to 5 issues in the #28 form
+      (context, files, acceptance criteria, no spoon-fed solution).
+- [ ] **08-6 Release content** — announcement copy (pinned, bilingual
+      Discussion) + promotional drafts for the user to post: Show HN, r/reactjs,
+      dev.to (canonical → Discussion), X/Bluesky.
+- [ ] **08-7 Starter templates** — `lyra-ds/starter-vite` and
+      `lyra-ds/starter-next`: minimal, installing public npm versions,
+      demonstrating styles + react + white-label in 4 tokens + dark mode.
+      Creating the repositories is manual work by the user (guided); the content
+      comes from here.
+- [ ] **08-8 Snapshot releases** — `workflow_dispatch` workflow with
+      `seek-oss/changesets-snapshot` (`0.0.0-snapshot-*`) so a contributor can
+      test a PR without a real release.
 
-## Trilha 3 — governança (pedido do usuário, 2026-08-03)
+## Track 3 — governance (requested by the user, 2026-08-03)
 
-- [ ] **08-9 Documentação do projeto em inglês** — revisitar as regras para que
-      toda documentação voltada ao público (README, CONTRIBUTING, templates,
-      changesets, comentários) seja em inglês, por ser open source. Decidir o
-      destino da prosa interna (WORK.md, `.batuta/`) junto com o usuário antes
-      de converter qualquer coisa.
-- [ ] **08-10 Limpeza de `.batuta/` e `WORK.md`** — arquivar briefs de lotes já
-      entregues, condensar o histórico do WORK.md (as lições migram para o
-      profile ou para um arquivo de lições), remover planos concluídos.
+- [ ] **08-9 Project documentation in English** — revisit the rules so every
+      public-facing document (README, CONTRIBUTING, templates, changesets,
+      comments) is English, as this is open source. Decide the fate of internal
+      prose (`WORK.md`, `.batuta/`) with the user before converting anything.
+- [ ] **08-10 `.batuta/` and `WORK.md` cleanup** — archive delivered lot briefs,
+      condense WORK.md history (move lessons to the profile or a lessons file),
+      remove completed plans.
 
-## Fora deste marco (registrado para o próximo)
+## Outside this milestone (recorded for the next one)
 
-- Fase 2 travada: camada de comportamento Zag.js nos wrappers interativos.
-- Satélite `@lyra-ds/vue` (primeiro "Em breve" a cair).
-- TS 7 (depende de 08-1 maturar), preset Tailwind satélite.
-- **Fase 8 — porte do delta do handoff v1.1+v1.2** (~28 componentes restantes,
-  TODOS com handoff completo: JSX de referência + `.d.ts` + CSS): scheduling
-  inteiro (CalendarView, SlotPicker, TimeZonePicker, WeeklyScheduleEditor,
-  RecurrenceSelector, SegmentedRing), forms de data (Calendar, DatePicker,
-  DateRangePicker, TimePicker, TimeInput) + RadioGroup/CheckboxGroup/Fieldset/
-  FormRow, primitives (Popover, Portal, VisuallyHidden), data (DataTable,
-  PersonCell, DiffCard), AppSidebar, BottomNav, BottomSheet, Dropzone,
-  ToastProvider e as extensões do Combobox (bloqueiam o TimeZonePicker). Mapa
-  e ondas em `.batuta/handoff-v1.2-map.md`; fonte em
-  `~/Documents/design_handoff_lyra_v1_2` (copiar para `handoff/` ao abrir a
-  fase, regenerando o parity baseline). CORREÇÃO 2026-08-03: uma nota anterior
-  aqui dizia que a família de data "não estava no handoff" — estava, no delta
-  v1.2; o registro errado foi substituído por este.
+- Blocked Phase 2: Zag.js behavior layer in interactive wrappers.
+- `@lyra-ds/vue` satellite (the first “Coming soon” item to fall).
+- TS 7 (depends on 08-1 maturing), Tailwind satellite preset.
+- ~~Phase 8 — port the v1.1+v1.2 handoff delta~~ COMPLETED 2026-08-03 (waves
+  1–6d, catalog at 78 components; see WORK.md). Only DiffCard remains, below.
+- **dts build debt:** one tsdown configuration per entry does not scale (71
+  entries exhaust the 4 GiB heap). It is mitigated with `--concurrency 2` +
+  `NODE_OPTIONS=8192`; evaluate the real post-phase fix: a single-pass
+  `tsc --emitDeclarationOnly` or tsdown's dts worker once mature.
+- **DiffCard:** the one v1.2 handoff component not yet ported; it can be
+  reconstructed from its CSS. Decide when it becomes relevant.

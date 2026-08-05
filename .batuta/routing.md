@@ -1,33 +1,34 @@
-# Routing — lyra-ds (confirmado no onboarding, 2026-07-20)
+# Routing — lyra-ds (confirmed during onboarding, 2026-07-20)
 
-Cópia local da tabela de roteamento do Batuta. Executores e modelos exatos
-confirmados pelo usuário. Nota: `opencode` vive em `~/.opencode/bin` — se
-`command -v opencode` falhar num shell não-interativo, prefixe
+Local copy of the Batuta routing table. Exact executors and models confirmed by
+the user. Note: `opencode` lives in `~/.opencode/bin` — if `command -v opencode`
+fails in a non-interactive shell, prefix
 `export PATH="$HOME/.opencode/bin:$PATH"`.
 
-| Complexity | Examples                                                                                 | Executor                                                    | Cost                |
-| ---------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------- |
-| Trivial    | rename, config, copy change, simple unit test                                            | opencode + `opencode/kimi-k2.7-code`                        | cents (API)         |
-| Medium     | isolated feature, bugfix with clear repro                                                | codex (default model — `gpt-5.6-terra`, assinatura ChatGPT) | flat (subscription) |
-| Complex    | multi-file feature/refactor que um brief autossuficiente especifica por completo         | codex `-m gpt-5.6-terra -c model_reasoning_effort="high"`   | flat (subscription) |
-| Critical   | arquitetura, trabalho sensível a segurança, tarefas que precisam do contexto da conversa | claude (a própria sessão)                                   | Claude subscription |
+| Complexity | Examples                                                                    | Executor                                                      | Cost                |
+| ---------- | --------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------- |
+| Trivial    | rename, config, copy change, simple unit test                               | opencode + `opencode/kimi-k2.7-code`                          | cents (API)         |
+| Medium     | isolated feature, bugfix with clear repro                                   | codex (default model — `gpt-5.6-terra`, ChatGPT subscription) | flat (subscription) |
+| Complex    | multi-file feature/refactor that a self-contained brief fully specifies     | codex `-m gpt-5.6-terra -c model_reasoning_effort="high"`     | flat (subscription) |
+| Critical   | architecture, security-sensitive work, tasks that need conversation context | claude (this session itself)                                  | Claude subscription |
 
 ## Support lanes
 
-| Role     | Examples                                     | Executor                                                           | Cost        |
-| -------- | -------------------------------------------- | ------------------------------------------------------------------ | ----------- |
-| Research | map sweep, contexto de brief, "onde vive X?" | opencode + `opencode/kimi-k2.7-code` (read-only por brief + guard) | cents (API) |
+| Role     | Examples                                       | Executor                                                               | Cost        |
+| -------- | ---------------------------------------------- | ---------------------------------------------------------------------- | ----------- |
+| Research | map sweep, brief context, "where does X live?" | opencode + `opencode/kimi-k2.7-code` (read-only through brief + guard) | cents (API) |
 
-Nota (2026-07-21): lane de Research migrada de `deepseek-v4-flash-free` para a
-versão paga — o tier free travou duas vezes (map sweep do onboarding e scout do
-Lote C, ambos mortos sem output).
+Note (2026-07-21): the Research lane moved from `deepseek-v4-flash-free` to the
+paid version — the free tier hung twice (the onboarding map sweep and the Lot C
+scout, both dead without output).
 
-Nota (2026-07-27): Research migrada de `deepseek-v4-flash` para
-`kimi-k2.7-code` (mesmo modelo da lane Trivial — uma conta só, comportamento
-já conhecido no projeto), confirmado no /batuta:init de reconfiguração.
+Note (2026-07-27): Research moved from `deepseek-v4-flash` to
+`kimi-k2.7-code` (the same model as the Trivial lane — one account only, with
+behavior already known in the project), confirmed in the reconfiguration
+`/batuta:init`.
 
 ## Rules
 
-As regras do `routing.md` global do plugin aplicam-se integralmente
-(classificação anunciada em uma linha, override verbal, escalação após 2
-falhas, adapters dormentes, Complex vs Critical pelo teste do brief).
+The rules in the plugin's global `routing.md` apply in full (classification
+announced in one line, verbal override, escalation after 2 failures, dormant
+adapters, Complex vs. Critical by the brief test).

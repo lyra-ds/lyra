@@ -1,39 +1,39 @@
 # Batuta profile — lyra-ds
 
-Criado em 2026-07-20 via /batuta:init. Complementa `.claude/CLAUDE.md` — o que
-já está lá (constraints da arquitetura CSS-first, stack travado, decisões
-locked) NÃO se repete aqui; briefs devem apontar executores para as
-constraints relevantes do CLAUDE.md quando tocarem em estilo/tokens.
+Created on 2026-07-20 via `/batuta:init`. Complements `.claude/CLAUDE.md` —
+what is already there (CSS-first architecture constraints, fixed stack, locked
+decisions) is NOT repeated here; briefs must point executors to the relevant
+CLAUDE.md constraints when they touch style/tokens.
 
 ## Stack
 
-- Monorepo pnpm 11.13.1 (workspaces + changesets), Node 24, TypeScript 5.9.3.
-- `packages/react` (React 19 dev / peer >=18, build tsup) + `packages/styles`
-  (CSS puro, sem build). Template de convenções: `templates/react.md` do
-  plugin Batuta — com a ressalva de que styling aqui é SEMPRE classes
-  `.lyra-*` do pacote styles (nunca CSS novo inline/module no react).
+- pnpm 11.13.1 monorepo (workspaces + changesets), Node 24, TypeScript 5.9.3.
+- `packages/react` (React 19 dev / peer >=18, tsup build) + `packages/styles`
+  (plain CSS, no build). Convention template: the Batuta plugin's
+  `templates/react.md`, except styling here is ALWAYS `.lyra-*` classes from
+  the styles package (never new inline/module CSS in react).
 
-## Metodologia
+## Methodology
 
-- Testes depois da implementação (tests-after), runner Vitest (Browser Mode
-  para componente/a11y).
-- Conventional commits; feature branches com PR para `main` (branch
-  protegida — nunca commitar direto na main).
+- Tests after implementation (tests-after), Vitest runner (Browser Mode for
+  component/a11y).
+- Conventional commits; feature branches with PRs to `main` (protected branch
+  — never commit directly to main).
 
 Execution: sequential
 Worktree: medium+
 Install: pnpm install
 
-## Comandos
+## Commands
 
 - Test: `pnpm test` · Build: `pnpm build` · Lint: `pnpm lint` (prettier) ·
   Typecheck: `pnpm typecheck` · Parity: `pnpm parity` · Smoke: `pnpm smoke`
 
-**Esta lista não é o gate — o CI é.** Ela ficou incompleta e custou um PR com 3
-de 4 checks vermelhos depois de 55 commits. O job `lint` do CI também roda
-`pnpm --filter @lyra-ds/styles run lint:css` (stylelint) e o `build` também roda
-`pnpm --filter @lyra-ds/react exec size-limit`. Antes de abrir PR, rode **o que
-está em `.github/workflows/ci.yml`**, não o que está escrito aqui:
+**This list is not the gate — CI is.** It was incomplete and cost a PR with 3
+of 4 checks red after 55 commits. CI's `lint` job also runs
+`pnpm --filter @lyra-ds/styles run lint:css` (stylelint), and `build` also runs
+`pnpm --filter @lyra-ds/react exec size-limit`. Before opening a PR, run **what
+is in `.github/workflows/ci.yml`**, not what is written here:
 
 ```bash
 # job lint
@@ -54,279 +54,229 @@ pnpm run build && node tools/docgen/generate.mjs --check \
   && node tools/smoke/smoke.mjs
 ```
 
-São 17 comandos. Eu errei isso **duas vezes seguidas**: na primeira segui a lista
-resumida acima em vez do workflow, e na segunda "corrigi" a partir de um `grep`
-do `ci.yml`, que também escondeu o eslint. Leia o arquivo inteiro.
+There are 17 commands. I made this mistake **twice in a row**: first I followed
+the abbreviated list above instead of the workflow; then I “fixed” it from a
+`grep` of `ci.yml`, which also hid eslint. Read the entire file.
 
-Duas armadilhas que esses dois gates escondiam:
+Two traps those gates concealed:
 
-- **stylelint x extensão aditiva**: reestilizar uma classe existente no fim do
-  arquivo é `no-duplicate-selectors` por construção — a convenção do parity e a
-  regra se contradizem. Resolvido com um `stylelint-disable no-duplicate-selectors`
-  no início da região aditiva de cada arquivo, mantendo a regra ligada na região
-  handoff-verbatim acima.
-- **eslint x runner de browser**: `jsx-a11y/anchor-is-valid` reprova `href="#"`,
-  mas em fixture do Browser Mode um href **válido** faz o clique sob teste navegar
-  o iframe do runner e **abortar a suíte inteira** ("Cannot connect to the iframe").
-  A regra vale para produto, não para fixture: desligada só em `src/**/*.test.tsx`.
-- **size-limit x import de conveniência**: o `SidebarGroup` importar `Icon` para
-  desenhar um chevron puxava o registry inteiro e custou **5,4 kB** a quem só
-  importa `SidebarGroup`. SVG inline é o padrão do DS para ícone de chrome
-  (fechar do Drawer, check do Stepper). Feature nova que cresce o bundle de
-  propósito (`asChild`) precisa do orçamento atualizado no mesmo commit.
+- **stylelint × additive extension:** restyling an existing class at the end of
+  the file is `no-duplicate-selectors` by construction — parity convention and
+  rule conflict. Solve with `stylelint-disable no-duplicate-selectors` at the
+  start of each file's additive region, leaving the rule on above in the
+  handoff-verbatim region.
+- **eslint × browser runner:** `jsx-a11y/anchor-is-valid` rejects `href="#"`,
+  but a valid href in a Browser Mode fixture makes the tested click navigate the
+  runner iframe and **abort the entire suite** (“Cannot connect to the iframe”).
+  The rule is for product code, not fixtures: disable it only in
+  `src/**/*.test.tsx`.
+- **size-limit × convenience import:** `SidebarGroup` importing `Icon` for a
+  chevron pulled in the entire registry and cost **5.4 kB** to anyone importing
+  only `SidebarGroup`. Inline SVG is the DS convention for chrome icons (Drawer
+  close, Stepper check). A feature that deliberately grows the bundle (`asChild`)
+  needs its updated budget in the same commit.
 
-## Delegação — o que já funcionou e o que já custou rodada
+## Delegation — what has worked and what has cost a round
 
-**Kimi trava com brief via arquivo temp (2026-08-04).** Duas invocações
-`opencode run … "Follow the instructions in $tmpfile"` penduraram sem output
-(5min+ cada); o probe inline respondeu em segundos e o MESMO conteúdo colado
-inline no argumento entregou em uma rodada limpa. Na lane trivial, brief vai
-INLINE no argumento, sempre — a receita de temp file do adapter não vale para
-este modelo.
+**Kimi hangs on a brief passed through a temporary file (2026-08-04).** Two
+`opencode run … "Follow the instructions in $tmpfile"` invocations hung without
+output (5min+ each); the inline probe answered in seconds and the SAME content
+pasted inline into the argument completed in one clean round. In the trivial
+lane, always pass the brief INLINE in the argument — the adapter's temporary
+file recipe does not work for this model.
 
-Lições dos lotes da Fase 6b, cada uma com a evidência que a gerou. Valem para
-qualquer executor, não só o codex.
+Lessons from the Phase 6b lots, each with the evidence that produced it. They
+apply to every executor, not just codex.
 
-**O trabalho mora no arquivo de brief, não no prompt.** A invocação que entregou
-os Lotes 1, 2 e 3 numa rodada limpa cada é literalmente uma linha: `Follow the
-instructions in .batuta/lot-NN-<slug>.md, which sits on top of the shared brief
-.batuta/brief-phase06b-fanout.md. Read both in full before writing anything. Work
-from the repo root; do not commit.` Prompt mínimo, brief rico. Instrução longa
-inline é onde os workflows internos do executor se enganCham.
+**The work lives in the brief file, not the prompt.** The invocation that
+delivered Lots 1, 2, and 3 in one clean round each was literally one line:
+`Follow the instructions in .batuta/lot-NN-<slug>.md, which sits on top of the shared brief .batuta/brief-phase06b-fanout.md. Read both in full before writing anything. Work from the repo root; do not commit.` Keep the prompt minimal and the brief rich; long inline instructions are where executor-internal workflows get confused.
 
-**Sempre redirecione `< /dev/null` para o stdin do codex** (regra do usuário,
-2026-07-26). Sem isso ele erra de forma intermitente e **mente sobre a causa**: nos
-Lotes 4 e 5 alegou três vezes estar bloqueado por permissão de workspace — "só posso
-escrever em `packages/react/src`", depois "só em `packages/styles/components`" — dois
-limites diferentes, ambos falsos, com um probe de 10 segundos provando que ele escrevia
-em `apps/docs` sem obstáculo. O gasto foi de quatro disparos perdidos e um diagnóstico
-meu errado (atribuí ao formato do prompt). Invocação correta:
+**Always redirect `< /dev/null` to codex stdin** (user rule, 2026-07-26). Without
+it codex fails intermittently and **lies about why**: in Lots 4 and 5 it claimed
+three times to be blocked by workspace permission, first “I can only write in
+`packages/react/src`”, then “only in `packages/styles/components`” — two false
+limits; a 10-second probe proved it could write `apps/docs`. Four launches and
+one mistaken diagnosis were wasted. Correct invocation:
 
 ```bash
-codex exec --sandbox workspace-write -m <modelo> -c model_reasoning_effort="high" \
+codex exec --sandbox workspace-write -m <model> -c model_reasoning_effort="high" \
   "Follow the instructions in .batuta/lot-NN.md …" < /dev/null
 ```
 
-**Ao re-disparar depois de um travamento, repita o prompt original verbatim.** No
-Lote 4 o codex parou pedindo aprovação de um "design workflow" dele; re-disparei
-com um prompt cheio de "APPROVED", "design approval", "do not ask questions" — e
-isso **alimentou** o gate em vez de desarmá-lo: a rodada seguinte inventou uma
-parede de permissão. Nomear o gate é invocá-lo. Não discuta com o fluxo interno
-do executor; devolva a mesma instrução que já funcionou.
+**When re-dispatching after a hang, repeat the original prompt verbatim.** In
+Lot 4 codex stopped to request approval for its “design workflow”; I retried
+with “APPROVED”, “design approval”, and “do not ask questions”, which fed the
+gate and the next round invented a permission wall. Naming the gate invokes it.
+Do not argue with an executor's internal flow; return the same instruction that
+already worked.
 
-**Relatório de falha do executor é alegação, não fato — verifique antes de
-escalar.** O codex afirmou que só podia escrever em `packages/react/src` e que
-`apps/docs` era read-only. Um probe de 10 segundos (`codex exec … "crie
-apps/docs/PROBE.txt com 'ok'"`) desmentiu na hora, e os `.codex/`/`.agents/` do
-repo estão vazios. Escalar para a lane cara em cima de um relatório falso é
-desperdício; o probe barato vem primeiro.
+**An executor failure report is a claim, not a fact — verify before escalating.**
+Codex said it could write only `packages/react/src` and that `apps/docs` was
+read-only. A 10-second probe (`codex exec … "create apps/docs/PROBE.txt with
+'ok'"`) disproved it; the repo's `.codex/`/`.agents/` are empty. Escalating to
+the expensive lane on a false report wastes money; use the cheap probe first.
 
-**O sandbox do codex não roda Browser Mode — então ele nunca executa os testes que
-escreve.** Ele não consegue bindar localhost, e o runner do Vitest precisa disso.
-No Lote 08 isso custou 8 falhas que ele reportou como sucesso: inseriu os `it()`
-novos **dentro** do corpo de um `it()` existente (e dentro do duplo `for` de
-tema×tom), o que o Vitest recusa em tempo de execução — "Calling the test function
-inside another test function is not allowed". Erro estrutural, invisível para
-typecheck, eslint e prettier, que ele rodou e viu passar. Consequência prática: em
-qualquer lote com teste, **rodar `pnpm run test` é do maestro, sempre**, e o
-relatório dele sobre teste vale zero. O mesmo vale para `pack-smoke`, `smoke` e
-`publint`, que também não sobrevivem ao sandbox.
+**Codex's sandbox cannot run Browser Mode, so it never executes the tests it
+writes.** It cannot bind localhost. In Lot 08 that cost 8 falsely reported
+successes: new `it()` blocks were inserted inside an existing `it()` and inside
+the theme×tone double `for`; Vitest rejects this at runtime. Typecheck, eslint,
+and prettier passed. Therefore the maestro always runs `pnpm run test`; its
+test report is worth zero. The same applies to `pack-smoke`, `smoke`, and
+`publint`, which do not survive the sandbox.
 
-**Asserção de existência no Browser Mode exige `expect.element` — locator nunca é
-null.** No Lote 09, 12 dos 20 testes novos usavam
-`expect(screen.getByRole(...)).not.toBeNull()`: o `getByRole` do Vitest Browser
-Mode retorna um Locator lazy, que é objeto sempre — a asserção passa exista o
-elemento ou não. Foi a prova de reverter-o-fix que pegou (os testes seguiram
-verdes procurando um botão inexistente); typecheck, eslint e a própria suíte
-verde não pegam. Forma correta:
-`await expect.element(screen.getByRole(...)).toBeInTheDocument()`. Briefs com
-teste de existência devem pinar isso. Há 4 usos vácuos pré-existentes no
-`file-manager.browser.test.tsx` (débito, anotado no WORK.md).
+**Existence assertions in Browser Mode require `expect.element` — a locator is
+never null.** In Lot 09, 12 of 20 tests used
+`expect(screen.getByRole(...)).not.toBeNull()`: the Browser Mode locator is
+always an object. The revert-the-fix proof caught tests still green for a
+missing button. Correct form:
+`await expect.element(screen.getByRole(...)).toBeInTheDocument()`. Briefs with
+existence tests must pin this. Four pre-existing vacuous uses in
+`file-manager.browser.test.tsx` remain debt in WORK.md.
 
-**Num worktree sem commits, `git checkout -- <arquivo>` apaga o trabalho do
-executor.** O executor entrega árvore suja (o brief manda não commitar), então
-HEAD ainda é a main — "restaurar" com checkout reverte para a main e destrói a
-implementação. No Lote 09 isso apagou os dois `.tsx` depois do experimento de
-regressão (recuperados do diff já revisado no contexto). Backup de experimento é
-por cópia: `cat arquivo > backup` antes, `cat backup > arquivo` depois — `cat`,
-não `cp`, porque o alias interativo do `cp` engole até `-f` e deixa o arquivo
-revertido em silêncio (mordeu duas vezes no mesmo lote).
+**In a worktree with no commits, `git checkout -- <file>` destroys executor
+work.** The brief says do not commit, so HEAD is still main. In Lot 09 checkout
+deleted both `.tsx` files after a regression experiment; recover from the
+reviewed diff. Experiment backup is by copy: `cat file > backup` before and
+`cat backup > file` after — `cat`, not `cp`, because the interactive `cp` alias
+silently defeats even `-f`.
 
-**Teste que passa não é teste que prova.** Ainda no Lote 08: a forma de verificar
-que uma regressão está coberta é **reverter o fix e ver o teste quebrar**. Um
-`sed` no arquivo, rodar só aquele diretório, restaurar. Levou 30 segundos e
-transformou "o teste passa" em `expected 'Loading' to be 'Carregando'` — a prova
-de que ele pega o descarte silencioso, e não algo que passaria de qualquer jeito.
-(Cuidado com `cp` sem `-f`: um alias interativo pode deixar o arquivo revertido.)
+**A passing test is not a test that proves.** Still in Lot 08, revert the fix
+and see the test fail: edit with `sed`, run only the directory, restore. It
+took 30 seconds and produced `expected 'Loading' to be 'Carregando'`, proving
+it catches silent loss. (Beware `cp` without `-f`: an interactive alias can
+leave the file reverted.)
 
-**Prop que funciona mas não está na interface não existe para o consumidor.** O
-docgen lê a interface, não o destructure. `Breadcrumb` e `Pagination` honravam
-`aria-label` desde sempre e ninguém sabia, porque a prop vinha herdada de
-`HTMLAttributes` e não aparecia na tabela. Redeclarar com JSDoc é o que a põe no
-`props.json`. Vale para qualquer prop herdada que o componente trate de forma
-especial.
+**A prop that works but is absent from the interface does not exist to the
+consumer.** Docgen reads the interface, not destructuring. `Breadcrumb` and
+`Pagination` always honored `aria-label`, but no one knew because it came from
+`HTMLAttributes` and was absent from the table. Redeclare it with JSDoc when a
+component treats an inherited prop specially.
 
-**Relatório de sucesso também não basta.** O `next build` prerenderiza exemplo
-quebrado sem falhar, e o executor não consegue abrir o dev no sandbox dele. Toda
-verificação de lote abre as páginas no navegador e exercita a interação; foi assim
-que apareceram o avatar vindo de CDN de terceiro (Lote 2) e o que os gates verdes
-não pegam.
+**A success report is insufficient too.** `next build` prerenders a broken
+example without failing, and the executor cannot open dev in its sandbox. Every
+lot verification opens pages in a browser and exercises interaction; that found
+the third-party CDN avatar in Lot 2 and what green gates miss.
 
-**O que faz a rodada sair limpa é pinar o que o executor não tem como derivar.**
-Não é o tamanho do brief, é a especificidade: shape exato de tipos, armadilhas de
-API (`actions` do FileManager substitui o menu em vez de estender; Tabs renderiza
-painéis vazios próprios), qual classe existe de fato, e as lições das rodadas
-anteriores. Colete isso lendo a fonte antes de escrever o brief.
+**A clean round comes from pinning what the executor cannot derive.** It is not
+brief size but specificity: exact type shapes, API traps (`actions` on
+FileManager replaces rather than extends the menu; Tabs renders its own empty
+panels), an actually existing class, and lessons from earlier rounds. Collect
+this by reading source before writing the brief.
 
-**Economia de lote:** Context + Conventions são construídos uma vez e reusados no
-lote inteiro; só Goal, critérios e fronteiras variam por item.
+**Lot economics:** Context + Conventions are built once and reused across the
+whole lot; only Goal, criteria, and boundaries vary per item.
 
-## Verificação fora do monorepo (starters, 2026-08-04)
+## Verification outside the monorepo (starters, 2026-08-04)
 
-- `pnpm install` dentro de um subdiretório não-workspace (ex.
-  `.batuta/starters/*`) sobe até a raiz do monorepo e instala o workspace —
-  use `--ignore-workspace`, ou dê ao starter um `pnpm-workspace.yaml` próprio
-  (o que também o torna raiz).
-- pnpm 11.13 renomeou `onlyBuiltDependencies` → `allowBuilds:` (mapa
-  nome→bool) em `pnpm-workspace.yaml`; o campo `pnpm` do package.json não é
-  mais lido.
-- A máquina do usuário tem política `minimumReleaseAge` (~24h) que bloqueia
-  instalar pacote recém-publicado — na verificação de starter no dia do
-  release, use `--config.minimum-release-age=0` (inclusive no `pnpm build`,
-  que re-roda o deps check). Nunca gravar esse override no template.
+- `pnpm install` in a non-workspace subdirectory (for example
+  `.batuta/starters/*`) walks up to the monorepo root and installs the workspace;
+  use `--ignore-workspace`, or give the starter its own `pnpm-workspace.yaml`
+  (which also makes it a root).
+- pnpm 11.13 renamed `onlyBuiltDependencies` to `allowBuilds:` (a name→bool
+  map) in `pnpm-workspace.yaml`; the `pnpm` field in package.json is no longer
+  read.
+- The user's machine has `minimumReleaseAge` policy (~24h) that blocks a newly
+  published package — when verifying a starter on release day, use
+  `--config.minimum-release-age=0` (also on `pnpm build`, which rechecks deps).
+  Never write that override into the template.
 
-## Takeover do GSD (2026-07-20)
+## GSD takeover (2026-07-20)
 
-O usuário aposentou o GSD; o Batuta assumiu a condução. Import feito:
-fases 1–3 → `WORK.md` (Done), fases 4–7 → `.batuta/plan-04..07-*.md`,
-decisões duráveis → abaixo. `.planning/` ficou intacto como arquivo histórico
-(REQUIREMENTS.md, research/PITFALLS.md e os decision-logs das fases seguem
-sendo referência de leitura); o usuário arquiva quando quiser.
+The user retired GSD; Batuta took over orchestration. Imported: phases 1–3 →
+`WORK.md` (Done), phases 4–7 → `.batuta/plan-04..07-*.md`, durable decisions →
+below. `.planning/` stays intact as historical archive (REQUIREMENTS.md,
+research/PITFALLS.md, and phase decision logs remain reading references); the
+user archives it when desired.
 
-## Decisões herdadas que briefs devem respeitar
+## Inherited decisions that briefs must respect
 
-- Fluxo de branch: NUNCA commitar na main (ruleset exige PR + 4 checks
-  verdes: lint, typecheck, test, build + 1 aprovação).
-- Versões exatas sempre (`save-exact` no .npmrc); engines `>=24 <25`.
-- CSS de `@lyra-ds/styles` é handoff-verbatim: sem prettier, stylelint só
-  valida namespace `.lyra-*`; extras vão no FIM do arquivo + allowlist
-  ADDITIVE_EXTENSIONS do parity. **O inventário do handoff (209 tokens / 248
-  classes / 14 imports da entrada) não é mais literal no código** — desde
-  2026-07-28 vive em `tools/parity/baseline.json`, snapshot commitado e
-  regenerado com `pnpm parity --update-baseline`. Ele não é imutável, é
-  _versionado_: avançar o handoff é atualizar `handoff/`, regenerar e revisar o
-  diff, que é o registro do que a versão nova trouxe. Regenerar sem que
-  `handoff/` tenha mudado de propósito é apagar o tripwire — o baseline guarda
-  nomes justamente porque contagem não pega troca (renomear uma classe nos dois
-  lados mantinha 248 e o gate antigo ficava mudo).
-- `@lyra-ds/react`: exports map == entries do tsup == basenames do dist;
-  `'use client'` via onSuccess do tsup (prepend determinístico); zero import
-  de CSS no código shipped; lucide-react é a única dep de runtime, via
-  registry gerado (prettier-ignored, gate --check de drift).
-- JSDoc canônico em inglês; convenções de conversão em
+- Branch flow: NEVER commit to main (ruleset requires PR + 4 green checks:
+  lint, typecheck, test, build + 1 approval).
+- Always exact versions (`save-exact` in `.npmrc`); engines `>=24 <25`.
+- `@lyra-ds/styles` CSS is handoff-verbatim: no prettier; stylelint validates
+  only `.lyra-*` namespace; extras go at the END + parity
+  ADDITIVE_EXTENSIONS allowlist. The handoff inventory (209 tokens / 248 classes
+  / 14 entry imports) is no longer literal code: since 2026-07-28 it lives in
+  `tools/parity/baseline.json`, a committed snapshot regenerated with
+  `pnpm parity --update-baseline`. It is versioned, not immutable: advance the
+  handoff by updating `handoff/`, regenerating, and reviewing the diff. Do not
+  regenerate without intended `handoff/` change; the baseline holds names
+  because counts miss a two-sided rename.
+- `@lyra-ds/react`: exports map == tsup entries == dist basenames; `'use client'`
+  via tsup `onSuccess` (deterministic prepend); no CSS import in shipped code;
+  `lucide-react` is the only runtime dependency, via generated registry
+  (`prettier`-ignored, drift gate `--check`).
+- Canonical JSDoc is English; conversion conventions are in
   `packages/react/CONVENTIONS.md`.
-- **Terminologia do pt-BR (regra do usuário, 2026-07-30):** o `CLAUDE.md` já trava
-  que código, token e nome de API ficam em inglês e a prosa em pt-BR. O que faltava
-  era o **jargão de conceito**, e a regra é:
-  - Mantenha em inglês o que o dev brasileiro **digita na busca e fala em voz alta**:
-    build, deploy, bundler, viewport, overflow, token, hook, rebuild.
-  - Traduza onde já existe termo dominante em pt-BR: folha de estilos, marca, escopo,
+- **pt-BR terminology (user rule, 2026-07-30):** CLAUDE.md locks code, token,
+  and API names in English and prose in pt-BR. Concept jargon rule:
+  - Keep in English what a Brazilian developer **types into search and says
+    aloud**: build, deploy, bundler, viewport, overflow, token, hook, rebuild.
+  - Translate where pt-BR has a dominant term: folha de estilos, marca, escopo,
     superfície, contraste, anel de foco.
-  - **Nunca invente tradução para fugir de um estrangeirismo dominante.** Foi o erro
-    de "semente" para _seed_ (o `--brand` do white-label) — botânico e estranho.
-  - Quando as duas opções soam ruins, **troque a metáfora por descrição** em vez de
-    escolher entre metáforas: `--brand` virou **"cor-base"**, que diz o que a coisa
-    faz sem precisar de glossário. Mesmo caminho valeu para "targeting hook" do
-    `.lyra-icon`: em vez de "gancho" ou "hook" (que ali colidiria com hook de React,
-    citado duas palavras antes), a frase foi reescrita para "para você conseguir
-    selecionar o ícone no seu CSS".
-  - Uma forma por conceito no site inteiro. A varredura achou "folha de estilo" vs
-    "folha de estilos" e "rederiva" vs "recalcula" — normalizados para o plural e
-    para "recalcula".
-- **Dogfooding do site — docs E landing (jul/2026; ampliado em 2026-07-28):** o motivo
-  não é estética interna. O usuário decidiu que landing e docs usam componentes do Lyra
-  **porque eles podem ser reaproveitados por outros usuários** — o site é a primeira
-  prova de que o DS serve para construir um produto real. Consequência prática: quando
-  o site precisa de algo que o DS não tem, a pergunta é "um consumidor do Lyra ia querer
-  isto?". Se sim, **vira componente do DS** (com changeset e teste), não classe `.lw-*`.
-  Foi por essa regra que `ThemeProvider` e `PageHeader` entraram na Fase 6 em vez de
-  ficarem para o porte do delta. `.lw-*` fica só para o que é genuinamente específico
-  deste site: composição de página, hero, CTA, cromo de marketing.
-  `apps/docs` usa o próprio DS, não
-  reimplementa. Onde existe componente em `@lyra-ds/react`, use o componente —
-  nunca a classe `.lyra-*` crua (ex.: `<Table>`, `<Card>`, `<Badge>`, e
-  `<Button asChild>` para links com cara de botão). Classes `.lw-*` no
-  `apps/docs/app/site.css` são só para o **layout do site de docs**
-  (header/sidebar/grid/TOC/painel de código/busca/toggle/previews), que o DS não
-  provê. Layout de preview também vai para `.lw-*`, nunca `style={{}}` inline.
-  Se o componente do DS não cobrir o caso, **estenda o DS** (com changeset e
-  teste), como foi feito com `Button asChild` e `Card asChild`. Cuidado de
-  especificidade: `.lw-docs__content a:not(.lyra-btn)` e `.lw-docs__content p`
-  ganham de uma classe `.lw-*` solta — prefixe quando precisar sobrescrever.
-- **Impeccable por componente (regra do usuário, 2026-07-25):** todo componente
-  que criarmos passa pelo skill `impeccable` na sua página de demonstração, não
-  só uma vez sobre um showcase. Roda no ciclo do Batuta **depois da verificação
-  do lote e antes do commit**. Motivo: a primeira rodada (score 14/20) achou o
-  que gate verde e relatório de executor não pegam — scroll horizontal em 375px,
-  sidebar sticky sem `max-height`, 39 alvos de toque abaixo de 44px, `<main>`
-  ausente e o palco achatando componente de bloco. Achado de cromo do site vira
-  correção no `apps/docs`; achado de componente vira lote/issue no DS.
+  - **Never invent a translation to avoid a dominant foreign term.** “semente”
+    for _seed_ (`--brand` in white-label) was botanical and odd.
+  - When both options sound bad, **replace the metaphor with a description**:
+    `--brand` became **“cor-base”**. The same applied to the targeting hook of
+    `.lyra-icon`: rather than “gancho” or “hook” (which would collide with the
+    React hook mentioned two words earlier), rewrite it as “para você conseguir
+    selecionar o ícone no seu CSS”.
+  - One form per concept across the site. The sweep found “folha de estilo” vs.
+    “folha de estilos” and “rederiva” vs. “recalcula”; normalized to plural and
+    “recalcula”.
+- **Dogfooding the site — docs AND landing (Jul/2026; expanded 2026-07-28):**
+  the point is not internal aesthetics. The user decided landing and docs use
+  Lyra components **because other users can reuse them** — the site is the
+  first proof that the DS builds a real product. When the site needs something
+  Lyra lacks, ask “would a Lyra consumer want this?” If yes, **make it a DS
+  component** (with changeset and test), not `.lw-*`. `ThemeProvider` and
+  `PageHeader` entered Phase 6 by this rule. `.lw-*` is only genuinely
+  site-specific composition, hero, CTA, and marketing chrome. `apps/docs` uses
+  the DS, never raw `.lyra-*` where a React component exists (for example
+  `<Table>`, `<Card>`, `<Badge>`, `<Button asChild>`). `apps/docs/app/site.css`
+  `.lw-*` classes are only docs-site layout; preview layout also uses `.lw-*`,
+  never inline `style={{}}`. Extend the DS when needed. Specificity warning:
+  `.lw-docs__content a:not(.lyra-btn)` and `.lw-docs__content p` beat a loose
+  `.lw-*` class — prefix an override.
+- **Impeccable per component (user rule, 2026-07-25):** every created component
+  goes through the `impeccable` skill on its demo page, not just a showcase;
+  run after lot verification and before commit. The first round (14/20) found
+  375px horizontal scroll, sticky sidebar without `max-height`, 39 targets
+  under 44px, missing `<main>`, and a preview flattening a block component.
+  Site-chrome findings go to `apps/docs`; component findings become DS lots/issues.
 
 ## Project map
 
-(sweep de 2026-07-27 pelo scout da lane Research — kimi-k2.7-code; detalhes
-ficam com grep e git)
+(2026-07-27 sweep by the Research-lane scout — kimi-k2.7-code; details stay
+with grep and git.)
 
-- Monorepo pnpm com três workspaces (`pnpm-workspace.yaml`): `packages/*`,
-  `apps/*` e `tools/*`. Node 24 obrigatório.
-- `packages/styles` — core CSS puro, SEM build: `styles.css` é o entry e
-  importa `tokens/` (base, brand, colors, effects, fonts, spacing, typography)
-  e `components/` (buttons, data, display, feedback, files, forms,
-  navigation). `compat-shadcn.css` é subpath opt-in nunca importado pelo
-  entry. Validado por stylelint + testes em `tests/` (Vitest Browser Mode).
-- `packages/react` — wrappers finos sobre as classes `.lyra-*`. Um diretório
-  por componente em `src/<componente>/` (~35 componentes + `internal/`), cada
-  um com `index.ts`, `*.tsx`, `*.browser.test.tsx` (chromium),
-  `*.ssr.test.ts` e `__screenshots__/` quando aplicável. `src/index.ts` é o
-  barrel. Build tsup → `dist/` com exports duais ESM+CJS por componente.
-  Única dep de runtime: `lucide-react`, via
-  `src/icon/icon-registry.ts` (GERADO por `tools/icon-registry`, não editar).
-- `apps/docs` — site de docs Next.js 16 + fumadocs-core/fumadocs-mdx.
-  `app/layout.tsx` carrega fontes e `@lyra-ds/styles/styles.css`;
-  `app/[lang]/layout.tsx` faz i18n via next-intl (locales em `lib/i18n.ts`,
-  strings em `messages/{en,pt-BR}.json`). `app/site.css` define as classes
-  `.lw-*` (só chrome do site). Conteúdo MDX em `content/docs/{en,pt-BR}/`
-  (index + 1 página por componente), exemplos vivos em
-  `components/examples/<componente>/`, chrome do site em `components/`
-  (site-header, docs-sidebar, command-menu, toc, theme-toggle, …).
-  Build estático → `out/` (inclui `llms.txt` copiado por
-  `scripts/copy-llms.mjs`).
-- `tools/` — gates Node invocados pelos scripts do root: `parity/` (tokens e
-  classes vs handoff), `icon-registry/` (gera o registry do Icon),
-  `docgen/` (gera `output/llms.txt` + `props.json` a partir dos tipos do
-  dist), `pack-smoke/` (pack + build Vite real), `smoke/` (consumidores Vite
-  e Next.js reais), `dist-scan/` (`use client` + zero CDN no dist).
-- `handoff/` — referência de design SOMENTE leitura, fonte pixel-perfect
-  (tokens, componentes, ui_kits, guidelines, llms.txt).
-- `.github/workflows/ci.yml` — 4 jobs (lint, typecheck, test, build); o gate
-  real é este arquivo (ver seção Comandos). `.changeset/` — versionamento
-  (styles + react fixados, publicados juntos). `.planning/` — arquivo
-  histórico do GSD, não tocar via Batuta.
-- Não tocar: `node_modules/`, `dist/`, `apps/docs/.next/` e `apps/docs/out/`,
-  `pnpm-lock.yaml` (só via pnpm), `handoff/**`, `__screenshots__/`,
-  `.vitest-attachments/`, `tools/docgen/output/*`,
-  `packages/react/src/icon/icon-registry.ts` (gerados — mude a fonte e rode o
-  gerador).
+- pnpm monorepo with three workspaces (`pnpm-workspace.yaml`): `packages/*`,
+  `apps/*`, and `tools/*`. Node 24 required.
+- `packages/styles`: pure CSS core, NO build; `styles.css` entry imports
+  `tokens/` and `components/`. `compat-shadcn.css` is opt-in subpath, never
+  entry-imported. Validated by stylelint + Browser Mode tests in `tests/`.
+- `packages/react`: thin wrappers over `.lyra-*`; one directory per component
+  plus `internal/`, with `index.ts`, `*.tsx`, browser/SSR tests and screenshots
+  where applicable. tsup → dual ESM+CJS dist entries. Only runtime dependency
+  `lucide-react`, through generated `src/icon/icon-registry.ts` (do not edit).
+- `apps/docs`: Next.js 16 + fumadocs-core/fumadocs-mdx; locale layouts via
+  next-intl, messages in `messages/{en,pt-BR}.json`, MDX in
+  `content/docs/{en,pt-BR}/`, examples under `components/examples/`; static
+  build to `out/`, including copied `llms.txt`.
+- `tools/`: parity, generated icon registry, docgen, pack-smoke, smoke, and
+  dist-scan gates. `handoff/` is read-only pixel-perfect reference.
+- `.github/workflows/ci.yml` has lint/typecheck/test/build; it is the real gate.
+  Do not touch generated/build directories, `pnpm-lock.yaml` except through pnpm,
+  `handoff/**`, screenshots, docgen output, or generated icon registry directly.
 
-## Automação de PR — regras pós-incidente 0.2.0 (2026-08-03)
+## PR automation — post-incident 0.2.0 rules (2026-08-03)
 
-- **Número de PR nunca é previsto.** Toda cadeia usa o número capturado da saída
-  do `gh pr create` (ou `--json number`). O incidente: o bot de changesets tomou
-  o número que a cadeia previa e um `--admin merge` publicou 0.2.0 sem o usuário.
-- **Cadeia automática nunca mergeia Version Packages.** Verificar o título antes
-  do merge e abortar se contiver "version packages" — release é gatilho do
-  usuário, sempre.
-- **Stats da landing acompanham qualquer mudança de inventário** (componentes,
-  tokens, classes): re-derivar e atualizar o pino no MESMO commit; o gate é
-  `pnpm run test` completo com exit code — filtros de tail/grep já esconderam
-  falha duas vezes.
+- **Never predict a PR number.** Use the number captured from `gh pr create`
+  (or `--json number`). A changesets bot took the predicted number and an
+  `--admin merge` published 0.2.0 without the user.
+- **Automation never merges Version Packages.** Verify the title and abort if
+  it contains “version packages” — a release is always user-triggered.
+- **Landing stats track every inventory change** (components, tokens, classes):
+  re-derive and update the pin in the SAME commit; the gate is full `pnpm run
+test` with exit code — tail/grep filters hid failures twice.
