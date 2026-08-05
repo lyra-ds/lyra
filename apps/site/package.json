@@ -16,7 +16,7 @@
     "@fontsource/plus-jakarta-sans": "5.2.8",
     "@lyra-ds/react": "workspace:*",
     "@lyra-ds/styles": "workspace:*",
-    "next": "16.2.10",
+    "next": "16.3.0",
     "next-intl": "4.13.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
