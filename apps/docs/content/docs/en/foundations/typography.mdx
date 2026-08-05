@@ -1,0 +1,56 @@
+---
+title: Typography
+description: The type scale, text roles and monospace conventions that make Lyra interfaces readable.
+---
+
+# Typography
+
+Lyra’s typography tokens connect a compact text scale to clear semantic roles. Use the role token a
+component calls for, rather than choosing a font family, weight or size directly in product CSS.
+
+## Scale
+
+The `--text-*` ramp runs from 12px to 60px. It is the shared source for component density, headings
+and display moments: smaller steps support metadata, the middle steps carry interface copy, and the
+largest steps establish page hierarchy. Choose the semantic font token first; reach for a scale step
+only when defining a new semantic role.
+
+<Example id="scale" title="Text scale — 12px to 60px" layout="block">
+  Each row uses its matching `--text-*` token. The label is the token API; the pixel value is a
+  reference for comparing steps, not a value to copy into a component.
+</Example>
+
+## Display and headings
+
+`--display-font` and the heading tokens combine Plus Jakarta Sans with their intended weight, size
+and line-height. Pair display text with `--tracking-display` and headings with `--tracking-heading`
+to preserve the compact optical rhythm of the hierarchy. `--h3-font` returns to normal tracking for
+a quieter subsection heading.
+
+<Example id="display" title="Display and heading roles" layout="block">
+  Use these complete font shorthands for page titles and section headings. The labels expose the
+  tracking token and the token’s current composition so its visual purpose remains inspectable.
+</Example>
+
+## Body
+
+`--body-font` is the 14px default for controls, menus, tables and card copy. Use
+`--body-strong-font` when emphasis should stay within the same scale step; use the 16px scale with
+relaxed leading for long-form reading. Pair each role with `--text-primary`, `--text-secondary` or
+`--text-muted` according to the importance of the content.
+
+<Example id="body" title="Body and UI copy" layout="block">
+  Overlines, captions and strong body copy are separate roles, not ad-hoc combinations of uppercase,
+  weight and color. That lets the same hierarchy adapt with the theme.
+</Example>
+
+## Mono
+
+`--font-mono` is JetBrains Mono, reserved for code, token names and technical data. The
+`--code-font` shorthand gives code its standard 13px size and readable leading. Keep technical
+fragments distinct from prose with semantic surface, border and text tokens instead of custom colors.
+
+<Example id="mono" title="Code and token labels" layout="block">
+  Use monospace for snippets, inline commands and token names. It is a content role, not an
+  alternative body typeface.
+</Example>
