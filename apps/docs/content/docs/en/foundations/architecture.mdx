@@ -1,0 +1,62 @@
+---
+title: Architecture
+description: The token layers, packages and decisions that keep Lyra portable.
+---
+
+# Architecture
+
+Lyra is a CSS-first design system with a small React layer. Its architecture keeps visual decisions
+portable while giving product teams one consistent component API.
+
+## Token layers
+
+Tokens move through three layers. Every color decision reaches components through the semantic
+layer, so a theme or a brand can swap those values without changing component CSS; fixed scale
+primitives (spacing, type, radii) are consumed directly.
+
+| Layer      | Examples                     | Role                                                                                          |
+| ---------- | ---------------------------- | --------------------------------------------------------------------------------------------- |
+| Primitives | `--indigo-600`, `--space-4`  | Fixed scales. Color primitives never appear in component CSS; spacing and type steps do.      |
+| Semantic   | `--accent`, `--surface-card` | Intent tokens; the only color layer components consume, and the layer themes and brands swap. |
+| Components | `.lyra-*` classes            | Reusable component classes that consume the semantic layer.                                   |
+
+## Packages and builds
+
+`@lyra-ds/styles` is pure CSS: tokens and `.lyra-*` component classes with no build step required by
+the consumer. `@lyra-ds/react` supplies thin React wrappers over that CSS. Its only runtime
+dependency is `lucide-react`, and its builds use `tsdown`.
+
+The catalog contains 78 components. The CSS layer remains the visual source of truth, so the same
+tokens and classes can support adapters without tying the system to one framework.
+
+## Decisions that hold
+
+- **Pure CSS:** no Tailwind is required in the core. Tokens and Lyra classes remain usable wherever
+  CSS runs.
+- **Lyra naming:** semantic Lyra tokens stay the primary API. The
+  `@lyra-ds/styles/compat-shadcn.css` subpath is an opt-in compatibility layer for shadcn tokens;
+  it is never included by default.
+- **Framework-agnostic behavior:** accessible behavior via framework-agnostic state machines is
+  planned for the multi-framework phase. It is not part of the CSS core today.
+- **LLM-first:** [`/llms.txt`](/llms.txt) exists today and is generated from the real declaration
+  files. A copyable registry and MCP server are future work.
+
+## White-label contract
+
+The live contract in `packages/styles/tokens/brand.css` scopes a brand with `[data-brand]`. Set
+`--brand`, `--brand-contrast`, `--brand-radius` and `--brand-font`; the accent group derives with
+`color-mix()` in both light and dark themes. For setup, scope and contrast guidance, see the
+[white-label guide](/en/guides/white-label).
+
+## Distribution
+
+npm distribution is live for `@lyra-ds/styles` and `@lyra-ds/react`, currently version `0.4.1`.
+Both use trusted OIDC publishing with provenance. A shadcn-style copyable registry is planned as a
+second phase; Vue, Svelte and Web Components adapters are also planned, not shipped.
+
+## Repository layout
+
+- `packages/styles` — tokens and pure CSS component classes.
+- `packages/react` — thin React wrappers.
+- `apps/docs` — the documentation site.
+- `tools/*` — quality gates including parity, docgen and the icon registry.

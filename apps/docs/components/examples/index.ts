@@ -177,6 +177,8 @@ import { TypographyBody } from './typography/body';
 import { TypographyDisplay } from './typography/display';
 import { TypographyMono } from './typography/mono';
 import { TypographyScale } from './typography/scale';
+import { BrandingFavicon } from './branding/favicon';
+import { BrandingLogo } from './branding/logo';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -209,6 +211,10 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     neutrals: ColorsNeutrals,
     semantic: ColorsSemantic,
     dark: ColorsDark,
+  },
+  branding: {
+    logo: BrandingLogo,
+    favicon: BrandingFavicon,
   },
   container: {
     basic: ContainerBasic,
