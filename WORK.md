@@ -5,6 +5,44 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Marco de Adoção (plan-08 trilhas 2–3) — frente aberta em 2026-08-04
+      (noite), escolha do usuário na retomada.** Primeiro lote entregue via
+      PR #98 (`feat/adocao-repo-readiness`):
+  - FUNDING.yml → kimi (kimi-k2.7-code, brief inline), commit 362090b. O
+    usuário ativou o Sponsors na mesma noite; aprovação do GitHub pendente.
+    Perfil de Sponsors não tem API de escrita — rascunho de intro + tiers
+    entregue em `~/Documents/github-sponsors-profile-draft.md` para colar.
+  - 08-4 residual: o grosso já existia (forms bug/feature, config, PR
+    template). Form de docs → kimi, commit f32e2af; labels curados (a11y,
+    pkg: styles, pkg: react, docs site) criados via gh → claude.
+  - 08-5 good first issues → claude (crítico): #95 (DateRangePicker, anúncio
+    acessível do período). Curadoria honesta: só #28+#95 servem de porta de
+    entrada hoje; #96 (tzpicker sem CSS) e #97 (SlotPicker overflow móvel)
+    abertos como help wanted — a varredura do color-contrast vai gerar os
+    próximos good-first.
+  - 08-6 REFORMULADO pelo usuário nesta sessão: anúncio será artigo bilíngue
+    no site pessoal dele, não Discussion. PRD entregue em
+    `~/Documents/prd-artigo-anuncio-lyra-ds.md` (números verificados de
+    stats.json, claims de honestidade, critérios de aceite).
+  - 08-8 snapshot releases → codex (gpt-5.6-terra, worktree), commit 3e9375a.
+    DESVIO do plano: seek-oss/changesets-snapshot descartado — publish
+    aninhado quebra o OIDC (lição npm/cli#8976 do release.yml); workflow
+    hand-rolled espelhando o caminho provado. PENDÊNCIA manual do usuário:
+    registrar snapshot.yml como trusted publisher dos 2 pacotes no npmjs.com
+    antes do primeiro dispatch.
+  - 08-7 starters → codex (gpt-5.6-terra, reasoning high, 2 lotes): conteúdo
+    COMPLETO e VERIFICADO em `.batuta/starters/starter-{vite,next}/`
+    (excluído do git via info/exclude). Ambos instalam 0.4.0 do npm público,
+    buildam verde e foram provados no navegador (dark + troca de marca via
+    4 tokens, console limpo). Lições da verificação: pnpm 11.13 renomeou
+    `onlyBuiltDependencies` → `allowBuilds` em pnpm-workspace.yaml (o vite
+    precisa para o esbuild); a política local `minimumReleaseAge` do usuário
+    bloqueia instalar pacote publicado há <24h (override só na verificação).
+    FALTA: usuário criar os repos `lyra-ds/starter-vite` e
+    `lyra-ds/starter-next` (guiado) para eu subir o conteúdo.
+  - Falta também: 08-9/08-10 (governança — inglês nos docs públicos e limpeza
+    de `.batuta/`/WORK.md, decisão conjunta com o usuário).
+
 - [x] **0.4.0 PUBLICADO via OIDC — 2026-08-04 (gatilho explícito do usuário).**
       Version PR #74 verificado (título + 7 changesets das ondas 4–6d + wrap
       do CodeBlock; bump 0.3.0→0.4.0 nos dois pacotes) antes do merge; run
@@ -128,24 +166,19 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       200).** Derivação: 74 diretórios de componente vs. 50
       slugs no manifesto = 24 sem página. 5 lotes por afinidade, sequenciais,
       brief compartilhado em `.batuta/brief-docs-wave.md` + lotes
-      `.batuta/lot-docs-{1..5}-*.md`:
-      1. forms (6): radio-group, checkbox-group, fieldset+FormRow, separator,
-         time-input, segmented-ring → codex ENTREGUE; verificação: gates
-         verdes (1 fix mecânico do maestro: `'use client'` no exemplo com
-         função `valueText` — RSC recusa função de server component; brief
-         da onda ajustado mentalmente para os próximos lotes), classes do
-         HTML puro conferidas contra o styles (zero inventadas), 12 páginas
-         renderizando com props/exemplos, impeccable 19/20 (zero overflow a
-         375px, headings sãos). Débitos de componente registrados do audit:
-         alvos de toque dos controles nativos (radio/checkbox 18×18 — label
-         estende o alvo; avaliar estratégia coarse-pointer no DS) e steppers
-         do TimeInput 23×15 pointer-only (design intencional, documentado).
-      2. nav/chrome (5): nav-link, app-sidebar, bottom-nav, action-bar,
-         toast-provider+useToast
-      3. data/overlay (4): data-table, person-cell, popover, bottom-sheet
-      4. date/time (4): calendar, time-picker, date-picker, date-range-picker
-      5. scheduling (5): time-zone-picker, recurrence-selector,
-         weekly-schedule-editor, slot-picker, calendar-view
+      `.batuta/lot-docs-{1..5}-*.md`: 1. forms (6): radio-group, checkbox-group, fieldset+FormRow, separator,
+      time-input, segmented-ring → codex ENTREGUE; verificação: gates
+      verdes (1 fix mecânico do maestro: `'use client'` no exemplo com
+      função `valueText` — RSC recusa função de server component; brief
+      da onda ajustado mentalmente para os próximos lotes), classes do
+      HTML puro conferidas contra o styles (zero inventadas), 12 páginas
+      renderizando com props/exemplos, impeccable 19/20 (zero overflow a
+      375px, headings sãos). Débitos de componente registrados do audit:
+      alvos de toque dos controles nativos (radio/checkbox 18×18 — label
+      estende o alvo; avaliar estratégia coarse-pointer no DS) e steppers
+      do TimeInput 23×15 pointer-only (design intencional, documentado). 2. nav/chrome (5): nav-link, app-sidebar, bottom-nav, action-bar,
+      toast-provider+useToast 3. data/overlay (4): data-table, person-cell, popover, bottom-sheet 4. date/time (4): calendar, time-picker, date-picker, date-range-picker 5. scheduling (5): time-zone-picker, recurrence-selector,
+      weekly-schedule-editor, slot-picker, calendar-view
       Ciclo por lote: codex (high, worktree) → verificação (gates + páginas
       no navegador) → impeccable nas páginas do lote → commit → PR. Depois da
       onda: gatilho do usuário para o 0.4.0 (Version PR #74).

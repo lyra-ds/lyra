@@ -1,0 +1,87 @@
+# Snapshot — manually publish throwaway versions of @lyra-ds/styles and
+# @lyra-ds/react for contributors testing a selected ref. Versions use the
+# 0.0.0-snapshot-<timestamp> form and the npm `snapshot` dist-tag; neither is
+# a GitHub release, tag, or commit.
+#
+# Auth is npm trusted publishing (OIDC). Before this can run, BOTH packages
+# must add this exact workflow file, snapshot.yml, as a trusted publisher on
+# npmjs.com (org lyra-ds, repo lyra, no environment). Trusted publishing is
+# configured per workflow file, so release.yml's registration does not cover
+# this workflow.
+#
+# Two npm/cli#8976 lessons are load-bearing here:
+#   1. The publish runs in a TOP-LEVEL step — the OIDC env vars
+#      (ACTIONS_ID_TOKEN_REQUEST_*) do not survive an action's nested command
+#      chain.
+#   2. setup-node has NO registry configuration — it would write an .npmrc
+#      routing auth through NODE_AUTH_TOKEN, which npm prefers over the OIDC
+#      exchange and 404s.
+name: Snapshot
+
+run-name: Snapshot${{ inputs.ref-note && format(' — {0}', inputs.ref-note) || '' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref-note:
+        description: Optional note about the selected ref; shown in the run name and logs.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC exchange)
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    # Never run on forks — they have no secrets and must not try to publish.
+    if: github.repository == 'lyra-ds/lyra'
+    runs-on: ubuntu-latest
+    env:
+      # @lyra-ds/react's declaration build needs >4 GB of heap with 71 per-entry dts builds (measured —
+      # see DEPLOY.md); same value the deploy workflow uses.
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # changesets needs history to compute the changelog links.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Describe snapshot
+        run: |
+          printf 'Snapshot ref: %s\n' "$GITHUB_SHA"
+          printf 'Reference note: %s\n' "${REF_NOTE:-<none>}"
+        env:
+          REF_NOTE: ${{ inputs.ref-note }}
+      - name: Check for changesets
+        run: |
+          changesets=(.changeset/*.md)
+          for changeset in "${changesets[@]}"; do
+            if [ "$changeset" != '.changeset/README.md' ] && [ -f "$changeset" ]; then
+              exit 0
+            fi
+          done
+          echo '::error::No changeset files were found for this ref. Add a changeset before dispatching a snapshot.'
+          exit 1
+      - name: Version packages for snapshot
+        run: pnpm changeset version --snapshot snapshot
+      - run: pnpm run build
+      - name: Publish @lyra-ds/styles snapshot (OIDC)
+        working-directory: packages/styles
+        # Top-level `run` on purpose — the OIDC exchange needs the step's own
+        # env (npm/cli#8976).
+        run: pnpm publish --tag snapshot --no-git-checks
+      - name: Publish @lyra-ds/react snapshot (OIDC)
+        working-directory: packages/react
+        # Top-level `run` on purpose — the OIDC exchange needs the step's own
+        # env (npm/cli#8976).
+        run: pnpm publish --tag snapshot --no-git-checks

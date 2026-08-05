@@ -1,0 +1,47 @@
+name: 'Docs issue'
+description: 'Report an error, gap, or unclear passage in the documentation.'
+title: '[Docs]: '
+labels: ['documentation', 'docs site']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to help improve the docs. Please fill in the
+        fields below so we can find and fix the issue quickly.
+  - type: input
+    id: page
+    attributes:
+      label: Page URL or path
+      description: The page where you found the problem, or the source file path.
+      placeholder: https://lyra-ds.dev/docs/components/button or content/docs/en/components/button.mdx
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem?
+      description: Choose the option that best describes the issue.
+      options:
+        - 'Incorrect or outdated content'
+        - 'Missing content or example'
+        - 'Unclear wording'
+        - 'Broken link or rendering'
+        - 'Translation (pt-BR) issue'
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What is wrong?
+      description: Tell us what the docs currently say and what they should say instead.
+      placeholder: |
+        The docs say "...", but the correct behavior is "...".
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix
+      description: If you have a suggestion for wording, code, or an example, share it here.
+    validations:
+      required: false
