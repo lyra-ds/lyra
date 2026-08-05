@@ -2,9 +2,51 @@
 
 ## In progress
 
-- [ ] **Adoption milestone (plan-08 tracks 2–3) — front opened on the night of
-      2026-08-04, chosen by the user on resumption.** The first lot shipped in
-      PR #98 (`feat/adocao-repo-readiness`):
+- [ ] **Next direction (decided with the user, 2026-08-05): `lyra-ds/blade`** —
+      Blade components as the first framework satellite (before Vue/Svelte),
+      then a Filament v4 token-bridge theme. PRDs delivered to
+      `~/Documents/prd-lyra-blade.md` and `~/Documents/prd-lyra-filament-theme.md`;
+      each lives in its own repo with its own Claude/Batuta session. Locked in
+      the PRDs: CSS stays npm-only; Alpine as peer; class-emission parity with
+      React as the central gate. Sequence: announcement article first, then
+      blade phase 1, then the `starter-laravel` template, then Filament.
+      Vue/Zag still wait for the announcement signal, per plan.
+- [ ] **Workspace restructure (user, outside this session):** the repo folder
+      moves to `~/Projects/lyra-ds/lyra` under an org umbrella (starters
+      cloned as siblings). Persistent memory pre-migrated to the new path key.
+- [ ] **Dependabot #92 triage** — 18 minor/patch npm updates, lint and test
+      RED; annotated on the PR, needs its own cycle against the exact-versions
+      policy. (#91 checkout patch merged; #93 TypeScript 6 and #94 @types/node
+      26 closed by locked policy, encoded as dependabot ignores in #104.)
+- [ ] **Foundations styleguide (seed, surfaced 2026-08-05):** the docs site has
+      guides + 78 component pages but no foundations section, while
+      `handoff/guidelines/` carries 15 finished high-fidelity pages (colors ×4,
+      type ×4, spacing ×3, brand ×3, architecture). Same port pattern as the
+      component docs wave (~3 lots, bilingual MDX); strong pre-announcement
+      content.
+
+## Done
+
+- [x] **0.4.1 published through OIDC (2026-08-05, user trigger)** — Version PR
+      #90 verified (two changesets: npm metadata 211/78 + AA contrast), run
+      30969067799, SLSA provenance on both packages, npm description confirmed
+      fixed. Two dropped GitHub push events tonight required an empty-commit
+      retrigger (#102 branch) and a close/reopen (#90). → claude (critical).
+- [x] **Color-contrast sweep executed and resolved (PR #103, 2026-08-05)** —
+      the blanket axe filter hid: measurement artifacts (axe measured
+      mid-`lyra-fade-in`; fixed by finishing animations before `axe.run`), 26
+      real deep failures (light `--text-faint` at 2.34–2.56:1 → raised to
+      slate-500 = 4.76:1, pinned as exact parity divergence
+      LIGHT_TEXT_CONTRAST_DIVERGENCES, adversarially proven), and 7 borderline
+      pairs now explicit in `src/internal/test-axe.ts` (includes
+      `#ffffff/#6e6ade` — the hover accent, measured only when CI's pointer
+      rests at 0,0). New contrast regressions now FAIL CI (proven by removing
+      a pair → 5 tests red). Sweep + token/parity → claude (critical); 36-file
+      test refactor → codex (`gpt-5.6-terra`, high, worktree; 1 recursive-
+      wrapper fix in tabs by maestro). Codex cross-review: 2 findings, both
+      rejected with rationale.
+- [x] **Adoption milestone (plan-08 tracks 2–3) — COMPLETE (2026-08-04/05).**
+      First lot shipped in PR #98 (`feat/adocao-repo-readiness`):
   - FUNDING.yml → kimi (`kimi-k2.7-code`, inline brief), commit `362090b`;
     corrected to the org in #99 (the user enabled Sponsors directly on the
     lyra-ds org, not the personal profile). DONE end to end the same night:
