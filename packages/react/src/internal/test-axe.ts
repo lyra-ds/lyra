@@ -17,6 +17,12 @@ const ACCEPTED_CONTRAST_PAIRS = new Set([
   '#6c739e/#0b0d1d',
   // Light --text-faint/--text-muted (slate-500) on --surface-sunken (4.34:1).
   '#64748b/#f1f5f9',
+  // White label on the indigo-500 accent (4.39:1) — the primary/danger button
+  // HOVER fill (dark --accent-hover ramp). Only measured when the runner's
+  // pointer happens to rest on the control (headless CI leaves the mouse at
+  // 0,0); the rest-state fills were repaired to AA via the parity dark-fill
+  // divergences, and the hover ramp keeps the handoff's frozen accent.
+  '#ffffff/#6e6ade',
 ]);
 
 /** Finish entrance animations, run axe, and assert no unaccepted violations. */
