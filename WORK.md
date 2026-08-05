@@ -14,10 +14,15 @@
 - [ ] **Workspace restructure (user, outside this session):** the repo folder
       moves to `~/Projects/lyra-ds/lyra` under an org umbrella (starters
       cloned as siblings). Persistent memory pre-migrated to the new path key.
-- [ ] **Dependabot #92 triage** — 18 minor/patch npm updates, lint and test
-      RED; annotated on the PR, needs its own cycle against the exact-versions
-      policy. (#91 checkout patch merged; #93 TypeScript 6 and #94 @types/node
-      26 closed by locked policy, encoded as dependabot ignores in #104.)
+- [ ] **Dependency triage (was Dependabot #92, closed stale by dependabot)** —
+      re-triaged from live `pnpm outdated` into risk tiers. Tier D1 (12 safe
+      minor/patch: react 19.2.8, prettier, eslint, vite, playwright 1.62 et
+      al.) delivered in PR #110 → claude (critical); root cause of the old
+      red found: duplicate React from a stale peer resolution, fixed with
+      pnpm dedupe (trail: .batuta/runs/2026-08-05-deps-d1.md). Queued:
+      D2 next 16.3 + fumadocs-core 16.14; D3 lucide-react 1.28 +
+      @fontsource 5.3 (visual-sensitive); size-limit 13 major = own
+      decision. typescript 7 / @types/node 26 stay blocked by policy (#104).
 - [ ] **Foundations styleguide (active, 2026-08-05)** — porting the 15
       `handoff/guidelines/` cards into a new manifest-driven docs section as
       5 topic pages (colors, typography, spacing, brand, architecture), 3
