@@ -1,13 +1,13 @@
 // SIMPLE-component test template (D-25) — the shape Phase 4 copies for every plain,
 // stateless wrapper. Runs in the "browser" vitest project (real chromium) because a
 // CSS-first DS needs real rendering: jsdom applies zero CSS, so focus-visible states,
-// dark-theme token cascades and axe's color-contrast rule are all untestable there.
+// dark-theme token cascades and axe accessibility checks are all untestable there.
 //
 // The @lyra-ds/styles entry CSS is imported IN THIS TEST (never in src, RCT-03). Vite
 // resolves its @import graph and injects it as a <style> — this is the fixture stylesheet.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, cleanup } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Button } from './index';
 
@@ -25,23 +25,6 @@ function setTheme(theme: (typeof THEMES)[number]): void {
   if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
   else document.documentElement.removeAttribute('data-theme');
   void document.documentElement.offsetHeight; // force style recalc
-}
-
-// Frozen dark brand-token contrast is marginally under AA (indigo-500 #6E6ADE + #FFFFFF = 4.39:1
-// for enabled primary/danger text). Those tokens are LOCKED (@lyra-ds/styles, Phase 2) and out of
-// this wrapper's scope — tracked in .planning/…/deferred-items.md. The smoke matrix therefore
-// allows ONLY that known `color-contrast` finding while enforcing every other axe rule. Any
-// structural/aria/name violation, or any color-contrast target beyond the frozen accent, still
-// fails. A11y-focused fixtures (loading, icon-only) run with the FULL ruleset and zero allowances.
-async function expectNoViolations(
-  container: Element,
-  opts: { allowFrozenTokenContrast?: boolean } = {},
-): Promise<void> {
-  const results = await axe.run(container as HTMLElement);
-  const violations = opts.allowFrozenTokenContrast
-    ? results.violations.filter((v) => v.id !== 'color-contrast')
-    : results.violations;
-  expect(violations).toEqual([]);
 }
 
 afterEach(async () => {
@@ -188,7 +171,7 @@ describe('Button — smoke matrix (light + dark)', () => {
             const btn = container.querySelector('button')!;
             expect(btn.className).toBe(`lyra-btn lyra-btn--${variant} lyra-btn--${size}`);
             expect(errorSpy).not.toHaveBeenCalled();
-            await expectNoViolations(container, { allowFrozenTokenContrast: true });
+            await expectNoAxeViolations(container);
           } finally {
             errorSpy.mockRestore();
           }
@@ -216,7 +199,7 @@ describe('Button — loading', () => {
       expect(btn.disabled).toBe(true);
       expect(btn.getAttribute('aria-busy')).toBe('true');
       expect(btn.className).toBe('lyra-btn lyra-btn--primary lyra-btn--md lyra-btn--loading');
-      await expectNoViolations(container);
+      await expectNoAxeViolations(container);
     });
   }
 
@@ -243,7 +226,7 @@ describe('Button — icon-only', () => {
       expect(btn.className).toBe('lyra-btn lyra-btn--primary lyra-btn--md lyra-btn--icon');
       expect(btn.getAttribute('aria-label')).toBe('Search');
       expect(btn.querySelector('.lyra-btn__label')).toBeNull();
-      await expectNoViolations(container);
+      await expectNoAxeViolations(container);
     });
   }
 });

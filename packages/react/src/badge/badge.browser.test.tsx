@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Badge } from './index';
 afterEach(cleanup);
@@ -17,7 +17,7 @@ describe('Badge', () => {
         );
         expect(container.querySelector('span')!.className).toBe(`lyra-badge lyra-badge--${tone}`);
         expect(error).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations).toEqual([]);
+        await expectNoAxeViolations(container);
         error.mockRestore();
       });
 });

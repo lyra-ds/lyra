@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Footer } from './index';
 
@@ -14,7 +14,7 @@ describe('Footer', () => {
     expect(container.querySelector('.lyra-footer__brand')).toBeNull();
     expect(container.querySelector('.lyra-footer__note')).toBeNull();
     expect(container.querySelector('.lyra-footer__links')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('renders supplied links in a labelled navigation landmark', async () => {

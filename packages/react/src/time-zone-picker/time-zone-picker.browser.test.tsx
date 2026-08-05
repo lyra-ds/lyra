@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { TimeZonePicker } from './index';
 
@@ -28,9 +28,7 @@ describe('TimeZonePicker', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Time zone' }));
       await expect.element(screen.getByRole('listbox')).toBeInTheDocument();
       expect(screen.container.querySelector('.lyra-tzpicker')).not.toBeNull();
-      expect(
-        (await axe.run(screen.container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(screen.container);
     });
   }
 

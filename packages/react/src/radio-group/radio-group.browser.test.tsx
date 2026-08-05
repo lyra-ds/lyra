@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { RadioGroup } from './index';
 
@@ -40,7 +40,7 @@ describe('RadioGroup', () => {
       expect(container.querySelectorAll('input[type="radio"]')).toHaveLength(2);
       expect(container.querySelector('.lyra-choice')!.className).toBe('lyra-choice');
       expect(container.querySelector('.lyra-choice__hint')!.textContent).toBe('Written updates');
-      expect((await axe.run(container)).violations).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 

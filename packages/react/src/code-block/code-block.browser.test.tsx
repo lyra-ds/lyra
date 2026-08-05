@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { CodeBlock } from './index';
 
@@ -39,9 +39,7 @@ describe('CodeBlock', () => {
     expect(container.querySelector('.lyra-code')!.className).toBe(
       'lyra-code lyra-code--line-numbers',
     );
-    expect(
-      (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-    ).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('only enables CSS counter line numbers when lineNumbers is set', async () => {

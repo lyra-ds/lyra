@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Brand } from './index';
 
@@ -36,7 +36,7 @@ describe('Brand', () => {
     document.documentElement.dataset.theme = 'dark';
     expect(getComputedStyle(lightMark).display).toBe('none');
     expect(getComputedStyle(darkMark).display).not.toBe('none');
-    expect((await axe.run(screen.container)).violations).toEqual([]);
+    await expectNoAxeViolations(screen.container);
   });
 
   it('renders one mark with a translated accessible name when there is no wordmark', async () => {
@@ -48,7 +48,7 @@ describe('Brand', () => {
     if (brand == null) return;
 
     expect(brand.querySelectorAll('img')).toHaveLength(1);
-    expect((await axe.run(screen.container)).violations).toEqual([]);
+    await expectNoAxeViolations(screen.container);
   });
 
   it('renders a non-interactive span without href', async () => {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import { useState } from 'react';
 import '@lyra-ds/styles/styles.css';
 import { CommandPalette, type CommandGroup } from './index';
@@ -113,7 +113,7 @@ describe('CommandPalette', () => {
     expect(getComputedStyle(trigger.querySelector('.lyra-kbd')!).display).toBe('none');
     await userEvent.click(screen.getByRole('button', { name: 'Search' }));
     expect(onClick).toHaveBeenCalledTimes(1);
-    expect((await axe.run(trigger)).violations).toEqual([]);
+    await expectNoAxeViolations(trigger);
   });
 
   for (const theme of themes) {
@@ -148,9 +148,7 @@ describe('CommandPalette', () => {
         expect(panel.querySelector('.lyra-cmdk__shortcut .lyra-kbd')!.className).toBe('lyra-kbd');
         expect(panel.querySelector('.lyra-cmdk__footer')!.className).toBe('lyra-cmdk__footer');
         expect(errorSpy).not.toHaveBeenCalled();
-        expect(
-          (await axe.run(container)).violations.filter((item) => item.id !== 'color-contrast'),
-        ).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         errorSpy.mockRestore();
       }
@@ -160,9 +158,7 @@ describe('CommandPalette', () => {
       setTheme(theme);
       await render(<CommandPalette open onClose={() => {}} groups={groups} />);
       await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk-overlay')).not.toBeNull());
-      expect(
-        (await axe.run(document.body)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(document.body);
     });
   }
 

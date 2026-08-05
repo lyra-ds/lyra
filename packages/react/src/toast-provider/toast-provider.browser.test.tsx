@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { ToastProvider, useToast } from './index';
 
@@ -113,9 +113,7 @@ describe('ToastProvider', () => {
       const { container } = await render(<ToastHarness duration={0} />);
       await userEvent.click(container.querySelector<HTMLButtonElement>('button')!);
 
-      expect(
-        (await axe.run(document.body)).violations.filter((v) => v.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(document.body);
     });
   }
 

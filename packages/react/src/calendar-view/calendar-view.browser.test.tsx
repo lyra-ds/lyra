@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { CalendarView } from './index';
 
@@ -59,9 +59,7 @@ describe('CalendarView', () => {
         getComputedStyle(screen.container.querySelector('.lyra-calview__evt--external')!)
           .borderTopStyle,
       ).toBe('solid');
-      expect(
-        (await axe.run(screen.container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(screen.container);
     });
   }
 

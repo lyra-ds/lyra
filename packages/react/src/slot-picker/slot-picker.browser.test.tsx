@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { SlotPicker } from './index';
 
@@ -31,9 +31,7 @@ describe('SlotPicker', () => {
         .element(screen.getByRole('listbox', { name: /Available times/ }))
         .toBeInTheDocument();
       expect(screen.container.querySelector('.lyra-slotpicker')).not.toBeNull();
-      expect(
-        (await axe.run(screen.container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(screen.container);
     });
   }
 

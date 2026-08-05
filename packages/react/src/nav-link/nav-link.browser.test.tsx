@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { NavLink } from './index';
 
@@ -18,7 +18,7 @@ describe('NavLink', () => {
     await expect.element(screen.getByRole('link', { name: 'Docs' })).toBeInTheDocument();
     expect(link.className).toContain('lyra-navlink--active');
     expect(link.getAttribute('aria-current')).toBe('page');
-    expect((await axe.run(screen.container)).violations).toEqual([]);
+    await expectNoAxeViolations(screen.container);
   });
 
   it('merges props into the asChild anchor without creating another focusable element', async () => {

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { DateRangePicker } from './index';
 
@@ -53,9 +53,7 @@ describe('DateRangePicker', () => {
       await expect
         .element(screen.getByRole('dialog', { name: 'Date range picker' }))
         .toBeInTheDocument();
-      expect(
-        (await axe.run(screen.container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(screen.container);
     });
   }
 

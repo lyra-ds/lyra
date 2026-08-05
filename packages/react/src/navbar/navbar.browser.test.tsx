@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Navbar } from './index';
 
@@ -44,7 +44,7 @@ describe('Navbar', () => {
     expect(container.querySelector('.lyra-navbar__brand')).toBeNull();
     expect(container.querySelector('.lyra-navbar__nav')).toBeNull();
     expect(container.querySelector('.lyra-navbar__actions')).toBeNull();
-    expect((await axe.run(container)).violations).toEqual([]);
+    await expectNoAxeViolations(container);
   });
 
   it('renders a labelled navigation landmark when the nav slot is supplied', async () => {

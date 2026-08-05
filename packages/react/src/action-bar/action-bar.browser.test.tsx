@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { ActionBar } from './index';
 
@@ -29,7 +29,7 @@ describe('ActionBar', () => {
           .element(screen.getByRole('button', { name: 'Clear selection' }))
           .toBeInTheDocument();
         expect(errorSpy).not.toHaveBeenCalled();
-        expect((await axe.run(screen.container)).violations).toEqual([]);
+        await expectNoAxeViolations(screen.container);
       } finally {
         errorSpy.mockRestore();
       }

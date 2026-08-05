@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Table } from './index';
 
@@ -38,9 +38,7 @@ describe('Table', () => {
           expect(container.querySelector('tbody td')!.className).toBe('lyra-table__primary');
           expect(container.querySelectorAll('tbody tr')).toHaveLength(2);
           expect(error).not.toHaveBeenCalled();
-          expect(
-            (await axe.run(container)).violations.filter((v) => v.id !== 'color-contrast'),
-          ).toEqual([]);
+          await expectNoAxeViolations(container);
         } finally {
           error.mockRestore();
         }
@@ -49,16 +47,10 @@ describe('Table', () => {
   }
 
   for (const theme of ['light', 'dark'] as const) {
-    it(`clears color-contrast on the column headings in ${theme}`, async () => {
+    it(`is axe clean on the column headings in ${theme}`, async () => {
       setTheme(theme);
       const { container } = await render(<Table columns={columns} rows={rows} />);
-      expect(
-        (
-          await axe.run(container.querySelector<HTMLElement>('thead')!, {
-            runOnly: ['color-contrast'],
-          })
-        ).violations,
-      ).toEqual([]);
+      await expectNoAxeViolations(container.querySelector<HTMLElement>('thead')!);
     });
   }
 

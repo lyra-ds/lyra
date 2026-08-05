@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Fieldset, FormRow } from './index';
 
@@ -40,7 +40,7 @@ describe('Fieldset and FormRow', () => {
       );
       expect(getComputedStyle(formRow).display).toBe('grid');
       await expect.element(formRow).toBeInTheDocument();
-      expect((await axe.run(container)).violations).toEqual([]);
+      await expectNoAxeViolations(container);
     });
   }
 

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { BottomNav } from './index';
 
@@ -41,7 +41,7 @@ describe('BottomNav', () => {
         expect(active.querySelector('.lyra-bottomnav__icon')).not.toBeNull();
         expect(active.querySelector('.lyra-bottomnav__label')).not.toBeNull();
         expect(error).not.toHaveBeenCalled();
-        expect((await axe.run(container)).violations).toEqual([]);
+        await expectNoAxeViolations(container);
       } finally {
         error.mockRestore();
       }

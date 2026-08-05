@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import axe from 'axe-core';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { RecurrenceSelector } from './index';
 
@@ -27,9 +27,7 @@ describe('RecurrenceSelector', () => {
         .element(screen.getByRole('combobox', { name: 'Recurrence' }))
         .toBeInTheDocument();
       expect(screen.container.querySelector('.lyra-recur')).not.toBeNull();
-      expect(
-        (await axe.run(screen.container)).violations.filter((item) => item.id !== 'color-contrast'),
-      ).toEqual([]);
+      await expectNoAxeViolations(screen.container);
     });
   }
 
