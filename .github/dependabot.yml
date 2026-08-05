@@ -9,6 +9,14 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # TypeScript is pinned at 5.9.x by a locked decision (CLAUDE.md): the last
+      # JS-based line validated against the dts pipeline. Revisit with tsdown/TS 7.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # @types/node tracks the engines pin (node >=24 <25).
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
