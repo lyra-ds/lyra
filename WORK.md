@@ -38,8 +38,9 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
     `onlyBuiltDependencies` → `allowBuilds` em pnpm-workspace.yaml (o vite
     precisa para o esbuild); a política local `minimumReleaseAge` do usuário
     bloqueia instalar pacote publicado há <24h (override só na verificação).
-    FALTA: usuário criar os repos `lyra-ds/starter-vite` e
-    `lyra-ds/starter-next` (guiado) para eu subir o conteúdo.
+    PUBLICADOS a pedido do usuário na mesma noite: repos criados via gh
+    (`lyra-ds/starter-vite`, `lyra-ds/starter-next`), conteúdo no ar e
+    provado por clone limpo + build verde direto do GitHub.
   - Falta também: 08-9/08-10 (governança — inglês nos docs públicos e limpeza
     de `.batuta/`/WORK.md, decisão conjunta com o usuário).
 
