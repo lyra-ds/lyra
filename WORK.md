@@ -22,9 +22,13 @@
       pnpm dedupe (trail: .batuta/runs/2026-08-05-deps-d1.md); merged as
       1effb5d. Tier D2 (next 16.3.0 + fumadocs-core 16.14.0) delivered in
       PR #111 → claude (critical); browser-proven docs output (trail:
-      .batuta/runs/2026-08-05-deps-d2.md). Queued: D3 lucide-react 1.28 +
-      @fontsource 5.3 (visual-sensitive); size-limit 13 major = own
-      decision. typescript 7 / @types/node 26 stay blocked by policy (#104).
+      .batuta/runs/2026-08-05-deps-d2.md); merged as cb7b4da. Tier D3
+      (lucide-react 1.28.0 + @fontsource 5.3.0) delivered in PR #112 →
+      claude (critical); icon registry byte-identical, budgets hold, fonts
+      visually proven (trail: .batuta/runs/2026-08-05-deps-d3.md). Triage
+      CLOSED once #112 merges. Not taken by decision: typescript 7 /
+      @types/node 26 (policy #104); size-limit 13 major = own future
+      decision.
 - [ ] **Foundations styleguide (active, 2026-08-05)** — porting the 15
       `handoff/guidelines/` cards into a new manifest-driven docs section as
       5 topic pages (colors, typography, spacing, brand, architecture), 3
