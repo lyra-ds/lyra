@@ -1,0 +1,56 @@
+---
+title: Cores
+description: As escalas primitivas e a camada semântica de cores por trás de cada superfície Lyra.
+---
+
+# Cores
+
+O Lyra separa escalas primitivas fixas de tokens semânticos. Use tokens semânticos em componentes e
+na folha de estilos do aplicativo; os primitivos formam a paleta que define esses significados, não
+uma segunda API para o código de produto.
+
+## Primária — Indigo
+
+Indigo é a escala de acento do Lyra. `--accent` resolve para indigo 600 no tema claro padrão, e os
+passos próximos ficam reservados para estados de hover, active, soft e texto legível em soft. Use
+esses nomes semânticos em vez de escolher diretamente um passo da escala.
+
+<Example id="primary" title="Indigo 50–950" layout="block">
+  A escala completa é fixa entre temas. Seus nomes de token ajudam a definir a camada semântica, mas
+  componentes devem usar `--accent`, `--accent-hover` e os tokens semânticos relacionados.
+</Example>
+
+## Neutros
+
+Slate fornece a rampa de neutros frios para superfícies, bordas e texto. O tema claro mapeia sua
+camada semântica para essa escala, então `--surface-card`, `--border-default` e `--text-primary`
+continuam expressando finalidade mesmo se o primitivo de origem mudar.
+
+<Example id="neutrals" title="Slate 50–900" layout="block">
+  Use tokens semânticos de superfície, borda e texto na interface do produto. Recorra a um primitivo
+  slate apenas ao criar ou manter a própria camada de tokens.
+</Example>
+
+## Cores semânticas
+
+Success, warning, danger e info oferecem um token forte para ênfase, um token soft para fundo
+sutil e um token de texto para tinta legível sobre esse fundo. Esse conjunto mantém estados de
+status consistentes entre componentes.
+
+<Example id="semantic" title="Tokens de intenção" layout="block">
+  Combine `--*-soft` com o `--*-text` correspondente; use `--success`, `--warning`, `--danger` ou
+  `--info` para o sinal forte. Não substitua esses tokens por primitivos green, amber, red ou blue
+  em um componente.
+</Example>
+
+## Modo escuro
+
+`[data-theme="dark"]` troca superfícies, texto, bordas e valores de intenção semânticos, enquanto os
+primitivos indigo, slate e de status permanecem fixos. Um componente que consome apenas tokens
+semânticos se adapta automaticamente, inclusive dentro de uma ilha de tema escuro.
+
+<Example id="dark" title="Camada semântica escura" layout="block">
+  A amostra aninhada aplica `data-theme="dark"` localmente. Seus tokens de superfície resolvem para
+  a escala night, enquanto o tratamento de acento avança para passos mais claros de indigo visando
+  contraste.
+</Example>

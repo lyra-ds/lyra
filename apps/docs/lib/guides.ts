@@ -9,6 +9,7 @@
  * component name, so it has to be translated. Hence `titleKey` instead of `name`.
  */
 import { componentSlugs } from './components';
+import { foundationSlugs } from './foundations';
 
 export type GuideEntry = {
   /** Kebab-case slug — matches the MDX filename and the example-registry key. */
@@ -38,10 +39,12 @@ export function getGuide(slug: string): GuideEntry | undefined {
  * look plausible, which is the worst kind of wrong. Assert it at module load: this module
  * is imported during static generation, so a collision fails the build instead of shipping.
  */
-const collisions = guideSlugs.filter((slug) => componentSlugs.includes(slug));
+const collisions = guideSlugs.filter(
+  (slug) => componentSlugs.includes(slug) || foundationSlugs.includes(slug),
+);
 if (collisions.length > 0) {
   throw new Error(
-    `Guide slug collides with a component slug: ${collisions.join(', ')}. ` +
-      'Guides and components share the example registry namespace — rename the guide.',
+    `Guide slug collides with a component or foundation slug: ${collisions.join(', ')}. ` +
+      'Guides, foundations and components share the example registry namespace — rename the guide.',
   );
 }

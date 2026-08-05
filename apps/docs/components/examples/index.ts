@@ -166,6 +166,10 @@ import { SlotPickerBasic } from './slot-picker/basic';
 import { SlotPickerLocalizedTimeZone } from './slot-picker/localized-time-zone';
 import { CalendarViewWeek } from './calendar-view/week';
 import { CalendarViewMonth } from './calendar-view/month';
+import { ColorsDark } from './colors/dark';
+import { ColorsNeutrals } from './colors/neutrals';
+import { ColorsPrimary } from './colors/primary';
+import { ColorsSemantic } from './colors/semantic';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -182,6 +186,12 @@ import { CalendarViewMonth } from './calendar-view/month';
  * anyway — only `next dev` (Turbopack) surfaces it, as a 500 on the page.
  */
 export const examples: Record<string, Record<string, ComponentType>> = {
+  colors: {
+    primary: ColorsPrimary,
+    neutrals: ColorsNeutrals,
+    semantic: ColorsSemantic,
+    dark: ColorsDark,
+  },
   container: {
     basic: ContainerBasic,
     nested: ContainerNested,
