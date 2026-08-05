@@ -8,10 +8,13 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 - [ ] **Marco de Adoção (plan-08 trilhas 2–3) — frente aberta em 2026-08-04
       (noite), escolha do usuário na retomada.** Primeiro lote entregue via
       PR #98 (`feat/adocao-repo-readiness`):
-  - FUNDING.yml → kimi (kimi-k2.7-code, brief inline), commit 362090b. O
-    usuário ativou o Sponsors na mesma noite; aprovação do GitHub pendente.
-    Perfil de Sponsors não tem API de escrita — rascunho de intro + tiers
-    entregue em `~/Documents/github-sponsors-profile-draft.md` para colar.
+  - FUNDING.yml → kimi (kimi-k2.7-code, brief inline), commit 362090b;
+    corrigido para a org no #99 (o usuário ativou o Sponsors direto na org
+    lyra-ds, não no perfil pessoal). FEITO de ponta a ponta na mesma noite:
+    perfil de Sponsors preenchido pelo usuário com o short bio + introduction
+    (inglês) de `~/Documents/github-sponsors-profile-draft.md`; meta inicial
+    sugerida: 10 patrocinadores mensais, descrição amarrada aos adapters
+    Vue/Svelte. Aprovação do GitHub ainda pendente para o botão aparecer.
   - 08-4 residual: o grosso já existia (forms bug/feature, config, PR
     template). Form de docs → kimi, commit f32e2af; labels curados (a11y,
     pkg: styles, pkg: react, docs site) criados via gh → claude.
