@@ -20,8 +20,8 @@ export const foundations: FoundationEntry[] = [
   { slug: 'colors', titleKey: 'foundationColors', published: true },
   { slug: 'typography', titleKey: 'foundationTypography', published: true },
   { slug: 'spacing', titleKey: 'foundationSpacing', published: true },
-  { slug: 'brand', titleKey: 'foundationBrand', published: false },
-  { slug: 'architecture', titleKey: 'foundationArchitecture', published: false },
+  { slug: 'branding', titleKey: 'foundationBrand', published: true },
+  { slug: 'architecture', titleKey: 'foundationArchitecture', published: true },
 ];
 
 /** Topics that have MDX content and may be emitted as static pages. */

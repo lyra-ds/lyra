@@ -1,0 +1,63 @@
+---
+title: Arquitetura
+description: As camadas de token, os pacotes e as decisões que mantêm o Lyra portátil.
+---
+
+# Arquitetura
+
+O Lyra é um design system CSS-first com uma camada React pequena. Sua arquitetura mantém as decisões
+visuais portáteis e oferece às equipes de produto uma API de componentes consistente.
+
+## Camadas de token
+
+Os tokens passam por três camadas. Toda decisão de cor chega aos componentes pela camada semântica,
+então um tema ou uma marca pode trocar esses valores sem alterar a folha de estilos do componente;
+as primitivas de escala fixa (espaçamento, tipografia, raios) são consumidas diretamente.
+
+| Camada      | Exemplos                     | Papel                                                                                                |
+| ----------- | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Primitivas  | `--indigo-600`, `--space-4`  | Escalas fixas. Primitivas de cor nunca aparecem na folha de estilos do componente; as de escala sim. |
+| Semântica   | `--accent`, `--surface-card` | Tokens de intenção; a única camada de cor consumida pelos componentes — a que temas e marcas trocam. |
+| Componentes | Classes `.lyra-*`            | Classes reutilizáveis de componente que consomem a camada semântica.                                 |
+
+## Pacotes e builds
+
+`@lyra-ds/styles` é CSS puro: tokens e classes de componente `.lyra-*` sem etapa de build exigida de
+quem consome o pacote. `@lyra-ds/react` fornece wrappers React finos sobre essa folha de estilos. Sua
+única dependência de runtime é `lucide-react`, e seus builds usam `tsdown`.
+
+O catálogo tem 78 componentes. A camada CSS continua sendo a fonte visual de verdade, por isso os
+mesmos tokens e classes podem apoiar adapters sem vincular o sistema a um único framework.
+
+## Decisões que permanecem
+
+- **CSS puro:** o core não exige Tailwind. Tokens e classes Lyra continuam utilizáveis onde houver
+  CSS.
+- **Nomenclatura Lyra:** os tokens semânticos Lyra continuam sendo a API principal. O subpath
+  `@lyra-ds/styles/compat-shadcn.css` é uma camada de compatibilidade opt-in para tokens shadcn;
+  ele nunca entra por padrão.
+- **Comportamento agnóstico de framework:** comportamento acessível por state machines agnósticas de
+  framework está planejado para a fase multi-framework. Isso ainda não faz parte do core CSS.
+- **LLM-first:** [`/llms.txt`](/llms.txt) existe hoje e é gerado a partir dos arquivos de declaração
+  reais. Um registry copiável e um servidor MCP são trabalho futuro.
+
+## Contrato white-label
+
+O contrato ativo em `packages/styles/tokens/brand.css` delimita uma marca com `[data-brand]`. Defina
+`--brand`, `--brand-contrast`, `--brand-radius` e `--brand-font`; o grupo de acento é derivado com
+`color-mix()` nos temas claro e escuro. Para configuração, escopo e orientação de contraste, consulte
+o [guia de white-label](/pt-BR/guides/white-label).
+
+## Distribuição
+
+A distribuição via npm está ativa para `@lyra-ds/styles` e `@lyra-ds/react`, ambos atualmente na
+versão `0.4.1`. Os dois usam publicação confiável por OIDC com provenance. Um registry copiável no
+estilo shadcn está planejado como segunda fase; adapters para Vue, Svelte e Web Components também
+estão planejados, não foram lançados.
+
+## Estrutura de repositório
+
+- `packages/styles` — tokens e classes de componente em CSS puro.
+- `packages/react` — wrappers React finos.
+- `apps/docs` — o site de documentação.
+- `tools/*` — quality gates como parity, docgen e o registro de ícones.
