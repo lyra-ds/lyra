@@ -1,5 +1,13 @@
 # @lyra-ds/styles
 
+## 0.4.1
+
+### Patch Changes
+
+- [#103](https://github.com/lyra-ds/lyra/pull/103) [`46dfe0e`](https://github.com/lyra-ds/lyra/commit/46dfe0e253dae01253a83114ba278e676d9b94d2) Thanks [@franciscpd](https://github.com/franciscpd)! - Accessibility: light-theme `--text-faint` raised from slate-400 to slate-500. At slate-400 the placeholder, group-label, calendar outside-month and hour-rail text it colors measured 2.34–2.56:1 against the light surfaces — below the WCAG AA 4.5:1 floor; it now lands at 4.76:1 on white. Dark theme is unchanged. The browser test suites now enforce axe's `color-contrast` rule with an explicit accepted-pair allowlist instead of filtering the rule out wholesale, so new contrast regressions fail CI.
+
+- [#88](https://github.com/lyra-ds/lyra/pull/88) [`717e697`](https://github.com/lyra-ds/lyra/commit/717e697bee342e3b26d6b00d7ca7e8f4a4c707f2) Thanks [@franciscpd](https://github.com/franciscpd)! - Update package metadata: keywords and corrected catalog stats in the description.
+
 ## 0.4.0
 
 ### Minor Changes
