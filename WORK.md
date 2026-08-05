@@ -19,8 +19,10 @@
       minor/patch: react 19.2.8, prettier, eslint, vite, playwright 1.62 et
       al.) delivered in PR #110 → claude (critical); root cause of the old
       red found: duplicate React from a stale peer resolution, fixed with
-      pnpm dedupe (trail: .batuta/runs/2026-08-05-deps-d1.md). Queued:
-      D2 next 16.3 + fumadocs-core 16.14; D3 lucide-react 1.28 +
+      pnpm dedupe (trail: .batuta/runs/2026-08-05-deps-d1.md); merged as
+      1effb5d. Tier D2 (next 16.3.0 + fumadocs-core 16.14.0) delivered in
+      PR #111 → claude (critical); browser-proven docs output (trail:
+      .batuta/runs/2026-08-05-deps-d2.md). Queued: D3 lucide-react 1.28 +
       @fontsource 5.3 (visual-sensitive); size-limit 13 major = own
       decision. typescript 7 / @types/node 26 stay blocked by policy (#104).
 - [ ] **Foundations styleguide (active, 2026-08-05)** — porting the 15
