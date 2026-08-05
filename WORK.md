@@ -27,9 +27,13 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
   - 08-8 snapshot releases → codex (gpt-5.6-terra, worktree), commit 3e9375a.
     DESVIO do plano: seek-oss/changesets-snapshot descartado — publish
     aninhado quebra o OIDC (lição npm/cli#8976 do release.yml); workflow
-    hand-rolled espelhando o caminho provado. PENDÊNCIA manual do usuário:
-    registrar snapshot.yml como trusted publisher dos 2 pacotes no npmjs.com
-    antes do primeiro dispatch.
+    hand-rolled espelhando o caminho provado. CORREÇÃO na mesma noite
+    (crítico → claude, disparada por pergunta do usuário): snapshot.yml
+    separado era um erro — o npm permite UM trusted publisher por pacote,
+    escopado a um único arquivo de workflow; registrá-lo substituiria o do
+    release.yml e quebraria o release. O snapshot virou job do próprio
+    release.yml (dispatch manual roda só ele; push na main roda só o
+    release). NENHUMA ação no npmjs.com é necessária.
   - 08-7 starters → codex (gpt-5.6-terra, reasoning high, 2 lotes): conteúdo
     COMPLETO e VERIFICADO em `.batuta/starters/starter-{vite,next}/`
     (excluído do git via info/exclude). Ambos instalam 0.4.0 do npm público,
