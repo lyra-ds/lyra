@@ -5,6 +5,34 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [ ] **Marco de Adoção (plan-08 trilhas 2–3) — frente aberta em 2026-08-04 (noite),
+      escolha do usuário na retomada.** Progresso do primeiro lote (branch
+      `feat/adocao-repo-readiness`):
+      - FUNDING.yml → kimi (kimi-k2.7-code, inline), commit 362090b. Sponsors
+        ainda NÃO ativo no perfil do usuário — botão só aparece após ativação
+        manual em github.com/sponsors.
+      - 08-4 residual: o grosso já existia (forms bug/feature, config, PR
+        template). Form de docs → kimi, commit f32e2af; labels curados (a11y,
+        pkg: styles, pkg: react, docs site) criados via gh → claude.
+      - 08-5 good first issues → claude (crítico): #95 (DateRangePicker
+        anúncio acessível do período, good first issue). Curadoria honesta: só
+        #28+#95 servem de porta de entrada hoje; #96 (tzpicker sem CSS) e #97
+        (SlotPicker overflow móvel) abertos como help wanted — a varredura do
+        color-contrast vai gerar os próximos good-first.
+      - 08-6 REFORMULADO pelo usuário nesta sessão: anúncio será artigo
+        bilíngue no site pessoal dele, não Discussion. Entregue PRD em
+        `~/Documents/prd-artigo-anuncio-lyra-ds.md` para o Claude do site
+        gerar o artigo (números verificados de stats.json, claims de
+        honestidade, critérios de aceite).
+      - 08-8 snapshot releases → codex (gpt-5.6-terra, worktree), commit
+        3e9375a. DESVIO do plano: seek-oss/changesets-snapshot descartado —
+        publish aninhado quebra o OIDC (lição npm/cli#8976 do release.yml);
+        workflow hand-rolled espelhando o caminho provado. PENDÊNCIA manual
+        do usuário: registrar snapshot.yml como trusted publisher dos 2
+        pacotes no npmjs.com antes do primeiro dispatch.
+      - Falta: 08-7 starters (conteúdo em preparação; criação dos repos é
+        manual do usuário, guiada) e 08-9/08-10 (governança, decisão conjunta).
+
 - [x] **0.4.0 PUBLICADO via OIDC — 2026-08-04 (gatilho explícito do usuário).**
       Version PR #74 verificado (título + 7 changesets das ondas 4–6d + wrap
       do CodeBlock; bump 0.3.0→0.4.0 nos dois pacotes) antes do merge; run
