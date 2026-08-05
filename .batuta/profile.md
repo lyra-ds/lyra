@@ -181,6 +181,20 @@ anteriores. Colete isso lendo a fonte antes de escrever o brief.
 **Economia de lote:** Context + Conventions são construídos uma vez e reusados no
 lote inteiro; só Goal, critérios e fronteiras variam por item.
 
+## Verificação fora do monorepo (starters, 2026-08-04)
+
+- `pnpm install` dentro de um subdiretório não-workspace (ex.
+  `.batuta/starters/*`) sobe até a raiz do monorepo e instala o workspace —
+  use `--ignore-workspace`, ou dê ao starter um `pnpm-workspace.yaml` próprio
+  (o que também o torna raiz).
+- pnpm 11.13 renomeou `onlyBuiltDependencies` → `allowBuilds:` (mapa
+  nome→bool) em `pnpm-workspace.yaml`; o campo `pnpm` do package.json não é
+  mais lido.
+- A máquina do usuário tem política `minimumReleaseAge` (~24h) que bloqueia
+  instalar pacote recém-publicado — na verificação de starter no dia do
+  release, use `--config.minimum-release-age=0` (inclusive no `pnpm build`,
+  que re-roda o deps check). Nunca gravar esse override no template.
+
 ## Takeover do GSD (2026-07-20)
 
 O usuário aposentou o GSD; o Batuta assumiu a condução. Import feito:
