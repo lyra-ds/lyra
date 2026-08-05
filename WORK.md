@@ -29,9 +29,15 @@
       3b39e0f. Lot f2 (typography + spacing, 7 live examples) delivered in
       PR #108 → codex (`gpt-5.6-terra`, high, worktree; 1 retry fixing 4
       verification findings — 2 accepted cross-review + 2 maestro browser
-      findings) (trail: .batuta/runs/2026-08-05-foundations-type-spacing.md).
-      Lot f3 (brand + architecture reconciled with today's reality) queued
-      behind the #108 merge.
+      findings) (trail: .batuta/runs/2026-08-05-foundations-type-spacing.md);
+      merged as 66585c9. Lot f3 (branding + architecture) delivered in PR
+      #109 → codex (`gpt-5.6-terra`, high, worktree; 1 legitimate collision
+      stop — foundation slug renamed `branding` —, 2 maestro transport
+      errors, 1 design-gate verbatim re-dispatch; cross-review accepted 1
+      fact-check finding: token-layer claim scoped to color) (trail:
+      .batuta/runs/2026-08-05-foundations-brand-arch.md). Section complete
+      once #109 merges: /foundations/{colors,typography,spacing,branding,
+      architecture}, bilingual, all live-token examples.
 
 ## Done
 
