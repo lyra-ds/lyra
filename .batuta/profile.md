@@ -77,6 +77,13 @@ Duas armadilhas que esses dois gates escondiam:
 
 ## Delegação — o que já funcionou e o que já custou rodada
 
+**Kimi trava com brief via arquivo temp (2026-08-04).** Duas invocações
+`opencode run … "Follow the instructions in $tmpfile"` penduraram sem output
+(5min+ cada); o probe inline respondeu em segundos e o MESMO conteúdo colado
+inline no argumento entregou em uma rodada limpa. Na lane trivial, brief vai
+INLINE no argumento, sempre — a receita de temp file do adapter não vale para
+este modelo.
+
 Lições dos lotes da Fase 6b, cada uma com a evidência que a gerou. Valem para
 qualquer executor, não só o codex.
 

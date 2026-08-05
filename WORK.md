@@ -5,6 +5,21 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
 
 ## In progress
 
+- [x] **0.4.0 PUBLICADO via OIDC — 2026-08-04 (gatilho explícito do usuário).**
+      Version PR #74 verificado (título + 7 changesets das ondas 4–6d + wrap
+      do CodeBlock; bump 0.3.0→0.4.0 nos dois pacotes) antes do merge; run
+      30961279120 verde; provenance SLSA nos dois pacotes; tags + GitHub
+      Releases. Catálogo público: 68→78 componentes, 100%% documentados no
+      site. → claude (crítico).
+
+- [x] **Lote de vitrine OSS — PR #88 MERGEADO (2026-08-04).**
+      Da análise de saúde open source: READMEs mentindo ("not yet published",
+      "209 tokens/40 components" — real: 211/78 via stats.json derivado),
+      badges npm ausentes, keywords nos package.json, description do styles
+      defasada, dependabot.yml, changeset patch de metadados. Wiki vazia
+      DESLIGADA via API (feito). Brief `.batuta/lot-oss-vitrine.md` → codex
+      (`gpt-5.6-terra`, medium, worktree `oss-vitrine`).
+
 - [x] **Fase 8 / Onda 6d — CalendarView — PORTE DO DELTA COMPLETO (2026-08-03).**
       O componente mais caro, sozinho: mês + grade de horas com chips por medição
       de DOM real (testes só em Browser Mode), os 5 tipos distintos por forma+cor
@@ -107,9 +122,100 @@ restante planejado em `.batuta/plan-04..07-*.md`, em ordem de dependência.
       para DENTRO do sheet — a cópia na página ficava sob o overlay, inclicável).
       Docgen 64→65. → codex (`gpt-5.6-terra`, high, worktree, 1 retry) + claude.
 
-- [ ] **Debugging pendente — CodeBlock na tela de visualização não quebra o
-      conteúdo** (estoura a página). Reportado pelo usuário em 2026-08-03;
-      abrir sessão de debugging dedicada depois da Onda 3.
+- [x] **ONDA DE DOCS COMPLETA — 24 páginas bilíngues, catálogo 100%%
+      documentado (2026-08-04, PRs #83–#87 mergeados, deploy do SHA final
+      verde — run 30960423986; índice em produção com 74 páginas, spot-checks
+      200).** Derivação: 74 diretórios de componente vs. 50
+      slugs no manifesto = 24 sem página. 5 lotes por afinidade, sequenciais,
+      brief compartilhado em `.batuta/brief-docs-wave.md` + lotes
+      `.batuta/lot-docs-{1..5}-*.md`:
+      1. forms (6): radio-group, checkbox-group, fieldset+FormRow, separator,
+         time-input, segmented-ring → codex ENTREGUE; verificação: gates
+         verdes (1 fix mecânico do maestro: `'use client'` no exemplo com
+         função `valueText` — RSC recusa função de server component; brief
+         da onda ajustado mentalmente para os próximos lotes), classes do
+         HTML puro conferidas contra o styles (zero inventadas), 12 páginas
+         renderizando com props/exemplos, impeccable 19/20 (zero overflow a
+         375px, headings sãos). Débitos de componente registrados do audit:
+         alvos de toque dos controles nativos (radio/checkbox 18×18 — label
+         estende o alvo; avaliar estratégia coarse-pointer no DS) e steppers
+         do TimeInput 23×15 pointer-only (design intencional, documentado).
+      2. nav/chrome (5): nav-link, app-sidebar, bottom-nav, action-bar,
+         toast-provider+useToast
+      3. data/overlay (4): data-table, person-cell, popover, bottom-sheet
+      4. date/time (4): calendar, time-picker, date-picker, date-range-picker
+      5. scheduling (5): time-zone-picker, recurrence-selector,
+         weekly-schedule-editor, slot-picker, calendar-view
+      Ciclo por lote: codex (high, worktree) → verificação (gates + páginas
+      no navegador) → impeccable nas páginas do lote → commit → PR. Depois da
+      onda: gatilho do usuário para o 0.4.0 (Version PR #74).
+      **Progresso:** lotes 1–4 MERGEADOS (PRs #83, #84, #85, #86); lote 5 no
+      PR #87 aguardando checks — com ele a onda fecha em 78/78 documentados.
+      Lições da condução: 3 stop conditions legítimas em 3 lotes, todas por
+      nota MINHA desviando da fonte (label do BottomNav, foco do Popover,
+      separador do DateRangePicker) — lote 5 foi pré-verificado contra o
+      código e saiu limpo; o executor alegou docs build verde no lote 3 que
+      NÃO estava (crases aninhadas em code span viravam JSX no prerender).
+      **Débito de DS registrado (2026-08-04):** componentes de scheduling têm
+      min-width intrínseco (ex.: `.lyra-slotpicker__main` 232px/coluna de
+      dia) e estouram viewport de phone — as docs apresentam com scroll no
+      palco (`.lw-example-scroll`); candidato a trabalho responsivo no marco
+      de comportamento.
+
+- [x] **3 overflows móveis — PR #82 MERGEADO e provado em produção
+      (2026-08-04).** Deploy do SHA exato (run 30928255184) verde; prova:
+      file-upload@375 contido (277px em palco de 325, docSW 375),
+      skeleton@375 zero elementos além do viewport (classe aplicada),
+      landing@360 docSW 360 com gap 4px computado. Palcos `--block`/`--plain` ganham `minmax(0, 1fr)` (a
+      trilha implícita estourava o contêiner — FileUpload 340px em palco de
+      325); exemplos do Skeleton saem do inline style para `.lw-skeleton-*`
+      com max-width; navbar da landing perde 2–3px de overflow a 360px com
+      gap `--space-1` sob 380px (provado via CSSOM em produção, CSP bloqueia
+      style injetado — lição de harness). → kimi (`opencode/kimi-k2.7-code`,
+      3 ciclos inline, 1 commit por ciclo; 2 travamentos iniciais por brief
+      via arquivo temp — lição no profile) + claude (verificação, provas).
+
+- [x] **Sidebar das docs responsivo na visão mobile — PR #81 MERGEADO
+      (2026-08-04).** Pedido do usuário
+      em 2026-08-03 (durante a retomada): a documentação "não está tão legal ao
+      acessar no mobile". Entra logo após o debugging do CodeBlock — mesma
+      superfície (página de docs), antes da onda de documentação.
+      **Diagnóstico já medido em produção (375px):** a sidebar empilha inteira
+      ACIMA do conteúdo — 3.262px de navegação (72 links) antes do main
+      (conteúdo começa em y=3437 de 8898). Candidato natural: colapsar num
+      Drawer do DS atrás de botão de menu abaixo do breakpoint. Bônus da
+      varredura de overflow (350+ combinações página×largura): dois overflows
+      reais a 375px para tratar no mesmo ciclo — exemplo do **file-upload**
+      (`.lyra-upload` estoura 12px) e do **skeleton** (spans de largura fixa
+      estouram 26px); e a navbar da landing estoura 3px a 360px.
+      **Entregue (2026-08-04): PR #81 mergeado, 4 checks verdes.** Botão de
+      menu 44×44 no header ≤900px abre o Drawer do DS com o `<DocsSidebar>`;
+      sidebar inline sai do fluxo; fecha em navegação/Escape/backdrop.
+      Conteúdo a 375px: de y=3437 para y=151. Cross-review: 2 aceitos e
+      corrigidos (ARIA do gatilho; reveal do ativo mirava a rail escondida —
+      agora acha a cópia visível, provado com scrollTop 2144 no drawer), 1
+      rejeitado (foco no gatilho pós-navegação é a restauração padrão do
+      Drawer). Prova em navegador no build estático: 375/768 com drawer,
+      1440 intacto. → codex (`gpt-5.6-terra`, high, worktree) + claude (2
+      fixes do cross-review). Os 3 overflows menores (file-upload 12px,
+      skeleton 26px, navbar da landing 3px @360) ficam para ciclo trivial.
+
+- [x] **CodeBlock ganha `wrap` opt-in — o "overflow" reportado era código
+      cortado sem quebra no showcase da landing (2026-08-04, PR #80 mergeado).**
+      Debugging sistemático: varredura de 350+ combinações página×largura em
+      produção provou que NENHUMA página estoura — o `pre` sempre rolou; o que
+      o usuário via (confirmado por ele: showcase da landing) era o código
+      amputado no meio da palavra a 375px, sem scrollbar visível em touch.
+      Fix pela regra do dogfooding: prop `wrap` no DS (`.lyra-code--wrap`,
+      pre-wrap + overflow-wrap anywhere; o pre sem scroll deixa de ser tab
+      stop — LOW do cross-review), showcase adota, exemplo bilíngue, changeset
+      minor, `.lyra-code--wrap` na allowlist do parity (lacuna do brief,
+      follow-through do maestro). Teste nas duas direções PROVADO POR MUTAÇÃO
+      (CSS removido → falha exata). Gates completos do ci.yml verdes no
+      worktree; 665 testes. Bônus da varredura: overflows reais achados em
+      file-upload/skeleton/navbar (anotados no item do mobile). → codex
+      (`gpt-5.6-terra`, high, worktree) + claude (diagnóstico, parity, fix do
+      tabindex), PR #80.
 
 - [x] **Sidebar/índice/⌘K em ordem alfabética (2026-08-03).** O manifesto
       (`apps/docs/lib/components.ts`) exportava em ordem de inserção; o export
