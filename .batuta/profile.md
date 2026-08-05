@@ -141,6 +141,14 @@ reviewed diff. Experiment backup is by copy: `cat file > backup` before and
 `cat backup > file` after — `cat`, not `cp`, because the interactive `cp` alias
 silently defeats even `-f`.
 
+**Integration always runs from the main checkout, never inside the worktree.**
+`git merge --squash batuta/<slug>` executed inside the worktree merges the
+branch into itself and reports "Already up to date"/"nothing to squash". This
+bit three times in one night (2026-08-04) because verification commands chain
+`cd` into the worktree and the merge rode the same shell. Check
+`git branch --show-current` before the merge — it must print the feature
+branch on the main checkout.
+
 **A passing test is not a test that proves.** Still in Lot 08, revert the fix
 and see the test fail: edit with `sed`, run only the directory, restore. It
 took 30 seconds and produced `expected 'Loading' to be 'Carregando'`, proving
