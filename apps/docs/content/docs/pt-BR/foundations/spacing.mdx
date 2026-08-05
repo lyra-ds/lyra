@@ -1,0 +1,46 @@
+---
+title: Espaçamento
+description: Os tokens de espaçamento, raio e elevação que dão um ritmo consistente aos layouts Lyra.
+---
+
+# Espaçamento
+
+O Lyra usa uma grade de espaçamento de 4px para tornar previsível a distância entre elementos
+relacionados. Construa o layout com `--space-*` e, em seguida, use os tokens de raio e sombra para
+expressar agrupamento e elevação sem criar medidas avulsas.
+
+## Escala
+
+A rampa `--space-*` começa em 4px e avança pelos passos usados em padding de componentes, gaps,
+ritmo de seções e margens de página. Passos pequenos aproximam controles relacionados; os médios
+separam conteúdo dentro de uma superfície; os maiores dividem regiões da página. O token zero está
+disponível quando um componente precisa de uma redefinição explícita.
+
+<Example id="scale" title="Escala de espaçamento — grade de 4px" layout="block">
+  As barras usam o mesmo token indicado no rótulo. Prefira um passo nomeado a uma medida literal
+  para que o layout mantenha o mesmo ritmo dos componentes ao redor.
+</Example>
+
+## Raios
+
+O conjunto de raios vai de um detalhe de 4px a uma pílula totalmente arredondada. `--radius-md` é o
+canto padrão de 10px para superfícies gerais; use raios menores em controles compactos, maiores em
+containers espaçosos e `--radius-full` apenas quando a própria forma precisar parecer uma pílula ou
+um círculo.
+
+<Example id="radii" title="Papéis de raio de borda" layout="block">
+  Cada superfície aplica seu próprio token `--radius-*`. O passo médio em destaque é a escolha
+  padrão para cards e para a maior parte dos containers de componentes.
+</Example>
+
+## Sombras
+
+`--shadow-xs` até `--shadow-lg` oferecem elevação progressivamente mais visível no tema claro: use
+xs para separação sutil, sm para cards, md para feedback de hover e lg para modais. No modo escuro,
+`--shadow-xs` e `--shadow-sm` resolvem para `none`, com bordas semânticas expressando a elevação
+sutil; `--shadow-md` e `--shadow-lg` permanecem para overlays mais profundos.
+
+<Example id="shadows" title="Sombras de elevação" layout="block">
+  Escolha a menor sombra que comunique a relação. Uma sombra sinaliza elevação, não substitui a
+  borda que define uma superfície.
+</Example>

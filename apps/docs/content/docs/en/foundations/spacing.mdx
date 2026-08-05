@@ -1,0 +1,45 @@
+---
+title: Spacing
+description: The spacing, radius and elevation tokens that give Lyra layouts a consistent rhythm.
+---
+
+# Spacing
+
+Lyra uses a 4px spacing grid to make the distance between related elements predictable. Build layout
+with `--space-*`, then use the radius and shadow tokens to express grouping and elevation without
+inventing one-off measurements.
+
+## Scale
+
+The `--space-*` ramp starts at 4px and grows through the steps used by component padding, gaps,
+section rhythm and page gutters. Small steps tighten related controls; middle steps separate content
+inside a surface; larger steps divide regions of a page. The zero token is available when a component
+needs an explicit reset.
+
+<Example id="scale" title="Spacing scale — 4px grid" layout="block">
+  The bars use the same token named in their label. Prefer a named step over a literal measurement
+  so a layout keeps the same rhythm as the components around it.
+</Example>
+
+## Radii
+
+The radius set moves from a 4px detail to a fully rounded pill. `--radius-md` is the default 10px
+corner for general surfaces; use smaller radii for compact controls, larger radii for spacious
+containers, and `--radius-full` only when the shape itself should read as a pill or circle.
+
+<Example id="radii" title="Border radius roles" layout="block">
+  Each surface applies its own `--radius-*` token. The highlighted medium step is the standard
+  choice for cards and most component containers.
+</Example>
+
+## Shadows
+
+`--shadow-xs` through `--shadow-lg` provide increasingly prominent light-theme elevation: use xs for
+subtle separation, sm for cards, md for hover feedback and lg for modals. In dark mode,
+`--shadow-xs` and `--shadow-sm` resolve to `none`, with semantic borders carrying subtle elevation;
+`--shadow-md` and `--shadow-lg` remain for deeper overlays.
+
+<Example id="shadows" title="Elevation shadows" layout="block">
+  Choose the smallest shadow that communicates the relationship. A shadow signals elevation, not a
+  substitute for the border that defines a surface.
+</Example>

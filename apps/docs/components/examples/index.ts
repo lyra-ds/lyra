@@ -170,6 +170,13 @@ import { ColorsDark } from './colors/dark';
 import { ColorsNeutrals } from './colors/neutrals';
 import { ColorsPrimary } from './colors/primary';
 import { ColorsSemantic } from './colors/semantic';
+import { SpacingRadii } from './spacing/radii';
+import { SpacingScale } from './spacing/scale';
+import { SpacingShadows } from './spacing/shadows';
+import { TypographyBody } from './typography/body';
+import { TypographyDisplay } from './typography/display';
+import { TypographyMono } from './typography/mono';
+import { TypographyScale } from './typography/scale';
 
 /**
  * Slug → example id → live component. The id MUST match the file name under
@@ -186,6 +193,17 @@ import { ColorsSemantic } from './colors/semantic';
  * anyway — only `next dev` (Turbopack) surfaces it, as a 500 on the page.
  */
 export const examples: Record<string, Record<string, ComponentType>> = {
+  typography: {
+    scale: TypographyScale,
+    display: TypographyDisplay,
+    body: TypographyBody,
+    mono: TypographyMono,
+  },
+  spacing: {
+    scale: SpacingScale,
+    radii: SpacingRadii,
+    shadows: SpacingShadows,
+  },
   colors: {
     primary: ColorsPrimary,
     neutrals: ColorsNeutrals,

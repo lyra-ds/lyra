@@ -25,9 +25,13 @@
       delivered in PR #107, commit 403f68c → codex (`gpt-5.6-terra`, high,
       worktree; 1 verbatim re-dispatch past its design-approval gate);
       cross-review 3 lenses no findings; browser-proven both locales
-      (trail: .batuta/runs/2026-08-05-foundations-colors.md). Lot f2
-      (typography + spacing) and lot f3 (brand + architecture reconciled
-      with today's reality) queued sequentially behind the merge.
+      (trail: .batuta/runs/2026-08-05-foundations-colors.md); merged as
+      3b39e0f. Lot f2 (typography + spacing, 7 live examples) delivered in
+      PR #108 → codex (`gpt-5.6-terra`, high, worktree; 1 retry fixing 4
+      verification findings — 2 accepted cross-review + 2 maestro browser
+      findings) (trail: .batuta/runs/2026-08-05-foundations-type-spacing.md).
+      Lot f3 (brand + architecture reconciled with today's reality) queued
+      behind the #108 merge.
 
 ## Done
 

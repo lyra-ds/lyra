@@ -1,0 +1,57 @@
+---
+title: Tipografia
+description: A escala tipográfica, os papéis de texto e as convenções monoespaçadas que tornam as interfaces Lyra legíveis.
+---
+
+# Tipografia
+
+Os tokens tipográficos do Lyra conectam uma escala de texto compacta a papéis semânticos claros.
+Use o token de papel indicado para cada componente, em vez de escolher família, peso ou tamanho de
+fonte diretamente na folha de estilos do produto.
+
+## Escala
+
+A rampa `--text-*` vai de 12px a 60px. Ela é a fonte compartilhada para densidade de componentes,
+títulos e momentos de display: os passos menores atendem metadados, os intermediários carregam texto
+de interface e os maiores estabelecem a hierarquia da página. Escolha primeiro o token semântico de
+fonte; recorra a um passo da escala apenas ao definir um novo papel semântico.
+
+<Example id="scale" title="Escala de texto — 12px a 60px" layout="block">
+  Cada linha usa o token `--text-*` correspondente. O rótulo é a API do token; o valor em pixels é
+  uma referência para comparar passos, não um valor para copiar para um componente.
+</Example>
+
+## Display e títulos
+
+`--display-font` e os tokens de título combinam Plus Jakarta Sans com o peso, o tamanho e a altura
+de linha planejados. Combine texto display com `--tracking-display` e títulos com
+`--tracking-heading` para preservar o ritmo óptico compacto da hierarquia. `--h3-font` volta ao
+tracking normal para um subtítulo mais discreto.
+
+<Example id="display" title="Papéis de display e títulos" layout="block">
+  Use esses atalhos completos de fonte em títulos de página e de seção. Os rótulos mostram o token
+  de tracking e a composição atual do token para que sua finalidade visual permaneça verificável.
+</Example>
+
+## Corpo
+
+`--body-font` é o padrão de 14px para controles, menus, tabelas e texto em cards. Use
+`--body-strong-font` quando a ênfase precisar ficar no mesmo passo da escala; use a escala de 16px
+com leading relaxado para leitura longa. Combine cada papel com `--text-primary`, `--text-secondary`
+ou `--text-muted` conforme a importância do conteúdo.
+
+<Example id="body" title="Texto de corpo e interface" layout="block">
+  Overlines, captions e corpo em destaque são papéis próprios, não combinações improvisadas de caixa
+  alta, peso e cor. Assim, a mesma hierarquia se adapta ao tema.
+</Example>
+
+## Mono
+
+`--font-mono` usa JetBrains Mono e fica reservado para código, nomes de tokens e dados técnicos. O
+atalho `--code-font` entrega ao código o tamanho padrão de 13px e leading legível. Diferencie trechos
+técnicos da prosa com tokens semânticos de superfície, borda e texto, em vez de cores personalizadas.
+
+<Example id="mono" title="Código e rótulos de tokens" layout="block">
+  Use monoespaçada para snippets, comandos inline e nomes de tokens. É um papel de conteúdo, não uma
+  fonte alternativa para texto de corpo.
+</Example>
