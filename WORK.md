@@ -18,12 +18,16 @@
       RED; annotated on the PR, needs its own cycle against the exact-versions
       policy. (#91 checkout patch merged; #93 TypeScript 6 and #94 @types/node
       26 closed by locked policy, encoded as dependabot ignores in #104.)
-- [ ] **Foundations styleguide (seed, surfaced 2026-08-05):** the docs site has
-      guides + 78 component pages but no foundations section, while
-      `handoff/guidelines/` carries 15 finished high-fidelity pages (colors ×4,
-      type ×4, spacing ×3, brand ×3, architecture). Same port pattern as the
-      component docs wave (~3 lots, bilingual MDX); strong pre-announcement
-      content.
+- [ ] **Foundations styleguide (active, 2026-08-05)** — porting the 15
+      `handoff/guidelines/` cards into a new manifest-driven docs section as
+      5 topic pages (colors, typography, spacing, brand, architecture), 3
+      lots, bilingual MDX. Lot f1 (section infrastructure + Colors page)
+      delivered in PR #107, commit 403f68c → codex (`gpt-5.6-terra`, high,
+      worktree; 1 verbatim re-dispatch past its design-approval gate);
+      cross-review 3 lenses no findings; browser-proven both locales
+      (trail: .batuta/runs/2026-08-05-foundations-colors.md). Lot f2
+      (typography + spacing) and lot f3 (brand + architecture reconciled
+      with today's reality) queued sequentially behind the merge.
 
 ## Done
 
