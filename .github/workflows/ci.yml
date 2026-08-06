@@ -53,6 +53,10 @@ jobs:
       # no-restricted-imports CSS-import ban — the machine-checked "zero CSS imports
       # in react src" rule; sideEffects:false would silently drop any stray CSS import).
       - run: pnpm --filter @lyra-ds/react run lint
+      # batuta/eslint: flat-config eslint (jsx-a11y + react-hooks) for the two Next.js
+      # apps, which had zero lint coverage until now.
+      - run: pnpm --filter @lyra-ds/docs run lint
+      - run: pnpm --filter @lyra-ds/site run lint
 
   typecheck:
     runs-on: ubuntu-latest

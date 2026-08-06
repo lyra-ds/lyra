@@ -39,7 +39,6 @@ function useRevealActiveEntry() {
     const target = active.offsetTop - visible / 2 + active.offsetHeight / 2;
     node.scrollTop = Math.max(0, Math.min(target, node.scrollHeight - visible));
     // Mount only: see the note above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }
 
