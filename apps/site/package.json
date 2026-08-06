@@ -2,6 +2,7 @@
   "name": "@lyra-ds/site",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
     "prebuild": "node scripts/derive-stats.mjs && node scripts/generate-headers.mjs",
@@ -9,7 +10,8 @@
     "build": "next build",
     "pretypecheck": "node scripts/derive-stats.mjs",
     "test": "node --test scripts/landing-sections.test.mjs scripts/consent.test.mjs scripts/analytics.test.mjs scripts/metadata-deploy.test.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "5.3.0",
