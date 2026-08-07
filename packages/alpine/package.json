@@ -1,0 +1,65 @@
+{
+  "name": "@lyra-ds/alpine",
+  "version": "0.0.0",
+  "description": "Lyra DS \u2014 Alpine.js plugin porting the exact state machines of the interactive @lyra-ds/react components. All appearance comes from @lyra-ds/styles .lyra-* classes; one Alpine.data() per component.",
+  "keywords": [
+    "design-system",
+    "alpinejs",
+    "alpine",
+    "livewire",
+    "components",
+    "ui",
+    "white-label",
+    "accessibility"
+  ],
+  "license": "MIT",
+  "homepage": "https://lyra-ds.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lyra-ds/lyra.git",
+    "directory": "packages/alpine"
+  },
+  "bugs": "https://github.com/lyra-ds/lyra/issues",
+  "type": "module",
+  "sideEffects": false,
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "alpinejs": ">=3.13 <4"
+  },
+  "devDependencies": {
+    "@lyra-ds/styles": "workspace:*",
+    "@types/alpinejs": "3.13.11",
+    "alpinejs": "3.15.12"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "size-limit": [
+    {
+      "name": "import lyra from '@lyra-ds/alpine'",
+      "path": "dist/index.js",
+      "ignore": [
+        "alpinejs"
+      ],
+      "limit": "0.5 kB"
+    }
+  ]
+}

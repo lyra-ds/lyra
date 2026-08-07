@@ -97,15 +97,21 @@ jobs:
       - name: Check for unpublished versions
         id: unpublished
         if: steps.changesets.outputs.hasChangesets == 'false'
+        # Checks EVERY publishable package, not just the styles/react fixed
+        # group: @lyra-ds/alpine versions independently, so an alpine-only
+        # bump must also flip the guard (cross-review finding, plan 09 task 1).
         run: |
-          local_version=$(node -p "require('./packages/styles/package.json').version")
-          published=$(npm view @lyra-ds/styles version 2>/dev/null || echo "none")
-          echo "local=$local_version published=$published"
-          if [ "$local_version" != "$published" ]; then
-            echo "pending=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "pending=false" >> "$GITHUB_OUTPUT"
-          fi
+          pending=false
+          for pkg in packages/styles packages/react packages/alpine; do
+            name=$(node -p "require('./$pkg/package.json').name")
+            local_version=$(node -p "require('./$pkg/package.json').version")
+            published=$(npm view "$name" version 2>/dev/null || echo "none")
+            echo "$name local=$local_version published=$published"
+            if [ "$local_version" != "$published" ]; then
+              pending=true
+            fi
+          done
+          echo "pending=$pending" >> "$GITHUB_OUTPUT"
       - name: Publish to npm (OIDC)
         if: steps.unpublished.outputs.pending == 'true'
         # Top-level `run` on purpose — the OIDC exchange needs the step's own
@@ -122,7 +128,7 @@ jobs:
         # content changesets/action would have published).
         run: |
           git push origin --tags
-          for pkg in packages/styles packages/react; do
+          for pkg in packages/styles packages/react packages/alpine; do
             name=$(node -p "require('./$pkg/package.json').name")
             version=$(node -p "require('./$pkg/package.json').version")
             tag="$name@$version"

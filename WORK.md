@@ -2,6 +2,18 @@
 
 ## In progress
 
+- [ ] **Onda 1 `@lyra-ds/alpine` (plan: `.batuta/plan-09-alpine.md`, aprovado
+      2026-08-06)** — pacote novo `packages/alpine`: plugin Alpine portando as
+      máquinas de estado dos 7 interativos core do React. Task 1 (scaffold)
+      → claude (critical): pacote ESM-only (tsdown; decisão: sem CJS — plugin
+      Alpine é consumido via bundler; attw ignora `cjs-resolves-to-esm`
+      explicitamente no CI), vitest Browser Mode, gates
+      publint/attw/size-limit no ci.yml, changeset minor. Cross-review Codex:
+      2 findings aceitos (guard de release só olhava styles; CSS real no
+      harness) — corrigidos. PR #113
+      (trail: .batuta/runs/2026-08-06-alpine-scaffold.md). Tasks 2–8
+      (componentes → codex) e 9 (release → claude) na sequência.
+
 - [ ] **Satellite direction `lyra-ds/blade` (decided 2026-08-05)** — Blade as
       the first framework satellite (before Vue/Svelte), then a Filament v4
       token-bridge theme. PRDs in `~/Documents/prd-lyra-blade.md` and

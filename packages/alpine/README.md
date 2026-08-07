@@ -1,0 +1,70 @@
+# @lyra-ds/alpine
+
+Alpine.js plugin for [Lyra DS](https://lyra-ds.dev) — the behavior layer of the
+CSS-first design system. One `Alpine.data()` per interactive component, porting
+the **exact state machine** of its `@lyra-ds/react` counterpart: same modifier
+classes, same ARIA, same `inert`, same focus/scroll-lock/keyboard handling. All
+appearance comes from [`@lyra-ds/styles`](https://www.npmjs.com/package/@lyra-ds/styles);
+this package ships behavior only.
+
+## Installation
+
+```sh
+npm install @lyra-ds/styles @lyra-ds/alpine alpinejs
+```
+
+`alpinejs` (>= 3.13) is a peer dependency — this package never bundles Alpine.
+
+## Usage
+
+```js
+// e.g. resources/js/app.js
+import Alpine from 'alpinejs';
+import lyra from '@lyra-ds/alpine';
+
+Alpine.plugin(lyra);
+Alpine.start();
+```
+
+Then use the registered components in your markup:
+
+```html
+<div x-data="lyraDialog({ open: false })">…</div>
+```
+
+Initial state is seeded through the `x-data` arguments (`defaultOpen`,
+`active`, …). Every controllable state is exposed via `x-modelable`, so
+`x-model` — and Livewire's `wire:model` / `$wire.entangle` — work with no extra
+code.
+
+This package is ESM-only: consume it through a bundler (Vite, esbuild, webpack)
+or a Node version with ESM support. There is no CommonJS build.
+
+## Components (wave 1)
+
+| `Alpine.data()` | Status  |
+| --------------- | ------- |
+| `lyraDropdown`  | planned |
+| `lyraDialog`    | planned |
+| `lyraDrawer`    | planned |
+| `lyraTabs`      | planned |
+| `lyraAccordion` | planned |
+| `lyraTooltip`   | planned |
+| `lyraPopover`   | planned |
+
+Each component lands with a browser test suite (keyboard, focus, `inert`, axe)
+run against the real `@lyra-ds/styles` CSS.
+
+## Compatibility
+
+Every release of `@lyra-ds/alpine` records which `@lyra-ds/styles` version it
+was tested against. The Blade package's README carries the full matrix
+(`blade 0.x ⇄ styles ^0.4 ⇄ alpine 0.x`).
+
+| @lyra-ds/alpine | tested against @lyra-ds/styles |
+| --------------- | ------------------------------ |
+| 0.1.0 (planned) | ^0.4                           |
+
+## License
+
+MIT

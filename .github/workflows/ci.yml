@@ -124,6 +124,16 @@ jobs:
       # recursive `pnpm run build` above.
       # Phase 3, RCT-04: exports-map lint for the react package (dual ESM+CJS map).
       - run: pnpm exec publint packages/react
+      # Plan 09 (alpine wave 1): exports-map lint for @lyra-ds/alpine (ESM-only map).
+      - run: pnpm exec publint packages/alpine
+      # Plan 09: type-resolution check for @lyra-ds/alpine. The package is deliberately
+      # ESM-only (an Alpine plugin is consumed through a bundler; CJS would reintroduce
+      # the default-export interop trap), so the cjs-resolves-to-esm advisory is the
+      # expected-and-accepted state, ignored explicitly here.
+      - run: pnpm --filter @lyra-ds/alpine exec attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm
+      # Plan 09: entry budget for @lyra-ds/alpine — components must grow it consciously
+      # (updated budget in the same commit, same rule as react).
+      - run: pnpm --filter @lyra-ds/alpine exec size-limit
       # Phase 3, RCT-04: type-resolution check. --profile node16 because node10 (legacy
       # moduleResolution) cannot resolve the per-component exports-map subpaths — it is the
       # ONLY column that flags (node16 + bundler are green). RESEARCH A3; the default-profile

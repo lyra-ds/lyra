@@ -16,7 +16,7 @@
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
     "changeset": "changeset",
-    "release": "pnpm --filter @lyra-ds/react run build && changeset publish"
+    "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
