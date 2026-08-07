@@ -35,9 +35,13 @@ function mountDialog(
   return host;
 }
 
+// Bare microtasks race Alpine's scheduler on loaded CI runners (bit three suites in a row on
+// GitHub Actions). Synchronize with Alpine's own flush, then hop a frame (x-show shows via
+// requestAnimationFrame) and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  await Alpine.nextTick();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -69,7 +73,7 @@ async function openDialog(host: HTMLElement): Promise<void> {
   control.focus();
   await userEvent.click(control);
   await flush();
-  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'));
+  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'), { timeout: 3000 });
 }
 
 // Alpine flushes watchers/effects on a microtask, so state driven by the dismissal (focus
@@ -176,12 +180,12 @@ describe('lyraDialog', () => {
     await openDialog(host);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
 
     await openDialog(host);
     await backdropDismiss(host);
     expect(document.activeElement).toBe(control);
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
 
     await openDialog(host);
     await userEvent.click(host.querySelector<HTMLButtonElement>('.lyra-dialog__close')!);
@@ -230,7 +234,7 @@ describe('lyraDialog', () => {
     expect(panel(host).classList).toContain('lyra-dialog--closing');
     expect(document.body.style.overflow).toBe('');
     expect(document.body.style.paddingRight).toBe('17px');
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
   });
 
   it('only finalizes presence for the panel animation, never a bubbled child animation', async () => {
@@ -245,7 +249,7 @@ describe('lyraDialog', () => {
     expect(overlay(host).style.display).not.toBe('none');
 
     panel(host).dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'));
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
   });
 
   it('cancels an exit on reopen and focuses again before a subsequent restore', async () => {
@@ -257,7 +261,9 @@ describe('lyraDialog', () => {
     await flush();
     expect(overlay(host).classList).not.toContain('lyra-dialog-overlay--closing');
     // Initial focus re-entry rides $nextTick, which flushes after the watcher microtasks.
-    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true));
+    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true), {
+      timeout: 3000,
+    });
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
   });
