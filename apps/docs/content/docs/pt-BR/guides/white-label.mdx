@@ -41,6 +41,11 @@ html[data-brand='harbor'] {
 }
 ```
 
+Nunca defina `data-brand` sem uma definição correspondente de `--brand`. O atributo sozinho ativa
+a camada de derivação e, sem a cor-base, todo o grupo de acento resolve para nada — botões
+primários perdem o preenchimento. Para mostrar o visual padrão do Lyra (por exemplo, uma opção
+"default" em um seletor de marcas), remova o atributo em vez de definir uma marca vazia.
+
 ## Escolha o escopo
 
 Coloque `data-brand` em `<html>` quando o aplicativo inteiro pertencer a uma marca. Todos os

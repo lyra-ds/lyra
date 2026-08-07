@@ -40,6 +40,11 @@ html[data-brand='harbor'] {
 }
 ```
 
+Never set `data-brand` without a matching `--brand` definition. The attribute alone activates the
+derivation layer, and with no seed the whole accent group resolves to nothing — primary buttons
+lose their fill. To show Lyra's baseline look (for example a "default" option in a brand
+switcher), remove the attribute instead of defining an empty brand.
+
 ## Choose the scope
 
 Put `data-brand` on `<html>` when the whole application belongs to one brand. Every descendant
