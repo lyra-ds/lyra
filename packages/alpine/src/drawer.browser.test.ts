@@ -35,9 +35,13 @@ function mountDrawer(
   return host;
 }
 
+// Bare microtasks race Alpine's scheduler on loaded CI runners (bit three suites in a row on
+// GitHub Actions). Synchronize with Alpine's own flush, then hop a frame (x-show shows via
+// requestAnimationFrame) and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  await Alpine.nextTick();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -69,7 +73,7 @@ async function openDrawer(host: HTMLElement): Promise<void> {
   control.focus();
   await userEvent.click(control);
   await flush();
-  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'));
+  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'), { timeout: 3000 });
 }
 
 async function dismissWithBackdrop(host: HTMLElement): Promise<void> {
@@ -173,12 +177,12 @@ describe('lyraDrawer', () => {
     await openDrawer(host);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
 
     await openDrawer(host);
     await dismissWithBackdrop(host);
     expect(document.activeElement).toBe(control);
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
 
     await openDrawer(host);
     await userEvent.click(host.querySelector<HTMLButtonElement>('.lyra-drawer__close')!);
@@ -193,7 +197,7 @@ describe('lyraDrawer', () => {
     expect(overlay(host).style.display).not.toBe('none');
 
     await dismissWithBackdrop(host);
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
   });
 
   it('keeps closing classes through exit, unlocks scroll immediately, and removes the overlay by the fallback', async () => {
@@ -213,7 +217,7 @@ describe('lyraDrawer', () => {
     expect(panel(host).className).toBe('lyra-drawer lyra-drawer--closing');
     expect(document.body.style.overflow).toBe('');
     expect(document.body.style.paddingRight).toBe('17px');
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 500 });
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
   });
 
   it('only finalizes presence for the panel animation, never a bubbled child animation', async () => {
@@ -228,7 +232,7 @@ describe('lyraDrawer', () => {
     expect(overlay(host).style.display).not.toBe('none');
 
     panel(host).dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'));
+    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
   });
 
   it('cancels an exit on reopen and focuses again before a subsequent restore', async () => {
@@ -239,7 +243,9 @@ describe('lyraDrawer', () => {
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await flush();
     expect(overlay(host).classList).not.toContain('lyra-drawer-overlay--closing');
-    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true));
+    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true), {
+      timeout: 3000,
+    });
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
   });
