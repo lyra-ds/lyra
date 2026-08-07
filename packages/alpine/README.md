@@ -29,8 +29,18 @@ Alpine.start();
 Then use the registered components in your markup:
 
 ```html
-<div x-data="lyraDialog({ open: false })">…</div>
+<div x-data="lyraDropdown({ align: 'end' })" class="lyra-dropdown">
+  <button x-bind="trigger">Actions</button>
+  <div x-bind="menu" x-cloak>
+    <button x-bind="item">Edit</button>
+  </div>
+</div>
 ```
+
+Put `x-cloak` on initially-hidden parts (like the menu above): bindings only
+apply once Alpine starts, and without it a server-rendered page flashes the
+raw markup. Add the standard `[x-cloak] { display: none !important; }` rule
+to your CSS.
 
 Initial state is seeded through the `x-data` arguments (`defaultOpen`,
 `active`, …). Every controllable state is exposed via `x-modelable`, so
@@ -44,7 +54,7 @@ or a Node version with ESM support. There is no CommonJS build.
 
 | `Alpine.data()` | Status  |
 | --------------- | ------- |
-| `lyraDropdown`  | planned |
+| `lyraDropdown`  | shipped |
 | `lyraDialog`    | planned |
 | `lyraDrawer`    | planned |
 | `lyraTabs`      | planned |

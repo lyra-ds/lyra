@@ -1,3 +1,6 @@
+import { lyraDropdown } from './dropdown';
+import type { LyraDropdownOptions } from './dropdown';
+
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
  *
@@ -25,7 +28,9 @@ export interface LyraAlpine {
  * ```
  */
 export default function lyra(alpine: LyraAlpine): void {
-  // Wave-1 registrations land here one per task:
-  // lyraDropdown, lyraDialog, lyraDrawer, lyraTabs, lyraAccordion, lyraTooltip, lyraPopover.
-  void alpine;
+  alpine.data(
+    'lyraDropdown',
+    (...args) =>
+      lyraDropdown((args[0] ?? {}) as LyraDropdownOptions) as unknown as Record<string, unknown>,
+  );
 }

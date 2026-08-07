@@ -10,9 +10,17 @@
       explicitamente no CI), vitest Browser Mode, gates
       publint/attw/size-limit no ci.yml, changeset minor. Cross-review Codex:
       2 findings aceitos (guard de release só olhava styles; CSS real no
-      harness) — corrigidos. PR #113
-      (trail: .batuta/runs/2026-08-06-alpine-scaffold.md). Tasks 2–8
-      (componentes → codex) e 9 (release → claude) na sequência.
+      harness) — corrigidos. PR #113, commit f285352
+      (trail: .batuta/runs/2026-08-06-alpine-scaffold.md). Task 2
+      (`lyraDropdown`) → codex (gpt-5.6-terra high, worktree): 2 rounds
+      falharam a verificação (6 e 3 testes vermelhos — codex não roda
+      Browser Mode), ESCALADA para claude mantendo o diff (7/10 verdes);
+      3 causas-raiz provadas por instrumentação ($nextTick vs x-show,
+      $el de x-bind ≠ raiz, outside-click síncrono) + fixture de flip
+      corrigida. Cross-review: 1 high aceito (type="button" nos bindings),
+      2 docs aceitos (x-cloak no README, tabela), 1 recusado (escape hatch
+      de @keydown — capture resolve). 10/10 + ci.yml completo verdes.
+      Tasks 3–8 (componentes → codex) e 9 (release → claude) na sequência.
 
 - [ ] **Satellite direction `lyra-ds/blade` (decided 2026-08-05)** — Blade as
       the first framework satellite (before Vue/Svelte), then a Filament v4
