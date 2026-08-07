@@ -280,6 +280,11 @@ with grep and git.)
 
 ## PR automation — post-incident 0.2.0 rules (2026-08-03)
 
+- **Every PR: assignee franciscpd + content labels (user rule, 2026-08-06).**
+  Use the existing scheme (`pkg: styles|react|alpine`, `docs site`,
+  `documentation`, `github_actions`, `dependencies`, `a11y`, `bug`,
+  `enhancement`); pass `--assignee franciscpd --label ...` on `gh pr create`.
+
 - **Never predict a PR number.** Use the number captured from `gh pr create`
   (or `--json number`). A changesets bot took the predicted number and an
   `--admin merge` published 0.2.0 without the user.
