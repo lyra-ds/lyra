@@ -1,6 +1,7 @@
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
+import { whenVisible } from './internal/when-visible';
 
 const INITIAL_FOCUS_SELECTOR = [
   'a[href]',
@@ -110,11 +111,19 @@ export function lyraDrawer({
         this.scrollLocked = true;
       }
       this.opener = document.activeElement;
-      this.$nextTick(() => {
-        if (!this.open) return;
-        this.attachFocusTrap();
-        this.focusInitial();
-      });
+      // The panel is revealed by x-show through a DEFERRED rAF/setTimeout whose ordering
+      // against $nextTick is nondeterministic — focus() silently no-ops on display:none when
+      // the tick loses the race. whenVisible polls for real layout before trapping/focusing.
+      const panel = this.panelElement();
+      if (!panel) return;
+      whenVisible(
+        panel,
+        () => !this.open,
+        () => {
+          this.attachFocusTrap();
+          this.focusInitial();
+        },
+      );
     },
 
     activateClose() {
