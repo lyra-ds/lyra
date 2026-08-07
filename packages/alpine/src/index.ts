@@ -6,6 +6,8 @@ import { lyraDrawer } from './drawer';
 import type { LyraDrawerOptions } from './drawer';
 import { lyraTabs } from './tabs';
 import type { LyraTabsOptions } from './tabs';
+import { lyraTooltip } from './tooltip';
+import type { LyraTooltipOptions } from './tooltip';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -52,5 +54,10 @@ export default function lyra(alpine: LyraAlpine): void {
   alpine.data(
     'lyraTabs',
     (...args) => lyraTabs((args[0] ?? {}) as LyraTabsOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraTooltip',
+    (...args) =>
+      lyraTooltip((args[0] ?? {}) as LyraTooltipOptions) as unknown as Record<string, unknown>,
   );
 }
