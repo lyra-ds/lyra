@@ -4,6 +4,8 @@ import { lyraDialog } from './dialog';
 import type { LyraDialogOptions } from './dialog';
 import { lyraDrawer } from './drawer';
 import type { LyraDrawerOptions } from './drawer';
+import { lyraTabs } from './tabs';
+import type { LyraTabsOptions } from './tabs';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -46,5 +48,9 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraDrawer',
     (...args) =>
       lyraDrawer((args[0] ?? {}) as LyraDrawerOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraTabs',
+    (...args) => lyraTabs((args[0] ?? {}) as LyraTabsOptions) as unknown as Record<string, unknown>,
   );
 }
