@@ -2,25 +2,25 @@
 
 ## In progress
 
-- [ ] **Onda 1 `@lyra-ds/alpine` (plan: `.batuta/plan-09-alpine.md`, aprovado
-      2026-08-06)** — pacote novo `packages/alpine`: plugin Alpine portando as
-      máquinas de estado dos 7 interativos core do React. Task 1 (scaffold)
-      → claude (critical): pacote ESM-only (tsdown; decisão: sem CJS — plugin
-      Alpine é consumido via bundler; attw ignora `cjs-resolves-to-esm`
-      explicitamente no CI), vitest Browser Mode, gates
-      publint/attw/size-limit no ci.yml, changeset minor. Cross-review Codex:
-      2 findings aceitos (guard de release só olhava styles; CSS real no
-      harness) — corrigidos. PR #113, commit f285352
-      (trail: .batuta/runs/2026-08-06-alpine-scaffold.md). Task 2
-      (`lyraDropdown`) → codex (gpt-5.6-terra high, worktree): 2 rounds
-      falharam a verificação (6 e 3 testes vermelhos — codex não roda
-      Browser Mode), ESCALADA para claude mantendo o diff (7/10 verdes);
-      3 causas-raiz provadas por instrumentação ($nextTick vs x-show,
-      $el de x-bind ≠ raiz, outside-click síncrono) + fixture de flip
-      corrigida. Cross-review: 1 high aceito (type="button" nos bindings),
-      2 docs aceitos (x-cloak no README, tabela), 1 recusado (escape hatch
-      de @keydown — capture resolve). 10/10 + ci.yml completo verdes.
-      Tasks 3–8 (componentes → codex) e 9 (release → claude) na sequência.
+- [x] **Onda 1 `@lyra-ds/alpine` COMPLETA — 0.1.0 PUBLICADO (2026-08-07)**
+      (plan: `.batuta/plan-09-alpine.md`, todas as 9 tasks) — plugin Alpine
+      com os 7 interativos core portados do React: Dropdown #116, Dialog
+      #117, Drawer #118, Tabs #119, Accordion #120, Tooltip #124, Popover
+      #125; README/release #126; scaffold #113 (sessão anterior). 64 testes
+      Browser Mode contra o CSS real; size-limit 4.22/4.45 kB. Saga de CI do
+      dia (4 falhas em 3 suites, sempre verde local) resolvida em 3 camadas:
+      #121 waitFor, #122 flush sincronizado com Alpine.nextTick, e a RAIZ em
+      #123 — reveal do x-show é rAF/setTimeout deferido vs $nextTick em
+      setTimeout, ordem não-determinística; `internal/when-visible.ts` faz
+      poll de layout antes de focar/medir (lição irmã do x-show/mounted do
+      #117). Publish 0.1.0 LOCAL com OTP do usuário (OIDC não faz primeiro
+      publish — npm/cli#8544, mesmo rito de styles/react); tag + GitHub
+      Release criados; guard do release.yml passa a ver 0.1.0 publicado.
+      PENDENTE (usuário): configurar trusted publisher do @lyra-ds/alpine
+      no npmjs.com (repo lyra-ds/lyra, workflow release.yml) para o OIDC
+      assumir do 0.1.1 em diante. Trails:
+      .batuta/runs/2026-08-06-alpine-dropdown.md,
+      2026-08-07-alpine-dialog.md, 2026-08-07-alpine-wave1-fanout.md.
 
 - [ ] **Satellite direction `lyra-ds/blade` (decided 2026-08-05)** — Blade as
       the first framework satellite (before Vue/Svelte), then a Filament v4
