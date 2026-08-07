@@ -37,8 +37,8 @@ source wins on any detail this list compresses):
   target tab AND activate it (automatic activation), respecting
   `event.defaultPrevented` and doing nothing when there are no tabs.
 - `panel`: `role="tabpanel"`, `aria-labelledby` → its tab id,
-  `tabindex="0"`, reactive `hidden` (hidden unless its `data-value`
-  matches `active`).
+`tabindex="0"`, reactive `hidden` (hidden unless its `data-value`
+matches `active`).
 </task>
 
 <scope>
@@ -54,6 +54,7 @@ and report.
 </scope>
 
 <acceptance_criteria>
+
 1. `pnpm --filter @lyra-ds/alpine run typecheck` passes (paste real output).
 2. `pnpm exec prettier --check packages/alpine` passes.
 3. `src/tabs.browser.test.ts` mirrors the React suite's coverage for the
@@ -67,7 +68,7 @@ and report.
 4. `Alpine.plugin(lyra)` now registers `lyraTabs`; all existing suites
    pass unmodified.
 5. size-limit budget updated per the shared brief's rule.
-</acceptance_criteria>
+   </acceptance_criteria>
 
 <compact_output_contract>
 Report back, in order: files touched (paths only); commands run with their

@@ -72,10 +72,10 @@ source wins on any detail this list compresses):
   binding's click. Every close path is a plain `this.open = false`
   assignment (x-modelable reactivity).
 - Exit presence: on open→false set `closing`, keep the overlay shown,
-  finalize on the panel's own `animationend` (target===currentTarget) or
-  the 250ms fallback, whichever first; reopen during the exit window
-  cancels the close cleanly and re-runs initial focus (mirror the React
-  WR-03 test).
+finalize on the panel's own `animationend` (target===currentTarget) or
+the 250ms fallback, whichever first; reopen during the exit window
+cancels the close cleanly and re-runs initial focus (mirror the React
+WR-03 test).
 </task>
 
 <scope>
@@ -92,6 +92,7 @@ report.
 </scope>
 
 <acceptance_criteria>
+
 1. `pnpm --filter @lyra-ds/alpine run typecheck` passes (paste real output).
 2. `pnpm exec prettier --check packages/alpine` passes.
 3. `src/dialog.browser.test.ts` mirrors the React suite's coverage for the
@@ -107,7 +108,7 @@ report.
 4. `Alpine.plugin(lyra)` now registers `lyraDialog`; the existing dropdown
    and smoke suites still pass unmodified (do not touch their files).
 5. size-limit budget updated per the shared brief's rule.
-</acceptance_criteria>
+   </acceptance_criteria>
 
 <compact_output_contract>
 Report back, in order: files touched (paths only); commands run with their

@@ -44,8 +44,8 @@ source wins on any detail this list compresses):
 - Flip placement: drive with the shared `flip-placement` util (offset 8),
   measuring trigger + panel while open, exactly as lyraDropdown does.
 - Document listeners while open (attach in watch, detach on close/destroy):
-  `mousedown` outside the ROOT (captured in init) closes; `keydown` Escape
-  `preventDefault`s, closes AND focuses the trigger.
+`mousedown` outside the ROOT (captured in init) closes; `keydown` Escape
+`preventDefault`s, closes AND focuses the trigger.
 </task>
 
 <scope>
@@ -62,6 +62,7 @@ Do not change anything outside this list — in particular do NOT touch
 </scope>
 
 <acceptance_criteria>
+
 1. `pnpm --filter @lyra-ds/alpine run typecheck` passes (paste real output).
 2. `pnpm exec prettier --check packages/alpine` passes.
 3. `src/popover.browser.test.ts` mirrors the React suite's coverage for
@@ -76,7 +77,7 @@ Do not change anything outside this list — in particular do NOT touch
 4. `Alpine.plugin(lyra)` now registers `lyraPopover`; all existing suites
    pass unmodified.
 5. size-limit budget updated per the shared brief's rule.
-</acceptance_criteria>
+   </acceptance_criteria>
 
 <compact_output_contract>
 Report back, in order: files touched (paths only); commands run with their

@@ -43,8 +43,8 @@ source wins on any detail this list compresses):
   tip has no focus inside): document keydown listener attached only while
   open, removed on close/destroy, hides the tip.
 - Placement resolution runs while open (attach on open, cleanup on close),
-  driven by the ported utility; closed resets the resolved side to the
-  requested one.
+driven by the ported utility; closed resets the resolved side to the
+requested one.
 </task>
 
 <scope>
@@ -62,6 +62,7 @@ and report.
 </scope>
 
 <acceptance_criteria>
+
 1. `pnpm --filter @lyra-ds/alpine run typecheck` passes (paste real output).
 2. `pnpm exec prettier --check packages/alpine` passes.
 3. `src/tooltip.browser.test.ts` mirrors the React suite's coverage for
@@ -76,7 +77,7 @@ and report.
 4. `Alpine.plugin(lyra)` now registers `lyraTooltip`; all existing suites
    pass unmodified.
 5. size-limit budget updated per the shared brief's rule.
-</acceptance_criteria>
+   </acceptance_criteria>
 
 <compact_output_contract>
 Report back, in order: files touched (paths only); commands run with their

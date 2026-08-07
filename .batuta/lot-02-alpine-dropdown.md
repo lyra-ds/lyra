@@ -13,6 +13,7 @@ Popover will reuse it in a later lot).
 
 Behavior contract (verified against the React source — read it anyway; the
 source wins on any detail this list compresses):
+
 - State: `open` (seeded by an optional `defaultOpen` argument, default false).
   `open` is the controllable state for `x-modelable`.
 - Named bindings (consumed via `x-bind`): `trigger` (the button), `menu` (the
@@ -30,8 +31,8 @@ source wins on any detail this list compresses):
   handling for menu navigation exactly (arrows/Home/End/Escape/typed
   behavior as implemented there — mirror what its test suite proves).
 - Outside click: `mousedown` on `document` closes when the click lands
-  outside trigger+menu; listeners attach only while open and are removed on
-  close/destroy.
+outside trigger+menu; listeners attach only while open and are removed on
+close/destroy.
 </task>
 
 <scope>
@@ -47,6 +48,7 @@ report.
 </scope>
 
 <acceptance_criteria>
+
 1. `pnpm --filter @lyra-ds/alpine run typecheck` passes (paste real output).
 2. `pnpm exec prettier --check packages/alpine` passes.
 3. `src/dropdown.browser.test.ts` mirrors the coverage of the React suite for
@@ -57,7 +59,7 @@ report.
 4. `Alpine.plugin(lyra)` now registers `lyraDropdown`; the existing smoke
    suite still passes unmodified.
 5. size-limit budget updated per the shared brief's rule.
-</acceptance_criteria>
+   </acceptance_criteria>
 
 <compact_output_contract>
 Report back, in order: files touched (paths only); commands run with their

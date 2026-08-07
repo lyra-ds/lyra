@@ -106,26 +106,28 @@ their structure before inventing your own.
 </lessons_from_dropdown>
 
 <test_laws>
+
 1. Test the behavior, never a mock. These are real-browser tests against the
    real CSS.
 2. A failing test means fix the code, not the test.
 3. No test-only flags or branches in production code.
-Also: every suite imports `@lyra-ds/styles/styles.css` first; run axe
-(`axe-core` is a root devDep — port `packages/react/src/internal/test-axe.ts`
-into `packages/alpine/src/internal/test-axe.ts` on first need) on the
-component open AND closed; existence assertions must assert real DOM state
-(`document.querySelector(...)` results may be legitimately null — assert on
-elements, attributes and classList, not on locator truthiness).
-</test_laws>
+   Also: every suite imports `@lyra-ds/styles/styles.css` first; run axe
+   (`axe-core` is a root devDep — port `packages/react/src/internal/test-axe.ts`
+   into `packages/alpine/src/internal/test-axe.ts` on first need) on the
+   component open AND closed; existence assertions must assert real DOM state
+   (`document.querySelector(...)` results may be legitimately null — assert on
+   elements, attributes and classList, not on locator truthiness).
+   </test_laws>
 
 <environment_limits>
 Your sandbox CANNOT run Vitest Browser Mode (no localhost bind). Do not try;
 do not report test results you could not produce. Instead:
+
 - run `pnpm --filter @lyra-ds/alpine run typecheck` and
   `pnpm exec prettier --check packages/alpine` and report their real output;
 - write the browser tests so the maestro runs them; structure test files so a
   syntax/nesting error is impossible to miss (no `it()` inside `it()`).
-</environment_limits>
+  </environment_limits>
 
 <default_follow_through_policy>
 Proceed without asking on anything this contract or the repository answers.
