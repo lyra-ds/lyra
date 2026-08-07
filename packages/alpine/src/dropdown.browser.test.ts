@@ -90,7 +90,10 @@ describe('lyraDropdown', () => {
       <div style="height: calc(100vh - 60px)"></div>
       <div x-data="lyraDropdown({ align: 'end' })" class="lyra-dropdown">
         <button type="button" x-bind="trigger">Actions</button>
-        <div x-bind="menu"><button type="button" x-bind="item">Edit</button></div>
+        <!-- A one-item menu measures ~54px — the same as the room left below — so the flip
+             verdict would hinge on the runner's font metrics. Fix the height to keep the
+             menu unambiguously taller than the space under the trigger. -->
+        <div x-bind="menu"><button type="button" x-bind="item" style="height: 120px">Edit</button></div>
       </div>
       <div style="height: 150vh"></div>
     `;
