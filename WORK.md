@@ -16,9 +16,9 @@
       #117). Publish 0.1.0 LOCAL com OTP do usuário (OIDC não faz primeiro
       publish — npm/cli#8544, mesmo rito de styles/react); tag + GitHub
       Release criados; guard do release.yml passa a ver 0.1.0 publicado.
-      PENDENTE (usuário): configurar trusted publisher do @lyra-ds/alpine
-      no npmjs.com (repo lyra-ds/lyra, workflow release.yml) para o OIDC
-      assumir do 0.1.1 em diante. Trails:
+      Trusted publisher do @lyra-ds/alpine configurado pelo usuário no
+      npmjs.com (2026-08-07) — OIDC com provenance assume do 0.1.1 em
+      diante, zero pendências. Trails:
       .batuta/runs/2026-08-06-alpine-dropdown.md,
       2026-08-07-alpine-dialog.md, 2026-08-07-alpine-wave1-fanout.md.
 
