@@ -39,9 +39,12 @@ function mountAccordion({
   return host;
 }
 
+// Bare microtasks race Alpine's scheduler on loaded CI runners (see #122). Synchronize with
+// Alpine's own flush, then hop a frame and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  await Alpine.nextTick();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
