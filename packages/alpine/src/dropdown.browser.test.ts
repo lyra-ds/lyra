@@ -28,9 +28,13 @@ function mountDropdown(options = '{}'): HTMLElement {
   return host;
 }
 
+// Two bare microtasks raced Alpine's scheduler under CI load (two different assertions bit on
+// GitHub runners). Synchronize with Alpine's own flush, then hop a frame (x-show shows via
+// requestAnimationFrame) and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
-  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  await Alpine.nextTick();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function dropdown(host: HTMLElement): HTMLElement {
@@ -121,7 +125,9 @@ describe('lyraDropdown', () => {
     await userEvent.keyboard('{ArrowDown}');
     await flush();
     const commands = menu(host).querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
-    expect(document.activeElement).toBe(commands[0]);
+    // Focus entry rides $nextTick, which can flush after the two-microtask flush() under CI
+    // load — poll instead of asserting a single tick (same fix as the Dialog WR-03 test).
+    await vi.waitFor(() => expect(document.activeElement).toBe(commands[0]));
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(commands[1]);
     await userEvent.keyboard('{ArrowDown}');
@@ -137,7 +143,7 @@ describe('lyraDropdown', () => {
 
     await userEvent.keyboard('{ArrowUp}');
     await flush();
-    expect(document.activeElement).toBe(commands[1]);
+    await vi.waitFor(() => expect(document.activeElement).toBe(commands[1]));
   });
 
   it('closes after a command selection with focus restored, while Tab keeps native focus order', async () => {
