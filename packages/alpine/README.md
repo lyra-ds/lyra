@@ -52,15 +52,15 @@ or a Node version with ESM support. There is no CommonJS build.
 
 ## Components (wave 1)
 
-| `Alpine.data()` | Status  |
-| --------------- | ------- |
-| `lyraDropdown`  | shipped |
-| `lyraDialog`    | planned |
-| `lyraDrawer`    | planned |
-| `lyraTabs`      | planned |
-| `lyraAccordion` | planned |
-| `lyraTooltip`   | planned |
-| `lyraPopover`   | planned |
+| `Alpine.data()` | Named bindings                          | Controllable state (`x-modelable`) |
+| --------------- | --------------------------------------- | ---------------------------------- |
+| `lyraDropdown`  | `trigger`, `menu`, `item`               | `open`                             |
+| `lyraDialog`    | `overlay`, `panel`, `title`, `close`    | `open`                             |
+| `lyraDrawer`    | `overlay`, `panel`, `title`, `close`    | `open`                             |
+| `lyraTabs`      | `list`, `tab`, `panel`                  | `active`                           |
+| `lyraAccordion` | `item`, `trigger`, `panelWrap`, `panel` | `openItems` (array)                |
+| `lyraTooltip`   | `root`, `target`, `bubble`              | — (parity: React exposes none)     |
+| `lyraPopover`   | `trigger`, `panel`                      | `open`                             |
 
 Each component lands with a browser test suite (keyboard, focus, `inert`, axe)
 run against the real `@lyra-ds/styles` CSS.
@@ -73,7 +73,7 @@ was tested against. The Blade package's README carries the full matrix
 
 | @lyra-ds/alpine | tested against @lyra-ds/styles |
 | --------------- | ------------------------------ |
-| 0.1.0 (planned) | ^0.4                           |
+| 0.1.0           | ^0.4 (validated on 0.4.1)      |
 
 ## License
 
