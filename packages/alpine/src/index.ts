@@ -1,5 +1,7 @@
 import { lyraDropdown } from './dropdown';
 import type { LyraDropdownOptions } from './dropdown';
+import { lyraDialog } from './dialog';
+import type { LyraDialogOptions } from './dialog';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -28,6 +30,11 @@ export interface LyraAlpine {
  * ```
  */
 export default function lyra(alpine: LyraAlpine): void {
+  alpine.data(
+    'lyraDialog',
+    (...args) =>
+      lyraDialog((args[0] ?? {}) as LyraDialogOptions) as unknown as Record<string, unknown>,
+  );
   alpine.data(
     'lyraDropdown',
     (...args) =>
