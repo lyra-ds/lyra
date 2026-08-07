@@ -6,6 +6,8 @@ import { lyraDrawer } from './drawer';
 import type { LyraDrawerOptions } from './drawer';
 import { lyraTabs } from './tabs';
 import type { LyraTabsOptions } from './tabs';
+import { lyraAccordion } from './accordion';
+import type { LyraAccordionOptions } from './accordion';
 import { lyraTooltip } from './tooltip';
 import type { LyraTooltipOptions } from './tooltip';
 
@@ -54,6 +56,11 @@ export default function lyra(alpine: LyraAlpine): void {
   alpine.data(
     'lyraTabs',
     (...args) => lyraTabs((args[0] ?? {}) as LyraTabsOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraAccordion',
+    (...args) =>
+      lyraAccordion((args[0] ?? {}) as LyraAccordionOptions) as unknown as Record<string, unknown>,
   );
   alpine.data(
     'lyraTooltip',
