@@ -10,6 +10,8 @@ import { lyraAccordion } from './accordion';
 import type { LyraAccordionOptions } from './accordion';
 import { lyraTooltip } from './tooltip';
 import type { LyraTooltipOptions } from './tooltip';
+import { lyraPopover } from './popover';
+import type { LyraPopoverOptions } from './popover';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -66,5 +68,10 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraTooltip',
     (...args) =>
       lyraTooltip((args[0] ?? {}) as LyraTooltipOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraPopover',
+    (...args) =>
+      lyraPopover((args[0] ?? {}) as LyraPopoverOptions) as unknown as Record<string, unknown>,
   );
 }
