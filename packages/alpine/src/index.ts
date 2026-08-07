@@ -6,6 +6,8 @@ import { lyraDrawer } from './drawer';
 import type { LyraDrawerOptions } from './drawer';
 import { lyraTabs } from './tabs';
 import type { LyraTabsOptions } from './tabs';
+import { lyraAccordion } from './accordion';
+import type { LyraAccordionOptions } from './accordion';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -52,5 +54,10 @@ export default function lyra(alpine: LyraAlpine): void {
   alpine.data(
     'lyraTabs',
     (...args) => lyraTabs((args[0] ?? {}) as LyraTabsOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraAccordion',
+    (...args) =>
+      lyraAccordion((args[0] ?? {}) as LyraAccordionOptions) as unknown as Record<string, unknown>,
   );
 }
