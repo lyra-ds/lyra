@@ -2,55 +2,48 @@
 
 ## In progress
 
-- [ ] **Next direction (decided with the user, 2026-08-05): `lyra-ds/blade`** —
-      Blade components as the first framework satellite (before Vue/Svelte),
-      then a Filament v4 token-bridge theme. PRDs delivered to
-      `~/Documents/prd-lyra-blade.md` and `~/Documents/prd-lyra-filament-theme.md`;
-      each lives in its own repo with its own Claude/Batuta session. Locked in
-      the PRDs: CSS stays npm-only; Alpine as peer; class-emission parity with
-      React as the central gate. Sequence: announcement article first, then
-      blade phase 1, then the `starter-laravel` template, then Filament.
-      Vue/Zag still wait for the announcement signal, per plan.
-- [ ] **Workspace restructure (user, outside this session):** the repo folder
-      moves to `~/Projects/lyra-ds/lyra` under an org umbrella (starters
-      cloned as siblings). Persistent memory pre-migrated to the new path key.
-- [ ] **Dependency triage (was Dependabot #92, closed stale by dependabot)** —
-      re-triaged from live `pnpm outdated` into risk tiers. Tier D1 (12 safe
-      minor/patch: react 19.2.8, prettier, eslint, vite, playwright 1.62 et
-      al.) delivered in PR #110 → claude (critical); root cause of the old
-      red found: duplicate React from a stale peer resolution, fixed with
-      pnpm dedupe (trail: .batuta/runs/2026-08-05-deps-d1.md); merged as
-      1effb5d. Tier D2 (next 16.3.0 + fumadocs-core 16.14.0) delivered in
-      PR #111 → claude (critical); browser-proven docs output (trail:
-      .batuta/runs/2026-08-05-deps-d2.md); merged as cb7b4da. Tier D3
-      (lucide-react 1.28.0 + @fontsource 5.3.0) delivered in PR #112 →
-      claude (critical); icon registry byte-identical, budgets hold, fonts
-      visually proven (trail: .batuta/runs/2026-08-05-deps-d3.md). Triage
-      CLOSED once #112 merges. Not taken by decision: typescript 7 /
-      @types/node 26 (policy #104); size-limit 13 major = own future
-      decision.
-- [ ] **Foundations styleguide (active, 2026-08-05)** — porting the 15
-      `handoff/guidelines/` cards into a new manifest-driven docs section as
-      5 topic pages (colors, typography, spacing, brand, architecture), 3
-      lots, bilingual MDX. Lot f1 (section infrastructure + Colors page)
-      delivered in PR #107, commit 403f68c → codex (`gpt-5.6-terra`, high,
-      worktree; 1 verbatim re-dispatch past its design-approval gate);
-      cross-review 3 lenses no findings; browser-proven both locales
-      (trail: .batuta/runs/2026-08-05-foundations-colors.md); merged as
-      3b39e0f. Lot f2 (typography + spacing, 7 live examples) delivered in
-      PR #108 → codex (`gpt-5.6-terra`, high, worktree; 1 retry fixing 4
-      verification findings — 2 accepted cross-review + 2 maestro browser
-      findings) (trail: .batuta/runs/2026-08-05-foundations-type-spacing.md);
-      merged as 66585c9. Lot f3 (branding + architecture) delivered in PR
-      #109 → codex (`gpt-5.6-terra`, high, worktree; 1 legitimate collision
-      stop — foundation slug renamed `branding` —, 2 maestro transport
-      errors, 1 design-gate verbatim re-dispatch; cross-review accepted 1
-      fact-check finding: token-layer claim scoped to color) (trail:
-      .batuta/runs/2026-08-05-foundations-brand-arch.md). Section complete
-      once #109 merges: /foundations/{colors,typography,spacing,branding,
-      architecture}, bilingual, all live-token examples.
+- [ ] **Satellite direction `lyra-ds/blade` (decided 2026-08-05)** — Blade as
+      the first framework satellite (before Vue/Svelte), then a Filament v4
+      token-bridge theme. PRDs in `~/Documents/prd-lyra-blade.md` and
+      `~/Documents/prd-lyra-filament-theme.md`; each satellite lives in its
+      own repo with its own Claude/Batuta session. Status: announcement
+      article PUBLISHED 2026-08-04 (bilingual, personal site,
+      `francisross/src/content/blog/lyra-ds-css-first-design-system.*`);
+      blade phase 1 IN PROGRESS in its own session. This repo's role: serve
+      the satellites (CSS stays npm-only; class-emission parity with React
+      is the central gate) and syndicate the article: files ready in
+      `~/Documents/lyra-ds-devto-en.md` (canonical_url, published: false)
+      and `~/Documents/lyra-ds-tabnews-pt.md`; publishing is user-side.
 
 ## Done
+
+- [x] **Foundations styleguide (2026-08-05)** — 15 `handoff/guidelines/`
+      cards ported into a manifest-driven docs section: /foundations/{colors,
+      typography,spacing,branding,architecture}, bilingual, live-token
+      examples. Lot f1 (infra + Colors) PR #107 → codex (`gpt-5.6-terra`,
+      high, worktree; 1 verbatim re-dispatch past its design-approval gate;
+      trail: .batuta/runs/2026-08-05-foundations-colors.md), merged 3b39e0f.
+      Lot f2 (typography + spacing, 7 live examples) PR #108 → codex (1 retry
+      fixing 4 verification findings; trail:
+      .batuta/runs/2026-08-05-foundations-type-spacing.md), merged 66585c9.
+      Lot f3 (branding + architecture) PR #109 → codex (1 legitimate
+      collision stop — slug renamed `branding`; cross-review accepted 1
+      fact-check finding; trail:
+      .batuta/runs/2026-08-05-foundations-brand-arch.md), merged f3c2a7a.
+- [x] **Dependency triage (was Dependabot #92) — CLOSED 2026-08-05.** Tier D1
+      (12 safe minor/patch) PR #110, merged 1effb5d — root cause of the old
+      red: duplicate React from stale peer resolution, fixed with pnpm dedupe
+      (trail: .batuta/runs/2026-08-05-deps-d1.md). Tier D2 (next 16.3.0 +
+      fumadocs-core 16.14.0) PR #111, merged cb7b4da, browser-proven (trail:
+      .batuta/runs/2026-08-05-deps-d2.md). Tier D3 (lucide-react 1.28.0 +
+      @fontsource 5.3.0) PR #112, merged 769c2f5 — icon registry
+      byte-identical, budgets hold (trail:
+      .batuta/runs/2026-08-05-deps-d3.md). All → claude (critical). Not taken
+      by decision: typescript 7 / @types/node 26 (policy #104); size-limit 13
+      major = own future decision.
+- [x] **Workspace restructure — DONE (user, 2026-08-05).** Repo now lives at
+      `~/Projects/lyra-ds/lyra` under the org umbrella; persistent memory
+      migrated to the new path key.
 
 - [x] **0.4.1 published through OIDC (2026-08-05, user trigger)** — Version PR
       #90 verified (two changesets: npm metadata 211/78 + AA contrast), run
