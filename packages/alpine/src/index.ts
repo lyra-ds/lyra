@@ -4,6 +4,8 @@ import { lyraDialog } from './dialog';
 import type { LyraDialogOptions } from './dialog';
 import { lyraDrawer } from './drawer';
 import type { LyraDrawerOptions } from './drawer';
+import { lyraBottomSheet } from './bottom-sheet';
+import type { LyraBottomSheetOptions } from './bottom-sheet';
 import { lyraTabs } from './tabs';
 import type { LyraTabsOptions } from './tabs';
 import { lyraAccordion } from './accordion';
@@ -63,6 +65,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraDrawer',
     (...args) =>
       lyraDrawer((args[0] ?? {}) as LyraDrawerOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraBottomSheet',
+    (...args) =>
+      lyraBottomSheet((args[0] ?? {}) as LyraBottomSheetOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
   alpine.data(
     'lyraTabs',
