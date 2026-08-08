@@ -31,20 +31,24 @@ test('rejects a missing stats source instead of emitting invented inventory', as
   );
 });
 
-test('renders bilingual theming and community sections in the static export', () => {
-  for (const [locale, themingTitle, communityTitle] of [
-    ['en', 'White-label without starting over', 'Built in the open'],
-    ['pt-BR', 'White-label sem recomeçar', 'Feito no aberto'],
+test('renders bilingual theming, community, and sponsors sections in the static export', () => {
+  for (const [locale, themingTitle, communityTitle, sponsorsTitle] of [
+    ['en', 'White-label without starting over', 'Built in the open', 'Sustaining Lyra, together'],
+    ['pt-BR', 'White-label sem recomeçar', 'Feito no aberto', 'Mantendo o Lyra, juntos'],
   ]) {
     const page = readFileSync(resolve(siteRoot, 'out', `${locale}.html`), 'utf8');
 
     assert.match(page, /id="theming"/);
     assert.match(page, /id="community"/);
+    assert.match(page, /id="sponsors"/);
     assert.match(page, new RegExp(themingTitle));
     assert.match(page, new RegExp(communityTitle));
+    assert.match(page, new RegExp(sponsorsTitle));
     assert.match(page, /111 semantic tokens|111 tokens semânticos/);
     assert.match(page, /html\[data-brand='harbor'\]/);
     assert.match(page, /github\.com\/lyra-ds\/lyra\/discussions/);
+    assert.match(page, /href="https:\/\/github\.com\/sponsors\/lyra-ds"/);
+    assert.doesNotMatch(page, /src="\/sponsors\.svg"/);
   }
 
   assert.equal(existsSync(statsPath), true);

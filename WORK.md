@@ -44,6 +44,27 @@
 
 ## Done
 
+- [x] **Sponsors pipeline + landing section (2026-08-07)** — org GitHub
+      Sponsors profile approved (github.com/sponsors/lyra-ds, public, goal 10
+      monthly). Wiring done outside the cycle: org-default FUNDING.yml in
+      lyra-ds/.github; PR #133 (funding field in the 3 published
+      package.json + README badges). Cycle (worktree `batuta/sponsors`, both
+      lots one clean round each): lot 01 SponsorKit 18.0.0 pipeline
+      (config + update-sponsors script with committed contract
+      data/sponsors.json + public/sponsors.svg, weekly sponsors.yml opening a
+      PR — main is protected) → codex, commit 157be3c (trail:
+      .batuta/runs/2026-08-07-sponsors-01-pipeline.md); lot 02 bilingual
+      Sponsors landing section (empty state + heart CTA; renders self-hosted
+      /sponsors.svg when populated; static-export test extended) → codex,
+      commit 7123efd (trail:
+      .batuta/runs/2026-08-07-sponsors-02-section.md). Research-lane note:
+      kimi scout hung with an INLINE brief too (5+ min, zero output, killed)
+      — first inline-brief hang on record; maestro did the research (lane
+      fallback). USER ACTION pending: create SPONSORKIT_GITHUB_TOKEN secret
+      (PAT with read:user + read:org) for sponsors.yml. Site debt noted: no
+      scroll-margin on section anchors (all anchors land under the sticky
+      header).
+
 - [x] **Foundations styleguide (2026-08-05)** — 15 `handoff/guidelines/`
       cards ported into a manifest-driven docs section: /foundations/{colors,
       typography,spacing,branding,architecture}, bilingual, live-token

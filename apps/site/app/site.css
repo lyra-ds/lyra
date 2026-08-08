@@ -207,6 +207,31 @@
   line-height: var(--leading-relaxed);
 }
 
+.lw-sponsors__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lw-sponsors .lw-section__sub {
+  margin-bottom: var(--space-5);
+}
+
+.lw-sponsors__empty {
+  max-width: 560px;
+  margin: 0 0 var(--space-6);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.lw-sponsors__image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto var(--space-6);
+}
+
 .lw-faq {
   display: grid;
   grid-template-columns: 320px 1fr;
