@@ -27,6 +27,8 @@ import { lyraTableOfContents } from './table-of-contents';
 import type { LyraTableOfContentsOptions } from './table-of-contents';
 import { lyraTimeInput } from './time-input';
 import type { LyraTimeInputOptions } from './time-input';
+import { lyraTimePicker } from './time-picker';
+import type { LyraTimePickerOptions } from './time-picker';
 import { lyraFileUpload } from './file-upload';
 import type { LyraFileUploadOptions } from './file-upload';
 import { lyraFileManager } from './file-manager';
@@ -156,6 +158,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraTimeInput',
     (...args) =>
       lyraTimeInput((args[0] ?? {}) as LyraTimeInputOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraTimePicker',
+    (...args) =>
+      lyraTimePicker((args[0] ?? {}) as LyraTimePickerOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
   alpine.data(
     'lyraFileUpload',
