@@ -29,6 +29,8 @@ import { lyraTimeInput } from './time-input';
 import type { LyraTimeInputOptions } from './time-input';
 import { lyraFileUpload } from './file-upload';
 import type { LyraFileUploadOptions } from './file-upload';
+import { lyraFileManager } from './file-manager';
+import type { LyraFileManagerOptions } from './file-manager';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -149,6 +151,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraFileUpload',
     (...args) =>
       lyraFileUpload((args[0] ?? {}) as LyraFileUploadOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraFileManager',
+    (...args) =>
+      lyraFileManager((args[0] ?? {}) as LyraFileManagerOptions) as unknown as Record<
         string,
         unknown
       >,
