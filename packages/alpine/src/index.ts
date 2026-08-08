@@ -46,6 +46,8 @@ import { lyraTimeZonePicker } from './time-zone-picker';
 import type { LyraTimeZonePickerOptions } from './time-zone-picker';
 import { lyraCommandPalette } from './command-palette';
 import type { LyraCommandPaletteOptions } from './command-palette';
+import { lyraDataTable } from './data-table';
+import type { LyraDataTableOptions } from './data-table';
 
 export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
 export type {
@@ -54,6 +56,7 @@ export type {
   LyraTimeZonePickerOption,
   LyraTimeZonePickerOptions,
 } from './time-zone-picker';
+export type { LyraDataTableOptions, LyraDataTableSorting } from './data-table';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -238,5 +241,10 @@ export default function lyra(alpine: LyraAlpine): void {
         string,
         unknown
       >,
+  );
+  alpine.data(
+    'lyraDataTable',
+    (...args) =>
+      lyraDataTable((args[0] ?? {}) as LyraDataTableOptions) as unknown as Record<string, unknown>,
   );
 }
