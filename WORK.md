@@ -2,6 +2,27 @@
 
 ## In progress
 
+- [x] **Onda E `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
+      `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-e.md`,
+      lots e1–e3; a pedido "onda 7" — não existia nos planos, usuário
+      confirmou Onda E) — busca APG: lyraCombobox +
+      `internal/active-descendant.ts` #155, lyraTimeZonePicker #156 (camada
+      de dados ESTENDENDO a factory do combobox — padrão novo, sem markup
+      aninhado), lyraCommandPalette #157. Todos → codex (medium, worktree),
+      1 rodada cada + reparos do maestro: e1 um teste com premissa errada
+      (query 'jp' era o VALUE; filtro só olha label+keywords); e2 três
+      defeitos de construção de teste (useFakeTimers sem toFake congela o
+      próprio flush() → deadlock; Chromium emite GMT+0 para Londres; axe em
+      listbox vazio = aria-required-children transitório); e3 um BUG REAL no
+      helper compartilhado `internal/focus-trap.ts` exposto pelo primeiro
+      trap com options tabindex="-1" — isTabbable não rejeitava
+      tabIndex < 0, o wrap do Tab nunca disparava (fix 1 linha, alargamento
+      de escopo do maestro). 210 testes (27 suítes), size 13.82/13.9 kB.
+      18 changesets minor acumulados (B+C+D+E) → 0.2.0 via Version Packages
+      (usuário). Resta do PRD: F (data-table); pós-D: promover
+      recurrence-selector. Trails:
+      .batuta/runs/2026-08-08-alpine-e{1,2,3}-*.md.
+
 - [x] **Onda D `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
       `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-d.md`,
       lots d1–d4) — datas fechadas: lyraCalendar + `internal/date-utils.ts`
