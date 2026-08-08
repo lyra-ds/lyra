@@ -1,4 +1,4 @@
-import { access, copyFile, readFile, rm } from 'node:fs/promises';
+import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
@@ -76,6 +76,9 @@ export async function updateSponsors({ token } = {}) {
   if (!Array.isArray(sponsors)) {
     throw new Error('SponsorKit wrote an invalid sponsors.json artifact; expected an array.');
   }
+
+  // SponsorKit omits the final newline for empty output, which would create a diff on every run.
+  await writeFile(outputPaths.json, `${JSON.stringify(sponsors, null, 2)}\n`);
 
   if (sponsors.length === 0) {
     await removeIfPresent(outputPaths.svg);
