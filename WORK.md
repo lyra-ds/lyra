@@ -2,6 +2,25 @@
 
 ## In progress
 
+- [x] **Onda C `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
+      `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-c.md`,
+      lots c1–c6) — 6 entregas: lyraBottomSheet #143 (desbloqueia os pickers
+      da onda D), lyraTableOfContents + `internal/scroll-spy.ts` #144,
+      lyraTimeInput #145, lyraFileUpload #146, lyraFileManager #147, theme
+      store (primeiro `Alpine.store` do pacote, contrato anti-flash com o
+      blade) #148. Todos → codex (`gpt-5.6-terra`, medium); 2 re-disparos
+      verbatim (gate de design nos lots c3/c4). A verificação do maestro
+      pegou e corrigiu: foco inicial fora da paridade React (c1), teste de
+      drag guard vacuoso (c1), geometria mascarando o branch de fim de
+      documento no scroll-spy (c2), steppers invisíveis sem wrapper (c3),
+      espera por existência de span x-show (c4), clearInterval vacuoso (c4)
+      e o flake do empty state com DUAS causas (c5): estado reativo escrito
+      em `$watch` mata o efeito x-show dependente → derivar DENTRO do efeito; + corrida do reveal rAF-deferido nos testes → `vi.waitFor` por
+      transição. 150 testes Browser Mode (19 suítes), size 8.14/8.35 kB.
+      11 changesets minor acumulados (B+C) → 0.2.0 via Version Packages
+      (usuário). Restam: D (datas — calendar/date-picker/range/time-picker),
+      E (busca APG), F (data-table).
+
 - [x] **Onda B `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
       `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-b.md`,
       lots b1–b5) — 5 bindings novos portados do React: lyraCodeBlock #136,
