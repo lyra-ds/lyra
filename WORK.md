@@ -57,7 +57,10 @@
       Sponsors landing section (empty state + heart CTA; renders self-hosted
       /sponsors.svg when populated; static-export test extended) → codex,
       commit 7123efd (trail:
-      .batuta/runs/2026-08-07-sponsors-02-section.md). Research-lane note:
+      .batuta/runs/2026-08-07-sponsors-02-section.md); lot 03 zero-sponsor
+      fixes (JSON newline normalization + safe svg staging) after the first
+      real sponsors.yml run failed → codex (trail:
+      .batuta/runs/2026-08-07-sponsors-03-zerofix.md). Research-lane note:
       kimi scout hung with an INLINE brief too (5+ min, zero output, killed)
       — first inline-brief hang on record; maestro did the research (lane
       fallback). USER ACTION pending: create SPONSORKIT_GITHUB_TOKEN secret
