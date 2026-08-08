@@ -42,6 +42,16 @@ import { lyraDateRangePicker } from './date-range-picker';
 import type { LyraDateRangePickerOptions } from './date-range-picker';
 import { lyraCombobox } from './combobox';
 import type { LyraComboboxOptions } from './combobox';
+import { lyraTimeZonePicker } from './time-zone-picker';
+import type { LyraTimeZonePickerOptions } from './time-zone-picker';
+
+export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
+export type {
+  LyraTimeZonePickerData,
+  LyraTimeZonePickerLabels,
+  LyraTimeZonePickerOption,
+  LyraTimeZonePickerOptions,
+} from './time-zone-picker';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -210,5 +220,13 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraCombobox',
     (...args) =>
       lyraCombobox((args[0] ?? {}) as LyraComboboxOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraTimeZonePicker',
+    (...args) =>
+      lyraTimeZonePicker((args[0] ?? {}) as LyraTimeZonePickerOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
 }
