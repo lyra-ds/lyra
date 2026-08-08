@@ -2,6 +2,25 @@
 
 ## In progress
 
+- [x] **Onda D `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
+      `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-d.md`,
+      lots d1–d4) — datas fechadas: lyraCalendar + `internal/date-utils.ts`
+      #150 (grade 42 dias, 3 views, range, teclado completo),
+      lyraDatePicker #151, lyraDateRangePicker #152, lyraTimePicker #153.
+      Todos → codex (medium). Arquitetura dos pickers: coordenador fino
+      compondo lyraPopover/lyraBottomSheet/lyraCalendar aninhados com
+      x-model encadeado. **Três leis novas de Alpine descobertas na onda**:
+      (1) o canal x-model/entangle SERIALIZA Dates para strings JSON — todo
+      estado data-like normaliza na LEITURA (`normalizeDay`); (2)
+      encadeamento x-modelable com nome igual entangla o componente consigo
+      mesmo (conferido no fonte do Alpine) — escopo-alias get/set no
+      template canônico; (3) `<template x-if>` monta só UM elemento raiz.
+      As leis acumuladas no brief renderam a primeira rodada 100% limpa
+      (d4: 180/180 de primeira). 180 testes (23 suítes), size 10.63/10.85
+      kB. 15 changesets minor (B+C+D) → 0.2.0 via Version Packages
+      (usuário). Restam do PRD: E (combobox/command-palette APG + timezone
+      picker) e F (data-table); pós-D: promover recurrence-selector.
+
 - [x] **Onda C `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
       `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-c.md`,
       lots c1–c6) — 6 entregas: lyraBottomSheet #143 (desbloqueia os pickers
