@@ -32,6 +32,8 @@ import type { LyraFileUploadOptions } from './file-upload';
 import { lyraFileManager } from './file-manager';
 import type { LyraFileManagerOptions } from './file-manager';
 import { lyraTheme } from './theme';
+import { lyraCalendar } from './calendar';
+import type { LyraCalendarOptions } from './calendar';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -166,5 +168,10 @@ export default function lyra(alpine: LyraAlpine): void {
         string,
         unknown
       >,
+  );
+  alpine.data(
+    'lyraCalendar',
+    (...args) =>
+      lyraCalendar((args[0] ?? {}) as LyraCalendarOptions) as unknown as Record<string, unknown>,
   );
 }
