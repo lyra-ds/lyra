@@ -2,6 +2,22 @@
 
 ## In progress
 
+- [x] **Onda B `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
+      `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-b.md`,
+      lots b1–b5) — 5 bindings novos portados do React: lyraCodeBlock #136,
+      lyraCookieBanner #138, lyraSidebarGroup #139, lyraSegmentedControl
+      #140, lyraWorkspaceSwitcher #141. Todos → codex (`gpt-5.6-terra`,
+      lane medium), 1 rodada limpa cada; sandbox do codex degradou a partir
+      do b3 (pnpm ERR_SQLITE_ERROR — nenhum gate rodou lá), então budget de
+      size, prettier-fix e todas as provas ficaram com o maestro na
+      integração (trails em `.batuta/runs/2026-08-08-alpine-b*.md`).
+      102 testes Browser Mode (13 suítes), revert-the-fix por lot,
+      size-limit 5.46/5.65 kB. 5 changesets minor acumulados → próxima
+      release 0.2.0 via Version Packages (usuário). Próximas ondas do PRD:
+      C (médios + infra: bottom-sheet, TOC/scroll-spy, time-input,
+      file-upload, file-manager, theme store), D (datas), E (busca APG),
+      F (data-table).
+
 - [x] **Onda 1 `@lyra-ds/alpine` COMPLETA — 0.1.0 PUBLICADO (2026-08-07)**
       (plan: `.batuta/plan-09-alpine.md`, todas as 9 tasks) — plugin Alpine
       com os 7 interativos core portados do React: Dropdown #116, Dialog
