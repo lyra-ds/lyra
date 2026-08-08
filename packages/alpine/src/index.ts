@@ -40,6 +40,8 @@ import { lyraDatePicker } from './date-picker';
 import type { LyraDatePickerOptions } from './date-picker';
 import { lyraDateRangePicker } from './date-range-picker';
 import type { LyraDateRangePickerOptions } from './date-range-picker';
+import { lyraCombobox } from './combobox';
+import type { LyraComboboxOptions } from './combobox';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -203,5 +205,10 @@ export default function lyra(alpine: LyraAlpine): void {
         string,
         unknown
       >,
+  );
+  alpine.data(
+    'lyraCombobox',
+    (...args) =>
+      lyraCombobox((args[0] ?? {}) as LyraComboboxOptions) as unknown as Record<string, unknown>,
   );
 }
