@@ -2,6 +2,26 @@
 
 ## In progress
 
+- [x] **Onda F `@lyra-ds/alpine` COMPLETA (2026-08-08) — CATÁLOGO DO PRD
+      B–F FECHADO** (PRD: `docs/prd-alpine-ondas-b-f.md`; lot
+      `.batuta/lot-f1-alpine-data-table.md` sobre o brief da onda E) —
+      lyraDataTable #159 → codex (medium, worktree), 1 rodada limpa de
+      código; reparos do maestro só em teste: (1) expectativa contradizia a
+      regra travada de nulls-last em desc (esperava o reverse() do React —
+      a divergência foi DECLARADA pelo executor, corretamente); (2) prova
+      revert-the-fix pegou asserção VACUOSA — a restauração da ordem
+      servida era testada de um estado idêntico à ordem original (mutação
+      passava); endurecida via desc-by-name, re-mutação morde. Modelo
+      DOM-driven: ids `data-row-id` em ordem ORIGINAL, indeterminate
+      imperativo, ciclo asc→desc→null com aria-sort, clientSort opt-in
+      (insertBefore, localeCompare numeric/base, nulls por último nas duas
+      direções, restauração da ordem servida). 221 testes (28 suítes),
+      size 14.66/14.75 kB. 19 changesets minor (B–F) → 0.2.0 via Version
+      Packages (usuário). Pós-catálogo: promover recurrence-selector
+      (decisão com o usuário); reavaliar weekly-schedule-editor,
+      slot-picker, calendar-view. Trail:
+      .batuta/runs/2026-08-08-alpine-f1-data-table.md.
+
 - [x] **Onda E `@lyra-ds/alpine` COMPLETA (2026-08-08)** (PRD:
       `docs/prd-alpine-ondas-b-f.md`; brief `.batuta/brief-alpine-wave-e.md`,
       lots e1–e3; a pedido "onda 7" — não existia nos planos, usuário
