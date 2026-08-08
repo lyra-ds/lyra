@@ -44,6 +44,8 @@ import { lyraCombobox } from './combobox';
 import type { LyraComboboxOptions } from './combobox';
 import { lyraTimeZonePicker } from './time-zone-picker';
 import type { LyraTimeZonePickerOptions } from './time-zone-picker';
+import { lyraCommandPalette } from './command-palette';
+import type { LyraCommandPaletteOptions } from './command-palette';
 
 export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
 export type {
@@ -225,6 +227,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraTimeZonePicker',
     (...args) =>
       lyraTimeZonePicker((args[0] ?? {}) as LyraTimeZonePickerOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraCommandPalette',
+    (...args) =>
+      lyraCommandPalette((args[0] ?? {}) as LyraCommandPaletteOptions) as unknown as Record<
         string,
         unknown
       >,
