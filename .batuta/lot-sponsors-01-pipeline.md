@@ -4,9 +4,10 @@
 
 Create the sponsors data pipeline for the lyra-ds org: a pinned `sponsorkit`
 setup that regenerates committed sponsor artifacts (`apps/site/data/sponsors.json`
-+ `apps/site/public/sponsors.svg`), and a scheduled GitHub workflow that runs it
-and opens a PR when the data changed. GitHub Sponsors profile:
-https://github.com/sponsors/lyra-ds (organization).
+
+- `apps/site/public/sponsors.svg`), and a scheduled GitHub workflow that runs it
+  and opens a PR when the data changed. GitHub Sponsors profile:
+  https://github.com/sponsors/lyra-ds (organization).
 
 ## Context
 
