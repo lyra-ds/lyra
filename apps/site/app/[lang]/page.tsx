@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ComponentShowcase } from '@/components/sections/component-showcase';
 import { Community } from '@/components/sections/community';
 import { Frameworks } from '@/components/sections/frameworks';
+import { Sponsors } from '@/components/sections/sponsors';
 import { Theming } from '@/components/sections/theming';
 import { DOCS_ORIGIN } from '@/lib/links';
 
@@ -55,6 +56,7 @@ export default async function LandingPage({ params }: { params: Promise<{ lang: 
       <Frameworks />
       <Theming />
       <Community />
+      <Sponsors />
       <section id="faq" className="lw-section lw-section--alt">
         <div className="lw-container lw-faq">
           <div>
