@@ -6,6 +6,7 @@
 [![CI](https://github.com/lyra-ds/lyra/actions/workflows/ci.yml/badge.svg)](https://github.com/lyra-ds/lyra/actions/workflows/ci.yml)
 [![npm @lyra-ds/styles](https://img.shields.io/npm/v/@lyra-ds/styles?label=%40lyra-ds%2Fstyles)](https://www.npmjs.com/package/@lyra-ds/styles)
 [![npm @lyra-ds/react](https://img.shields.io/npm/v/@lyra-ds/react?label=%40lyra-ds%2Freact)](https://www.npmjs.com/package/@lyra-ds/react)
+[![Apoie](https://img.shields.io/badge/Apoie-%E2%9D%A4-db61a2?logo=github)](https://github.com/sponsors/lyra-ds)
 
 > Design system open source, CSS-first. Tokens semânticos, temas white-label e wrappers React finos — Vue, Svelte e Web Components sobre o mesmo core em CSS.
 
