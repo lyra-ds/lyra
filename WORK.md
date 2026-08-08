@@ -2,6 +2,27 @@
 
 ## In progress
 
+- [x] **Promoção pós-catálogo: lyraRecurrenceSelector COMPLETA
+      (2026-08-08)** (PRD §3, promoção pós-D; lot
+      `.batuta/lot-r1-alpine-recurrence-selector.md` sobre o brief da onda
+      E) — lyraRecurrenceSelector + `describeRecurrence` exportado #161 →
+      codex (medium, worktree), 1 rodada + 1 fix de TEMPLATE do maestro.
+      Editor RRULE-subset: presets derivados do weekday, editor custom com
+      controles nativos, toggle de dia nunca esvazia, resumo vivo
+      aria-live via os 13 templates de sentença inteira, date picker
+      aninhado via escopo-alias, estado JSON-safe (end.date ISO; payload
+      provado por JSON.parse(JSON.stringify)). Divergência declarada:
+      label-função conflicts(count) → templates conflictsOne/conflictsMany.
+      **13ª lei de Alpine descoberta**: `:value` de `<select>` com options
+      de `x-for` roda ANTES das options montarem e fica obsoleto (estado
+      certo, DOM errado) — template canônico usa `:selected` POR OPTION.
+      228 testes (29 suítes), size 16.53/16.73 kB (primeiro budget medido
+      pelo próprio sandbox do codex via tsdown direto). 20 changesets
+      minor (B–F + recurrence) → 0.2.0 via Version Packages (usuário).
+      Reavaliar com o usuário: weekly-schedule-editor, slot-picker,
+      calendar-view. Trail:
+      .batuta/runs/2026-08-08-alpine-r1-recurrence-selector.md.
+
 - [x] **Onda F `@lyra-ds/alpine` COMPLETA (2026-08-08) — CATÁLOGO DO PRD
       B–F FECHADO** (PRD: `docs/prd-alpine-ondas-b-f.md`; lot
       `.batuta/lot-f1-alpine-data-table.md` sobre o brief da onda E) —
