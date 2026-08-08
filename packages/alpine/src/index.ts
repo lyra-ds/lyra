@@ -17,6 +17,8 @@ import { lyraCookieBanner } from './cookie-banner';
 import type { LyraCookieBannerOptions } from './cookie-banner';
 import { lyraSidebarGroup } from './sidebar-group';
 import type { LyraSidebarGroupOptions } from './sidebar-group';
+import { lyraSegmentedControl } from './segmented-control';
+import type { LyraSegmentedControlOptions } from './segmented-control';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -92,6 +94,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraCookieBanner',
     (...args) =>
       lyraCookieBanner((args[0] ?? {}) as LyraCookieBannerOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraSegmentedControl',
+    (...args) =>
+      lyraSegmentedControl((args[0] ?? {}) as LyraSegmentedControlOptions) as unknown as Record<
         string,
         unknown
       >,
