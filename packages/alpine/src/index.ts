@@ -12,6 +12,7 @@ import { lyraTooltip } from './tooltip';
 import type { LyraTooltipOptions } from './tooltip';
 import { lyraPopover } from './popover';
 import type { LyraPopoverOptions } from './popover';
+import { lyraCodeBlock } from './code-block';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -74,4 +75,5 @@ export default function lyra(alpine: LyraAlpine): void {
     (...args) =>
       lyraPopover((args[0] ?? {}) as LyraPopoverOptions) as unknown as Record<string, unknown>,
   );
+  alpine.data('lyraCodeBlock', () => lyraCodeBlock() as unknown as Record<string, unknown>);
 }
