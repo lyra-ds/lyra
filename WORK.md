@@ -18,7 +18,14 @@
       Release criados; guard do release.yml passa a ver 0.1.0 publicado.
       Trusted publisher do @lyra-ds/alpine configurado pelo usuário no
       npmjs.com (2026-08-07) — OIDC com provenance assume do 0.1.1 em
-      diante, zero pendências. Trails:
+      diante, zero pendências. 0.1.1 PUBLICADO 2026-08-07 via OIDC
+      (primeiro release 100% automático do pacote): fix accordion/tabs —
+      `:class` string nunca remove classe pré-existente no markup; estado
+      SSR (`lyra-acc__item--open`, `lyra-tab--active`) ficava preso ao
+      fechar/trocar; sintaxe de objeto reconcilia (PR #130, squash
+      3757c78 + Version PR #131; regressões `serverRenderedOpen`/
+      `serverRenderedActive`, 66 testes; demais `:class` auditados —
+      `--closing` e placement não são pré-renderizáveis). Trails:
       .batuta/runs/2026-08-06-alpine-dropdown.md,
       2026-08-07-alpine-dialog.md, 2026-08-07-alpine-wave1-fanout.md.
 
