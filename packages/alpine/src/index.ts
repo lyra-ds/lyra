@@ -48,6 +48,8 @@ import { lyraCommandPalette } from './command-palette';
 import type { LyraCommandPaletteOptions } from './command-palette';
 import { lyraDataTable } from './data-table';
 import type { LyraDataTableOptions } from './data-table';
+import { lyraRecurrenceSelector } from './recurrence-selector';
+import type { LyraRecurrenceSelectorOptions } from './recurrence-selector';
 
 export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
 export type {
@@ -57,6 +59,14 @@ export type {
   LyraTimeZonePickerOptions,
 } from './time-zone-picker';
 export type { LyraDataTableOptions, LyraDataTableSorting } from './data-table';
+export { DEFAULT_LABELS, describeRecurrence } from './recurrence-selector';
+export type {
+  LyraRecurrenceSelectorOptions,
+  RecurrenceConflict,
+  RecurrenceEnd,
+  RecurrenceRule,
+  RecurrenceSelectorLabels,
+} from './recurrence-selector';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -246,5 +256,13 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraDataTable',
     (...args) =>
       lyraDataTable((args[0] ?? {}) as LyraDataTableOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraRecurrenceSelector',
+    (...args) =>
+      lyraRecurrenceSelector((args[0] ?? {}) as LyraRecurrenceSelectorOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
 }
