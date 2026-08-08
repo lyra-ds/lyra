@@ -19,6 +19,8 @@ import { lyraSidebarGroup } from './sidebar-group';
 import type { LyraSidebarGroupOptions } from './sidebar-group';
 import { lyraSegmentedControl } from './segmented-control';
 import type { LyraSegmentedControlOptions } from './segmented-control';
+import { lyraWorkspaceSwitcher } from './workspace-switcher';
+import type { LyraWorkspaceSwitcherOptions } from './workspace-switcher';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -85,6 +87,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraSidebarGroup',
     (...args) =>
       lyraSidebarGroup((args[0] ?? {}) as LyraSidebarGroupOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraWorkspaceSwitcher',
+    (...args) =>
+      lyraWorkspaceSwitcher((args[0] ?? {}) as LyraWorkspaceSwitcherOptions) as unknown as Record<
         string,
         unknown
       >,
