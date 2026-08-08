@@ -50,6 +50,8 @@ import { lyraDataTable } from './data-table';
 import type { LyraDataTableOptions } from './data-table';
 import { lyraRecurrenceSelector } from './recurrence-selector';
 import type { LyraRecurrenceSelectorOptions } from './recurrence-selector';
+import { lyraSlotPicker } from './slot-picker';
+import type { LyraSlotPickerOptions } from './slot-picker';
 
 export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
 export type {
@@ -67,6 +69,7 @@ export type {
   RecurrenceRule,
   RecurrenceSelectorLabels,
 } from './recurrence-selector';
+export type { LyraSlot, LyraSlotPickerLabels, LyraSlotPickerOptions } from './slot-picker';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -261,6 +264,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraRecurrenceSelector',
     (...args) =>
       lyraRecurrenceSelector((args[0] ?? {}) as LyraRecurrenceSelectorOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraSlotPicker',
+    (...args) =>
+      lyraSlotPicker((args[0] ?? {}) as LyraSlotPickerOptions) as unknown as Record<
         string,
         unknown
       >,
