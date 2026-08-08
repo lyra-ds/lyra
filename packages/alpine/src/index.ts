@@ -23,6 +23,8 @@ import { lyraSegmentedControl } from './segmented-control';
 import type { LyraSegmentedControlOptions } from './segmented-control';
 import { lyraWorkspaceSwitcher } from './workspace-switcher';
 import type { LyraWorkspaceSwitcherOptions } from './workspace-switcher';
+import { lyraTableOfContents } from './table-of-contents';
+import type { LyraTableOfContentsOptions } from './table-of-contents';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -122,6 +124,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraSegmentedControl',
     (...args) =>
       lyraSegmentedControl((args[0] ?? {}) as LyraSegmentedControlOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraTableOfContents',
+    (...args) =>
+      lyraTableOfContents((args[0] ?? {}) as LyraTableOfContentsOptions) as unknown as Record<
         string,
         unknown
       >,
