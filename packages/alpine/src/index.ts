@@ -52,6 +52,8 @@ import { lyraRecurrenceSelector } from './recurrence-selector';
 import type { LyraRecurrenceSelectorOptions } from './recurrence-selector';
 import { lyraSlotPicker } from './slot-picker';
 import type { LyraSlotPickerOptions } from './slot-picker';
+import { lyraWeeklyScheduleEditor } from './weekly-schedule-editor';
+import type { LyraWeeklyScheduleEditorOptions } from './weekly-schedule-editor';
 
 export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
 export type {
@@ -70,6 +72,14 @@ export type {
   RecurrenceSelectorLabels,
 } from './recurrence-selector';
 export type { LyraSlot, LyraSlotPickerLabels, LyraSlotPickerOptions } from './slot-picker';
+export type {
+  DateException,
+  LyraWeeklyScheduleEditorOptions,
+  TimeRange,
+  Weekday,
+  WeeklySchedule,
+  WeeklyScheduleEditorLabels,
+} from './weekly-schedule-editor';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -275,5 +285,12 @@ export default function lyra(alpine: LyraAlpine): void {
         string,
         unknown
       >,
+  );
+  alpine.data(
+    'lyraWeeklyScheduleEditor',
+    (...args) =>
+      lyraWeeklyScheduleEditor(
+        (args[0] ?? {}) as LyraWeeklyScheduleEditorOptions,
+      ) as unknown as Record<string, unknown>,
   );
 }
