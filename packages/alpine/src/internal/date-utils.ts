@@ -15,6 +15,18 @@ export function dateFrom(value: Date | string | null | undefined): Date | null {
     : null;
 }
 
+/** Normalizes a date-like model value, including JSON datetime strings, to local midnight. */
+export function normalizeDay(value: unknown): Date | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const direct = dateFrom(value);
+    if (direct) return direct;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : dateFrom(parsed);
+  }
+  return value instanceof Date ? dateFrom(value) : null;
+}
+
 /** Whether two local dates name the same calendar day. */
 export function sameDay(left: Date | null, right: Date | null): boolean {
   return Boolean(

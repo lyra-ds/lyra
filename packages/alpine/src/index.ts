@@ -34,6 +34,8 @@ import type { LyraFileManagerOptions } from './file-manager';
 import { lyraTheme } from './theme';
 import { lyraCalendar } from './calendar';
 import type { LyraCalendarOptions } from './calendar';
+import { lyraDatePicker } from './date-picker';
+import type { LyraDatePickerOptions } from './date-picker';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -173,5 +175,13 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraCalendar',
     (...args) =>
       lyraCalendar((args[0] ?? {}) as LyraCalendarOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraDatePicker',
+    (...args) =>
+      lyraDatePicker((args[0] ?? {}) as LyraDatePickerOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
 }
