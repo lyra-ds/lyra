@@ -31,6 +31,7 @@ import { lyraFileUpload } from './file-upload';
 import type { LyraFileUploadOptions } from './file-upload';
 import { lyraFileManager } from './file-manager';
 import type { LyraFileManagerOptions } from './file-manager';
+import { lyraTheme } from './theme';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -43,6 +44,8 @@ import type { LyraFileManagerOptions } from './file-manager';
 export interface LyraAlpine {
   /** Registers a reusable `x-data` component (`Alpine.data(name, factory)`). */
   data(name: string, factory: (...args: unknown[]) => Record<string, unknown>): void;
+  /** Registers a global reactive store (`Alpine.store(name, value)`). */
+  store(name: string, value: unknown): void;
 }
 
 /**
@@ -59,6 +62,7 @@ export interface LyraAlpine {
  * ```
  */
 export default function lyra(alpine: LyraAlpine): void {
+  alpine.store('theme', lyraTheme());
   alpine.data(
     'lyraDialog',
     (...args) =>
