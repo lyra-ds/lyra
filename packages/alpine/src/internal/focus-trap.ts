@@ -12,6 +12,7 @@ const FOCUSABLE_SELECTOR = [
 ].join(',');
 
 function isTabbable(element: HTMLElement): boolean {
+  if (element.tabIndex < 0) return false;
   if (element.hasAttribute('disabled')) return false;
   if (element.hasAttribute('hidden')) return false;
   if (element.closest('[inert]')) return false;
