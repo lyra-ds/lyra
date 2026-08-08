@@ -1,20 +1,12 @@
-import { addMonths, dateFrom, dateKey, isoFrom, sameDay } from './internal/date-utils';
+import {
+  addMonths,
+  dateFrom,
+  dateKey,
+  isoFrom,
+  normalizeDay,
+  sameDay,
+} from './internal/date-utils';
 import { whenVisible } from './internal/when-visible';
-
-/**
- * x-model / Livewire entangle serializes Dates to JSON strings on the way through; accept a
- * Date, an ISO `YYYY-MM-DD`, or a full JSON datetime string when reading `selected` back.
- */
-function normalizeDay(value: unknown): Date | null {
-  if (value == null) return null;
-  if (typeof value === 'string') {
-    const direct = dateFrom(value);
-    if (direct) return direct;
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : dateFrom(parsed);
-  }
-  return value instanceof Date ? dateFrom(value) : null;
-}
 
 /** The selected bounds when {@link lyraCalendar} is used in range mode. */
 export interface LyraCalendarRange {
