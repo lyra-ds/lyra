@@ -27,6 +27,8 @@ import { lyraTableOfContents } from './table-of-contents';
 import type { LyraTableOfContentsOptions } from './table-of-contents';
 import { lyraTimeInput } from './time-input';
 import type { LyraTimeInputOptions } from './time-input';
+import { lyraFileUpload } from './file-upload';
+import type { LyraFileUploadOptions } from './file-upload';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -142,5 +144,13 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraTimeInput',
     (...args) =>
       lyraTimeInput((args[0] ?? {}) as LyraTimeInputOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraFileUpload',
+    (...args) =>
+      lyraFileUpload((args[0] ?? {}) as LyraFileUploadOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
 }
