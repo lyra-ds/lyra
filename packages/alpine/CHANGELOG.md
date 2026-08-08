@@ -1,5 +1,11 @@
 # @lyra-ds/alpine
 
+## 0.1.1
+
+### Patch Changes
+
+- [#130](https://github.com/lyra-ds/lyra/pull/130) [`3757c78`](https://github.com/lyra-ds/lyra/commit/3757c78624670703d1f5a3b59a953acee131cb54) Thanks [@franciscpd](https://github.com/franciscpd)! - Accordion and Tabs: remove the state classes (`lyra-acc__item--open`, `lyra-tab--active`) even when they were rendered statically by the server — the `:class` bindings now use object syntax so Alpine reconciles pre-existing classes
+
 ## 0.1.0
 
 ### Minor Changes
