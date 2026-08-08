@@ -15,6 +15,8 @@ import type { LyraPopoverOptions } from './popover';
 import { lyraCodeBlock } from './code-block';
 import { lyraCookieBanner } from './cookie-banner';
 import type { LyraCookieBannerOptions } from './cookie-banner';
+import { lyraSidebarGroup } from './sidebar-group';
+import type { LyraSidebarGroupOptions } from './sidebar-group';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -76,6 +78,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraPopover',
     (...args) =>
       lyraPopover((args[0] ?? {}) as LyraPopoverOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraSidebarGroup',
+    (...args) =>
+      lyraSidebarGroup((args[0] ?? {}) as LyraSidebarGroupOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
   alpine.data('lyraCodeBlock', () => lyraCodeBlock() as unknown as Record<string, unknown>);
   alpine.data(
