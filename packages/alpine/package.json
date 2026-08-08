@@ -1,6 +1,6 @@
 {
   "name": "@lyra-ds/alpine",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Lyra DS — Alpine.js plugin porting the exact state machines of the interactive @lyra-ds/react components. All appearance comes from @lyra-ds/styles .lyra-* classes; one Alpine.data() per component.",
   "keywords": [
     "design-system",
