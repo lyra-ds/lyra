@@ -161,7 +161,8 @@ export function lyraTabs({ active }: LyraTabsOptions): LyraTabsData {
         return this.isActiveTab(this.$el) ? 0 : -1;
       },
       [':class']() {
-        return this.isActiveTab(this.$el) ? 'lyra-tab--active' : '';
+        // Object syntax so the class is also removed when the server rendered it statically.
+        return { 'lyra-tab--active': this.isActiveTab(this.$el) };
       },
       ['@click'](event: MouseEvent) {
         if (event.currentTarget instanceof HTMLElement) this.activateTab(event.currentTarget);
