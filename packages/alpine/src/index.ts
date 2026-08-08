@@ -25,6 +25,8 @@ import { lyraWorkspaceSwitcher } from './workspace-switcher';
 import type { LyraWorkspaceSwitcherOptions } from './workspace-switcher';
 import { lyraTableOfContents } from './table-of-contents';
 import type { LyraTableOfContentsOptions } from './table-of-contents';
+import { lyraTimeInput } from './time-input';
+import type { LyraTimeInputOptions } from './time-input';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.
@@ -135,5 +137,10 @@ export default function lyra(alpine: LyraAlpine): void {
         string,
         unknown
       >,
+  );
+  alpine.data(
+    'lyraTimeInput',
+    (...args) =>
+      lyraTimeInput((args[0] ?? {}) as LyraTimeInputOptions) as unknown as Record<string, unknown>,
   );
 }
