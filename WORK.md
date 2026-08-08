@@ -2,6 +2,31 @@
 
 ## In progress
 
+- [x] **Promoções pós-catálogo COMPLETAS (2026-08-08) — avaliação dos 3
+      adiados fechada com o usuário** — lyraSlotPicker #163 (destravado
+      pelo tzpicker #156; agrupamento por dia da ZONA via truque Intl
+      en-CA, calendário lateral com marcadores, pills selecionar→confirmar,
+      countdown de reserva) e lyraWeeklyScheduleEditor #164 (7 dias,
+      intervalos com aritmética exata, popover de cópia profunda, exceções
+      de data via picker aninhado). Ambos → codex (medium, worktree);
+      s1 teve 1 gate de design (re-disparo verbatim) + 4 defeitos de
+      fixture, w1 saiu com typecheck limpo de primeira graças à seção
+      `<fixture_laws>` no brief. **calendar-view ADIADO por decisão** —
+      porte direto rejeitado (566 linhas de renderização geométrica; num
+      app Blade a grade nasce server-rendered); se o blade pedir,
+      re-escopar como shell fino (view/anchor, prev/next, popover de
+      evento, linha do agora) sobre grade servida.
+      **Duas leis novas de Alpine**: (1) `<template x-for>` monta UMA raiz
+      igual ao x-if — ramos irmãos precisam de wrapper único, e quando o
+      wrapper mudaria o layout use `display: contents`; (2) com guard de
+      eventos aninhados no root, os eventos PRÓPRIOS do componente têm de
+      sair do root (`$dispatch` dispara do filho que avalia a expressão e
+      o guard engole) — bug real pego no w1. Também: `JSON.stringify` em
+      atributo `x-data` de aspas duplas trunca a expressão e derruba o
+      componente inteiro. 241 testes (31 suítes), size 18.39/18.5 kB.
+      22 changesets minor → 0.2.0 via Version Packages (usuário). Trails:
+      .batuta/runs/2026-08-08-alpine-{s1-slot-picker,w1-weekly-schedule-editor}.md.
+
 - [x] **Promoção pós-catálogo: lyraRecurrenceSelector COMPLETA
       (2026-08-08)** (PRD §3, promoção pós-D; lot
       `.batuta/lot-r1-alpine-recurrence-selector.md` sobre o brief da onda
