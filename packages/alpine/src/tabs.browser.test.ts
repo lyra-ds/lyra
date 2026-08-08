@@ -13,17 +13,20 @@ function mountTabs({
   active = 'one',
   variant = 'line',
   customIds = false,
+  serverRenderedActive = false,
 }: {
   active?: string;
   variant?: 'line' | 'pills';
   customIds?: boolean;
+  serverRenderedActive?: boolean;
 } = {}): HTMLElement {
   const host = document.createElement('div');
   const listClasses = variant === 'pills' ? 'lyra-tabs lyra-tabs--pills' : 'lyra-tabs';
+  const staticActiveClass = serverRenderedActive && active === 'one' ? ' lyra-tab--active' : '';
   host.innerHTML = `
     <div x-data="lyraTabs({ active: '${active}' })">
       <div class="${listClasses}" x-bind="list">
-        <button ${customIds ? 'id="custom-one-tab"' : ''} type="button" class="lyra-tab" data-value="one" x-bind="tab">One <span class="lyra-tab__count">2</span></button>
+        <button ${customIds ? 'id="custom-one-tab"' : ''} type="button" class="lyra-tab${staticActiveClass}" data-value="one" x-bind="tab">One <span class="lyra-tab__count">2</span></button>
         <button type="button" class="lyra-tab" data-value="two" x-bind="tab">Two</button>
         <button type="button" class="lyra-tab" data-value="three" x-bind="tab">Three</button>
       </div>
@@ -134,6 +137,19 @@ describe('lyraTabs', () => {
     expect(controls[0].getAttribute('aria-selected')).toBe('false');
     expect(tabPanels[2].hidden).toBe(false);
     expect(tabPanels[0].hidden).toBe(true);
+  });
+
+  it('deactivates a tab whose active class was rendered by the server', async () => {
+    const host = mountTabs({ active: 'one', serverRenderedActive: true });
+    const controls = tabs(host);
+
+    expect(controls[0].classList).toContain('lyra-tab--active');
+    await userEvent.click(controls[1]);
+    await flush();
+
+    expect(controls[0].classList).not.toContain('lyra-tab--active');
+    expect(controls[0].getAttribute('aria-selected')).toBe('false');
+    expect(controls[1].classList).toContain('lyra-tab--active');
   });
 
   it('roves focus with automatic activation, arrows, wrap, Home, and End', async () => {

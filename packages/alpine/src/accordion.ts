@@ -103,7 +103,8 @@ export function lyraAccordion({
 
     item: {
       [':class']() {
-        return this.isItemOpen(this.$el) ? 'lyra-acc__item--open' : '';
+        // Object syntax so the class is also removed when the server rendered it statically.
+        return { 'lyra-acc__item--open': this.isItemOpen(this.$el) };
       },
     },
 

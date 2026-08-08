@@ -13,16 +13,20 @@ function mountAccordion({
   defaultOpen,
   multiple = false,
   customIds = false,
+  serverRenderedOpen = false,
 }: {
   defaultOpen?: 'one' | 'two';
   multiple?: boolean;
   customIds?: boolean;
+  serverRenderedOpen?: boolean;
 } = {}): HTMLElement {
   const defaultOpenOption = defaultOpen === undefined ? '' : `defaultOpen: '${defaultOpen}',`;
+  const staticOpenClass =
+    serverRenderedOpen && defaultOpen === 'one' ? ' lyra-acc__item--open' : '';
   const host = document.createElement('div');
   host.innerHTML = `
     <div class="lyra-accordion" x-data="lyraAccordion({ ${defaultOpenOption} multiple: ${multiple} })">
-      <div class="lyra-acc__item" data-value="one" x-bind="item">
+      <div class="lyra-acc__item${staticOpenClass}" data-value="one" x-bind="item">
         <button ${customIds ? 'id="custom-one-trigger"' : ''} class="lyra-acc__trigger" x-bind="trigger">One <span class="lyra-acc__chevron" aria-hidden="true"></span></button>
         <div class="lyra-acc__panel-wrap" x-bind="panelWrap"><div class="lyra-acc__panel-clip"><div ${customIds ? 'id="custom-one-panel"' : ''} class="lyra-acc__panel" x-bind="panel">One panel <button type="button" data-testid="one-action">One action</button></div></div></div>
       </div>
@@ -118,6 +122,19 @@ describe('lyraAccordion', () => {
     expect(wraps[0].hasAttribute('inert')).toBe(true);
     expect(wraps[1].hasAttribute('inert')).toBe(false);
     expect(panels(host)).toHaveLength(2);
+  });
+
+  it('closes a default-open item whose open class was rendered by the server', async () => {
+    const host = mountAccordion({ defaultOpen: 'one', serverRenderedOpen: true });
+    const controls = triggers(host);
+
+    expect(items(host)[0].classList).toContain('lyra-acc__item--open');
+    await userEvent.click(controls[0]);
+    await flush();
+
+    expect(items(host)[0].classList).not.toContain('lyra-acc__item--open');
+    expect(controls[0].getAttribute('aria-expanded')).toBe('false');
+    expect(panelWraps(host)[0].hasAttribute('inert')).toBe(true);
   });
 
   it('allows independent open items with Space and Enter when multiple is enabled', async () => {
