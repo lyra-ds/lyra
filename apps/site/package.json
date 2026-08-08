@@ -9,6 +9,7 @@
     "pretest": "pnpm --filter @lyra-ds/react run build && pnpm run build",
     "build": "next build",
     "pretypecheck": "node scripts/derive-stats.mjs",
+    "update-sponsors": "node scripts/update-sponsors.mjs",
     "test": "node --test scripts/landing-sections.test.mjs scripts/consent.test.mjs scripts/analytics.test.mjs scripts/metadata-deploy.test.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
@@ -27,6 +28,7 @@
     "@types/node": "24.10.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
+    "sponsorkit": "18.0.0",
     "typescript": "5.9.3"
   }
 }
