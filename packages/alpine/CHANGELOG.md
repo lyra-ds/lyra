@@ -1,5 +1,13 @@
 # @lyra-ds/alpine
 
+## 0.3.0
+
+### Minor Changes
+
+- [#166](https://github.com/lyra-ds/lyra/pull/166) [`49da62a`](https://github.com/lyra-ds/lyra/commit/49da62aa405713daa0ff9f31e7299bb077bcce10) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraAppSidebar`, an Alpine.js port of the app-sidebar icon-rail state machine with modelable collapsed state, served-markup bindings, localized collapse labels, and bubbling collapse events.
+
+- [#169](https://github.com/lyra-ds/lyra/pull/169) [`4ad14a4`](https://github.com/lyra-ds/lyra/commit/4ad14a4715daca0d532f54aede3cf017147e2182) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the `lyraToasts` Alpine singleton store and `lyraToastStack` served-markup binding, with Livewire event support, auto-dismiss controls, accessible close buttons, and inlined tone icons.
+
 ## 0.2.0
 
 ### Minor Changes
