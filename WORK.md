@@ -2,6 +2,35 @@
 
 ## In progress
 
+- [x] **Sistema de toasts no alpine — `lyraToasts` (store) + `lyraToastStack`
+      (2026-08-09) [batuta/20260809-025845-alpine-toasts]** → codex
+      (`gpt-5.6-terra`, high; worktree), 3 rodadas corretivas. Fecha
+      `.batuta/prd-alpine-toasts.md`, vindo do blade: o `toast-provider` React
+      tinha escapado do filtro dos 24 interativos, e por isso o toast Blade não
+      tinha auto-dismiss. Store com fila, API imperativa (`toast`/`success`/
+      `error`/`info`/`dismiss`), ids incrementais, `duration` 4000 default e
+      `0` desligando o timer daquele toast; ponte `lyra:toast` no `window` para
+      `$this->dispatch(...)` do Livewire. **Decisões do maestro:** nome
+      `lyraToasts` (assimétrico com o `theme` já publicado, mas `toasts` colide
+      fácil no app do consumidor — escolha do usuário); e **os timers moram no
+      store, não no stack** — o PRD sugeria limpar o mapa no `destroy()` do
+      stack, o que deixaria itens presos na fila se o stack remontar (rotina no
+      Livewire). Consequência: o `unmounted` do React não tem análogo, e push
+      sem stack montado enfileira e auto-dismissa normal. `message` vai por
+      `x-text`, nunca `x-html` — a fila é alimentada por evento e payload de
+      Livewire.
+      **Lei 14 de Alpine, custou uma rodada:** `vi.useFakeTimers` e render do
+      Alpine NÃO convivem no mesmo teste. Com `setTimeout` fakeado, o
+      `Alpine.nextTick()` do helper `flush()` nunca resolve e o teste estoura o
+      timeout de 15s — o reveal do `x-for` é rAF-deferido. Separar sempre:
+      teste de render com timers reais, teste de tempo store-only sem montar
+      nem dar flush.
+      Cross-review pegou 4 buracos reais (listener do `lyra:toast` sem guarda
+      de idempotência duplicando toast e timer; teste de XSS que passaria com
+      `x-html`; `duration` do evento não provado; botão de fechar com um único
+      toast, que não prova qual linha ele fecha) e eu peguei um quinto (alias
+      `ToastOptions` exportado sem prefixo, fora do brief).
+
 - [x] **`lyraAppSidebar` — binding do modo rail (2026-08-09)
       [batuta/20260809-020030-alpine-app-sidebar]** → codex
       (`gpt-5.6-terra`, high; worktree), 1 rodada corretiva por
