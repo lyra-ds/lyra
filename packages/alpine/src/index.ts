@@ -36,6 +36,7 @@ import type { LyraFileUploadOptions } from './file-upload';
 import { lyraFileManager } from './file-manager';
 import type { LyraFileManagerOptions } from './file-manager';
 import { lyraTheme } from './theme';
+import { lyraToastStack, lyraToasts } from './toasts';
 import { lyraCalendar } from './calendar';
 import type { LyraCalendarOptions } from './calendar';
 import { lyraDatePicker } from './date-picker';
@@ -66,6 +67,13 @@ export type {
 } from './time-zone-picker';
 export type { LyraDataTableOptions, LyraDataTableSorting } from './data-table';
 export type { LyraAppSidebarLabels, LyraAppSidebarOptions } from './app-sidebar';
+export type {
+  LyraToastOptions,
+  LyraToastStackData,
+  LyraToastsStore,
+  QueuedToast,
+  ToastTone,
+} from './toasts';
 export { DEFAULT_LABELS, describeRecurrence } from './recurrence-selector';
 export type {
   LyraRecurrenceSelectorOptions,
@@ -114,6 +122,8 @@ export interface LyraAlpine {
  */
 export default function lyra(alpine: LyraAlpine): void {
   alpine.store('theme', lyraTheme());
+  alpine.store('lyraToasts', lyraToasts());
+  alpine.data('lyraToastStack', () => lyraToastStack() as unknown as Record<string, unknown>);
   alpine.data(
     'lyraDialog',
     (...args) =>
