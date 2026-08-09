@@ -2,6 +2,29 @@
 
 ## In progress
 
+- [x] **`lyraAppSidebar` — binding do modo rail (2026-08-09)
+      [batuta/20260809-020030-alpine-app-sidebar]** → codex
+      (`gpt-5.6-terra`, high; worktree), 1 rodada corretiva por
+      cross-review. Fecha o pedido do PRD `.batuta/prd-alpine-app-sidebar.md`
+      vindo do repo `blade`, que corrigiu a classificação do PRD das ondas
+      B–F: `app-sidebar` NÃO era estático — o React usa
+      `useControllableState` para o rail. Estado único `collapsed`
+      (modelable), bindings `root` (`:class` objeto + `:style` com
+      `--appsidebar-width` 64px/`width`px, porque o CSS não define largura)
+      e `toggle` (`:aria-label`/`:title` alternando, `@click`), evento
+      `lyra:collapse`. **Quatro decisões de porte fechadas pelo maestro** e
+      documentadas no JSDoc: chevron são dois `<path>` servidos com
+      `x-show` (sem binding, igual aos ícones de sort do data-table);
+      `title` dos itens é servido sempre pelo consumidor (o binding não
+      varre `.lyra-sbgroup__item`); `addRailLinkLabels` não é portado; e
+      `collapsible` não existe — a sidebar é colapsável exatamente quando
+      o consumidor serve um toggle com `x-bind="toggle"`. Desbloqueia a
+      task 7 do plano do blade.
+      **Achado fora do lote:** `ade1488` entrou em main sem CI e deixou
+      `prettier --check` vermelho em `.batuta/prd-alpine-ondas-b-f.md`;
+      o commit deste lote corrige a formatação junto, senão nenhum PR
+      passa no gate de lint.
+
 - [x] **Promoções pós-catálogo COMPLETAS (2026-08-08) — avaliação dos 3
       adiados fechada com o usuário** — lyraSlotPicker #163 (destravado
       pelo tzpicker #156; agrupamento por dia da ZONA via truque Intl
