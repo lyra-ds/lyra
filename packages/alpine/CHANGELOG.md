@@ -1,5 +1,53 @@
 # @lyra-ds/alpine
 
+## 0.2.0
+
+### Minor Changes
+
+- [#143](https://github.com/lyra-ds/lyra/pull/143) [`e6c7e67`](https://github.com/lyra-ds/lyra/commit/e6c7e673f3c52ec8341fe004c78202289f3bc035) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraBottomSheet`, an Alpine.js modal bottom-sheet state machine over consumer-rendered markup with controllable open state, focus trapping, scroll locking, guarded backdrop dismissal, and bubbling close events.
+
+- [#150](https://github.com/lyra-ds/lyra/pull/150) [`4a227f6`](https://github.com/lyra-ds/lyra/commit/4a227f6fe30c9683474edaf430a96e7f66167adf) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraCalendar`, an Alpine.js port of the React calendar state machine with served `x-for` grids, controllable single or range selection, keyboard navigation, locale-aware labels, and interaction-only change events.
+
+- [#136](https://github.com/lyra-ds/lyra/pull/136) [`76513e5`](https://github.com/lyra-ds/lyra/commit/76513e5f1aecc43d57b75fed8cea0d1bf05fe945) Thanks [@franciscpd](https://github.com/franciscpd)! - `lyraCodeBlock` — React CodeBlock copy-feedback state-machine port with named `copyButton`/`status` bindings over consumer-rendered markup, internal non-modelable `copied` feedback, `data-copy-text` override support, polite live-region ARIA, and reset-timer cleanup.
+
+- [#155](https://github.com/lyra-ds/lyra/pull/155) [`7db8d58`](https://github.com/lyra-ds/lyra/commit/7db8d580d465753978ecd0898b6f019c714cdcf3) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraCombobox`, an Alpine.js data-driven port of the React searchable combobox with controllable selected/open state, stable active-descendant navigation, filtering, grouping, popup placement, and interaction-only change events.
+
+- [#157](https://github.com/lyra-ds/lyra/pull/157) [`75046c1`](https://github.com/lyra-ds/lyra/commit/75046c142418127cc50930d67d6922f9045659ce) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraCommandPalette`, an Alpine.js port of the grouped Command/Ctrl+K command palette with modelable overlay state, APG active-descendant filtering, focus trapping, scroll locking, exit presence, global hotkeys, and bubbling command-selection events over consumer-served templates.
+
+- [#138](https://github.com/lyra-ds/lyra/pull/138) [`2a0cf6f`](https://github.com/lyra-ds/lyra/commit/2a0cf6f532f755302bfaa598c1af5721ae0fcd7b) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraCookieBanner`, an Alpine.js cookie-consent state machine that persists all or essential-only choices, emits consent events, and keeps the existing banner mounted for its exit animation.
+
+- [#159](https://github.com/lyra-ds/lyra/pull/159) [`0773bbc`](https://github.com/lyra-ds/lyra/commit/0773bbc8bc0e79106584f2be40ef35a660d2a58b) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraDataTable`, an Alpine.js DOM-driven data-table state layer for consumer-served table markup with controllable, modelable row selection and sorting, accessible header and checkbox bindings, and optional client-side row reordering.
+
+- [#151](https://github.com/lyra-ds/lyra/pull/151) [`641a27f`](https://github.com/lyra-ds/lyra/commit/641a27f77d32cfa98531f9cfc32910a02d86a18f) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraDatePicker`, an Alpine.js thin coordinator that composes the shipped Calendar with Popover on desktop and BottomSheet on mobile, supports controllable date and open state, normalizes serialized date models, and formats the consumer-served trigger.
+
+- [#152](https://github.com/lyra-ds/lyra/pull/152) [`4e6b704`](https://github.com/lyra-ds/lyra/commit/4e6b704687ce39a80f6b9882ebb0c6435faa293b) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraDateRangePicker`, an Alpine.js thin coordinator that composes the shipped range Calendar with Popover on desktop and BottomSheet on mobile, supports controllable range and open state, normalizes serialized range models, and closes only once both range bounds are selected.
+
+- [#147](https://github.com/lyra-ds/lyra/pull/147) [`4389b1f`](https://github.com/lyra-ds/lyra/commit/4389b1f5335fe3f4aca2e19084f518c6d2014b4e) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraFileManager`, an Alpine.js port of the React file-manager shell with served-markup bindings, controllable list/grid and search state, DOM-driven filtering, empty-state support, and interaction-only view events.
+
+- [#146](https://github.com/lyra-ds/lyra/pull/146) [`e40601d`](https://github.com/lyra-ds/lyra/commit/e40601dbee78ed71783f1373731e5c7b80c297f6) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraFileUpload`, an Alpine.js port of the React upload state machine with served dropzone bindings, runtime `x-for` upload items, controllable items and dragging state, simulated progress, validation, and bubbling file/change events.
+
+- [#161](https://github.com/lyra-ds/lyra/pull/161) [`3a4d875`](https://github.com/lyra-ds/lyra/commit/3a4d8757585272b8ce1ebabc2de6cc1583b886fa) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraRecurrenceSelector`, an Alpine.js RRULE-subset editor with JSON-safe modelable recurrence state, native preset and custom controls, a nested date picker, whole-sentence recurrence summaries, and interaction-only change events; the React function-valued conflict label is represented by JSON-safe `conflictsOne` and `conflictsMany` templates.
+
+- [#140](https://github.com/lyra-ds/lyra/pull/140) [`8476f17`](https://github.com/lyra-ds/lyra/commit/8476f17902242c2fe1bc9a9b5e79a95e5ce75d61) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraSegmentedControl`, an Alpine.js port of the React segmented-control radiogroup state machine with served-markup bindings, controllable `value`, roving keyboard focus, and interaction-only change events.
+
+- [#139](https://github.com/lyra-ds/lyra/pull/139) [`3ba8c53`](https://github.com/lyra-ds/lyra/commit/3ba8c5308fe0be164bcffb199fb1dde6d1e332f3) Thanks [@franciscpd](https://github.com/franciscpd)! - `lyraSidebarGroup` — React SidebarGroup disclosure-state-machine port with named root, label, and item bindings over consumer-rendered markup, controllable `collapsed` state, template-based item unmounting, and bubbling `lyra:select` events.
+
+- [#163](https://github.com/lyra-ds/lyra/pull/163) [`47c506f`](https://github.com/lyra-ds/lyra/commit/47c506f7e2532775784cba323586a0cb67a12b0c) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraSlotPicker`, an Alpine.js coordinator for timezone-aware bookable slots with modelable local day and IANA zone state, embedded Calendar and TimeZonePicker templates, empty/loading/temporary-hold states, and interaction-only change and confirmation events; React's function-valued slot labels are represented by JSON-safe interpolation templates.
+
+- [#144](https://github.com/lyra-ds/lyra/pull/144) [`b098c7f`](https://github.com/lyra-ds/lyra/commit/b098c7fa4f94ee5fb026274af81681c8851d12aa) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraTableOfContents`, an Alpine.js port of the React in-page navigation rail with served-markup link bindings, controllable `activeId`, and scroll-spy tracking over document headings.
+
+- [#145](https://github.com/lyra-ds/lyra/pull/145) [`50eab3e`](https://github.com/lyra-ds/lyra/commit/50eab3e868823ef506bfeedb9c62aaaf7328f66f) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraTimeInput`, an Alpine.js port of the React time-input state machine with served-markup bindings, controllable `selected` state, tolerant time parsing, clamped stepping, ARIA spinbutton support, and interaction-only change events.
+
+- [#153](https://github.com/lyra-ds/lyra/pull/153) [`311b8e2`](https://github.com/lyra-ds/lyra/commit/311b8e2c8e91461698bc6ab95520c47580dc40af) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraTimePicker`, an Alpine.js thin coordinator that composes consumer-served time options with Popover on desktop and BottomSheet on mobile, supports controllable selected and open state, formatted trigger text, accessible list navigation, selection scrolling, and interaction-only change events.
+
+- [#156](https://github.com/lyra-ds/lyra/pull/156) [`5471e4d`](https://github.com/lyra-ds/lyra/commit/5471e4d723b0c2f7f2dfca2d9e4a0135ba40d72a) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraTimeZonePicker`, an Alpine.js data layer that extends `lyraCombobox` with the curated IANA zone list, localized live times, reference-date GMT offsets, detected/recent pinning, and modelable IANA value selection.
+
+- [#164](https://github.com/lyra-ds/lyra/pull/164) [`49f9256`](https://github.com/lyra-ds/lyra/commit/49f92567c611f387c3150d7eb9b3c44b25066b3e) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraWeeklyScheduleEditor`, an Alpine.js weekly local-time availability editor with modelable schedule and exception state, nested time-input, popover, and date-picker compositions, cloned day copying, inline range validation, and interaction-only schedule and exception events; React's function-valued sentence labels are represented by JSON-safe `{day}` templates while date and range formatters retain their defaults.
+
+- [#141](https://github.com/lyra-ds/lyra/pull/141) [`c91e63c`](https://github.com/lyra-ds/lyra/commit/c91e63ccb8ca9f0a66530d022a8a4a44bceaf1c9) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraWorkspaceSwitcher`, an Alpine.js listbox-popover state machine over consumer-rendered workspace markup with controllable open state, real-focus navigation, flip placement, and bubbling workspace-change events.
+
+- [#148](https://github.com/lyra-ds/lyra/pull/148) [`adf5648`](https://github.com/lyra-ds/lyra/commit/adf5648a1222d2d1bcd098a21d8a0260c6041fb5) Thanks [@franciscpd](https://github.com/franciscpd)! - Add a reactive `theme` Alpine store that persists light, dark, and system choices, resolves the OS preference onto `data-theme`, synchronizes cross-tab storage changes, and exposes a resolved-theme toggle.
+
 ## 0.1.1
 
 ### Patch Changes
