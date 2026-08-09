@@ -331,6 +331,15 @@
   color: var(--accent-soft-text);
   background: var(--accent-soft);
 }
+
+/* The idle hover above outweighs `--active` on specificity (0-3-0 vs 0-1-0), so the selected option
+   would lose its accent surface under the pointer. State the hovered-active surface explicitly —
+   the same shape `.lyra-page--active:hover` uses — as a tinted step of the active surface, so hover
+   still reads as hover without erasing the selection. */
+.lyra-segmented__option--active:hover:not(:disabled) {
+  color: var(--accent-soft-text);
+  background: color-mix(in oklab, var(--accent-soft), var(--accent) 14%);
+}
 .lyra-segmented__option:disabled {
   color: var(--text-faint);
   cursor: not-allowed;

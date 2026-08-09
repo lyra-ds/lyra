@@ -177,10 +177,13 @@ whole lot; only Goal, criteria, and boundaries vary per item.
 
 ## Verification outside the monorepo (starters, 2026-08-04)
 
-- `pnpm install` in a non-workspace subdirectory (for example
-  `.batuta/starters/*`) walks up to the monorepo root and installs the workspace;
-  use `--ignore-workspace`, or give the starter its own `pnpm-workspace.yaml`
-  (which also makes it a root).
+- The starters live in their own repos (`lyra-ds/starter-next`,
+  `lyra-ds/starter-vite`) and are cloned outside this monorepo; the local copies
+  under `.batuta/starters/` were removed on 2026-08-09.
+- `pnpm install` in a non-workspace subdirectory of the monorepo walks up to the
+  root and installs the workspace; use `--ignore-workspace`, or give the starter
+  its own `pnpm-workspace.yaml` (which also makes it a root). This is why the
+  starters are verified from a clone outside the repo.
 - pnpm 11.13 renamed `onlyBuiltDependencies` to `allowBuilds:` (a name→bool
   map) in `pnpm-workspace.yaml`; the `pnpm` field in package.json is no longer
   read.
