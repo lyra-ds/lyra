@@ -19,6 +19,8 @@ import { lyraCookieBanner } from './cookie-banner';
 import type { LyraCookieBannerOptions } from './cookie-banner';
 import { lyraSidebarGroup } from './sidebar-group';
 import type { LyraSidebarGroupOptions } from './sidebar-group';
+import { lyraAppSidebar } from './app-sidebar';
+import type { LyraAppSidebarOptions } from './app-sidebar';
 import { lyraSegmentedControl } from './segmented-control';
 import type { LyraSegmentedControlOptions } from './segmented-control';
 import { lyraWorkspaceSwitcher } from './workspace-switcher';
@@ -63,6 +65,7 @@ export type {
   LyraTimeZonePickerOptions,
 } from './time-zone-picker';
 export type { LyraDataTableOptions, LyraDataTableSorting } from './data-table';
+export type { LyraAppSidebarLabels, LyraAppSidebarOptions } from './app-sidebar';
 export { DEFAULT_LABELS, describeRecurrence } from './recurrence-selector';
 export type {
   LyraRecurrenceSelectorOptions,
@@ -157,6 +160,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraSidebarGroup',
     (...args) =>
       lyraSidebarGroup((args[0] ?? {}) as LyraSidebarGroupOptions) as unknown as Record<
+        string,
+        unknown
+      >,
+  );
+  alpine.data(
+    'lyraAppSidebar',
+    (...args) =>
+      lyraAppSidebar((args[0] ?? {}) as LyraAppSidebarOptions) as unknown as Record<
         string,
         unknown
       >,
