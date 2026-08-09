@@ -394,6 +394,10 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-menu__item',
       'lyra-page',
       'lyra-sbgroup__item',
+      // Hover-over-active repair: the idle hover outweighed `--active` on specificity, so the
+      // selected item lost its accent surface under the pointer. Same repair as `lyra-tab--active`
+      // below.
+      'lyra-sbgroup__item--active',
       'lyra-sbgroup__label',
       'lyra-sbgroup__label--btn',
       'lyra-tab',

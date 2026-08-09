@@ -657,3 +657,18 @@
 .lyra-kbd {
   color: var(--text-secondary);
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): an idle `:hover` outweighs the `--active` class
+   it sits beside (0-2-0 vs 0-1-0), so the selected sidebar item and the selected tab both lost
+   their accent treatment under the pointer — the selection read as unselected exactly while a
+   person pointed at it. `.lyra-page--active:hover` already carried the answer: state the
+   hovered-active treatment explicitly, as a tinted step of the active one, so hover still reads as
+   hover without erasing the selection. The sidebar item carries its selection in a surface, the
+   underline tab in its text color; dark theme states the active tab's color at a higher
+   specificity of its own, so that half only ever misfired in light. */
+.lyra-sbgroup__item--active:hover {
+  background: color-mix(in oklab, var(--accent-soft), var(--accent) 14%);
+}
+.lyra-tab--active:hover {
+  color: var(--accent-hover);
+}
