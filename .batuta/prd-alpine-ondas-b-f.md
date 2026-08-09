@@ -1,0 +1,109 @@
+# PRD — `@lyra-ds/alpine`: bindings das ondas B–F (fase 2 do blade)
+
+> Para: sessão Batuta do monorepo `lyra`, trabalhando em `packages/alpine`.
+> De: sessão Batuta do `lyra-ds/blade`, 2026-08-08.
+> Origem: análise fonte a fonte dos 24 interativos restantes de
+> `packages/react/src`, com vereditos e decisões fechados com o usuário
+> em 2026-08-08. Autocontido — não precisa do repo blade para executar.
+
+## 1. Contexto
+
+O `@lyra-ds/alpine` (hoje 0.1.1) tem 7 bindings: dropdown, dialog, drawer,
+tabs, accordion, tooltip, popover. O repo `lyra-ds/blade` publicou os 7
+Blade correspondentes (release 0.3.0) e vai atacar o restante do catálogo
+em ondas. **Cada onda do blade depende de os bindings existirem aqui
+primeiro** — este PRD lista o que criar, em que ordem, e com que contrato.
+
+O contrato não muda: um `Alpine.data()` por componente portando a MESMA
+máquina de estados do React correspondente (mesmas classes-modificador,
+mesmo ARIA, mesmo manejo de foco/teclado), fonte de verdade em
+`packages/react/src/<nome>/<nome>.tsx` e seus testes browser. Estado
+controlável expõe `x-modelable` (Livewire via entangle). Sem portal — o
+markup vive onde o consumidor o colocou. Callbacks viram eventos custom
+(`$dispatch`). Testes browser (vitest) + axe por binding, como os 7 atuais.
+
+## 2. Decisões fechadas (2026-08-08 — não reabrir sem o usuário)
+
+1. **Ordem**: `lyraBottomSheet` entra ANTES dos pickers de data/hora — os
+   3 pickers overlay lançam já com a troca Popover ↔ BottomSheet abaixo de
+   640px (`matchMedia`), paridade mobile completa desde a v1.
+2. **Sort do data-table: dual-mode, default server-side.** Por default o
+   binding só gerencia seleção + `aria-sort`/classes (o app ordena via
+   links/forms — tabelas paginadas). `clientSort: true` opt-in reordena
+   os `<tr>` servidos via `insertBefore` lendo `data-sort-value`, com o
+   comparador `localeCompare` numeric/base portado do React.
+3. **Tema**: não é `Alpine.data()` — vira `Alpine.store('theme')` +
+   parcial de script inline anti-flash fornecido pelo blade (o store aqui,
+   o script lá).
+4. **Excluído**: create-workspace-dialog (composição de produto; vira
+   receita na doc — `lyraDialog` + form). **Adiados**: recurrence-selector
+   (promover quando lyraDatePicker existir), weekly-schedule-editor,
+   slot-picker, calendar-view.
+5. Cláusula de honestidade (PRD original do blade §3): combobox e
+   command-palette só entram com qualidade APG completa.
+
+## 3. Ondas e entregas
+
+Uma release (changeset minor) por onda; o blade consome a versão nova.
+
+### Onda B — 5 bindings baratos
+
+| Binding | Cx | Modelable | Resumo |
+|---|---|---|---|
+| `lyraCodeBlock` | S | — | `copied` + timeout 1500ms; `navigator.clipboard.writeText` de `data-copy-text` ou `textContent` do pre, fallback silencioso; live-region `role="status" aria-live="polite"`. x-bind: `copyButton`, `status`. `destroy()` limpa o timer. |
+| `lyraCookieBanner` | S | `visible` | `init()` lê localStorage (`lyra-cookie-consent`; try/catch → mostra no erro); decidir persiste + `--closing` + `animationend` esconde; eventos `lyra:accept`/`lyra:essentials`. Atenção: no React o default é não montar até checar o storage; aqui o markup vem servido — documentar `x-cloak` obrigatório para não piscar. |
+| `lyraSidebarGroup` | S | `collapsed` | Disclosure de um booleano: `aria-expanded` no label-botão, classe `--collapsed`, itens desmontados (`x-if`) quando colapsado; seleção via evento custom. |
+| `lyraSegmentedControl` | S/M | `value` | Radiogroup roving tabindex + selection-follows-focus: setas circulares pulando disabled, Home/End; DOM-driven (lê `[role="radio"]` + data-attribute do value). x-bind: `group`, `option` (`:aria-checked`, `:tabindex`, `--active`). |
+| `lyraWorkspaceSwitcher` | S | `open` | ~90% o lyraDropdown: listbox popover com `role="option"`/`aria-selected`, flip placement, outside-mousedown, foco inicial na opção selecionada (pendingFocus -2 além de 0/último). Considerar generalizar como "listbox popover" (o skin de workspace fica no Blade). Seleção via evento custom. |
+
+### Onda C — médios + infra
+
+| Binding | Cx | Modelable | Resumo |
+|---|---|---|---|
+| `lyraBottomSheet` | M | `open` | Irmão do dialog/drawer: presence (`internal/presence.ts` existente), focus trap, scroll lock, restore do opener, Escape; guard de mousedown no backdrop (drag do painel até o overlay NÃO fecha — mousedown E click devem ser no overlay). x-bind: `overlay`, `panel`, `close`, `title`. |
+| `lyraTableOfContents` | M | `activeId` | Markup trivial (`aria-current="location"`, `--active`); o trabalho é o scroll-spy → novo `internal/scroll-spy.ts`: IntersectionObserver com `rootMargin '0px 0px -70% 0px'`, ativo = topmost intersectante; fallbacks: fim do documento → último, banda vazia → heading precedente (top ≤ 30%) → primeiro; seed via `queueMicrotask`; listeners scroll (passive) + resize; SSR-safe sem IO; ignora ids sem elemento. DOM-driven (lê `a[href^="#"]`). |
+| `lyraTimeInput` | M | `selected` (`HH:mm`\|null) | `role="spinbutton"` com aria-valuemin/max/now/text; parsing tolerante ("9", "0930", "9:5", "9h30" — primeiro h/H vira `:`; com `:` exige 2 campos; ≤2 chars = horas, senão últimos 2 = minutos); semântica tripla: vazio→null (clear), inválido→undefined (preserva texto + `bad`); normaliza em blur/Enter com clamp em min/max; ArrowUp/Down ±step (default 15), Shift=±60; steppers `tabIndex=-1`. Standalone — o time-picker NÃO o usa. |
+| `lyraFileUpload` | M | `items`, `dragging` | Dropzone (botão nativo abre input file oculto), dragover/dragleave/drop com preventDefault, validação `maxSizeMB` (excedente vira item error), `multiple=false` substitui; progresso SIMULADO (setInterval 120ms, step por `uploadDuration`, cleanup em `destroy`); remoção por item limpa timer. Lista nasce em runtime → `x-for` sobre template servido (exceção documentada ao markup-servido). Files reais via evento `lyra:files`; `lyra:change` com items. Helpers formatBytes/iconFor portados. |
+| `lyraFileManager` | M | `view` (`list`\|`grid`), `query` | Shell: busca filtra por `data-name` (toggle de hidden, sem re-render), duas árvores servidas alternadas por `x-show`, estado vazio por contagem de matches, `aria-pressed` nos botões de view; menus por item reusam lyraDropdown. Ações/breadcrumb são do consumidor (links/forms). |
+| `theme` (store) | S | — | `Alpine.store('theme')`: chosen light/dark/system + resolved via `matchMedia('(prefers-color-scheme: dark)')` com listener change; persiste em localStorage `lyra-theme` (try/catch); sync cross-tab via listener `storage`; escreve `document.documentElement.dataset.theme`; API `{theme, resolvedTheme, dark, setTheme, toggle}`. O script inline anti-flash é do blade — documentar o contrato (mesma chave, mesmo dataset). |
+
+### Onda D — datas (depende de C pelo BottomSheet)
+
+| Binding | Cx | Modelable | Resumo |
+|---|---|---|---|
+| `lyraCalendar` | L | `selected` (Date \| `{start,end}`) | Grade fixa de 42 dias a partir do 1º dia da semana que contém o dia 1 (`weekStartsOn`); 3 views days/months/years (título alterna days→months→years; months mostra 12, years bloco de 12 = `floor(year/12)*12`); roving tabindex com foco pós-render (padrão pendingFocus por chave `Y-M-D`); teclado: setas ±1/±7 dias, Home/End nas bordas da semana, PageUp/Down ±mês com clamp do dia; range: sem start ou completo → `{start: date, end: null}`, data < start reordena as pontas; `isInRange` estritamente entre; min/max/`isDateDisabled` (visíveis, não selecionáveis); parsing ISO `YYYY-MM-DD` com validação de rollover; classes `--out/--today/--selected/--in-range`; 5 formatters `Intl.DateTimeFormat` (zero libs). Células via `x-for` sobre getters `days()`/`months()`/`years()`; `renderDayMarker` vira slot do consumidor. Extrair `internal/date-utils.ts`. |
+| `lyraDatePicker` | M | `selected`, `open` | Casca: compõe lyraCalendar + padrão popover (desktop) / lyraBottomSheet (<640px via matchMedia, resolvido pós-init — default desktop); fecha ao selecionar (ignora range); texto do trigger via `Intl.DateTimeFormat(locale)`, placeholder quando vazio. |
+| `lyraDateRangePicker` | M | `selected` (`{start,end}`), `open` | Mesma casca (candidato a factory interna comum): calendar em modo range; só fecha com range completo; mudança dispara a cada ponta; trigger `start + separator + (end ?? incompleteRange)`. |
+| `lyraTimePicker` | M | `selected`, `open` | Listbox de opções geradas min→max por step (default 30; inválido → 30; min>max → vazia); setas com clamp (NÃO circular — diferente do dropdown), Home/End, delegação via `document.activeElement`; scroll da selecionada ao abrir (`offsetTop - 84`; usar `$watch('open')` + `whenVisible`); exibição `Intl` hourCycle h23, valores internos sempre `HH:mm`. Compõe popover/BottomSheet como os date pickers. |
+
+### Onda E — busca APG
+
+| Binding | Cx | Modelable | Resumo |
+|---|---|---|---|
+| `lyraCombobox` | L | `value` (e `open`) | Select pesquisável APG: foco DOM fixo no input, navegação por `aria-activedescendant` (ids estáveis por índice ORIGINAL da opção); filtro NFD sem diacríticos sobre label+keywords; grupos como headings presentacionais (quando o grupo muda entre opções contíguas); ArrowUp/Down clamp (não circular), Home/End, Enter seleciona, Escape fecha e devolve foco ao trigger; mudar query reseta activeIndex 0; scroll manual da ativa (offsetTop vs scrollTop); mouseenter seta ativa; outside-mousedown; flip placement. DATA-driven: `options` na factory + `x-for` sobre `filtered()` (grupos/hint/trailing exigem). Trigger `aria-haspopup="listbox"`. Novo `internal/active-descendant.ts` (compartilhado com command-palette). |
+| `lyraTimeZonePicker` | S | `value` (IANA) | Camada de dados sobre lyraCombobox: lista curada de 27 zonas (substituível via `zones`), grupos pinados Detected/Recent (dedup), offset via `formatToParts`/`shortOffset` com try/catch (UTC→GMT), `label = "Cidade (GMT-3)"`, keywords = curadas + IANA tokenizado + offset, trailing = hora local da zona com tick de 60s (`init`/`destroy`); `referenceDate` define o offset (DST). |
+| `lyraCommandPalette` | L | `open` | Dialog (presence/trap/scroll-lock/restore do opener) + busca activedescendant (filtro `includes` lowercase sobre label+hint, grupos vazios omitidos) + hotkey global `meta|ctrl+k` (configurável; listener em `init`/`destroy`) + modo `inline` (sem overlay/trap/hotkey); Enter → pick (evento `lyra:select` com o item), Escape fecha; abrir foca o input via rAF e reseta query/activeIndex; click no overlay (target === currentTarget) fecha. `groups` como dados + `x-for`. |
+
+### Onda F — fecha o catálogo
+
+| Binding | Cx | Modelable | Resumo |
+|---|---|---|---|
+| `lyraDataTable` | L | `sorting` (`{key,dir}`\|null), `selected` (ids) | Seleção: select-all com indeterminate imperativo (`$watch`), checkbox por linha com `@click.stop`, ids via `data-row-id` da `<tr>` (ordem ORIGINAL — nunca derivar do índice pós-sort), classe `--selected`. Sort: dual-mode da decisão §2.2 — default só `aria-sort`/classes/ciclo asc→desc→null emitindo evento; `clientSort: true` reordena `<tr>` via `insertBefore` por `data-sort-value` (localeCompare numeric/base, nulls por último). x-bind: `selectAll`, `rowCheckbox`, `row`, `sortButton`, `header`. |
+
+- Promoção pós-D: `recurrence-selector` (M — RRULE-subset genérico, controles
+  nativos, estado JSON; só bloqueava pelo DatePicker embutido;
+  `describeRecurrence` porta como utilitário). Reavaliar com o usuário:
+  weekly-schedule-editor, slot-picker, calendar-view.
+
+## 4. Helpers `internal/`
+
+Já existem — reusar: `presence.ts`, `focus-trap.ts`, `scroll-lock.ts`,
+`flip-placement.ts`, `when-visible.ts`, `test-axe.ts`. Criar: `scroll-spy.ts`
+(onda C), `date-utils.ts` (onda D), `active-descendant.ts` (onda E).
+
+## 5. Fora de escopo aqui
+
+Os componentes Blade, fixtures de classe e testes Livewire ficam no repo
+`lyra-ds/blade` (sessão própria, onda a onda, consumindo cada release).
+Os 3 estáticos da onda B do blade (app-sidebar, checkbox-group,
+radio-group) não passam por aqui — zero JS.
