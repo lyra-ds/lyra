@@ -1,5 +1,13 @@
 # @lyra-ds/alpine
 
+## 0.4.0
+
+### Minor Changes
+
+- [#173](https://github.com/lyra-ds/lyra/pull/173) [`fdbafe0`](https://github.com/lyra-ds/lyra/commit/fdbafe0a77adb5ab37d9e1b2d9735b2e0c8de774) Thanks [@franciscpd](https://github.com/franciscpd)! - Permite configurar a chave de storage do `$store.theme` por `<html data-lyra-theme-key>`.
+
+- [#173](https://github.com/lyra-ds/lyra/pull/173) [`fdbafe0`](https://github.com/lyra-ds/lyra/commit/fdbafe0a77adb5ab37d9e1b2d9735b2e0c8de774) Thanks [@franciscpd](https://github.com/franciscpd)! - Adiciona suporte a `labels.timeOptions` em `lyraTimePicker` para traduzir o `aria-label` da listbox.
+
 ## 0.3.0
 
 ### Minor Changes
