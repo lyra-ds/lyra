@@ -164,6 +164,20 @@ afterEach(() => {
 });
 
 describe('lyraTimePicker', () => {
+  it('applies labels.timeOptions to the listbox aria-label', () => {
+    setViewport(false);
+    const host = mountTimePicker("{ labels: { timeOptions: 'Opções de horário' } }");
+
+    expect(list(host).getAttribute('aria-label')).toBe('Opções de horário');
+  });
+
+  it('keeps the English listbox aria-label by default', () => {
+    setViewport(false);
+    const host = mountTimePicker();
+
+    expect(list(host).getAttribute('aria-label')).toBe('Time options');
+  });
+
   it('generates inclusive options from min to max using step', () => {
     setViewport(false);
     const host = mountTimePicker("{ min: '09:00', max: '10:00', step: 20 }");

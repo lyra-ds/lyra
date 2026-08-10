@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import lyra from './index';
 
 const STORAGE_KEY = 'lyra-theme';
+const CUSTOM_STORAGE_KEY = 'app-theme';
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
 const mountedHosts: HTMLElement[] = [];
@@ -43,6 +44,8 @@ async function flush(): Promise<void> {
 
 beforeEach(() => {
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(CUSTOM_STORAGE_KEY);
+  delete document.documentElement.dataset.lyraThemeKey;
   delete document.documentElement.dataset.theme;
 });
 
@@ -52,6 +55,8 @@ afterEach(() => {
     host.remove();
   }
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(CUSTOM_STORAGE_KEY);
+  delete document.documentElement.dataset.lyraThemeKey;
   delete document.documentElement.dataset.theme;
 });
 
@@ -87,6 +92,45 @@ describe('theme store', () => {
     expect(theme.resolvedTheme).toBe('dark');
     expect(theme.dark).toBe(true);
     expect(document.documentElement.dataset.theme).toBe('dark');
+  });
+
+  it('persists an explicit choice using the key configured on html', () => {
+    document.documentElement.dataset.lyraThemeKey = CUSTOM_STORAGE_KEY;
+    const theme = registerThemeStore();
+
+    theme.setTheme('dark');
+
+    expect(localStorage.getItem(CUSTOM_STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it('reads a stored choice using the key configured on html', () => {
+    document.documentElement.dataset.lyraThemeKey = CUSTOM_STORAGE_KEY;
+    localStorage.setItem(CUSTOM_STORAGE_KEY, 'dark');
+    const theme = registerThemeStore();
+
+    expect(theme.theme).toBe('dark');
+    expect(theme.resolvedTheme).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+  });
+
+  it('uses the default storage key when the theme key attribute is absent', () => {
+    const theme = registerThemeStore();
+
+    theme.setTheme('dark');
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(CUSTOM_STORAGE_KEY)).toBeNull();
+  });
+
+  it('uses the default storage key when the theme key attribute is empty', () => {
+    document.documentElement.dataset.lyraThemeKey = '';
+    const theme = registerThemeStore();
+
+    theme.setTheme('dark');
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(CUSTOM_STORAGE_KEY)).toBeNull();
   });
 
   it('applies a choice when localStorage rejects the persistence write', () => {

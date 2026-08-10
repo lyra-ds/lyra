@@ -1,5 +1,16 @@
 import { whenVisible } from './internal/when-visible';
 
+/** Translatable labels for {@link lyraTimePicker}, merged over the English defaults. */
+export interface LyraTimePickerLabels {
+  /** Accessible name for the listbox. Default: `"Time options"`. */
+  timeOptions?: string;
+}
+
+/** English defaults for {@link lyraTimePicker} labels. */
+const DEFAULT_LABELS: Required<LyraTimePickerLabels> = {
+  timeOptions: 'Time options',
+};
+
 /** Initial configuration accepted by `x-data="lyraTimePicker(...)"`. */
 export interface LyraTimePickerOptions {
   /** Initial 24-hour `HH:mm` value. */
@@ -12,6 +23,8 @@ export interface LyraTimePickerOptions {
   max?: string;
   /** BCP 47 locale used to display selected and option times. Default: `"en-US"`. */
   locale?: string;
+  /** Labels merged over the English defaults. */
+  labels?: LyraTimePickerLabels;
   /** Trigger text with no selected time. Default: `"Select time"`. */
   placeholder?: string;
 }
@@ -138,8 +151,10 @@ export function lyraTimePicker({
   min = '00:00',
   max = '23:59',
   locale = 'en-US',
+  labels: labelsProp,
   placeholder = 'Select time',
 }: LyraTimePickerOptions = {}): LyraTimePickerData {
+  const labels = { ...DEFAULT_LABELS, ...labelsProp };
   const state: LyraTimePickerData & ThisType<LyraTimePickerState> = {
     selected: defaultValue ?? null,
     open: false,
@@ -229,7 +244,7 @@ export function lyraTimePicker({
       role: 'listbox',
       tabindex: '-1',
       [':aria-label']() {
-        return 'Time options';
+        return labels.timeOptions;
       },
       ['@keydown'](event: KeyboardEvent) {
         const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];

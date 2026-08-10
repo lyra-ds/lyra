@@ -237,6 +237,10 @@
 
 ## Done
 
+- [x] alpine: chave de storage do `$store.theme` configurável por `<html data-lyra-theme-key>` [batuta/20260810-182007-alpine-theme-key] → codex
+
+- [x] alpine: `lyraTimePicker` aceita `labels.timeOptions` para o `aria-label` da listbox [batuta/20260810-180448-alpine-tp-labels] → codex
+
 - [x] **Sponsors pipeline + landing section (2026-08-07)** — org GitHub
       Sponsors profile approved (github.com/sponsors/lyra-ds, public, goal 10
       monthly). Wiring done outside the cycle: org-default FUNDING.yml in
