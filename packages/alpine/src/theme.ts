@@ -19,13 +19,17 @@ export interface LyraThemeStore {
   toggle(): void;
 }
 
-const STORAGE_KEY = 'lyra-theme';
+const DEFAULT_STORAGE_KEY = 'lyra-theme';
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 const DEFAULT_THEME: Theme = 'system';
 
+function storageKey(): string {
+  return document.documentElement.dataset.lyraThemeKey || DEFAULT_STORAGE_KEY;
+}
+
 function readStored(): Theme | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     return raw === 'light' || raw === 'dark' || raw === 'system' ? raw : null;
   } catch {
     return null;
@@ -41,13 +45,15 @@ function resolveTheme(theme: Theme, systemDark: boolean): ResolvedTheme {
  *
  * IT DOES NOT PREVENT THE FIRST-PAINT FLASH, and cannot: Alpine runs after the document has
  * already painted. Preventing it requires a blocking inline script in `<head>` that sets the
- * attribute before first paint, reading the SAME `lyra-theme` key:
+ * attribute before first paint. The `<html data-lyra-theme-key>` attribute is the single source of
+ * configuration for the storage key, with `lyra-theme` as its fallback:
  *
  * ```html
  * <script>
  *   (function () {
  *     try {
- *       var s = localStorage.getItem('lyra-theme');
+ *       var k = document.documentElement.dataset.lyraThemeKey || 'lyra-theme';
+ *       var s = localStorage.getItem(k);
  *       var d = matchMedia('(prefers-color-scheme: dark)').matches;
  *       document.documentElement.dataset.theme = s === 'light' || s === 'dark' ? s : d ? 'dark' : 'light';
  *     } catch (e) {}
@@ -89,7 +95,7 @@ export function lyraTheme(): LyraThemeStore {
 
     setTheme(next) {
       try {
-        localStorage.setItem(STORAGE_KEY, next);
+        localStorage.setItem(storageKey(), next);
       } catch {
         // Storage can be unavailable; the theme still applies for this page view.
       }
