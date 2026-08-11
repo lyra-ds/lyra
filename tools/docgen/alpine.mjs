@@ -28,6 +28,7 @@ const DATA_REGISTRATION = /\.data\(\s*['"]([A-Za-z]+)['"]/g;
 const STORE_REGISTRATION = /\.store\(\s*['"]([A-Za-z]+)['"]/g;
 const OUTPUT = join(REPO, 'tools', 'docgen', 'output');
 const PROPS_FILE = join(OUTPUT, 'alpine-props.json');
+const LLMS_FILE = join(OUTPUT, 'alpine-llms.txt');
 
 // Bindings cujo slug no site não é a forma kebab do nome.
 const SLUG_OVERRIDES = new Map();
@@ -127,8 +128,50 @@ function extractBindings() {
   return [...bindings, ...stores].sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
-function render() {
-  return JSON.stringify(extractBindings(), null, 2) + '\n';
+function renderProps(bindings) {
+  return JSON.stringify(bindings, null, 2) + '\n';
+}
+
+/**
+ * Bloco do Alpine para o llms.txt publicado. Mesmo formato do bloco do React: cada entrada
+ * declara como se monta e o que aceita, para que um agente escreva markup válido sem ter
+ * lido o pacote.
+ */
+function renderLlms(bindings) {
+  const section = (entry) => {
+    const head =
+      entry.kind === 'store'
+        ? `Global store, read as \`${entry.binding}\`.`
+        : `Mount with \`x-data="${entry.binding}({ … })"\`.`;
+    const options =
+      entry.props.length === 0
+        ? 'Takes no options.'
+        : entry.props
+            .map(
+              (prop) =>
+                `- \`${prop.name}${prop.optional ? '?' : ''}: ${prop.type}\`${prop.description ? ` — ${prop.description.split('\n')[0]}` : ''}`,
+            )
+            .join('\n');
+
+    return [
+      `### ${entry.binding}`,
+      '',
+      `Documented as \`${entry.slug}\`. ${head}`,
+      '',
+      options,
+    ].join('\n');
+  };
+
+  return [
+    '## Alpine bindings and stores (@lyra-ds/alpine)',
+    '',
+    'One `Alpine.data()` per interactive component, plus two global stores. The plugin ships no',
+    'CSS: markup uses the same `.lyra-*` classes as every other stack, and the binding only adds',
+    'behavior. Never invent a binding name or an option — this list is the whole surface.',
+    '',
+    ...bindings.map(section),
+    '',
+  ].join('\n');
 }
 
 function main() {
@@ -137,27 +180,34 @@ function main() {
     throw new Error(`Argumento desconhecido ${mode}. Use sem argumento ou --check.`);
   }
 
-  const generated = render();
+  const bindings = extractBindings();
+  const artifacts = [
+    [PROPS_FILE, renderProps(bindings)],
+    [LLMS_FILE, renderLlms(bindings)],
+  ];
 
   if (mode === '--check') {
-    if (!existsSync(PROPS_FILE)) {
-      throw new Error(
-        'tools/docgen/output/alpine-props.json ausente — rode `pnpm run docgen:alpine`.',
-      );
+    for (const [file, expected] of artifacts) {
+      const name = file.slice(REPO.length + 1);
+
+      if (!existsSync(file)) {
+        throw new Error(`${name} ausente — rode \`pnpm run docgen:alpine\`.`);
+      }
+      if (readFileSync(file, 'utf8') !== expected) {
+        throw new Error(
+          `${name} difere de uma geração fresca. Rode \`pnpm run docgen:alpine\` e commite.`,
+        );
+      }
     }
-    if (readFileSync(PROPS_FILE, 'utf8') !== generated) {
-      throw new Error(
-        'tools/docgen/output/alpine-props.json difere de uma geração fresca. Rode `pnpm run docgen:alpine` e commite.',
-      );
-    }
-    console.log('docgen:alpine --check OK.');
+
+    console.log('docgen:alpine --check OK: os dois artefatos gerados batem.');
     return;
   }
 
   mkdirSync(OUTPUT, { recursive: true });
-  writeFileSync(PROPS_FILE, generated, 'utf8');
+  for (const [file, contents] of artifacts) writeFileSync(file, contents, 'utf8');
   console.log(
-    `docgen:alpine: escreveu alpine-props.json (${JSON.parse(generated).length} bindings).`,
+    `docgen:alpine: escreveu alpine-props.json e alpine-llms.txt (${bindings.length} entradas).`,
   );
 }
 

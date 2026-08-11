@@ -22,6 +22,7 @@ export const guides: GuideEntry[] = [
   { slug: 'getting-started', titleKey: 'gettingStarted' },
   { slug: 'white-label', titleKey: 'whiteLabel' },
   { slug: 'plain-html', titleKey: 'plainHtml' },
+  { slug: 'compatibility', titleKey: 'compatibility' },
   { slug: 'compat-shadcn', titleKey: 'compatShadcn' },
   { slug: 'prose', titleKey: 'prose' },
 ];

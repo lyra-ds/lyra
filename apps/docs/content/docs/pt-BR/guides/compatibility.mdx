@@ -1,0 +1,43 @@
+---
+title: Compatibilidade
+description: Quais versões de pacote andam juntas, e quais peers cada uma espera.
+---
+
+# Compatibilidade
+
+Cada pacote do Lyra tem versionamento próprio. O `@lyra-ds/styles` é o que todos compartilham: ele
+carrega a aparência, e os outros apenas emitem as classes dele. Por isso a atualização do styles é a
+que se agenda com atenção, e as demais seguem o ritmo delas.
+
+## Matriz de pacotes
+
+| Pacote                      | Versão | Depende de                                | Peers                                  |
+| --------------------------- | ------ | ----------------------------------------- | -------------------------------------- |
+| `@lyra-ds/styles`           | 0.4.2  | —                                         | nenhum                                 |
+| `@lyra-ds/react`            | 0.4.2  | `@lyra-ds/styles`                         | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/alpine`           | 0.4.0  | `@lyra-ds/styles`                         | `alpinejs >=3.13 <4`                   |
+| `lyra-ds/blade` (Packagist) | 0.9.0  | `@lyra-ds/styles`, `@lyra-ds/alpine ^0.4` | PHP >= 8.3, Laravel 12 ou 13           |
+
+O styles aparece como dependência no sentido que importa para você: os componentes emitem classes
+que ele define, então uma versão do styles anterior às classes de um componente renderiza markup sem
+estilo. Nada disso é verificado na instalação — é justamente por isso que esta tabela existe.
+
+## Como ler a matriz
+
+- **O styles é o piso.** Atualize-o primeiro e depois o wrapper que você usa. Na ordem inversa, as
+  classes de um componente novo podem ficar indefinidas por um deploy inteiro.
+- **Os wrappers não conversam entre si.** Um projeto pode usar React numa superfície e Blade em
+  outra com uma cópia só do CSS, e os dois não precisam estar em versões equivalentes.
+- **Alpine é peer do Blade, não dependência.** O pacote Composer não embarca JavaScript; os 29
+  componentes Blade interativos emitem `x-data` e esperam o plugin presente em tempo de execução.
+
+## Fontes
+
+Plus Jakarta Sans e JetBrains Mono são peers de todo o sistema, nunca embutidas:
+
+```bash
+npm i @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono
+```
+
+Instalá-las você mesmo é o que permite controlar como elas carregam — auto-hospedadas, com subset,
+com preload ou trocadas pela fonte da sua marca via `--brand-font`.

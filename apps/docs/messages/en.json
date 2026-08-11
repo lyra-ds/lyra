@@ -75,5 +75,6 @@
   "absenceBladeThemeProvider": "Blade has no provider shape. The theme lives in the @lyraThemeScript directive plus the Alpine theme store.",
   "absenceBladeCalendarView": "Deferred by decision — CalendarView has no Blade counterpart yet.",
   "stackHtml": "HTML",
-  "absenceHtmlNever": "This component has no canonical HTML of its own."
+  "absenceHtmlNever": "This component has no canonical HTML of its own.",
+  "compatibility": "Compatibility"
 }

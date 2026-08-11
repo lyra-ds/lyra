@@ -1,0 +1,272 @@
+## Alpine bindings and stores (@lyra-ds/alpine)
+
+One `Alpine.data()` per interactive component, plus two global stores. The plugin ships no
+CSS: markup uses the same `.lyra-*` classes as every other stack, and the binding only adds
+behavior. Never invent a binding name or an option — this list is the whole surface.
+
+### lyraAccordion
+
+Documented as `accordion`. Mount with `x-data="lyraAccordion({ … })"`.
+
+- `defaultOpen?: string` — Id of the item initially open.
+- `multiple?: boolean` — Whether more than one item may be open at once. Default: `false`.
+### lyraAppSidebar
+
+Documented as `app-sidebar`. Mount with `x-data="lyraAppSidebar({ … })"`.
+
+- `defaultCollapsed?: boolean` — Whether the sidebar starts in its icon-rail state. Default: `false`.
+- `width?: number` — Sidebar width in pixels while expanded. Default: `260`.
+- `labels?: LyraAppSidebarLabels` — Localized labels for the collapse control.
+### lyraBottomSheet
+
+Documented as `bottom-sheet`. Mount with `x-data="lyraBottomSheet({ … })"`.
+
+- `defaultOpen?: boolean` — Whether the sheet starts open. Defaults to `false`.
+### lyraCalendar
+
+Documented as `calendar`. Mount with `x-data="lyraCalendar({ … })"`.
+
+- `range?: boolean` — Whether selection is a date range. Default: `false`.
+- `defaultValue?: string | {
+    start?: string | null;
+    end?: string | null;
+  } | null` — Initial ISO date, or range of ISO dates.
+- `min?: string` — Inclusive lower selection limit as ISO `YYYY-MM-DD`.
+- `max?: string` — Inclusive upper selection limit as ISO `YYYY-MM-DD`.
+- `disabledDates?: string[]` — ISO dates that cannot be selected; this replaces React's function-only data API.
+- `isDateDisabled?: (date: Date) => boolean` — Optional JavaScript-only disabled-date predicate; it combines with `disabledDates`.
+- `weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6` — First weekday, where `0` is Sunday and `6` is Saturday. Default: `0`.
+- `locale?: string` — BCP 47 locale used for labels and names. Default: `"en-US"`.
+- `labels?: LyraCalendarLabels` — Translatable labels merged over English defaults.
+### lyraCodeBlock
+
+Documented as `code-block`. Mount with `x-data="lyraCodeBlock({ … })"`.
+
+Takes no options.
+### lyraCombobox
+
+Documented as `combobox`. Mount with `x-data="lyraCombobox({ … })"`.
+
+- `options?: LyraComboboxOption[]` — Available data options. Default: `[]`.
+- `value?: string` — Initially selected option value; also the modelable selected value.
+- `open?: boolean` — Whether the popup initially starts open; also modelable. Default: `false`.
+- `placeholder?: string` — Trigger text with no selected option. Default: `"Select…"`.
+- `searchPlaceholder?: string` — Search input placeholder. Default: `"Search…"`.
+- `emptyMessage?: string` — Text shown when filtering finds no options. Default: `"No results."`.
+- `disabled?: boolean` — Disables the trigger. Default: `false`.
+- `id?: string` — Stable id base; one is generated from the root when omitted.
+- `error?: boolean` — Applies the React field error modifier to the trigger. Default: `false`.
+- `describedBy?: string` — Consumer-owned field-message id used for `aria-describedby`.
+### lyraCommandPalette
+
+Documented as `command-palette`. Mount with `x-data="lyraCommandPalette({ … })"`.
+
+- `groups?: LyraCommandPaletteGroup[]` — Command groups rendered through nested consumer `x-for` templates. Default: `[]`.
+- `open?: boolean` — Overlay visibility; modelable with `x-modelable="open"`. Ignored in inline mode.
+- `placeholder?: string` — Search input placeholder. Default: `"Type a command or search…"`.
+- `emptyMessage?: string` — Text shown before a quoted unmatched query. Default: `"No results for"`.
+- `searchLabel?: string` — Accessible search-input name. Default: `"Search commands"`.
+- `hints?: LyraCommandPaletteHints` — Partial override for footer hint labels.
+- `hotkey?: string | false` — Command/Ctrl key used to toggle the overlay. Falsy disables it. Default: `"k"`.
+- `inline?: boolean` — Render only the panel, without modal behavior. Default: `false`.
+- `label?: string` — Accessible dialog name in overlay mode. Default: `"Command palette"`.
+### lyraCookieBanner
+
+Documented as `cookie-banner`. Mount with `x-data="lyraCookieBanner({ … })"`.
+
+- `storageKey?: string`
+### lyraDataTable
+
+Documented as `data-table`. Mount with `x-data="lyraDataTable({ … })"`.
+
+- `sorting?: LyraDataTableSorting | null` — Controlled sort state. Modelable with `x-modelable="sorting"`. Default: `null`.
+- `selected?: string[]` — Controlled selected served row ids. Modelable with `x-modelable="selected"`. Default: `[]`.
+- `clientSort?: boolean` — Reorder served rows in the browser after sorting. Default: `false`.
+### lyraDatePicker
+
+Documented as `date-picker`. Mount with `x-data="lyraDatePicker({ … })"`.
+
+- `defaultValue?: string` — Initial ISO `YYYY-MM-DD` date.
+- `locale?: string` — BCP 47 locale used for the trigger's selected-date text. Default: `"en-US"`.
+- `placeholder?: string` — Trigger text when no date is selected. Default: `"Select date"`.
+### lyraDateRangePicker
+
+Documented as `date-range-picker`. Mount with `x-data="lyraDateRangePicker({ … })"`.
+
+- `defaultValue?: {
+    start?: string | null;
+    end?: string | null;
+  } | null` — Initial ISO `YYYY-MM-DD` bounds.
+- `locale?: string` — BCP 47 locale used for the trigger's selected-date text. Default: `"en-US"`.
+- `placeholder?: string` — Trigger text when no range has started. Default: `"Select period"`.
+- `rangeSeparator?: string` — Text between formatted range bounds. Default: `" – "`.
+- `incompleteRange?: string` — Text after the separator while the range has no end. Default: `"…"`.
+### lyraDialog
+
+Documented as `dialog`. Mount with `x-data="lyraDialog({ … })"`.
+
+- `defaultOpen?: boolean`
+- `closeOnEsc?: boolean`
+- `closeOnOverlayClick?: boolean`
+- `labelId?: string`
+### lyraDrawer
+
+Documented as `drawer`. Mount with `x-data="lyraDrawer({ … })"`.
+
+- `defaultOpen?: boolean`
+- `labelId?: string`
+### lyraDropdown
+
+Documented as `dropdown`. Mount with `x-data="lyraDropdown({ … })"`.
+
+- `defaultOpen?: boolean` — Whether the menu starts open. Default: `false`.
+- `align?: 'start' | 'end'` — Popup alignment. Default: `"start"`.
+### lyraFileManager
+
+Documented as `file-manager`. Mount with `x-data="lyraFileManager({ … })"`.
+
+- `defaultView?: 'list' | 'grid'` — Initial display mode. Default: `'list'`.
+- `defaultQuery?: string` — Initial file-name filter. Default: `''`.
+### lyraFileUpload
+
+Documented as `file-upload`. Mount with `x-data="lyraFileUpload({ … })"`.
+
+- `maxSizeMB?: number` — Files larger than this many megabytes are added as error items.
+- `multiple?: boolean` — Whether more than one file can be added. Defaults to `true`.
+- `uploadDuration?: number` — Simulated upload duration in milliseconds. Defaults to `1800`.
+- `defaultItems?: LyraFileUploadItem[]` — Items used to seed the upload list.
+### lyraPopover
+
+Documented as `popover`. Mount with `x-data="lyraPopover({ … })"`.
+
+- `defaultOpen?: boolean` — Whether the panel starts open. Default: `false`.
+- `side?: 'auto' | 'bottom' | 'top'` — Preferred vertical side. Default: automatic placement.
+- `align?: 'start' | 'end' | 'center'` — Preferred horizontal alignment. Defaults to automatic placement.
+- `width?: number` — Fixed panel width in CSS pixels.
+- `ariaLabel?: string` — Accessible name for the non-modal dialog panel. Default: `"Popover"`.
+### lyraRecurrenceSelector
+
+Documented as `recurrence-selector`. Mount with `x-data="lyraRecurrenceSelector({ … })"`.
+
+- `value?: RecurrenceRule | null` — Controllable rule. `null` means no recurrence. Date ends are normalized to ISO strings.
+- `startDate?: string | Date` — Base date for presets. A `YYYY-MM-DD` string becomes local noon. Default: today.
+- `defaultEndCount?: number` — Initial count used by presets and the count-end control.
+- `conflicts?: readonly RecurrenceConflict[]` — Non-blocking unavailable occurrence warnings.
+- `labels?: RecurrenceSelectorLabels` — Labels merged over {@link DEFAULT_LABELS}.
+### lyraSegmentedControl
+
+Documented as `segmented-control`. Mount with `x-data="lyraSegmentedControl({ … })"`.
+
+- `value?: string` — Initially selected option value. Defaults to an unselected group.
+### lyraSidebarGroup
+
+Documented as `sidebar-group`. Mount with `x-data="lyraSidebarGroup({ … })"`.
+
+- `defaultCollapsed?: boolean` — Whether the group starts with its consumer-rendered items unmounted. Default: `false`.
+### lyraSlotPicker
+
+Documented as `slot-picker`. Mount with `x-data="lyraSlotPicker({ … })"`.
+
+- `slots?: readonly LyraSlot[]` — Free slots in UTC. They are grouped by the active display-zone day.
+- `date?: string | null` — Initial visible local `YYYY-MM-DD` day; modelable after initialization.
+- `timezone?: string` — Initial IANA display zone; modelable after initialization.
+- `detectedZone?: string` — IANA zone shown as detected in the embedded time-zone picker.
+- `holdExpiresAt?: string | null` — UTC ISO temporary-hold expiry.
+- `nextAvailableDate?: string` — Local `YYYY-MM-DD` target for an empty-day shortcut.
+- `loading?: boolean` — Renders six slot pills while availability loads.
+- `locale?: string` — BCP 47 locale used for display times and dates. Default: `"en-US"`.
+- `min?: string` — Inclusive local calendar lower limit.
+- `max?: string` — Inclusive local calendar upper limit.
+- `labels?: LyraSlotPickerLabels` — Translatable labels merged over English defaults.
+- `tzLabels?: LyraTimeZonePickerLabels` — Labels forwarded unchanged to the nested time-zone picker.
+### lyraTableOfContents
+
+Documented as `table-of-contents`. Mount with `x-data="lyraTableOfContents({ … })"`.
+
+- `activeId?: string` — Id of the active in-page target.
+### lyraTabs
+
+Documented as `tabs`. Mount with `x-data="lyraTabs({ … })"`.
+
+- `active: string` — Value of the active tab. This controllable state is required.
+### $store.theme
+
+Documented as `theme-provider`. Global store, read as `$store.theme`.
+
+- `theme: Theme` — The chosen theme, which may be `"system"`.
+- `resolvedTheme: ResolvedTheme` — The actual theme applied to `<html data-theme>`.
+- `dark: boolean` — Convenience for `resolvedTheme === "dark"`.
+- `init: (): void` — Initializes browser state after Alpine registers this singleton store.
+- `setTheme: (next: Theme): void` — Chooses a theme, persists it, and applies it to the document.
+- `toggle: (): void` — Flips from the theme currently applied to the document.
+### lyraTimeInput
+
+Documented as `time-input`. Mount with `x-data="lyraTimeInput({ … })"`.
+
+- `defaultValue?: string` — Initial 24-hour HH:mm value, or no selection when omitted.
+- `step?: number` — Minutes added or subtracted by steppers and Arrow keys. Default: `15`.
+- `min?: string` — Inclusive 24-hour HH:mm lower limit.
+- `max?: string` — Inclusive 24-hour HH:mm upper limit.
+- `invalid?: boolean` — Enables consumer-driven invalid styling and `aria-invalid`.
+- `valueText?: (hours: number, minutes: number) => string` — Spoken value for a selected time.
+### lyraTimePicker
+
+Documented as `time-picker`. Mount with `x-data="lyraTimePicker({ … })"`.
+
+- `defaultValue?: string` — Initial 24-hour `HH:mm` value.
+- `step?: number` — Minutes between generated options. Default: `30`.
+- `min?: string` — Inclusive 24-hour `HH:mm` lower limit. Default: `"00:00"`.
+- `max?: string` — Inclusive 24-hour `HH:mm` upper limit. Default: `"23:59"`.
+- `locale?: string` — BCP 47 locale used to display selected and option times. Default: `"en-US"`.
+- `labels?: LyraTimePickerLabels` — Labels merged over the English defaults.
+- `placeholder?: string` — Trigger text with no selected time. Default: `"Select time"`.
+### lyraTimeZonePicker
+
+Documented as `time-zone-picker`. Mount with `x-data="lyraTimeZonePicker({ … })"`.
+
+- `zones?: readonly LyraTimeZonePickerOption[]` — IANA zones that replace {@link TIME_ZONE_PICKER_ZONES}.
+- `recentZones?: readonly string[]` — IANA zones pinned after the detected zone. Default: `[]`.
+- `detectedZone?: string` — IANA zone pinned before recent zones.
+- `referenceDate?: string | Date` — Date used to derive GMT offsets. A `YYYY-MM-DD` value becomes local noon.
+- `locale?: string` — BCP 47 locale used for each option's live local time. Default: `"en-US"`.
+- `labels?: LyraTimeZonePickerLabels` — Labels merged over the English defaults.
+- `placeholder?: string` — Trigger text when no zone is selected; overrides `labels.placeholder`.
+### $store.lyraToasts
+
+Documented as `toast`. Global store, read as `$store.lyraToasts`.
+
+- `items: QueuedToast[]` — The current queue, in the order notifications were added.
+- `duration: number` — Default auto-dismiss delay in milliseconds. Default: `4000`.
+- `closeLabel: string` — Accessible name passed to every toast close button. Default: `"Close notification"`.
+- `init: (): void` — Registers the singleton's browser-only Livewire event bridge.
+- `toast: (message: string, options?: LyraToastOptions): number` — Queues a notification and returns its store-local identifier.
+- `success: (message: string, options?: LyraToastOptions): number` — Queues a success notification, overriding a supplied tone.
+- `error: (message: string, options?: LyraToastOptions): number` — Queues a danger notification, overriding a supplied tone.
+- `info: (message: string, options?: LyraToastOptions): number` — Queues an informational notification, overriding a supplied tone.
+- `dismiss: (id: number): void` — Removes a notification and clears its pending auto-dismiss timer, if any.
+### lyraToastStack
+
+Documented as `toast-stack`. Mount with `x-data="lyraToastStack({ … })"`.
+
+Takes no options.
+### lyraTooltip
+
+Documented as `tooltip`. Mount with `x-data="lyraTooltip({ … })"`.
+
+- `tip: string` — Short, non-interactive text shown for the target.
+- `placement?: TooltipPlacement` — Preferred side of the target. Default: `"top"`.
+### lyraWeeklyScheduleEditor
+
+Documented as `weekly-schedule-editor`. Mount with `x-data="lyraWeeklyScheduleEditor({ … })"`.
+
+- `value?: Partial<WeeklySchedule>` — Weekly local-time availability, merged over the empty seven-day schedule.
+- `exceptions?: DateException[]` — Date-specific availability overrides.
+- `defaultRange?: TimeRange` — Range created when enabling a weekday. Default: 09:00–17:00.
+- `weekStartsOn?: Weekday` — First displayed weekday, where 0 is Sunday. Default: 1.
+- `showExceptions?: boolean` — Whether to render date exceptions. Default: true.
+- `labels?: WeeklyScheduleEditorLabels` — Translatable labels merged over English defaults.
+### lyraWorkspaceSwitcher
+
+Documented as `workspace-switcher`. Mount with `x-data="lyraWorkspaceSwitcher({ … })"`.
+
+- `defaultOpen?: boolean` — Whether the workspace listbox starts open. Default: `false`.

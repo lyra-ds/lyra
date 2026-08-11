@@ -1,0 +1,43 @@
+---
+title: Compatibility
+description: Which package versions belong together, and which peers each one expects.
+---
+
+# Compatibility
+
+Every Lyra package versions independently. `@lyra-ds/styles` is the one they all share: it carries
+the appearance, and the others only emit its classes. That is why a styles upgrade is the one you
+schedule deliberately, and the rest follow their own pace.
+
+## Package matrix
+
+| Package                     | Version | Depends on                                | Peers                                  |
+| --------------------------- | ------- | ----------------------------------------- | -------------------------------------- |
+| `@lyra-ds/styles`           | 0.4.2   | —                                         | none                                   |
+| `@lyra-ds/react`            | 0.4.2   | `@lyra-ds/styles`                         | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/alpine`           | 0.4.0   | `@lyra-ds/styles`                         | `alpinejs >=3.13 <4`                   |
+| `lyra-ds/blade` (Packagist) | 0.9.0   | `@lyra-ds/styles`, `@lyra-ds/alpine ^0.4` | PHP >= 8.3, Laravel 12 or 13           |
+
+The styles package is listed as a dependency in the sense that matters to you: the components emit
+classes it defines, so a version of styles that predates a component's classes renders unstyled
+markup. Nothing enforces that at install time, which is exactly why this table exists.
+
+## Reading the matrix
+
+- **Styles is the floor.** Upgrade it first, then whichever wrapper you use. Going the other way can
+  leave a new component's classes undefined for one deploy.
+- **The wrappers never talk to each other.** A project can use React on one surface and Blade on
+  another with a single copy of the CSS, and the two need not be on matching version numbers.
+- **Alpine is a peer of Blade, not a dependency.** The Composer package ships no JavaScript; the 29
+  interactive Blade components emit `x-data` and expect the plugin to be present at runtime.
+
+## Fonts
+
+Plus Jakarta Sans and JetBrains Mono are peers of the whole system, never bundled:
+
+```bash
+npm i @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono
+```
+
+Installing them yourself is what lets you control how they load — self-hosted, subset, preloaded or
+swapped for your own brand face through `--brand-font`.
