@@ -140,7 +140,7 @@ describe('FileManager', () => {
   it('uses the default Dropdown actions when no custom action builder is supplied', async () => {
     const screen = await render(<FileManager files={files} />);
     await userEvent.click(screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!);
-    expect(screen.getByRole('menuitem', { name: 'Open' })).not.toBeNull();
+    await expect.element(screen.getByRole('menuitem', { name: 'Open' })).toBeInTheDocument();
   });
 
   it('uses "Name" as the default list header', async () => {
@@ -267,7 +267,7 @@ describe('FileManager', () => {
 
     const actionTrigger = screen.container.querySelector<HTMLElement>('.lyra-dropdown__trigger')!;
     await userEvent.click(actionTrigger);
-    expect(screen.getByRole('menuitem', { name: 'Share' })).not.toBeNull();
+    await expect.element(screen.getByRole('menuitem', { name: 'Share' })).toBeInTheDocument();
     expect(customActions).toHaveBeenCalledWith(files[1]);
   });
 
