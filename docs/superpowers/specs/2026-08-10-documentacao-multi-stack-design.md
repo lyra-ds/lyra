@@ -12,11 +12,11 @@ mão.
 
 Existem hoje **três** consumidores do mesmo CSS core, e dois não têm casa:
 
-| Pacote | Estado | No site |
-|---|---|---|
-| `@lyra-ds/react` | publicado | 74 páginas |
-| `@lyra-ds/alpine` | 0.4.0, 66 módulos | **nada** |
-| `lyra-ds/blade` | 0.9.0, 72 componentes | **nada** |
+| Pacote            | Estado                | No site    |
+| ----------------- | --------------------- | ---------- |
+| `@lyra-ds/react`  | publicado             | 74 páginas |
+| `@lyra-ds/alpine` | 0.4.0, 66 módulos     | **nada**   |
+| `lyra-ds/blade`   | 0.9.0, 72 componentes | **nada**   |
 
 O Blade é a segunda stack sem casa, não a primeira. Uma solução desenhada só para ele seria
 refeita quando o Alpine entrasse. O escopo desta spec é, portanto, a **arquitetura
@@ -49,11 +49,11 @@ acessibilidade, anatomia — descreve o componente, não a stack, e não se mult
 
 Nenhuma tabela de API é escrita à mão:
 
-| Stack | Fonte | Gerador | Onde roda |
-|---|---|---|---|
-| React | `packages/react/dist/*.d.ts` | `tools/docgen/generate.mjs` (existe) | `lyra` |
-| Alpine | `packages/alpine/dist/index.d.ts` (interfaces `Lyra*Options`) | mesmo gerador, segunda entrada | `lyra` |
-| Blade | `@props` dos 72 `.blade.php` + snippet curado | `BoostGuidelinesGenerator` estendido | `blade` |
+| Stack  | Fonte                                                         | Gerador                              | Onde roda |
+| ------ | ------------------------------------------------------------- | ------------------------------------ | --------- |
+| React  | `packages/react/dist/*.d.ts`                                  | `tools/docgen/generate.mjs` (existe) | `lyra`    |
+| Alpine | `packages/alpine/dist/index.d.ts` (interfaces `Lyra*Options`) | mesmo gerador, segunda entrada       | `lyra`    |
+| Blade  | `@props` dos 72 `.blade.php` + snippet curado                 | `BoostGuidelinesGenerator` estendido | `blade`   |
 
 O Alpine é quase de graça: já publica `.d.ts`, e o docgen já usa a API do compilador
 TypeScript.
@@ -96,8 +96,8 @@ por aba é código e API, não pixel.
   com a linha de ausência visível. Nunca uma aba vazia.
 - **Só duas seções trocam**: API e Código. Exemplos, "quando usar" e acessibilidade ficam
   parados — o leitor não perde o lugar ao trocar de aba.
-- **Linha de herança na aba Blade**: *"O comportamento vem de `lyraDropdown()` — instale
-  `@lyra-ds/alpine`"*, com link para a aba irmã.
+- **Linha de herança na aba Blade**: _"O comportamento vem de `lyraDropdown()` — instale
+  `@lyra-ds/alpine`"_, com link para a aba irmã.
 
 ### i18n
 
@@ -242,21 +242,22 @@ O `blade-demo` é a matéria-prima e é aposentado.
 Três frentes, que só se encontram no fim.
 
 **Frente A — `lyra-ds/blade`** (pode começar agora; o `WORK.md` de lá diz "nada em voo")
+
 1. `bin/generate-docs-api` e o formato do `api.json`
 2. `resources/docs-examples/*.blade.php` para os 72, compilados sob teste
 3. Teste de frescor
 4. `api.json` publicado na release
 
 **Frente B — `lyra`** (paralela, não depende de A)
+
 1. Segunda entrada do docgen → `props.json` do Alpine
 2. Manifesto com disponibilidade por stack e frases de ausência; páginas dos órfãos
 3. `StackSwitcher` + blocos de API/código por stack, entregues já com React e Alpine
 
-**Junção**
-4. Snapshot do Blade em `tools/blade-api/`, terceira aba acesa, teste espelho
-5. Guias por stack, matriz de compatibilidade, `llms.txt` dos três
+**Junção** 4. Snapshot do Blade em `tools/blade-api/`, terceira aba acesa, teste espelho 5. Guias por stack, matriz de compatibilidade, `llms.txt` dos três
 
 **Frente C — Laravel** (independente das outras duas)
+
 1. `starter-laravel` sem Tailwind, com Alpine `^0.4.0`
 2. Views de auth do Fortify no starter
 3. `starter-laravel-demo`: telas de produto + `/components` + Fortify ligado
@@ -282,11 +283,11 @@ Três frentes, que só se encontram no fim.
 
 ## 10. Riscos
 
-| Risco | Mitigação |
-|---|---|
-| Snapshot do Blade envelhece sem ninguém notar | Versão carimbada e exibida na aba e na matriz; fica velho e visível, não errado e silencioso |
-| Snippets Blade divergem da tag real | Snippet é fonte compilada e renderizada pela suíte Pest, não texto em MDX |
-| Preview React esconder uma divergência real de Blade | As 72 fixtures de class-emission do repo PHP são a prova; se elas passarem a falhar, o preview é o menor problema |
-| Escopo da frente C crescer para "clone dos starter kits oficiais" | Fronteira declarada na seção 7 e no README do starter |
-| Campo de código de 6 dígitos faltar no catálogo | Tratado como achado, não como bloqueio: sai como `input` até haver decisão |
+| Risco                                                                          | Mitigação                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Snapshot do Blade envelhece sem ninguém notar                                  | Versão carimbada e exibida na aba e na matriz; fica velho e visível, não errado e silencioso                                                                                                                               |
+| Snippets Blade divergem da tag real                                            | Snippet é fonte compilada e renderizada pela suíte Pest, não texto em MDX                                                                                                                                                  |
+| Preview React esconder uma divergência real de Blade                           | As 72 fixtures de class-emission do repo PHP são a prova; se elas passarem a falhar, o preview é o menor problema                                                                                                          |
+| Escopo da frente C crescer para "clone dos starter kits oficiais"              | Fronteira declarada na seção 7 e no README do starter                                                                                                                                                                      |
+| Campo de código de 6 dígitos faltar no catálogo                                | Tratado como achado, não como bloqueio: sai como `input` até haver decisão                                                                                                                                                 |
 | O demo hospedado cair sem ninguém notar, e o site linkar para uma página morta | Imagem única e sem dependência externa (SQLite em arquivo), então a superfície de falha é pequena; o link do site aponta para o domínio, não para uma rota interna, e a galeria `/components` serve de healthcheck legível |

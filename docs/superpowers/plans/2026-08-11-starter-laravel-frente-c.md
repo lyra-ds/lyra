@@ -26,30 +26,32 @@
 ## File Structure
 
 ### `lyra-ds/starter-laravel`
-| Arquivo | Responsabilidade |
-|---|---|
-| `resources/css/app.css` | Importa `@lyra-ds/styles` e as fontes; regra pré-boot; sem Tailwind |
-| `resources/js/app.js` | Registra o plugin Lyra e inicia o Alpine |
-| `resources/views/layouts/app.blade.php` | Layout com `@lyraThemeScript` no `<head>` |
-| `resources/views/auth/*.blade.php` | As sete views do Fortify, escritas só com componentes do catálogo |
-| `resources/views/welcome.blade.php` | Página inicial mínima que prova tema e white-label |
-| `tests/Feature/AuthViewsTest.php` | Toda view de auth renderiza e emite classes `.lyra-*` |
-| `tests/Feature/ThemeTest.php` | `@lyraThemeScript` presente e chave de tema configurável |
-| `.github/workflows/ci.yml` | Pint + Pest + build de assets |
-| `README.md` / `AGENTS.md` | Uso do template, checklist pós-clone, regra de não inventar API |
+
+| Arquivo                                 | Responsabilidade                                                    |
+| --------------------------------------- | ------------------------------------------------------------------- |
+| `resources/css/app.css`                 | Importa `@lyra-ds/styles` e as fontes; regra pré-boot; sem Tailwind |
+| `resources/js/app.js`                   | Registra o plugin Lyra e inicia o Alpine                            |
+| `resources/views/layouts/app.blade.php` | Layout com `@lyraThemeScript` no `<head>`                           |
+| `resources/views/auth/*.blade.php`      | As sete views do Fortify, escritas só com componentes do catálogo   |
+| `resources/views/welcome.blade.php`     | Página inicial mínima que prova tema e white-label                  |
+| `tests/Feature/AuthViewsTest.php`       | Toda view de auth renderiza e emite classes `.lyra-*`               |
+| `tests/Feature/ThemeTest.php`           | `@lyraThemeScript` presente e chave de tema configurável            |
+| `.github/workflows/ci.yml`              | Pint + Pest + build de assets                                       |
+| `README.md` / `AGENTS.md`               | Uso do template, checklist pós-clone, regra de não inventar API     |
 
 ### `lyra-ds/starter-laravel-demo`
-| Arquivo | Responsabilidade |
-|---|---|
-| `routes/web.php` | Rotas do produto + `/components` |
-| `resources/views/app/*.blade.php` | Dashboard, agenda, arquivos, equipe, configurações |
-| `resources/views/components-gallery.blade.php` | Galeria dos 72, herdada do `blade-demo` |
-| `app/Providers/FortifyServiceProvider.php` | Aponta o Fortify para as views do starter |
-| `database/seeders/DemoSeeder.php` | Usuário de demonstração |
-| `tests/Feature/RoutesTest.php` | Toda rota responde 200 e emite `.lyra-` |
-| `tests/Feature/AuthFlowTest.php` | Login, registro e 2FA de ponta a ponta |
-| `Dockerfile` | Imagem única para o Docploy |
-| `.github/workflows/ci.yml` | Pint + Pest + build |
+
+| Arquivo                                        | Responsabilidade                                   |
+| ---------------------------------------------- | -------------------------------------------------- |
+| `routes/web.php`                               | Rotas do produto + `/components`                   |
+| `resources/views/app/*.blade.php`              | Dashboard, agenda, arquivos, equipe, configurações |
+| `resources/views/components-gallery.blade.php` | Galeria dos 72, herdada do `blade-demo`            |
+| `app/Providers/FortifyServiceProvider.php`     | Aponta o Fortify para as views do starter          |
+| `database/seeders/DemoSeeder.php`              | Usuário de demonstração                            |
+| `tests/Feature/RoutesTest.php`                 | Toda rota responde 200 e emite `.lyra-`            |
+| `tests/Feature/AuthFlowTest.php`               | Login, registro e 2FA de ponta a ponta             |
+| `Dockerfile`                                   | Imagem única para o Docploy                        |
+| `.github/workflows/ci.yml`                     | Pint + Pest + build                                |
 
 ---
 
@@ -58,12 +60,14 @@
 ### Task 1: Scaffold sem Tailwind
 
 **Files:**
+
 - Create: o repositório inteiro, a partir de `composer create-project laravel/laravel`
 - Modify: `package.json`, `vite.config.js`, `resources/css/app.css`, `resources/js/app.js`
 - Create: `resources/views/layouts/app.blade.php`
 - Create: `tests/Feature/AssetsTest.php`
 
 **Interfaces:**
+
 - Produces: um app Laravel que builda e roda com o Lyra ligado. As tasks 2–4 e o demo inteiro partem daqui.
 
 - [ ] **Step 1: Crie o projeto**
@@ -210,10 +214,12 @@ git commit -m "feat: liga o Lyra DS e remove o Tailwind do scaffold"
 Escritas **só com componentes do catálogo** — cobertura já verificada: `input`, `checkbox`, `button`, `alert`, `card`, `brand`, `separator`, `form-row`, `fieldset`, `spinner`, `icon`, `stack`, `container` existem todos no `lyra-ds/blade` 0.9.0.
 
 **Files:**
+
 - Create: `resources/views/auth/{login,register,forgot-password,reset-password,verify-email,confirm-password,two-factor-challenge}.blade.php`
 - Create: `tests/Feature/AuthViewsTest.php`
 
 **Interfaces:**
+
 - Produces: as views nos nomes exatos que o Fortify resolve (`auth.login`, `auth.register`, …). O demo (task 7) as aponta sem renomear nada.
 
 - [ ] **Step 1: Escreva o teste**
@@ -319,6 +325,7 @@ Confira cada prop contra `resources/views/components/*.blade.php` do `lyra-ds/bl
 - [ ] **Step 4: Escreva as outras seis**
 
 Mesma forma. Notas por tela:
+
 - **register** — nome, email, senha e confirmação; o `password_confirmation` é o nome que o Fortify espera.
 - **forgot-password** — só email, e a `session('status')` em `alert` de sucesso.
 - **reset-password** — email, senha, confirmação, mais `<input type="hidden" name="token" value="{{ $request->route('token') }}">`. Esse hidden é o **único** input cru aceitável: ele não tem representação visual, e o teste do Step 1 só cobra classe em campos visíveis — se ele falhar aqui, ajuste o regex para ignorar `type="hidden"`, e registre o porquê em comentário.
@@ -347,6 +354,7 @@ git commit -m "feat: views de autenticação do Fortify escritas com o catálogo
 ### Task 3: Tema, white-label e a página inicial
 
 **Files:**
+
 - Modify: `resources/views/welcome.blade.php`
 - Create: `tests/Feature/ThemeTest.php`
 
@@ -395,6 +403,7 @@ git commit -m "feat: página inicial com tema e white-label ao vivo"
 ### Task 4: README, AGENTS e CI
 
 **Files:**
+
 - Create: `README.md`, `AGENTS.md`, `.github/workflows/ci.yml`
 
 - [ ] **Step 1: CI**
@@ -447,6 +456,7 @@ gh run watch
 ### Task 5: Derivar o demo do starter
 
 **Files:**
+
 - Create: o repositório, a partir de um clone do `starter-laravel`
 - Create: `.github/workflows/ci.yml`
 
@@ -475,11 +485,13 @@ git add -A && git commit -m "chore: identidade do repositório de demonstração
 ### Task 6: A galeria dos 72 migra
 
 **Files:**
+
 - Create: `resources/views/components-gallery.blade.php`
 - Modify: `routes/web.php`
 - Create: `tests/Feature/GalleryTest.php`
 
 **Interfaces:**
+
 - Consumes: `blade-demo/resources/views/demo.blade.php` (884 linhas) como matéria-prima.
 - Produces: rota `/components`.
 
@@ -536,6 +548,7 @@ git commit -m "feat: galeria dos componentes migrada do blade-demo, com cobertur
 ### Task 7: Fortify de verdade
 
 **Files:**
+
 - Modify: `composer.json`, `routes/web.php`
 - Create: `app/Providers/FortifyServiceProvider.php`
 - Create: `database/seeders/DemoSeeder.php`
@@ -625,6 +638,7 @@ git commit -m "feat: autenticação real com Fortify sobre SQLite"
 O que separa "galeria" de "produto": componentes aparecendo onde fazem sentido, dentro de um shell, com dados plausíveis.
 
 **Files:**
+
 - Create: `resources/views/app/{dashboard,schedule,files,team,settings}.blade.php`
 - Create: `resources/views/layouts/shell.blade.php`
 - Modify: `routes/web.php`
@@ -666,13 +680,13 @@ vendor/bin/pest --filter=Routes
 
 `layouts/shell.blade.php` usa `<lyra:shell>` com `<lyra:app-sidebar>` e a navegação por `<lyra:nav-link>`; cada tela estende esse shell:
 
-| Rota | Componentes em contexto |
-|---|---|
-| `/dashboard` | `stat` (4 cartões), `data-table` de atividade recente, `page-header` |
-| `/schedule` | `calendar`, `slot-picker`, `time-zone-picker` |
-| `/files` | `file-manager`, `file-upload`, `empty-state` |
-| `/team` | `data-table` com `person-cell`, `avatar`, `dropdown` de ações |
-| `/settings` | `fieldset`/`form-row`, `input`, `switch`, `segmented-control`, `select` |
+| Rota         | Componentes em contexto                                                 |
+| ------------ | ----------------------------------------------------------------------- |
+| `/dashboard` | `stat` (4 cartões), `data-table` de atividade recente, `page-header`    |
+| `/schedule`  | `calendar`, `slot-picker`, `time-zone-picker`                           |
+| `/files`     | `file-manager`, `file-upload`, `empty-state`                            |
+| `/team`      | `data-table` com `person-cell`, `avatar`, `dropdown` de ações           |
+| `/settings`  | `fieldset`/`form-row`, `input`, `switch`, `segmented-control`, `select` |
 
 Dados fixos em arrays no controller ou na própria rota — este é um demo, não precisa de banco além do de auth.
 
@@ -690,10 +704,12 @@ git commit -m "feat: telas de produto do demo com o shell do Lyra"
 ### Task 9: Docker e deploy no Docploy
 
 **Files:**
+
 - Create: `Dockerfile`, `.dockerignore`
 - Modify: `README.md`
 
 **Interfaces:**
+
 - Produces: uma imagem única que serve o app na porta 80, sem serviço externo de banco.
 
 - [ ] **Step 1: Escreva o Dockerfile**
@@ -753,6 +769,7 @@ Esperado: as três linhas. Se o `login` responder sem `lyra-btn`, o build de ass
 - [ ] **Step 3: Publique no Docploy**
 
 Crie a aplicação apontando para o repositório, build por Dockerfile, com:
+
 - `APP_KEY` gerada e fixada como variável de ambiente (sem ela, cada deploy invalida sessões);
 - `APP_URL` com o domínio real;
 - `APP_ENV=production`, `APP_DEBUG=false`;
@@ -774,6 +791,7 @@ git commit -m "feat: imagem Docker e instruções de deploy"
 ### Task 10: Fechar o circuito
 
 **Files:**
+
 - Modify: `lyra-ds/lyra:apps/docs` (links para o demo)
 - Modify: `lyra-ds/blade:README.md`
 - Arquivar: `lyra-ds/blade-demo`

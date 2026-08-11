@@ -27,33 +27,35 @@
 ## File Structure
 
 **Novos**
-| Arquivo | Responsabilidade |
-|---|---|
-| `tools/dist-scan/alpine-types.mjs` | Falha se uma `export interface Lyra*` do `src` não chegar em `dist/index.d.ts` |
-| `tools/docgen/typescript.mjs` | Helpers de parsing TS extraídos de `generate.mjs`, compartilhados pelos dois geradores |
-| `tools/docgen/alpine.mjs` | Gerador do `alpine-props.json` a partir de `packages/alpine/dist/index.d.ts` |
-| `tools/docgen/output/alpine-props.json` | Artefato gerado, commitado |
-| `apps/docs/lib/stacks.ts` | `DocStack`, ordem, rótulos e a função pura de resolução da stack ativa |
-| `apps/docs/lib/stacks.test.ts` | Testes da resolução (vitest) |
-| `apps/docs/components/stack-tabs.tsx` | Componente cliente: seletor + troca de bloco visível |
-| `apps/docs/components/stack-api.tsx` | Servidor: renderiza a tabela de API de uma stack |
-| `apps/docs/vitest.config.ts` | Projeto de teste do app de docs (ambiente node) |
-| `apps/docs/content/docs/{en,pt-BR}/components/form-row.mdx` | Página órfã (só Blade) |
-| `apps/docs/content/docs/{en,pt-BR}/components/toast-stack.mdx` | Página órfã (só Blade) |
-| `apps/docs/content/docs/{en,pt-BR}/guides/compatibility.mdx` | Matriz de compatibilidade |
+
+| Arquivo                                                        | Responsabilidade                                                                       |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `tools/dist-scan/alpine-types.mjs`                             | Falha se uma `export interface Lyra*` do `src` não chegar em `dist/index.d.ts`         |
+| `tools/docgen/typescript.mjs`                                  | Helpers de parsing TS extraídos de `generate.mjs`, compartilhados pelos dois geradores |
+| `tools/docgen/alpine.mjs`                                      | Gerador do `alpine-props.json` a partir de `packages/alpine/dist/index.d.ts`           |
+| `tools/docgen/output/alpine-props.json`                        | Artefato gerado, commitado                                                             |
+| `apps/docs/lib/stacks.ts`                                      | `DocStack`, ordem, rótulos e a função pura de resolução da stack ativa                 |
+| `apps/docs/lib/stacks.test.ts`                                 | Testes da resolução (vitest)                                                           |
+| `apps/docs/components/stack-tabs.tsx`                          | Componente cliente: seletor + troca de bloco visível                                   |
+| `apps/docs/components/stack-api.tsx`                           | Servidor: renderiza a tabela de API de uma stack                                       |
+| `apps/docs/vitest.config.ts`                                   | Projeto de teste do app de docs (ambiente node)                                        |
+| `apps/docs/content/docs/{en,pt-BR}/components/form-row.mdx`    | Página órfã (só Blade)                                                                 |
+| `apps/docs/content/docs/{en,pt-BR}/components/toast-stack.mdx` | Página órfã (só Blade)                                                                 |
+| `apps/docs/content/docs/{en,pt-BR}/guides/compatibility.mdx`   | Matriz de compatibilidade                                                              |
 
 **Modificados**
-| Arquivo | Mudança |
-|---|---|
-| `packages/alpine/src/index.ts` | Reexporta as 46 interfaces públicas |
-| `tools/docgen/generate.mjs` | Passa a importar os helpers de `typescript.mjs` |
-| `package.json` (raiz) | Scripts `docgen:alpine`, `dist-scan:alpine-types` |
-| `.github/workflows/ci.yml` | Duas linhas de verificação novas |
-| `apps/docs/lib/components.ts` | `stacks` e `absence` por entrada |
-| `apps/docs/components/prop-table.tsx` | Aceita `stack` |
-| `apps/docs/components/component-page.tsx` | Injeta `StackTabs`/`StackApi` no MDX |
-| `apps/docs/messages/{en,pt-BR}.json` | Rótulos do seletor e das ausências |
-| `apps/docs/scripts/copy-llms.mjs` | Passa a copiar os três blocos |
+
+| Arquivo                                   | Mudança                                           |
+| ----------------------------------------- | ------------------------------------------------- |
+| `packages/alpine/src/index.ts`            | Reexporta as 46 interfaces públicas               |
+| `tools/docgen/generate.mjs`               | Passa a importar os helpers de `typescript.mjs`   |
+| `package.json` (raiz)                     | Scripts `docgen:alpine`, `dist-scan:alpine-types` |
+| `.github/workflows/ci.yml`                | Duas linhas de verificação novas                  |
+| `apps/docs/lib/components.ts`             | `stacks` e `absence` por entrada                  |
+| `apps/docs/components/prop-table.tsx`     | Aceita `stack`                                    |
+| `apps/docs/components/component-page.tsx` | Injeta `StackTabs`/`StackApi` no MDX              |
+| `apps/docs/messages/{en,pt-BR}.json`      | Rótulos do seletor e das ausências                |
+| `apps/docs/scripts/copy-llms.mjs`         | Passa a copiar os três blocos                     |
 
 ---
 
@@ -62,6 +64,7 @@
 Hoje `packages/alpine/dist/index.d.ts` tem 29 linhas e expõe só `lyra` e `LyraAlpine`. As 46 interfaces de opções vivem no `src` e nunca saem — foi assim que o `LyraTimePickerLabels` ficou invisível para o consumidor. O gerador da task 3 lê o `dist`, então isto vem primeiro.
 
 **Files:**
+
 - Create: `tools/dist-scan/alpine-types.mjs`
 - Modify: `packages/alpine/src/index.ts` (bloco de reexports no fim do arquivo)
 - Modify: `.github/workflows/ci.yml` (job de packaging, junto das outras linhas `dist-scan`)
@@ -69,6 +72,7 @@ Hoje `packages/alpine/dist/index.d.ts` tem 29 linhas e expõe só `lyra` e `Lyra
 - Create: `.changeset/alpine-export-option-types.md`
 
 **Interfaces:**
+
 - Consumes: nada.
 - Produces: `packages/alpine/dist/index.d.ts` contendo todas as interfaces `Lyra*`. A task 3 depende disso.
 
@@ -214,8 +218,8 @@ Em `package.json` (raiz), na seção `scripts`, depois de `"docgen"`:
 Em `.github/workflows/ci.yml`, no job de packaging, imediatamente após a linha `- run: pnpm --filter @lyra-ds/alpine exec size-limit`:
 
 ```yaml
-      - name: Interfaces do Alpine chegam às declarações publicadas
-        run: node tools/dist-scan/alpine-types.mjs
+- name: Interfaces do Alpine chegam às declarações publicadas
+  run: node tools/dist-scan/alpine-types.mjs
 ```
 
 - [ ] **Step 7: Changeset**
@@ -245,10 +249,12 @@ git commit -m "feat(alpine): exporta as interfaces de opções no entry do pacot
 `tools/docgen/generate.mjs` tem ~400 linhas e mistura duas coisas: ler declarações TypeScript e renderizar os artefatos do React. O gerador do Alpine precisa da primeira metade. Esta task é **movimentação pura**, e o `--check` existente é a prova: a saída tem que continuar byte a byte idêntica.
 
 **Files:**
+
 - Create: `tools/docgen/typescript.mjs`
 - Modify: `tools/docgen/generate.mjs`
 
 **Interfaces:**
+
 - Produces: de `tools/docgen/typescript.mjs`, exporta `rawJSDoc(node, sourceFile)`, `descriptionFromJSDoc(doc)`, `renderJSDoc(doc, indent)`, `membersFromInterface(interfaceNode, sourceFile)`, `membersFromTypeNode(typeNode, sourceFile, declarations, seen)`, `membersFromTypeAlias(alias, sourceFile, declarations)`, `pascalFromKebab(value)`, `titleCase(value)`. Assinaturas idênticas às atuais.
 
 - [ ] **Step 1: Fixe a saída atual como referência**
@@ -311,26 +317,28 @@ git commit -m "chore(docgen): extrai os helpers de parsing TypeScript para um m�
 ### Task 3: Gerador do `alpine-props.json`
 
 **Files:**
+
 - Create: `tools/docgen/alpine.mjs`
 - Create: `tools/docgen/output/alpine-props.json` (gerado)
 - Modify: `package.json` (raiz)
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
+
 - Consumes: `packages/alpine/dist/index.d.ts` (task 1); helpers de `tools/docgen/typescript.mjs` (task 2).
 - Produces: `tools/docgen/output/alpine-props.json` — array de objetos
 
 ```jsonc
 {
-  "binding": "lyraDropdown",       // nome registrado no Alpine.data()
-  "slug": "dropdown",              // casa com ComponentEntry.slug do manifesto
+  "binding": "lyraDropdown", // nome registrado no Alpine.data()
+  "slug": "dropdown", // casa com ComponentEntry.slug do manifesto
   "optionsType": "LyraDropdownOptions",
-  "description": "…",              // JSDoc da interface
-  "props": [{ "name": "…", "type": "…", "optional": true, "description": "…" }]
+  "description": "…", // JSDoc da interface
+  "props": [{ "name": "…", "type": "…", "optional": true, "description": "…" }],
 }
 ```
 
-  O array é ordenado por `slug`. A task 5 consome esse arquivo.
+O array é ordenado por `slug`. A task 5 consome esse arquivo.
 
 - [ ] **Step 1: Escreva o gerador**
 
@@ -417,7 +425,9 @@ function main() {
 
   if (mode === '--check') {
     if (!existsSync(PROPS_FILE)) {
-      throw new Error('tools/docgen/output/alpine-props.json ausente — rode `pnpm run docgen:alpine`.');
+      throw new Error(
+        'tools/docgen/output/alpine-props.json ausente — rode `pnpm run docgen:alpine`.',
+      );
     }
     if (readFileSync(PROPS_FILE, 'utf8') !== generated) {
       throw new Error(
@@ -430,7 +440,9 @@ function main() {
 
   mkdirSync(OUTPUT, { recursive: true });
   writeFileSync(PROPS_FILE, generated, 'utf8');
-  console.log(`docgen:alpine: escreveu alpine-props.json (${JSON.parse(generated).length} bindings).`);
+  console.log(
+    `docgen:alpine: escreveu alpine-props.json (${JSON.parse(generated).length} bindings).`,
+  );
 }
 
 try {
@@ -473,7 +485,7 @@ Em `package.json` (raiz), logo após `"docgen"`:
 Em `.github/workflows/ci.yml`, imediatamente após `- run: node tools/docgen/generate.mjs --check`:
 
 ```yaml
-      - run: node tools/docgen/alpine.mjs --check
+- run: node tools/docgen/alpine.mjs --check
 ```
 
 - [ ] **Step 5: Commit**
@@ -491,12 +503,14 @@ git commit -m "feat(docgen): gera o catálogo de opções dos bindings do Alpine
 Lógica pura, testada, antes de qualquer pixel. `apps/docs` não tem test runner hoje (só `node --test` sobre `scripts/*.mjs`), então esta task instala o vitest do app.
 
 **Files:**
+
 - Create: `apps/docs/lib/stacks.ts`
 - Create: `apps/docs/lib/stacks.test.ts`
 - Create: `apps/docs/vitest.config.ts`
 - Modify: `apps/docs/package.json` (script `test`, devDependency)
 
 **Interfaces:**
+
 - Produces:
   - `type DocStack = 'react' | 'alpine' | 'blade'`
   - `const stackOrder: DocStack[]` — `['react', 'alpine', 'blade']`
@@ -639,10 +653,12 @@ git commit -m "feat(site): tipo DocStack e resolução da stack ativa"
 O manifesto já é a fonte única de rota, sidebar, índice e prop table. Agora ele também responde "quais stacks este componente tem, e o que dizer quando falta uma".
 
 **Files:**
+
 - Modify: `apps/docs/lib/components.ts`
 - Create: `apps/docs/lib/components.test.ts`
 
 **Interfaces:**
+
 - Consumes: `DocStack`, `stackOrder` (task 4); `tools/docgen/output/alpine-props.json` (task 3).
 - Produces: `ComponentEntry` ganha `stacks: DocStack[]` e `absence?: Partial<Record<DocStack, string>>` (chave de mensagem next-intl), ambos legíveis pelo `getComponent(slug)` que já existe. As tasks 6 e 7 consomem.
 
@@ -675,15 +691,18 @@ describe('manifesto de componentes', () => {
 
   it('não declara React sem props geradas correspondentes', () => {
     for (const entry of components.filter((item) => item.stacks.includes('react'))) {
-      expect(reactNames.has(entry.name), `${entry.name} declara react sem entrada em props.json`).toBe(
-        true,
-      );
+      expect(
+        reactNames.has(entry.name),
+        `${entry.name} declara react sem entrada em props.json`,
+      ).toBe(true);
     }
   });
 
   it('não declara Alpine sem binding gerado correspondente', () => {
     for (const entry of components.filter((item) => item.stacks.includes('alpine'))) {
-      expect(alpineSlugs.has(entry.slug), `${entry.slug} declara alpine sem binding gerado`).toBe(true);
+      expect(alpineSlugs.has(entry.slug), `${entry.slug} declara alpine sem binding gerado`).toBe(
+        true,
+      );
     }
   });
 
@@ -700,7 +719,10 @@ describe('manifesto de componentes', () => {
     for (const entry of components) {
       for (const stack of stackOrder) {
         if (entry.stacks.includes(stack)) continue;
-        expect(entry.absence?.[stack], `${entry.slug} não explica a ausência de ${stack}`).toBeTruthy();
+        expect(
+          entry.absence?.[stack],
+          `${entry.slug} não explica a ausência de ${stack}`,
+        ).toBeTruthy();
       }
     }
   });
@@ -816,10 +838,12 @@ git commit -m "feat(site): disponibilidade por stack e explicação de ausência
 Todos os blocos vão no HTML; o cliente mostra um. Isso mantém o conteúdo inteiro no export estático (e indexável), e a troca não repinta a página.
 
 **Files:**
+
 - Create: `apps/docs/components/stack-tabs.tsx`
 - Create: `apps/docs/components/stack-tabs.test.ts`
 
 **Interfaces:**
+
 - Consumes: `DocStack`, `stackOrder`, `stackLabelKey`, `resolveStack` (task 4).
 - Produces:
   - `<StackTabs available={DocStack[]} absence={Partial<Record<DocStack,string>>} children>` — client component.
@@ -887,10 +911,7 @@ export const STACK_STORAGE_KEY = 'lyra-docs-stack';
  * intenção explícita e a preferência é só um hábito. Não valida o vocabulário — quem
  * decide o que é válido para *este* componente é `resolveStack`.
  */
-export function readStoredStack(
-  storage: Pick<Storage, 'getItem'>,
-  search: string,
-): string | null {
+export function readStoredStack(storage: Pick<Storage, 'getItem'>, search: string): string | null {
   const fromUrl = new URLSearchParams(search).get('stack');
   return fromUrl ?? storage.getItem(STACK_STORAGE_KEY);
 }
@@ -912,7 +933,9 @@ export function StackTabs({
   const [active, setActive] = useState<DocStack>(() => resolveStack(available));
 
   useEffect(() => {
-    setActive(resolveStack(available, readStoredStack(window.localStorage, window.location.search)));
+    setActive(
+      resolveStack(available, readStoredStack(window.localStorage, window.location.search)),
+    );
   }, [available]);
 
   function choose(stack: DocStack) {
@@ -995,6 +1018,7 @@ git commit -m "feat(site): seletor de stack com persistência em URL e localStor
 Um componente só, ponta a ponta, antes de tocar em 74 páginas.
 
 **Files:**
+
 - Create: `apps/docs/components/stack-api.tsx`
 - Modify: `apps/docs/components/prop-table.tsx`
 - Modify: `apps/docs/components/component-page.tsx`
@@ -1002,6 +1026,7 @@ Um componente só, ponta a ponta, antes de tocar em 74 páginas.
 - Modify: `apps/docs/content/docs/pt-BR/components/dropdown.mdx`
 
 **Interfaces:**
+
 - Consumes: `StackTabs`, `StackPanel` (task 6); `getComponent` (task 5); `alpine-props.json` (task 3).
 - Produces: `<StackApi slug={string} stack={DocStack} name={string} />` — tabela de API da stack pedida. O MDX passa a usar `<StackTabs>`/`<StackPanel>`/`<StackApi>` injetados por `ComponentPage`.
 
@@ -1071,22 +1096,24 @@ export function StackApi({ slug, stack, name }: { slug: string; stack: DocStack;
 Em `apps/docs/components/component-page.tsx`, importe e passe adiante. Substitua a linha final `return <MDX components={{ Example, PropTable, pre: Pre }} />;` por:
 
 ```tsx
-  const entry = getComponent(slug);
-  if (!entry) throw new Error(`Unknown component "${slug}".`);
+const entry = getComponent(slug);
+if (!entry) throw new Error(`Unknown component "${slug}".`);
 
-  function Api({ stack }: { stack: DocStack }) {
-    return <StackApi slug={slug} stack={stack} name={entry!.name} />;
-  }
+function Api({ stack }: { stack: DocStack }) {
+  return <StackApi slug={slug} stack={stack} name={entry!.name} />;
+}
 
-  function Tabs({ children }: { children: ReactNode }) {
-    return (
-      <StackTabs available={entry!.stacks} absence={entry!.absence}>
-        {children}
-      </StackTabs>
-    );
-  }
+function Tabs({ children }: { children: ReactNode }) {
+  return (
+    <StackTabs available={entry!.stacks} absence={entry!.absence}>
+      {children}
+    </StackTabs>
+  );
+}
 
-  return <MDX components={{ Example, StackApi: Api, StackPanel, StackTabs: Tabs, PropTable, pre: Pre }} />;
+return (
+  <MDX components={{ Example, StackApi: Api, StackPanel, StackTabs: Tabs, PropTable, pre: Pre }} />
+);
 ```
 
 com os imports correspondentes no topo:
@@ -1159,6 +1186,7 @@ pnpm --filter @lyra-ds/docs run dev
 ```
 
 Abra `http://127.0.0.1:3000/en/components/dropdown` e confirme, um a um:
+
 - as duas abas aparecem, React ativa;
 - clicar em "HTML + Alpine" troca API e código, e **não** move os exemplos nem a prosa;
 - a URL vira `?stack=alpine`;
@@ -1182,10 +1210,12 @@ git commit -m "feat(site): abas de stack na página de componente, com Dropdown 
 73 componentes × 2 locales. Trabalho mecânico na estrutura, humano na prosa — faça em lotes por grupo do manifesto (`layout`, `action`, `form`, …), um commit por grupo, para que a revisão caiba na cabeça de alguém.
 
 **Files:**
+
 - Modify: `apps/docs/content/docs/{en,pt-BR}/components/*.mdx` (todos menos `dropdown.mdx`)
 - Create: `apps/docs/scripts/check-stack-sections.test.mjs`
 
 **Interfaces:**
+
 - Consumes: os componentes MDX da task 7.
 - Produces: nenhuma API nova — um teste que impede regressão.
 
@@ -1235,6 +1265,7 @@ Esperado: ~146 falhas (todas as páginas menos as duas do Dropdown). Esse númer
 - [ ] **Step 3: Converta grupo a grupo**
 
 Para cada componente, seguindo exatamente a forma da task 7:
+
 1. `## Props` + `## Plain HTML` viram `## API and code` com `<StackTabs>`;
 2. o HTML que já existia vai para `<StackPanel stack="alpine">` (ou `stack="react"` se o componente não tem Alpine — nesse caso o painel React carrega o HTML puro logo abaixo do exemplo React);
 3. se o manifesto declara `alpine`, adicione o exemplo com `x-data` conferido contra `packages/alpine/src/<slug>.ts`;
@@ -1264,12 +1295,14 @@ Esperado: zero falhas, build limpo.
 `form-row` e `toast-stack` existem no Blade e não têm página. Elas nascem agora, mesmo antes da aba Blade acender — com React e/ou Alpine quando houver, e a ausência explicada quando não.
 
 **Files:**
+
 - Create: `apps/docs/content/docs/{en,pt-BR}/components/form-row.mdx`
 - Create: `apps/docs/content/docs/{en,pt-BR}/components/toast-stack.mdx`
 - Modify: `apps/docs/lib/components.ts`
 - Modify: `apps/docs/messages/{en,pt-BR}.json`
 
 **Interfaces:**
+
 - Consumes: manifesto (task 5), abas (tasks 6–7).
 - Produces: duas entradas novas no manifesto — `{ slug: 'form-row', name: 'FormRow', group: 'form', stacks: [...] }` e `{ slug: 'toast-stack', name: 'ToastStack', group: 'feedback', stacks: [...] }`.
 
@@ -1313,6 +1346,7 @@ git commit -m "docs(site): páginas de FormRow e ToastStack"
 ### Task 10: Guias por stack, matriz de compatibilidade e llms.txt
 
 **Files:**
+
 - Modify: `apps/docs/content/docs/{en,pt-BR}/guides/getting-started.mdx`
 - Create: `apps/docs/content/docs/{en,pt-BR}/guides/compatibility.mdx`
 - Modify: `apps/docs/lib/guides.ts`
@@ -1320,6 +1354,7 @@ git commit -m "docs(site): páginas de FormRow e ToastStack"
 - Modify: `tools/docgen/alpine.mjs`
 
 **Interfaces:**
+
 - Consumes: `StackTabs`/`StackPanel` (task 6) — precisam ser injetados também na página de guia.
 - Produces: `apps/docs/public/llms.txt` cobrindo React e Alpine.
 
@@ -1382,11 +1417,13 @@ git commit -m "docs(site): guias por stack, matriz de compatibilidade e llms.txt
 > **Bloqueada pela Frente A.** Só comece quando `lyra-ds/blade` publicar `docs/api.json` com o formato declarado na spec (§5).
 
 **Files:**
+
 - Create: `tools/blade-api/api.json` (copiado da release)
 - Create: `tools/blade-api/check.mjs`
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
+
 - Consumes: `docs/api.json` da release do `lyra-ds/blade`.
 - Produces: `tools/blade-api/api.json` com campo `version`; `node tools/blade-api/check.mjs` falha se o arquivo não casar com o schema esperado ou se um slug declarado `blade` no manifesto não existir nele.
 
@@ -1409,7 +1446,7 @@ Esperado: a versão publicada e 72 componentes.
 Em `.github/workflows/ci.yml`, junto das outras verificações de artefato:
 
 ```yaml
-      - run: node tools/blade-api/check.mjs
+- run: node tools/blade-api/check.mjs
 ```
 
 - [ ] **Step 4: Commit**
@@ -1427,6 +1464,7 @@ git commit -m "feat(site): ingestão validada do snapshot de API do pacote Blade
 > **Depende da task 11.**
 
 **Files:**
+
 - Modify: `apps/docs/components/stack-api.tsx`
 - Modify: `apps/docs/lib/components.ts`
 - Modify: `apps/docs/content/docs/{en,pt-BR}/components/*.mdx`
@@ -1434,7 +1472,7 @@ git commit -m "feat(site): ingestão validada do snapshot de API do pacote Blade
 
 - [ ] **Step 1: Renderize a API do Blade**
 
-Em `stack-api.tsx`, troque o `return <p role="alert">Blade API arrives…</p>` por uma tabela lida de `tools/blade-api/api.json`, no mesmo formato das outras duas, seguida do `usage` do arquivo em bloco de código e — quando o componente tiver binding Alpine — da linha de herança: *"O comportamento vem de `lyraDropdown()`"*, com link para a aba irmã. Use uma chave de mensagem nova (`bladeInheritsAlpine`), não texto literal.
+Em `stack-api.tsx`, troque o `return <p role="alert">Blade API arrives…</p>` por uma tabela lida de `tools/blade-api/api.json`, no mesmo formato das outras duas, seguida do `usage` do arquivo em bloco de código e — quando o componente tiver binding Alpine — da linha de herança: _"O comportamento vem de `lyraDropdown()`"_, com link para a aba irmã. Use uma chave de mensagem nova (`bladeInheritsAlpine`), não texto literal.
 
 - [ ] **Step 2: Declare `blade` no manifesto**
 
