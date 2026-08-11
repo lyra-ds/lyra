@@ -13,7 +13,7 @@
  * handoff's own categories on purpose: `action` keeps Button/IconButton out of
  * `display`, and `data` collects the components that render records.
  */
-import type { DocStack } from './stacks';
+import { SIBLING, type DocStack } from './stacks';
 
 export type ComponentGroup =
   | 'layout'
@@ -49,16 +49,17 @@ export type ComponentEntry = {
  */
 const DEFAULT_ABSENCE: Record<DocStack, string> = {
   react: 'absenceReactMissing',
+  html: 'absenceHtmlNever',
   alpine: 'absenceAlpineStatic',
   blade: 'absenceBladePending',
 };
 
 const manifest: ComponentEntry[] = [
-  { slug: 'container', name: 'Container', group: 'layout', stacks: ['react'] },
-  { slug: 'stack', name: 'Stack', group: 'layout', stacks: ['react'] },
-  { slug: 'grid', name: 'Grid', group: 'layout', stacks: ['react'] },
-  { slug: 'page-header', name: 'PageHeader', group: 'layout', stacks: ['react'] },
-  { slug: 'shell', name: 'Shell', group: 'layout', stacks: ['react'] },
+  { slug: 'container', name: 'Container', group: 'layout', stacks: ['react', 'html'] },
+  { slug: 'stack', name: 'Stack', group: 'layout', stacks: ['react', 'html'] },
+  { slug: 'grid', name: 'Grid', group: 'layout', stacks: ['react', 'html'] },
+  { slug: 'page-header', name: 'PageHeader', group: 'layout', stacks: ['react', 'html'] },
+  { slug: 'shell', name: 'Shell', group: 'layout', stacks: ['react', 'html'] },
   {
     slug: 'theme-provider',
     name: 'ThemeProvider',
@@ -66,8 +67,8 @@ const manifest: ComponentEntry[] = [
     stacks: ['react', 'alpine'],
     absence: { blade: 'absenceBladeThemeProvider' },
   },
-  { slug: 'navbar', name: 'Navbar', group: 'navigation', stacks: ['react'] },
-  { slug: 'footer', name: 'Footer', group: 'navigation', stacks: ['react'] },
+  { slug: 'navbar', name: 'Navbar', group: 'navigation', stacks: ['react', 'html'] },
+  { slug: 'footer', name: 'Footer', group: 'navigation', stacks: ['react', 'html'] },
   {
     slug: 'table-of-contents',
     name: 'TableOfContents',
@@ -75,39 +76,39 @@ const manifest: ComponentEntry[] = [
     stacks: ['react', 'alpine'],
   },
   { slug: 'code-block', name: 'CodeBlock', group: 'display', stacks: ['react', 'alpine'] },
-  { slug: 'brand', name: 'Brand', group: 'display', stacks: ['react'] },
+  { slug: 'brand', name: 'Brand', group: 'display', stacks: ['react', 'html'] },
   {
     slug: 'segmented-control',
     name: 'SegmentedControl',
     group: 'form',
     stacks: ['react', 'alpine'],
   },
-  { slug: 'button', name: 'Button', group: 'action', stacks: ['react'] },
-  { slug: 'badge', name: 'Badge', group: 'display', stacks: ['react'] },
-  { slug: 'input', name: 'Input', group: 'form', stacks: ['react'] },
+  { slug: 'button', name: 'Button', group: 'action', stacks: ['react', 'html'] },
+  { slug: 'badge', name: 'Badge', group: 'display', stacks: ['react', 'html'] },
+  { slug: 'input', name: 'Input', group: 'form', stacks: ['react', 'html'] },
   { slug: 'dialog', name: 'Dialog', group: 'overlay', stacks: ['react', 'alpine'] },
-  { slug: 'textarea', name: 'Textarea', group: 'form', stacks: ['react'] },
-  { slug: 'checkbox', name: 'Checkbox', group: 'form', stacks: ['react'] },
-  { slug: 'radio', name: 'Radio', group: 'form', stacks: ['react'] },
-  { slug: 'switch', name: 'Switch', group: 'form', stacks: ['react'] },
-  { slug: 'select', name: 'Select', group: 'form', stacks: ['react'] },
+  { slug: 'textarea', name: 'Textarea', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'checkbox', name: 'Checkbox', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'radio', name: 'Radio', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'switch', name: 'Switch', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'select', name: 'Select', group: 'form', stacks: ['react', 'html'] },
   { slug: 'combobox', name: 'Combobox', group: 'form', stacks: ['react', 'alpine'] },
   { slug: 'file-upload', name: 'FileUpload', group: 'form', stacks: ['react', 'alpine'] },
-  { slug: 'avatar', name: 'Avatar', group: 'display', stacks: ['react'] },
-  { slug: 'card', name: 'Card', group: 'display', stacks: ['react'] },
-  { slug: 'tag', name: 'Tag', group: 'display', stacks: ['react'] },
-  { slug: 'icon', name: 'Icon', group: 'display', stacks: ['react'] },
-  { slug: 'skeleton', name: 'Skeleton', group: 'display', stacks: ['react'] },
+  { slug: 'avatar', name: 'Avatar', group: 'display', stacks: ['react', 'html'] },
+  { slug: 'card', name: 'Card', group: 'display', stacks: ['react', 'html'] },
+  { slug: 'tag', name: 'Tag', group: 'display', stacks: ['react', 'html'] },
+  { slug: 'icon', name: 'Icon', group: 'display', stacks: ['react', 'html'] },
+  { slug: 'skeleton', name: 'Skeleton', group: 'display', stacks: ['react', 'html'] },
   { slug: 'accordion', name: 'Accordion', group: 'display', stacks: ['react', 'alpine'] },
-  { slug: 'icon-button', name: 'IconButton', group: 'action', stacks: ['react'] },
-  { slug: 'table', name: 'Table', group: 'data', stacks: ['react'] },
-  { slug: 'stat', name: 'Stat', group: 'data', stacks: ['react'] },
-  { slug: 'empty-state', name: 'EmptyState', group: 'data', stacks: ['react'] },
+  { slug: 'icon-button', name: 'IconButton', group: 'action', stacks: ['react', 'html'] },
+  { slug: 'table', name: 'Table', group: 'data', stacks: ['react', 'html'] },
+  { slug: 'stat', name: 'Stat', group: 'data', stacks: ['react', 'html'] },
+  { slug: 'empty-state', name: 'EmptyState', group: 'data', stacks: ['react', 'html'] },
   { slug: 'file-manager', name: 'FileManager', group: 'data', stacks: ['react', 'alpine'] },
-  { slug: 'breadcrumb', name: 'Breadcrumb', group: 'navigation', stacks: ['react'] },
+  { slug: 'breadcrumb', name: 'Breadcrumb', group: 'navigation', stacks: ['react', 'html'] },
   { slug: 'tabs', name: 'Tabs', group: 'navigation', stacks: ['react', 'alpine'] },
-  { slug: 'pagination', name: 'Pagination', group: 'navigation', stacks: ['react'] },
-  { slug: 'stepper', name: 'Stepper', group: 'navigation', stacks: ['react'] },
+  { slug: 'pagination', name: 'Pagination', group: 'navigation', stacks: ['react', 'html'] },
+  { slug: 'stepper', name: 'Stepper', group: 'navigation', stacks: ['react', 'html'] },
   { slug: 'dropdown', name: 'Dropdown', group: 'navigation', stacks: ['react', 'alpine'] },
   { slug: 'sidebar-group', name: 'SidebarGroup', group: 'navigation', stacks: ['react', 'alpine'] },
   {
@@ -122,10 +123,10 @@ const manifest: ComponentEntry[] = [
     group: 'navigation',
     stacks: ['react', 'alpine'],
   },
-  { slug: 'alert', name: 'Alert', group: 'feedback', stacks: ['react'] },
+  { slug: 'alert', name: 'Alert', group: 'feedback', stacks: ['react', 'html'] },
   { slug: 'toast', name: 'Toast', group: 'feedback', stacks: ['react', 'alpine'] },
-  { slug: 'progress', name: 'Progress', group: 'feedback', stacks: ['react'] },
-  { slug: 'spinner', name: 'Spinner', group: 'feedback', stacks: ['react'] },
+  { slug: 'progress', name: 'Progress', group: 'feedback', stacks: ['react', 'html'] },
+  { slug: 'spinner', name: 'Spinner', group: 'feedback', stacks: ['react', 'html'] },
   { slug: 'tooltip', name: 'Tooltip', group: 'feedback', stacks: ['react', 'alpine'] },
   { slug: 'cookie-banner', name: 'CookieBanner', group: 'feedback', stacks: ['react', 'alpine'] },
   { slug: 'drawer', name: 'Drawer', group: 'overlay', stacks: ['react', 'alpine'] },
@@ -133,21 +134,21 @@ const manifest: ComponentEntry[] = [
     slug: 'create-workspace-dialog',
     name: 'CreateWorkspaceDialog',
     group: 'overlay',
-    stacks: ['react'],
+    stacks: ['react', 'html'],
   },
-  { slug: 'radio-group', name: 'RadioGroup', group: 'form', stacks: ['react'] },
-  { slug: 'checkbox-group', name: 'CheckboxGroup', group: 'form', stacks: ['react'] },
-  { slug: 'fieldset', name: 'Fieldset', group: 'form', stacks: ['react'] },
-  { slug: 'separator', name: 'Separator', group: 'layout', stacks: ['react'] },
+  { slug: 'radio-group', name: 'RadioGroup', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'checkbox-group', name: 'CheckboxGroup', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'fieldset', name: 'Fieldset', group: 'form', stacks: ['react', 'html'] },
+  { slug: 'separator', name: 'Separator', group: 'layout', stacks: ['react', 'html'] },
   { slug: 'time-input', name: 'TimeInput', group: 'form', stacks: ['react', 'alpine'] },
-  { slug: 'segmented-ring', name: 'SegmentedRing', group: 'display', stacks: ['react'] },
-  { slug: 'nav-link', name: 'NavLink', group: 'navigation', stacks: ['react'] },
+  { slug: 'segmented-ring', name: 'SegmentedRing', group: 'display', stacks: ['react', 'html'] },
+  { slug: 'nav-link', name: 'NavLink', group: 'navigation', stacks: ['react', 'html'] },
   { slug: 'app-sidebar', name: 'AppSidebar', group: 'navigation', stacks: ['react', 'alpine'] },
-  { slug: 'bottom-nav', name: 'BottomNav', group: 'navigation', stacks: ['react'] },
-  { slug: 'action-bar', name: 'ActionBar', group: 'data', stacks: ['react'] },
-  { slug: 'toast-provider', name: 'ToastProvider', group: 'feedback', stacks: ['react'] },
+  { slug: 'bottom-nav', name: 'BottomNav', group: 'navigation', stacks: ['react', 'html'] },
+  { slug: 'action-bar', name: 'ActionBar', group: 'data', stacks: ['react', 'html'] },
+  { slug: 'toast-provider', name: 'ToastProvider', group: 'feedback', stacks: ['react', 'html'] },
   { slug: 'data-table', name: 'DataTable', group: 'data', stacks: ['react', 'alpine'] },
-  { slug: 'person-cell', name: 'PersonCell', group: 'data', stacks: ['react'] },
+  { slug: 'person-cell', name: 'PersonCell', group: 'data', stacks: ['react', 'html'] },
   { slug: 'popover', name: 'Popover', group: 'overlay', stacks: ['react', 'alpine'] },
   { slug: 'bottom-sheet', name: 'BottomSheet', group: 'overlay', stacks: ['react', 'alpine'] },
   { slug: 'calendar', name: 'Calendar', group: 'form', stacks: ['react', 'alpine'] },
@@ -177,7 +178,7 @@ const manifest: ComponentEntry[] = [
     slug: 'calendar-view',
     name: 'CalendarView',
     group: 'data',
-    stacks: ['react'],
+    stacks: ['react', 'html'],
     absence: { alpine: 'absenceAlpineCalendarView', blade: 'absenceBladeCalendarView' },
   },
   {
@@ -195,6 +196,13 @@ export const components: ComponentEntry[] = [...manifest]
     absence: Object.fromEntries(
       (Object.keys(DEFAULT_ABSENCE) as DocStack[])
         .filter((stack) => !entry.stacks.includes(stack))
+        // A ausência de `html` num componente com binding (e vice-versa) não é ausência:
+        // é a mesma aba com outro nome, e anunciá-la seria ruído para o leitor.
+        .filter((stack) => {
+          const sibling = SIBLING[stack];
+
+          return !sibling || !entry.stacks.includes(sibling);
+        })
         .map((stack) => [stack, entry.absence?.[stack] ?? DEFAULT_ABSENCE[stack]]),
     ),
   }))

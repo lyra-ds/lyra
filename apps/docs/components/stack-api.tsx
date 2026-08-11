@@ -58,6 +58,8 @@ function AlpineApi({ slug }: { slug: string }) {
 export function StackApi({ slug, stack, name }: { slug: string; stack: DocStack; name: string }) {
   if (stack === 'react') return <PropTable name={name} />;
   if (stack === 'alpine') return <AlpineApi slug={slug} />;
+  // HTML puro não tem API a gerar: o contrato é o markup, e ele está no corpo da página.
+  if (stack === 'html') return null;
 
   return <p role="alert">Blade API arrives with the Frente A snapshot.</p>;
 }

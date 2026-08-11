@@ -40,12 +40,14 @@ Prefira outro componente quando:
   mudança de etapa; atualizar só este indicador visual não informa nada a quem usa leitor de tela.
 - Mantenha os nomes das etapas curtos e significativos, pois são o único texto que identifica cada estágio.
 
-## Props
+## API e código
 
-<PropTable name="Stepper" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 O conector após uma etapa concluída carrega `lyra-step__line--done`; o Stepper não é interativo.
 
 ```html
@@ -80,3 +82,6 @@ O conector após uma etapa concluída carrega `lyra-step__line--done`; o Stepper
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

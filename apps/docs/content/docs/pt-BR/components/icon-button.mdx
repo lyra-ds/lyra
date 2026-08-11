@@ -40,12 +40,14 @@ Prefira outro componente quando:
 - O Icon filho normalmente é decorativo; não dê a ele `title` que duplique o rótulo do botão.
 - O foco usa o anel compartilhado `--shadow-focus`. Preserve foco visível ao adicionar estilos próprios.
 
-## Props
+## API e código
 
-<PropTable name="IconButton" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use `aria-label` e `title` juntos, como faz o componente React; o SVG continua decorativo:
 
 ```html
@@ -65,3 +67,6 @@ Use `aria-label` e `title` juntos, como faz o componente React; o SVG continua d
   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"></svg>
 </button>
 ```
+
+  </StackPanel>
+</StackTabs>

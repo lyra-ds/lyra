@@ -40,11 +40,15 @@ Prefira outro componente quando:
 - O seletor de exceção não adiciona uma data anterior a hoje. Os controles de adicionar e remover, assim como
   strings de dias e intervalos, vêm de `labels`.
 
-## Props
+## API e código
 
-<PropTable name="WeeklyScheduleEditor" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, você controla a validação de intervalos, a cópia e as regras de substituição por exceção:
 
@@ -64,3 +68,6 @@ Sem React, você controla a validação de intervalos, a cópia e as regras de s
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

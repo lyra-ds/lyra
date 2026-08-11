@@ -39,11 +39,15 @@ Reach for something else when:
 - Each completed item includes `.lyra-upload__check` with `role="img"` and the accessible name “Upload complete” by default. Pass `doneLabel` to translate it; `removeLabel` receives each file name so remove-button names can follow local word order.
 - The visible `label` is button text, not a form `<label>`. Make its action and accepted file rules explicit through `label`, `hint`, `accept` and nearby instructions.
 
-## Props
+## API and code
 
-<PropTable name="FileUpload" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The React component handles the picker, drag events and progress. This markup shows the public classes used by the rendered upload state:
 
@@ -74,3 +78,6 @@ The React component handles the picker, drag events and progress. This markup sh
   </ul>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

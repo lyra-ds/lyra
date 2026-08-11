@@ -45,11 +45,15 @@ Reach for something else when:
   title and close name come from `label`/`labels.sheetTitle` and `labels.close`. It is prose only in
   these docs because the stage cannot resize its viewport.
 
-## Props
+## API and code
 
-<PropTable name="DateRangePicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose one trigger with Popover and Calendar classes, then implement range state,
 focus movement and the mobile sheet alternative yourself:
@@ -85,3 +89,6 @@ focus movement and the mobile sheet alternative yourself:
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

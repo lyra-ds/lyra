@@ -40,12 +40,14 @@ Reach for something else when:
 - Stat has no interactive element or focus behaviour. Place it next to the heading or region that
   explains the metric and its reporting period.
 
-## Props
+## API and code
 
-<PropTable name="Stat" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The delta carries both its direction class and the arrow as visible text:
 
 ```html
@@ -55,3 +57,6 @@ The delta carries both its direction class and the arrow as visible text:
   <span class="lyra-stat__delta lyra-stat__delta--up">↑ 12%</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

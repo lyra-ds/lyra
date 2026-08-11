@@ -44,11 +44,15 @@ Reach for something else when:
 - Search folds diacritics in both labels and keywords: `cafe` can find `café`. Options also match their
   IANA identifier and displayed offset even though those search terms need not be visible.
 
-## Props
+## API and code
 
-<PropTable name="TimeZonePicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, use the Combobox structure and derive the zone's offset for the intended date yourself:
 
@@ -84,3 +88,6 @@ Without React, use the Combobox structure and derive the zone's offset for the i
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

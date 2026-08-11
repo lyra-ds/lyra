@@ -58,11 +58,15 @@ Reach for something else when:
 - Below 720px, Trigger collapses to its icon while its visible label and shortcut are hidden. It
   keeps its accessible name from `label`; the search icon is decorative, so make that label meaningful.
 
-## Props
+## API and code
 
-<PropTable name="CommandPalette" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 This is the panel structure used by inline mode. A modal wraps it in the overlay and adds dialog semantics:
 
@@ -101,3 +105,6 @@ This is the panel structure used by inline mode. A modal wraps it in the overlay
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

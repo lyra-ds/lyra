@@ -73,5 +73,7 @@
   "absenceAlpineCalendarView": "Adiado por decisão — CalendarView ainda não tem binding Alpine.",
   "absenceBladePending": "Ainda não documentado para Blade.",
   "absenceBladeThemeProvider": "Blade não tem forma de provider. O tema vive na diretiva @lyraThemeScript e no store de tema do Alpine.",
-  "absenceBladeCalendarView": "Adiado por decisão — CalendarView ainda não tem equivalente em Blade."
+  "absenceBladeCalendarView": "Adiado por decisão — CalendarView ainda não tem equivalente em Blade.",
+  "stackHtml": "HTML",
+  "absenceHtmlNever": "Este componente não tem HTML canônico próprio."
 }

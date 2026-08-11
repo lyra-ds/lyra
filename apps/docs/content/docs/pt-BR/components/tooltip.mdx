@@ -54,11 +54,15 @@ Procure outra coisa quando:
   divergência de hidratação e — como ele não corrige divergência de atributo — a descrição nunca chega
   ao DOM. Um `'use client'` no arquivo que renderiza os dois resolve.
 
-## Props
+## API e código
 
-<PropTable name="Tooltip" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 O wrapper carrega o texto em `data-tip`; o CSS desenha a bolha a partir dele:
 
@@ -74,3 +78,6 @@ O wrapper carrega o texto em `data-tip`; o CSS desenha a bolha a partir dele:
   <span id="tip-share" role="tooltip" hidden>Todos no workspace conseguem abrir este link</span>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

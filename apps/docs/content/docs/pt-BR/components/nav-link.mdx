@@ -42,15 +42,20 @@ Prefira outro componente quando:
 - Com `asChild`, forneça exatamente um elemento de link válido. Esse filho mantém a responsabilidade
   por `href`, comportamento de teclado e nome acessível.
 
-## Props
+## API e código
 
-<PropTable name="NavLink" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use uma âncora para cada destino e declare diretamente a página atual:
 
 ```html
 <a class="lyra-navlink lyra-navlink--active" href="/overview" aria-current="page">Visão geral</a>
 <a class="lyra-navlink" href="/projects">Projetos</a>
 ```
+
+  </StackPanel>
+</StackTabs>

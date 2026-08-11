@@ -37,12 +37,14 @@ Reach for something else when:
 - There is no generated `id` or `htmlFor`; consumer `id` passes through when another element needs to refer to the input.
 - The focus-visible ring is `--shadow-focus`. Use a visible group heading or a `<fieldset>`/`<legend>` to explain the decision.
 
-## Props
+## API and code
 
-<PropTable name="Radio" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use a shared `name` for the group and wrap each native input in its label:
 
 ```html
@@ -58,3 +60,6 @@ Use a shared `name` for the group and wrap each native input in its label:
   </label>
 </fieldset>
 ```
+
+  </StackPanel>
+</StackTabs>

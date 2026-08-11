@@ -51,11 +51,15 @@ Reach for something else when:
 - When `onRowClick` is present, hover styling is enabled automatically, but the row is still not a
   keyboard-operable control. Put a real button or link in a cell for a keyboard action.
 
-## Props
+## API and code
 
-<PropTable name="DataTable" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose the table classes — you own sorting, selected-row state, checkbox labels and
 the loading transition:
@@ -90,3 +94,6 @@ the loading transition:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

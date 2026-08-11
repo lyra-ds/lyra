@@ -49,12 +49,14 @@ Reach for something else when:
 - The light and dark marks are both in the DOM and CSS hides one. Provide equivalent artwork so a
   theme change never changes the product name or meaning.
 
-## Props
+## API and code
 
-<PropTable name="Brand" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The examples use documentation assets, so their image paths will 404 in your app. Replace them with
 your product's own light and dark mark files when copying this markup:
 
@@ -69,3 +71,6 @@ your product's own light and dark mark files when copying this markup:
   <img class="lyra-brand__mark" src="/mark.svg" alt="" />
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -45,12 +45,14 @@ Reach for something else when:
   reader could announce between locations.
 - Supply concise, ordered labels that identify locations without relying on the visual hierarchy.
 
-## Props
+## API and code
 
-<PropTable name="Breadcrumb" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The separator span is intentionally empty: CSS draws its chevron, and assistive technology ignores it.
 
 ```html
@@ -62,3 +64,6 @@ The separator span is intentionally empty: CSS draws its chevron, and assistive 
   <span class="lyra-breadcrumb__current" aria-current="page">Brand refresh</span>
 </nav>
 ```
+
+  </StackPanel>
+</StackTabs>

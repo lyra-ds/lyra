@@ -39,12 +39,14 @@ Reach for something else when:
   step change; updating this visual indicator alone tells a screen-reader user nothing.
 - Keep step names concise and meaningful, because they are the only text that identifies each stage.
 
-## Props
+## API and code
 
-<PropTable name="Stepper" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The connector after a completed step carries `lyra-step__line--done`; the Stepper itself is not interactive.
 
 ```html
@@ -79,3 +81,6 @@ The connector after a completed step carries `lyra-step__line--done`; the Steppe
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -43,11 +43,15 @@ Reach for something else when:
   rail mode, group labels, item text and badges are visually hidden, while the control and item names
   remain available.
 
-## Props
+## API and code
 
-<PropTable name="AppSidebar" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The composed-link door is ordinary navigation markup. Supply the collapse behavior, rail labels and
 selection handling yourself outside React:
@@ -71,3 +75,6 @@ selection handling yourself outside React:
   </div>
 </nav>
 ```
+
+  </StackPanel>
+</StackTabs>

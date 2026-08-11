@@ -45,11 +45,15 @@ Reach for something else when:
 - useScrollSpy never moves focus while scrolling. Keep the active indicator separate from keyboard
   focus, and do not announce every scroll change as a live update.
 
-## Props
+## API and code
 
-<PropTable name="TableOfContents" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The navigation label names the landmark; the current location is an anchor state, not a button state:
 
@@ -67,3 +71,6 @@ The navigation label names the landmark; the current location is an anchor state
   </ul>
 </nav>
 ```
+
+  </StackPanel>
+</StackTabs>

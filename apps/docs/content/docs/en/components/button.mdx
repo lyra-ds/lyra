@@ -57,12 +57,14 @@ Reach for something else when:
 - With `asChild`, the accessibility contract belongs to the child: an anchor needs a real `href`
   to be reachable by keyboard.
 
-## Props
+## API and code
 
-<PropTable name="Button" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Compose one variant class and one size class; the label sits in its own element so the spinner
 can be added without reflow:
 
@@ -80,3 +82,6 @@ can be added without reflow:
   <span class="lyra-btn__label">Read the docs</span>
 </a>
 ```
+
+  </StackPanel>
+</StackTabs>

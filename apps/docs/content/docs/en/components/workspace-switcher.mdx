@@ -45,11 +45,15 @@ Reach for something else when:
 - `onChange` receives both the selected id and workspace record. Update the surrounding application
   state there; `current` is how a controlled switcher announces that state on the next render.
 
-## Props
+## API and code
 
-<PropTable name="WorkspaceSwitcher" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The current workspace is the selected listbox option; creation remains an option, not a menu command:
 
@@ -86,3 +90,6 @@ The current workspace is the selected listbox option; creation remains an option
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

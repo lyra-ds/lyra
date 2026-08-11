@@ -38,12 +38,14 @@ Reach for something else when:
 - The child Icon is normally decorative; do not give it a `title` that duplicates the button label.
 - Focus uses the shared `--shadow-focus` ring. Keep visible focus intact when adding custom styles.
 
-## Props
+## API and code
 
-<PropTable name="IconButton" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use `aria-label` and `title` together, as the React component does; the SVG remains decorative:
 
 ```html
@@ -63,3 +65,6 @@ Use `aria-label` and `title` together, as the React component does; the SVG rema
   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"></svg>
 </button>
 ```
+
+  </StackPanel>
+</StackTabs>

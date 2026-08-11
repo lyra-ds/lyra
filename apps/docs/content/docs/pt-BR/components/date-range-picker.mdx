@@ -47,11 +47,15 @@ Prefira outro componente quando:
   nome de fechar vêm de `label`/`labels.sheetTitle` e `labels.close`. Aqui é apenas texto porque o
   stage não redimensiona o viewport.
 
-## Props
+## API e código
 
-<PropTable name="DateRangePicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, componha um trigger com classes de Popover e Calendar e implemente estado do intervalo,
 movimento de foco e a alternativa de folha mobile:
@@ -87,3 +91,6 @@ movimento de foco e a alternativa de folha mobile:
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

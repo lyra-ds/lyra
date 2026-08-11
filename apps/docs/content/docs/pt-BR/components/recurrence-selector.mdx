@@ -42,7 +42,10 @@ Prefira outro componente quando:
 - O caminho de data de término usa DatePicker com a data inicial da recorrência como mínimo, impedindo uma
   data anterior ao início da série. Todas as strings visíveis e acessíveis vêm de `labels`.
 
-## Props
+## API e código
+
+<StackTabs>
+  <StackPanel stack="react">
 
 <PropTable name="RecurrenceSelector" />
 
@@ -53,7 +56,10 @@ completo usado pelo seletor. Forneça em `labels` os mesmos templates de frase c
 a função escolhe um template para cada combinação de frequência, intervalo e término, depois preenche seus
 placeholders. Ela nunca concatena fragmentos de recorrência; a tradução controla ordem e gramática.
 
-## HTML puro
+  </StackPanel>
+
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, controle o estado da regra e mantenha o resumo sincronizado com ele:
 
@@ -79,3 +85,6 @@ Sem React, controle o estado da regra e mantenha o resumo sincronizado com ele:
   >
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

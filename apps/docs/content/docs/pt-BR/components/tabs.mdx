@@ -43,11 +43,15 @@ Prefira outro componente quando:
 - O componente não renderiza o conteúdo dos painéis. Renderize esse conteúdo você e preserve um
   indicador de foco visível para controles que adicionar ao redor dele.
 
-## Props
+## API e código
 
-<PropTable name="Tabs" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Tabs emite a lista de abas e seus painéis vazios rotulados. O conteúdo da aplicação fica fora deste markup.
 
@@ -90,3 +94,6 @@ Tabs emite a lista de abas e seus painéis vazios rotulados. O conteúdo da apli
   hidden
 ></div>
 ```
+
+  </StackPanel>
+</StackTabs>

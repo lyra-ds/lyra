@@ -44,7 +44,10 @@ Reach for something else when:
 - FormRow is only a responsive `div` grid. It adds no landmark or group semantics; Fieldset provides
   the semantic boundary in these examples.
 
-## Props
+## API and code
+
+<StackTabs>
+  <StackPanel stack="react">
 
 <PropTable name="Fieldset" />
 
@@ -55,8 +58,9 @@ FormRow places related form fields in equal-width columns and uses the number of
 
 <PropTable name="FormRow" />
 
-## Plain HTML
+  </StackPanel>
 
+  <StackPanel stack="html">
 Without React, retain the native fieldset and set `--lyra-formrow-columns` for each equal-width row:
 
 ```html
@@ -77,3 +81,6 @@ Without React, retain the native fieldset and set `--lyra-formrow-columns` for e
   </div>
 </fieldset>
 ```
+
+  </StackPanel>
+</StackTabs>

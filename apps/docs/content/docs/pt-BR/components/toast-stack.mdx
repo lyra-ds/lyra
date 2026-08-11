@@ -33,3 +33,30 @@ Prefira outra coisa quando:
 - A dispensa é alcançável pelo teclado em todo toast — o temporizador é conveniência, nunca a única
   saída.
 - Os toasts empilham na ordem da fila, então a ordem de leitura acompanha a ordem visual.
+
+## API e código
+
+<StackTabs>
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+A pilha não recebe opções — ela renderiza o que estiver no store. Monte uma por documento e
+enfileire toasts de qualquer lugar com `$store.lyraToasts`:
+
+```html
+<div class="lyra-toast-stack" x-data="lyraToastStack()">
+  <template x-for="toast in toasts" :key="toast.id">
+    <div class="lyra-toast" role="status">
+      <span class="lyra-toast__icon" :class="toneClass(toast.tone)"></span>
+      <span x-text="toast.message"></span>
+      <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+    </div>
+  </template>
+</div>
+```
+
+Cada toast carrega o próprio id, então o botão de fechar o lê do elemento em vez de um closure.
+`toneClass()` mapeia o tom para o modificador do ícone; o ícone em si é você quem fornece.
+
+  </StackPanel>
+</StackTabs>

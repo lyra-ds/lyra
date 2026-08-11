@@ -41,11 +41,15 @@ Reach for something else when:
 - Calendar days with availability receive a visual marker and unavailable days are disabled. Visible and
   accessible date, time, hold and time-zone strings are configurable through `locale` and `labels`.
 
-## Props
+## API and code
 
-<PropTable name="SlotPicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, group UTC instants using the chosen display zone before rendering these classes:
 
@@ -66,3 +70,6 @@ Without React, group UTC instants using the chosen display zone before rendering
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

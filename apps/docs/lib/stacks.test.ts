@@ -14,6 +14,10 @@ describe('resolveStack', () => {
     expect(resolveStack(['alpine', 'blade'], null)).toBe('alpine');
   });
 
+  it('prefere HTML a Alpine quando um componente estático não tem React', () => {
+    expect(resolveStack(['html', 'blade'], null)).toBe('html');
+  });
+
   it('ignora valor arbitrário vindo da URL', () => {
     expect(resolveStack(['react', 'blade'], 'javascript')).toBe('react');
   });
@@ -23,6 +27,6 @@ describe('resolveStack', () => {
   });
 
   it('expõe a ordem canônica das stacks', () => {
-    expect(stackOrder).toEqual(['react', 'alpine', 'blade']);
+    expect(stackOrder).toEqual(['react', 'html', 'alpine', 'blade']);
   });
 });

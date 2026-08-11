@@ -43,11 +43,15 @@ Reach for something else when:
 - Page scroll is locked while the dialog is open, and the panel is portaled to `document.body`
   so it escapes any `overflow: hidden` ancestor.
 
-## Props
+## API and code
 
-<PropTable name="Dialog" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose the same classes — you own the open/close state, focus and Escape:
 
@@ -66,3 +70,6 @@ Without React, compose the same classes — you own the open/close state, focus 
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

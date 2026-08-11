@@ -42,11 +42,15 @@ Reach for something else when:
 - Pointer clicks follow the same `onChange` path as the keyboard. Keep `value` current after every
   callback, or the announced selection and visible state will disagree.
 
-## Props
+## API and code
 
-<PropTable name="SegmentedControl" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The native buttons carry radio semantics. Only the selected, enabled option belongs in the Tab order:
 
@@ -82,3 +86,6 @@ The native buttons carry radio semantics. Only the selected, enabled option belo
   </button>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

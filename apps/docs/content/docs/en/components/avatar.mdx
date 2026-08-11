@@ -57,12 +57,14 @@ Reach for something else when:
 - Avatar is a `<span>`, not a button or link. Wrap it in the semantic interactive element when it opens
   a profile, and give that parent an accessible name.
 
-## Props
+## API and code
 
-<PropTable name="Avatar" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Keep the image alternative text meaningful; the status dot has its own announced state:
 
 ```html
@@ -79,3 +81,6 @@ Keep the image alternative text meaningful; the status dot has its own announced
   <span aria-hidden="true">LD</span>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

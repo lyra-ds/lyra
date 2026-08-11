@@ -45,12 +45,14 @@ Prefira outro componente quando:
   que um leitor de tela possa anunciar entre localizações.
 - Forneça rótulos curtos e ordenados que identifiquem as localizações sem depender da hierarquia visual.
 
-## Props
+## API e código
 
-<PropTable name="Breadcrumb" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 O span separador é propositalmente vazio: o CSS desenha o chevron e a tecnologia assistiva o ignora.
 
 ```html
@@ -62,3 +64,6 @@ O span separador é propositalmente vazio: o CSS desenha o chevron e a tecnologi
   <span class="lyra-breadcrumb__current" aria-current="page">Atualização da marca</span>
 </nav>
 ```
+
+  </StackPanel>
+</StackTabs>

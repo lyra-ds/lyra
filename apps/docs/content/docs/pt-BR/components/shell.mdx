@@ -57,12 +57,14 @@ Prefira outro componente quando:
 - Em `scroll="content"`, garanta que o conteúdo principal tenha controles focalizáveis ou um alvo de
   foco gerenciado para que usuários de teclado entrem e descubram a região rolável.
 
-## Props
+## API e código
 
-<PropTable name="Shell" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 As classes expressam o modelo de scroll da página. Nomeie os dois landmarks de navegação e defina o
 offset sticky quando houver um cabeçalho fixo acima da moldura:
 
@@ -82,3 +84,6 @@ offset sticky quando houver um cabeçalho fixo acima da moldura:
   </nav>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

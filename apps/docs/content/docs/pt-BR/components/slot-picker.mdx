@@ -42,11 +42,15 @@ Prefira outro componente quando:
 - Dias de calendário com disponibilidade recebem um marcador visual, e dias indisponíveis são desabilitados.
   Strings visíveis e acessíveis de data, horário, reserva e fuso são configuráveis por `locale` e `labels`.
 
-## Props
+## API e código
 
-<PropTable name="SlotPicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, agrupe instantes UTC com o fuso de exibição escolhido antes de renderizar estas classes:
 
@@ -67,3 +71,6 @@ Sem React, agrupe instantes UTC com o fuso de exibição escolhido antes de rend
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

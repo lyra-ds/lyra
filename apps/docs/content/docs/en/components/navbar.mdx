@@ -50,12 +50,14 @@ Reach for something else when:
 - Navbar adds no focus management. Keep the brand, route links and actions in a DOM order that still
   makes sense after the responsive row wraps.
 
-## Props
+## API and code
 
-<PropTable name="Navbar" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The header owns the page-level landmark; the named navigation holds real anchors and the current
 route declares itself:
 
@@ -73,3 +75,6 @@ route declares itself:
   </div>
 </header>
 ```
+
+  </StackPanel>
+</StackTabs>

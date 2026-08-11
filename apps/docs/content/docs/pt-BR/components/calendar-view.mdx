@@ -47,12 +47,14 @@ Prefira outro componente quando:
 - CalendarView não emite landmark de página nem heading, portanto pode ficar dentro do outline do documento da
   página consumidora. Use `labels` e `locale` para traduzir controles e formatação de datas.
 
-## Props
+## API e código
 
-<PropTable name="CalendarView" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Sem React, calcule a posição local dos eventos e controle navegação de visualização, posição do popover e criação de slots:
 
 ```html
@@ -73,3 +75,6 @@ Sem React, calcule a posição local dos eventos e controle navegação de visua
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

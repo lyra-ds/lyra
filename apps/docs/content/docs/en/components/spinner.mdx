@@ -41,14 +41,19 @@ Reach for something else when:
   that implies a duration.
 - Give the surrounding region its own text if the reader needs to know _what_ is loading.
 
-## Props
+## API and code
 
-<PropTable name="Spinner" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Size is a modifier class; the animation lives entirely in CSS:
 
 ```html
 <span class="lyra-spinner lyra-spinner--md" role="status" aria-label="Loading"></span>
 ```
+
+  </StackPanel>
+</StackTabs>

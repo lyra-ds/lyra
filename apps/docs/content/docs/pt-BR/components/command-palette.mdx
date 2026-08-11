@@ -57,11 +57,15 @@ Prefira outro componente quando:
 - Abaixo de 720px, Trigger se reduz ao ícone enquanto o rótulo visível e o atalho ficam ocultos. Ele
   preserva o nome acessível de `label`; o ícone de busca é decorativo, então esse rótulo deve ser significativo.
 
-## Props
+## API e código
 
-<PropTable name="CommandPalette" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Esta é a estrutura de painel usada pelo modo inline. Um modal a envolve no overlay e adiciona a semântica de diálogo:
 
@@ -100,3 +104,6 @@ Esta é a estrutura de painel usada pelo modo inline. Um modal a envolve no over
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

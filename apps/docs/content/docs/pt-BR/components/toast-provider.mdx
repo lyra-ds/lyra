@@ -42,7 +42,10 @@ Prefira outro componente quando:
 - O ToastStack do provider fica fixo no canto inferior direito do viewport. Mantenha mensagens breves
   e não deixe a pilha substituir um status persistente.
 
-## Props
+## API e código
+
+<StackTabs>
+  <StackPanel stack="react">
 
 <PropTable name="ToastProvider" />
 
@@ -55,8 +58,9 @@ chamada sobrescreve o padrão do provider para aquele toast, e `0` desativa seu 
 Métodos da API mantidos depois que o provider desmonta são no-ops seguros: retornam um id, mas não colocam
 estado na fila nem deixam um timer.
 
-## HTML puro
+  </StackPanel>
 
+  <StackPanel stack="html">
 ToastProvider é estado e temporização React; em HTML puro, use os primitives resultantes. A fila, timers
 de auto-dismiss e o comportamento de fechar ficam com você:
 
@@ -69,3 +73,6 @@ de auto-dismiss e o comportamento de fechar ficam com você:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

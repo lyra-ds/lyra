@@ -46,12 +46,14 @@ Prefira outro componente quando:
 - Toda transição de fechado para aberto zera nome, slug e estado de "tocado". Forneça `onClose` e
   altere `open` em resposta para Escape, o botão de fechar e Cancel realmente fecharem o diálogo.
 
-## Props
+## API e código
 
-<PropTable name="CreateWorkspaceDialog" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Este componente compõe Dialog, Avatar, Input e Button. Sem React, as mesmas classes fornecem a
 aparência; a regra nome-para-slug, o reset, o foco e o comportamento de fechamento são seus:
 
@@ -91,3 +93,6 @@ aparência; a regra nome-para-slug, o reset, o foco e o comportamento de fechame
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

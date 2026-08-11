@@ -41,12 +41,14 @@ Prefira outro componente quando:
 - Stat não tem elemento interativo nem comportamento de foco. Coloque-o perto do título ou região que
   explica a métrica e seu período de referência.
 
-## Props
+## API e código
 
-<PropTable name="Stat" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 O delta carrega a classe de direção e a seta como texto visível:
 
 ```html
@@ -56,3 +58,6 @@ O delta carrega a classe de direção e a seta como texto visível:
   <span class="lyra-stat__delta lyra-stat__delta--up">↑ 12%</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

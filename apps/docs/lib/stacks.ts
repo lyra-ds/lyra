@@ -5,14 +5,24 @@
  * O nome do tipo é `DocStack`, e não `Stack`, porque `Stack` já é um componente de
  * layout do próprio design system.
  */
-export type DocStack = 'react' | 'alpine' | 'blade';
+export type DocStack = 'react' | 'html' | 'alpine' | 'blade';
 
 /** Ordem canônica: do runtime mais usado ao mais específico. Decide o fallback. */
-export const stackOrder: DocStack[] = ['react', 'alpine', 'blade'];
+export const stackOrder: DocStack[] = ['react', 'html', 'alpine', 'blade'];
+
+/**
+ * `html` e `alpine` são o mesmo lugar visto de dois estados: todo componente tem HTML
+ * canônico, e 31 deles ganham comportamento por um binding. Um componente estático mostra
+ * "HTML"; um interativo mostra "HTML + Alpine" — nunca as duas abas, porque seria a mesma
+ * aba duas vezes. `SIBLING` registra esse par para quem precisa saber que a ausência de
+ * uma é explicada pela presença da outra.
+ */
+export const SIBLING: Partial<Record<DocStack, DocStack>> = { html: 'alpine', alpine: 'html' };
 
 /** Stack → chave de mensagem next-intl, para que os rótulos não se dupliquem por aí. */
 export const stackLabelKey: Record<DocStack, string> = {
   react: 'stackReact',
+  html: 'stackHtml',
   alpine: 'stackAlpine',
   blade: 'stackBlade',
 };

@@ -56,11 +56,15 @@ Reach for something else when:
 - Never make color the only signal for a selected mode; expose the current choice in the control's
   text or state.
 
-## Props
+## API and code
 
-<PropTable name="ThemeProvider" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 ThemeProvider is React behavior, but the resulting document attribute is plain HTML. The same
 stylesheet classes then resolve against the selected token set:
@@ -72,3 +76,6 @@ stylesheet classes then resolve against the selected token set:
   </body>
 </html>
 ```
+
+  </StackPanel>
+</StackTabs>

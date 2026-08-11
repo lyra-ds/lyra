@@ -41,12 +41,14 @@ Prefira outro componente quando:
 - O tom nunca é a mensagem. "Falhou" precisa dizer _Falhou_; um badge vermelho só com um número não
   funciona para quem não distingue a cor.
 
-## Props
+## API e código
 
-<PropTable name="Badge" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 ```html
 <span class="lyra-badge lyra-badge--success">
   <span class="lyra-badge__dot" aria-hidden="true"></span>
@@ -54,3 +56,6 @@ Prefira outro componente quando:
 </span>
 <span class="lyra-badge lyra-badge--warning">Degradado</span>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -40,12 +40,14 @@ Reach for something else when:
   is compact, so do not make it the only practical way to clear a filter on touch-heavy screens.
 - Do not use color as the category name; the visible tag text is the meaning.
 
-## Props
+## API and code
 
-<PropTable name="Tag" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use a real button for removal, not a clickable span:
 
 ```html
@@ -56,3 +58,6 @@ Use a real button for removal, not a clickable span:
   <button class="lyra-tag__remove" type="button" aria-label="Remove">×</button>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

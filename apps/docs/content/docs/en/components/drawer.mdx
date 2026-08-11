@@ -46,11 +46,15 @@ Reach for something else when:
 - The component is portaled to `document.body` by default. Pass `container` only when your app
   needs a different portal host.
 
-## Props
+## API and code
 
-<PropTable name="Drawer" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose the same classes — you own open state, focus trapping, scroll locking and
 the Escape path:
@@ -69,3 +73,6 @@ the Escape path:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

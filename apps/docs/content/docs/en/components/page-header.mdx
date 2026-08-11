@@ -43,12 +43,14 @@ Reach for something else when:
 - A header does not move focus. When navigation replaces a page, the application must choose whether
   focus belongs on the new `<h1>` or the first task control.
 
-## Props
+## API and code
 
-<PropTable name="PageHeader" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The header row keeps page-wide actions beside the identity; the secondary row follows it:
 
 ```html
@@ -68,3 +70,6 @@ The header row keeps page-wide actions beside the identity; the secondary row fo
   </nav>
 </header>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -53,11 +53,15 @@ Prefira outro componente quando:
 - CodeBlock não realça nem sanitiza markup. Seu highlighter e qualquer fonte não confiável continuam
   sob sua responsabilidade.
 
-## Props
+## API e código
 
-<PropTable name="CodeBlock" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 O painel espera o markup do seu highlighter dentro do `<pre>`. Adicione `line` a cada linha apenas
 quando ativar o modificador de números de linha:
@@ -74,3 +78,6 @@ quando ativar o modificador de números de linha:
   <span class="lyra-code__status" role="status" aria-live="polite"></span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

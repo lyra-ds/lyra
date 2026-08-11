@@ -43,11 +43,15 @@ Prefira outro componente quando:
 - A busca remove diacríticos de labels e keywords: `cafe` encontra `café`. As opções também encontram o
   identificador IANA e o offset exibido, ainda que esses termos não precisem ficar visíveis.
 
-## Props
+## API e código
 
-<PropTable name="TimeZonePicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, use a estrutura de Combobox e calcule você o offset do fuso para a data pretendida:
 
@@ -83,3 +87,6 @@ Sem React, use a estrutura de Combobox e calcule você o offset do fuso para a d
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

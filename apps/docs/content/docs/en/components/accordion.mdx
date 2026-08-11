@@ -42,11 +42,15 @@ Reach for something else when:
 - Use unique, stable item `id` values. They identify each item's state; duplicates can make separate items
   open or close together.
 
-## Props
+## API and code
 
-<PropTable name="Accordion" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Keep the native button and its expanded state in sync with the panel it controls:
 
@@ -68,3 +72,6 @@ Keep the native button and its expanded state in sync with the panel it controls
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

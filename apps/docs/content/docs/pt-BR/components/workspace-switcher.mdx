@@ -44,11 +44,15 @@ Prefira outro componente quando:
 - `onChange` recebe o id e o registro do workspace selecionado. Atualize o estado da aplicação nele;
   `current` é como um switcher controlado anuncia esse estado na próxima renderização.
 
-## Props
+## API e código
 
-<PropTable name="WorkspaceSwitcher" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 O workspace atual é a opção selecionada do listbox; criar continua sendo opção, não comando de menu:
 
@@ -85,3 +89,6 @@ O workspace atual é a opção selecionada do listbox; criar continua sendo opç
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

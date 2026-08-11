@@ -37,12 +37,14 @@ Reach for something else when:
 - `hint` or `error` is connected with `aria-describedby`; `error` takes precedence and sets `aria-invalid`.
 - Focus uses `--shadow-focus`. Do not document custom listbox keystrokes here: this is not a custom combobox.
 
-## Props
+## API and code
 
-<PropTable name="Select" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Place the native select in its wrapper so the CSS arrow can sit over the control without receiving clicks:
 
 ```html
@@ -66,3 +68,6 @@ Place the native select in its wrapper so the CSS arrow can sit over the control
   <span class="lyra-hint lyra-hint--error">Choose the billing country.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

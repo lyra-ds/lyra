@@ -44,12 +44,14 @@ Prefira outro componente quando:
 - No modo controlado, `onChange` informa o próximo `string[]` completo; quem chama deve atualizar
   `value` para refletir a mudança.
 
-## Props
+## API e código
 
-<PropTable name="CheckboxGroup" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Sem React, componha checkboxes nativos nas classes compartilhadas de campo e grupo de escolhas:
 
 ```html
@@ -68,3 +70,6 @@ Sem React, componha checkboxes nativos nas classes compartilhadas de campo e gru
   <span class="lyra-hint">Choose every channel you want to use.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

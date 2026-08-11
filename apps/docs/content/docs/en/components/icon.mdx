@@ -41,12 +41,14 @@ Reach for something else when:
 - A bare Icon is not interactive or focusable. Put it inside a semantic link or button when it triggers
   something.
 
-## Props
+## API and code
 
-<PropTable name="Icon" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Icon renders an SVG. The React component also emits `.lyra-icon` as a targeting hook, but no stylesheet
 rule ships for it, so plain HTML needs no Lyra class:
 
@@ -64,3 +66,6 @@ rule ships for it, so plain HTML needs no Lyra class:
 
 <svg role="img" aria-label="Featured project" width="24" height="24" viewBox="0 0 24 24"></svg>
 ```
+
+  </StackPanel>
+</StackTabs>

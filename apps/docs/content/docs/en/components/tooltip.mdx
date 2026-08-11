@@ -54,11 +54,15 @@ Reach for something else when:
   hydration mismatch, and — because React does not patch attribute mismatches — the description never
   reaches the DOM at all. A `'use client'` directive on the file that renders both is the fix.
 
-## Props
+## API and code
 
-<PropTable name="Tooltip" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The wrapper carries the text in `data-tip`; CSS draws the bubble from it:
 
@@ -74,3 +78,6 @@ The wrapper carries the text in `data-tip`; CSS draws the bubble from it:
   <span id="tip-share" role="tooltip" hidden>Everyone in the workspace can open this link</span>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

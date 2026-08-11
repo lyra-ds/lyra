@@ -45,12 +45,14 @@ Reach for something else when:
 - A controlled `value` stays owned by the caller. Update it in `onChange` after the component reports
   the newly selected string.
 
-## Props
+## API and code
 
-<PropTable name="RadioGroup" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Without React, use a radiogroup wrapper, a shared native name and the same field classes:
 
 ```html
@@ -69,3 +71,6 @@ Without React, use a radiogroup wrapper, a shared native name and the same field
   <span class="lyra-hint">Choose the best way to reach you.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

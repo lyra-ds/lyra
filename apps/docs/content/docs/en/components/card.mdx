@@ -49,12 +49,14 @@ Reach for something else when:
 - Do not nest interactive elements inside a fully clickable card link; split competing actions into
   a structured Card with buttons in `actions` or `footer`.
 
-## Props
+## API and code
 
-<PropTable name="Card" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use the body class only when the header or footer is present; plain padded cards use `lyra-card--padded`:
 
 ```html
@@ -75,3 +77,6 @@ Use the body class only when the header or footer is present; plain padded cards
   >Read deployment</a
 >
 ```
+
+  </StackPanel>
+</StackTabs>
