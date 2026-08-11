@@ -46,14 +46,66 @@ Prefira outro componente quando:
 - O foco vai para elementos DOM `menuitem` reais, diferente do descendente ativo virtual de
   CommandPalette. Perto da borda inferior de um celular, o popup vira para cima em vez de rolar a página.
 
-## Props
+## API e código
 
-<PropTable name="Dropdown" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
 
-## HTML puro
+```tsx
+<Dropdown
+  align="end"
+  trigger={<Button variant="secondary">Ações do projeto</Button>}
+  items={[
+    { type: 'label', label: 'Projeto' },
+    { label: 'Renomear projeto' },
+    { type: 'separator' },
+    { label: 'Arquivar projeto', danger: true },
+  ]}
+/>
+```
 
-Um elemento é o gatilho. Ponha a semântica de menu no próprio controle — um span embrulhando um
-botão daria duas paradas de Tab para a mesma afordância:
+  </StackPanel>
+
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+A estrutura abaixo é o HTML puro: ela vem inteira no markup servido e fica inerte até o Alpine
+bootar. Acrescentar o `x-data` e os três nomes de `x-bind` é toda a diferença entre um menu estático
+e um menu que funciona.
+
+```html
+<div class="lyra-dropdown" x-data="lyraDropdown({ align: 'end' })">
+  <span
+    class="lyra-btn lyra-btn--secondary lyra-btn--md lyra-dropdown__trigger"
+    role="button"
+    tabindex="0"
+    aria-haspopup="menu"
+    aria-expanded="false"
+    x-bind="trigger"
+  >
+    Ações do projeto
+  </span>
+  <div class="lyra-menu lyra-menu--end" role="menu" x-bind="menu" x-cloak>
+    <span class="lyra-menu__label">Projeto</span>
+    <button class="lyra-menu__item" type="button" role="menuitem" x-bind="item">
+      Renomear projeto
+    </button>
+    <hr class="lyra-menu__sep" />
+    <button
+      class="lyra-menu__item lyra-menu__item--danger"
+      type="button"
+      role="menuitem"
+      x-bind="item"
+    >
+      Arquivar projeto
+    </button>
+  </div>
+</div>
+```
+
+Sem Alpine, um elemento continua sendo o gatilho. Ponha a semântica de menu no próprio controle — um
+span embrulhando um botão daria duas paradas de Tab para a mesma afordância:
 
 ```html
 <div class="lyra-dropdown">
@@ -76,3 +128,6 @@ botão daria duas paradas de Tab para a mesma afordância:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>
