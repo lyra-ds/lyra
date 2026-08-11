@@ -1,0 +1,35 @@
+---
+title: ToastStack
+description: A região que renderiza os toasts da fila, movida pelo store de toasts do Alpine.
+---
+
+# ToastStack
+
+ToastStack é a região que a página monta uma vez para renderizar o que estiver na fila de toasts.
+Ela cuida de posição, empilhamento e dispensa; não decide _quando_ um toast aparece — isso é
+trabalho do store, e qualquer código com acesso a ele pode enfileirar um.
+
+Em React não existe componente com este nome: lá a mesma região é renderizada pelo `ToastProvider`.
+A diferença existe porque Alpine não tem forma de provider — um store mais um ponto de montagem
+fazem o mesmo trabalho com menos peças.
+
+## Quando usar
+
+Monte exatamente um ToastStack por documento, perto do fim do `<body>`, e deixe-o lá. Todo o resto
+conversa com o store.
+
+Prefira outra coisa quando:
+
+- **A mensagem pertence a um campo ou formulário específico** — use Alert, que fica no fluxo, ao
+  lado do que descreve, e não some sozinha.
+- **A mensagem precisa de resposta antes de qualquer outra coisa** — use Dialog, que bloqueia.
+- **A página ainda não tem nada a anunciar** — uma fila vazia não renderiza nada, então não há
+  estado vazio a desenhar.
+
+## Acessibilidade
+
+- A região anuncia de forma educada: um toast é informação complementar, e interromper o leitor de
+  tela no meio de uma frase por causa dele é a troca errada.
+- A dispensa é alcançável pelo teclado em todo toast — o temporizador é conveniência, nunca a única
+  saída.
+- Os toasts empilham na ordem da fila, então a ordem de leitura acompanha a ordem visual.

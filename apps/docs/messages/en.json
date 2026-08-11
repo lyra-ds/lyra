@@ -62,5 +62,16 @@
   "consentBody": "This site keeps your theme choice in your browser. You can also allow anonymous usage analytics, which would only ever tell us which pages help people. Neither is needed to read anything here.",
   "consentAcceptLabel": "Allow analytics",
   "consentEssentialsLabel": "Only essentials",
-  "privacyTitle": "Privacy"
+  "privacyTitle": "Privacy",
+  "stackReact": "React",
+  "stackAlpine": "HTML + Alpine",
+  "stackBlade": "Blade",
+  "stackSelector": "Choose a stack",
+  "absenceReactMissing": "This component has no React counterpart.",
+  "absenceReactToastStack": "React renders the queue through ToastProvider instead of a standalone component.",
+  "absenceAlpineStatic": "This component is static — it needs no Alpine binding. The plain HTML is all there is.",
+  "absenceAlpineCalendarView": "Deferred by decision — CalendarView has no Alpine binding yet.",
+  "absenceBladePending": "Not documented for Blade yet.",
+  "absenceBladeThemeProvider": "Blade has no provider shape. The theme lives in the @lyraThemeScript directive plus the Alpine theme store.",
+  "absenceBladeCalendarView": "Deferred by decision — CalendarView has no Blade counterpart yet."
 }

@@ -62,5 +62,16 @@
   "consentBody": "Este site guarda sua escolha de tema no seu navegador. Você também pode permitir métricas de uso anônimas, que serviriam apenas para saber quais páginas ajudam. Nenhuma das duas é necessária para ler nada aqui.",
   "consentAcceptLabel": "Permitir métricas",
   "consentEssentialsLabel": "Apenas o essencial",
-  "privacyTitle": "Privacidade"
+  "privacyTitle": "Privacidade",
+  "stackReact": "React",
+  "stackAlpine": "HTML + Alpine",
+  "stackBlade": "Blade",
+  "stackSelector": "Escolha uma stack",
+  "absenceReactMissing": "Este componente não tem equivalente em React.",
+  "absenceReactToastStack": "Em React a fila é renderizada pelo ToastProvider, não por um componente próprio.",
+  "absenceAlpineStatic": "Este componente é estático — não precisa de binding Alpine. O HTML puro é tudo o que existe.",
+  "absenceAlpineCalendarView": "Adiado por decisão — CalendarView ainda não tem binding Alpine.",
+  "absenceBladePending": "Ainda não documentado para Blade.",
+  "absenceBladeThemeProvider": "Blade não tem forma de provider. O tema vive na diretiva @lyraThemeScript e no store de tema do Alpine.",
+  "absenceBladeCalendarView": "Adiado por decisão — CalendarView ainda não tem equivalente em Blade."
 }
