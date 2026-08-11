@@ -202,9 +202,18 @@ O starter vestido de produto — rotas que são telas, não seções:
 - **Auth** — Fortify ligado de verdade: login, registro e 2FA reais, com o mesmo tema e
   white-label das outras telas.
 
-**Deploy:** as rotas exportadas para HTML estático e publicadas no GitHub Pages, como os
-irmãos. A interatividade toda é Alpine no cliente, então o export não perde nada. (Alternativa
-descartada por custo: hospedagem com PHP.)
+**Deploy: PHP de verdade, no Docploy self-hosted do mantenedor**, via Dockerfile — imagem
+única, SQLite em arquivo, sem serviço externo de banco.
+
+Isso corrige uma contradição da primeira versão desta spec, que pedia export estático para o
+GitHub Pages (paridade com `starter-next-demo` e `starter-vite-demo`) **e** Fortify ligado de
+verdade. As duas coisas não coexistem: página estática não tem `POST /login`, então as telas
+de auth apareceriam e o formulário não submeteria — o demo mostraria autenticação sem provar
+autenticação, que é o oposto do ponto.
+
+A assimetria com os irmãos passa a ser deliberada e tem uma razão declarada: React e Vite são
+100% cliente, e Blade é server-rendered. Um demo de Blade que não roda no servidor não
+demonstra a stack que ele existe para demonstrar.
 
 O `blade-demo` é a matéria-prima e é aposentado.
 
@@ -251,7 +260,7 @@ Três frentes, que só se encontram no fim.
 1. `starter-laravel` sem Tailwind, com Alpine `^0.4.0`
 2. Views de auth do Fortify no starter
 3. `starter-laravel-demo`: telas de produto + `/components` + Fortify ligado
-4. Export estático e publicação no GitHub Pages
+4. Dockerfile e publicação no Docploy self-hosted (auth funcional no ar)
 5. Ligações cruzadas site ↔ demo ↔ Packagist
 
 **Depois:** prosa pt-BR das páginas órfãs novas.
@@ -280,3 +289,4 @@ Três frentes, que só se encontram no fim.
 | Preview React esconder uma divergência real de Blade | As 72 fixtures de class-emission do repo PHP são a prova; se elas passarem a falhar, o preview é o menor problema |
 | Escopo da frente C crescer para "clone dos starter kits oficiais" | Fronteira declarada na seção 7 e no README do starter |
 | Campo de código de 6 dígitos faltar no catálogo | Tratado como achado, não como bloqueio: sai como `input` até haver decisão |
+| O demo hospedado cair sem ninguém notar, e o site linkar para uma página morta | Imagem única e sem dependência externa (SQLite em arquivo), então a superfície de falha é pequena; o link do site aponta para o domínio, não para uma rota interna, e a galeria `/components` serve de healthcheck legível |
