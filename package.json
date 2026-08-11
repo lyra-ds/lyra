@@ -12,6 +12,7 @@
     "test": "pnpm -r --if-present run test",
     "build": "pnpm -r --if-present run build",
     "docgen": "node tools/docgen/generate.mjs",
+    "dist-scan:alpine-types": "node tools/dist-scan/alpine-types.mjs",
     "parity": "node tools/parity/parity.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",

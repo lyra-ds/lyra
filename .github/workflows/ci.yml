@@ -134,6 +134,9 @@ jobs:
       # Plan 09: entry budget for @lyra-ds/alpine — components must grow it consciously
       # (updated budget in the same commit, same rule as react).
       - run: pnpm --filter @lyra-ds/alpine exec size-limit
+
+      - name: Interfaces do Alpine chegam às declarações publicadas
+        run: node tools/dist-scan/alpine-types.mjs
       # Phase 3, RCT-04: type-resolution check. --profile node16 because node10 (legacy
       # moduleResolution) cannot resolve the per-component exports-map subpaths — it is the
       # ONLY column that flags (node16 + bundler are green). RESEARCH A3; the default-profile
