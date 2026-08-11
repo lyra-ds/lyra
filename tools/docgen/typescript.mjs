@@ -43,6 +43,21 @@ export function renderJSDoc(doc, indent = '') {
 
 export function membersFromInterface(interfaceNode, sourceFile) {
   return interfaceNode.members.map((member) => {
+    // Um método de interface é membro público como qualquer outro: os stores do Alpine
+    // (`$store.theme.toggle()`) são feitos deles. O tipo relatado é a assinatura sem o
+    // nome — `(): void` —, o que mantém a coluna de tipo legível na tabela de API.
+    if (ts.isMethodSignature(member)) {
+      const signature = member.getText(sourceFile).slice(member.name.getText(sourceFile).length);
+
+      return {
+        name: member.name.getText(sourceFile),
+        type: signature.replace(/;$/, '').trim(),
+        optional: Boolean(member.questionToken),
+        description: descriptionFromJSDoc(rawJSDoc(member, sourceFile)),
+        jsDoc: rawJSDoc(member, sourceFile),
+      };
+    }
+
     if (!ts.isPropertySignature(member) || !member.type) {
       throw new Error(
         `Unsupported member in ${interfaceNode.name.text}: expected a typed property signature.`,

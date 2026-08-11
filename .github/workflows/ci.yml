@@ -113,6 +113,7 @@ jobs:
       - run: pnpm run build
       # Phase 5, GEN-01..GEN-03: declaration-driven docs drift guard; consumes dist.
       - run: node tools/docgen/generate.mjs --check
+      - run: node tools/docgen/alpine.mjs --check
       # Phase 2, STY-07: publint validates the exports map (incl. ./styles.css) and
       # that sideEffects: ["**/*.css"] protects the CSS from consumer tree-shaking.
       # Invoked via the pinned lockfile devDep (pnpm exec), never floating dlx/npx.
