@@ -129,6 +129,51 @@ async function flush(): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
+/**
+ * O calendário do seletor de exceções roda com `min: new Date()`, então toda data
+ * fixa vira passado assim que o relógio anda — e dia passado é `aria-disabled`, que
+ * nunca aceita clique. Estas datas são derivadas do dia da execução: sempre futuras,
+ * e `nearby` sempre antes de `distant`, que é a ordenação observada pelo teste.
+ */
+function futureDate(daysAhead: number): Date {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + daysAhead);
+
+  return date;
+}
+
+/** `YYYY-MM-DD`, o formato que o binding usa nas exceções. */
+function isoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** `ano-mêsZeroBased-dia`, o formato do `data-key` emitido por `lyraCalendar`. */
+function dayKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+/**
+ * Clica um dia futuro no calendário aberto, avançando um mês só se a célula ainda não
+ * estiver na grade. Decidir pela presença do elemento, e não por aritmética de meses,
+ * mantém o helper correto quando o calendário reabre já no mês da seleção anterior.
+ */
+async function clickFutureDay(scope: HTMLElement, date: Date): Promise<void> {
+  const selector = `[data-key="${dayKey(date)}"]`;
+
+  if (!scope.querySelector(selector)) {
+    const navigation = [...scope.querySelectorAll<HTMLButtonElement>('.lyra-cal__nav')];
+    await userEvent.click(navigation.at(-1)!);
+    await flush();
+  }
+
+  await userEvent.click(scope.querySelector<HTMLButtonElement>(selector)!);
+  await flush();
+}
+
 async function expectVisible(element: HTMLElement): Promise<void> {
   await vi.waitFor(() => expect(element.style.display).not.toBe('none'));
 }
@@ -248,8 +293,10 @@ describe('lyraWeeklyScheduleEditor', () => {
 
   it('adds sorted unique date exceptions, formats them, removes by index, and emits exception events', async () => {
     setViewport(false);
+    const nearby = futureDate(5);
+    const distant = futureDate(15);
     const host = mount(
-      "{ exceptions: [{ date: '2026-08-20', ranges: [{ start: '09:00', end: '11:00' }] }], value: { 1: [{ start: '09:00', end: '17:00' }] } }",
+      `{ exceptions: [{ date: '${isoDate(distant)}', ranges: [{ start: '09:00', end: '11:00' }] }], value: { 1: [{ start: '09:00', end: '17:00' }] } }`,
     );
     const events: unknown[] = [];
     editor(host).addEventListener('lyra:exceptions', (event) =>
@@ -259,25 +306,22 @@ describe('lyraWeeklyScheduleEditor', () => {
     const trigger = editor(host).querySelector<HTMLButtonElement>('.lyra-datepicker__btn')!;
     await userEvent.click(trigger);
     await flush();
-    const day = editor(host).querySelector<HTMLButtonElement>('[data-key="2026-7-10"]')!;
-    await userEvent.click(day);
-    await flush();
+    await clickFutureDay(editor(host), nearby);
     expect(data(host).exceptions).toEqual([
-      { date: '2026-08-10', ranges: [] },
-      { date: '2026-08-20', ranges: [{ start: '09:00', end: '11:00' }] },
+      { date: isoDate(nearby), ranges: [] },
+      { date: isoDate(distant), ranges: [{ start: '09:00', end: '11:00' }] },
     ]);
     expect(editor(host).textContent).toContain('Unavailable all day');
     // Selecting closes the picker; reopen it before re-picking the same day.
     await userEvent.click(trigger);
     await flush();
-    await userEvent.click(editor(host).querySelector<HTMLButtonElement>('[data-key="2026-7-10"]')!);
-    await flush();
+    await clickFutureDay(editor(host), nearby);
     expect(data(host).exceptions).toHaveLength(2);
     await userEvent.click(
       editor(host).querySelectorAll<HTMLButtonElement>('[aria-label="Remove exception"]')[1]!,
     );
     await flush();
-    expect(data(host).exceptions).toEqual([{ date: '2026-08-10', ranges: [] }]);
+    expect(data(host).exceptions).toEqual([{ date: isoDate(nearby), ranges: [] }]);
     expect(events).toHaveLength(2);
     for (const detail of events) expect(JSON.parse(JSON.stringify(detail))).toEqual(detail);
     const hidden = mount('{ showExceptions: false }');
@@ -323,10 +367,7 @@ describe('lyraWeeklyScheduleEditor', () => {
       editor(exceptionHost).querySelector<HTMLButtonElement>('.lyra-datepicker__btn')!;
     await userEvent.click(exceptionTrigger);
     await flush();
-    await userEvent.click(
-      editor(exceptionHost).querySelector<HTMLButtonElement>('[data-key="2026-7-10"]')!,
-    );
-    await flush();
+    await clickFutureDay(editor(exceptionHost), futureDate(5));
     const exceptionOuter = Alpine.$data(exceptionHost.firstElementChild as HTMLElement) as {
       outerExceptions: unknown;
     };
