@@ -23,6 +23,19 @@ A frente C (starter Laravel e demo) está planejada e não foi iniciada. Ela nã
 depende de A nem de B: só a task 10 dela, das ligações cruzadas, espera a aba
 Blade existir.
 
+**Próxima ação, já decidida pelo usuário e não executada:** atualizar a spec e os
+planos com as correções da seção abaixo. O pedido veio no fim da sessão e a
+pausa chegou antes da execução — nenhum documento foi tocado, então não há nada
+pela metade. Os pontos exatos a mudar estão mapeados:
+
+- `docs/superpowers/specs/…-design.md`: linha 55 (fonte do catálogo Alpine),
+  linha 58 ("quase de graça"), linha 76 e 78 (órfãos e contagem da união),
+  linhas 83, 115, 230 e 274 ("três stacks" → quatro).
+- `docs/superpowers/plans/…-frente-b.md`: as mesmas três correções, mais uma nota
+  de execução no topo — o plano virou registro de trabalho feito, não previsão.
+- `docs/superpowers/plans/…-frente-c.md`: conferir se cita "três stacks".
+- As cópias em `~/Documents/` precisam ser ressincronizadas depois.
+
 ## Decisions not yet written
 
 Três correções de desenho foram descobertas **durante a execução** e estão no
@@ -44,6 +57,10 @@ código e no PR, mas **os planos e a spec não foram atualizados** para refleti-
 Também não está registrado em lugar nenhum além do PR: **`form-row` nunca foi
 órfão** — está documentado dentro de `fieldset.mdx`, junto do Fieldset. A spec
 lista ele entre os 6 componentes sem página, e isso é um erro de levantamento.
+Com ele fora da conta, os órfãos são **cinco** e a união tem **75 páginas**, não
+76 — 75 é o número real de arquivos em `content/docs/en/components/` e de
+entradas no manifesto, conferido. A mensagem do commit `66d1f68` diz 76; o texto
+está errado, o trabalho não.
 
 ## Background
 
@@ -69,8 +86,5 @@ com `min` vindo de um `startDate` fixo — aquele não apodrece. A diferença é
 1. **Mergear o #176 antes ou depois da frente A?** As tasks 11 e 12 acrescentam a
    aba Blade sobre este trabalho. Mergear agora entrega Alpine ao público já;
    esperar junta tudo numa release só.
-2. **Atualizar spec e planos com as três correções acima?** Elas estão no código
-   e no PR, mas os documentos seguem afirmando o que se provou errado — e são
-   eles que vão guiar as frentes A e C.
-3. **Quando começar a frente C?** Ela é independente e o plano está pronto em
+2. **Quando começar a frente C?** Ela é independente e o plano está pronto em
    `~/Documents/2026-08-11-starter-laravel-frente-c.md`.
