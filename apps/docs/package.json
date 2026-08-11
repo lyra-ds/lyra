@@ -8,7 +8,7 @@
     "prebuild": "node scripts/copy-llms.mjs && node scripts/generate-headers.mjs",
     "build": "next build",
     "pretest": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/docs run build",
-    "test": "node --test scripts/consent.test.mjs scripts/analytics.test.mjs scripts/consent-export.test.mjs",
+    "test": "node --test scripts/consent.test.mjs scripts/analytics.test.mjs scripts/consent-export.test.mjs && vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
@@ -28,6 +28,7 @@
     "@types/node": "24.10.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }
