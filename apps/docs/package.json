@@ -17,7 +17,7 @@
     "@fontsource/plus-jakarta-sans": "5.3.0",
     "@lyra-ds/react": "workspace:*",
     "@lyra-ds/styles": "workspace:*",
-    "fumadocs-core": "16.14.0",
+    "fumadocs-core": "16.14.2",
     "fumadocs-mdx": "15.2.2",
     "next": "16.3.0",
     "next-intl": "4.13.5",
@@ -25,7 +25,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@types/node": "24.10.1",
+    "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "typescript": "5.9.3",
