@@ -41,17 +41,17 @@
 
 ### `lyra-ds/starter-laravel-demo`
 
-| Arquivo                                        | Responsabilidade                                   |
-| ---------------------------------------------- | -------------------------------------------------- |
-| `routes/web.php`                               | Rotas do produto + `/components`                   |
-| `resources/views/app/*.blade.php`              | Dashboard, agenda, arquivos, equipe, configurações |
-| `resources/views/components-gallery.blade.php` | Galeria dos 72, herdada do `blade-demo`            |
-| `app/Providers/FortifyServiceProvider.php`     | Aponta o Fortify para as views do starter          |
-| `database/seeders/DemoSeeder.php`              | Usuário de demonstração                            |
-| `tests/Feature/RoutesTest.php`                 | Toda rota responde 200 e emite `.lyra-`            |
-| `tests/Feature/AuthFlowTest.php`               | Login, registro e 2FA de ponta a ponta             |
-| `Dockerfile`                                   | Imagem única para o Docploy                        |
-| `.github/workflows/ci.yml`                     | Pint + Pest + build                                |
+| Arquivo                                        | Responsabilidade                                                                 |
+| ---------------------------------------------- | -------------------------------------------------------------------------------- |
+| `routes/web.php`                               | Rotas do produto + `/components`                                                 |
+| `resources/views/app/*.blade.php`              | Dashboard, agenda, arquivos, equipe, configurações                               |
+| `resources/views/components-gallery.blade.php` | Galeria dos 72, herdada do `blade-demo`                                          |
+| `app/Providers/FortifyServiceProvider.php`     | Aponta o Fortify para as views do starter                                        |
+| `database/seeders/DemoSeeder.php`              | Usuário de demonstração                                                          |
+| `tests/Feature/RoutesTest.php`                 | Toda rota responde 200 e emite `.lyra-`                                          |
+| `tests/Feature/AuthFlowTest.php`               | Login, registro, desafio 2FA e recovery code (o TOTP em si fica na prova manual) |
+| `Dockerfile`                                   | Imagem única para o Docploy                                                      |
+| `.github/workflows/ci.yml`                     | Pint + Pest + build                                                              |
 
 ---
 
@@ -211,7 +211,7 @@ git commit -m "feat: liga o Lyra DS e remove o Tailwind do scaffold"
 
 ### Task 2: As sete views do Fortify
 
-Escritas **só com componentes do catálogo** — cobertura já verificada: `input`, `checkbox`, `button`, `alert`, `card`, `brand`, `separator`, `form-row`, `fieldset`, `spinner`, `icon`, `stack`, `container` existem todos no `lyra-ds/blade` 0.9.0.
+Escritas **só com componentes do catálogo** — cobertura já verificada: `input`, `checkbox`, `button`, `alert`, `card`, `brand`, `separator`, `form-row`, `fieldset`, `spinner`, `icon`, `stack`, `container` existem todos no `lyra-ds/blade` 0.10.0. Atenção ao contrato do `brand`: a prop `mark` é **obrigatória** (sem default) — `<lyra:brand />` sem ela quebra a renderização.
 
 **Files:**
 
@@ -251,7 +251,9 @@ it('renders every Fortify view with Lyra markup', function (string $view): void 
 it('never falls back to raw HTML controls', function (string $view): void {
     $html = View::make($view, ['request' => request()])->render();
 
-    expect($html)->not->toMatch('/<input(?![^>]*class="[^"]*lyra-)/')
+    // Allowlist única: inputs type="hidden" (o token do reset-password não tem
+    // representação visual). Todo controle visível precisa vir do catálogo.
+    expect($html)->not->toMatch('/<input(?![^>]*type="hidden")(?![^>]*class="[^"]*lyra-)/')
         ->and($html)->not->toMatch('/<button(?![^>]*class="[^"]*lyra-)/');
 })->with('auth views');
 ```
@@ -276,7 +278,7 @@ Create `resources/views/auth/login.blade.php`:
 @section('content')
 <lyra:container max="sm">
     <lyra:card>
-        <lyra:brand />
+        <lyra:brand :mark="asset('logo.svg')" />
         <h1>Sign in</h1>
 
         @if (session('status'))
@@ -328,7 +330,7 @@ Mesma forma. Notas por tela:
 
 - **register** — nome, email, senha e confirmação; o `password_confirmation` é o nome que o Fortify espera.
 - **forgot-password** — só email, e a `session('status')` em `alert` de sucesso.
-- **reset-password** — email, senha, confirmação, mais `<input type="hidden" name="token" value="{{ $request->route('token') }}">`. Esse hidden é o **único** input cru aceitável: ele não tem representação visual, e o teste do Step 1 só cobra classe em campos visíveis — se ele falhar aqui, ajuste o regex para ignorar `type="hidden"`, e registre o porquê em comentário.
+- **reset-password** — email, senha, confirmação, mais `<input type="hidden" name="token" value="{{ $request->route('token') }}">`. Esse hidden é o **único** input cru aceitável: ele não tem representação visual, e o regex do Step 1 já ignora `type="hidden"` de saída, com o porquê em comentário.
 - **verify-email** — texto, botão de reenviar, sem campos.
 - **confirm-password** — só senha.
 - **two-factor-challenge** — um `input` de código com `inputmode="numeric"` e `autocomplete="one-time-code"`, mais alternância para código de recuperação. **Aqui está a única lacuna conhecida de catálogo:** não existe componente dedicado de código OTP; sai como `input` comum. Se ao escrever a tela isso incomodar, abra uma issue no `lyra-ds/lyra` descrevendo o componente que faltou — é um achado legítimo, não um defeito deste starter.
@@ -598,7 +600,42 @@ it('registers a new user', function (): void {
 
     $this->assertDatabaseHas('users', ['email' => 'ana@example.com']);
 });
+
+it('sends a 2FA-enabled user to the challenge screen', function (): void {
+    $user = User::factory()->create(['password' => bcrypt('password')]);
+    $user->forceFill([
+        'two_factor_secret' => encrypt('base32-secret'),
+        'two_factor_recovery_codes' => encrypt(json_encode(['RECOVERY-ONE', 'RECOVERY-TWO'])),
+        'two_factor_confirmed_at' => now(),
+    ])->save();
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect('/two-factor-challenge');
+
+    $this->assertGuest();
+});
+
+it('signs in through a recovery code', function (): void {
+    $user = User::factory()->create(['password' => bcrypt('password')]);
+    $user->forceFill([
+        'two_factor_secret' => encrypt('base32-secret'),
+        'two_factor_recovery_codes' => encrypt(json_encode(['RECOVERY-ONE', 'RECOVERY-TWO'])),
+        'two_factor_confirmed_at' => now(),
+    ])->save();
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'password']);
+
+    $this->post('/two-factor-challenge', ['recovery_code' => 'RECOVERY-ONE'])
+        ->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($user->fresh());
+});
 ```
+
+O desafio TOTP em si (código de 6 dígitos válido) e a tela de confirmação de senha ficam
+para a prova manual do fluxo completo (Task de verificação final) — gerar códigos TOTP
+sintéticos no Pest exigiria fixar o relógio e o segredo do Fortify, e o código de
+recuperação já prova o caminho do desafio de ponta a ponta.
 
 - [ ] **Step 2: Rode e veja falhar**
 
@@ -620,7 +657,14 @@ Em `app/Providers/FortifyServiceProvider.php`, registre as sete views exatamente
 
 - [ ] **Step 4: SQLite e usuário de demonstração**
 
-`.env.example` com `DB_CONNECTION=sqlite` e `DB_DATABASE=/app/database/database.sqlite`. Create `database/seeders/DemoSeeder.php` criando `demo@lyra-ds.dev` com senha fixa **documentada no README** — é um demo público, a senha é parte da vitrine, não um segredo.
+`.env.example` com `DB_CONNECTION=sqlite` e `DB_DATABASE=/app/database/database.sqlite`. Create `database/seeders/DemoSeeder.php` criando `demo@lyra-ds.dev` com senha fixa **documentada no README** — é um demo público, a senha é parte da vitrine, não um segredo. Duas exigências de contrato:
+
+- **Idempotente por construção**: use `User::firstOrCreate(['email' => …], […])` — o seeder
+  roda em todo boot do container (ver Dockerfile) e não pode duplicar nem sobrescrever a
+  conta num volume persistente.
+- **Registrado no fluxo padrão**: adicione `$this->call(DemoSeeder::class);` no `run()` do
+  `DatabaseSeeder` — `php artisan db:seed --force` executa o `DatabaseSeeder`, e sem esse
+  vínculo a conta demo nunca nasce.
 
 - [ ] **Step 5: Rode até verde e commite**
 
@@ -738,7 +782,11 @@ COPY --from=assets /app/public/build ./public/build
 
 # O banco do demo é um arquivo: sem serviço externo, e um volume no Docploy
 # preserva os usuários registrados entre deploys. Sem volume, cada deploy
-# recomeça do seeder — aceitável para uma vitrine.
+# recomeça do seeder — aceitável para uma vitrine. O db:seed do CMD roda em
+# TODO boot: só é seguro porque o DemoSeeder é idempotente (firstOrCreate) —
+# ele recria a conta demo se o volume for descartado e não toca em nada que
+# já exista. Se o seeder um dia deixar de ser idempotente, troque por uma
+# guarda de primeiro boot (arquivo-marcador no volume).
 RUN mkdir -p database && touch database/database.sqlite \
     && composer dump-autoload --optimize \
     && chown -R www-data:www-data storage bootstrap/cache database

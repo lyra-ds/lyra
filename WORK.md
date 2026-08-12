@@ -2,17 +2,19 @@
 
 ## In progress
 
-- [ ] **Documentação multi-stack — frente B entregue, PR #176 aberto
-      (2026-08-11)** → maestro (claude), branch `feat/docs-multi-stack`, 15
-      commits. Tasks 1–10 do plano
-      `docs/superpowers/plans/2026-08-10-docs-multi-stack-frente-b.md`: seletor
-      de stack nas 76 páginas de componente, catálogo do Alpine gerado do
-      pacote publicado (32 entradas — 30 bindings e 2 stores), guias por stack,
-      matriz de compatibilidade e `llms.txt` cobrindo as três stacks. Suíte
-      completa verde localmente (styles 69, alpine 268, react 665, docs 20 +
-      313 `node --test`); **CI do PR ainda rodando no momento do pause** —
-      verificar antes do merge. Tasks 11–12 (aba Blade) bloqueadas pelo
-      `docs/api.json` da frente A, em `lyra-ds/blade`.
+- [ ] **Documentação multi-stack — frente B mergeada (PR #176, 2026-08-12);
+      tasks 11–12 desbloqueadas e pendentes** → maestro (claude). Tasks 1–10 do
+      plano `docs/superpowers/plans/2026-08-10-docs-multi-stack-frente-b.md`:
+      seletor de stack nas **75** páginas de componente (união corrigida:
+      `form-row` vive em `fieldset.mdx`), catálogo do Alpine gerado das
+      registrations do pacote publicado (32 entradas — 30 bindings e 2 stores),
+      guias por stack, matriz de compatibilidade e `llms.txt` cobrindo React e
+      Alpine (o modelo é de **quatro stacks** — HTML e Alpine são a mesma aba
+      em dois estados; a cobertura publicada de llms.txt/API ganha o Blade nas
+      tasks 11–12). Review do PR: 14 comentários CodeRabbit triados — 3 fixes
+      aplicados, 2 pushbacks, o resto encaminhado. **Tasks 11–12 (aba Blade)
+      desbloqueadas**: `lyra-ds/blade` v0.10.0 publicou o `api.json` (72
+      componentes, 30 com binding). São o próximo pedaço de produto.
 
 - [x] **Sistema de toasts no alpine — `lyraToasts` (store) + `lyraToastStack`
       (2026-08-09) [batuta/20260809-025845-alpine-toasts]** → codex

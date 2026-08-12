@@ -1,5 +1,12 @@
 # Handoff — 2026-08-11
 
+> **Histórico (fechado em 2026-08-12):** tudo que este handoff deixava pendente foi
+> executado — PR #176 mergeado, correções de spec/planos aplicadas (PR das correções),
+> tasks 11–12 desbloqueadas pela release `v0.10.0` do `lyra-ds/blade` (o `api.json` está
+> anexado; 72 componentes, 30 com binding). As "open questions" abaixo foram respondidas:
+> o #176 foi mergeado antes da junção com a frente A, e a frente C ainda não começou.
+> O estado vivo está no `WORK.md`.
+
 ## Cycle point
 
 A frente B da documentação multi-stack está **entregue e no PR #176**
@@ -28,12 +35,14 @@ planos com as correções da seção abaixo. O pedido veio no fim da sessão e a
 pausa chegou antes da execução — nenhum documento foi tocado, então não há nada
 pela metade. Os pontos exatos a mudar estão mapeados:
 
-- `docs/superpowers/specs/…-design.md`: linha 55 (fonte do catálogo Alpine),
-  linha 58 ("quase de graça"), linha 76 e 78 (órfãos e contagem da união),
-  linhas 83, 115, 230 e 274 ("três stacks" → quatro).
-- `docs/superpowers/plans/…-frente-b.md`: as mesmas três correções, mais uma nota
-  de execução no topo — o plano virou registro de trabalho feito, não previsão.
-- `docs/superpowers/plans/…-frente-c.md`: conferir se cita "três stacks".
+- `docs/superpowers/specs/2026-08-10-documentacao-multi-stack-design.md`: linha 55
+  (fonte do catálogo Alpine), linha 58 ("quase de graça"), linha 76 e 78 (órfãos e
+  contagem da união), linhas 83, 115, 230 e 274 ("três stacks" → quatro).
+- `docs/superpowers/plans/2026-08-10-docs-multi-stack-frente-b.md`: as mesmas três
+  correções, mais uma nota de execução no topo — o plano virou registro de trabalho
+  feito, não previsão.
+- `docs/superpowers/plans/2026-08-11-starter-laravel-frente-c.md`: conferir se cita
+  "três stacks".
 - As cópias em `~/Documents/` precisam ser ressincronizadas depois.
 
 ## Decisions not yet written

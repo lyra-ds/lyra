@@ -1,5 +1,22 @@
 # Documentação multi-stack — Frente B (site) Implementation Plan
 
+> **Nota de execução (2026-08-12):** este plano virou **registro de trabalho feito**, não
+> previsão — as tasks 1–10 foram executadas e entregues no PR #176 (mergeado em
+> 2026-08-12); as tasks 11–12 dependiam do `api.json` da Frente A, publicado na release
+> `v0.10.0` do `lyra-ds/blade`, e seguem pendentes. Três correções de desenho descobertas
+> na execução (detalhes na spec, seção corrigida):
+>
+> 1. O catálogo do Alpine **não** sai das interfaces `Lyra*Options` — sai das chamadas
+>    `Alpine.data()`/`Alpine.store()` no `dist/index.js` (o gerador entregue,
+>    `tools/docgen/alpine.mjs`, faz assim).
+> 2. São **quatro** stacks: HTML e Alpine são a mesma aba em dois estados.
+> 3. O pacote exportava 29 linhas de `.d.ts`; **47** interfaces de opções (não 46) foram
+>    exportadas, com o scanner `tools/dist-scan/alpine-types.mjs` contra regressão.
+>
+> E `form-row` nunca foi órfão: é documentado dentro de `fieldset.mdx` — não ganhou página
+> própria; a união tem **75** páginas. `toast-stack` tem o binding `lyraToastStack` no
+> Alpine, então a página nasceu com HTML + Alpine além do Blade.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fazer o site documentar React e HTML + Alpine na mesma página, com seletor de stack, API gerada nas duas e a terceira aba (Blade) pronta para acender quando o artefato da Frente A chegar.
@@ -39,8 +56,8 @@
 | `apps/docs/components/stack-tabs.tsx`                          | Componente cliente: seletor + troca de bloco visível                                   |
 | `apps/docs/components/stack-api.tsx`                           | Servidor: renderiza a tabela de API de uma stack                                       |
 | `apps/docs/vitest.config.ts`                                   | Projeto de teste do app de docs (ambiente node)                                        |
-| `apps/docs/content/docs/{en,pt-BR}/components/form-row.mdx`    | Página órfã (só Blade)                                                                 |
-| `apps/docs/content/docs/{en,pt-BR}/components/toast-stack.mdx` | Página órfã (só Blade)                                                                 |
+| ~~`form-row.mdx`~~ (não criado)                                | Correção: `form-row` é documentado dentro de `fieldset.mdx`, nunca foi órfão           |
+| `apps/docs/content/docs/{en,pt-BR}/components/toast-stack.mdx` | Página órfã (HTML + Alpine + Blade — o binding `lyraToastStack` existe no pacote)      |
 | `apps/docs/content/docs/{en,pt-BR}/guides/compatibility.mdx`   | Matriz de compatibilidade                                                              |
 
 **Modificados**
@@ -1291,6 +1308,10 @@ Esperado: zero falhas, build limpo.
 ---
 
 ### Task 9: Páginas órfãs
+
+> **Correção 2026-08-12 (como executado):** `form-row` já tinha casa — é documentado
+> dentro de `fieldset.mdx`, junto do Fieldset — e não ganhou página própria. Só
+> `toast-stack.mdx` nasceu aqui, com HTML + Alpine (binding `lyraToastStack`) além do Blade.
 
 `form-row` e `toast-stack` existem no Blade e não têm página. Elas nascem agora, mesmo antes da aba Blade acender — com React e/ou Alpine quando houver, e a ausência explicada quando não.
 

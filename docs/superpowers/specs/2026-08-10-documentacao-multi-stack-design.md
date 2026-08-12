@@ -3,6 +3,11 @@
 > Data: 2026-08-10 · Estado: aprovado, pronto para planejamento
 > Repositórios envolvidos: `lyra-ds/lyra` (site e pacotes JS), `lyra-ds/blade` (pacote PHP),
 > `lyra-ds/blade-demo` (matéria-prima do starter Laravel).
+>
+> **Correções 2026-08-12** (descobertas na execução da frente B, PR #176): o catálogo do
+> Alpine deriva das registrations, não das interfaces; são **quatro** stacks, não três
+> (HTML e Alpine são a mesma aba em dois estados); a união tem **75** páginas, não 76 —
+> `form-row` nunca foi órfão. As seções abaixo já estão corrigidas.
 
 ## 1. Problema
 
@@ -49,38 +54,48 @@ acessibilidade, anatomia — descreve o componente, não a stack, e não se mult
 
 Nenhuma tabela de API é escrita à mão:
 
-| Stack  | Fonte                                                         | Gerador                              | Onde roda |
-| ------ | ------------------------------------------------------------- | ------------------------------------ | --------- |
-| React  | `packages/react/dist/*.d.ts`                                  | `tools/docgen/generate.mjs` (existe) | `lyra`    |
-| Alpine | `packages/alpine/dist/index.d.ts` (interfaces `Lyra*Options`) | mesmo gerador, segunda entrada       | `lyra`    |
-| Blade  | `@props` dos 72 `.blade.php` + snippet curado                 | `BoostGuidelinesGenerator` estendido | `blade`   |
+| Stack  | Fonte                                                                  | Gerador                              | Onde roda |
+| ------ | ---------------------------------------------------------------------- | ------------------------------------ | --------- |
+| React  | `packages/react/dist/*.d.ts`                                           | `tools/docgen/generate.mjs` (existe) | `lyra`    |
+| Alpine | chamadas `Alpine.data()`/`Alpine.store()` no `dist/index.js` publicado | mesmo gerador, segunda entrada       | `lyra`    |
+| Blade  | `@props` dos 72 `.blade.php` + snippet curado                          | `BoostGuidelinesGenerator` estendido | `blade`   |
 
-O Alpine é quase de graça: já publica `.d.ts`, e o docgen já usa a API do compilador
-TypeScript.
+**Correção 2026-08-12:** o Alpine **não** era quase de graça. O catálogo não pode sair das
+interfaces `Lyra*Options` — derivar delas inventa `lyraToast` e perde `lyraCodeBlock`,
+`lyraToastStack` e os dois stores globais; a lista de verdade são as registrations no
+`dist/index.js`. E o pacote publicava só 29 linhas de `.d.ts`: as 47 interfaces de opções
+foram exportadas na própria frente B (changeset `minor`), com um scanner
+(`tools/dist-scan/alpine-types.mjs`) que impede a regressão.
 
 ### Manifesto único
 
 `apps/docs/lib/components.ts` já é a fonte única do catálogo — dele saem rota, sidebar,
 índice e prop table. Ele ganha, por componente:
 
-- disponibilidade por stack (`react`, `alpine`, `blade`);
+- disponibilidade por stack (`react`, `html`, `alpine`, `blade` — HTML e Alpine são a mesma
+  aba em dois estados: todo componente tem HTML canônico, só quem tem binding ganha o
+  estado Alpine);
 - quando uma stack falta, **a frase que explica a ausência** (o README do Blade já tem esse
   texto: o tema vive em `@lyraThemeScript` + store Alpine; a fila de toast vive no
   `toast-stack`).
 
 ### Catálogo: união, não interseção
 
-Medido: **70 componentes existem nos dois lados**. Órfãos:
+Medido: **70 componentes existem nos dois lados**. Órfãos — **cinco**, não seis
+(correção 2026-08-12: `form-row` nunca foi órfão; é documentado dentro de `fieldset.mdx`,
+junto do Fieldset):
 
 - só no site: `calendar-view`, `create-workspace-dialog`, `theme-provider`, `toast-provider`
-- só no Blade: `form-row`, `toast-stack`
+- só no Blade: `toast-stack` — e nem ele é Blade-only de verdade: o binding
+  `lyraToastStack` existe no `@lyra-ds/alpine`, então a página nasce com HTML + Alpine
+  além do Blade
 
-**Decisão:** uma página por componente da **união** (76). A ausência vira documentação, não
+**Decisão:** uma página por componente da **união** (75). A ausência vira documentação, não
 buraco. Efeito colateral desejado: `calendar-view` ganha aba React e a linha de ausência do
 Blade — a decisão de adiá-lo deixa de ser item de backlog e vira estado documentado; quando
 ele sair, muda uma linha do manifesto.
 
-### Preview vivo continua React nas três stacks
+### Preview vivo continua React em todas as stacks
 
 O site não roda PHP, e não precisa: a aparência inteira é `@lyra-ds/styles`, e a paridade de
 classes React↔Blade já é provada por 72 fixtures de class-emission no repo PHP. O que muda
@@ -112,7 +127,8 @@ JSDoc nas duas línguas. O que precisa de tradução segue sendo a prosa das pá
   `@lyraThemeScript` no `<head>`, e a regra CSS pré-boot que evita menus piscando abertos.
 - Página nova de **matriz de compatibilidade** (Blade ↔ `@lyra-ds/alpine` ↔ `@lyra-ds/styles`),
   que hoje só existe no README do outro repo.
-- `llms.txt` passa a cobrir as três stacks, cumprindo o que o PRD do Blade já declarava.
+- `llms.txt` passa a cobrir as quatro stacks (o HTML canônico entra no bloco do Alpine),
+  cumprindo o que o PRD do Blade já declarava.
 
 ## 5. Fronteira entre os repositórios
 
@@ -227,7 +243,7 @@ O `blade-demo` é a matéria-prima e é aposentado.
 ## 7. O que esta spec não faz
 
 - **Não cria um site de documentação em PHP.** A parte cara da doc é a prosa — 70 páginas de
-  "quando usar" e acessibilidade, idênticas nas três stacks porque descrevem o componente, não
+  "quando usar" e acessibilidade, idênticas em todas as stacks porque descrevem o componente, não
   a linguagem. Duplicar significa escrever duas vezes ou divergir, e divergência em orientação
   de acessibilidade é a pior categoria de erro possível aqui. O ganho real de um site PHP
   (preview renderizado de verdade) é comprado pelo HTML renderizado dentro do `api.json`; o
@@ -268,10 +284,10 @@ Três frentes, que só se encontram no fim.
 
 ## 9. Critérios de aceite
 
-- Uma página de componente mostra as três abas, e trocar de aba não move exemplos nem prosa.
+- Uma página de componente mostra as abas das stacks disponíveis, e trocar de aba não move exemplos nem prosa.
 - `?stack=blade` abre a página na aba Blade; a preferência persiste entre páginas.
 - Uma página sem uma stack não mostra aquela aba, e explica a ausência em uma frase.
-- Nenhuma tabela de props é escrita à mão nas três stacks.
+- Nenhuma tabela de props é escrita à mão, em nenhuma stack.
 - Adicionar um componente no `lyra-ds/blade` sem regenerar o `api.json` deixa a suíte de lá
   vermelha.
 - Declarar no manifesto uma stack ausente do JSON correspondente quebra o build do site.
