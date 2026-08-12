@@ -15,12 +15,18 @@ const API_FILE = resolve(REPO, 'tools', 'blade-api', 'api.json');
 const OUTPUT = resolve(REPO, 'tools', 'docgen', 'output');
 const LLMS_FILE = resolve(OUTPUT, 'blade-llms.txt');
 
+/**
+ * `values` é `observedValues` no gerador do pacote PHP: os valores distintos que as
+ * fixtures passam naquela prop, não o enum aceito. `hint` do checkbox-group prova a
+ * diferença — traz `"Choose one"`, e o próprio usage passa outro texto. Documentar isso
+ * como "one of" inventaria uma restrição que não existe, então a redação é ilustrativa.
+ */
 function renderProp(prop) {
   const details = [];
   if (prop.required) details.push('required');
   if (prop.default != null) details.push(`default \`${prop.default}\``);
   if (prop.values.length)
-    details.push(`one of ${prop.values.map((value) => `\`${value}\``).join(' | ')}`);
+    details.push(`example values ${prop.values.map((value) => `\`${value}\``).join(', ')}`);
 
   return `- \`${prop.name}\`${details.length ? ` — ${details.join(', ')}` : ''}`;
 }

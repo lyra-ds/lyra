@@ -63,6 +63,12 @@ type BladeEntry = {
 
 type BladeApiFile = { version: string; components: BladeEntry[] };
 
+/**
+ * `values` vem de `observedValues` no gerador do pacote PHP — os valores que as fixtures
+ * passam naquela prop, não o enum aceito. Por isso a coluna se chama "example values":
+ * chamar de "valores aceitos" inventaria uma restrição que o artefato não afirma.
+ */
+
 function BladeApi({ slug }: { slug: string }) {
   const t = useTranslations();
   const { version, components } = bladeApi as BladeApiFile;
@@ -95,7 +101,7 @@ function BladeApi({ slug }: { slug: string }) {
             { key: 'name', label: t('apiProp') },
             { key: 'default', label: t('apiDefault') },
             { key: 'required', label: t('required') },
-            { key: 'values', label: t('apiValues') },
+            { key: 'values', label: t('apiExampleValues') },
           ]}
           rows={entry.props.map((prop) => ({
             id: prop.name,

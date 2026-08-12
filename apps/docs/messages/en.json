@@ -52,7 +52,7 @@
   "apiNoOptions": "This binding takes no options — mount it and it works.",
   "apiProp": "Prop",
   "apiDefault": "Default",
-  "apiValues": "Values",
+  "apiExampleValues": "Example values",
   "apiNoBlade": "No Blade API found for {slug}.",
   "apiBladeNoProps": "This component takes no props — drop the tag in.",
   "bladeVersion": "Generated from lyra-ds/blade v{version}.",

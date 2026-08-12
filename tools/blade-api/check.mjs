@@ -4,7 +4,8 @@
  * O arquivo é copiado da release do `lyra-ds/blade` (asset `api.json`), nunca editado à
  * mão. Este check falha nomeando o item ofensor quando:
  *  (a) `version` falta ou não é semver;
- *  (b) algum componente vem sem `slug`, `usage` ou `props`;
+ *  (b) algum componente tem `slug`/`usage` vazios, `props` que não é array, prop com
+ *      forma errada, ou um slug repetido;
  *  (c) um slug declarado `blade` no manifesto do site não existe no snapshot — a aba
  *      apontaria para uma API que não há;
  *  (d) um componente do snapshot não tem página no site nem consta das exceções abaixo.
@@ -34,14 +35,39 @@ if (!Array.isArray(api.components) || api.components.length === 0) {
 
 const apiSlugs = new Set();
 
-for (const [index, component] of (api.components ?? []).entries()) {
-  const label = component?.slug ? `'${component.slug}'` : `components[${index}]`;
+/**
+ * Campo presente não é campo válido: `props: {}` passaria por um teste de nulidade e só
+ * quebraria depois, no `.map()` do gerador e do site. O snapshot vem de outro repositório
+ * — este check é a fronteira, então valida forma, não só presença.
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
 
-  for (const field of ['slug', 'usage', 'props']) {
-    if (component?.[field] == null) failures.push(`${label} veio sem o campo '${field}'`);
+for (const [index, component] of (api.components ?? []).entries()) {
+  const label = isNonEmptyString(component?.slug) ? `'${component.slug}'` : `components[${index}]`;
+
+  if (!isNonEmptyString(component?.slug)) failures.push(`${label} tem 'slug' vazio ou não-string`);
+  if (!isNonEmptyString(component?.usage))
+    failures.push(`${label} tem 'usage' vazio ou não-string`);
+
+  if (!Array.isArray(component?.props)) {
+    failures.push(`${label} tem 'props' que não é array`);
+  } else {
+    for (const [position, prop] of component.props.entries()) {
+      const where = `${label}, prop[${position}]`;
+
+      if (!isNonEmptyString(prop?.name)) failures.push(`${where} tem 'name' vazio ou não-string`);
+      if (typeof prop?.required !== 'boolean')
+        failures.push(`${where} tem 'required' não-booleano`);
+      if (!Array.isArray(prop?.values)) failures.push(`${where} tem 'values' que não é array`);
+    }
   }
 
-  if (component?.slug) apiSlugs.add(component.slug);
+  if (isNonEmptyString(component?.slug)) {
+    if (apiSlugs.has(component.slug)) failures.push(`${label} aparece duas vezes no snapshot`);
+    apiSlugs.add(component.slug);
+  }
 }
 
 /**

@@ -36,7 +36,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `tone` — default `'info'`, one of `danger` | `info` | `success` | `warning`
+- `tone` — default `'info'`, example values `danger`, `info`, `success`, `warning`
 
 ```blade
 <lyra:alert tone="warning">Your trial ends in 3 days. Add a payment method to keep your workspace active.</lyra:alert>
@@ -74,8 +74,8 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 - `src` — default `null`
 - `name` — default `null`
-- `size` — default `'md'`, one of `lg` | `md` | `sm` | `xl`
-- `shape` — default `'circle'`, one of `square`
+- `size` — default `'md'`, example values `lg`, `md`, `sm`, `xl`
+- `shape` — default `'circle'`, example values `square`
 - `status` — default `null`
 - `statusLabel` — default `null`
 
@@ -86,7 +86,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `tone` — default `'neutral'`, one of `accent` | `danger` | `info` | `neutral` | `success` | `warning`
+- `tone` — default `'neutral'`, example values `accent`, `danger`, `info`, `neutral`, `success`, `warning`
 - `dot` — default `false`
 
 ```blade
@@ -149,8 +149,8 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `variant` — default `'primary'`, one of `danger` | `ghost` | `primary` | `secondary` | `soft`
-- `size` — default `'md'`, one of `lg` | `md` | `sm`
+- `variant` — default `'primary'`, example values `danger`, `ghost`, `primary`, `secondary`, `soft`
+- `size` — default `'md'`, example values `lg`, `md`, `sm`
 - `loading` — default `false`
 - `disabled` — default `false`
 - `full` — default `false`
@@ -168,7 +168,7 @@ Behavior comes from the `lyraCalendar()` Alpine binding (`@lyra-ds/alpine`); the
 - `max` — default `null`
 - `disabledDates` — default `[]`
 - `weekStartsOn` — default `0`
-- `size` — default `'sm'`, one of `md`
+- `size` — default `'sm'`, example values `md`
 - `todayButton` — default `false`
 - `locale` — default `'en-US'`
 - `labels` — default `[]`
@@ -211,12 +211,12 @@ Static component: no Alpine binding, the markup is the whole contract.
 Static component: no Alpine binding, the markup is the whole contract.
 
 - `label` — default `null`
-- `hint` — default `null`, one of `Choose one`
-- `error` — default `null`, one of `Required`
+- `hint` — default `null`, example values `Choose one`
+- `error` — default `null`, example values `Required`
 - `options` — default `[]`
 - `value` — default `null`
 - `defaultValue` — default `[]`
-- `direction` — default `'column'`, one of `row`
+- `direction` — default `'column'`, example values `row`
 - `name` — default `null`
 
 ```blade
@@ -253,9 +253,9 @@ Behavior comes from the `lyraCombobox()` Alpine binding (`@lyra-ds/alpine`); the
 - `options` — default `[]`
 - `value` — default `null`
 - `defaultOpen` — default `false`
-- `label` — default `null`, one of `Country`
-- `hint` — default `null`, one of `Choose one`
-- `error` — default `null`, one of `Required`
+- `label` — default `null`, example values `Country`
+- `hint` — default `null`, example values `Choose one`
+- `error` — default `null`, example values `Required`
 - `placeholder` — default `null`
 - `searchPlaceholder` — default `null`
 - `emptyMessage` — default `null`
@@ -348,7 +348,7 @@ Behavior comes from the `lyraDataTable()` Alpine binding (`@lyra-ds/alpine`); th
 - `clientSort` — default `false`
 - `stickyHeader` — default `false`
 - `maxHeight` — default `null`
-- `density` — default `'comfortable'`, one of `compact`
+- `density` — default `'comfortable'`, example values `compact`
 - `loading` — default `false`
 - `empty` — default `null`
 - `hover` — default `false`
@@ -373,7 +373,7 @@ Behavior comes from the `lyraDataTable()` Alpine binding (`@lyra-ds/alpine`); th
 
 Behavior comes from the `lyraDatePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
 
-- `label` — default `null`, one of `0` | `Date`
+- `label` — default `null`, example values `0`, `Date`
 - `hint` — default `null`
 - `error` — default `null`
 - `defaultValue` — default `null`
@@ -400,7 +400,7 @@ Behavior comes from the `lyraDatePicker()` Alpine binding (`@lyra-ds/alpine`); t
 
 Behavior comes from the `lyraDateRangePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
 
-- `label` — default `null`, one of `0` | `Period`
+- `label` — default `null`, example values `0`, `Period`
 - `hint` — default `null`
 - `error` — default `null`
 - `defaultValue` — default `null`
@@ -507,7 +507,7 @@ Behavior comes from the `lyraFileManager()` Alpine binding (`@lyra-ds/alpine`); 
 
 - `files` — default `[]`
 - `path` — default `[]`
-- `defaultView` — default `'list'`, one of `grid`
+- `defaultView` — default `'list'`, example values `grid`
 - `defaultQuery` — default `''`
 - `actions` — default `null`
 - `searchPlaceholder` — default `'Search files…'`
@@ -532,7 +532,7 @@ Behavior comes from the `lyraFileUpload()` Alpine binding (`@lyra-ds/alpine`); t
 
 - `label` — default `'Drag files here or click to select'`
 - `hint` — default `null`
-- `accept` — default `null`, one of `.pdf`
+- `accept` — default `null`, example values `.pdf`
 - `maxSizeMB` — default `null`
 - `multiple` — default `true`
 - `uploadDuration` — default `1800`
@@ -591,7 +591,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `name` — default `null`, one of `check`
+- `name` — default `null`, example values `check`
 - `size` — default `20`
 - `color` — default `null`
 - `title` — default `null`
@@ -604,8 +604,8 @@ Static component: no Alpine binding, the markup is the whole contract.
 Static component: no Alpine binding, the markup is the whole contract.
 
 - `label` — required
-- `variant` — default `'secondary'`, one of `danger` | `ghost` | `primary` | `secondary` | `soft`
-- `size` — default `'md'`, one of `lg` | `md` | `sm`
+- `variant` — default `'secondary'`, example values `danger`, `ghost`, `primary`, `secondary`, `soft`
+- `size` — default `'md'`, example values `lg`, `md`, `sm`
 
 ```blade
 <lyra:icon-button label="Close panel" variant="secondary" size="md">
@@ -618,8 +618,8 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 - `label` — default `null`
 - `hint` — default `null`
-- `error` — default `null`, one of `Invalid`
-- `size` — default `'md'`, one of `lg` | `sm`
+- `error` — default `null`, example values `Invalid`
+- `size` — default `'md'`, example values `lg`, `sm`
 
 ```blade
 <lyra:input
@@ -656,7 +656,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `title` — required, one of `Reports`
+- `title` — required, example values `Reports`
 - `titleAs` — default `'h1'`
 
 ```blade
@@ -681,7 +681,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `name` — required, one of `Ada Lovelace`
+- `name` — required, example values `Ada Lovelace`
 - `detail` — default `null`
 - `src` — default `null`
 
@@ -710,7 +710,7 @@ Behavior comes from the `lyraPopover()` Alpine binding (`@lyra-ds/alpine`); the 
 Static component: no Alpine binding, the markup is the whole contract.
 
 - `value` — required
-- `tone` — default `null`, one of `danger` | `success`
+- `tone` — default `null`, example values `danger`, `success`
 
 ```blade
 <lyra:progress :value="68" tone="success" />
@@ -729,13 +729,13 @@ Static component: no Alpine binding, the markup is the whole contract.
 Static component: no Alpine binding, the markup is the whole contract.
 
 - `label` — default `null`
-- `hint` — default `null`, one of `Choose one`
-- `error` — default `null`, one of `Required`
+- `hint` — default `null`, example values `Choose one`
+- `error` — default `null`, example values `Required`
 - `options` — default `[]`
 - `value` — default `null`
 - `defaultValue` — default `null`
 - `name` — default `null`
-- `direction` — default `'column'`, one of `row`
+- `direction` — default `'column'`, example values `row`
 
 ```blade
 <lyra:radio-group
@@ -793,7 +793,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 - `total` — default `null`
 - `centerValue` — default `null`
 - `centerLabel` — default `null`
-- `size` — default `'lg'`, one of `md`
+- `size` — default `'lg'`, example values `md`
 - `stacked` — default `false`
 - `showLegend` — default `true`
 
@@ -815,8 +815,8 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 - `label` — default `null`
 - `hint` — default `null`
-- `error` — default `null`, one of `Invalid`
-- `size` — default `'md'`, one of `lg` | `sm`
+- `error` — default `null`, example values `Invalid`
+- `size` — default `'md'`, example values `lg`, `sm`
 
 ```blade
 <lyra:select name="timezone" label="Time zone" hint="Used for every scheduled report." size="md">
@@ -828,7 +828,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `orientation` — default `'horizontal'`, one of `vertical`
+- `orientation` — default `'horizontal'`, example values `vertical`
 
 ```blade
 <lyra:separator orientation="horizontal">
@@ -844,7 +844,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 - `sidebarLabel` — default `null`
 - `asideLabel` — default `null`
 - `mainAs` — default `'main'`
-- `scroll` — default `'page'`, one of `content`
+- `scroll` — default `'page'`, example values `content`
 - `sidebarWidth` — default `null`
 - `asideWidth` — default `null`
 - `top` — default `null`
@@ -897,9 +897,9 @@ Behavior comes from the `lyraSlotPicker()` Alpine binding (`@lyra-ds/alpine`); t
 
 - `slots` — default `[]`
 - `date` — default `null`
-- `timezone` — default `null`, one of `America/Sao_Paulo`
+- `timezone` — default `null`, example values `America/Sao_Paulo`
 - `detectedZone` — default `null`
-- `holdExpiresAt` — default `null`, one of `2099-08-10T13:02:05Z`
+- `holdExpiresAt` — default `null`, example values `2099-08-10T13:02:05Z`
 - `nextAvailableDate` — default `null`
 - `loading` — default `false`
 - `locale` — default `'en-US'`
@@ -924,7 +924,7 @@ Behavior comes from the `lyraSlotPicker()` Alpine binding (`@lyra-ds/alpine`); t
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `size` — default `'md'`, one of `lg` | `md` | `sm`
+- `size` — default `'md'`, example values `lg`, `md`, `sm`
 
 ```blade
 <lyra:spinner size="md" />
@@ -950,7 +950,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Static component: no Alpine binding, the markup is the whole contract.
 
-- `direction` — default `'flat'`, one of `down` | `flat` | `up`
+- `direction` — default `'flat'`, example values `down`, `flat`, `up`
 
 ```blade
 <lyra:stat direction="up">
@@ -1021,7 +1021,7 @@ Behavior comes from the `lyraTabs()` Alpine binding (`@lyra-ds/alpine`); the tag
 
 - `items` — required
 - `active` — required
-- `variant` — default `'line'`, one of `pills`
+- `variant` — default `'line'`, example values `pills`
 
 ```blade
 <lyra:tabs active="issues" variant="line" :items="[
@@ -1045,7 +1045,7 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 - `label` — default `null`
 - `hint` — default `null`
-- `error` — default `null`, one of `Invalid`
+- `error` — default `null`, example values `Invalid`
 
 ```blade
 <lyra:textarea
@@ -1060,15 +1060,15 @@ Static component: no Alpine binding, the markup is the whole contract.
 
 Behavior comes from the `lyraTimeInput()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
 
-- `label` — default `null`, one of `Start time`
-- `hint` — default `null`, one of `Use 24-hour time`
-- `error` — default `null`, one of `Invalid` | `Invalid time`
+- `label` — default `null`, example values `Start time`
+- `hint` — default `null`, example values `Use 24-hour time`
+- `error` — default `null`, example values `Invalid`, `Invalid time`
 - `value` — default `null`
 - `defaultValue` — default `null`
 - `step` — default `15`
 - `min` — default `null`
 - `max` — default `null`
-- `size` — default `'md'`, one of `lg` | `sm`
+- `size` — default `'md'`, example values `lg`, `sm`
 - `invalid` — default `false`
 - `labels` — default `[]`
 - `disabled` — default `false`
@@ -1088,7 +1088,7 @@ Behavior comes from the `lyraTimeInput()` Alpine binding (`@lyra-ds/alpine`); th
 
 Behavior comes from the `lyraTimePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
 
-- `label` — default `null`, one of `Time`
+- `label` — default `null`, example values `Time`
 - `hint` — default `null`
 - `error` — default `null`
 - `defaultValue` — default `null`
@@ -1119,9 +1119,9 @@ Behavior comes from the `lyraTimeZonePicker()` Alpine binding (`@lyra-ds/alpine`
 - `recentZones` — default `[]`
 - `detectedZone` — default `null`
 - `referenceDate` — default `null`
-- `label` — default `null`, one of `Time zone`
-- `hint` — default `null`, one of `Choose one`
-- `error` — default `null`, one of `Required`
+- `label` — default `null`, example values `Time zone`
+- `hint` — default `null`, example values `Choose one`
+- `error` — default `null`, example values `Required`
 - `placeholder` — default `null`
 - `locale` — default `'en-US'`
 - `labels` — default `[]`
@@ -1159,7 +1159,7 @@ _No props — drop the tag in._
 Behavior comes from the `lyraTooltip()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
 
 - `tip` — required
-- `placement` — default `'top'`, one of `bottom`
+- `placement` — default `'top'`, example values `bottom`
 
 ```blade
 <lyra:tooltip tip="Deploys the current branch to production" placement="top">
