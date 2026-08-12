@@ -1,0 +1,10 @@
+{
+  "files": [
+    {
+      "path": ".claude/CLAUDE.md",
+      "description": "Project constraints, locked decisions and technology stack"
+    },
+    { "path": "CONTRIBUTING.md", "description": "Contribution workflow and expectations" },
+    { "path": "VERSIONING.md", "description": "Release and versioning policy (changesets)" }
+  ]
+}
