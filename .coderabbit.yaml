@@ -7,13 +7,13 @@ reviews:
   auto_review:
     enabled: true
     ignore_title_keywords:
-      - "chore(release)"
-      - "Version Packages"
+      - 'chore(release)'
+      - 'Version Packages'
   path_filters:
-    - "!handoff/**"
-    - "!pnpm-lock.yaml"
+    - '!handoff/**'
+    - '!pnpm-lock.yaml'
   path_instructions:
-    - path: "packages/styles/**"
+    - path: 'packages/styles/**'
       instructions: |
         This is the CSS core of a CSS-first, white-label design system.
         - All appearance must live in `.lyra-*` classes; flag any Tailwind usage or utility-class approaches.
@@ -21,14 +21,14 @@ reviews:
         - Entry keyframe animations must animate `transform` only; flag any keyframe whose initial frame sets `opacity: 0`.
         - `compat-shadcn.css` is opt-in: it must never be imported by the main entry stylesheet.
         - The package must never set `"sideEffects": false` — CSS imports would be dropped by bundlers.
-    - path: "packages/react/**"
+    - path: 'packages/react/**'
       instructions: |
         React wrappers must stay thin: behavior and appearance come from `@lyra-ds/styles` classes, not from inline styles or CSS-in-JS.
         - Flag any runtime CDN dependency; icons must come from the local static Lucide name→component map.
         - Flag dynamic icon imports or patterns that would pull the whole Lucide icon set into consumer bundles.
         - Tree-shaking contract: per-component entries with `"sideEffects": false` — flag imports that create cross-component coupling.
         - Public API must match the hand-written `.d.ts` contracts; flag prop or type changes that drift from them.
-    - path: "packages/alpine/**"
+    - path: 'packages/alpine/**'
       instructions: |
         Alpine.js plugin for the same CSS core.
         - `x-for` templates must render exactly one root element (use `display: contents` wrappers when needed).
@@ -36,7 +36,7 @@ reviews:
         - For `select` elements populated via `x-for`, bind `:selected` per option.
         - rAF-deferred visibility: components using `x-show` need the `mounted` flag + `whenVisible` pattern.
         - `:class` with string syntax does not remove pre-existing SSR classes — object syntax is required.
-    - path: "apps/**"
+    - path: 'apps/**'
       instructions: |
         Docs and site apps must dogfood the design system: UI chrome should be built from Lyra components, not ad-hoc CSS or Tailwind.
         - Component documentation pages follow the multi-stack pattern (React / Alpine / Blade / HTML tabs); flag pages that bypass it.
