@@ -11,7 +11,9 @@ const target = resolve(appRoot, 'public', 'llms.txt');
 // regras e os tokens no topo, e o do Alpine entra depois dele. Concatenar aqui, em vez de
 // gerar um arquivo só, mantém cada gerador dono do seu pacote e verificável por --check.
 const parts = await Promise.all(
-  ['llms.txt', 'alpine-llms.txt'].map((file) => readFile(resolve(output, file), 'utf8')),
+  ['llms.txt', 'alpine-llms.txt', 'blade-llms.txt'].map((file) =>
+    readFile(resolve(output, file), 'utf8'),
+  ),
 );
 
 await mkdir(dirname(target), { recursive: true });

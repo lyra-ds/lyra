@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] **Documentação multi-stack — frente B mergeada (PR #176, 2026-08-12);
-      tasks 11–12 desbloqueadas e pendentes** → maestro (claude). Tasks 1–10 do
+- [x] **Documentação multi-stack — frente B completa (PRs #176 e o das tasks
+      11–12, 2026-08-12); aba Blade acesa** → maestro (claude). Tasks 1–10 do
       plano `docs/superpowers/plans/2026-08-10-docs-multi-stack-frente-b.md`:
       seletor de stack nas **75** páginas de componente (união corrigida:
       `form-row` vive em `fieldset.mdx`), catálogo do Alpine gerado das
@@ -12,9 +12,13 @@
       Alpine (o modelo é de **quatro stacks** — HTML e Alpine são a mesma aba
       em dois estados; a cobertura publicada de llms.txt/API ganha o Blade nas
       tasks 11–12). Review do PR: 14 comentários CodeRabbit triados — 3 fixes
-      aplicados, 2 pushbacks, o resto encaminhado. **Tasks 11–12 (aba Blade)
-      desbloqueadas**: `lyra-ds/blade` v0.10.0 publicou o `api.json` (72
-      componentes, 30 com binding). São o próximo pedaço de produto.
+      aplicados, 2 pushbacks, o resto encaminhado. **Tasks 11–12 executadas**:
+      `api.json` da release v0.10.0 (72 componentes, 30 com binding) ingerido
+      com validador próprio (`tools/blade-api/check.mjs`) no CI, aba Blade
+      renderizando tag, versão, herança do binding, tabela de props e usage;
+      `llms.txt` agora cobre as quatro stacks (`tools/docgen/blade.mjs`
+      com `--check`). Restam a frente C (starter Laravel) e a atualização do
+      snapshot a cada release do blade.
 
 - [x] **Sistema de toasts no alpine — `lyraToasts` (store) + `lyraToastStack`
       (2026-08-09) [batuta/20260809-025845-alpine-toasts]** → codex

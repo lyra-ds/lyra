@@ -117,6 +117,7 @@ jobs:
       # Frente B task 11: o snapshot de API do Blade (release do lyra-ds/blade) precisa
       # casar com o manifesto e as páginas do site — aba blade sem API é quebra.
       - run: node tools/blade-api/check.mjs
+      - run: node tools/docgen/blade.mjs --check
       # Phase 2, STY-07: publint validates the exports map (incl. ./styles.css) and
       # that sideEffects: ["**/*.css"] protects the CSS from consumer tree-shaking.
       # Invoked via the pinned lockfile devDep (pnpm exec), never floating dlx/npx.

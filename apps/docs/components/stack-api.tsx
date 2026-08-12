@@ -106,16 +106,14 @@ function BladeApi({ slug }: { slug: string }) {
             ) : (
               <span className="lw-prop-table__optional">—</span>
             ),
-            values: prop.values.length ? (
-              prop.values.map((value, index) => (
-                <span key={value}>
-                  {index > 0 ? ' ' : null}
-                  <code>{value}</code>
-                </span>
-              ))
-            ) : (
-              '—'
-            ),
+            values: prop.values.length
+              ? prop.values.map((value, index) => (
+                  <span key={value}>
+                    {index > 0 ? ' ' : null}
+                    <code>{value}</code>
+                  </span>
+                ))
+              : '—',
           }))}
         />
       )}

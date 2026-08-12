@@ -1,0 +1,1214 @@
+## Blade components (lyra-ds/blade v0.10.0)
+
+One `<lyra:*>` tag per component, rendered server-side by Laravel. Every tag emits the
+same `.lyra-*` classes as the other stacks; interactive ones serve the HTML that an
+Alpine binding animates. Never invent a tag or a prop — this list is the whole surface.
+
+### <lyra:accordion>
+
+Behavior comes from the `lyraAccordion()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `items` — required
+- `defaultOpen` — default `null`
+- `multiple` — default `false`
+
+```blade
+<lyra:accordion :items="[
+    ['id' => 'billing', 'title' => 'Billing', 'content' => 'Invoices are issued on the first business day of each month.'],
+    ['id' => 'security', 'title' => 'Security', 'content' => 'Two-factor authentication is required for every workspace owner.'],
+]" default-open="billing" />
+```
+### <lyra:action-bar>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `open` — default `true`
+- `count` — default `null`
+- `label` — default `'selected'`
+
+```blade
+<lyra:action-bar :count="3" label="files selected">
+    <lyra:button variant="secondary" size="sm">Move</lyra:button>
+    <lyra:button variant="danger" size="sm">Delete</lyra:button>
+</lyra:action-bar>
+```
+### <lyra:alert>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `tone` — default `'info'`, one of `danger` | `info` | `success` | `warning`
+
+```blade
+<lyra:alert tone="warning">Your trial ends in 3 days. Add a payment method to keep your workspace active.</lyra:alert>
+```
+### <lyra:app-sidebar>
+
+Behavior comes from the `lyraAppSidebar()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `brand` — default `null`
+- `groups` — default `[]`
+- `footer` — default `null`
+- `width` — default `260`
+- `collapsible` — default `false`
+- `defaultCollapsed` — default `false`
+- `labels` — default `[]`
+
+```blade
+<lyra:app-sidebar
+    :groups="[
+        ['heading' => 'Workspace', 'items' => [
+            ['id' => 'overview', 'label' => 'Overview', 'active' => true],
+            ['id' => 'projects', 'label' => 'Projects', 'badge' => '12'],
+        ]],
+        ['heading' => 'Account', 'items' => [
+            ['id' => 'billing', 'label' => 'Billing'],
+            ['id' => 'settings', 'label' => 'Settings'],
+        ]],
+    ]"
+    collapsible
+/>
+```
+### <lyra:avatar>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `src` — default `null`
+- `name` — default `null`
+- `size` — default `'md'`, one of `lg` | `md` | `sm` | `xl`
+- `shape` — default `'circle'`, one of `square`
+- `status` — default `null`
+- `statusLabel` — default `null`
+
+```blade
+<lyra:avatar name="Ana Ribeiro" size="md" shape="circle" status="online" status-label="Online" />
+```
+### <lyra:badge>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `tone` — default `'neutral'`, one of `accent` | `danger` | `info` | `neutral` | `success` | `warning`
+- `dot` — default `false`
+
+```blade
+<lyra:badge tone="success" dot>Active</lyra:badge>
+```
+### <lyra:bottom-nav>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `items` — required
+
+```blade
+<lyra:bottom-nav :items="[
+    ['label' => 'Home', 'icon' => '🏠', 'active' => true],
+    ['label' => 'Search', 'icon' => '🔍'],
+    ['label' => 'Profile', 'icon' => '👤'],
+]" />
+```
+### <lyra:bottom-sheet>
+
+Behavior comes from the `lyraBottomSheet()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `title` — default `null`
+- `ariaLabel` — default `null`
+- `closable` — default `true`
+- `closeLabel` — default `'Close'`
+- `defaultOpen` — default `false`
+
+```blade
+<lyra:bottom-sheet title="Share project" close-label="Close">
+    Anyone with the link can view this project.
+</lyra:bottom-sheet>
+```
+### <lyra:brand>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `mark` — required
+- `markDark` — default `null`
+- `size` — default `null`
+- `href` — default `null`
+
+```blade
+<lyra:brand mark="/img/lyra-mark.svg" :size="24" href="/">Lyra</lyra:brand>
+```
+### <lyra:breadcrumb>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `items` — required
+
+```blade
+<lyra:breadcrumb :items="[
+    ['label' => 'Workspace', 'href' => '/workspace'],
+    ['label' => 'Projects', 'href' => '/workspace/projects'],
+    ['label' => 'Website redesign'],
+]" />
+```
+### <lyra:button>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `variant` — default `'primary'`, one of `danger` | `ghost` | `primary` | `secondary` | `soft`
+- `size` — default `'md'`, one of `lg` | `md` | `sm`
+- `loading` — default `false`
+- `disabled` — default `false`
+- `full` — default `false`
+
+```blade
+<lyra:button variant="primary" size="md">Save changes</lyra:button>
+```
+### <lyra:calendar>
+
+Behavior comes from the `lyraCalendar()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `range` — default `false`
+- `defaultValue` — default `null`
+- `min` — default `null`
+- `max` — default `null`
+- `disabledDates` — default `[]`
+- `weekStartsOn` — default `0`
+- `size` — default `'sm'`, one of `md`
+- `todayButton` — default `false`
+- `locale` — default `'en-US'`
+- `labels` — default `[]`
+- `dateDisabledPredicate` — default `null`
+
+```blade
+<lyra:calendar
+    default-value="2026-03-17"
+    min="2026-01-01"
+    max="2026-12-31"
+    :week-starts-on="1"
+    locale="en-US"
+    today-button
+/>
+```
+### <lyra:card>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `padded` — default `true`
+- `interactive` — default `false`
+
+```blade
+<lyra:card padded>
+    <h3>Monthly usage</h3>
+    <p>You have used 68% of the included API requests this cycle.</p>
+</lyra:card>
+```
+### <lyra:checkbox>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+
+```blade
+<lyra:checkbox name="newsletter" value="weekly" label="Send me the weekly product digest" />
+```
+### <lyra:checkbox-group>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+- `hint` — default `null`, one of `Choose one`
+- `error` — default `null`, one of `Required`
+- `options` — default `[]`
+- `value` — default `null`
+- `defaultValue` — default `[]`
+- `direction` — default `'column'`, one of `row`
+- `name` — default `null`
+
+```blade
+<lyra:checkbox-group
+    name="notifications"
+    label="Email notifications"
+    hint="You can change this at any time."
+    :options="[
+        ['value' => 'mentions', 'label' => 'Mentions', 'hint' => 'When someone mentions you in a comment'],
+        ['value' => 'deploys', 'label' => 'Deploys'],
+        ['value' => 'billing', 'label' => 'Billing', 'disabled' => true],
+    ]"
+    :default-value="['mentions']"
+/>
+```
+### <lyra:code-block>
+
+Behavior comes from the `lyraCodeBlock()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `language` — default `null`
+- `lineNumbers` — default `false`
+- `wrap` — default `false`
+- `copyLabel` — default `null`
+- `copiedLabel` — default `null`
+- `copyText` — default `null`
+
+```blade
+<lyra:code-block language="bash" line-numbers copy-label="Copy" copied-label="Copied!" copy-text="composer require lyra-ds/blade">composer require lyra-ds/blade</lyra:code-block>
+```
+### <lyra:combobox>
+
+Behavior comes from the `lyraCombobox()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `options` — default `[]`
+- `value` — default `null`
+- `defaultOpen` — default `false`
+- `label` — default `null`, one of `Country`
+- `hint` — default `null`, one of `Choose one`
+- `error` — default `null`, one of `Required`
+- `placeholder` — default `null`
+- `searchPlaceholder` — default `null`
+- `emptyMessage` — default `null`
+- `disabled` — default `false`
+- `factory` — default `'lyraCombobox'`
+- `extraOptions` — default `[]`
+
+```blade
+<lyra:combobox
+    label="Assignee"
+    placeholder="Select a teammate"
+    search-placeholder="Search teammates"
+    empty-message="No teammate found."
+    :options="[
+        ['value' => 'ana', 'label' => 'Ana Ribeiro'],
+        ['value' => 'joao', 'label' => 'João Martins'],
+        ['value' => 'mei', 'label' => 'Mei Tanaka'],
+    ]"
+/>
+```
+### <lyra:command-palette>
+
+Behavior comes from the `lyraCommandPalette()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `groups` — default `[]`
+- `defaultOpen` — default `false`
+- `placeholder` — default `null`
+- `emptyMessage` — default `null`
+- `searchLabel` — default `null`
+- `hints` — default `[]`
+- `hotkey` — default `'k'`
+- `inline` — default `false`
+- `label` — default `null`
+
+```blade
+<lyra:command-palette
+    placeholder="Type a command or search…"
+    empty-message="No results found."
+    hotkey="k"
+    :groups="[
+        ['label' => 'Navigation', 'items' => [
+            ['id' => 'go-projects', 'label' => 'Go to projects'],
+            ['id' => 'go-billing', 'label' => 'Go to billing'],
+        ]],
+        ['label' => 'Actions', 'items' => [
+            ['id' => 'new-project', 'label' => 'Create a project'],
+        ]],
+    ]"
+/>
+```
+### <lyra:container>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `max` — default `null`
+
+```blade
+<lyra:container max="lg">
+    <h1>Workspace overview</h1>
+</lyra:container>
+```
+### <lyra:cookie-banner>
+
+Behavior comes from the `lyraCookieBanner()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `ariaLabel` — default `'Cookie notice'`
+- `storageKey` — default `'lyra-cookie-consent'`
+- `policyHref` — default `null`
+- `essentialsLabel` — default `'Only essentials'`
+- `acceptLabel` — default `'Accept all'`
+
+```blade
+<lyra:cookie-banner
+    policy-href="/privacy"
+    essentials-label="Only essentials"
+    accept-label="Accept all"
+>
+    We use cookies to measure how the documentation is used.
+</lyra:cookie-banner>
+```
+### <lyra:data-table>
+
+Behavior comes from the `lyraDataTable()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `columns` — required
+- `rows` — required
+- `sorting` — default `null`
+- `selectable` — default `false`
+- `selected` — default `[]`
+- `clientSort` — default `false`
+- `stickyHeader` — default `false`
+- `maxHeight` — default `null`
+- `density` — default `'comfortable'`, one of `compact`
+- `loading` — default `false`
+- `empty` — default `null`
+- `hover` — default `false`
+- `labels` — default `[]`
+
+```blade
+<lyra:data-table
+    :columns="[
+        ['key' => 'name', 'label' => 'Project', 'sortable' => true],
+        ['key' => 'owner', 'label' => 'Owner'],
+        ['key' => 'issues', 'label' => 'Open issues', 'align' => 'end'],
+    ]"
+    :rows="[
+        ['id' => '1', 'name' => 'Website redesign', 'owner' => 'Ana Ribeiro', 'issues' => 12],
+        ['id' => '2', 'name' => 'Mobile app', 'owner' => 'João Martins', 'issues' => 4],
+    ]"
+    density="comfortable"
+    hover
+/>
+```
+### <lyra:date-picker>
+
+Behavior comes from the `lyraDatePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `label` — default `null`, one of `0` | `Date`
+- `hint` — default `null`
+- `error` — default `null`
+- `defaultValue` — default `null`
+- `placeholder` — default `null`
+- `min` — default `null`
+- `max` — default `null`
+- `locale` — default `'en-US'`
+- `labels` — default `[]`
+- `disabled` — default `false`
+- `name` — default `null`
+
+```blade
+<lyra:date-picker
+    name="due_date"
+    label="Due date"
+    hint="Pick a date within the current quarter."
+    default-value="2026-03-17"
+    min="2026-01-01"
+    max="2026-12-31"
+    locale="en-US"
+/>
+```
+### <lyra:date-range-picker>
+
+Behavior comes from the `lyraDateRangePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `label` — default `null`, one of `0` | `Period`
+- `hint` — default `null`
+- `error` — default `null`
+- `defaultValue` — default `null`
+- `placeholder` — default `null`
+- `min` — default `null`
+- `max` — default `null`
+- `locale` — default `'en-US'`
+- `labels` — default `[]`
+- `disabled` — default `false`
+- `name` — default `null`
+
+```blade
+<lyra:date-range-picker
+    name="reporting_period"
+    label="Reporting period"
+    :default-value="['start' => '2026-03-01', 'end' => '2026-03-31']"
+    min="2026-01-01"
+    max="2026-12-31"
+    locale="en-US"
+/>
+```
+### <lyra:dialog>
+
+Behavior comes from the `lyraDialog()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `title` — required
+- `closable` — default `true`
+- `closeLabel` — default `'Close'`
+- `defaultOpen` — default `false`
+- `closeOnEsc` — default `true`
+- `closeOnOverlayClick` — default `true`
+- `labelId` — default `null`
+
+```blade
+<lyra:dialog title="Delete project" close-label="Close">
+    This permanently deletes the project and every issue attached to it.
+</lyra:dialog>
+```
+### <lyra:drawer>
+
+Behavior comes from the `lyraDrawer()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `title` — required
+- `closable` — default `true`
+- `closeLabel` — default `'Close'`
+- `defaultOpen` — default `false`
+- `labelId` — default `null`
+
+```blade
+<lyra:drawer title="Project settings" close-label="Close">
+    Rename the project, change its visibility or archive it.
+</lyra:drawer>
+```
+### <lyra:dropdown>
+
+Behavior comes from the `lyraDropdown()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `items` — required
+- `align` — default `'start'`
+- `defaultOpen` — default `false`
+
+```blade
+<lyra:dropdown align="end" :items="[
+    ['type' => 'label', 'label' => 'Project'],
+    ['label' => 'Rename project'],
+    ['type' => 'separator'],
+    ['label' => 'Archive project', 'danger' => true],
+]">
+    <x-slot:trigger>Project actions</x-slot:trigger>
+</lyra:dropdown>
+```
+### <lyra:empty-state>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+_No props — drop the tag in._
+
+```blade
+<lyra:empty-state>
+    <x-slot:title>No projects yet</x-slot:title>
+    <x-slot:description>Create your first project to start tracking work.</x-slot:description>
+    <x-slot:action>
+        <lyra:button variant="primary">Create a project</lyra:button>
+    </x-slot:action>
+</lyra:empty-state>
+```
+### <lyra:fieldset>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+_No props — drop the tag in._
+
+```blade
+<lyra:fieldset>
+    <x-slot:legend>Billing address</x-slot:legend>
+    <x-slot:description>We use this address on every invoice.</x-slot:description>
+    <lyra:input name="street" label="Street" />
+    <lyra:input name="city" label="City" />
+</lyra:fieldset>
+```
+### <lyra:file-manager>
+
+Behavior comes from the `lyraFileManager()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `files` — default `[]`
+- `path` — default `[]`
+- `defaultView` — default `'list'`, one of `grid`
+- `defaultQuery` — default `''`
+- `actions` — default `null`
+- `searchPlaceholder` — default `'Search files…'`
+- `emptyMessage` — default `'No files found.'`
+- `labels` — default `[]`
+
+```blade
+<lyra:file-manager
+    :path="['Workspace', 'Design']"
+    :files="[
+        ['name' => 'Brand assets', 'type' => 'folder', 'items' => 12, 'updated' => '2026-03-14'],
+        ['name' => 'homepage.fig', 'type' => 'file', 'size' => 4823000, 'updated' => '2026-03-16', 'shared' => true],
+        ['name' => 'style-guide.pdf', 'type' => 'file', 'size' => 918000, 'updated' => '2026-03-10'],
+    ]"
+    default-view="list"
+    search-placeholder="Search files…"
+/>
+```
+### <lyra:file-upload>
+
+Behavior comes from the `lyraFileUpload()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `label` — default `'Drag files here or click to select'`
+- `hint` — default `null`
+- `accept` — default `null`, one of `.pdf`
+- `maxSizeMB` — default `null`
+- `multiple` — default `true`
+- `uploadDuration` — default `1800`
+- `defaultItems` — default `[]`
+- `doneLabel` — default `'Upload complete'`
+- `removeLabel` — default `'Remove'`
+
+```blade
+<lyra:file-upload
+    label="Drag files here or click to select"
+    hint="PNG or JPG up to 5 MB."
+    accept="image/png,image/jpeg"
+    :max-size-m-b="5"
+    multiple
+/>
+```
+### <lyra:footer>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `linksLabel` — default `null`
+
+```blade
+<lyra:footer links-label="Footer navigation">
+    <span>© 2026 Lyra</span>
+</lyra:footer>
+```
+### <lyra:form-row>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `columns` — default `null`
+
+```blade
+<lyra:form-row :columns="2">
+    <lyra:input name="first_name" label="First name" />
+    <lyra:input name="last_name" label="Last name" />
+</lyra:form-row>
+```
+### <lyra:grid>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `columns` — default `null`
+- `minItem` — default `null`
+- `gap` — default `null`
+
+```blade
+<lyra:grid :columns="3" gap="md">
+    <lyra:card>Requests</lyra:card>
+    <lyra:card>Errors</lyra:card>
+    <lyra:card>Latency</lyra:card>
+</lyra:grid>
+```
+### <lyra:icon>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `name` — default `null`, one of `check`
+- `size` — default `20`
+- `color` — default `null`
+- `title` — default `null`
+
+```blade
+<lyra:icon name="check" :size="20" title="Done" />
+```
+### <lyra:icon-button>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — required
+- `variant` — default `'secondary'`, one of `danger` | `ghost` | `primary` | `secondary` | `soft`
+- `size` — default `'md'`, one of `lg` | `md` | `sm`
+
+```blade
+<lyra:icon-button label="Close panel" variant="secondary" size="md">
+    <lyra:icon name="x" :size="16" />
+</lyra:icon-button>
+```
+### <lyra:input>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+- `hint` — default `null`
+- `error` — default `null`, one of `Invalid`
+- `size` — default `'md'`, one of `lg` | `sm`
+
+```blade
+<lyra:input
+    name="email"
+    type="email"
+    label="Email address"
+    placeholder="you@example.com"
+    autocomplete="email"
+/>
+```
+### <lyra:nav-link>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `active` — default `false`
+
+```blade
+<lyra:nav-link href="/projects" active>Projects</lyra:nav-link>
+```
+### <lyra:navbar>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `sticky` — default `true`
+- `navLabel` — default `null`
+
+```blade
+<lyra:navbar sticky nav-label="Main navigation">
+    <lyra:nav-link href="/overview" active>Overview</lyra:nav-link>
+    <lyra:nav-link href="/projects">Projects</lyra:nav-link>
+</lyra:navbar>
+```
+### <lyra:page-header>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `title` — required, one of `Reports`
+- `titleAs` — default `'h1'`
+
+```blade
+<lyra:page-header title="Website redesign" title-as="h1">
+    <lyra:button variant="primary">New issue</lyra:button>
+</lyra:page-header>
+```
+### <lyra:pagination>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `page` — required
+- `total` — required
+- `url` — required
+- `previousLabel` — default `'Previous page'`
+- `nextLabel` — default `'Next page'`
+
+```blade
+<lyra:pagination :page="3" :total="12" url="/projects?page={page}" previous-label="Previous page" next-label="Next page" />
+```
+### <lyra:person-cell>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `name` — required, one of `Ada Lovelace`
+- `detail` — default `null`
+- `src` — default `null`
+
+```blade
+<lyra:person-cell name="Ana Ribeiro" detail="Product designer" />
+```
+### <lyra:popover>
+
+Behavior comes from the `lyraPopover()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `defaultOpen` — default `false`
+- `side` — default `'auto'`
+- `align` — default `null`
+- `width` — default `null`
+- `ariaLabel` — default `'Popover'`
+- `wrapTrigger` — default `true`
+
+```blade
+<lyra:popover side="bottom" align="start" aria-label="Usage details">
+    <x-slot:trigger>Usage details</x-slot:trigger>
+    <p>68% of the included API requests were used this cycle.</p>
+</lyra:popover>
+```
+### <lyra:progress>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `value` — required
+- `tone` — default `null`, one of `danger` | `success`
+
+```blade
+<lyra:progress :value="68" tone="success" />
+```
+### <lyra:radio>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+
+```blade
+<lyra:radio name="plan" value="pro" label="Pro — $29 per month" />
+```
+### <lyra:radio-group>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+- `hint` — default `null`, one of `Choose one`
+- `error` — default `null`, one of `Required`
+- `options` — default `[]`
+- `value` — default `null`
+- `defaultValue` — default `null`
+- `name` — default `null`
+- `direction` — default `'column'`, one of `row`
+
+```blade
+<lyra:radio-group
+    name="plan"
+    label="Plan"
+    hint="You can switch plans at any time."
+    :options="[
+        ['value' => 'starter', 'label' => 'Starter', 'hint' => 'Up to 3 projects'],
+        ['value' => 'pro', 'label' => 'Pro', 'hint' => 'Unlimited projects'],
+        ['value' => 'enterprise', 'label' => 'Enterprise', 'disabled' => true],
+    ]"
+    default-value="pro"
+/>
+```
+### <lyra:recurrence-selector>
+
+Behavior comes from the `lyraRecurrenceSelector()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `value` — default `null`
+- `startDate` — default `null`
+- `defaultEndCount` — default `null`
+- `conflicts` — default `[]`
+- `labels` — default `[]`
+
+```blade
+<lyra:recurrence-selector
+    start-date="2026-03-02"
+    :value="['freq' => 'weekly', 'interval' => 2, 'byWeekday' => [1, 3]]"
+/>
+```
+### <lyra:segmented-control>
+
+Behavior comes from the `lyraSegmentedControl()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `options` — required
+- `value` — required
+- `label` — required
+
+```blade
+<lyra:segmented-control
+    label="View"
+    value="board"
+    :options="[
+        ['value' => 'list', 'label' => 'List'],
+        ['value' => 'board', 'label' => 'Board'],
+        ['value' => 'timeline', 'label' => 'Timeline', 'disabled' => true],
+    ]"
+/>
+```
+### <lyra:segmented-ring>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `segments` — default `[]`
+- `total` — default `null`
+- `centerValue` — default `null`
+- `centerLabel` — default `null`
+- `size` — default `'lg'`, one of `md`
+- `stacked` — default `false`
+- `showLegend` — default `true`
+
+```blade
+<lyra:segmented-ring
+    :segments="[
+        ['label' => 'Done', 'value' => 42, 'tone' => 'success'],
+        ['label' => 'In progress', 'value' => 18, 'tone' => 'info'],
+        ['label' => 'Blocked', 'value' => 6, 'tone' => 'danger'],
+    ]"
+    center-value="66"
+    center-label="issues"
+    size="lg"
+/>
+```
+### <lyra:select>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+- `hint` — default `null`
+- `error` — default `null`, one of `Invalid`
+- `size` — default `'md'`, one of `lg` | `sm`
+
+```blade
+<lyra:select name="timezone" label="Time zone" hint="Used for every scheduled report." size="md">
+    <option value="america-sao_paulo">America/Sao_Paulo</option>
+    <option value="europe-lisbon">Europe/Lisbon</option>
+</lyra:select>
+```
+### <lyra:separator>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `orientation` — default `'horizontal'`, one of `vertical`
+
+```blade
+<lyra:separator orientation="horizontal">
+    <x-slot:label>Danger zone</x-slot:label>
+</lyra:separator>
+```
+### <lyra:shell>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `sidebarAs` — default `'aside'`
+- `asideAs` — default `'aside'`
+- `sidebarLabel` — default `null`
+- `asideLabel` — default `null`
+- `mainAs` — default `'main'`
+- `scroll` — default `'page'`, one of `content`
+- `sidebarWidth` — default `null`
+- `asideWidth` — default `null`
+- `top` — default `null`
+
+```blade
+<lyra:shell sidebar-label="Workspace navigation" main-as="main" scroll="page">
+    <x-slot:topbar>
+        <lyra:navbar>
+            <lyra:nav-link href="/overview" active>Overview</lyra:nav-link>
+            <lyra:nav-link href="/projects">Projects</lyra:nav-link>
+        </lyra:navbar>
+    </x-slot:topbar>
+    <x-slot:sidebar>
+        <lyra:nav-link href="/overview" active>Overview</lyra:nav-link>
+        <lyra:nav-link href="/projects">Projects</lyra:nav-link>
+    </x-slot:sidebar>
+    <lyra:page-header title="Overview" />
+</lyra:shell>
+```
+### <lyra:sidebar-group>
+
+Behavior comes from the `lyraSidebarGroup()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `label` — default `null`
+- `items` — default `[]`
+- `collapsible` — default `false`
+- `defaultCollapsed` — default `false`
+
+```blade
+<lyra:sidebar-group label="Workspace" collapsible :items="[
+    ['id' => 'overview', 'label' => 'Overview', 'active' => true],
+    ['id' => 'projects', 'label' => 'Projects', 'badge' => '12'],
+    ['id' => 'members', 'label' => 'Members'],
+]" />
+```
+### <lyra:skeleton>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `width` — default `'100%'`
+- `height` — default `14`
+- `circle` — default `false`
+
+```blade
+<lyra:skeleton width="240px" :height="14" />
+```
+### <lyra:slot-picker>
+
+Behavior comes from the `lyraSlotPicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `slots` — default `[]`
+- `date` — default `null`
+- `timezone` — default `null`, one of `America/Sao_Paulo`
+- `detectedZone` — default `null`
+- `holdExpiresAt` — default `null`, one of `2099-08-10T13:02:05Z`
+- `nextAvailableDate` — default `null`
+- `loading` — default `false`
+- `locale` — default `'en-US'`
+- `min` — default `null`
+- `max` — default `null`
+- `labels` — default `[]`
+- `tzLabels` — default `[]`
+
+```blade
+<lyra:slot-picker
+    date="2026-03-17"
+    timezone="America/Sao_Paulo"
+    locale="en-US"
+    :slots="[
+        ['start' => '2026-03-17T13:00:00Z', 'end' => '2026-03-17T13:30:00Z'],
+        ['start' => '2026-03-17T14:00:00Z', 'end' => '2026-03-17T14:30:00Z'],
+        ['start' => '2026-03-17T15:30:00Z', 'end' => '2026-03-17T16:00:00Z'],
+    ]"
+/>
+```
+### <lyra:spinner>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `size` — default `'md'`, one of `lg` | `md` | `sm`
+
+```blade
+<lyra:spinner size="md" />
+```
+### <lyra:stack>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `direction` — default `null`
+- `gap` — default `null`
+- `align` — default `null`
+- `justify` — default `null`
+- `wrap` — default `false`
+- `as` — default `'div'`
+
+```blade
+<lyra:stack direction="row" gap="md" align="center" justify="between">
+    <lyra:badge tone="success">Deployed</lyra:badge>
+    <lyra:button variant="secondary" size="sm">View logs</lyra:button>
+</lyra:stack>
+```
+### <lyra:stat>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `direction` — default `'flat'`, one of `down` | `flat` | `up`
+
+```blade
+<lyra:stat direction="up">
+    <x-slot:label>Monthly active users</x-slot:label>
+    <x-slot:value>12,480</x-slot:value>
+    <x-slot:delta>8.2% vs. last month</x-slot:delta>
+</lyra:stat>
+```
+### <lyra:stepper>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `steps` — required
+- `active` — required
+
+```blade
+<lyra:stepper :steps="['Account', 'Workspace', 'Billing']" :active="1" />
+```
+### <lyra:switch>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+
+```blade
+<lyra:switch name="two_factor" label="Require two-factor authentication" />
+```
+### <lyra:table>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `columns` — required
+- `rows` — required
+- `hover` — default `false`
+
+```blade
+<lyra:table
+    hover
+    :columns="[
+        ['key' => 'name', 'label' => 'Project'],
+        ['key' => 'owner', 'label' => 'Owner'],
+        ['key' => 'issues', 'label' => 'Open issues', 'align' => 'end'],
+    ]"
+    :rows="[
+        ['name' => 'Website redesign', 'owner' => 'Ana Ribeiro', 'issues' => 12],
+        ['name' => 'Mobile app', 'owner' => 'João Martins', 'issues' => 4],
+    ]"
+/>
+```
+### <lyra:table-of-contents>
+
+Behavior comes from the `lyraTableOfContents()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `items` — required
+- `activeId` — default `null`
+- `label` — required
+
+```blade
+<lyra:table-of-contents label="On this page" active-id="props" :items="[
+    ['id' => 'installation', 'label' => 'Installation', 'level' => 2],
+    ['id' => 'props', 'label' => 'Props', 'level' => 2],
+    ['id' => 'accessibility', 'label' => 'Accessibility', 'level' => 3],
+]" />
+```
+### <lyra:tabs>
+
+Behavior comes from the `lyraTabs()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `items` — required
+- `active` — required
+- `variant` — default `'line'`, one of `pills`
+
+```blade
+<lyra:tabs active="issues" variant="line" :items="[
+    ['id' => 'overview', 'label' => 'Overview', 'panel' => 'Everything that happened this week.'],
+    ['id' => 'issues', 'label' => 'Issues', 'count' => 12, 'panel' => '12 issues are open.'],
+    ['id' => 'settings', 'label' => 'Settings', 'panel' => 'Rename or archive this project.'],
+]" />
+```
+### <lyra:tag>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+_No props — drop the tag in._
+
+```blade
+<lyra:tag>design-system</lyra:tag>
+```
+### <lyra:textarea>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `label` — default `null`
+- `hint` — default `null`
+- `error` — default `null`, one of `Invalid`
+
+```blade
+<lyra:textarea
+    name="release_notes"
+    label="Release notes"
+    hint="Markdown is supported."
+    rows="4"
+    placeholder="What changed in this release?"
+/>
+```
+### <lyra:time-input>
+
+Behavior comes from the `lyraTimeInput()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `label` — default `null`, one of `Start time`
+- `hint` — default `null`, one of `Use 24-hour time`
+- `error` — default `null`, one of `Invalid` | `Invalid time`
+- `value` — default `null`
+- `defaultValue` — default `null`
+- `step` — default `15`
+- `min` — default `null`
+- `max` — default `null`
+- `size` — default `'md'`, one of `lg` | `sm`
+- `invalid` — default `false`
+- `labels` — default `[]`
+- `disabled` — default `false`
+
+```blade
+<lyra:time-input
+    name="start_time"
+    label="Start time"
+    default-value="09:00"
+    :step="15"
+    min="08:00"
+    max="18:00"
+    size="md"
+/>
+```
+### <lyra:time-picker>
+
+Behavior comes from the `lyraTimePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `label` — default `null`, one of `Time`
+- `hint` — default `null`
+- `error` — default `null`
+- `defaultValue` — default `null`
+- `placeholder` — default `null`
+- `step` — default `30`
+- `min` — default `null`
+- `max` — default `null`
+- `locale` — default `'en-US'`
+- `labels` — default `[]`
+- `disabled` — default `false`
+
+```blade
+<lyra:time-picker
+    label="Meeting time"
+    default-value="14:30"
+    :step="30"
+    min="08:00"
+    max="18:00"
+    locale="en-US"
+/>
+```
+### <lyra:time-zone-picker>
+
+Behavior comes from the `lyraTimeZonePicker()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `value` — default `null`
+- `zones` — default `null`
+- `recentZones` — default `[]`
+- `detectedZone` — default `null`
+- `referenceDate` — default `null`
+- `label` — default `null`, one of `Time zone`
+- `hint` — default `null`, one of `Choose one`
+- `error` — default `null`, one of `Required`
+- `placeholder` — default `null`
+- `locale` — default `'en-US'`
+- `labels` — default `[]`
+- `disabled` — default `false`
+
+```blade
+<lyra:time-zone-picker
+    label="Time zone"
+    value="America/Sao_Paulo"
+    detected-zone="America/Sao_Paulo"
+    :recent-zones="['Europe/Lisbon', 'America/New_York']"
+    locale="en-US"
+/>
+```
+### <lyra:toast>
+
+Static component: no Alpine binding, the markup is the whole contract.
+
+- `tone` — default `'info'`
+
+```blade
+<lyra:toast tone="success">Project settings saved.</lyra:toast>
+```
+### <lyra:toast-stack>
+
+Behavior comes from the `lyraToastStack()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+_No props — drop the tag in._
+
+```blade
+<lyra:toast-stack />
+```
+### <lyra:tooltip>
+
+Behavior comes from the `lyraTooltip()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `tip` — required
+- `placement` — default `'top'`, one of `bottom`
+
+```blade
+<lyra:tooltip tip="Deploys the current branch to production" placement="top">
+    <lyra:button variant="primary" size="sm">Deploy</lyra:button>
+</lyra:tooltip>
+```
+### <lyra:weekly-schedule-editor>
+
+Behavior comes from the `lyraWeeklyScheduleEditor()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `value` — default `null`
+- `exceptions` — default `[]`
+- `defaultRange` — default `null`
+- `weekStartsOn` — default `1`
+- `showExceptions` — default `true`
+- `labels` — default `[]`
+- `name` — default `null`
+
+```blade
+<lyra:weekly-schedule-editor
+    name="availability"
+    :week-starts-on="1"
+    :value="[
+        1 => [['start' => '09:00', 'end' => '12:00'], ['start' => '13:00', 'end' => '18:00']],
+        2 => [['start' => '09:00', 'end' => '18:00']],
+        3 => [['start' => '09:00', 'end' => '18:00']],
+    ]"
+    :default-range="['start' => '09:00', 'end' => '17:00']"
+/>
+```
+### <lyra:workspace-switcher>
+
+Behavior comes from the `lyraWorkspaceSwitcher()` Alpine binding (`@lyra-ds/alpine`); the tag serves the HTML it animates.
+
+- `workspaces` — default `[]`
+- `current` — default `null`
+- `create` — default `false`
+- `createLabel` — default `'Create workspace'`
+- `createId` — default `'create'`
+- `defaultOpen` — default `false`
+
+```blade
+<lyra:workspace-switcher
+    current="acme"
+    create
+    create-label="Create workspace"
+    :workspaces="[
+        ['id' => 'acme', 'name' => 'Acme Inc.', 'plan' => 'Pro', 'members' => 24],
+        ['id' => 'lyra', 'name' => 'Lyra Design', 'plan' => 'Starter', 'members' => 6],
+    ]"
+/>
+```
