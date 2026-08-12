@@ -14,6 +14,9 @@ tools/icon-registry/fixtures/
 packages/react/src/icon/icon-registry.ts
 # Generated llms reference — its byte-exact format is owned by docgen --check.
 tools/docgen/output/llms.txt
+# Blade API snapshot — copied byte-for-byte from the lyra-ds/blade release asset;
+# reformatting would break parity with the published artifact (blade-api check owns it).
+tools/blade-api/api.json
 # Batuta task worktrees — a second checkout of this repo under .batuta/worktrees/, so every file
 # in it is a duplicate that prettier would scan (and report, including the handoff and fixtures this
 # file deliberately excludes above — the exclusions are relative to the repo root, not to a nested
