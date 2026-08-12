@@ -1,4 +1,5 @@
 import { Badge, Table } from '@lyra-ds/react';
+import { useTranslations } from 'next-intl';
 import alpineProps from '../../../tools/docgen/output/alpine-props.json';
 import type { DocStack } from '@/lib/stacks';
 import { PropTable } from './prop-table';
@@ -13,9 +14,10 @@ type AlpineEntry = {
 };
 
 function AlpineApi({ slug }: { slug: string }) {
+  const t = useTranslations();
   const entry = (alpineProps as AlpineEntry[]).find((candidate) => candidate.slug === slug);
 
-  if (!entry) return <p role="alert">No generated Alpine binding found for {slug}.</p>;
+  if (!entry) return <p role="alert">{t('apiNoBinding', { slug })}</p>;
 
   return (
     <>
@@ -24,14 +26,14 @@ function AlpineApi({ slug }: { slug: string }) {
       </p>
 
       {entry.props.length === 0 ? (
-        <p>This binding takes no options — mount it and it works.</p>
+        <p>{t('apiNoOptions')}</p>
       ) : (
         <Table
           columns={[
-            { key: 'name', label: entry.kind === 'store' ? 'Member' : 'Option' },
-            { key: 'type', label: 'Type' },
-            { key: 'required', label: 'Required' },
-            { key: 'description', label: 'Description' },
+            { key: 'name', label: entry.kind === 'store' ? t('apiMember') : t('apiOption') },
+            { key: 'type', label: t('apiType') },
+            { key: 'required', label: t('required') },
+            { key: 'description', label: t('apiDescription') },
           ]}
           rows={entry.props.map((prop) => ({
             description: prop.description,
@@ -40,7 +42,7 @@ function AlpineApi({ slug }: { slug: string }) {
             required: prop.optional ? (
               <span className="lw-prop-table__optional">—</span>
             ) : (
-              <Badge tone="warning">Required</Badge>
+              <Badge tone="warning">{t('required')}</Badge>
             ),
             type: <code>{prop.type}</code>,
           }))}
@@ -56,10 +58,12 @@ function AlpineApi({ slug }: { slug: string }) {
  * uma prop nova aparece na documentação no mesmo commit em que aparece no pacote.
  */
 export function StackApi({ slug, stack, name }: { slug: string; stack: DocStack; name: string }) {
+  const t = useTranslations();
+
   if (stack === 'react') return <PropTable name={name} />;
   if (stack === 'alpine') return <AlpineApi slug={slug} />;
   // HTML puro não tem API a gerar: o contrato é o markup, e ele está no corpo da página.
   if (stack === 'html') return null;
 
-  return <p role="alert">Blade API arrives with the Frente A snapshot.</p>;
+  return <p role="alert">{t('apiBladeSoon')}</p>;
 }
