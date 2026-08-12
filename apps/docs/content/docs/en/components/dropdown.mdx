@@ -45,14 +45,66 @@ Reach for something else when:
 - Focus moves to real menuitem DOM elements, unlike CommandPalette's virtual active descendant.
   Near the bottom of a phone screen, the popup flips above its trigger instead of scrolling the page.
 
-## Props
+## API and code
 
-<PropTable name="Dropdown" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
 
-## Plain HTML
+```tsx
+<Dropdown
+  align="end"
+  trigger={<Button variant="secondary">Project actions</Button>}
+  items={[
+    { type: 'label', label: 'Project' },
+    { label: 'Rename project' },
+    { type: 'separator' },
+    { label: 'Archive project', danger: true },
+  ]}
+/>
+```
 
-One element is the trigger. Put the menu semantics on the control itself — a span wrapping a button
-would give the same affordance two tab stops:
+  </StackPanel>
+
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+The structure below is the plain HTML: it is complete in the served markup and inert until Alpine
+boots. Adding `x-data` and the three `x-bind` names is the whole difference between a static menu and
+a working one.
+
+```html
+<div class="lyra-dropdown" x-data="lyraDropdown({ align: 'end' })">
+  <span
+    class="lyra-btn lyra-btn--secondary lyra-btn--md lyra-dropdown__trigger"
+    role="button"
+    tabindex="0"
+    aria-haspopup="menu"
+    aria-expanded="false"
+    x-bind="trigger"
+  >
+    Project actions
+  </span>
+  <div class="lyra-menu lyra-menu--end" role="menu" x-bind="menu" x-cloak>
+    <span class="lyra-menu__label">Project</span>
+    <button class="lyra-menu__item" type="button" role="menuitem" x-bind="item">
+      Rename project
+    </button>
+    <hr class="lyra-menu__sep" />
+    <button
+      class="lyra-menu__item lyra-menu__item--danger"
+      type="button"
+      role="menuitem"
+      x-bind="item"
+    >
+      Archive project
+    </button>
+  </div>
+</div>
+```
+
+Without Alpine, one element is still the trigger. Put the menu semantics on the control itself — a
+span wrapping a button would give the same affordance two tab stops:
 
 ```html
 <div class="lyra-dropdown">
@@ -75,3 +127,6 @@ would give the same affordance two tab stops:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

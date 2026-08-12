@@ -49,12 +49,14 @@ Prefira outro componente quando:
 - Não aninhe elementos interativos em um card totalmente clicável. Separe ações concorrentes em Card
   estruturado, com botões em `actions` ou `footer`.
 
-## Props
+## API e código
 
-<PropTable name="Card" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use a classe do corpo apenas com cabeçalho ou rodapé; cards simples com padding usam `lyra-card--padded`:
 
 ```html
@@ -75,3 +77,6 @@ Use a classe do corpo apenas com cabeçalho ou rodapé; cards simples com paddin
   >Ler deploy</a
 >
 ```
+
+  </StackPanel>
+</StackTabs>

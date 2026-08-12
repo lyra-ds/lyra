@@ -1,0 +1,1068 @@
+[
+  {
+    "binding": "lyraAccordion",
+    "kind": "data",
+    "slug": "accordion",
+    "optionsType": "LyraAccordionOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraAccordion(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "string",
+        "optional": true,
+        "description": "Id of the item initially open."
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether more than one item may be open at once. Default: `false`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraAppSidebar",
+    "kind": "data",
+    "slug": "app-sidebar",
+    "optionsType": "LyraAppSidebarOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraAppSidebar(...)\"`.",
+    "props": [
+      {
+        "name": "defaultCollapsed",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the sidebar starts in its icon-rail state. Default: `false`."
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "optional": true,
+        "description": "Sidebar width in pixels while expanded. Default: `260`."
+      },
+      {
+        "name": "labels",
+        "type": "LyraAppSidebarLabels",
+        "optional": true,
+        "description": "Localized labels for the collapse control."
+      }
+    ]
+  },
+  {
+    "binding": "lyraBottomSheet",
+    "kind": "data",
+    "slug": "bottom-sheet",
+    "optionsType": "LyraBottomSheetOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraBottomSheet(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the sheet starts open. Defaults to `false`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraCalendar",
+    "kind": "data",
+    "slug": "calendar",
+    "optionsType": "LyraCalendarOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraCalendar(...)\"`.",
+    "props": [
+      {
+        "name": "range",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether selection is a date range. Default: `false`."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string | {\n    start?: string | null;\n    end?: string | null;\n  } | null",
+        "optional": true,
+        "description": "Initial ISO date, or range of ISO dates."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive lower selection limit as ISO `YYYY-MM-DD`."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive upper selection limit as ISO `YYYY-MM-DD`."
+      },
+      {
+        "name": "disabledDates",
+        "type": "string[]",
+        "optional": true,
+        "description": "ISO dates that cannot be selected; this replaces React's function-only data API."
+      },
+      {
+        "name": "isDateDisabled",
+        "type": "(date: Date) => boolean",
+        "optional": true,
+        "description": "Optional JavaScript-only disabled-date predicate; it combines with `disabledDates`."
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+        "optional": true,
+        "description": "First weekday, where `0` is Sunday and `6` is Saturday. Default: `0`."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for labels and names. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "LyraCalendarLabels",
+        "optional": true,
+        "description": "Translatable labels merged over English defaults."
+      }
+    ]
+  },
+  {
+    "binding": "lyraCodeBlock",
+    "kind": "data",
+    "slug": "code-block",
+    "optionsType": null,
+    "description": "",
+    "props": []
+  },
+  {
+    "binding": "lyraCombobox",
+    "kind": "data",
+    "slug": "combobox",
+    "optionsType": "LyraComboboxOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraCombobox(...)\"`.",
+    "props": [
+      {
+        "name": "options",
+        "type": "LyraComboboxOption[]",
+        "optional": true,
+        "description": "Available data options. Default: `[]`."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "optional": true,
+        "description": "Initially selected option value; also the modelable selected value."
+      },
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the popup initially starts open; also modelable. Default: `false`."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text with no selected option. Default: `\"Select…\"`."
+      },
+      {
+        "name": "searchPlaceholder",
+        "type": "string",
+        "optional": true,
+        "description": "Search input placeholder. Default: `\"Search…\"`."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Text shown when filtering finds no options. Default: `\"No results.\"`."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables the trigger. Default: `false`."
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "optional": true,
+        "description": "Stable id base; one is generated from the root when omitted."
+      },
+      {
+        "name": "error",
+        "type": "boolean",
+        "optional": true,
+        "description": "Applies the React field error modifier to the trigger. Default: `false`."
+      },
+      {
+        "name": "describedBy",
+        "type": "string",
+        "optional": true,
+        "description": "Consumer-owned field-message id used for `aria-describedby`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraCommandPalette",
+    "kind": "data",
+    "slug": "command-palette",
+    "optionsType": "LyraCommandPaletteOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraCommandPalette(...)\"`.",
+    "props": [
+      {
+        "name": "groups",
+        "type": "LyraCommandPaletteGroup[]",
+        "optional": true,
+        "description": "Command groups rendered through nested consumer `x-for` templates. Default: `[]`."
+      },
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": true,
+        "description": "Overlay visibility; modelable with `x-modelable=\"open\"`. Ignored in inline mode."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Search input placeholder. Default: `\"Type a command or search…\"`."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "optional": true,
+        "description": "Text shown before a quoted unmatched query. Default: `\"No results for\"`."
+      },
+      {
+        "name": "searchLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible search-input name. Default: `\"Search commands\"`."
+      },
+      {
+        "name": "hints",
+        "type": "LyraCommandPaletteHints",
+        "optional": true,
+        "description": "Partial override for footer hint labels."
+      },
+      {
+        "name": "hotkey",
+        "type": "string | false",
+        "optional": true,
+        "description": "Command/Ctrl key used to toggle the overlay. Falsy disables it. Default: `\"k\"`."
+      },
+      {
+        "name": "inline",
+        "type": "boolean",
+        "optional": true,
+        "description": "Render only the panel, without modal behavior. Default: `false`."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible dialog name in overlay mode. Default: `\"Command palette\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraCookieBanner",
+    "kind": "data",
+    "slug": "cookie-banner",
+    "optionsType": "LyraCookieBannerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraCookieBanner(...)\"`.",
+    "props": [
+      {
+        "name": "storageKey",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      }
+    ]
+  },
+  {
+    "binding": "lyraDataTable",
+    "kind": "data",
+    "slug": "data-table",
+    "optionsType": "LyraDataTableOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraDataTable(...)\"`.",
+    "props": [
+      {
+        "name": "sorting",
+        "type": "LyraDataTableSorting | null",
+        "optional": true,
+        "description": "Controlled sort state. Modelable with `x-modelable=\"sorting\"`. Default: `null`."
+      },
+      {
+        "name": "selected",
+        "type": "string[]",
+        "optional": true,
+        "description": "Controlled selected served row ids. Modelable with `x-modelable=\"selected\"`. Default: `[]`."
+      },
+      {
+        "name": "clientSort",
+        "type": "boolean",
+        "optional": true,
+        "description": "Reorder served rows in the browser after sorting. Default: `false`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraDatePicker",
+    "kind": "data",
+    "slug": "date-picker",
+    "optionsType": "LyraDatePickerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraDatePicker(...)\"`.",
+    "props": [
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial ISO `YYYY-MM-DD` date."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for the trigger's selected-date text. Default: `\"en-US\"`."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no date is selected. Default: `\"Select date\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraDateRangePicker",
+    "kind": "data",
+    "slug": "date-range-picker",
+    "optionsType": "LyraDateRangePickerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraDateRangePicker(...)\"`.",
+    "props": [
+      {
+        "name": "defaultValue",
+        "type": "{\n    start?: string | null;\n    end?: string | null;\n  } | null",
+        "optional": true,
+        "description": "Initial ISO `YYYY-MM-DD` bounds."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for the trigger's selected-date text. Default: `\"en-US\"`."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no range has started. Default: `\"Select period\"`."
+      },
+      {
+        "name": "rangeSeparator",
+        "type": "string",
+        "optional": true,
+        "description": "Text between formatted range bounds. Default: `\" – \"`."
+      },
+      {
+        "name": "incompleteRange",
+        "type": "string",
+        "optional": true,
+        "description": "Text after the separator while the range has no end. Default: `\"…\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraDialog",
+    "kind": "data",
+    "slug": "dialog",
+    "optionsType": "LyraDialogOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraDialog(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "closeOnEsc",
+        "type": "boolean",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "closeOnOverlayClick",
+        "type": "boolean",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "labelId",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      }
+    ]
+  },
+  {
+    "binding": "lyraDrawer",
+    "kind": "data",
+    "slug": "drawer",
+    "optionsType": "LyraDrawerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraDrawer(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "labelId",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      }
+    ]
+  },
+  {
+    "binding": "lyraDropdown",
+    "kind": "data",
+    "slug": "dropdown",
+    "optionsType": "LyraDropdownOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraDropdown(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the menu starts open. Default: `false`."
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'end'",
+        "optional": true,
+        "description": "Popup alignment. Default: `\"start\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraFileManager",
+    "kind": "data",
+    "slug": "file-manager",
+    "optionsType": "LyraFileManagerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraFileManager(...)\"`.",
+    "props": [
+      {
+        "name": "defaultView",
+        "type": "'list' | 'grid'",
+        "optional": true,
+        "description": "Initial display mode. Default: `'list'`."
+      },
+      {
+        "name": "defaultQuery",
+        "type": "string",
+        "optional": true,
+        "description": "Initial file-name filter. Default: `''`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraFileUpload",
+    "kind": "data",
+    "slug": "file-upload",
+    "optionsType": "LyraFileUploadOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraFileUpload(...)\"`.",
+    "props": [
+      {
+        "name": "maxSizeMB",
+        "type": "number",
+        "optional": true,
+        "description": "Files larger than this many megabytes are added as error items."
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether more than one file can be added. Defaults to `true`."
+      },
+      {
+        "name": "uploadDuration",
+        "type": "number",
+        "optional": true,
+        "description": "Simulated upload duration in milliseconds. Defaults to `1800`."
+      },
+      {
+        "name": "defaultItems",
+        "type": "LyraFileUploadItem[]",
+        "optional": true,
+        "description": "Items used to seed the upload list."
+      }
+    ]
+  },
+  {
+    "binding": "lyraPopover",
+    "kind": "data",
+    "slug": "popover",
+    "optionsType": "LyraPopoverOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraPopover(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the panel starts open. Default: `false`."
+      },
+      {
+        "name": "side",
+        "type": "'auto' | 'bottom' | 'top'",
+        "optional": true,
+        "description": "Preferred vertical side. Default: automatic placement."
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'end' | 'center'",
+        "optional": true,
+        "description": "Preferred horizontal alignment. Defaults to automatic placement."
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "optional": true,
+        "description": "Fixed panel width in CSS pixels."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the non-modal dialog panel. Default: `\"Popover\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraRecurrenceSelector",
+    "kind": "data",
+    "slug": "recurrence-selector",
+    "optionsType": "LyraRecurrenceSelectorOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraRecurrenceSelector(...)\"`.",
+    "props": [
+      {
+        "name": "value",
+        "type": "RecurrenceRule | null",
+        "optional": true,
+        "description": "Controllable rule. `null` means no recurrence. Date ends are normalized to ISO strings."
+      },
+      {
+        "name": "startDate",
+        "type": "string | Date",
+        "optional": true,
+        "description": "Base date for presets. A `YYYY-MM-DD` string becomes local noon. Default: today."
+      },
+      {
+        "name": "defaultEndCount",
+        "type": "number",
+        "optional": true,
+        "description": "Initial count used by presets and the count-end control."
+      },
+      {
+        "name": "conflicts",
+        "type": "readonly RecurrenceConflict[]",
+        "optional": true,
+        "description": "Non-blocking unavailable occurrence warnings."
+      },
+      {
+        "name": "labels",
+        "type": "RecurrenceSelectorLabels",
+        "optional": true,
+        "description": "Labels merged over {@link DEFAULT_LABELS}."
+      }
+    ]
+  },
+  {
+    "binding": "lyraSegmentedControl",
+    "kind": "data",
+    "slug": "segmented-control",
+    "optionsType": "LyraSegmentedControlOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraSegmentedControl(...)\"`.",
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "optional": true,
+        "description": "Initially selected option value. Defaults to an unselected group."
+      }
+    ]
+  },
+  {
+    "binding": "lyraSidebarGroup",
+    "kind": "data",
+    "slug": "sidebar-group",
+    "optionsType": "LyraSidebarGroupOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraSidebarGroup(...)\"`.",
+    "props": [
+      {
+        "name": "defaultCollapsed",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the group starts with its consumer-rendered items unmounted. Default: `false`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraSlotPicker",
+    "kind": "data",
+    "slug": "slot-picker",
+    "optionsType": "LyraSlotPickerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraSlotPicker(...)\"`.",
+    "props": [
+      {
+        "name": "slots",
+        "type": "readonly LyraSlot[]",
+        "optional": true,
+        "description": "Free slots in UTC. They are grouped by the active display-zone day."
+      },
+      {
+        "name": "date",
+        "type": "string | null",
+        "optional": true,
+        "description": "Initial visible local `YYYY-MM-DD` day; modelable after initialization."
+      },
+      {
+        "name": "timezone",
+        "type": "string",
+        "optional": true,
+        "description": "Initial IANA display zone; modelable after initialization."
+      },
+      {
+        "name": "detectedZone",
+        "type": "string",
+        "optional": true,
+        "description": "IANA zone shown as detected in the embedded time-zone picker."
+      },
+      {
+        "name": "holdExpiresAt",
+        "type": "string | null",
+        "optional": true,
+        "description": "UTC ISO temporary-hold expiry."
+      },
+      {
+        "name": "nextAvailableDate",
+        "type": "string",
+        "optional": true,
+        "description": "Local `YYYY-MM-DD` target for an empty-day shortcut."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "optional": true,
+        "description": "Renders six slot pills while availability loads."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for display times and dates. Default: `\"en-US\"`."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive local calendar lower limit."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive local calendar upper limit."
+      },
+      {
+        "name": "labels",
+        "type": "LyraSlotPickerLabels",
+        "optional": true,
+        "description": "Translatable labels merged over English defaults."
+      },
+      {
+        "name": "tzLabels",
+        "type": "LyraTimeZonePickerLabels",
+        "optional": true,
+        "description": "Labels forwarded unchanged to the nested time-zone picker."
+      }
+    ]
+  },
+  {
+    "binding": "lyraTableOfContents",
+    "kind": "data",
+    "slug": "table-of-contents",
+    "optionsType": "LyraTableOfContentsOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraTableOfContents(...)\"`.",
+    "props": [
+      {
+        "name": "activeId",
+        "type": "string",
+        "optional": true,
+        "description": "Id of the active in-page target."
+      }
+    ]
+  },
+  {
+    "binding": "lyraTabs",
+    "kind": "data",
+    "slug": "tabs",
+    "optionsType": "LyraTabsOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraTabs(...)\"`.",
+    "props": [
+      {
+        "name": "active",
+        "type": "string",
+        "optional": false,
+        "description": "Value of the active tab. This controllable state is required."
+      }
+    ]
+  },
+  {
+    "binding": "$store.theme",
+    "kind": "store",
+    "slug": "theme-provider",
+    "optionsType": "LyraThemeStore",
+    "description": "",
+    "props": [
+      {
+        "name": "theme",
+        "type": "Theme",
+        "optional": false,
+        "description": "The chosen theme, which may be `\"system\"`."
+      },
+      {
+        "name": "resolvedTheme",
+        "type": "ResolvedTheme",
+        "optional": false,
+        "description": "The actual theme applied to `<html data-theme>`."
+      },
+      {
+        "name": "dark",
+        "type": "boolean",
+        "optional": false,
+        "description": "Convenience for `resolvedTheme === \"dark\"`."
+      },
+      {
+        "name": "init",
+        "type": "(): void",
+        "optional": false,
+        "description": "Initializes browser state after Alpine registers this singleton store."
+      },
+      {
+        "name": "setTheme",
+        "type": "(next: Theme): void",
+        "optional": false,
+        "description": "Chooses a theme, persists it, and applies it to the document."
+      },
+      {
+        "name": "toggle",
+        "type": "(): void",
+        "optional": false,
+        "description": "Flips from the theme currently applied to the document."
+      }
+    ]
+  },
+  {
+    "binding": "lyraTimeInput",
+    "kind": "data",
+    "slug": "time-input",
+    "optionsType": "LyraTimeInputOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraTimeInput(...)\"`.",
+    "props": [
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial 24-hour HH:mm value, or no selection when omitted."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "optional": true,
+        "description": "Minutes added or subtracted by steppers and Arrow keys. Default: `15`."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive 24-hour HH:mm lower limit."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive 24-hour HH:mm upper limit."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "optional": true,
+        "description": "Enables consumer-driven invalid styling and `aria-invalid`."
+      },
+      {
+        "name": "valueText",
+        "type": "(hours: number, minutes: number) => string",
+        "optional": true,
+        "description": "Spoken value for a selected time."
+      }
+    ]
+  },
+  {
+    "binding": "lyraTimePicker",
+    "kind": "data",
+    "slug": "time-picker",
+    "optionsType": "LyraTimePickerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraTimePicker(...)\"`.",
+    "props": [
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial 24-hour `HH:mm` value."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "optional": true,
+        "description": "Minutes between generated options. Default: `30`."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive 24-hour `HH:mm` lower limit. Default: `\"00:00\"`."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "optional": true,
+        "description": "Inclusive 24-hour `HH:mm` upper limit. Default: `\"23:59\"`."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used to display selected and option times. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "LyraTimePickerLabels",
+        "optional": true,
+        "description": "Labels merged over the English defaults."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text with no selected time. Default: `\"Select time\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraTimeZonePicker",
+    "kind": "data",
+    "slug": "time-zone-picker",
+    "optionsType": "LyraTimeZonePickerOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraTimeZonePicker(...)\"`.",
+    "props": [
+      {
+        "name": "zones",
+        "type": "readonly LyraTimeZonePickerOption[]",
+        "optional": true,
+        "description": "IANA zones that replace {@link TIME_ZONE_PICKER_ZONES}."
+      },
+      {
+        "name": "recentZones",
+        "type": "readonly string[]",
+        "optional": true,
+        "description": "IANA zones pinned after the detected zone. Default: `[]`."
+      },
+      {
+        "name": "detectedZone",
+        "type": "string",
+        "optional": true,
+        "description": "IANA zone pinned before recent zones."
+      },
+      {
+        "name": "referenceDate",
+        "type": "string | Date",
+        "optional": true,
+        "description": "Date used to derive GMT offsets. A `YYYY-MM-DD` value becomes local noon."
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": "BCP 47 locale used for each option's live local time. Default: `\"en-US\"`."
+      },
+      {
+        "name": "labels",
+        "type": "LyraTimeZonePickerLabels",
+        "optional": true,
+        "description": "Labels merged over the English defaults."
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "optional": true,
+        "description": "Trigger text when no zone is selected; overrides `labels.placeholder`."
+      }
+    ]
+  },
+  {
+    "binding": "$store.lyraToasts",
+    "kind": "store",
+    "slug": "toast",
+    "optionsType": "LyraToastsStore",
+    "description": "Imperative notification API and state registered as `Alpine.store('lyraToasts', ...)`.",
+    "props": [
+      {
+        "name": "items",
+        "type": "QueuedToast[]",
+        "optional": false,
+        "description": "The current queue, in the order notifications were added."
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "optional": false,
+        "description": "Default auto-dismiss delay in milliseconds. Default: `4000`."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": false,
+        "description": "Accessible name passed to every toast close button. Default: `\"Close notification\"`."
+      },
+      {
+        "name": "init",
+        "type": "(): void",
+        "optional": false,
+        "description": "Registers the singleton's browser-only Livewire event bridge."
+      },
+      {
+        "name": "toast",
+        "type": "(message: string, options?: LyraToastOptions): number",
+        "optional": false,
+        "description": "Queues a notification and returns its store-local identifier."
+      },
+      {
+        "name": "success",
+        "type": "(message: string, options?: LyraToastOptions): number",
+        "optional": false,
+        "description": "Queues a success notification, overriding a supplied tone."
+      },
+      {
+        "name": "error",
+        "type": "(message: string, options?: LyraToastOptions): number",
+        "optional": false,
+        "description": "Queues a danger notification, overriding a supplied tone."
+      },
+      {
+        "name": "info",
+        "type": "(message: string, options?: LyraToastOptions): number",
+        "optional": false,
+        "description": "Queues an informational notification, overriding a supplied tone."
+      },
+      {
+        "name": "dismiss",
+        "type": "(id: number): void",
+        "optional": false,
+        "description": "Removes a notification and clears its pending auto-dismiss timer, if any."
+      }
+    ]
+  },
+  {
+    "binding": "lyraToastStack",
+    "kind": "data",
+    "slug": "toast-stack",
+    "optionsType": null,
+    "description": "",
+    "props": []
+  },
+  {
+    "binding": "lyraTooltip",
+    "kind": "data",
+    "slug": "tooltip",
+    "optionsType": "LyraTooltipOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraTooltip(...)\"`.",
+    "props": [
+      {
+        "name": "tip",
+        "type": "string",
+        "optional": false,
+        "description": "Short, non-interactive text shown for the target."
+      },
+      {
+        "name": "placement",
+        "type": "TooltipPlacement",
+        "optional": true,
+        "description": "Preferred side of the target. Default: `\"top\"`."
+      }
+    ]
+  },
+  {
+    "binding": "lyraWeeklyScheduleEditor",
+    "kind": "data",
+    "slug": "weekly-schedule-editor",
+    "optionsType": "LyraWeeklyScheduleEditorOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraWeeklyScheduleEditor(...)\"`.",
+    "props": [
+      {
+        "name": "value",
+        "type": "Partial<WeeklySchedule>",
+        "optional": true,
+        "description": "Weekly local-time availability, merged over the empty seven-day schedule."
+      },
+      {
+        "name": "exceptions",
+        "type": "DateException[]",
+        "optional": true,
+        "description": "Date-specific availability overrides."
+      },
+      {
+        "name": "defaultRange",
+        "type": "TimeRange",
+        "optional": true,
+        "description": "Range created when enabling a weekday. Default: 09:00–17:00."
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "Weekday",
+        "optional": true,
+        "description": "First displayed weekday, where 0 is Sunday. Default: 1."
+      },
+      {
+        "name": "showExceptions",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether to render date exceptions. Default: true."
+      },
+      {
+        "name": "labels",
+        "type": "WeeklyScheduleEditorLabels",
+        "optional": true,
+        "description": "Translatable labels merged over English defaults."
+      }
+    ]
+  },
+  {
+    "binding": "lyraWorkspaceSwitcher",
+    "kind": "data",
+    "slug": "workspace-switcher",
+    "optionsType": "LyraWorkspaceSwitcherOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraWorkspaceSwitcher(...)\"`.",
+    "props": [
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the workspace listbox starts open. Default: `false`."
+      }
+    ]
+  }
+]

@@ -57,12 +57,14 @@ Prefira outro componente quando:
 - Inline herda a semântica de Stack. A quebra evita controles cortados, mas cada controle ainda
   precisa do próprio nome acessível e de foco visível.
 
-## Props
+## API e código
 
-<PropTable name="Stack" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Os wrappers React definem essas propriedades para você. Aplique a mesma classe e propriedades em
 qualquer outro framework:
 
@@ -80,3 +82,6 @@ qualquer outro framework:
   <button class="lyra-btn lyra-btn--ghost lyra-btn--sm">Cancelar</button>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -46,11 +46,15 @@ Reach for something else when:
 - `labels.calendar` forwards translated Calendar controls, while `locale` formats both the trigger
   and Calendar dates.
 
-## Props
+## API and code
 
-<PropTable name="DatePicker" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose the trigger, Popover and Calendar classes and own the local-date, dialog and
 keyboard behavior:
@@ -87,3 +91,6 @@ keyboard behavior:
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

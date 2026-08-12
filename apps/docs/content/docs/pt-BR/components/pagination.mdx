@@ -41,12 +41,14 @@ Prefira outro componente quando:
 - A página ativa tem `aria-current="page"`. Cada botão de página habilitado continua na ordem normal de Tab.
 - Reticências são spans com `aria-hidden`, não botões. Não faça uma lacuna de truncamento parecer acionável.
 
-## Props
+## API e código
 
-<PropTable name="Pagination" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Anterior é o primeiro botão na navegação; uma reticência é um span não interativo.
 
 ```html
@@ -62,3 +64,6 @@ Anterior é o primeiro botão na navegação; uma reticência é um span não in
   <button class="lyra-page" type="button" aria-label="Next page">›</button>
 </nav>
 ```
+
+  </StackPanel>
+</StackTabs>

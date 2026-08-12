@@ -46,12 +46,14 @@ Prefira outro componente quando:
 - Um `value` controlado continua sob controle de quem chama. Atualize-o em `onChange` depois que o
   componente informar a nova string selecionada.
 
-## Props
+## API e código
 
-<PropTable name="RadioGroup" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Sem React, use um wrapper radiogroup, um `name` nativo compartilhado e as mesmas classes de campo:
 
 ```html
@@ -70,3 +72,6 @@ Sem React, use um wrapper radiogroup, um `name` nativo compartilhado e as mesmas
   <span class="lyra-hint">Choose the best way to reach you.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

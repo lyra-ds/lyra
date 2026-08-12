@@ -41,12 +41,14 @@ Reach for something else when:
 - Tone alone is never the message. "Failed" must say _Failed_; a red badge with only a number
   fails for anyone who cannot distinguish the hue.
 
-## Props
+## API and code
 
-<PropTable name="Badge" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 ```html
 <span class="lyra-badge lyra-badge--success">
   <span class="lyra-badge__dot" aria-hidden="true"></span>
@@ -54,3 +56,6 @@ Reach for something else when:
 </span>
 <span class="lyra-badge lyra-badge--warning">Degraded</span>
 ```
+
+  </StackPanel>
+</StackTabs>

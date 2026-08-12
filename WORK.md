@@ -2,6 +2,18 @@
 
 ## In progress
 
+- [ ] **Documentação multi-stack — frente B entregue, PR #176 aberto
+      (2026-08-11)** → maestro (claude), branch `feat/docs-multi-stack`, 15
+      commits. Tasks 1–10 do plano
+      `docs/superpowers/plans/2026-08-10-docs-multi-stack-frente-b.md`: seletor
+      de stack nas 76 páginas de componente, catálogo do Alpine gerado do
+      pacote publicado (32 entradas — 30 bindings e 2 stores), guias por stack,
+      matriz de compatibilidade e `llms.txt` cobrindo as três stacks. Suíte
+      completa verde localmente (styles 69, alpine 268, react 665, docs 20 +
+      313 `node --test`); **CI do PR ainda rodando no momento do pause** —
+      verificar antes do merge. Tasks 11–12 (aba Blade) bloqueadas pelo
+      `docs/api.json` da frente A, em `lyra-ds/blade`.
+
 - [x] **Sistema de toasts no alpine — `lyraToasts` (store) + `lyraToastStack`
       (2026-08-09) [batuta/20260809-025845-alpine-toasts]** → codex
       (`gpt-5.6-terra`, high; worktree), 3 rodadas corretivas. Fecha

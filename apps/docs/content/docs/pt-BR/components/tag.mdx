@@ -41,12 +41,14 @@ Prefira outro componente quando:
   14px, então não o torne a única forma prática de limpar um filtro em telas de toque.
 - Não use cor como nome da categoria; o texto visível da tag é o significado.
 
-## Props
+## API e código
 
-<PropTable name="Tag" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use um botão real para remoção, não um span clicável:
 
 ```html
@@ -57,3 +59,6 @@ Use um botão real para remoção, não um span clicável:
   <button class="lyra-tag__remove" type="button" aria-label="Remove">×</button>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

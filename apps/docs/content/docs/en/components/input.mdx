@@ -56,12 +56,14 @@ Reach for something else when:
   a stale description pointing at the field.
 - Focus is the `--shadow-focus` ring; the error state changes the border, never the focus ring.
 
-## Props
+## API and code
 
-<PropTable name="Input" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The field wrapper carries the layout; the icon variant needs the extra `lyra-input-wrap`:
 
 ```html
@@ -77,3 +79,6 @@ The field wrapper carries the layout; the icon variant needs the extra `lyra-inp
   <span class="lyra-hint lyra-hint--error">Use lowercase and dashes.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

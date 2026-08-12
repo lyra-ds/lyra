@@ -43,12 +43,14 @@ Reach for something else when:
 - Segment colour is visual context, not the accessible name. Give every segment a useful `label` and do
   not rely on a `tone` or custom `color` alone to communicate meaning.
 
-## Props
+## API and code
 
-<PropTable name="SegmentedRing" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Without React, draw the SVG arcs yourself but keep one textual equivalent and hide duplicate visual
 content from assistive technology:
 
@@ -71,3 +73,6 @@ content from assistive technology:
   </ul>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

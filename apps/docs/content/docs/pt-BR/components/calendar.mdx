@@ -55,11 +55,15 @@ Prefira outro componente quando:
 - `labels` fornece as strings de navegação, troca de visualização e hoje. A formatação de datas usa
   `Intl`, portanto a grade não tem strings fixas de mês, dia da semana ou data.
 
-## Props
+## API e código
 
-<PropTable name="Calendar" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, componha as classes do calendário e implemente interpretação de data local, foco
 rotativo, seleção e mudanças de visualização:
@@ -97,3 +101,6 @@ rotativo, seleção e mudanças de visualização:
   <div class="lyra-cal__foot"><button class="lyra-cal__today" type="button">Hoje</button></div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

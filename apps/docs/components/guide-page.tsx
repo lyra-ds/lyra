@@ -4,6 +4,7 @@ import type { Locale } from '@/lib/i18n';
 import { ExampleView, type ExampleLayout } from './example-view';
 import { examples } from './examples';
 import { Pre } from './pre';
+import { StackPanel, StackTabs } from './stack-tabs';
 
 type MdxModule = {
   default: ComponentType<{ components?: Record<string, ComponentType<any>> }>;
@@ -23,6 +24,10 @@ type MdxModule = {
  * It does NOT accept `PropTable`: prop tables are generated per component from
  * `props.json`, and a guide has no component to look up. A guide that needs one is a
  * component page wearing the wrong hat.
+ *
+ * It DOES accept the stack tabs, with a fixed list: um guia não é componente, então não há
+ * disponibilidade a consultar — as três stacks existem para instalar e configurar o Lyra,
+ * independentemente de qual componente o leitor vai usar depois.
  */
 export async function GuidePage({ locale, slug }: { locale: Locale; slug: string }) {
   const mod = (await import(`../content/docs/${locale}/guides/${slug}.mdx`)) as MdxModule;
@@ -58,5 +63,9 @@ export async function GuidePage({ locale, slug }: { locale: Locale; slug: string
     );
   }
 
-  return <MDX components={{ Example, pre: Pre }} />;
+  function Tabs({ children }: { children: ReactNode }) {
+    return <StackTabs available={['react', 'alpine', 'blade']}>{children}</StackTabs>;
+  }
+
+  return <MDX components={{ Example, StackPanel, StackTabs: Tabs, pre: Pre }} />;
 }

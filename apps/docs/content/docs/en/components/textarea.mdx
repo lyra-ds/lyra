@@ -41,12 +41,14 @@ Reach for something else when:
 - It is a native `<textarea>`, so typing, multiline editing and form submission keep browser behavior.
 - The focus ring is `--shadow-focus`; error styling changes the border and focus shadow, not the label alone.
 
-## Props
+## API and code
 
-<PropTable name="Textarea" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use the shared field, label and hint classes around a native textarea:
 
 ```html
@@ -66,3 +68,6 @@ Use the shared field, label and hint classes around a native textarea:
   <span class="lyra-hint lyra-hint--error">Add more detail before publishing.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

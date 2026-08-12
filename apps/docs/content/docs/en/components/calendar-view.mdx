@@ -48,12 +48,14 @@ Reach for something else when:
 - CalendarView emits no page landmark or heading, so it can sit inside the consuming page's document outline.
   Use `labels` and `locale` to translate controls and date formatting.
 
-## Props
+## API and code
 
-<PropTable name="CalendarView" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Without React, calculate local event placement and own view navigation, popover positioning and slot creation:
 
 ```html
@@ -74,3 +76,6 @@ Without React, calculate local event placement and own view navigation, popover 
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

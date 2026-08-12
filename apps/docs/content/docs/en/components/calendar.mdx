@@ -54,11 +54,15 @@ Reach for something else when:
 - `labels` provides the navigation, view-change and today strings. Date formatting uses `Intl`, so
   there are no hardcoded month, weekday or date strings in the grid.
 
-## Props
+## API and code
 
-<PropTable name="Calendar" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose the calendar classes and implement local-date parsing, roving focus,
 selection and view changes yourself:
@@ -96,3 +100,6 @@ selection and view changes yourself:
   <div class="lyra-cal__foot"><button class="lyra-cal__today" type="button">Today</button></div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

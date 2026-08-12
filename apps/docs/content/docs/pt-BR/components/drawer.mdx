@@ -46,11 +46,15 @@ Prefira outro componente quando:
 - Por padrão, o componente é portado para `document.body`. Passe `container` apenas quando a aplicação
   precisar de outro host de portal.
 
-## Props
+## API e código
 
-<PropTable name="Drawer" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, componha as mesmas classes — estado de abertura, retenção de foco, bloqueio de rolagem e
 o caminho de Escape ficam com você:
@@ -69,3 +73,6 @@ o caminho de Escape ficam com você:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

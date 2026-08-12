@@ -56,12 +56,14 @@ Reach for something else when:
 - In `scroll="content"`, ensure the main content contains focusable controls or a managed focus
   target so keyboard users can enter and discover the scrollable region.
 
-## Props
+## API and code
 
-<PropTable name="Shell" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 The classes express the page-scroll model. Name both navigation landmarks and set the sticky offset
 when a fixed site header sits above the frame:
 
@@ -81,3 +83,6 @@ when a fixed site header sits above the frame:
   </nav>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

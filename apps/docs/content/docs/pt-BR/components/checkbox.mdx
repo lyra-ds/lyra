@@ -38,12 +38,14 @@ Prefira outro componente quando:
 - Não há `id` gerado nem `htmlFor`; passe `id` nas props do consumidor se outro elemento precisar referenciá-lo.
 - O anel em foco visível é `--shadow-focus`. Não o remova e forneça rótulo visível ou `aria-label` quando não houver texto.
 
-## Props
+## API e código
 
-<PropTable name="Checkbox" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Input e texto compartilham um único label, então a linha em si não precisa de par `for`/`id`:
 
 ```html
@@ -57,3 +59,6 @@ Input e texto compartilham um único label, então a linha em si não precisa de
   <span>Concordo com os termos de processamento de dados</span>
 </label>
 ```
+
+  </StackPanel>
+</StackTabs>

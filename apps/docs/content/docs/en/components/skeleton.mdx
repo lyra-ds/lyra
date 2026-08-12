@@ -39,12 +39,14 @@ Reach for something else when:
   that reintroduces motion for people who opted out.
 - Skeleton is a `<span>` with no keyboard interaction or focus behaviour.
 
-## Props
+## API and code
 
-<PropTable name="Skeleton" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use a circle's height as its diameter; give bars widths that resemble the content they replace:
 
 ```html
@@ -58,3 +60,6 @@ Use a circle's height as its diameter; give bars widths that resemble the conten
   <span class="lyra-skeleton" style="width: 85%; height: 12px" aria-hidden="true"></span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

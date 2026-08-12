@@ -37,12 +37,14 @@ Prefira outro componente quando:
 - `hint` ou `error` é conectado por `aria-describedby`; `error` tem precedência e define `aria-invalid`.
 - O foco usa `--shadow-focus`. Não documente atalhos de listbox personalizados: este não é um combobox customizado.
 
-## Props
+## API e código
 
-<PropTable name="Select" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Coloque o select nativo no wrapper para a seta CSS ficar sobre o controle sem receber cliques:
 
 ```html
@@ -66,3 +68,6 @@ Coloque o select nativo no wrapper para a seta CSS ficar sobre o controle sem re
   <span class="lyra-hint lyra-hint--error">Escolha o país de cobrança.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

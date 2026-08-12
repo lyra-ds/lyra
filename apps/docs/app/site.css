@@ -270,3 +270,24 @@
   width: 100%;
   overflow-x: auto;
 }
+
+/*
+ * Seletor de stack. Os três blocos vão para o HTML e o contêiner decide qual aparece,
+ * então a página exportada carrega o conteúdo das três stacks e a troca não repinta
+ * nem reposiciona o resto da página.
+ */
+.lw-stack-tabs [data-stack] {
+  display: none;
+}
+
+.lw-stack-tabs[data-active-stack='react'] [data-stack='react'],
+.lw-stack-tabs[data-active-stack='alpine'] [data-stack='alpine'],
+.lw-stack-tabs[data-active-stack='blade'] [data-stack='blade'] {
+  display: block;
+}
+
+.lw-stack-tabs__absence {
+  color: var(--text-muted);
+  font: var(--caption-font);
+  margin-block: var(--space-2) 0;
+}

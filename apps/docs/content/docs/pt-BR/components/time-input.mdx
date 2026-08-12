@@ -51,11 +51,15 @@ Prefira outro componente quando:
 - `error` substitui `hint`, é conectado por `aria-describedby` e define `aria-invalid`. `invalid` pode
   definir a aparência de inválido sem uma mensagem de erro visível.
 
-## Props
+## API e código
 
-<PropTable name="TimeInput" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, use a mesma estrutura e implemente interpretação, limite e comportamento de teclado:
 
@@ -85,3 +89,6 @@ Sem React, use a mesma estrutura e implemente interpretação, limite e comporta
   <span class="lyra-hint">Enter a 24-hour time.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

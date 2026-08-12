@@ -40,11 +40,15 @@ Reach for something else when:
   local work and the group callback for the shared selection effect.
 - The label is a structural heading for this group of buttons, not an action unless `collapsible` is set.
 
-## Props
+## API and code
 
-<PropTable name="SidebarGroup" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The active destination is a button with `aria-current`; the disclosure label is a separate button:
 
@@ -65,3 +69,6 @@ The active destination is a button with `aria-current`; the disclosure label is 
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

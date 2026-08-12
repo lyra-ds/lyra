@@ -52,11 +52,15 @@ Reach for something else when:
 - CodeBlock does not highlight or sanitize markup. Your highlighter and any untrusted source remain
   your responsibility.
 
-## Props
+## API and code
 
-<PropTable name="CodeBlock" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 The panel expects your highlighter's markup inside the `<pre>`. Add `line` to each line only when
 you enable the line-number modifier:
@@ -73,3 +77,6 @@ you enable the line-number modifier:
   <span class="lyra-code__status" role="status" aria-live="polite"></span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

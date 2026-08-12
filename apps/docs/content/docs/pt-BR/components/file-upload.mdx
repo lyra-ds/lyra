@@ -38,11 +38,15 @@ Prefira outro componente quando:
 - Cada item concluído inclui `.lyra-upload__check` com `role="img"` e nome acessível “Upload complete” por padrão. Passe `doneLabel` para traduzi-lo; `removeLabel` recebe o nome de cada arquivo para que o rótulo de remoção siga a ordem natural do idioma.
 - O `label` visível é texto do botão, não um `<label>` de formulário. Deixe ação e regras de arquivo claras com `label`, `hint`, `accept` e instruções próximas.
 
-## Props
+## API e código
 
-<PropTable name="FileUpload" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 O componente React cuida do seletor, eventos de drop e progresso. Esta marcação mostra as classes públicas usadas pelo estado renderizado do upload:
 
@@ -73,3 +77,6 @@ O componente React cuida do seletor, eventos de drop e progresso. Esta marcaçã
   </ul>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

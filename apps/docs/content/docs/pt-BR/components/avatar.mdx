@@ -59,12 +59,14 @@ Prefira outro componente quando:
 - Avatar é um `<span>`, não um botão ou link. Envolva-o no elemento interativo semântico ao abrir um
   perfil e dê a esse elemento um nome acessível.
 
-## Props
+## API e código
 
-<PropTable name="Avatar" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Mantenha o texto alternativo da imagem significativo; o ponto de status tem um estado próprio anunciado:
 
 ```html
@@ -81,3 +83,6 @@ Mantenha o texto alternativo da imagem significativo; o ponto de status tem um e
   <span aria-hidden="true">LD</span>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -39,12 +39,14 @@ Prefira outro componente quando:
 - É um `<textarea>` nativo, então digitação, edição multilinha e envio de formulário mantêm o comportamento do navegador.
 - O anel de foco é `--shadow-focus`; o erro muda a borda e a sombra de foco, nunca apenas o rótulo.
 
-## Props
+## API e código
 
-<PropTable name="Textarea" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use as classes compartilhadas de campo, rótulo e dica em volta de um textarea nativo:
 
 ```html
@@ -64,3 +66,6 @@ Use as classes compartilhadas de campo, rótulo e dica em volta de um textarea n
   <span class="lyra-hint lyra-hint--error">Adicione mais detalhes antes de publicar.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

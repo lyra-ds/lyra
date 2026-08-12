@@ -38,11 +38,15 @@ Prefira outro componente quando:
 - Seta para cima/baixo muda a opção ativa; Enter a seleciona; Escape fecha o popup e devolve o foco ao gatilho.
 - Um label nomeia a busca com `aria-labelledby`; sem ele, o placeholder da busca vira `aria-label`. Dica ou erro descreve ambos os controles.
 
-## Props
+## API e código
 
-<PropTable name="Combobox" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Mantenha alinhados os ids do gatilho, da busca e da listbox. O foco DOM permanece na busca;
 `aria-activedescendant` identifica a opção ativa sem mover o foco para dentro da lista:
@@ -87,3 +91,6 @@ Mantenha alinhados os ids do gatilho, da busca e da listbox. O foco DOM permanec
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -91,6 +91,33 @@ export type {
   WeeklySchedule,
   WeeklyScheduleEditorLabels,
 } from './weekly-schedule-editor';
+export type { LyraAccordionOptions } from './accordion';
+export type { LyraBottomSheetOptions } from './bottom-sheet';
+export type { LyraCalendarLabels, LyraCalendarOptions, LyraCalendarRange } from './calendar';
+export type {
+  LyraCommandPaletteGroup,
+  LyraCommandPaletteHints,
+  LyraCommandPaletteItem,
+  LyraCommandPaletteOptions,
+} from './command-palette';
+export type { LyraCookieBannerOptions } from './cookie-banner';
+export type { LyraDatePickerOptions } from './date-picker';
+export type { LyraDateRangePickerOptions } from './date-range-picker';
+export type { LyraDialogOptions } from './dialog';
+export type { LyraDrawerOptions } from './drawer';
+export type { LyraDropdownOptions } from './dropdown';
+export type { LyraFileManagerOptions } from './file-manager';
+export type { LyraFileUploadItem, LyraFileUploadOptions } from './file-upload';
+export type { LyraPopoverOptions } from './popover';
+export type { LyraSegmentedControlOptions } from './segmented-control';
+export type { LyraSidebarGroupOptions } from './sidebar-group';
+export type { LyraTableOfContentsOptions } from './table-of-contents';
+export type { LyraTabsOptions } from './tabs';
+export type { LyraThemeStore } from './theme';
+export type { LyraTimeInputOptions } from './time-input';
+export type { LyraTimePickerLabels, LyraTimePickerOptions } from './time-picker';
+export type { LyraTooltipOptions } from './tooltip';
+export type { LyraWorkspaceSwitcherOptions } from './workspace-switcher';
 
 /**
  * Structural slice of the Alpine instance that the Lyra plugin actually uses.

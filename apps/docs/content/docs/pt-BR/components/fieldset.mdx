@@ -45,7 +45,10 @@ Prefira outro componente quando:
 - FormRow é apenas uma grade responsiva em uma `div`. Não adiciona semântica de landmark ou grupo;
   Fieldset fornece a fronteira semântica nestes exemplos.
 
-## Props
+## API e código
+
+<StackTabs>
+  <StackPanel stack="react">
 
 <PropTable name="Fieldset" />
 
@@ -56,8 +59,9 @@ FormRow organiza campos relacionados em colunas de mesma largura e usa a quantid
 
 <PropTable name="FormRow" />
 
-## HTML puro
+  </StackPanel>
 
+  <StackPanel stack="html">
 Sem React, mantenha o fieldset nativo e defina `--lyra-formrow-columns` para cada linha de largura igual:
 
 ```html
@@ -78,3 +82,6 @@ Sem React, mantenha o fieldset nativo e defina `--lyra-formrow-columns` para cad
   </div>
 </fieldset>
 ```
+
+  </StackPanel>
+</StackTabs>

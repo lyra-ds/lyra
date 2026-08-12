@@ -41,12 +41,14 @@ Prefira outro componente quando:
   fornece o nome acessível do controle.
 - Um Icon isolado não é interativo nem recebe foco. Coloque-o em link ou botão semântico quando disparar algo.
 
-## Props
+## API e código
 
-<PropTable name="Icon" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Icon renderiza um SVG. O componente React também emite `.lyra-icon` como hook de seleção, mas não há regra
 de stylesheet para ela; por isso o HTML puro não precisa de classe Lyra:
 
@@ -64,3 +66,6 @@ de stylesheet para ela; por isso o HTML puro não precisa de classe Lyra:
 
 <svg role="img" aria-label="Projeto em destaque" width="24" height="24" viewBox="0 0 24 24"></svg>
 ```
+
+  </StackPanel>
+</StackTabs>

@@ -56,11 +56,15 @@ Prefira outro caminho quando:
 - Nunca use cor como único sinal do modo selecionado; exponha a escolha atual no texto ou no estado
   do controle.
 
-## Props
+## API e código
 
-<PropTable name="ThemeProvider" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 ThemeProvider é comportamento de React, mas o atributo resultante no documento é HTML puro. As
 classes da folha de estilos passam então a resolver contra o conjunto de tokens selecionado:
@@ -72,3 +76,6 @@ classes da folha de estilos passam então a resolver contra o conjunto de tokens
   </body>
 </html>
 ```
+
+  </StackPanel>
+</StackTabs>

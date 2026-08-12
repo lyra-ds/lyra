@@ -43,11 +43,15 @@ Reach for something else when:
 - The component does not render panel content. Render that content yourself and preserve a visible
   focus indicator for any controls you add around it.
 
-## Props
+## API and code
 
-<PropTable name="Tabs" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Tabs emits the tablist and its empty labelled panels. Application content is separate from this markup.
 
@@ -90,3 +94,6 @@ Tabs emits the tablist and its empty labelled panels. Application content is sep
   hidden
 ></div>
 ```
+
+  </StackPanel>
+</StackTabs>

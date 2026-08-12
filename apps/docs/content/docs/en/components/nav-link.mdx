@@ -41,15 +41,20 @@ Reach for something else when:
 - With `asChild`, provide exactly one valid link element. That child keeps responsibility for its
   `href`, keyboard behavior and accessible name.
 
-## Props
+## API and code
 
-<PropTable name="NavLink" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Use an anchor for each destination and declare the current page directly:
 
 ```html
 <a class="lyra-navlink lyra-navlink--active" href="/overview" aria-current="page">Overview</a>
 <a class="lyra-navlink" href="/projects">Projects</a>
 ```
+
+  </StackPanel>
+</StackTabs>

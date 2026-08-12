@@ -40,12 +40,14 @@ Reach for something else when:
 - The active page has `aria-current="page"`. Every enabled page button remains in the normal Tab order.
 - Ellipses are `aria-hidden` spans, not buttons. Do not make a truncation gap look actionable.
 
-## Props
+## API and code
 
-<PropTable name="Pagination" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Previous is the first button in the navigation; an ellipsis is a non-interactive span.
 
 ```html
@@ -61,3 +63,6 @@ Previous is the first button in the navigation; an ellipsis is a non-interactive
   <button class="lyra-page" type="button" aria-label="Next page">›</button>
 </nav>
 ```
+
+  </StackPanel>
+</StackTabs>

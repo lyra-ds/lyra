@@ -44,12 +44,14 @@ Reach for something else when:
 - In controlled mode, `onChange` reports the full next `string[]`; the caller must update `value` to
   reflect the change.
 
-## Props
+## API and code
 
-<PropTable name="CheckboxGroup" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 Without React, compose native checkboxes in the shared field and choice-group classes:
 
 ```html
@@ -68,3 +70,6 @@ Without React, compose native checkboxes in the shared field and choice-group cl
   <span class="lyra-hint">Choose every channel you want to use.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

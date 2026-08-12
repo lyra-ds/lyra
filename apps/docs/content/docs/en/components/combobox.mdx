@@ -38,11 +38,15 @@ Reach for something else when:
 - Arrow Up/Down changes the active option; Enter selects it; Escape closes the popup and restores focus to the trigger.
 - A label names the search input through `aria-labelledby`; without one, the search placeholder is used as its `aria-label`. Hint or error is described to both controls.
 
-## Props
+## API and code
 
-<PropTable name="Combobox" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Keep the trigger, search input and listbox ids aligned. DOM focus remains on the search input;
 `aria-activedescendant` identifies the active option without moving focus into the list:
@@ -87,3 +91,6 @@ Keep the trigger, search input and listbox ids aligned. DOM focus remains on the
   </span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

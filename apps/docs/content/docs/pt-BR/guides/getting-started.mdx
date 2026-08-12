@@ -11,11 +11,57 @@ usar só o CSS; o pacote React é conveniência, não requisito.
 
 ## Instalação
 
+Escolha a stack em que você está construindo. As três instalam `@lyra-ds/styles`, porque é lá que a
+aparência vive — e em nenhum outro lugar.
+
+<StackTabs>
+  <StackPanel stack="react">
+
 ```bash
 npm i @lyra-ds/react @lyra-ds/styles
 ```
 
-As fontes são peer dependencies, então você as instala e controla como elas carregam:
+  </StackPanel>
+
+  <StackPanel stack="alpine">
+
+```bash
+npm i @lyra-ds/styles alpinejs @lyra-ds/alpine
+```
+
+Registre o plugin antes de iniciar o Alpine, uma vez só, no entry da aplicação:
+
+```js
+import Alpine from 'alpinejs';
+import lyra from '@lyra-ds/alpine';
+
+Alpine.plugin(lyra);
+Alpine.start();
+```
+
+  </StackPanel>
+
+  <StackPanel stack="blade">
+
+```bash
+composer require lyra-ds/blade
+npm i @lyra-ds/styles alpinejs @lyra-ds/alpine
+```
+
+O Laravel descobre o service provider sozinho, então os componentes já funcionam nas duas sintaxes:
+
+```blade
+<lyra:button variant="primary">Salvar</lyra:button>
+```
+
+Os 29 componentes interativos emitem `x-data`, então registre o plugin do Alpine exatamente como na
+aba HTML + Alpine. Ponha o `@lyraThemeScript` no `<head>` do documento, antes das folhas de estilo.
+
+  </StackPanel>
+</StackTabs>
+
+As fontes são peer dependencies em qualquer stack, então você as instala e controla como elas
+carregam:
 
 ```bash
 npm i @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono

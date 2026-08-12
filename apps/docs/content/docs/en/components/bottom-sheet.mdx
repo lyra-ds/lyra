@@ -44,11 +44,15 @@ Reach for something else when:
 - The close button defaults to the English accessible name "Close". Pass `closeLabel` to translate
   it.
 
-## Props
+## API and code
 
-<PropTable name="BottomSheet" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, compose the same classes — you own open state, portal placement, focus trapping,
 scroll locking, Escape and the guarded backdrop-close behavior:
@@ -66,3 +70,6 @@ scroll locking, Escape and the guarded backdrop-close behavior:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

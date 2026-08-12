@@ -37,12 +37,14 @@ Prefira outro componente quando:
 - Não há `id` gerado nem `htmlFor`; o `id` do consumidor passa adiante quando outro elemento precisa referenciar o input.
 - O anel em foco visível é `--shadow-focus`. Use um título de grupo visível ou `<fieldset>`/`<legend>` para explicar a decisão.
 
-## Props
+## API e código
 
-<PropTable name="Radio" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use um `name` compartilhado no grupo e envolva cada input nativo em seu label:
 
 ```html
@@ -58,3 +60,6 @@ Use um `name` compartilhado no grupo e envolva cada input nativo em seu label:
   </label>
 </fieldset>
 ```
+
+  </StackPanel>
+</StackTabs>

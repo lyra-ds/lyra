@@ -44,11 +44,15 @@ Prefira outro componente quando:
 - A rolagem da página fica bloqueada enquanto o diálogo está aberto, e o painel é portado para o
   `document.body`, escapando de qualquer ancestral com `overflow: hidden`.
 
-## Props
+## API e código
 
-<PropTable name="Dialog" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, componha as mesmas classes — o estado de abertura, o foco e o Escape ficam com você:
 
@@ -67,3 +71,6 @@ Sem React, componha as mesmas classes — o estado de abertura, o foco e o Escap
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

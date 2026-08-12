@@ -40,11 +40,15 @@ Reach for something else when:
 - The exception picker cannot add a date before today. Its add and remove controls, along with all weekday and
   range strings, come from `labels`.
 
-## Props
+## API and code
 
-<PropTable name="WeeklyScheduleEditor" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, own range validation, copying and the exception override rules yourself:
 
@@ -64,3 +68,6 @@ Without React, own range validation, copying and the exception override rules yo
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

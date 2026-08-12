@@ -39,12 +39,14 @@ Prefira outro componente quando:
   movimento a quem optou por reduzi-lo.
 - Skeleton é um `<span>` sem interação por teclado ou comportamento de foco.
 
-## Props
+## API e código
 
-<PropTable name="Skeleton" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Use a altura de um círculo como seu diâmetro; dê às barras larguras parecidas com o conteúdo substituído:
 
 ```html
@@ -58,3 +60,6 @@ Use a altura de um círculo como seu diâmetro; dê às barras larguras parecida
   <span class="lyra-skeleton" style="width: 85%; height: 12px" aria-hidden="true"></span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

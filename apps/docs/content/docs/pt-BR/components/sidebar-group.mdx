@@ -41,11 +41,15 @@ Prefira outro componente quando:
   local e o do grupo para o efeito de seleção compartilhado.
 - O rótulo é um cabeçalho estrutural para este grupo de botões, não uma ação, a menos que `collapsible` esteja definido.
 
-## Props
+## API e código
 
-<PropTable name="SidebarGroup" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 O destino ativo é um botão com `aria-current`; o rótulo de disclosure é outro botão:
 
@@ -66,3 +70,6 @@ O destino ativo é um botão com `aria-current`; o rótulo de disclosure é outr
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

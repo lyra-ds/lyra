@@ -43,11 +43,15 @@ Reach for something else when:
 - With `side="auto"`, placement is measured against the trigger and panel and can flip above the
   trigger. `top` and `bottom` choose an explicit vertical side.
 
-## Props
+## API and code
 
-<PropTable name="Popover" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, put the panel inside its positioned anchor and own toggle, outside-click and Escape
 behavior:
@@ -73,3 +77,6 @@ behavior:
   </div>
 </span>
 ```
+
+  </StackPanel>
+</StackTabs>

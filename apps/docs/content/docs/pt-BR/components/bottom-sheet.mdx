@@ -45,11 +45,15 @@ Prefira outro componente quando:
 - O botão de fechar usa por padrão o nome acessível em inglês "Close". Passe `closeLabel` para
   traduzi-lo.
 
-## Props
+## API e código
 
-<PropTable name="BottomSheet" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Sem React, componha as mesmas classes — estado de abertura, posição de portal, retenção de foco,
 bloqueio de rolagem, Escape e o fechamento protegido pelo backdrop ficam com você:
@@ -67,3 +71,6 @@ bloqueio de rolagem, Escape e o fechamento protegido pelo backdrop ficam com voc
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

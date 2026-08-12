@@ -44,12 +44,14 @@ Prefira outro componente quando:
 - A cor do segmento é contexto visual, não o nome acessível. Dê a cada segmento um `label` útil e não
   dependa somente de um `tone` ou `color` personalizado para comunicar significado.
 
-## Props
+## API e código
 
-<PropTable name="SegmentedRing" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Sem React, desenhe os arcos SVG, mas mantenha um único equivalente textual e oculte conteúdo visual
 duplicado de tecnologias assistivas:
 
@@ -72,3 +74,6 @@ duplicado de tecnologias assistivas:
   </ul>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

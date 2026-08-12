@@ -42,7 +42,10 @@ Reach for something else when:
 - The end-date path uses DatePicker with the recurrence start date as its minimum, preventing a date before
   the series starts. All visible and accessible strings come from `labels`.
 
-## Props
+## API and code
+
+<StackTabs>
+  <StackPanel stack="react">
 
 <PropTable name="RecurrenceSelector" />
 
@@ -53,7 +56,10 @@ used by the selector. Supply the same complete-sentence templates in `labels` th
 it picks a template for each frequency, interval and end-condition combination, then fills its placeholders.
 It never concatenates recurrence fragments, so translation controls word order and grammar.
 
-## Plain HTML
+  </StackPanel>
+
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
 
 Without React, own the rule state and keep the summary synchronized with it:
 
@@ -77,3 +83,6 @@ Without React, own the rule state and keep the summary synchronized with it:
   <span class="lyra-recur__summary" aria-live="polite">Repeats every 2 weeks on Monday</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

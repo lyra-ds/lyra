@@ -46,12 +46,14 @@ Reach for something else when:
 - Every closed-to-open transition resets the name, slug and "touched" state. Provide `onClose` and
   change `open` in response so Escape, the close button and Cancel can actually dismiss the dialog.
 
-## Props
+## API and code
 
-<PropTable name="CreateWorkspaceDialog" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## Plain HTML
-
+  <StackPanel stack="html">
 This component composes Dialog, Avatar, Input and Button. Without React, the same classes supply the
 appearance; the name-to-slug rule, reset behavior, focus and closing behavior are yours to implement:
 
@@ -93,3 +95,6 @@ appearance; the name-to-slug rule, reset behavior, focus and closing behavior ar
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

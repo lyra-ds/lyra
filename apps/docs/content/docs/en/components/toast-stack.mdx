@@ -1,0 +1,62 @@
+---
+title: ToastStack
+description: The region that renders queued toasts, driven by the Alpine toast store.
+---
+
+# ToastStack
+
+ToastStack is the region a page mounts once to render whatever the toast queue holds. It owns
+placement, stacking order and dismissal; it does not decide _when_ a toast appears — that is the
+store's job, and any code with access to the store can push one.
+
+React has no component with this name: there, the same region is rendered by `ToastProvider`. The
+split exists because Alpine has no provider shape — a store plus a mount point does the same work
+with fewer moving parts.
+
+## When to use
+
+Mount exactly one ToastStack per document, near the end of `<body>`, and leave it there. Everything
+else talks to the store.
+
+Reach for something else when:
+
+- **The message belongs to a specific field or form** — use Alert, which stays in the flow next to
+  what it describes and does not disappear on a timer.
+- **The message needs an answer before anything else happens** — use Dialog, which blocks.
+- **The page has nothing to announce yet** — an empty stack renders nothing, so there is no state to
+  design for.
+
+## Accessibility
+
+- The region announces politely: a toast is supplementary information, and interrupting a screen
+  reader mid-sentence for one is the wrong trade.
+- Dismissal is reachable by keyboard on every toast — a timer is a convenience, never the only way
+  out.
+- Toasts stack in queue order, so the reading order matches the visual order.
+
+## API and code
+
+<StackTabs>
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+The stack takes no options — it renders whatever the store holds. Mount one per document and
+push toasts from anywhere with `$store.lyraToasts`:
+
+```html
+<div class="lyra-toast-stack" x-data="lyraToastStack()">
+  <template x-for="toast in toasts" :key="toast.id">
+    <div class="lyra-toast" role="status">
+      <span class="lyra-toast__icon" :class="toneClass(toast.tone)"></span>
+      <span x-text="toast.message"></span>
+      <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+    </div>
+  </template>
+</div>
+```
+
+Each toast carries its own id, so the close button reads it from the element instead of a closure.
+`toneClass()` maps the tone to its icon modifier; the icon itself is yours to provide.
+
+  </StackPanel>
+</StackTabs>

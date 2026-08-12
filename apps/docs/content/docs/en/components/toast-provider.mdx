@@ -41,7 +41,10 @@ Reach for something else when:
 - The provider's ToastStack is fixed at the bottom-right of the viewport. Keep messages brief and do
   not let the stack become a substitute for persistent status.
 
-## Props
+## API and code
+
+<StackTabs>
+  <StackPanel stack="react">
 
 <PropTable name="ToastProvider" />
 
@@ -53,8 +56,9 @@ Call `useToast` only below a ToastProvider; outside one, the hook throws. It ret
 provider default for that toast, and `0` disables its auto-dismiss timer. Retained API methods called
 after the provider unmounts are safe no-ops: they return an id but do not queue state or leave a timer.
 
-## Plain HTML
+  </StackPanel>
 
+  <StackPanel stack="html">
 ToastProvider is React state and timing, so plain HTML uses the output primitives. Own the queue,
 auto-dismiss timers and close behavior yourself:
 
@@ -67,3 +71,6 @@ auto-dismiss timers and close behavior yourself:
   </div>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

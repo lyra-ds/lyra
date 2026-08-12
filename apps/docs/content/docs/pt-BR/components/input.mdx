@@ -56,12 +56,14 @@ Prefira outro componente quando:
   sobra uma descrição velha apontando para o campo.
 - O foco é o anel `--shadow-focus`; o estado de erro muda a borda, nunca o anel de foco.
 
-## Props
+## API e código
 
-<PropTable name="Input" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 O wrapper do campo carrega o layout; a variante com ícone precisa do `lyra-input-wrap` extra:
 
 ```html
@@ -77,3 +79,6 @@ O wrapper do campo carrega o layout; a variante com ícone precisa do `lyra-inpu
   <span class="lyra-hint lyra-hint--error">Use minúsculas e hífens.</span>
 </div>
 ```
+
+  </StackPanel>
+</StackTabs>

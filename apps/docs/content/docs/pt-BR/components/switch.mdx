@@ -37,12 +37,14 @@ Prefira outro componente quando:
 - Não há `id` gerado nem `htmlFor`; o `id` do consumidor chega ao input nativo oculto quando necessário.
 - Espaço alterna o input focado. O trilho visível recebe seu anel `--shadow-focus` do input em foco.
 
-## Props
+## API e código
 
-<PropTable name="Switch" />
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
 
-## HTML puro
-
+  <StackPanel stack="html">
 Mantenha o checkbox nativo no label; o trilho é decorativo e fica oculto para tecnologias assistivas:
 
 ```html
@@ -58,3 +60,6 @@ Mantenha o checkbox nativo no label; o trilho é decorativo e fica oculto para t
   <span>Gerenciado pela sua organização</span>
 </label>
 ```
+
+  </StackPanel>
+</StackTabs>
