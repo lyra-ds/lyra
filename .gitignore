@@ -23,3 +23,7 @@ apps/docs/public/_headers
 
 # Playwright MCP screenshots/artifacts
 .playwright-mcp/
+# Ad-hoc browser screenshots taken at the repo root while verifying a change by hand.
+# They are debug scratch, never deliverables — two slipped into #183 because a stray `rm`
+# ran from another directory and `-f` swallowed the miss.
+/*.png
