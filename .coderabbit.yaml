@@ -39,7 +39,7 @@ reviews:
     - path: 'apps/**'
       instructions: |
         Docs and site apps must dogfood the design system: UI chrome should be built from Lyra components, not ad-hoc CSS or Tailwind.
-        - Component documentation pages follow the multi-stack pattern (React / Alpine / Blade / HTML tabs); flag pages that bypass it.
+        - Component pages use the stack-tab pattern, showing ONLY the stacks that component actually has — a page with three tabs or two is correct, not a defect. `html` and `alpine` are the SAME tab in two states (every component has canonical HTML; only those with a binding get the Alpine state), so they never both appear. Panel order follows the canonical `react, html, alpine, blade`. Flag a page that puts API outside `<StackTabs>`, or declares a stack the manifest does not list — never flag a page for "missing" tabs.
         - The site is bilingual (en + pt-BR); flag user-facing strings added to only one locale.
 chat:
   auto_reply: true
