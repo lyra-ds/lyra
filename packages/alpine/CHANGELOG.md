@@ -1,5 +1,11 @@
 # @lyra-ds/alpine
 
+## 0.5.0
+
+### Minor Changes
+
+- [#176](https://github.com/lyra-ds/lyra/pull/176) [`c01fa26`](https://github.com/lyra-ds/lyra/commit/c01fa26b1a58d51544ef0f953b4ffa54919b4421) Thanks [@franciscpd](https://github.com/franciscpd)! - Exporta as interfaces de opções dos bindings das ondas iniciais (`LyraDropdownOptions`, `LyraDialogOptions`, `LyraCalendarOptions`, `LyraTimePickerLabels`, `LyraThemeStore`, …) no entry do pacote. As dos bindings mais novos já saíam; estas 29 existiam só no fonte, então o consumidor não conseguia tipar o objeto passado em `x-data` e a documentação não tinha de onde ler o contrato. Nenhuma mudança de runtime — o bundle segue idêntico.
+
 ## 0.4.0
 
 ### Minor Changes
