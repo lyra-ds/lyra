@@ -4,25 +4,26 @@
 
 **Date:** 2026-08-12
 
-**Owners:** Lyra maintainers
+**Owner:** Lyra maintainers
 
 **Scope:** Product identity, component ownership, inclusion decisions, stability,
 and public commitments for `@lyra-ds/styles`, `@lyra-ds/react`, and
 `@lyra-ds/alpine` in Lyra v1.0.
 
-**Governed by:** [Lyra v1.0 specification index](./README.md) and the
-[Lyra v1.0 roadmap PRD](../2026-08-12-lyra-v1-roadmap-prd.md).
+**Governing PRD:**
+[Lyra v1.0 roadmap PRD](../2026-08-12-lyra-v1-roadmap-prd.md)
 
 ## Decision summary
 
 Lyra v1.0 MUST remain a CSS-first, semantic, white-label design system with
 Lyra-owned public contracts. It MUST support stable React APIs and explicit
 Alpine enhancements for server-rendered applications without requiring the two
-adapters to share runtime dependencies. Components enter the catalog because
-they address evidenced user needs and improve a coherent Lyra contract, not to
-maximize component count. Native HTML is the default, external primitives are
-implementation candidates subject to evidence, and domain-oriented components
-remain a deliberate source of product differentiation.
+adapters to share runtime dependencies. Components MUST enter the catalog only
+when they address evidenced user needs and improve a coherent Lyra contract;
+they MUST NOT enter to maximize component count. Native HTML MUST be the
+default, external primitives MUST remain implementation candidates subject to
+evidence, and domain-oriented components MUST remain a deliberate source of
+product differentiation.
 
 ## Job, audiences, and open-source position
 
@@ -44,7 +45,7 @@ The primary audiences are:
 
 As an open-source product, Lyra MUST make support boundaries, stability,
 accessibility, performance, migration costs, and contribution criteria publicly
-inspectable. Evaluation MUST not depend on roadmap claims or undocumented
+inspectable. Evaluation MUST NOT depend on roadmap claims or undocumented
 maintainer knowledge.
 
 ## Product truths
@@ -55,7 +56,7 @@ maintainer knowledge.
 2. **Semantic tokens:** Components consume intent through semantic tokens.
    White-label and theme changes MUST NOT require product markup to adopt a
    utility framework.
-3. **White-label:** The brand contract remains based on `--brand`,
+3. **White-label:** The brand contract MUST remain based on `--brand`,
    `--brand-contrast`, `--brand-radius`, and `--brand-font`, with derived accent
    values for light and dark themes.
 4. **React plus Alpine:** React and Alpine share behavioral specifications and
@@ -71,15 +72,16 @@ maintainer knowledge.
 ### 1. Native first
 
 Lyra MUST use semantic HTML when the platform provides the required semantics
-and behavior. A third-party primitive requires a demonstrated contract gain;
-internal convenience alone is insufficient.
+and behavior. A third-party primitive MUST demonstrate a contract gain;
+internal convenience alone MUST NOT be sufficient.
 
 ### 2. Evidence over preference
 
 Library familiarity, popularity, or aesthetic preference MUST NOT decide an
 adoption. A candidate MUST improve an approved functional contract and pass the
 applicable accessibility, browser, SSR, hydration, API, and bundle gates.
-Rejection evidence is as important as adoption evidence.
+Rejection evidence MUST satisfy the same measurement and contract-comparison
+standard as adoption evidence.
 
 ### 3. Lyra owns the public contract
 
@@ -123,11 +125,11 @@ models and APIs even when lower-level interactions use an external foundation.
 
 ## Ownership levels
 
-| Level                   | Entry rule                                                                                                                                                                    | Exit rule                                                                                                                                                                                                      |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primitive               | The capability is a smallest reusable semantic or interaction building block and native HTML or a bounded internal/external primitive can express it.                         | Promote it to a design-system component when Lyra must own a reusable public state, styling, or composition contract; remove or replace it when evidence shows it no longer meets its internal responsibility. |
-| Design-system component | The scorecard and decision framework justify a reusable Lyra public contract across products, with defined anatomy, states, accessibility, styling, and adapters.             | Promote it to a domain component when a stable product model becomes central; deprecate it when the need disappears, a native contract supersedes it, or maintenance cannot meet the approved guarantees.      |
-| Domain component        | Repeated product workflows or data models require a differentiated Lyra composition, and lower-level components cannot express the need without duplicating domain knowledge. | Decompose shared behavior into lower levels when it becomes general; deprecate the domain component when evidence no longer supports the workflow or Lyra cannot maintain its complete product contract.       |
+| Level                   | Entry rule                                                                                                                                                                | Exit rule                                                                                                                                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primitive               | The capability MUST be a smallest reusable semantic or interaction building block that native HTML or a bounded internal/external primitive can express.                  | Lyra MUST promote it to a design-system component when Lyra needs to own a reusable public state, styling, or composition contract. Lyra MUST remove or replace it when evidence shows it no longer meets its internal responsibility. |
+| Design-system component | The scorecard and decision framework MUST justify a reusable Lyra public contract across products, with defined anatomy, states, accessibility, styling, and adapters.    | Lyra MUST promote it to a domain component when a stable product model becomes central. Lyra MUST deprecate it when the need disappears, a native contract supersedes it, or maintenance cannot meet the approved guarantees.          |
+| Domain component        | Repeated product workflows or data models MUST require a differentiated Lyra composition that lower-level components cannot express without duplicating domain knowledge. | Lyra MUST decompose shared behavior into lower levels when it becomes general. Lyra MUST deprecate the domain component when evidence no longer supports the workflow or Lyra cannot maintain its complete product contract.           |
 
 An internal implementation MAY move between native, external, and Lyra-owned
 behavior without changing its ownership level. A public ownership-level change
@@ -135,13 +137,14 @@ is substantive and MUST follow the specification change protocol.
 
 ## Component inclusion scorecard
 
-Score each dimension with current evidence: `0` means absent or contradicted,
-`1` means bounded or partially demonstrated, and `2` means strong and repeated.
+A proposal MUST score each dimension with current evidence and MUST use this
+scale: `0` means absent or contradicted, `1` means bounded or partially
+demonstrated, and `2` means strong and repeated.
 
 | Dimension              | 0                                                                 | 1                                                            | 2                                                                                             |
 | ---------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | Repeated user need     | Hypothetical or one-off                                           | Repeats in one product or one verified workflow              | Repeats across products, teams, or verified workflows                                         |
-| Semantic ownership     | Native HTML already supplies the complete contract                | Lyra adds a bounded state or composition contract            | Lyra must own a distinct, durable public model                                                |
+| Semantic ownership     | Native HTML already supplies the complete contract                | Lyra adds a bounded state or composition contract            | A distinct, durable Lyra public model is necessary                                            |
 | Accessibility leverage | Adds no shared accessibility value                                | Centralizes a limited semantic or interaction requirement    | Removes repeated accessibility risk across consumers                                          |
 | Cross-product reuse    | Product-specific with no credible reuse                           | Reusable within one product family                           | Reusable across distinct product contexts                                                     |
 | Maintenance cost       | Cost or expertise exceeds sustainable ownership                   | Sustainable with explicit constraints                        | Low or already funded by shared infrastructure                                                |
@@ -150,21 +153,23 @@ Score each dimension with current evidence: `0` means absent or contradicted,
 | Differentiation        | Duplicates a commodity catalog item without a Lyra advantage      | Improves consistency or adoption                             | Expresses Lyra's semantic, white-label, application, scheduling, workspace, or file strengths |
 
 Every proposal MUST attach evidence for each score and identify its intended
-ownership level. Inclusion requires:
+ownership level. Inclusion MUST satisfy all of these gates:
 
-- no `0` for repeated user need, accessibility leverage, maintenance cost, or
-  adapter feasibility;
-- a total of at least `10` out of `16`;
-- an explicit decision from the native/external/Lyra-owned framework below;
-- an approved family spec before implementation.
+- the proposal MUST have no `0` for repeated user need, accessibility leverage,
+  maintenance cost, or adapter feasibility;
+- the proposal MUST score at least `10` out of `16`;
+- the proposal MUST record an explicit decision from the
+  native/external/Lyra-owned framework below;
+- the proposal MUST have an approved family spec before implementation.
 
-A score does not override an anti-goal, dependency gate, or bundle gate. A
+A score MUST NOT override an anti-goal, dependency gate, or bundle gate. A
 maintainer exception MUST record the user benefit, rejected alternatives,
-ongoing owner, and acceptance evidence in the family spec.
+ongoing owner, and acceptance evidence in the family spec and MUST NOT waive an
+anti-goal or mandatory PRD gate.
 
 ## Native, external, or Lyra-owned decision framework
 
-Apply these questions in order:
+Reviewers MUST apply these questions in order:
 
 1. **Can native HTML and CSS satisfy the approved contract?** If yes, Lyra MUST
    use the native foundation and add only the styling or bounded enhancement the
@@ -178,9 +183,9 @@ Apply these questions in order:
    domain knowledge?** If yes, Lyra MUST own the public model and behavior.
    External primitives MAY remain internal implementation details for bounded
    interactions.
-4. **Does no option meet the accepted contract?** Keep or build Lyra-owned
-   behavior only with an explicit maintenance owner and acceptance matrix;
-   otherwise the proposal MUST remain out of scope.
+4. **Does no option meet the accepted contract?** Lyra MAY keep or build
+   Lyra-owned behavior only with an explicit maintenance owner and acceptance
+   matrix; otherwise the proposal MUST remain out of scope.
 
 Equivalent production responsibilities MUST NOT ship on simultaneous Radix and
 Base UI foundations. A dependency adopted for internal behavior MUST remain
@@ -192,8 +197,8 @@ replaceable behind the Lyra public contract.
 | -------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Experimental` | `Draft`                                           | Evaluation only. The surface MUST be clearly marked and MAY change or be removed without compatibility guarantees.                                                |
 | `Beta`         | `Approved`                                        | The contract and acceptance matrix are approved, but implementation evidence is incomplete. Changes remain possible and MUST include release and migration notes. |
-| `Stable`       | `Implemented`                                     | Shipped behavior and documentation satisfy the approved spec. Versioning, deprecation, support, and migration policies apply.                                     |
-| `Deprecated`   | `Implemented` plus an approved deprecation change | The contract remains supported temporarily while its replacement or rationale, migration guidance, and explicit removal version are published.                    |
+| `Stable`       | `Implemented`                                     | Shipped behavior and documentation MUST satisfy the approved spec. Versioning, deprecation, support, and migration policies MUST apply.                           |
+| `Deprecated`   | `Implemented` plus an approved deprecation change | The contract MUST remain supported temporarily while its replacement or rationale, migration guidance, and explicit removal version are published.                |
 
 A component MUST NOT be labeled `Stable` before its governing specification is
 `Implemented`. A deprecated component MUST NOT lose the guarantees of its last
@@ -203,8 +208,8 @@ release notes and migration examples.
 
 ## Public commitments
 
-The following commitments are copied from the roadmap PRD and are not expanded
-by this specification.
+Lyra MUST satisfy the following commitments, copied verbatim from the roadmap
+PRD and not expanded by this specification.
 
 ### Product commitments
 
@@ -228,8 +233,8 @@ by this specification.
 
 ## Explicit anti-goals
 
-The following anti-goals are copied from the roadmap PRD and are not expanded by
-this specification.
+The v1.0 scope MUST NOT include any of the following anti-goals, copied verbatim
+from the roadmap PRD and not expanded by this specification.
 
 - Shipping Vue, Svelte, or Web Components adapters before v1.0.
 - Refining the Blade project within this roadmap.
@@ -243,17 +248,17 @@ this specification.
 
 ## Icon direction
 
-Lucide remains the default icon library. The curated `Icon` registry and its
-escape hatch remain the supported React contract. Lyra MUST improve registry
-discovery, document use of icons outside the registry, and define an adapter
-path for organization-specific icon sets without importing every available
-glyph into consumer bundles. Brand icons MUST remain separate from the
-general-purpose registry so trademarked assets and visual-style exceptions do
-not erode the core set.
+Lucide MUST remain the default icon library. The curated `Icon` registry and its
+escape hatch MUST remain the supported React contract. Lyra MUST improve
+registry discovery, document use of icons outside the registry, and define an
+adapter path for organization-specific icon sets without importing every
+available glyph into consumer bundles. Brand icons MUST remain separate from
+the general-purpose registry so trademarked assets and visual-style exceptions
+do not erode the core set.
 
 ## Acceptance criteria
 
-Before this document moves to `Approved`, reviewers can verify that:
+Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
 - [ ] the job, audiences, CSS-first position, semantic tokens, white-label
       contract, React and Alpine boundary, and domain differentiation agree with

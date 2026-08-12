@@ -18,7 +18,7 @@ public documentation.
 
 ## Dependency order
 
-The foundational specifications are interpreted in this order:
+The foundational specifications MUST be interpreted in this order:
 
 1. Design and product principles establish product boundaries and ownership.
 2. Tokens and visual language plus interaction and accessibility establish the
@@ -27,40 +27,41 @@ The foundational specifications are interpreted in this order:
    stack-specific implementations.
 4. Quality and performance defines the evidence required to accept them.
 
-Every component-family specification depends on all five foundational
-specifications. A family specification may narrow a permitted choice for its
-components, but it cannot weaken a foundational requirement.
+Every component-family specification MUST depend on all five foundational
+specifications. A family specification MAY narrow a permitted choice for its
+components, but it MUST NOT weaken a foundational requirement.
 
 ## Lifecycle
 
-Every specification moves through `Draft → Approved → Implemented`.
+Every specification MUST move through `Draft → Approved → Implemented`. The
+transition owner MUST verify the required evidence for the target state:
 
-| State         | Transition owner                                                                                                                                                 | Required evidence                                                                                                                                                                                                                                        |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Draft`       | A spec author or Lyra maintainer                                                                                                                                 | The problem, scope, decisions, dependencies, open questions, and verifiable acceptance criteria are recorded. Draft requirements can be reviewed but cannot authorize implementation.                                                                    |
-| `Approved`    | Design-system maintainers; the PRD owner also approves changes to product scope or v1.0 gates; accessibility-sensitive specs require interaction-standard review | All required decisions and acceptance criteria are present, open questions that block implementation are resolved, conflicts are reconciled, downstream effects are identified, and required product, technical, and accessibility reviews are recorded. |
-| `Implemented` | Design-system maintainers, after the implementation owner assembles the evidence                                                                                 | Shipped behavior, public documentation, conformance results, migration material, and any required bundle or dependency record satisfy the approved spec.                                                                                                 |
+| State         | Transition owner                                                                                                                                                                                       | Required evidence                                                                                                                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Draft`       | A spec author or Lyra maintainer MUST initiate the transition.                                                                                                                                         | The spec MUST record the problem, scope, decisions, dependencies, open questions, and verifiable acceptance criteria. Draft requirements MAY be reviewed but MUST NOT authorize implementation.                                              |
+| `Approved`    | Design-system maintainers MUST approve the transition. The PRD owner MUST also approve changes to product scope or v1.0 gates. Accessibility-sensitive specs MUST receive interaction-standard review. | The spec MUST contain all required decisions and acceptance criteria, resolve open questions that block implementation, reconcile conflicts, identify downstream effects, and record required product, technical, and accessibility reviews. |
+| `Implemented` | Design-system maintainers MUST approve the transition after the implementation owner assembles the evidence.                                                                                           | The evidence MUST demonstrate that shipped behavior, public documentation, conformance results, migration material, and any required bundle or dependency record satisfy the approved spec.                                                  |
 
-Only an `Approved` specification may generate an implementation plan. Moving a
-specification to `Implemented` records conformance; it does not silently change
-what was approved.
+A specification MUST reach `Approved` before it generates an implementation
+plan. Moving a specification to `Implemented` MUST record conformance and MUST
+NOT silently change what was approved.
 
 ## Normative language
 
-The uppercase key words `MUST`, `MUST NOT`, `REQUIRED`, `SHALL`, `SHALL NOT`,
-`SHOULD`, `SHOULD NOT`, `RECOMMENDED`, `MAY`, and `OPTIONAL` use the meanings
-defined by [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119):
+The uppercase key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY`
+use the meanings defined by
+[RFC 2119](https://www.rfc-editor.org/rfc/rfc2119):
 
-- `MUST`, `REQUIRED`, and `SHALL` express an absolute requirement.
-- `MUST NOT` and `SHALL NOT` express an absolute prohibition.
-- `SHOULD` and `RECOMMENDED` mean there may be a valid reason to choose
-  differently, but the consequences must be understood and weighed.
+- `MUST` expresses an absolute requirement.
+- `MUST NOT` expresses an absolute prohibition.
+- `SHOULD` means there may be a valid reason to choose differently, but the
+  consequences must be understood and weighed.
 - `SHOULD NOT` means there may be a valid reason to allow the behavior, but the
   consequences must be understood and weighed.
-- `MAY` and `OPTIONAL` identify a genuinely optional choice.
+- `MAY` identifies a genuinely optional choice.
 
-Only these uppercase key words are normative. Their lowercase forms and prose
-without an uppercase key word are explanatory.
+Only these five uppercase key words are permitted and normative. Their lowercase
+forms and prose without a permitted uppercase key word are explanatory.
 
 ## Shared vocabulary
 
@@ -99,28 +100,29 @@ without an uppercase key word are explanatory.
 
 ## Conflict resolution
 
-Authority descends in this order:
+Authority MUST descend in this order:
 
-1. The roadmap PRD owns product scope and v1.0 product gates.
-2. The foundational specifications own cross-component requirements.
-3. Approved component-family specifications own component details.
+1. The roadmap PRD MUST own product scope and v1.0 product gates.
+2. The foundational specifications MUST own cross-component requirements.
+3. Approved component-family specifications MUST own component details.
 
-Shipped behavior never silently overrides an approved specification. A
-divergence is either an implementation defect to correct or a substantive spec
-change that must pass the change protocol before the behavior becomes the
-contract.
+Shipped behavior MUST NOT silently override an approved specification. A
+divergence MUST be treated as either an implementation defect to correct or a
+substantive spec change that passes the change protocol before the behavior
+becomes the contract.
 
 ## Change protocol
 
 A substantive requirement change MUST receive maintainer review, identify the
 affected downstream foundational, family, implementation, test, migration, and
 documentation artifacts, and add a changelog note below. A change that affects
-product scope or a v1.0 gate also requires PRD-owner approval. Editorial changes
-that do not alter meaning MAY omit downstream review but still use normal
-repository review.
+product scope or a v1.0 gate MUST also receive PRD-owner approval. Editorial
+changes that do not alter meaning MAY omit downstream review but MUST still use
+normal repository review.
 
 ## Changelog
 
-| Date       | Change                                                                                  |
-| ---------- | --------------------------------------------------------------------------------------- |
-| 2026-08-12 | Created the Lyra v1.0 specification index, lifecycle, vocabulary, and governance rules. |
+| Date       | Change                                                                                                                             |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-12 | Restricted normative language to the five permitted terms and made lifecycle, authority, and inclusion gates explicitly normative. |
+| 2026-08-12 | Created the Lyra v1.0 specification index, lifecycle, vocabulary, and governance rules.                                            |
