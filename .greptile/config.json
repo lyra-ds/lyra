@@ -1,0 +1,77 @@
+{
+  "strictness": 2,
+  "ignorePatterns": ["handoff/**", "pnpm-lock.yaml"],
+  "skipReview": "chore(release)",
+  "rules": [
+    {
+      "id": "no-tailwind",
+      "rule": "No Tailwind anywhere in packages/ or apps/. All appearance must come from plain CSS `.lyra-*` classes and design tokens.",
+      "scope": ["packages/**", "apps/**"],
+      "severity": "high",
+      "enabled": true
+    },
+    {
+      "id": "tokens-are-final",
+      "rule": "Design token values (colors, typography, spacing, radii, shadows, state styles) are final and pixel-perfect from the design handoff. Flag any change to token values that lacks an explicit justification.",
+      "scope": ["packages/styles/**"],
+      "severity": "high",
+      "enabled": true
+    },
+    {
+      "id": "transform-only-keyframes",
+      "rule": "Entry keyframe animations must animate transform only. The initial keyframe must never set `opacity: 0`.",
+      "scope": ["packages/styles/**"],
+      "severity": "high",
+      "enabled": true
+    },
+    {
+      "id": "compat-shadcn-opt-in",
+      "rule": "`compat-shadcn.css` is an opt-in subpath and must never be imported by the main entry stylesheet.",
+      "scope": ["packages/styles/**"],
+      "severity": "high",
+      "enabled": true
+    },
+    {
+      "id": "styles-side-effects",
+      "rule": "The styles package must never declare `\"sideEffects\": false` — bundlers would silently drop the CSS import. It must mark CSS files as side-effectful.",
+      "scope": ["packages/styles/package.json"],
+      "severity": "high",
+      "enabled": true
+    },
+    {
+      "id": "thin-react-wrappers",
+      "rule": "React components are thin wrappers over the CSS core: no inline styles for appearance, no CSS-in-JS, no visual logic that belongs in `@lyra-ds/styles`.",
+      "scope": ["packages/react/**"],
+      "severity": "medium",
+      "enabled": true
+    },
+    {
+      "id": "no-runtime-cdn",
+      "rule": "No runtime CDN dependencies. Icons must come from the local static Lucide name-to-component map; flag dynamic icon imports that would pull the whole icon set into consumer bundles.",
+      "scope": ["packages/react/**", "packages/alpine/**"],
+      "severity": "high",
+      "enabled": true
+    },
+    {
+      "id": "alpine-x-for-single-root",
+      "rule": "Alpine `x-for` templates must render exactly one root element; use a `display: contents` wrapper when a component needs multiple children.",
+      "scope": ["packages/alpine/**"],
+      "severity": "medium",
+      "enabled": true
+    },
+    {
+      "id": "alpine-class-object-syntax",
+      "rule": "Alpine `:class` bindings must use object syntax, not string syntax — string syntax does not remove classes already present in server-rendered markup.",
+      "scope": ["packages/alpine/**"],
+      "severity": "medium",
+      "enabled": true
+    },
+    {
+      "id": "docs-multi-stack",
+      "rule": "Component documentation pages must follow the multi-stack pattern (React / Alpine / Blade / HTML stack tabs). Flag component pages that bypass it, and user-facing strings added to only one of the two locales (en, pt-BR).",
+      "scope": ["apps/**"],
+      "severity": "medium",
+      "enabled": true
+    }
+  ]
+}
