@@ -323,7 +323,8 @@ The phases are quality gates rather than calendar commitments. Work can be devel
 - Record current standalone and scenario bundle baselines.
 - Define browser and assistive-technology support.
 - Create the overlay-foundation evaluation ADR template.
-- Define synchronized release/versioning policy for Styles, React, and Alpine.
+- Define independent SemVer for Styles, React, and Alpine, with coordinated
+  release windows for packages affected by shared-contract changes.
 
 **Exit gate:** reproducible CI baseline, approved foundational specs, and no unresolved policy required by the first component-family spec.
 
