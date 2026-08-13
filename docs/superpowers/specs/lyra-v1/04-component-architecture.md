@@ -463,38 +463,33 @@ dependencies. A temporary spike MAY compare alternatives outside the production
 entry, but the accepted implementation MUST have one owner and MUST NOT retain a
 fallback implementation without an approved separate responsibility.
 
-A simple primitive migration MUST add at most `+1.5 kB` Brotli per
-[consumer entry](./README.md#consumer-entry). A complex component migration MUST
-add at most `+3 kB` Brotli per consumer entry. A delta above either limit MUST
-receive an explicit bundle exception in the adoption [ADR](./README.md#adr) with
-user-facing benefits, rejected alternatives, and maintainer approval. The
-production entry MUST be measured after replaced code and dependencies are
-removed; an existing budget MUST NOT be raised first to make a candidate pass.
-The
-[quality and performance specification](./05-quality-performance.md#budgets-and-replacement-scope)
-owns these thresholds and the adoption gate. This specification applies them
-to architecture decisions and supplies the candidate-specific inputs; Quality
-owns the common measurement method, tooling, scenario definitions, execution,
-aggregation, and CI and release evidence.
+An architecture adoption decision MUST satisfy the canonical
+[Quality budget and replacement requirements](./05-quality-performance.md#budgets-and-replacement-scope).
+This specification owns the decision to adopt a primitive, the required
+[ADR](./README.md#adr), vendor isolation, and replacement scope; it supplies
+candidate-specific contract and ADR inputs. Quality owns the numeric thresholds,
+measurement method and tooling, scenario definitions, evidence completeness and
+validity criteria, execution, aggregation, and CI and release enforcement.
 
 ### External-primitive ADR evidence template
 
-The shared [ADR definition](./README.md#adr) is canonical. This template defines
-the architecture-specific inputs to the Quality-owned external-dependency
-adoption evidence gate; it does not create a second evidence owner.
+The shared [ADR definition](./README.md#adr) is canonical. This template owns
+the architecture-specific decision record and inputs for external-primitive
+adoption; it aggregates evidence whose measurement and validity requirements
+are owned by Quality and does not create a second evidence owner.
 
 Every adoption or replacement ADR MUST contain all fields below:
 
-| Field                            | Required evidence                                                                                                                                                                                                                                                                                                           |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contract gain                    | Name the approved requirement the primitive satisfies better, the current failure, and the observable Lyra contract that remains unchanged or intentionally changes.                                                                                                                                                        |
-| Rejected alternatives            | Compare native HTML, the existing Lyra implementation, and viable primitive candidates against the same requirements; record why each was rejected.                                                                                                                                                                         |
-| Browser and assistive technology | Provide automated Chromium, Firefox, and WebKit results plus the applicable manual Windows/NVDA and macOS/VoiceOver scenarios and any required mobile evidence.                                                                                                                                                             |
-| SSR result                       | Record server render, first-client-render, hydration, portal, generated-ID, and no-JavaScript results for the exact revision.                                                                                                                                                                                               |
-| Standalone bundle delta          | Classify the change as a simple primitive migration with a `+1.5 kB` Brotli per-consumer-entry limit or a complex component migration with a `+3 kB` limit. Report the built component entry before and after, with externals, compression method, tool version, removed code, and budget or approved ADR-exception result. |
-| Scenario delta                   | Report every representative application composition affected by the shared dependency and whether deduplication changes the total.                                                                                                                                                                                          |
-| Removed code                     | List superseded Lyra files, exports, tests, dependencies, and byte totals removed; explain any retained responsibility.                                                                                                                                                                                                     |
-| Migration impact                 | Identify public API, DOM, state, event, CSS, package, adapter, and documentation effects with before/after examples and the release plan.                                                                                                                                                                                   |
+| Field                            | Required evidence                                                                                                                                                                                                                                                                         |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contract gain                    | Name the approved requirement the primitive satisfies better, the current failure, and the observable Lyra contract that remains unchanged or intentionally changes.                                                                                                                      |
+| Rejected alternatives            | Compare native HTML, the existing Lyra implementation, and viable primitive candidates against the same requirements; record why each was rejected.                                                                                                                                       |
+| Browser and assistive technology | Provide automated Chromium, Firefox, and WebKit results plus the applicable manual Windows/NVDA and macOS/VoiceOver scenarios and any required mobile evidence.                                                                                                                           |
+| SSR result                       | Record server render, first-client-render, hydration, portal, generated-ID, and no-JavaScript results for the exact revision.                                                                                                                                                             |
+| Standalone bundle delta          | Report the built component entry before and after under the [canonical Quality budget classification and limits](./05-quality-performance.md#budgets-and-replacement-scope), with externals, compression method, tool version, removed code, and budget or approved ADR-exception result. |
+| Scenario delta                   | Report every representative application composition affected by the shared dependency and whether deduplication changes the total.                                                                                                                                                        |
+| Removed code                     | List superseded Lyra files, exports, tests, dependencies, and byte totals removed; explain any retained responsibility.                                                                                                                                                                   |
+| Migration impact                 | Identify public API, DOM, state, event, CSS, package, adapter, and documentation effects with before/after examples and the release plan.                                                                                                                                                 |
 
 The ADR MUST identify the exact candidate and version, revision, measurement
 commands, expected results, actual results, owner, and approval. Adoption MUST

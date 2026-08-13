@@ -43,8 +43,8 @@ internal token graph.
 
 A derived token MAY depend only on the same tier, an earlier tier, or a brand
 input through the approved brand mappings below. A component token MAY expose a
-documented consumer override before falling back to a semantic alias. No
-derived token MAY feed back into a brand input, and token references MUST NOT be
+documented consumer override before falling back to a semantic alias. A derived
+token MUST NOT feed back into a brand input, and token references MUST NOT be
 circular.
 
 Theme and brand scopes MUST NOT redefine reference scales, with two closed

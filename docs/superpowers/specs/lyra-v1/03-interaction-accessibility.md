@@ -136,7 +136,7 @@ removal MUST move focus to the nearest documented continuation point.
 ## Disabled and read-only contract
 
 A disabled control MUST expose an unavailable state programmatically and MUST
-not activate. A native `disabled` control MUST remain outside sequential focus
+NOT activate. A native `disabled` control MUST remain outside sequential focus
 according to platform behavior. A composite that keeps an `aria-disabled` item
 navigable for discovery MUST prevent activation and MUST document its focus and
 announcement behavior. CSS alone MUST NOT create a disabled state.
@@ -149,7 +149,8 @@ on its native semantics and user need.
 
 Disabled and read-only presentation MUST satisfy the interaction-state rules in
 the [tokens and visual-language specification](./02-tokens-visual-language.md#interaction-state-visuals).
-Neither state MAY hide required validation, status, or explanatory content.
+Disabled and read-only states MUST NOT hide required validation, status, or
+explanatory content.
 
 ## Pointer, touch, and target contract
 
@@ -452,8 +453,8 @@ or assistive-technology record.
 
 A production migration or dependency-adoption record MUST additionally prove
 that public API types do not expose the selected primitive library and MUST
-include before/after standalone and representative-composition bundle evidence
-against the approved budgets. Public-type isolation and bundle evidence MUST
+include before/after standalone and [scenario bundle](./README.md#scenario-bundle)
+evidence against the approved budgets. Public-type isolation and bundle evidence MUST
 supplement, not replace, the interaction, accessibility, SSR, hydration, browser,
 and manual assistive-technology gates.
 
@@ -493,8 +494,8 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
       evidence aggregates their owners, scenarios, and review status, and an
       empty classification cannot satisfy the manual-review gate by omission;
 - [ ] implementation evidence makes semantic, keyboard, browser, SSR, hydration,
-      axe, public-type isolation, standalone bundle, representative-composition
-      bundle, and manual review gates cumulative rather than substitutive;
+      axe, public-type isolation, standalone bundle, [scenario bundle](./README.md#scenario-bundle),
+      and manual review gates cumulative rather than substitutive;
 - [ ] every named component pattern has a semantic owner and minimum family-spec
       keyboard and focus obligations;
 - [ ] the Tabs, FileUpload, DataTable, overlay, and contrast-helper findings are
