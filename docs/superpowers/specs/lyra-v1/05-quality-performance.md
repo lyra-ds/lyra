@@ -7,9 +7,10 @@
 **Owner:** Lyra maintainers
 
 **Scope:** Quality levels, test architecture, merge and release gates, browser
-and assistive-technology evidence, server rendering and hydration, flake policy,
-bundle and runtime performance, traceability, and release evidence for
-`@lyra-ds/styles`, `@lyra-ds/react`, and `@lyra-ds/alpine` in Lyra v1.0.
+and assistive-technology evidence, server-rendering and hydration verification,
+flake policy, bundle and runtime performance, external-dependency adoption
+evidence, traceability, and release evidence for `@lyra-ds/styles`,
+`@lyra-ds/react`, and `@lyra-ds/alpine` in Lyra v1.0.
 
 **Governing PRD:**
 [Lyra v1.0 roadmap PRD](../2026-08-12-lyra-v1-roadmap-prd.md)
@@ -34,6 +35,14 @@ This document specifies the v1.0 evidence target. The current CI and test
 harness are evidence inputs, not proof that every target already exists. In
 particular, a Chromium-only project or a render-only SSR test MUST NOT be
 reported as the complete browser or SSR-and-hydration gate.
+
+The
+[component architecture specification](./04-component-architecture.md#ssr-hydration-and-no-javascript-behavior)
+owns SSR, hydration, and no-JavaScript behavior. This specification owns the
+methods, execution, aggregation, and merge and release evidence used to prove
+that behavior. It also owns bundle-budget thresholds and the complete evidence
+gate for external-dependency adoption; Architecture supplies candidate-specific
+contract and ADR inputs without becoming a second evidence owner.
 
 ## Quality levels, severity, and service-level objectives
 

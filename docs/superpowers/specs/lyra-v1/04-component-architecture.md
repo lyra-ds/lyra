@@ -396,6 +396,12 @@ limitation.
 
 ## SSR, hydration, and no-JavaScript behavior
 
+This section owns the SSR, hydration, and no-JavaScript behavioral contract.
+The
+[quality and performance specification](./05-quality-performance.md#browser-ssr-and-flake-policy)
+owns test method, execution, aggregation, and release evidence for that
+contract.
+
 React rendering and module evaluation MUST NOT access `window`, `document`,
 layout, storage, media queries, time, randomness, or browser-only constructors
 before a guarded client phase. The server and first client render MUST produce
@@ -464,15 +470,18 @@ receive an explicit bundle exception in the adoption [ADR](./README.md#adr) with
 user-facing benefits, rejected alternatives, and maintainer approval. The
 production entry MUST be measured after replaced code and dependencies are
 removed; an existing budget MUST NOT be raised first to make a candidate pass.
-This specification owns the thresholds and adoption gate. The
-[quality and performance specification](./05-quality-performance.md#reproducible-brotli-protocol)
-MUST own the common measurement method, tooling, scenario definitions, and CI
-enforcement.
+The
+[quality and performance specification](./05-quality-performance.md#budgets-and-replacement-scope)
+owns these thresholds and the adoption gate. This specification applies them
+to architecture decisions and supplies the candidate-specific inputs; Quality
+owns the common measurement method, tooling, scenario definitions, execution,
+aggregation, and CI and release evidence.
 
 ### External-primitive ADR evidence template
 
-The shared [ADR definition](./README.md#adr) is canonical. This template owns
-the evidence required for an external-primitive adoption or replacement.
+The shared [ADR definition](./README.md#adr) is canonical. This template defines
+the architecture-specific inputs to the Quality-owned external-dependency
+adoption evidence gate; it does not create a second evidence owner.
 
 Every adoption or replacement ADR MUST contain all fields below:
 
