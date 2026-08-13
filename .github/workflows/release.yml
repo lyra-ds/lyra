@@ -94,7 +94,7 @@ jobs:
       # Cheap guard so ordinary pushes to main (docs, site, CI) skip the
       # build+publish machinery: only proceed when the local version is not
       # on the registry yet. `changeset publish` is idempotent anyway — this
-      # only saves the pointless react build on every unrelated push.
+      # only saves the pointless adapter builds on every unrelated push.
       - name: Check for unpublished versions
         id: unpublished
         if: steps.changesets.outputs.hasChangesets == 'false'
