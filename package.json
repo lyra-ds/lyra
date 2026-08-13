@@ -20,6 +20,7 @@
     "phase0:check": "node tools/phase0/check-artifacts.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
+    "release-policy:check": "node tools/release-policy/check.mjs",
     "changeset": "changeset",
     "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
   },

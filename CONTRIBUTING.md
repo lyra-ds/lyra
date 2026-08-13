@@ -36,8 +36,9 @@ pnpm build            # recursive, per-package (when packages define it)
 
 ## Changesets
 
-Any PR that touches a published package (`@lyra-ds/styles` or `@lyra-ds/react`)
-must include a **changeset** describing the change:
+Any PR that changes a publishable package (`@lyra-ds/styles`, `@lyra-ds/react`,
+or `@lyra-ds/alpine`) must include that affected package in a **changeset** and
+choose the bump required by its own public surface:
 
 ```bash
 pnpm changeset
@@ -50,8 +51,9 @@ changesets has no `0.x` mode, and a `major` changeset would produce `1.0.0`.
 declared public API surface live in [VERSIONING.md](./VERSIONING.md) — read it
 before choosing a bump type.
 
-The two packages are versioned in lockstep (see
-[VERSIONING.md](./VERSIONING.md)).
+Packages use independent SemVer. A shared-contract change may list multiple
+affected packages so they release in the same documented window, but unchanged
+packages do not receive a bump. See [VERSIONING.md](./VERSIONING.md).
 
 ## React component conventions
 

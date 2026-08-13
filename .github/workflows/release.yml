@@ -1,13 +1,14 @@
 # Release — changesets flow: while changesets exist on main, this keeps a
 # "Version Packages" PR open/updated; when that PR merges (no changesets
-# left), it builds and publishes @lyra-ds/styles + @lyra-ds/react to npm and
-# creates the GitHub Releases from the changelogs.
+# left), it builds React and Alpine, publishes buildless Styles plus both
+# adapters independently to npm, then creates the GitHub Releases from the
+# changelogs.
 #
-# Auth is npm trusted publishing (OIDC) — configured on npmjs.com for both
+# Auth is npm trusted publishing (OIDC) — configured on npmjs.com for all three
 # packages (org lyra-ds, repo lyra, workflow release.yml, no environment).
 # The 0.1.0 release used a granular NPM_TOKEN because OIDC cannot perform a
 # package's FIRST publish (npm/cli#8544). OIDC was proven end-to-end on the
-# 0.1.1 release (SLSA provenance on both packages); the token and the
+# 0.1.1 release (SLSA provenance on Styles and React); the token and the
 # NPM_TOKEN repo secret were revoked on 2026-08-03. Two npm/cli#8976 lessons are load-bearing here:
 #   1. The publish runs in a TOP-LEVEL step, not through changesets/action's
 #      `publish` input — the OIDC env vars (ACTIONS_ID_TOKEN_REQUEST_*) do
@@ -97,9 +98,8 @@ jobs:
       - name: Check for unpublished versions
         id: unpublished
         if: steps.changesets.outputs.hasChangesets == 'false'
-        # Checks EVERY publishable package, not just the styles/react fixed
-        # group: @lyra-ds/alpine versions independently, so an alpine-only
-        # bump must also flip the guard (cross-review finding, plan 09 task 1).
+        # Checks every publishable package: a release of any independently
+        # versioned package must flip the guard.
         run: |
           pending=false
           for pkg in packages/styles packages/react packages/alpine; do
