@@ -25,19 +25,35 @@ opt-in adapter and MUST NOT become the source of Lyra token semantics.
 
 ## Token tiers
 
-The token graph MUST use these tiers in dependency order:
+The derived token graph MUST use these tiers in dependency order:
 
-| Tier                     | Responsibility                                                                                                                                                                                                                                      | Examples                                                                                 | Consumer contract                                                                                                                                                                          |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Reference scales         | Reference scales MUST hold stable palette steps, type sizes and weights, spacing increments, radii, control sizes, motion values, elevation values, and stacking levels. They MUST NOT encode a component or product state.                         | `--indigo-600`, `--text-base`, `--space-4`, `--radius-md`, `--duration-fast`             | Consumers MAY inspect or use a reference value while defining a semantic or approved component token, but component CSS MUST NOT consume a reference token when a semantic role exists.    |
-| Semantic aliases         | Semantic aliases MUST describe visual intent independently of their current reference value. Each supported theme MUST resolve every alias used by a public component.                                                                              | `--surface-card`, `--text-muted`, `--border-input`, `--accent-hover`, `--danger-text`    | Components and product CSS SHOULD consume this tier by default. Consumer theme overrides MAY replace aliases only when all affected pairs and states retain the requirements in this spec. |
-| Component tokens         | A component token MUST represent a reusable part, property, or state that cannot be named accurately at the semantic tier. It MUST fall back to a semantic token or another component token with a valid value.                                     | `--lyra-dialog-surface`, `--lyra-button-padding-inline`, `--lyra-tab-indicator-selected` | A documented component token MAY be a public override point. An implementation-only component token MUST be marked private in source and MUST NOT be presented as a compatibility promise. |
-| Consumer brand overrides | Brand inputs MUST provide the smallest safe white-label input surface. They MUST remain `--brand`, `--brand-contrast`, `--brand-radius`, and `--brand-font`; `--brand` is the required seed and the other three inputs MAY use documented defaults. | `--brand`, `--brand-contrast`, `--brand-radius`, `--brand-font`                          | Consumers MAY set these inputs on a `[data-brand]` scope. They MUST NOT need to replace component markup, import a utility framework, or understand a component's internal token graph.    |
+| Tier             | Responsibility                                                                                                                                                                                                                      | Examples                                                                                 | Consumer contract                                                                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Reference scales | Reference scales MUST hold stable default palette steps, type sizes and weights, spacing increments, radii, control sizes, motion values, elevation values, and stacking levels. They MUST NOT encode a component or product state. | `--indigo-600`, `--text-base`, `--space-4`, `--radius-md`, `--duration-fast`             | Consumers MAY inspect or use a reference value while defining a semantic or approved component token, but component CSS MUST NOT consume a reference token when a semantic role exists.    |
+| Semantic aliases | Semantic aliases MUST describe visual intent independently of their current reference value. Each supported theme MUST resolve every alias used by a public component.                                                              | `--surface-card`, `--text-muted`, `--border-input`, `--accent-hover`, `--danger-text`    | Components and product CSS SHOULD consume this tier by default. Consumer theme overrides MAY replace aliases only when all affected pairs and states retain the requirements in this spec. |
+| Component tokens | A component token MUST represent a reusable part, property, or state that cannot be named accurately at the semantic tier. It MUST fall back to a semantic token or another component token with a valid value.                     | `--lyra-dialog-surface`, `--lyra-button-padding-inline`, `--lyra-tab-indicator-selected` | A documented component token MAY be a public override point. An implementation-only component token MUST be marked private in source and MUST NOT be presented as a compatibility promise. |
 
-A token MAY depend only on the same tier or an earlier tier, except that a
-component token MAY expose a documented consumer override before falling back
-to a semantic alias. Token references MUST NOT be circular. A theme or brand
-scope MUST NOT redefine reference scales to produce semantic changes.
+The four consumer brand inputs are external roots, not a derived tier. They MUST
+remain `--brand`, `--brand-contrast`, `--brand-radius`, and `--brand-font`;
+`--brand` is the required seed and the other three inputs MAY use documented
+defaults. A brand input MUST NOT depend on a derived token. Consumers MAY set
+these inputs on a `[data-brand]` scope, and they MUST NOT need to replace
+component markup, import a utility framework, or understand a component's
+internal token graph.
+
+A derived token MAY depend only on the same tier, an earlier tier, or a brand
+input through the approved brand mappings below. A component token MAY expose a
+documented consumer override before falling back to a semantic alias. No
+derived token MAY feed back into a brand input, and token references MUST NOT be
+circular.
+
+Theme and brand scopes MUST NOT redefine reference scales, with two closed
+white-label compatibility exceptions: `--brand-radius` MAY override only
+`--radius-md`, and `--brand-font` MAY override only `--font-sans` and
+`--font-display`. These bridges MUST remain one-way from an external brand input
+to the named reference token and MUST NOT authorize another reference-scale
+override. `--brand` and `--brand-contrast` MAY feed the semantic accent aliases
+defined by the brand contract.
 
 ## Naming and governance
 
@@ -48,8 +64,13 @@ implementation, framework, tenant, or visual value.
 - A reference token MUST use `--<family>-<step-or-role>`. Ordered families MUST
   use a stable ascending scale; their names MUST NOT imply equal mathematical
   intervals unless the values provide them.
-- A semantic token MUST use `--<concept>-<role-or-state>`. Its name MUST remain
-  accurate in light, dark, branded, and forced-color presentation.
+- A semantic token MUST use either compact `--<concept>` or expanded
+  `--<concept>-<role-or-state>` form. Its name MUST remain accurate in light,
+  dark, branded, and forced-color presentation. The incumbent compact names
+  `--accent`, `--success`, `--warning`, `--danger`, and `--info` MUST remain
+  canonical public semantic aliases and MUST NOT be treated as deprecated. A
+  new semantic alias SHOULD use the expanded form; it MAY use the compact form
+  only when one concept word expresses its complete durable meaning.
 - A component token MUST use
   `--lyra-<component>-<part-or-property>[-<state>]`. A state suffix MUST use the
   state vocabulary in this document.
@@ -113,7 +134,7 @@ change documents a replacement order.
 | `tokens/typography.css` | It MUST own font-family fallbacks, weights, sizes, leading, tracking, and semantic typography roles.                                                                              | It MUST NOT load fonts or style component selectors.                                                                                                                                                                      |
 | `tokens/spacing.css`    | It MUST own spacing, radius, control-size, container, and shared layout reference values.                                                                                         | It MUST NOT define component anatomy or responsive layout rules.                                                                                                                                                          |
 | `tokens/effects.css`    | It MUST own elevation, focus-shadow composition, motion durations and easing, and stacking levels, including theme-specific effect overrides.                                     | It MUST NOT own interaction semantics or use motion as the only state signal.                                                                                                                                             |
-| `tokens/brand.css`      | It MUST map the four brand inputs onto approved semantic aliases for baseline light and dark themes. It MUST own progressive enhancement and safe fallbacks for brand derivation. | It MUST NOT redefine neutral surfaces, status meanings, unrelated spacing, or component anatomy. It MAY override `--radius-md`, `--font-sans`, and `--font-display` only as already defined by the public brand contract. |
+| `tokens/brand.css`      | It MUST map the four brand inputs onto approved semantic aliases for baseline light and dark themes. It MUST own progressive enhancement and safe fallbacks for brand derivation. | It MUST NOT redefine neutral surfaces, status meanings, unrelated spacing, or component anatomy. It MAY override only `--radius-md`, `--font-sans`, and `--font-display` under the closed compatibility exceptions above. |
 | `tokens/base.css`       | It MUST apply semantic tokens to global element defaults, selection, links, and code typography.                                                                                  | It MUST NOT invent a parallel token tier or contain component styling.                                                                                                                                                    |
 | Component CSS           | It MUST own component anatomy, state selectors, responsive behavior, and bounded component tokens.                                                                                | It MUST consume the canonical token graph and MUST NOT redefine global scales or status meanings.                                                                                                                         |
 | `compat-shadcn.css`     | It MUST map shadcn-compatible names to Lyra semantic aliases as an opt-in stylesheet.                                                                                             | It MUST NOT be imported by the canonical Lyra entry, own original values, or cause Lyra components and documentation to consume shadcn names.                                                                             |
@@ -379,8 +400,9 @@ or semantic-state assertion.
 
 Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
-- [ ] the four token tiers form an acyclic dependency model and distinguish
-      public overrides from private implementation details;
+- [ ] the three derived token tiers plus the external brand-input roots form an
+      acyclic dependency model, preserve the closed radius and font exceptions,
+      and distinguish public overrides from private implementation details;
 - [ ] naming, addition, value change, alias, deprecation, removal, fallback, and
       browser-enhancement rules produce one reviewable decision path;
 - [ ] ownership covers `fonts.css`, `colors.css`, `typography.css`,
