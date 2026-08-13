@@ -59,7 +59,10 @@ describe('public support matrix', () => {
       ),
     );
     const guides = ['en', 'pt-BR'].map((locale) =>
-      readFileSync(new URL(`../content/docs/${locale}/guides/support.mdx`, import.meta.url), 'utf8'),
+      readFileSync(
+        new URL(`../content/docs/${locale}/guides/support.mdx`, import.meta.url),
+        'utf8',
+      ),
     );
 
     for (const href of evidenceHrefs) {
