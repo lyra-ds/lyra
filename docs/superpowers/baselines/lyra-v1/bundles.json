@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-08-13T13:57:03.321Z",
-  "revision": "fcde81582ad8b60f9cf42fc5989d71e45b10efc7",
+  "measuredAt": "2026-08-13T16:52:24.309Z",
+  "revision": "6d5a832404e4404f7a5bd567695c64eac617e3b7",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "linux 6.18.42-1-MANJARO",
@@ -447,7 +447,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2667,
+            "rawBytes": 2605,
             "minifiedBytes": 1526,
             "brotliBytes": 529,
             "files": ["react-01.js"]
@@ -466,7 +466,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2384,
+            "rawBytes": 2322,
             "minifiedBytes": 1288,
             "brotliBytes": 453,
             "files": ["react-02.js"]
@@ -485,7 +485,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3419,
+            "rawBytes": 3357,
             "minifiedBytes": 1664,
             "brotliBytes": 681,
             "files": ["react-03.js"]
@@ -504,7 +504,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2325,
+            "rawBytes": 2263,
             "minifiedBytes": 1242,
             "brotliBytes": 428,
             "files": ["react-04.js"]
@@ -523,7 +523,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4651,
+            "rawBytes": 4589,
             "minifiedBytes": 2635,
             "brotliBytes": 894,
             "files": ["react-05.js"]
@@ -542,7 +542,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 12663,
+            "rawBytes": 12601,
             "minifiedBytes": 5689,
             "brotliBytes": 1758,
             "files": ["react-06.js"]
@@ -561,7 +561,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 13179,
+            "rawBytes": 13117,
             "minifiedBytes": 5914,
             "brotliBytes": 1822,
             "files": ["react-07.js"]
@@ -580,7 +580,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 26968,
+            "rawBytes": 26906,
             "minifiedBytes": 13276,
             "brotliBytes": 3665,
             "files": ["react-08.js"]
@@ -599,7 +599,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 54568,
+            "rawBytes": 53948,
             "minifiedBytes": 32070,
             "brotliBytes": 8388,
             "files": ["react-09.js"]
@@ -618,7 +618,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4789,
+            "rawBytes": 4727,
             "minifiedBytes": 2346,
             "brotliBytes": 895,
             "files": ["react-10.js"]
@@ -637,7 +637,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 44015,
+            "rawBytes": 43457,
             "minifiedBytes": 24507,
             "brotliBytes": 6457,
             "files": ["react-11.js"]
@@ -656,7 +656,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1482,
+            "rawBytes": 1420,
             "minifiedBytes": 514,
             "brotliBytes": 270,
             "files": ["react-12.js"]
@@ -675,7 +675,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4442,
+            "rawBytes": 4380,
             "minifiedBytes": 1635,
             "brotliBytes": 665,
             "files": ["react-13.js"]
@@ -694,7 +694,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3575,
+            "rawBytes": 3513,
             "minifiedBytes": 1036,
             "brotliBytes": 491,
             "files": ["react-14.js"]
@@ -713,7 +713,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3549,
+            "rawBytes": 3487,
             "minifiedBytes": 1027,
             "brotliBytes": 492,
             "files": ["react-15.js"]
@@ -732,7 +732,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 5539,
+            "rawBytes": 5477,
             "minifiedBytes": 2645,
             "brotliBytes": 899,
             "files": ["react-16.js"]
@@ -751,7 +751,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 5694,
+            "rawBytes": 5632,
             "minifiedBytes": 2680,
             "brotliBytes": 914,
             "files": ["react-17.js"]
@@ -770,7 +770,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2219,
+            "rawBytes": 2157,
             "minifiedBytes": 1129,
             "brotliBytes": 415,
             "files": ["react-18.js"]
@@ -789,7 +789,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1758,
+            "rawBytes": 1696,
             "minifiedBytes": 731,
             "brotliBytes": 291,
             "files": ["react-19.js"]
@@ -808,7 +808,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3618,
+            "rawBytes": 3556,
             "minifiedBytes": 1170,
             "brotliBytes": 516,
             "files": ["react-20.js"]
@@ -827,7 +827,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 50935,
+            "rawBytes": 50377,
             "minifiedBytes": 30513,
             "brotliBytes": 7992,
             "files": ["react-21.js"]
@@ -846,7 +846,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 63458,
+            "rawBytes": 62900,
             "minifiedBytes": 38476,
             "brotliBytes": 9747,
             "files": ["react-22.js"]
@@ -865,7 +865,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 13807,
+            "rawBytes": 13745,
             "minifiedBytes": 9092,
             "brotliBytes": 2413,
             "files": ["react-23.js"]
@@ -884,7 +884,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 28069,
+            "rawBytes": 28007,
             "minifiedBytes": 15063,
             "brotliBytes": 4402,
             "files": ["react-24.js"]
@@ -903,7 +903,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 9343,
+            "rawBytes": 9281,
             "minifiedBytes": 5045,
             "brotliBytes": 1782,
             "files": ["react-25.js"]
@@ -922,7 +922,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 37821,
+            "rawBytes": 37759,
             "minifiedBytes": 22623,
             "brotliBytes": 5684,
             "files": ["react-26.js"]
@@ -941,7 +941,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 38208,
+            "rawBytes": 38146,
             "minifiedBytes": 22908,
             "brotliBytes": 5789,
             "files": ["react-27.js"]
@@ -960,7 +960,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1479,
+            "rawBytes": 1417,
             "minifiedBytes": 540,
             "brotliBytes": 287,
             "files": ["react-28.js"]
@@ -979,7 +979,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 44569,
+            "rawBytes": 44011,
             "minifiedBytes": 24981,
             "brotliBytes": 6608,
             "files": ["react-29.js"]
@@ -998,7 +998,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4122,
+            "rawBytes": 4060,
             "minifiedBytes": 2444,
             "brotliBytes": 829,
             "files": ["react-30.js"]
@@ -1017,7 +1017,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1540,
+            "rawBytes": 1478,
             "minifiedBytes": 514,
             "brotliBytes": 298,
             "files": ["react-31.js"]
@@ -1036,7 +1036,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3177,
+            "rawBytes": 3115,
             "minifiedBytes": 1836,
             "brotliBytes": 679,
             "files": ["react-32.js"]
@@ -1055,7 +1055,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3420,
+            "rawBytes": 3358,
             "minifiedBytes": 1810,
             "brotliBytes": 742,
             "files": ["react-33.js"]
@@ -1074,7 +1074,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1866,
+            "rawBytes": 1804,
             "minifiedBytes": 797,
             "brotliBytes": 393,
             "files": ["react-34.js"]
@@ -1093,7 +1093,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2111,
+            "rawBytes": 2049,
             "minifiedBytes": 1152,
             "brotliBytes": 364,
             "files": ["react-35.js"]
@@ -1112,7 +1112,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1935,
+            "rawBytes": 1873,
             "minifiedBytes": 805,
             "brotliBytes": 397,
             "files": ["react-36.js"]
@@ -1131,7 +1131,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1902,
+            "rawBytes": 1840,
             "minifiedBytes": 931,
             "brotliBytes": 442,
             "files": ["react-37.js"]
@@ -1150,7 +1150,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1674,
+            "rawBytes": 1612,
             "minifiedBytes": 774,
             "brotliBytes": 326,
             "files": ["react-38.js"]
@@ -1169,7 +1169,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1394,
+            "rawBytes": 1332,
             "minifiedBytes": 451,
             "brotliBytes": 261,
             "files": ["react-39.js"]
@@ -1188,7 +1188,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1461,
+            "rawBytes": 1399,
             "minifiedBytes": 534,
             "brotliBytes": 293,
             "files": ["react-40.js"]
@@ -1207,7 +1207,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1594,
+            "rawBytes": 1532,
             "minifiedBytes": 653,
             "brotliBytes": 333,
             "files": ["react-41.js"]
@@ -1226,7 +1226,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 5675,
+            "rawBytes": 5613,
             "minifiedBytes": 3825,
             "brotliBytes": 1123,
             "files": ["react-42.js"]
@@ -1245,7 +1245,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1802,
+            "rawBytes": 1740,
             "minifiedBytes": 879,
             "brotliBytes": 364,
             "files": ["react-43.js"]
@@ -1264,7 +1264,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1785,
+            "rawBytes": 1723,
             "minifiedBytes": 844,
             "brotliBytes": 311,
             "files": ["react-44.js"]
@@ -1283,7 +1283,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1937,
+            "rawBytes": 1875,
             "minifiedBytes": 925,
             "brotliBytes": 376,
             "files": ["react-45.js"]
@@ -1302,7 +1302,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3314,
+            "rawBytes": 3252,
             "minifiedBytes": 1824,
             "brotliBytes": 748,
             "files": ["react-46.js"]
@@ -1321,7 +1321,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2849,
+            "rawBytes": 2787,
             "minifiedBytes": 1698,
             "brotliBytes": 627,
             "files": ["react-47.js"]
@@ -1340,7 +1340,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2292,
+            "rawBytes": 2230,
             "minifiedBytes": 1354,
             "brotliBytes": 518,
             "files": ["react-48.js"]
@@ -1359,7 +1359,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2909,
+            "rawBytes": 2847,
             "minifiedBytes": 1768,
             "brotliBytes": 639,
             "files": ["react-49.js"]
@@ -1378,7 +1378,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 6565,
+            "rawBytes": 6503,
             "minifiedBytes": 3367,
             "brotliBytes": 1147,
             "files": ["react-50.js"]
@@ -1397,7 +1397,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4468,
+            "rawBytes": 4406,
             "minifiedBytes": 1819,
             "brotliBytes": 705,
             "files": ["react-51.js"]
@@ -1416,7 +1416,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 10519,
+            "rawBytes": 10457,
             "minifiedBytes": 5652,
             "brotliBytes": 1893,
             "files": ["react-52.js"]
@@ -1435,7 +1435,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 10020,
+            "rawBytes": 9958,
             "minifiedBytes": 4595,
             "brotliBytes": 1639,
             "files": ["react-53.js"]
@@ -1454,7 +1454,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 56622,
+            "rawBytes": 56064,
             "minifiedBytes": 32320,
             "brotliBytes": 8538,
             "files": ["react-54.js"]
@@ -1473,7 +1473,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 63069,
+            "rawBytes": 62511,
             "minifiedBytes": 38334,
             "brotliBytes": 10148,
             "files": ["react-55.js"]
@@ -1492,7 +1492,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2207,
+            "rawBytes": 2145,
             "minifiedBytes": 1162,
             "brotliBytes": 453,
             "files": ["react-56.js"]
@@ -1511,7 +1511,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 10648,
+            "rawBytes": 10586,
             "minifiedBytes": 6830,
             "brotliBytes": 2062,
             "files": ["react-57.js"]
@@ -1530,7 +1530,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2672,
+            "rawBytes": 2610,
             "minifiedBytes": 1566,
             "brotliBytes": 572,
             "files": ["react-58.js"]
@@ -1549,7 +1549,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2357,
+            "rawBytes": 2295,
             "minifiedBytes": 1488,
             "brotliBytes": 548,
             "files": ["react-59.js"]
@@ -1568,7 +1568,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 3193,
+            "rawBytes": 3131,
             "minifiedBytes": 2168,
             "brotliBytes": 699,
             "files": ["react-60.js"]
@@ -1587,7 +1587,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 8085,
+            "rawBytes": 8023,
             "minifiedBytes": 4979,
             "brotliBytes": 1458,
             "files": ["react-61.js"]
@@ -1606,7 +1606,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1866,
+            "rawBytes": 1804,
             "minifiedBytes": 911,
             "brotliBytes": 376,
             "files": ["react-62.js"]
@@ -1625,7 +1625,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 1755,
+            "rawBytes": 1693,
             "minifiedBytes": 850,
             "brotliBytes": 367,
             "files": ["react-63.js"]
@@ -1644,7 +1644,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 5157,
+            "rawBytes": 5095,
             "minifiedBytes": 3484,
             "brotliBytes": 1139,
             "files": ["react-64.js"]
@@ -1663,7 +1663,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 8721,
+            "rawBytes": 8659,
             "minifiedBytes": 4322,
             "brotliBytes": 1502,
             "files": ["react-65.js"]
@@ -1682,7 +1682,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 62598,
+            "rawBytes": 62040,
             "minifiedBytes": 36141,
             "brotliBytes": 9435,
             "files": ["react-66.js"]
@@ -1701,7 +1701,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4309,
+            "rawBytes": 4247,
             "minifiedBytes": 1641,
             "brotliBytes": 664,
             "files": ["react-67.js"]
@@ -1720,7 +1720,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 49336,
+            "rawBytes": 49274,
             "minifiedBytes": 33462,
             "brotliBytes": 7723,
             "files": ["react-68.js"]
@@ -1739,7 +1739,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 99240,
+            "rawBytes": 98620,
             "minifiedBytes": 61497,
             "brotliBytes": 15087,
             "files": ["react-69.js"]
@@ -1758,7 +1758,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 85557,
+            "rawBytes": 84937,
             "minifiedBytes": 55395,
             "brotliBytes": 13936,
             "files": ["react-70.js"]
@@ -1777,7 +1777,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 59530,
+            "rawBytes": 58972,
             "minifiedBytes": 35988,
             "brotliBytes": 9242,
             "files": ["react-71.js"]
@@ -1798,7 +1798,7 @@
         },
         "assets": {
           "javascript": {
-            "rawBytes": 195226,
+            "rawBytes": 195164,
             "minifiedBytes": 114387,
             "brotliBytes": 20784,
             "files": ["alpine-01.js"]
@@ -1811,7 +1811,7 @@
     "form": {
       "assets": {
         "javascript": {
-          "rawBytes": 20553,
+          "rawBytes": 20243,
           "minifiedBytes": 7686,
           "brotliBytes": 1878,
           "files": ["form.js"]
@@ -1820,23 +1820,23 @@
       "modules": [
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/button.js",
-          "renderedBytes": 3067
+          "renderedBytes": 3005
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/checkbox.js",
-          "renderedBytes": 1420
+          "renderedBytes": 1358
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/fieldset.js",
-          "renderedBytes": 1174
+          "renderedBytes": 1112
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/input.js",
-          "renderedBytes": 2491
+          "renderedBytes": 2429
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/select.js",
-          "renderedBytes": 2304
+          "renderedBytes": 2242
         },
         {
           "module": "<fixture>/scenarios/form.ts",
@@ -1847,7 +1847,7 @@
     "overlays": {
       "assets": {
         "javascript": {
-          "rawBytes": 53857,
+          "rawBytes": 53547,
           "minifiedBytes": 24600,
           "brotliBytes": 4912,
           "files": ["overlays.js"]
@@ -1856,23 +1856,23 @@
       "modules": [
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/dialog.js",
-          "renderedBytes": 7489
+          "renderedBytes": 7427
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/drawer.js",
-          "renderedBytes": 6898
+          "renderedBytes": 6836
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/dropdown.js",
-          "renderedBytes": 7941
+          "renderedBytes": 7879
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/popover.js",
-          "renderedBytes": 6372
+          "renderedBytes": 6310
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/tooltip.js",
-          "renderedBytes": 4625
+          "renderedBytes": 4563
         },
         {
           "module": "<fixture>/scenarios/overlays.ts",
@@ -1883,7 +1883,7 @@
     "application-shell": {
       "assets": {
         "javascript": {
-          "rawBytes": 90466,
+          "rawBytes": 89660,
           "minifiedBytes": 53211,
           "brotliBytes": 12644,
           "files": ["application-shell.js"]
@@ -1892,371 +1892,371 @@
       "modules": [
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/context.mjs",
-          "renderedBytes": 279
+          "renderedBytes": 217
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/createLucideIcon.mjs",
-          "renderedBytes": 546
+          "renderedBytes": 484
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/defaultAttributes.mjs",
-          "renderedBytes": 416
+          "renderedBytes": 354
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/Icon.mjs",
-          "renderedBytes": 1246
+          "renderedBytes": 1184
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/archive.mjs",
-          "renderedBytes": 498
+          "renderedBytes": 436
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-left.mjs",
-          "renderedBytes": 376
+          "renderedBytes": 314
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-right.mjs",
-          "renderedBytes": 378
+          "renderedBytes": 316
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-up-right.mjs",
-          "renderedBytes": 385
+          "renderedBytes": 323
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/bell.mjs",
-          "renderedBytes": 490
+          "renderedBytes": 428
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/book-open.mjs",
-          "renderedBytes": 498
+          "renderedBytes": 436
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/calendar.mjs",
-          "renderedBytes": 515
+          "renderedBytes": 453
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chart-line.mjs",
-          "renderedBytes": 395
+          "renderedBytes": 333
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/check.mjs",
-          "renderedBytes": 317
+          "renderedBytes": 255
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-down.mjs",
-          "renderedBytes": 334
+          "renderedBytes": 272
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-left.mjs",
-          "renderedBytes": 336
+          "renderedBytes": 274
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs",
-          "renderedBytes": 338
+          "renderedBytes": 276
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-left.mjs",
-          "renderedBytes": 391
+          "renderedBytes": 329
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-right.mjs",
-          "renderedBytes": 392
+          "renderedBytes": 330
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.mjs",
-          "renderedBytes": 396
+          "renderedBytes": 334
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-alert.mjs",
-          "renderedBytes": 520
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-check.mjs",
-          "renderedBytes": 399
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs",
-          "renderedBytes": 405
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-x.mjs",
-          "renderedBytes": 445
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle.mjs",
-          "renderedBytes": 331
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/cloud-upload.mjs",
-          "renderedBytes": 489
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/code.mjs",
-          "renderedBytes": 362
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/copy.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/credit-card.mjs",
-          "renderedBytes": 441
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/download.mjs",
-          "renderedBytes": 463
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/ellipsis.mjs",
-          "renderedBytes": 481
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/external-link.mjs",
-          "renderedBytes": 491
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/eye.mjs",
-          "renderedBytes": 460
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-archive.mjs",
-          "renderedBytes": 716
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-plus.mjs",
-          "renderedBytes": 594
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-spreadsheet.mjs",
-          "renderedBytes": 713
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-text.mjs",
-          "renderedBytes": 643
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file.mjs",
-          "renderedBytes": 470
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/film.mjs",
-          "renderedBytes": 711
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder-open.mjs",
-          "renderedBytes": 496
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder.mjs",
-          "renderedBytes": 423
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/funnel.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/globe.mjs",
-          "renderedBytes": 475
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/hard-drive.mjs",
-          "renderedBytes": 635
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/heart.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/house.mjs",
-          "renderedBytes": 483
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/image.mjs",
-          "renderedBytes": 522
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/inbox.mjs",
-          "renderedBytes": 488
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/info.mjs",
-          "renderedBytes": 435
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-dashboard.mjs",
-          "renderedBytes": 674
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-grid.mjs",
-          "renderedBytes": 659
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/link.mjs",
-          "renderedBytes": 456
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/list.mjs",
-          "renderedBytes": 564
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/lock.mjs",
-          "renderedBytes": 421
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/log-out.mjs",
           "renderedBytes": 458
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/mail.mjs",
-          "renderedBytes": 425
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/message-circle.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/minus.mjs",
-          "renderedBytes": 310
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/moon.mjs",
-          "renderedBytes": 408
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/music.mjs",
-          "renderedBytes": 460
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/package.mjs",
-          "renderedBytes": 614
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/pencil.mjs",
-          "renderedBytes": 480
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/plus.mjs",
-          "renderedBytes": 353
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/rocket.mjs",
-          "renderedBytes": 692
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/scale.mjs",
-          "renderedBytes": 583
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/search.mjs",
-          "renderedBytes": 384
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/send.mjs",
-          "renderedBytes": 490
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/settings.mjs",
-          "renderedBytes": 701
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/shield.mjs",
-          "renderedBytes": 467
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs",
-          "renderedBytes": 752
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sparkles.mjs",
-          "renderedBytes": 746
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/star.mjs",
-          "renderedBytes": 663
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sun.mjs",
-          "renderedBytes": 779
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/terminal.mjs",
-          "renderedBytes": 368
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/timer.mjs",
-          "renderedBytes": 493
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/trash-2.mjs",
-          "renderedBytes": 580
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs",
-          "renderedBytes": 505
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/upload.mjs",
-          "renderedBytes": 455
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user-plus.mjs",
-          "renderedBytes": 585
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user.mjs",
-          "renderedBytes": 400
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/users.mjs",
-          "renderedBytes": 550
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/x.mjs",
-          "renderedBytes": 346
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/zap.mjs",
-          "renderedBytes": 456
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs",
-          "renderedBytes": 363
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs",
-          "renderedBytes": 401
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs",
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-check.mjs",
           "renderedBytes": 337
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs",
-          "renderedBytes": 296
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs",
+          "renderedBytes": 343
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs",
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-x.mjs",
+          "renderedBytes": 383
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle.mjs",
+          "renderedBytes": 269
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/cloud-upload.mjs",
+          "renderedBytes": 427
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/code.mjs",
+          "renderedBytes": 300
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/copy.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/credit-card.mjs",
+          "renderedBytes": 379
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/download.mjs",
+          "renderedBytes": 401
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/ellipsis.mjs",
+          "renderedBytes": 419
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/external-link.mjs",
+          "renderedBytes": 429
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/eye.mjs",
+          "renderedBytes": 398
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-archive.mjs",
+          "renderedBytes": 654
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-plus.mjs",
+          "renderedBytes": 532
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-spreadsheet.mjs",
+          "renderedBytes": 651
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-text.mjs",
+          "renderedBytes": 581
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file.mjs",
+          "renderedBytes": 408
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/film.mjs",
+          "renderedBytes": 649
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder-open.mjs",
+          "renderedBytes": 434
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder.mjs",
+          "renderedBytes": 361
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/funnel.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/globe.mjs",
+          "renderedBytes": 413
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/hard-drive.mjs",
+          "renderedBytes": 573
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/heart.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/house.mjs",
+          "renderedBytes": 421
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/image.mjs",
+          "renderedBytes": 460
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/inbox.mjs",
+          "renderedBytes": 426
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/info.mjs",
+          "renderedBytes": 373
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-dashboard.mjs",
+          "renderedBytes": 612
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-grid.mjs",
+          "renderedBytes": 597
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/link.mjs",
+          "renderedBytes": 394
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/list.mjs",
+          "renderedBytes": 502
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/lock.mjs",
+          "renderedBytes": 359
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/log-out.mjs",
+          "renderedBytes": 396
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/mail.mjs",
+          "renderedBytes": 363
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/message-circle.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/minus.mjs",
+          "renderedBytes": 248
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/moon.mjs",
           "renderedBytes": 346
         },
         {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/music.mjs",
+          "renderedBytes": 398
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/package.mjs",
+          "renderedBytes": 552
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/pencil.mjs",
+          "renderedBytes": 418
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/plus.mjs",
+          "renderedBytes": 291
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/rocket.mjs",
+          "renderedBytes": 630
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/scale.mjs",
+          "renderedBytes": 521
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/search.mjs",
+          "renderedBytes": 322
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/send.mjs",
+          "renderedBytes": 428
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/settings.mjs",
+          "renderedBytes": 639
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/shield.mjs",
+          "renderedBytes": 405
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs",
+          "renderedBytes": 690
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sparkles.mjs",
+          "renderedBytes": 684
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/star.mjs",
+          "renderedBytes": 601
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sun.mjs",
+          "renderedBytes": 717
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/terminal.mjs",
+          "renderedBytes": 306
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/timer.mjs",
+          "renderedBytes": 431
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/trash-2.mjs",
+          "renderedBytes": 518
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs",
+          "renderedBytes": 443
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/upload.mjs",
+          "renderedBytes": 393
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user-plus.mjs",
+          "renderedBytes": 523
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user.mjs",
+          "renderedBytes": 338
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/users.mjs",
+          "renderedBytes": 488
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/x.mjs",
+          "renderedBytes": 284
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/zap.mjs",
+          "renderedBytes": 394
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs",
+          "renderedBytes": 301
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs",
+          "renderedBytes": 339
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs",
+          "renderedBytes": 275
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs",
+          "renderedBytes": 234
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs",
+          "renderedBytes": 284
+        },
+        {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/app-sidebar.js",
-          "renderedBytes": 5676
+          "renderedBytes": 5614
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/command-palette.js",
-          "renderedBytes": 16403
+          "renderedBytes": 16341
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/navbar.js",
-          "renderedBytes": 1384
+          "renderedBytes": 1322
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/shell.js",
-          "renderedBytes": 1725
+          "renderedBytes": 1663
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js",
-          "renderedBytes": 12017
+          "renderedBytes": 11955
         },
         {
           "module": "<fixture>/scenarios/application-shell.ts",
@@ -2267,7 +2267,7 @@
     "scheduling": {
       "assets": {
         "javascript": {
-          "rawBytes": 171214,
+          "rawBytes": 170470,
           "minifiedBytes": 106059,
           "brotliBytes": 19594,
           "files": ["scheduling.js"]
@@ -2276,367 +2276,367 @@
       "modules": [
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/context.mjs",
-          "renderedBytes": 279
+          "renderedBytes": 217
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/createLucideIcon.mjs",
-          "renderedBytes": 546
+          "renderedBytes": 484
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/defaultAttributes.mjs",
-          "renderedBytes": 416
+          "renderedBytes": 354
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/Icon.mjs",
-          "renderedBytes": 1246
+          "renderedBytes": 1184
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/archive.mjs",
-          "renderedBytes": 498
+          "renderedBytes": 436
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-left.mjs",
-          "renderedBytes": 376
+          "renderedBytes": 314
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-right.mjs",
-          "renderedBytes": 378
+          "renderedBytes": 316
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-up-right.mjs",
-          "renderedBytes": 385
+          "renderedBytes": 323
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/bell.mjs",
-          "renderedBytes": 490
+          "renderedBytes": 428
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/book-open.mjs",
-          "renderedBytes": 498
+          "renderedBytes": 436
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/calendar.mjs",
-          "renderedBytes": 517
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chart-line.mjs",
-          "renderedBytes": 395
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/check.mjs",
-          "renderedBytes": 317
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-down.mjs",
-          "renderedBytes": 334
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-left.mjs",
-          "renderedBytes": 336
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs",
-          "renderedBytes": 338
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-left.mjs",
-          "renderedBytes": 391
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-right.mjs",
-          "renderedBytes": 392
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.mjs",
-          "renderedBytes": 396
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-alert.mjs",
-          "renderedBytes": 520
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-check.mjs",
-          "renderedBytes": 399
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs",
-          "renderedBytes": 405
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-x.mjs",
-          "renderedBytes": 445
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle.mjs",
-          "renderedBytes": 331
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/cloud-upload.mjs",
-          "renderedBytes": 489
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/code.mjs",
-          "renderedBytes": 362
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/copy.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/credit-card.mjs",
-          "renderedBytes": 441
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/download.mjs",
-          "renderedBytes": 463
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/ellipsis.mjs",
-          "renderedBytes": 481
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/external-link.mjs",
-          "renderedBytes": 491
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/eye.mjs",
-          "renderedBytes": 460
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-archive.mjs",
-          "renderedBytes": 716
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-plus.mjs",
-          "renderedBytes": 594
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-spreadsheet.mjs",
-          "renderedBytes": 713
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-text.mjs",
-          "renderedBytes": 643
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file.mjs",
-          "renderedBytes": 470
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/film.mjs",
-          "renderedBytes": 711
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder-open.mjs",
-          "renderedBytes": 496
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder.mjs",
-          "renderedBytes": 423
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/funnel.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/globe.mjs",
-          "renderedBytes": 475
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/hard-drive.mjs",
-          "renderedBytes": 635
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/heart.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/house.mjs",
-          "renderedBytes": 483
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/image.mjs",
-          "renderedBytes": 522
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/inbox.mjs",
-          "renderedBytes": 488
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/info.mjs",
-          "renderedBytes": 435
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-dashboard.mjs",
-          "renderedBytes": 674
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-grid.mjs",
-          "renderedBytes": 659
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/link.mjs",
-          "renderedBytes": 456
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/list.mjs",
-          "renderedBytes": 564
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/lock.mjs",
-          "renderedBytes": 421
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/log-out.mjs",
-          "renderedBytes": 458
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/mail.mjs",
-          "renderedBytes": 425
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/message-circle.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/minus.mjs",
-          "renderedBytes": 310
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/moon.mjs",
-          "renderedBytes": 408
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/music.mjs",
-          "renderedBytes": 460
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/package.mjs",
-          "renderedBytes": 614
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/pencil.mjs",
-          "renderedBytes": 480
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/plus.mjs",
-          "renderedBytes": 353
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/rocket.mjs",
-          "renderedBytes": 692
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/scale.mjs",
-          "renderedBytes": 583
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/search.mjs",
-          "renderedBytes": 384
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/send.mjs",
-          "renderedBytes": 490
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/settings.mjs",
-          "renderedBytes": 701
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/shield.mjs",
-          "renderedBytes": 467
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs",
-          "renderedBytes": 752
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sparkles.mjs",
-          "renderedBytes": 746
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/star.mjs",
-          "renderedBytes": 663
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sun.mjs",
-          "renderedBytes": 779
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/terminal.mjs",
-          "renderedBytes": 368
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/timer.mjs",
-          "renderedBytes": 493
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/trash-2.mjs",
-          "renderedBytes": 580
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs",
-          "renderedBytes": 505
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/upload.mjs",
           "renderedBytes": 455
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user-plus.mjs",
-          "renderedBytes": 585
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chart-line.mjs",
+          "renderedBytes": 333
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user.mjs",
-          "renderedBytes": 400
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/check.mjs",
+          "renderedBytes": 255
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/users.mjs",
-          "renderedBytes": 550
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-down.mjs",
+          "renderedBytes": 272
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/x.mjs",
-          "renderedBytes": 346
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-left.mjs",
+          "renderedBytes": 274
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/zap.mjs",
-          "renderedBytes": 456
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs",
+          "renderedBytes": 276
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs",
-          "renderedBytes": 363
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-left.mjs",
+          "renderedBytes": 329
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs",
-          "renderedBytes": 401
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-right.mjs",
+          "renderedBytes": 330
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs",
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.mjs",
+          "renderedBytes": 334
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-alert.mjs",
+          "renderedBytes": 458
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-check.mjs",
           "renderedBytes": 337
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs",
-          "renderedBytes": 296
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs",
+          "renderedBytes": 343
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs",
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-x.mjs",
+          "renderedBytes": 383
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle.mjs",
+          "renderedBytes": 269
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/cloud-upload.mjs",
+          "renderedBytes": 427
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/code.mjs",
+          "renderedBytes": 300
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/copy.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/credit-card.mjs",
+          "renderedBytes": 379
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/download.mjs",
+          "renderedBytes": 401
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/ellipsis.mjs",
+          "renderedBytes": 419
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/external-link.mjs",
+          "renderedBytes": 429
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/eye.mjs",
+          "renderedBytes": 398
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-archive.mjs",
+          "renderedBytes": 654
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-plus.mjs",
+          "renderedBytes": 532
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-spreadsheet.mjs",
+          "renderedBytes": 651
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-text.mjs",
+          "renderedBytes": 581
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file.mjs",
+          "renderedBytes": 408
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/film.mjs",
+          "renderedBytes": 649
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder-open.mjs",
+          "renderedBytes": 434
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder.mjs",
+          "renderedBytes": 361
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/funnel.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/globe.mjs",
+          "renderedBytes": 413
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/hard-drive.mjs",
+          "renderedBytes": 573
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/heart.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/house.mjs",
+          "renderedBytes": 421
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/image.mjs",
+          "renderedBytes": 460
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/inbox.mjs",
+          "renderedBytes": 426
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/info.mjs",
+          "renderedBytes": 373
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-dashboard.mjs",
+          "renderedBytes": 612
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-grid.mjs",
+          "renderedBytes": 597
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/link.mjs",
+          "renderedBytes": 394
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/list.mjs",
+          "renderedBytes": 502
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/lock.mjs",
+          "renderedBytes": 359
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/log-out.mjs",
+          "renderedBytes": 396
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/mail.mjs",
+          "renderedBytes": 363
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/message-circle.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/minus.mjs",
+          "renderedBytes": 248
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/moon.mjs",
           "renderedBytes": 346
         },
         {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/music.mjs",
+          "renderedBytes": 398
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/package.mjs",
+          "renderedBytes": 552
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/pencil.mjs",
+          "renderedBytes": 418
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/plus.mjs",
+          "renderedBytes": 291
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/rocket.mjs",
+          "renderedBytes": 630
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/scale.mjs",
+          "renderedBytes": 521
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/search.mjs",
+          "renderedBytes": 322
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/send.mjs",
+          "renderedBytes": 428
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/settings.mjs",
+          "renderedBytes": 639
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/shield.mjs",
+          "renderedBytes": 405
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs",
+          "renderedBytes": 690
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sparkles.mjs",
+          "renderedBytes": 684
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/star.mjs",
+          "renderedBytes": 601
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sun.mjs",
+          "renderedBytes": 717
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/terminal.mjs",
+          "renderedBytes": 306
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/timer.mjs",
+          "renderedBytes": 431
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/trash-2.mjs",
+          "renderedBytes": 518
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs",
+          "renderedBytes": 443
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/upload.mjs",
+          "renderedBytes": 393
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user-plus.mjs",
+          "renderedBytes": 523
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user.mjs",
+          "renderedBytes": 338
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/users.mjs",
+          "renderedBytes": 488
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/x.mjs",
+          "renderedBytes": 284
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/zap.mjs",
+          "renderedBytes": 394
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs",
+          "renderedBytes": 301
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs",
+          "renderedBytes": 339
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs",
+          "renderedBytes": 275
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs",
+          "renderedBytes": 234
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs",
+          "renderedBytes": 284
+        },
+        {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/calendar-view.js",
-          "renderedBytes": 16644
+          "renderedBytes": 16582
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/date-picker.js",
-          "renderedBytes": 28924
+          "renderedBytes": 28862
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/slot-picker.js",
-          "renderedBytes": 40177
+          "renderedBytes": 40115
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/time-picker.js",
-          "renderedBytes": 19337
+          "renderedBytes": 19275
         },
         {
           "module": "<fixture>/scenarios/scheduling.ts",
@@ -2647,7 +2647,7 @@
     "files-data": {
       "assets": {
         "javascript": {
-          "rawBytes": 85433,
+          "rawBytes": 84813,
           "minifiedBytes": 53243,
           "brotliBytes": 12508,
           "files": ["files-data.js"]
@@ -2656,363 +2656,363 @@
       "modules": [
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/context.mjs",
-          "renderedBytes": 279
+          "renderedBytes": 217
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/createLucideIcon.mjs",
-          "renderedBytes": 546
+          "renderedBytes": 484
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/defaultAttributes.mjs",
-          "renderedBytes": 416
+          "renderedBytes": 354
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/Icon.mjs",
-          "renderedBytes": 1246
+          "renderedBytes": 1184
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/archive.mjs",
-          "renderedBytes": 498
+          "renderedBytes": 436
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-left.mjs",
-          "renderedBytes": 376
+          "renderedBytes": 314
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-right.mjs",
-          "renderedBytes": 378
+          "renderedBytes": 316
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/arrow-up-right.mjs",
-          "renderedBytes": 385
+          "renderedBytes": 323
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/bell.mjs",
-          "renderedBytes": 490
+          "renderedBytes": 428
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/book-open.mjs",
-          "renderedBytes": 498
+          "renderedBytes": 436
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/calendar.mjs",
-          "renderedBytes": 515
+          "renderedBytes": 453
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chart-line.mjs",
-          "renderedBytes": 395
+          "renderedBytes": 333
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/check.mjs",
-          "renderedBytes": 317
+          "renderedBytes": 255
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-down.mjs",
-          "renderedBytes": 334
+          "renderedBytes": 272
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-left.mjs",
-          "renderedBytes": 336
+          "renderedBytes": 274
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs",
-          "renderedBytes": 338
+          "renderedBytes": 276
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-left.mjs",
-          "renderedBytes": 391
+          "renderedBytes": 329
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-right.mjs",
-          "renderedBytes": 392
+          "renderedBytes": 330
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.mjs",
-          "renderedBytes": 396
+          "renderedBytes": 334
         },
         {
           "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-alert.mjs",
-          "renderedBytes": 520
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-check.mjs",
-          "renderedBytes": 399
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs",
-          "renderedBytes": 405
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-x.mjs",
-          "renderedBytes": 445
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle.mjs",
-          "renderedBytes": 331
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/cloud-upload.mjs",
-          "renderedBytes": 489
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/code.mjs",
-          "renderedBytes": 362
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/copy.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/credit-card.mjs",
-          "renderedBytes": 441
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/download.mjs",
-          "renderedBytes": 463
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/ellipsis.mjs",
-          "renderedBytes": 481
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/external-link.mjs",
-          "renderedBytes": 491
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/eye.mjs",
-          "renderedBytes": 460
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-archive.mjs",
-          "renderedBytes": 716
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-plus.mjs",
-          "renderedBytes": 594
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-spreadsheet.mjs",
-          "renderedBytes": 713
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-text.mjs",
-          "renderedBytes": 643
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file.mjs",
-          "renderedBytes": 470
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/film.mjs",
-          "renderedBytes": 711
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder-open.mjs",
-          "renderedBytes": 496
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder.mjs",
-          "renderedBytes": 423
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/funnel.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/globe.mjs",
-          "renderedBytes": 475
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/hard-drive.mjs",
-          "renderedBytes": 635
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/heart.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/house.mjs",
-          "renderedBytes": 483
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/image.mjs",
-          "renderedBytes": 522
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/inbox.mjs",
-          "renderedBytes": 488
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/info.mjs",
-          "renderedBytes": 435
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-dashboard.mjs",
-          "renderedBytes": 674
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-grid.mjs",
-          "renderedBytes": 659
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/link.mjs",
-          "renderedBytes": 456
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/list.mjs",
-          "renderedBytes": 564
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/lock.mjs",
-          "renderedBytes": 421
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/log-out.mjs",
           "renderedBytes": 458
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/mail.mjs",
-          "renderedBytes": 425
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/message-circle.mjs",
-          "renderedBytes": 451
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/minus.mjs",
-          "renderedBytes": 310
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/moon.mjs",
-          "renderedBytes": 408
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/music.mjs",
-          "renderedBytes": 460
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/package.mjs",
-          "renderedBytes": 614
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/pencil.mjs",
-          "renderedBytes": 480
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/plus.mjs",
-          "renderedBytes": 353
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/rocket.mjs",
-          "renderedBytes": 692
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/scale.mjs",
-          "renderedBytes": 583
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/search.mjs",
-          "renderedBytes": 384
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/send.mjs",
-          "renderedBytes": 490
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/settings.mjs",
-          "renderedBytes": 701
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/shield.mjs",
-          "renderedBytes": 467
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs",
-          "renderedBytes": 752
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sparkles.mjs",
-          "renderedBytes": 746
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/star.mjs",
-          "renderedBytes": 663
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sun.mjs",
-          "renderedBytes": 779
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/terminal.mjs",
-          "renderedBytes": 368
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/timer.mjs",
-          "renderedBytes": 493
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/trash-2.mjs",
-          "renderedBytes": 580
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs",
-          "renderedBytes": 505
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/upload.mjs",
-          "renderedBytes": 455
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user-plus.mjs",
-          "renderedBytes": 585
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user.mjs",
-          "renderedBytes": 400
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/users.mjs",
-          "renderedBytes": 550
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/x.mjs",
-          "renderedBytes": 346
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/zap.mjs",
-          "renderedBytes": 456
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs",
-          "renderedBytes": 363
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs",
-          "renderedBytes": 401
-        },
-        {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs",
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-check.mjs",
           "renderedBytes": 337
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs",
-          "renderedBytes": 296
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs",
+          "renderedBytes": 343
         },
         {
-          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs",
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle-x.mjs",
+          "renderedBytes": 383
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/circle.mjs",
+          "renderedBytes": 269
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/cloud-upload.mjs",
+          "renderedBytes": 427
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/code.mjs",
+          "renderedBytes": 300
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/copy.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/credit-card.mjs",
+          "renderedBytes": 379
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/download.mjs",
+          "renderedBytes": 401
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/ellipsis.mjs",
+          "renderedBytes": 419
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/external-link.mjs",
+          "renderedBytes": 429
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/eye.mjs",
+          "renderedBytes": 398
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-archive.mjs",
+          "renderedBytes": 654
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-plus.mjs",
+          "renderedBytes": 532
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-spreadsheet.mjs",
+          "renderedBytes": 651
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file-text.mjs",
+          "renderedBytes": 581
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/file.mjs",
+          "renderedBytes": 408
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/film.mjs",
+          "renderedBytes": 649
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder-open.mjs",
+          "renderedBytes": 434
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/folder.mjs",
+          "renderedBytes": 361
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/funnel.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/globe.mjs",
+          "renderedBytes": 413
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/hard-drive.mjs",
+          "renderedBytes": 573
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/heart.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/house.mjs",
+          "renderedBytes": 421
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/image.mjs",
+          "renderedBytes": 460
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/inbox.mjs",
+          "renderedBytes": 426
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/info.mjs",
+          "renderedBytes": 373
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-dashboard.mjs",
+          "renderedBytes": 612
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/layout-grid.mjs",
+          "renderedBytes": 597
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/link.mjs",
+          "renderedBytes": 394
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/list.mjs",
+          "renderedBytes": 502
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/lock.mjs",
+          "renderedBytes": 359
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/log-out.mjs",
+          "renderedBytes": 396
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/mail.mjs",
+          "renderedBytes": 363
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/message-circle.mjs",
+          "renderedBytes": 389
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/minus.mjs",
+          "renderedBytes": 248
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/moon.mjs",
           "renderedBytes": 346
         },
         {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/music.mjs",
+          "renderedBytes": 398
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/package.mjs",
+          "renderedBytes": 552
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/pencil.mjs",
+          "renderedBytes": 418
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/plus.mjs",
+          "renderedBytes": 291
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/rocket.mjs",
+          "renderedBytes": 630
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/scale.mjs",
+          "renderedBytes": 521
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/search.mjs",
+          "renderedBytes": 322
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/send.mjs",
+          "renderedBytes": 428
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/settings.mjs",
+          "renderedBytes": 639
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/shield.mjs",
+          "renderedBytes": 405
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs",
+          "renderedBytes": 690
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sparkles.mjs",
+          "renderedBytes": 684
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/star.mjs",
+          "renderedBytes": 601
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/sun.mjs",
+          "renderedBytes": 717
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/terminal.mjs",
+          "renderedBytes": 306
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/timer.mjs",
+          "renderedBytes": 431
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/trash-2.mjs",
+          "renderedBytes": 518
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs",
+          "renderedBytes": 443
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/upload.mjs",
+          "renderedBytes": 393
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user-plus.mjs",
+          "renderedBytes": 523
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/user.mjs",
+          "renderedBytes": 338
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/users.mjs",
+          "renderedBytes": 488
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/x.mjs",
+          "renderedBytes": 284
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/icons/zap.mjs",
+          "renderedBytes": 394
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs",
+          "renderedBytes": 301
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs",
+          "renderedBytes": 339
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs",
+          "renderedBytes": 275
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs",
+          "renderedBytes": 234
+        },
+        {
+          "module": "<fixture>/node_modules/.pnpm/lucide-react@1.30.0_react@19.2.8/node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs",
+          "renderedBytes": 284
+        },
+        {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/data-table.js",
-          "renderedBytes": 8231
+          "renderedBytes": 8169
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/file-manager.js",
-          "renderedBytes": 19121
+          "renderedBytes": 19059
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/file-upload.js",
-          "renderedBytes": 9435
+          "renderedBytes": 9373
         },
         {
           "module": "<fixture>/scenarios/files-data.ts",

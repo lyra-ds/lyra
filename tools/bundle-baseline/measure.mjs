@@ -122,12 +122,25 @@ function emittedAssets(result) {
   }));
 }
 
+export function normalizeModulePath(moduleId, fixtureRoot, repositoryRoot = REPO) {
+  for (const [root, replacement] of [
+    [fixtureRoot, '<fixture>'],
+    [repositoryRoot, '<repository>'],
+  ]) {
+    if (moduleId === root) return replacement;
+    if (moduleId.startsWith(`${root}/`) || moduleId.startsWith(`${root}\\`)) {
+      return `${replacement}${moduleId.slice(root.length)}`;
+    }
+  }
+  return moduleId;
+}
+
 function moduleContributions(result, fixtureRoot) {
   const contributions = new Map();
   for (const output of collectOutput(result)) {
     if (output.type !== 'chunk') continue;
     for (const [id, module] of Object.entries(output.modules)) {
-      const normalized = id.replaceAll(fixtureRoot, '<fixture>').replaceAll(REPO, '<repository>');
+      const normalized = normalizeModulePath(id, fixtureRoot);
       contributions.set(normalized, (contributions.get(normalized) ?? 0) + module.renderedLength);
     }
   }
@@ -137,34 +150,40 @@ function moduleContributions(result, fixtureRoot) {
 }
 
 async function viteBuild({ buildFunction, entry, externals, minify, name, root }) {
-  return buildFunction({
-    configFile: false,
-    root,
-    logLevel: 'silent',
-    mode: 'production',
-    define: {
-      'process.env.NODE_ENV': JSON.stringify('production'),
-    },
-    build: {
-      target: 'es2022',
-      minify,
-      write: false,
-      cssCodeSplit: extname(entry).toLowerCase() === '.css',
-      lib: {
-        entry,
-        formats: ['es'],
-        fileName: () => `${name}.js`,
+  const originalWorkingDirectory = process.cwd();
+  process.chdir(root);
+  try {
+    return await buildFunction({
+      configFile: false,
+      root,
+      logLevel: 'silent',
+      mode: 'production',
+      define: {
+        'process.env.NODE_ENV': JSON.stringify('production'),
       },
-      rolldownOptions: {
-        external: (id) => externals.some((peer) => id === peer || id.startsWith(`${peer}/`)),
-        output: {
-          assetFileNames: `${name}.[ext]`,
-          entryFileNames: `${name}.js`,
-          chunkFileNames: `${name}-[name].js`,
+      build: {
+        target: 'es2022',
+        minify,
+        write: false,
+        cssCodeSplit: extname(entry).toLowerCase() === '.css',
+        lib: {
+          entry,
+          formats: ['es'],
+          fileName: () => `${name}.js`,
+        },
+        rolldownOptions: {
+          external: (id) => externals.some((peer) => id === peer || id.startsWith(`${peer}/`)),
+          output: {
+            assetFileNames: `${name}.[ext]`,
+            entryFileNames: `${name}.js`,
+            chunkFileNames: `${name}-[name].js`,
+          },
         },
       },
-    },
-  });
+    });
+  } finally {
+    process.chdir(originalWorkingDirectory);
+  }
 }
 
 export async function measureScenario(options) {

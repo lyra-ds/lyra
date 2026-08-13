@@ -19,6 +19,7 @@ import {
   compareBaseline,
   installPackedArtifacts,
   measureScenario,
+  normalizeModulePath,
   runBundleBaselineCli,
   summarizeAssets,
   writeBaselineArtifacts,
@@ -46,6 +47,21 @@ test('summarizeAssets rejects an unknown emitted extension', () => {
   assert.throws(
     () => summarizeAssets([{ fileName: 'asset.svg', source: '<svg />' }]),
     /unsupported emitted asset extension: asset\.svg/,
+  );
+});
+
+test('normalizeModulePath only replaces complete path prefixes', () => {
+  assert.equal(
+    normalizeModulePath(
+      '/tmp/consumer/node_modules/@lyra-ds/react/dist/workspace-switcher.js',
+      '/tmp/consumer',
+      '/workspace',
+    ),
+    '<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js',
+  );
+  assert.equal(
+    normalizeModulePath('/workspace/packages/react/src/index.ts', '/tmp/consumer', '/workspace'),
+    '<repository>/packages/react/src/index.ts',
   );
 });
 
@@ -419,6 +435,25 @@ test('measureScenario keeps the React JSX runtime external', async () => {
       result.modules.every(({ module }) => !module.includes('react-jsx-runtime.development.js')),
     );
   } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('measureScenario is independent of the invoking working-directory depth', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-cwd-'));
+  const entry = join(fixture, 'entry.ts');
+  writeFileSync(entry, 'export const value = 1;\n');
+  const originalWorkingDirectory = process.cwd();
+
+  try {
+    process.chdir('/');
+    const fromRoot = await measureScenario({ entry, root: fixture });
+    process.chdir(originalWorkingDirectory);
+    const fromRepository = await measureScenario({ entry, root: fixture });
+
+    assert.deepEqual(fromRoot, fromRepository);
+  } finally {
+    process.chdir(originalWorkingDirectory);
     rmSync(fixture, { recursive: true, force: true });
   }
 });
