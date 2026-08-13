@@ -17,6 +17,7 @@
     "dist-scan:alpine-types": "node tools/dist-scan/alpine-types.mjs",
     "parity": "node tools/parity/parity.mjs",
     "baseline:bundles": "node tools/bundle-baseline/measure.mjs",
+    "phase0:check": "node tools/phase0/check-artifacts.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
     "changeset": "changeset",
