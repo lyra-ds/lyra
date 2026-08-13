@@ -101,9 +101,49 @@ dependencies; deduplication must be measured rather than inferred.
 Record CSS payload changes and runtime-responsiveness evidence, including the
 measurement environment, command, and any approved exception.
 
-| Measure                               | Before  | After   | Absolute delta | Percentage delta | Shared contribution   | Deduplication     | Limit                 | Pass/fail      |
-| ------------------------------------- | ------- | ------- | -------------- | ---------------- | --------------------- | ----------------- | --------------------- | -------------- |
-| [CSS or runtime measure and artifact] | [Value] | [Value] | [Delta]        | [Percent]        | [Shared contribution] | [Measured result] | [Budget or threshold] | [Pass or fail] |
+### Shared measurement context and immutable artifacts
+
+Use one shared context for the standalone, scenario, CSS, and runtime results.
+Each link must resolve to immutable before or after bytes, raw results, and the
+bundler metafile or equivalent module-contribution evidence.
+
+| Artifact metadata            | Before record                              | After record                               |
+| ---------------------------- | ------------------------------------------ | ------------------------------------------ |
+| Revision and package version | [Commit and package versions]              | [Commit and package versions]              |
+| Packed artifact and checksum | [Tarball URL and SHA-256]                  | [Tarball URL and SHA-256]                  |
+| Lockfile and checksum        | [Lockfile revision and SHA-256]            | [Lockfile revision and SHA-256]            |
+| Raw artifact and metafile    | [Immutable raw artifact and metafile link] | [Immutable raw artifact and metafile link] |
+| Exact measurement command    | [Command]                                  | [Command]                                  |
+
+| Shared measurement context        | Record                                                                       |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| Operating system and architecture | [OS/version and architecture]                                                |
+| Pinned tool versions              | [Node, pnpm, bundler, minifier, size analysis, Brotli, and browser versions] |
+| Production configuration          | [Mode, target, define values, tree-shaking settings, and externals]          |
+| Fixture source and input data     | [Public entry, fixture revision, and representative data]                    |
+| Cache and checkout state          | [Fresh temporary directory; cold cache; no prior build output]               |
+| Brotli parameters                 | [Text mode, quality 11, no custom dictionary]                                |
+
+### CSS payload evidence
+
+Build the public aggregate stylesheet and every affected documented opt-in or
+subpath in a production consumer fixture. Keep CSS evidence separate from
+JavaScript results.
+
+| Source entry and artifact             | Themes and brands included | Narrower supported entry     | Before raw CSS | Before minified CSS | Before quality-11 Brotli | After raw CSS | After minified CSS | After quality-11 Brotli | CSS asset count before → after | Duplicate or superseded rules        | Font or URL payload before → after | Immutable artifact link | Limit    | Pass/fail      |
+| ------------------------------------- | -------------------------- | ---------------------------- | -------------- | ------------------- | ------------------------ | ------------- | ------------------ | ----------------------- | ------------------------------ | ------------------------------------ | ---------------------------------- | ----------------------- | -------- | -------------- |
+| [Aggregate, opt-in, or subpath entry] | [Themes and brands]        | [Yes/no and supported entry] | [Bytes]        | [Bytes]             | [Bytes]                  | [Bytes]       | [Bytes]            | [Bytes]                 | [Count → count]                | [Declarations/rules and disposition] | [Bytes, URLs, and disposition]     | [Raw CSS and report]    | [Budget] | [Pass or fail] |
+
+### Runtime responsiveness evidence
+
+Use production artifacts and a pinned Chromium build. Record at least 30
+iterations for each representative operation: open or activation, keyboard
+navigation, selection or commit, largest approved data update, error or
+cancellation, and close or teardown.
+
+| Operation and representative data | Chromium revision | Viewport and device           | CPU and network         | Warm-up     | Recorded iterations (≥30) | Median     | P95        | Worst observed | Long tasks       | Rendered-node or virtualization assumptions | Event-to-next-paint measurement boundary | Threshold               | Immutable raw-result artifact link | Pass/fail      |
+| --------------------------------- | ----------------- | ----------------------------- | ----------------------- | ----------- | ------------------------- | ---------- | ---------- | -------------- | ---------------- | ------------------------------------------- | ---------------------------------------- | ----------------------- | ---------------------------------- | -------------- |
+| [Operation and data size]         | [Pinned revision] | [Viewport and device profile] | [Controlled conditions] | [Procedure] | [Count]                   | [Duration] | [Duration] | [Duration]     | [Count/duration] | [Assumptions]                               | [Boundary]                               | [User-facing threshold] | [Raw iterations and trace]         | [Pass or fail] |
 
 ## Removed code and dependencies
 

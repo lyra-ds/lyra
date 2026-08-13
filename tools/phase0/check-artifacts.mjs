@@ -19,6 +19,12 @@ const requiredHeadings = [
   'Approvals',
 ];
 
+const requiredSubheadings = [
+  'Shared measurement context and immutable artifacts',
+  'CSS payload evidence',
+  'Runtime responsiveness evidence',
+];
+
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, '../..');
 const templatePath = resolve(
@@ -41,12 +47,16 @@ try {
 }
 
 if (template !== undefined) {
-  const errors = requiredHeadings.flatMap((heading) => {
-    const matches = template.match(new RegExp(`^## ${heading}$`, 'gm')) ?? [];
+  const requiredStructure = [
+    ...requiredHeadings.map((heading) => ({ level: 2, heading })),
+    ...requiredSubheadings.map((heading) => ({ level: 3, heading })),
+  ];
+  const errors = requiredStructure.flatMap(({ level, heading }) => {
+    const matches = template.match(new RegExp(`^${'#'.repeat(level)} ${heading}$`, 'gm')) ?? [];
 
     return matches.length === 1
       ? []
-      : [`Expected exactly one level-2 heading "${heading}"; found ${matches.length}.`];
+      : [`Expected exactly one level-${level} heading "${heading}"; found ${matches.length}.`];
   });
 
   if (errors.length > 0) {
