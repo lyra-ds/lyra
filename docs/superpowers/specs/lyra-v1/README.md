@@ -122,9 +122,11 @@ forms and prose without a permitted uppercase key word are explanatory.
 - **Deprecated:** A still-supported public contract scheduled for removal. Its
   approved deprecation record identifies the replacement or rationale,
   migration guidance, and removal version.
-- <a id="critical-workflow"></a>**Critical workflow:** A supported workflow whose failure meets the shared
-  `P1` definition because it blocks a critical task or violates a required
-  accessibility or safety guarantee.
+- <a id="critical-workflow"></a>**Critical workflow:** A supported end-to-end
+  user journey that its family specification identifies as necessary to complete
+  a primary task or safely access, create, change, submit, cancel, recover, or
+  understand essential product information. Criticality is determined from the
+  supported task and its documented consequence before classifying any finding.
 - <a id="p1"></a>**P1:** A release-blocking defect or missing contract that
   prevents or may prevent access to a critical workflow, violates a required
   accessibility or safety guarantee, exposes an invalid production lifecycle,

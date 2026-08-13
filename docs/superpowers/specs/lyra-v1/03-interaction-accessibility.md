@@ -343,10 +343,11 @@ CI configuration that runs only one engine MUST NOT be presented as the v1.0
 release matrix.
 
 Every family spec MUST name its critical desktop workflows and map each one to
-manual scenario identifiers. The classification MUST include every workflow
-whose failure would meet the shared [`P1`](./README.md#p1) definition, including
-loss of access to a critical task, required accessibility guarantee, or safety
-guarantee.
+manual scenario identifiers. The classification MUST include every shared
+[critical workflow](./README.md#critical-workflow). A failure that prevents
+access to one is a [`P1`](./README.md#p1); failures of other `P1` conditions,
+such as data loss or a broken public package entry, remain `P1` even when they
+are not workflow failures.
 
 Quality evidence MUST publish the aggregate list, owning family spec, scenario
 identifiers, and current review status. If a family claims that it has no
