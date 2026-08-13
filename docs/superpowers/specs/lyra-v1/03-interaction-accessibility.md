@@ -171,13 +171,19 @@ and invalid movement without flooding the live region. Pointer cancellation
 MUST avoid committing an action on the down event when the user can still move
 away or abort.
 
-The WCAG 2.2 Level AA minimum of `24 × 24 CSS px` MUST be the compliance floor,
-including its defined spacing and semantic exceptions. Lyra's touch ergonomics
-target MUST be at least `44 × 44 CSS px` for interactive targets. A compact
-layout MAY use a smaller target only when its family spec documents the user
-need, the WCAG exception or spacing that keeps the target conforming, a coarse-
-pointer treatment or equivalent action, and manual touch evidence. Dense
-presentation MUST NOT reduce targets below the compliance floor.
+The WCAG 2.2 Level AA minimum of `24 × 24 CSS px` MUST be the compliance floor.
+Only the spacing, equivalent, inline, user-agent-control, and essential
+exceptions defined by WCAG 2.2 Success Criterion 2.5.8 MAY permit a smaller
+target. Density, compactness, data volume, and visual preference MUST NOT by
+themselves qualify as exceptions to that floor.
+
+Independently of compliance, Lyra's touch ergonomics target MUST be at least
+`44 × 44 CSS px` for interactive targets. A compact layout MAY depart from the
+Lyra target only when its family spec documents the user need, demonstrates
+either a target of at least `24 × 24 CSS px` or the exact applicable WCAG 2.5.8
+exception, defines a coarse-pointer treatment or equivalent action, and includes
+manual touch evidence. A departure from the Lyra target MUST NOT weaken the
+compliance floor.
 
 ## Layer and overlay contract
 
@@ -334,7 +340,18 @@ component's conformance suite before it changes the supported gate. A local or
 CI configuration that runs only one engine MUST NOT be presented as the v1.0
 release matrix.
 
-Critical desktop workflows MUST receive both of these manual reviews:
+Every family spec MUST name its critical desktop workflows and map each one to
+manual scenario identifiers. The classification MUST include every workflow
+whose failure would meet the shared `P1` definition, including loss of access to
+a critical task, required accessibility guarantee, or safety guarantee.
+
+Quality evidence MUST publish the aggregate list, owning family spec, scenario
+identifiers, and current review status. If a family claims that it has no
+critical desktop workflow, it MUST enumerate its supported workflows, record
+the evidence that none meets the `P1` definition, and receive Lyra-maintainer
+approval; omission or an empty matrix MUST NOT satisfy this requirement.
+
+Every named critical desktop workflow MUST receive both of these manual reviews:
 
 | Platform | Browser and assistive technology             | Minimum input coverage                                                                                                                |
 | -------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -376,20 +393,20 @@ The semantic owner identifies the layer that MUST own the primary behavior.
 Family specs MUST complete, test, and document the minimum obligations rather
 than treating this table as a complete component contract.
 
-| Pattern                    | Semantic owner                                                                                                                                 | Minimum keyboard and focus obligations the family spec MUST complete                                                                                                                                                                                                         |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Buttons and icon buttons   | Native `button`, or native link when the operation is navigation                                                                               | Tab reaches enabled actions; Enter and Space follow native button behavior; disabled behavior, pending activation, accessible naming, repeated activation, and post-action focus MUST be defined.                                                                            |
-| Fields and field groups    | Native `input`, `textarea`, `select`, `fieldset`, `legend`, `label`, and form semantics                                                        | Label, description, requirement, value, validation, error association, read-only and disabled behavior, editing keys, submission, and focus after validation MUST be defined.                                                                                                |
-| Composites                 | Lyra family contract guided by the applicable ARIA pattern                                                                                     | The spec MUST choose one tab stop model and define entry, arrows, Home/End where applicable, typeahead, selection versus focus, disabled items, orientation, wrapping, and exit.                                                                                             |
-| Tabs                       | Lyra Tabs family contract guided by the ARIA tabs pattern                                                                                      | Tab reaches the active tab and panel content; arrows, Home/End, activation mode, focus/selection synchronization, panel naming, real panel ownership, deletion if supported, and focus fallback MUST be defined.                                                             |
-| Disclosures                | Native `button` plus controlled content region; native `details`/`summary` MAY own bounded cases                                               | Trigger activation, expanded state, content relationship, retained focus, nested disclosure order, and optional region naming MUST be defined.                                                                                                                               |
-| Menus and listboxes        | Lyra family contract guided by the applicable ARIA menu or listbox pattern; the two roles MUST NOT be interchanged                             | Opening focus, arrows, Home/End, typeahead, activation or selection, disabled items, Escape, Tab exit, trigger restoration, nested submenus, and multi-selection where applicable MUST be defined.                                                                           |
-| Dialogs and modal surfaces | Native `dialog` when it meets the contract, otherwise a Lyra-owned dialog primitive                                                            | Accessible name and description, initial focus, Tab containment, safe focus restoration including opener removal, Escape and outside dismissal, nested layers, inert background, scroll lock, and closing presence MUST be defined.                                          |
-| Tooltips                   | Lyra tooltip family with a semantic trigger and non-interactive descriptive content                                                            | Keyboard focus and hover MAY reveal the same content; Escape dismissal, hover persistence, timing, `aria-describedby` relationship, touch alternative, and focus retention on the trigger MUST be defined. Interactive content MUST use a different non-modal layer pattern. |
-| Tables and data views      | Native table semantics for tabular data; a future grid contract MUST own cell navigation before `grid` roles appear                            | Caption or name, headers and associations, sort controls, selection controls, row actions, focus order, responsive overflow, empty content, and keyboard equivalence for every pointer action MUST be defined.                                                               |
-| Progress and status        | Native `progress`, `output`, and status semantics where applicable                                                                             | Determinate or indeterminate state, value text, live-region priority, update cadence, completion, failure, cancellation, deduplication, and post-completion focus MUST be defined.                                                                                           |
-| Drag and drop              | Lyra family contract over native pointer events and explicit direct actions                                                                    | Keyboard pickup or direct move, valid destinations, position changes, drop, cancel, invalid movement, focus retention, live feedback, and pointer cancellation MUST be defined.                                                                                              |
-| Date and time widgets      | Native date/time controls when they meet the locale contract, otherwise a Lyra family contract informed by tested date-input and grid patterns | Locale parsing and formatting, segmented editing or grid navigation, arrows, Home/End/Page keys where applicable, selection, min/max and unavailable values, validation, time zone, touch behavior, and focus restoration MUST be defined.                                   |
+| Pattern                    | Semantic owner                                                                                                                                                                              | Minimum keyboard and focus obligations the family spec MUST complete                                                                                                                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Buttons and icon buttons   | Native `button`, or native link when the operation is navigation                                                                                                                            | Tab reaches enabled actions; Enter and Space follow native button behavior; disabled behavior, pending activation, accessible naming, repeated activation, and post-action focus MUST be defined.                                                                            |
+| Fields and field groups    | Native `input`, `textarea`, `select`, `fieldset`, `legend`, `label`, and form semantics                                                                                                     | Label, description, requirement, value, validation, error association, read-only and disabled behavior, editing keys, submission, and focus after validation MUST be defined.                                                                                                |
+| Composites                 | Lyra family contract guided by the applicable ARIA pattern                                                                                                                                  | The spec MUST choose one tab stop model and define entry, arrows, Home/End where applicable, typeahead, selection versus focus, disabled items, orientation, wrapping, and exit.                                                                                             |
+| Tabs                       | Lyra Tabs family contract guided by the ARIA tabs pattern                                                                                                                                   | Tab reaches the active tab and panel content; arrows, Home/End, activation mode, focus/selection synchronization, panel naming, real panel ownership, deletion if supported, and focus fallback MUST be defined.                                                             |
+| Disclosures                | Native `button` plus controlled content region; native `details`/`summary` MAY own bounded cases                                                                                            | Trigger activation, expanded state, content relationship, retained focus, nested disclosure order, and optional region naming MUST be defined.                                                                                                                               |
+| Menus and listboxes        | Lyra family contract guided by the applicable ARIA menu or listbox pattern; the two roles MUST NOT be interchanged                                                                          | Opening focus, arrows, Home/End, typeahead, activation or selection, disabled items, Escape, Tab exit, trigger restoration, nested submenus, and multi-selection where applicable MUST be defined.                                                                           |
+| Dialogs and modal surfaces | Native `dialog` when it meets the contract; otherwise the Lyra-owned dialog contract and public API, with implementation selected by the approved architecture and overlay-family decisions | Accessible name and description, initial focus, Tab containment, safe focus restoration including opener removal, Escape and outside dismissal, nested layers, inert background, scroll lock, and closing presence MUST be defined.                                          |
+| Tooltips                   | Lyra tooltip family with a semantic trigger and non-interactive descriptive content                                                                                                         | Keyboard focus and hover MAY reveal the same content; Escape dismissal, hover persistence, timing, `aria-describedby` relationship, touch alternative, and focus retention on the trigger MUST be defined. Interactive content MUST use a different non-modal layer pattern. |
+| Tables and data views      | Native table semantics for tabular data; a future grid contract MUST own cell navigation before `grid` roles appear                                                                         | Caption or name, headers and associations, sort controls, selection controls, row actions, focus order, responsive overflow, empty content, and keyboard equivalence for every pointer action MUST be defined.                                                               |
+| Progress and status        | Native `progress`, `output`, and status semantics where applicable                                                                                                                          | Determinate or indeterminate state, value text, live-region priority, update cadence, completion, failure, cancellation, deduplication, and post-completion focus MUST be defined.                                                                                           |
+| Drag and drop              | Lyra family contract over native pointer events and explicit direct actions                                                                                                                 | Keyboard pickup or direct move, valid destinations, position changes, drop, cancel, invalid movement, focus retention, live feedback, and pointer cancellation MUST be defined.                                                                                              |
+| Date and time widgets      | Native date/time controls when they meet the locale contract, otherwise a Lyra family contract informed by tested date-input and grid patterns                                              | Locale parsing and formatting, segmented editing or grid navigation, arrows, Home/End/Page keys where applicable, selection, min/max and unavailable values, validation, time zone, touch behavior, and focus restoration MUST be defined.                                   |
 
 ## Current findings that v1.0 MUST remove
 
@@ -418,11 +435,20 @@ direction, viewport, zoom level, theme, forced-colors behavior, and motion
 preference when applicable. It MUST link each artifact to an expected result and
 the exact revision tested.
 
-Evidence MUST include automated semantic, keyboard, browser, SSR or hydration,
-and axe coverage where applicable, plus the manual matrix required by this
-document. A screenshot MAY support a visual result, but it MUST NOT replace a
-keyboard sequence, accessibility-tree assertion, contrast measurement, reflow
-inspection, or assistive-technology record.
+Implementation evidence MUST demonstrate passing automated semantic, keyboard,
+browser, SSR and hydration, and axe coverage, plus the manual matrix required by
+this document. These gates are cumulative: one result MUST NOT substitute for
+another, and manual evidence MUST supplement rather than replace them. A
+screenshot MAY support a visual result, but it MUST NOT replace a keyboard
+sequence, accessibility-tree assertion, contrast measurement, reflow inspection,
+or assistive-technology record.
+
+A production migration or dependency-adoption record MUST additionally prove
+that public API types do not expose the selected primitive library and MUST
+include before/after standalone and representative-composition bundle evidence
+against the approved budgets. Public-type isolation and bundle evidence MUST
+supplement, not replace, the interaction, accessibility, SSR, hydration, browser,
+and manual assistive-technology gates.
 
 A substantive behavior change MUST include migration guidance and before/after
 examples for every affected public adapter. A known failure MUST retain its
@@ -456,6 +482,12 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
       decisions;
 - [ ] Chromium, Firefox, and WebKit automated gates plus NVDA, VoiceOver, and
       conditional mobile review define evidence fields and release blockers;
+- [ ] family specs classify and name critical desktop workflows, quality
+      evidence aggregates their owners, scenarios, and review status, and an
+      empty classification cannot satisfy the manual-review gate by omission;
+- [ ] implementation evidence makes semantic, keyboard, browser, SSR, hydration,
+      axe, public-type isolation, standalone bundle, representative-composition
+      bundle, and manual review gates cumulative rather than substitutive;
 - [ ] every named component pattern has a semantic owner and minimum family-spec
       keyboard and focus obligations;
 - [ ] the Tabs, FileUpload, DataTable, overlay, and contrast-helper findings are
@@ -463,5 +495,6 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
 - [ ] downstream component architecture, quality, and family specifications can
       cite these contracts without an unresolved interaction or accessibility
       decision; and
-- [ ] the PRD owner, design-system maintainers, and required interaction-standard
-      reviewer have recorded the approvals assigned to them by governance.
+- [ ] the PRD owner and Lyra maintainers have recorded the approvals assigned to
+      them by governance, and evidence records review against the published
+      interaction standard without defining an additional approval role.
