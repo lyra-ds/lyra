@@ -1,10 +1,13 @@
 # Lyra v1.0 quality and performance
 
-**Status:** Draft
+**Status:** Approved
 
 **Date:** 2026-08-12
 
 **Owner:** Lyra maintainers
+
+**Approved:** 2026-08-13 by the PRD owner and Lyra maintainer after review
+against the published interaction standard
 
 **Scope:** Quality levels, test architecture, merge and release gates, browser
 and assistive-technology evidence, server-rendering and hydration verification,
@@ -555,44 +558,44 @@ close each gap before the affected contract claims v1.0 evidence.
 
 Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
-- [ ] `P1`, `P2`, and `P3` define impact, examples, response expectations,
+- [x] `P1`, `P2`, and `P3` define impact, examples, response expectations,
       merge and release effects, and any known WCAG 2.2 Level AA failure,
       keyboard-blocked primary task, focus escape from an active modal, data
       loss, or broken package entry is `P1`;
-- [ ] stable eligibility requires an `Implemented` family spec, complete current
+- [x] stable eligibility requires an `Implemented` family spec, complete current
       evidence, public documentation and migration material, and zero open
       `P1` findings;
-- [ ] static, unit, real-browser, SSR and hydration, accessibility, visual,
+- [x] static, unit, real-browser, SSR and hydration, accessibility, visual,
       React/Alpine conformance, packaging and consumer smoke, and manual review
       form cumulative layers with explicit pull-request, nightly, release-candidate,
       and release cadence;
-- [ ] the automated matrix preserves the exact Chromium, Firefox, and WebKit
+- [x] the automated matrix preserves the exact Chromium, Firefox, and WebKit
       revisions from the pinned Playwright version plus required Windows/NVDA,
       macOS/VoiceOver, and conditional mobile records, and evidence records the
       Playwright, browser, operating-system, and assistive-technology versions;
-- [ ] deterministic clocks, animations, environments, unique ports, isolated
+- [x] deterministic clocks, animations, environments, unique ports, isolated
       fixtures, retry evidence, failure classification, and owned quarantine
       prevent retry-only acceptance from proving a contract;
-- [ ] SSR evidence covers server render, first client render, hydration,
+- [x] SSR evidence covers server render, first client render, hydration,
       portals, IDs, environment state, input, focus, announcements, Alpine
       reconciliation, delayed initialization, and no-JavaScript behavior;
-- [ ] public-type isolation inspects source, emitted declarations, packed
+- [x] public-type isolation inspects source, emitted declarations, packed
       artifacts, consumer compilation, examples, and generated documentation;
-- [ ] the Brotli protocol uses pinned tooling, clean cold-cache packed artifacts,
+- [x] the Brotli protocol uses pinned tooling, clean cold-cache packed artifacts,
       fixed production inputs, quality 11 text compression, standalone entries,
       all five PRD scenarios, separate CSS results, complex-component runtime
       measurements, and reproducible comparison artifacts;
-- [ ] simple primitive migrations add at most `+1.5 kB` Brotli per consumer
+- [x] simple primitive migrations add at most `+1.5 kB` Brotli per consumer
       entry, complex component migrations add at most `+3 kB`, and larger
       deltas require an approved ADR after replaced production code and
       dependencies are removed and measured;
-- [ ] every normative family-spec acceptance criterion maps to an automated
+- [x] every normative family-spec acceptance criterion maps to an automated
       test, manual test record, or justified documented non-automatable review;
-- [ ] the immutable release evidence manifest records spec and package versions,
+- [x] the immutable release evidence manifest records spec and package versions,
       commands and results, artifact links, the browser and assistive-technology
       matrix, bundle and runtime reports, known issues, consumer validations,
       migration guide, and approvals for the exact published bytes; and
-- [ ] approval authority follows the [shared lifecycle](./README.md#lifecycle):
+- [x] approval authority follows the [shared lifecycle](./README.md#lifecycle):
       design-system maintainers approve the transition, the PRD owner also
       approves any product scope or v1.0 gate change, and required technical or
       accessibility reviews are recorded as evidence rather than as additional

@@ -1,16 +1,21 @@
-# Versioning policy (0.x)
+# Versioning policy
 
-Lyra DS follows [Semantic Versioning](https://semver.org/), with one deliberate
-convention layered on top for the pre-1.0 period. Read this before publishing a
-change or filing a changeset.
+Lyra DS follows [Semantic Versioning](https://semver.org/) with independent SemVer
+for `@lyra-ds/styles`, `@lyra-ds/react`, and `@lyra-ds/alpine`. Each package
+receives the smallest bump required by changes to its own public surface.
+Unchanged packages retain their current versions.
 
-## Lockstep versioning
+## Coordinated shared-contract releases
 
-`@lyra-ds/styles` and `@lyra-ds/react` are versioned **in lockstep** — they always
-share one "Lyra 0.x" version number. A release bumps both packages together, even
-if only one of them changed. This keeps the CSS core and the React wrappers
-provably compatible: any given `@lyra-ds/react` version targets the matching
-`@lyra-ds/styles` version.
+Independent versions do not remove coordination. When a change affects a shared
+CSS, markup, state, or behavior contract, every affected package releases in the
+same documented release window. The release publishes one compatibility and
+migration record, and each affected package receives the bump appropriate to its
+own public surface.
+
+The public [compatibility guide](./apps/docs/content/docs/en/guides/compatibility.mdx)
+lists the tested Styles, React, and Alpine ranges. Independent versions do not
+imply that every combination is compatible.
 
 ## The 0.x convention: 0.MINOR = breaking
 
@@ -31,6 +36,28 @@ considered unstable.
 > [CONTRIBUTING.md](./CONTRIBUTING.md) for the changeset workflow. `major`
 > changesets are **reserved for the deliberate 1.0 release**.
 
+## Post-1.0 SemVer
+
+After an individual package reaches `1.0.0`, its stable public contract follows
+the approved component architecture:
+
+- A **patch** preserves the stable public contract. It may contain compatible
+  fixes, documentation, internal refactors, build or test changes, and dependency
+  updates that preserve that contract.
+- A **minor** may add backwards-compatible public APIs, states, components, or
+  adapters, and may deprecate existing APIs.
+- A **major** identifies a removal or incompatible change to a public source,
+  type, export, required markup, CSS selector, token, DOM or ref target, state,
+  event, behavior, SSR contract, or adapter support.
+
+The Lyra v1.0 suite is declared only after all three packages independently
+publish `1.0.0` and the public compatibility guide records their tested mutual
+ranges. Later patch and minor versions may diverge; a future suite-wide breaking
+program bumps only the packages whose own public contracts break.
+
+The sibling `lyra-ds/blade` package keeps independent SemVer and release timing.
+It has its own compatibility matrix and does not block the Lyra v1.0 suite.
+
 ## Declared public API surface
 
 This versioning policy covers the following as the **public API** of Lyra DS.
@@ -42,11 +69,12 @@ release:
    framework adapters.
 3. **Design token names** — the CSS custom properties (e.g. `--brand`,
    `--brand-contrast`).
-4. **Documented public export paths** — the documented entry points of
-   `@lyra-ds/styles` and `@lyra-ds/react` (for example the styles entry and its
-   `./tokens/*` subpaths). The full per-component export map is finalized in
-   Phase 3; this policy covers whichever export paths are documented as public at
-   the time of a release.
+4. **Alpine behavior contracts** — documented plugin registration and component
+   names, option and data types, state attributes, and custom events.
+5. **Documented public export paths** — the documented entry points of Styles,
+   React, and Alpine (for example the styles entry and its `./tokens/*` subpaths).
+   This policy covers whichever export paths are documented as public at the time
+   of a release.
 
 ### Explicitly NOT public API
 

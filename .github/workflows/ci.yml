@@ -34,10 +34,12 @@ jobs:
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
+      - run: pnpm phase0:check
+      - run: pnpm release-policy:check
       # actionlint — checksum-verified binary (never a remote script piped into a
       # shell). The download is tamper-evident: the release tarball is verified
       # against the sha256 checksum literal committed below before it executes.
@@ -65,7 +67,7 @@ jobs:
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Phase 6a: apps/docs typechecks against @lyra-ds/react's BUILT dist types (it consumes
@@ -85,13 +87,12 @@ jobs:
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Chromium MUST be installed BEFORE `pnpm run test`: the root test script is
-      # `pnpm -r --if-present run test`, which now recurses into packages/styles'
-      # Browser Mode suite (STY-03/STY-04). A fresh runner has no browser, so this
-      # install has to precede the test step or CI fails deterministically.
+      # Chromium MUST be installed BEFORE `pnpm run test`: the root test script recurses
+      # into packages/styles' Browser Mode suite (STY-03/STY-04). A fresh runner has no
+      # browser, so this install has to precede the test step or CI fails deterministically.
       - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm run test # recurses into @lyra-ds/styles Browser Mode suite (Phase 2)
       # Phase 2, STY-06: token/class parity script (fails on any handoff drift)
@@ -107,10 +108,11 @@ jobs:
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
+      - run: pnpm baseline:bundles --check
       # Phase 5, GEN-01..GEN-03: declaration-driven docs drift guard; consumes dist.
       - run: node tools/docgen/generate.mjs --check
       - run: node tools/docgen/alpine.mjs --check

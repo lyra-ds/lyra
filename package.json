@@ -9,15 +9,18 @@
     "lint": "prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "test": "pnpm -r --if-present run test",
+    "test": "pnpm --filter @lyra-ds/react run build && node --test tools/phase0/check-artifacts.test.mjs tools/bundle-baseline/measure.test.mjs && pnpm -r --if-present run test",
     "build": "pnpm -r --if-present run build",
     "docgen": "node tools/docgen/generate.mjs",
     "docgen:alpine": "node tools/docgen/alpine.mjs",
     "docgen:blade": "node tools/docgen/blade.mjs",
     "dist-scan:alpine-types": "node tools/dist-scan/alpine-types.mjs",
     "parity": "node tools/parity/parity.mjs",
+    "baseline:bundles": "node tools/bundle-baseline/measure.mjs",
+    "phase0:check": "node tools/phase0/check-artifacts.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
+    "release-policy:check": "node tools/release-policy/check.mjs",
     "changeset": "changeset",
     "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
   },
@@ -47,6 +50,7 @@
     "vite": "8.2.1",
     "vitest": "4.1.10",
     "vitest-browser-react": "2.2.0",
-    "wrangler": "4.120.0"
+    "wrangler": "4.120.0",
+    "yaml": "2.9.0"
   }
 }

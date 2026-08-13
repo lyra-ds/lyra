@@ -1,10 +1,13 @@
 # Lyra v1.0 interaction and accessibility
 
-**Status:** Draft
+**Status:** Approved
 
 **Date:** 2026-08-12
 
 **Owner:** Lyra maintainers
+
+**Approved:** 2026-08-13 by the PRD owner and Lyra maintainer after review
+against the published interaction standard
 
 **Scope:** Keyboard, focus, pointer, touch, overlay, feedback,
 internationalization, responsive-input, and assistive-technology contracts for
@@ -469,43 +472,43 @@ moving or suppressing the check MUST NOT close the finding.
 
 Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
-- [ ] WCAG 2.2 Level AA, native semantics, APG guidance, and deviation approval
+- [x] WCAG 2.2 Level AA, native semantics, APG guidance, and deviation approval
       form one explicit standards baseline without treating automation or APG
       markup as automatic conformance;
-- [ ] keyboard reachability and activation cover native controls, composites,
+- [x] keyboard reachability and activation cover native controls, composites,
       shortcuts, editing conflicts, and the prohibition on pointer-only primary
       actions;
-- [ ] focus-visible, DOM order, initial focus, modal containment, dynamic
+- [x] focus-visible, DOM order, initial focus, modal containment, dynamic
       content, restoration, opener unmount, and removed focused nodes have
       explicit ownership and acceptance behavior;
-- [ ] disabled and read-only behavior remain semantically and visually distinct;
-- [ ] pointer, touch, hover, drag, coarse-pointer, cancellation, WCAG target
+- [x] disabled and read-only behavior remain semantically and visually distinct;
+- [x] pointer, touch, hover, drag, coarse-pointer, cancellation, WCAG target
       minimum, and the `44 × 44 CSS px` Lyra target have verifiable rules;
-- [ ] modal and non-modal layers define semantics, Escape, outside interaction,
+- [x] modal and non-modal layers define semantics, Escape, outside interaction,
       nested layers, scroll locking, portals, presence animation, reduced
       motion, and restoration without preserving current overlay divergence;
-- [ ] loading, progress, success, error, retry, cancel, destructive confirmation,
+- [x] loading, progress, success, error, retry, cancel, destructive confirmation,
       live-region priority, and event-based deduplication have complete contracts;
-- [ ] light, dark, forced colors, reduced motion, RTL, locale, 200% text zoom,
+- [x] light, dark, forced colors, reduced motion, RTL, locale, 200% text zoom,
       400% page zoom and reflow, containers, virtual keyboards, long content,
       empty content, and high density distinguish universal outcomes from family
       decisions;
-- [ ] Chromium, Firefox, and WebKit automated gates plus NVDA, VoiceOver, and
+- [x] Chromium, Firefox, and WebKit automated gates plus NVDA, VoiceOver, and
       conditional mobile review define evidence fields and release blockers;
-- [ ] family specs classify and name critical desktop workflows, quality
+- [x] family specs classify and name critical desktop workflows, quality
       evidence aggregates their owners, scenarios, and review status, and an
       empty classification cannot satisfy the manual-review gate by omission;
-- [ ] implementation evidence makes semantic, keyboard, browser, SSR, hydration,
+- [x] implementation evidence makes semantic, keyboard, browser, SSR, hydration,
       axe, public-type isolation, standalone bundle,
       [scenario bundle](./README.md#scenario-bundle), and manual review gates
       cumulative rather than substitutive;
-- [ ] every named component pattern has a semantic owner and minimum family-spec
+- [x] every named component pattern has a semantic owner and minimum family-spec
       keyboard and focus obligations;
-- [ ] the Tabs, FileUpload, DataTable, overlay, and contrast-helper findings are
+- [x] the Tabs, FileUpload, DataTable, overlay, and contrast-helper findings are
       `P1` contracts that v1.0 specs and migrations MUST NOT preserve;
-- [ ] downstream component architecture, quality, and family specifications can
+- [x] downstream component architecture, quality, and family specifications can
       cite these contracts without an unresolved interaction or accessibility
       decision; and
-- [ ] the PRD owner and Lyra maintainers have recorded the approvals assigned to
+- [x] the PRD owner and Lyra maintainers have recorded the approvals assigned to
       them by governance, and evidence records review against the published
       interaction standard without defining an additional approval role.

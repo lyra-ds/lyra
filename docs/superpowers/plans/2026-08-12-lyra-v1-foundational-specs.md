@@ -10,7 +10,10 @@
 
 ## Global Constraints
 
-- Scope is `@lyra-ds/styles`, `@lyra-ds/react`, and `@lyra-ds/alpine`; Blade, Vue, Svelte, Web Components, MCP, and production component changes remain out of scope.
+- Scope is `@lyra-ds/styles`, `@lyra-ds/react`, and `@lyra-ds/alpine`;
+  production Blade changes remain in the sibling `lyra-ds/blade` repository and
+  follow affected React contract stabilization, while Vue, Svelte, Web
+  Components, MCP, and production component changes remain out of scope.
 - The roadmap PRD at `docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md` is the governing product document.
 - Every new specification starts with `Status: Draft`, `Owner: Lyra maintainers`, and `Governing PRD` metadata.
 - Use RFC 2119 terms `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` only for normative requirements; define them once in the index.

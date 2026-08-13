@@ -5,31 +5,51 @@ description: Which package versions belong together, and which peers each one ex
 
 # Compatibility
 
-Every Lyra package versions independently. `@lyra-ds/styles` is the one they all share: it carries
-the appearance, and the others only emit its classes. That is why a styles upgrade is the one you
-schedule deliberately, and the rest follow their own pace.
+Styles, React, and Alpine release with independent SemVer. Each package receives only the bump its
+own public surface requires; an unchanged package keeps its version. When a shared CSS, markup,
+state, or behavior contract changes, the affected packages still release in one documented window
+with a shared compatibility and migration record.
 
-## Package matrix
+## Current versions
 
-| Package                     | Version | Depends on                                | Peers                                  |
-| --------------------------- | ------- | ----------------------------------------- | -------------------------------------- |
-| `@lyra-ds/styles`           | 0.4.2   | —                                         | none                                   |
-| `@lyra-ds/react`            | 0.4.2   | `@lyra-ds/styles`                         | `react >=18 <20`, `react-dom >=18 <20` |
-| `@lyra-ds/alpine`           | 0.4.0   | `@lyra-ds/styles`                         | `alpinejs >=3.13 <4`                   |
-| `lyra-ds/blade` (Packagist) | 0.10.0  | `@lyra-ds/styles`, `@lyra-ds/alpine ^0.4` | PHP >= 8.3, Laravel 12 or 13           |
+| Package           | Current version | Peers                                  |
+| ----------------- | --------------- | -------------------------------------- |
+| `@lyra-ds/styles` | 0.4.2           | none                                   |
+| `@lyra-ds/react`  | 0.4.2           | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/alpine` | 0.5.0           | `alpinejs >=3.13 <4`                   |
 
-The styles package is listed as a dependency in the sense that matters to you: the components emit
-classes it defines, so a version of styles that predates a component's classes renders unstyled
-markup. Nothing enforces that at install time, which is exactly why this table exists.
+## Tested compatibility
+
+| Styles range | React range | Alpine range | Status                                 |
+| ------------ | ----------- | ------------ | -------------------------------------- |
+| `=0.4.2`     | `=0.4.2`    | `=0.5.0`     | Tested together in the current release |
+
+These exact ranges are deliberately narrow: they record combinations the project has tested, not
+every combination an npm resolver can install. A later package release expands or replaces the row
+only after the shared contract has been verified.
 
 ## Reading the matrix
 
-- **Styles is the floor.** Upgrade it first, then whichever wrapper you use. Going the other way can
-  leave a new component's classes undefined for one deploy.
-- **The wrappers never talk to each other.** A project can use React on one surface and Blade on
-  another with a single copy of the CSS, and the two need not be on matching version numbers.
-- **Alpine is a peer of Blade, not a dependency.** The Composer package ships no JavaScript; the 29
-  interactive Blade components emit `x-data` and expect the plugin to be present at runtime.
+- **Styles is the shared visual contract.** React and Alpine emit its `.lyra-*` classes, so use a
+  tested row instead of assuming matching version numbers are compatible.
+- **React and Alpine do not depend on each other.** Install only the adapter your application uses,
+  or both when separate surfaces need them.
+- **Shared-contract releases are coordinated, not forced.** Every affected package receives its own
+  bump in the same release window; unaffected packages retain their versions.
+
+## Lyra v1.0 suite
+
+The Lyra v1.0 suite is declared only after Styles, React, and Alpine have each independently
+published `1.0.0` and a tested compatibility row records their mutual contract. One package reaching
+`1.0.0` early does not declare the suite complete.
+
+## Blade compatibility
+
+The current downstream release is `lyra-ds/blade` v0.10.0, a separately released Composer package
+with independent SemVer. It does not block the Lyra v1.0 suite, and compatibility with Styles and
+Alpine must come from the
+[Blade compatibility matrix](https://github.com/lyra-ds/blade#compatibility), not from the npm tuple
+above.
 
 ## Fonts
 

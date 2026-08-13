@@ -1,0 +1,39 @@
+---
+title: Support
+description: Component support and the environments Lyra v1.0 requires.
+---
+
+# Support
+
+## Component support
+
+<SupportMatrix />
+
+<h2 id="automated-browser-gate">Automated browser gate</h2>
+
+Lyra v1.0 requires an automated gate using Playwright 1.62.1 with Chromium revision 1234
+(`151.0.7922.34`), Firefox revision 1538 (`153.0`), and WebKit revision 2336 (`26.5`). The current
+CI is Chromium-only; Firefox and WebKit execution are a Phase 1 gap and no current matrix entry
+claims three-engine parity.
+
+## Manual assistive technology
+
+Every critical desktop workflow requires a Windows/NVDA record and a macOS/VoiceOver record.
+Automated results do not replace those reviews. Review iOS VoiceOver and Android TalkBack when a
+workflow has a mobile-specific scenario that differs from desktop.
+
+<h2 id="what-support-means">What support means</h2>
+
+The matrix uses only the CSS, Alpine-enhanced, React, and Unsupported levels. A level describes the
+documented adapter contract, not cross-adapter parity. Support means the applicable contract covers
+keyboard interaction, focus management and semantic markup; SSR and hydration; themes, forced
+colors, RTL, reduced motion, zoom, and reflow. Every Unsupported entry exposes its missing
+capability, reason, user impact, fallback, evidence status, and reevaluation owner.
+
+<h2 id="blade-timing">Blade timing</h2>
+
+Blade cells publish the CSS or Alpine-enhanced behavior present in the released
+`lyra-ds/blade` v0.10.0 artifact and its repository API snapshot. They do not claim parity with a
+future Lyra v1 contract. After an affected React contract stabilizes, Blade requires a separate
+compatibility update and evidence record. Blade is an existing downstream adapter and does not block
+Lyra v1.0.

@@ -1,10 +1,13 @@
 # Lyra v1.0 design and product principles
 
-**Status:** Draft
+**Status:** Approved
 
 **Date:** 2026-08-12
 
 **Owner:** Lyra maintainers
+
+**Approved:** 2026-08-13 by the PRD owner and Lyra maintainer after review
+against the published interaction standard
 
 **Scope:** Product identity, component ownership, inclusion decisions, stability,
 and public commitments for `@lyra-ds/styles`, `@lyra-ds/react`, and
@@ -246,7 +249,7 @@ The v1.0 scope MUST NOT include any of the following anti-goals, copied verbatim
 from the roadmap PRD and not expanded by this specification.
 
 - Shipping Vue, Svelte, or Web Components adapters before v1.0.
-- Refining the Blade project within this roadmap.
+- Making Blade evolution or release a Lyra v1.0 release blocker.
 - Making Zag.js the cross-framework foundation before those adapters become active scope.
 - Building an enterprise data grid with virtualization, editing, pivoting, or column authoring.
 - Replacing semantic CSS with Tailwind utilities.
@@ -269,24 +272,24 @@ do not erode the core set.
 
 Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
-- [ ] the job, audiences, CSS-first position, semantic tokens, white-label
+- [x] the job, audiences, CSS-first position, semantic tokens, white-label
       contract, React and Alpine boundary, and domain differentiation agree with
       the PRD and current architecture documentation;
-- [ ] each principle uses the normative language defined by the specification
+- [x] each principle uses the normative language defined by the specification
       index and does not expose an external primitive as a product requirement;
-- [ ] primitive, design-system component, and domain component have distinct,
+- [x] primitive, design-system component, and domain component have distinct,
       reviewable entry and exit rules;
-- [ ] the scorecard evaluates all eight required dimensions, defines its scoring
+- [x] the scorecard evaluates all eight required dimensions, defines its scoring
       evidence, and cannot override anti-goals or quality gates;
-- [ ] the native, external, or Lyra-owned decision framework yields one recorded
+- [x] the native, external, or Lyra-owned decision framework yields one recorded
       implementation direction and preserves a Lyra-owned public contract;
-- [ ] `Experimental`, `Beta`, `Stable`, and `Deprecated` map to the shared spec
+- [x] `Experimental`, `Beta`, `Stable`, and `Deprecated` map to the shared spec
       lifecycle, and `Stable` requires an `Implemented` spec;
-- [ ] public commitments and anti-goals match PRD sections 4 and 5 without added
+- [x] public commitments and anti-goals match PRD sections 4 and 5 without added
       scope;
-- [ ] icon policy retains Lucide, the curated registry, the escape hatch, an
+- [x] icon policy retains Lucide, the curated registry, the escape hatch, an
       organization adapter path, and a separate brand-icon policy;
-- [ ] downstream token, interaction, architecture, quality, and family specs can
+- [x] downstream token, interaction, architecture, quality, and family specs can
       cite these decisions without unresolved placeholders;
-- [ ] the PRD owner, design-system maintainers, and required accessibility
+- [x] the PRD owner, design-system maintainers, and required accessibility
       reviewer have recorded the approvals assigned to them by governance.

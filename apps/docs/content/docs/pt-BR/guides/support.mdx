@@ -1,0 +1,40 @@
+---
+title: Suporte
+description: Suporte dos componentes e os ambientes exigidos pelo Lyra v1.0.
+---
+
+# Suporte
+
+## Suporte dos componentes
+
+<SupportMatrix />
+
+<h2 id="automated-browser-gate">Gate automatizado de navegadores</h2>
+
+O Lyra v1.0 exige um gate automatizado com Playwright 1.62.1, Chromium revisão 1234
+(`151.0.7922.34`), Firefox revisão 1538 (`153.0`) e WebKit revisão 2336 (`26.5`). O CI atual usa
+apenas Chromium; executar Firefox e WebKit é uma lacuna da Fase 1, e nenhuma entrada atual da matriz
+afirma paridade entre os três engines.
+
+## Tecnologia assistiva manual
+
+Todo fluxo crítico de desktop exige um registro de Windows/NVDA e outro de macOS/VoiceOver. Os
+resultados automatizados não substituem essas revisões. Revise iOS VoiceOver e Android TalkBack
+quando um fluxo tiver um cenário específico de mobile que difira do desktop.
+
+<h2 id="what-support-means">O que suporte significa</h2>
+
+A matriz usa apenas os níveis CSS, com aprimoramento Alpine, React e Não compatível. Um nível
+descreve o contrato do adaptador documentado, não paridade entre adaptadores. Suporte significa que
+o contrato aplicável cobre teclado, gerenciamento de foco e markup semântico; SSR e hidratação;
+temas, cores forçadas, RTL, movimento reduzido, zoom e reflow. Toda entrada Não compatível expõe a
+capacidade ausente, o motivo, o impacto para quem usa, a alternativa, o status da evidência e quem
+reavaliará.
+
+<h2 id="blade-timing">Momento do Blade</h2>
+
+As células de Blade publicam o comportamento CSS ou com aprimoramento Alpine presente no artefato
+lançado `lyra-ds/blade` v0.10.0 e no snapshot de API do repositório. Elas não afirmam paridade com
+um contrato futuro do Lyra v1. Depois que um contrato React afetado se estabilizar, Blade exige uma
+atualização de compatibilidade e um registro de evidência separados. Blade é um adaptador downstream
+existente e não bloqueia o Lyra v1.0.

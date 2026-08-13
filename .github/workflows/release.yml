@@ -1,13 +1,14 @@
 # Release — changesets flow: while changesets exist on main, this keeps a
 # "Version Packages" PR open/updated; when that PR merges (no changesets
-# left), it builds and publishes @lyra-ds/styles + @lyra-ds/react to npm and
-# creates the GitHub Releases from the changelogs.
+# left), it builds React and Alpine, publishes buildless Styles plus both
+# adapters independently to npm, then creates the GitHub Releases from the
+# changelogs.
 #
-# Auth is npm trusted publishing (OIDC) — configured on npmjs.com for both
+# Auth is npm trusted publishing (OIDC) — configured on npmjs.com for all three
 # packages (org lyra-ds, repo lyra, workflow release.yml, no environment).
 # The 0.1.0 release used a granular NPM_TOKEN because OIDC cannot perform a
 # package's FIRST publish (npm/cli#8544). OIDC was proven end-to-end on the
-# 0.1.1 release (SLSA provenance on both packages); the token and the
+# 0.1.1 release (SLSA provenance on Styles and React); the token and the
 # NPM_TOKEN repo secret were revoked on 2026-08-03. Two npm/cli#8976 lessons are load-bearing here:
 #   1. The publish runs in a TOP-LEVEL step, not through changesets/action's
 #      `publish` input — the OIDC env vars (ACTIONS_ID_TOKEN_REQUEST_*) do
@@ -76,7 +77,7 @@ jobs:
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Version PR
@@ -93,13 +94,12 @@ jobs:
       # Cheap guard so ordinary pushes to main (docs, site, CI) skip the
       # build+publish machinery: only proceed when the local version is not
       # on the registry yet. `changeset publish` is idempotent anyway — this
-      # only saves the pointless react build on every unrelated push.
+      # only saves the pointless adapter builds on every unrelated push.
       - name: Check for unpublished versions
         id: unpublished
         if: steps.changesets.outputs.hasChangesets == 'false'
-        # Checks EVERY publishable package, not just the styles/react fixed
-        # group: @lyra-ds/alpine versions independently, so an alpine-only
-        # bump must also flip the guard (cross-review finding, plan 09 task 1).
+        # Checks every publishable package: a release of any independently
+        # versioned package must flip the guard.
         run: |
           pending=false
           for pkg in packages/styles packages/react packages/alpine; do
@@ -161,7 +161,7 @@ jobs:
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Describe snapshot
@@ -183,13 +183,11 @@ jobs:
       - name: Version packages for snapshot
         run: pnpm changeset version --snapshot snapshot
       - run: pnpm run build
-      - name: Publish @lyra-ds/styles snapshot (OIDC)
-        working-directory: packages/styles
+      - name: Publish versioned snapshots to npm (OIDC)
         # Top-level `run` on purpose — the OIDC exchange needs the step's own
-        # env (npm/cli#8976).
-        run: pnpm publish --tag snapshot --no-git-checks
-      - name: Publish @lyra-ds/react snapshot (OIDC)
-        working-directory: packages/react
-        # Top-level `run` on purpose — the OIDC exchange needs the step's own
-        # env (npm/cli#8976).
-        run: pnpm publish --tag snapshot --no-git-checks
+        # env (npm/cli#8976). Changesets publishes only packages versioned by
+        # the snapshot changesets, so independent Styles, React, and Alpine
+        # snapshots do not create empty releases for unaffected packages.
+        run: pnpm changeset publish --tag snapshot
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
