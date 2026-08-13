@@ -119,6 +119,34 @@ test('compareBaseline rejects reproducibility-critical tool and checksum drift',
   }
 });
 
+test('compareBaseline reports the exact measurement paths and values that drifted', () => {
+  const expected = baselineFixture();
+  expected.standalone = {
+    react: [{ assets: { javascript: { brotliBytes: 529 } } }],
+  };
+  expected.scenarios = {
+    form: { assets: { javascript: { rawBytes: 20_553 } } },
+  };
+  const actual = structuredClone(expected);
+  actual.standalone.react[0].assets.javascript.brotliBytes = 530;
+  actual.scenarios.form.assets.javascript.rawBytes = 20_554;
+
+  assert.throws(
+    () => compareBaseline(expected, actual),
+    (error) => {
+      assert.match(
+        error.message,
+        /standalone\.react\[0\]\.assets\.javascript\.brotliBytes: expected 529, actual 530/,
+      );
+      assert.match(
+        error.message,
+        /scenarios\.form\.assets\.javascript\.rawBytes: expected 20553, actual 20554/,
+      );
+      return true;
+    },
+  );
+});
+
 test('baseline artifact writes are immutable', async () => {
   const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-test-'));
   try {

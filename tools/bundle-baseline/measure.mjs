@@ -628,6 +628,32 @@ export function portableBaselineProjection(baseline) {
   };
 }
 
+function baselineDifferences(expected, actual, path, differences = []) {
+  if (Object.is(expected, actual)) return differences;
+
+  const expectedIsObject = expected !== null && typeof expected === 'object';
+  const actualIsObject = actual !== null && typeof actual === 'object';
+  if (!expectedIsObject || !actualIsObject || Array.isArray(expected) !== Array.isArray(actual)) {
+    differences.push(
+      `${path}: expected ${JSON.stringify(expected)}, actual ${JSON.stringify(actual)}`,
+    );
+    return differences;
+  }
+
+  if (Array.isArray(expected)) {
+    const length = Math.max(expected.length, actual.length);
+    for (let index = 0; index < length; index += 1) {
+      baselineDifferences(expected[index], actual[index], `${path}[${index}]`, differences);
+    }
+    return differences;
+  }
+
+  for (const key of new Set([...Object.keys(expected), ...Object.keys(actual)])) {
+    baselineDifferences(expected[key], actual[key], `${path}.${key}`, differences);
+  }
+  return differences;
+}
+
 export function compareBaseline(expected, actual) {
   const sections = [
     'schemaVersion',
@@ -644,7 +670,18 @@ export function compareBaseline(expected, actual) {
     (section) =>
       JSON.stringify(expectedPortable[section]) !== JSON.stringify(actualPortable[section]),
   );
-  if (drift.length > 0) throw new Error(`bundle baseline drift in: ${drift.join(', ')}`);
+  if (drift.length > 0) {
+    const differences = drift.flatMap((section) =>
+      baselineDifferences(expectedPortable[section], actualPortable[section], section),
+    );
+    const visibleDifferences = differences.slice(0, 20);
+    const omitted = differences.length - visibleDifferences.length;
+    const detail = [
+      ...visibleDifferences.map((difference) => `- ${difference}`),
+      ...(omitted > 0 ? [`- ${omitted} more difference${omitted === 1 ? '' : 's'} omitted`] : []),
+    ].join('\n');
+    throw new Error(`bundle baseline drift in: ${drift.join(', ')}\n${detail}`);
+  }
 }
 
 function baselineArtifactPaths(options = {}) {
