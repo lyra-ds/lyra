@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-08-13T16:52:24.309Z",
-  "revision": "6d5a832404e4404f7a5bd567695c64eac617e3b7",
+  "measuredAt": "2026-08-13T17:39:04.086Z",
+  "revision": "319a962b233d11bbd1776dd74ca25af409f3e294",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "linux 6.18.42-1-MANJARO",
@@ -10,7 +10,7 @@
     "pnpm": "11.13.1",
     "vite": "8.2.1",
     "sizeLimit": "12.1.0",
-    "lockfileSha256": "6e91cc7873c95a4b3777228e8dbfb4f25736af5ed09a82d877271dbe74c3185f",
+    "lockfileSha256": "fc29524a77a292a02d32bb910a142940e83ee51bf2be7403713edf78245a1907",
     "fixture": {
       "artifactInstallation": "offline tar extraction after frozen external install",
       "packageManager": "pnpm@11.13.1",

@@ -1,7 +1,7 @@
 # Lyra v1 bundle baseline
 
-- Revision: `6d5a832404e4404f7a5bd567695c64eac617e3b7`
-- Measured at: `2026-08-13T16:52:24.309Z`
+- Revision: `319a962b233d11bbd1776dd74ca25af409f3e294`
+- Measured at: `2026-08-13T17:39:04.086Z`
 - Owner: Lyra maintainers
 - Exact command: `pnpm baseline:bundles --write`
 - Environment: linux 6.18.42-1-MANJARO, x64, Node v24.18.0, pnpm 11.13.1
@@ -13,7 +13,7 @@
 - Lyra artifact installation: offline tar extraction after frozen external install
 - Externals: `react`, `react-dom`, `react-dom/client`
 - Brotli: mode=text, quality=11
-- Repository lockfile SHA-256: `6e91cc7873c95a4b3777228e8dbfb4f25736af5ed09a82d877271dbe74c3185f`
+- Repository lockfile SHA-256: `fc29524a77a292a02d32bb910a142940e83ee51bf2be7403713edf78245a1907`
 
 ## Packed artifacts
 

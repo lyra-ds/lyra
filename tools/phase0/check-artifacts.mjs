@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { parse } from 'yaml';
 
 const requiredHeadings = [
   'Status and owners',
@@ -40,6 +41,41 @@ const workflowLabels = [
   '.github/workflows/release.yml',
   '.github/workflows/sponsors.yml',
 ];
+
+export function validateNodeToolchain({
+  baseline,
+  nodeVersion,
+  workflows,
+  labels = workflows.map((_, index) => (index === 0 ? 'ci.yml' : `workflow-${index + 1}.yml`)),
+}) {
+  const errors = [];
+
+  if (!/^\d+\.\d+\.\d+$/.test(nodeVersion)) {
+    errors.push(`.nvmrc must pin an exact Node version; found "${nodeVersion}".`);
+  }
+  if (`v${nodeVersion}` !== baseline.environment.node) {
+    errors.push(
+      `.nvmrc ${nodeVersion} does not match bundle baseline Node ${baseline.environment.node}.`,
+    );
+  }
+
+  for (const [index, workflow] of workflows.entries()) {
+    const document = parse(workflow);
+    const jobs = Object.values(document?.jobs ?? {});
+    const steps = jobs.flatMap((job) => (Array.isArray(job?.steps) ? job.steps : []));
+    for (const step of steps) {
+      if (typeof step?.uses !== 'string' || !step.uses.startsWith('actions/setup-node@')) continue;
+      const versionFile = step.with?.['node-version-file'];
+      if (versionFile !== '.nvmrc') {
+        errors.push(
+          `${labels[index]} must configure every setup-node step from .nvmrc; found node-version-file="${String(versionFile)}".`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
 
 let template;
 
@@ -81,26 +117,12 @@ const [baselineText, nodeVersionText, ...workflowTexts] = await Promise.all([
 ]);
 const baseline = JSON.parse(baselineText);
 const nodeVersion = nodeVersionText.trim();
-const toolchainErrors = [];
-
-if (!/^\d+\.\d+\.\d+$/.test(nodeVersion)) {
-  toolchainErrors.push(`.nvmrc must pin an exact Node version; found "${nodeVersion}".`);
-}
-if (`v${nodeVersion}` !== baseline.environment.node) {
-  toolchainErrors.push(
-    `.nvmrc ${nodeVersion} does not match bundle baseline Node ${baseline.environment.node}.`,
-  );
-}
-
-for (const [index, workflow] of workflowTexts.entries()) {
-  const setupCount = workflow.match(/uses: actions\/setup-node@/g)?.length ?? 0;
-  const versionFileCount = workflow.match(/node-version-file:\s*\.nvmrc/g)?.length ?? 0;
-  if (setupCount !== versionFileCount) {
-    toolchainErrors.push(
-      `${workflowLabels[index]} must configure every setup-node step from .nvmrc; found ${versionFileCount}/${setupCount}.`,
-    );
-  }
-}
+const toolchainErrors = validateNodeToolchain({
+  baseline,
+  nodeVersion,
+  workflows: workflowTexts,
+  labels: workflowLabels,
+});
 
 if (toolchainErrors.length > 0) {
   console.error('Phase 0 Node toolchain is not reproducible:');

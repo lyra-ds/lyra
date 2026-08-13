@@ -90,10 +90,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Chromium MUST be installed BEFORE `pnpm run test`: the root test script is
-      # `pnpm -r --if-present run test`, which now recurses into packages/styles'
-      # Browser Mode suite (STY-03/STY-04). A fresh runner has no browser, so this
-      # install has to precede the test step or CI fails deterministically.
+      # Chromium MUST be installed BEFORE `pnpm run test`: the root test script recurses
+      # into packages/styles' Browser Mode suite (STY-03/STY-04). A fresh runner has no
+      # browser, so this install has to precede the test step or CI fails deterministically.
       - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm run test # recurses into @lyra-ds/styles Browser Mode suite (Phase 2)
       # Phase 2, STY-06: token/class parity script (fails on any handoff drift)
