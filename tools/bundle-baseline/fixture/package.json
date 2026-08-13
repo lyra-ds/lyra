@@ -4,11 +4,9 @@
   "type": "module",
   "packageManager": "pnpm@11.13.1",
   "dependencies": {
-    "@lyra-ds/alpine": "file:tarballs/lyra-ds-alpine-0.5.0.tgz",
-    "@lyra-ds/react": "file:tarballs/lyra-ds-react-0.4.2.tgz",
-    "@lyra-ds/styles": "file:tarballs/lyra-ds-styles-0.4.2.tgz",
     "@size-limit/preset-small-lib": "12.1.0",
     "alpinejs": "3.15.12",
+    "lucide-react": "1.30.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "size-limit": "12.1.0",

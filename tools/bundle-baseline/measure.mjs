@@ -236,11 +236,6 @@ function installFixture(tempRoot, tarballs) {
   const fixture = join(tempRoot, 'consumer');
   const store = join(tempRoot, 'pnpm-store');
   cpSync(FIXTURE_SOURCE, fixture, { recursive: true });
-  const fixtureTarballs = join(fixture, 'tarballs');
-  mkdirSync(fixtureTarballs, { recursive: true });
-  for (const tarball of Object.values(tarballs)) {
-    cpSync(tarball, join(fixtureTarballs, basename(tarball)));
-  }
   const packageManager = readJson(join(fixture, 'package.json')).packageManager;
   const pnpmVersion = run('pnpm', ['--version'], { cwd: REPO });
   if (packageManager !== `pnpm@${pnpmVersion}`) {
@@ -261,12 +256,35 @@ function installFixture(tempRoot, tarballs) {
   const installed = JSON.parse(
     run('pnpm', ['list', '--json', '--depth', 'Infinity', '--ignore-workspace'], { cwd: fixture }),
   );
+  const resolvedGraph = normalizeResolvedGraph(installed);
+  installPackedArtifacts(fixture, tarballs);
   return {
+    artifactInstallation: 'offline tar extraction after frozen external install',
     directory: fixture,
     lockfileSha256: sha256(readFileSync(join(fixture, 'pnpm-lock.yaml'))),
     packageManager,
-    resolvedGraph: normalizeResolvedGraph(installed),
+    resolvedGraph,
+    resolvedGraphSha256: sha256(JSON.stringify(resolvedGraph)),
   };
+}
+
+export function installPackedArtifacts(fixture, tarballs) {
+  const packages = {
+    react: '@lyra-ds/react',
+    alpine: '@lyra-ds/alpine',
+    styles: '@lyra-ds/styles',
+  };
+  for (const [key, tarball] of Object.entries(tarballs)) {
+    const packageName = packages[key];
+    if (!packageName) throw new Error(`unknown packed artifact: ${key}`);
+    const destination = join(fixture, 'node_modules', ...packageName.split('/'));
+    mkdirSync(destination, { recursive: true });
+    run('tar', ['-xzf', tarball, '--strip-components=1', '-C', destination]);
+    const installedName = readJson(join(destination, 'package.json')).name;
+    if (installedName !== packageName) {
+      throw new Error(`${key} tarball contains ${installedName}, expected ${packageName}`);
+    }
+  }
 }
 
 function normalizeResolvedDependencies(dependencies = {}) {
@@ -449,9 +467,11 @@ function environment(fixture, tarballs) {
     ),
     lockfileSha256: sha256(readFileSync(join(REPO, 'pnpm-lock.yaml'))),
     fixture: {
+      artifactInstallation: fixture.artifactInstallation,
       packageManager: fixture.packageManager,
       lockfileSha256: fixture.lockfileSha256,
       resolvedGraph: fixture.resolvedGraph,
+      resolvedGraphSha256: fixture.resolvedGraphSha256,
     },
     exactCommand: 'pnpm baseline:bundles --write',
     cacheState: 'cold: fresh temporary consumer and pnpm store',
@@ -526,6 +546,8 @@ function markdown(baseline) {
     `- Cache: ${baseline.environment.cacheState}`,
     `- Fixture package manager: ${baseline.environment.fixture.packageManager}`,
     `- Fixture lockfile SHA-256: \`${baseline.environment.fixture.lockfileSha256}\``,
+    `- Fixture external graph SHA-256: \`${baseline.environment.fixture.resolvedGraphSha256}\``,
+    `- Lyra artifact installation: ${baseline.environment.fixture.artifactInstallation}`,
     `- Externals: ${baseline.externals.map((item) => `\`${item}\``).join(', ')}`,
     `- Brotli: mode=${baseline.environment.brotli.mode}, quality=${baseline.environment.brotli.quality}`,
     `- Repository lockfile SHA-256: \`${baseline.environment.lockfileSha256}\``,

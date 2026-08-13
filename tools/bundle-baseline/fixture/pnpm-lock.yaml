@@ -8,21 +8,15 @@ importers:
 
   .:
     dependencies:
-      '@lyra-ds/alpine':
-        specifier: file:tarballs/lyra-ds-alpine-0.5.0.tgz
-        version: file:tarballs/lyra-ds-alpine-0.5.0.tgz(alpinejs@3.15.12)
-      '@lyra-ds/react':
-        specifier: file:tarballs/lyra-ds-react-0.4.2.tgz
-        version: file:tarballs/lyra-ds-react-0.4.2.tgz(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@lyra-ds/styles':
-        specifier: file:tarballs/lyra-ds-styles-0.4.2.tgz
-        version: file:tarballs/lyra-ds-styles-0.4.2.tgz
       '@size-limit/preset-small-lib':
         specifier: 12.1.0
         version: 12.1.0(size-limit@12.1.0)
       alpinejs:
         specifier: 3.15.12
         version: 3.15.12
+      lucide-react:
+        specifier: 1.30.0
+        version: 1.30.0(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -193,23 +187,6 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
-
-  '@lyra-ds/alpine@file:tarballs/lyra-ds-alpine-0.5.0.tgz':
-    resolution: {integrity: sha512-7/RZn96wN5NbY6PbHVhra0oR7TQ/wazAQKrK1uYq10JtR8Z61E0ubSZByT1DlNTVvqKQHCayLfhv4IPf3rLxpw==, tarball: file:tarballs/lyra-ds-alpine-0.5.0.tgz}
-    version: 0.5.0
-    peerDependencies:
-      alpinejs: '>=3.13 <4'
-
-  '@lyra-ds/react@file:tarballs/lyra-ds-react-0.4.2.tgz':
-    resolution: {integrity: sha512-SgFx5HzBE7LcX2sHBEPJF//1ew17ajBVWTmgDt1oKZR2WTiMrh6qeAuSzRT45AbaqaH1NUhzoYNVWpGvbhT7fA==, tarball: file:tarballs/lyra-ds-react-0.4.2.tgz}
-    version: 0.4.2
-    peerDependencies:
-      react: '>=18 <20'
-      react-dom: '>=18 <20'
-
-  '@lyra-ds/styles@file:tarballs/lyra-ds-styles-0.4.2.tgz':
-    resolution: {integrity: sha512-iG4VeYLUYMsrgGXEPr7VYwm3PttojbR5FPRaFi0wRF8cOUZskjU0uJ9hKZ4bk/xoaL7WAgLCyTWK1LOuhUo5Rw==, tarball: file:tarballs/lyra-ds-styles-0.4.2.tgz}
-    version: 0.4.2
 
   '@oxc-project/types@0.144.0':
     resolution: {integrity: sha512-nuhZIOLuI6TFQ32I/WnUx+SCPY7SdSKwgnFHydAuoS1+Z4BRcaP+RRJmGzl9lw+0OFF7UmaESf7KQRXaNLHypg==}
@@ -624,18 +601,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.2':
     optional: true
-
-  '@lyra-ds/alpine@file:tarballs/lyra-ds-alpine-0.5.0.tgz(alpinejs@3.15.12)':
-    dependencies:
-      alpinejs: 3.15.12
-
-  '@lyra-ds/react@file:tarballs/lyra-ds-react-0.4.2.tgz(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      lucide-react: 1.30.0(react@19.2.8)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-
-  '@lyra-ds/styles@file:tarballs/lyra-ds-styles-0.4.2.tgz': {}
 
   '@oxc-project/types@0.144.0': {}
 
