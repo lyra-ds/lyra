@@ -120,9 +120,19 @@ Lyra v1.0 will use a hybrid primitive architecture:
 - a shared conformance contract for React and Alpine;
 - no simultaneous Radix and Base UI overlay foundations in production.
 
-### 7.1 Recommended Radix adoption
+The active repository guidance currently excludes Radix and assigns a future
+behavior layer to Zag.js. This `Draft` proposes reconsidering that locked
+decision; it does not bypass it or authorize dependency adoption. Before any
+Radix, Base UI, or React Aria production change, maintainers MUST approve this
+PRD and the governing foundational and family specifications, approve an ADR
+that explicitly supersedes the conflicting repository decision, and update the
+repository guidance in the same decision wave. If that transition is rejected,
+this architecture and its implementation phases MUST be revised to comply with
+the active guidance before approval.
 
-| Lyra component        | Recommended primitive                    | Decision intent                                                                                  |
+### 7.1 Proposed Radix evaluation
+
+| Lyra component        | Candidate primitive                      | Evaluation intent                                                                                |
 | --------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Dialog                | Radix Dialog                             | Replace portal, focus scope, Escape, modal semantics, outside interaction, and focus restoration |
 | Drawer                | Radix Dialog                             | Share modal behavior while Lyra owns side placement and animation                                |
@@ -135,7 +145,11 @@ Lyra v1.0 will use a hybrid primitive architecture:
 | WorkspaceSwitcher     | Radix Popover or Dropdown infrastructure | Preserve Lyra domain API and presentation                                                        |
 | CreateWorkspaceDialog | Radix Dialog infrastructure              | Preserve the composed workflow while standardizing its modal foundation                          |
 
-Radix is the initial recommendation, not an unconditional selection. The overlay spike compares it with Base UI using the gates in this document. Exactly one becomes the production foundation.
+Radix is a candidate hypothesis, not a selected or preferred production
+foundation. The overlay spike compares it with Base UI, the incumbent Lyra
+implementation, and the active Zag.js direction using the gates in this
+document. The ADR MAY retain the incumbent approach; if it adopts a new
+foundation, exactly one may own equivalent production responsibilities.
 
 ### 7.2 React Aria evaluation
 
@@ -302,7 +316,7 @@ The phases are quality gates rather than calendar commitments. Work can be devel
 - Create a public behavior/support matrix by component and stack.
 - Record current standalone and scenario bundle baselines.
 - Define browser and assistive-technology support.
-- Create the Radix versus Base UI evaluation ADR template.
+- Create the overlay-foundation evaluation ADR template.
 - Define synchronized release/versioning policy for Styles, React, and Alpine.
 
 **Exit gate:** reproducible CI baseline, approved foundational specs, and no unresolved policy required by the first component-family spec.
@@ -326,7 +340,7 @@ The phases are quality gates rather than calendar commitments. Work can be devel
 **Outcome:** one reliable foundation powers overlays and menus.
 
 - Approve the overlay-foundation spec.
-- Run the Radix versus Base UI spike.
+- Run the overlay-foundation evaluation spike.
 - Select exactly one React overlay/menu foundation.
 - Introduce a Lyra-owned internal abstraction without leaking vendor types.
 - Migrate Dialog, Drawer, BottomSheet, Popover, Dropdown, and Tooltip.
@@ -358,7 +372,7 @@ The phases are quality gates rather than calendar commitments. Work can be devel
 - Spike Combobox.
 - Spike Calendar, DatePicker, and DateRangePicker as one family.
 - Spike TimeInput and TimePicker as one family.
-- Compare Tabs only if the selected Radix/Base UI approach cannot meet the approved API.
+- Compare Tabs only if the selected overlay foundation cannot meet the approved API.
 - Record adoption or rejection for each family.
 - Migrate only accepted families and delete superseded behavior.
 
@@ -488,6 +502,6 @@ The next work after approval of this PRD is documentation, not component migrati
 4. Component-architecture spec.
 5. Quality and performance spec.
 6. Overlay-foundation spec as the pilot family spec.
-7. Radix versus Base UI spike plan generated only after the overlay spec is approved.
+7. Overlay-foundation evaluation plan generated only after the overlay spec is approved.
 
 No production component code changes are authorized by this PRD alone.

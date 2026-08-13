@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Produce the five approved foundational frontend specifications that govern every Lyra v1.0 component-family spec and implementation wave.
+**Goal:** Produce the five foundational frontend specifications that govern every Lyra v1.0 component-family spec and implementation wave, and prepare them for maintainer approval.
 
 **Architecture:** Store the specifications as a numbered, cross-linked set under `docs/superpowers/specs/lyra-v1/`. A shared index owns lifecycle, vocabulary, normative language, and dependency order; each specification owns one decision domain and links to incumbent repository evidence instead of duplicating it. All five documents start as `Draft` and require explicit maintainer approval before their status changes.
 
@@ -16,7 +16,7 @@
 - Use RFC 2119 terms `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` only for normative requirements; define them once in the index.
 - Do not weaken the PRD gates: WCAG 2.2 AA, Chromium/Firefox/WebKit, NVDA/VoiceOver critical-flow review, SSR, public-type isolation, and bundle evidence remain mandatory.
 - Simple primitive migrations may add at most `+1.5 kB` Brotli per consumer entry; complex migrations may add at most `+3 kB`; larger changes require an ADR.
-- The documents describe contracts and acceptance criteria. They do not choose a Radix/Base UI winner, modify runtime code, or authorize implementation.
+- The documents describe contracts and acceptance criteria. They do not choose an overlay foundation, modify runtime code, or authorize implementation.
 - Existing public behavior is evidence, not automatically the desired v1.0 contract. Known audit defects must be named rather than normalized.
 - Each task creates a reviewable document and ends with formatting, structural checks, and a focused commit.
 
@@ -228,7 +228,7 @@ Specify light/dark/forced-colors, reduced motion, RTL, locale-sensitive formatti
 
 Define:
 
-- automated browser gate: current stable Chromium, Firefox, and WebKit supplied by the pinned Playwright version in the lockfile;
+- automated browser gate: the exact Chromium, Firefox, and WebKit revisions supplied by the pinned Playwright version in the lockfile;
 - critical manual desktop flows: NVDA with Firefox or Chromium on Windows, and VoiceOver with Safari on macOS;
 - mobile assistive-technology checks for components whose approved contract changes materially on touch or narrow viewports;
 - evidence format: browser, operating system, assistive technology/version, input method, scenario, expected result, actual result, and artifact link;

@@ -254,19 +254,36 @@ document that promises flash-free theming MUST apply the same resolution and
 storage key before first paint that its runtime adapter uses after hydration.
 Theme changes MUST preserve focus and MUST NOT replace meaningful content.
 
-A `[data-brand]` scope MUST define a valid `--brand` seed. Removing the brand
-MUST remove the attribute rather than set an empty seed. Brand derivation MUST
-map the seed to accent, hover, active, soft, soft-text, on-accent, focus, link,
-and accent-border roles in both light and dark presentation. It MAY also map the
-documented radius and font inputs. It MUST NOT change status meanings or assume
-that a generated color pair satisfies contrast without evidence.
+A `[data-brand]` scope MUST define `--brand` as one concrete, opaque CSS
+`<color>` accepted by every engine in the supported browser matrix. Validation
+MUST trim the value, parse it as a complete color rather than a declaration
+fragment, resolve it in an isolated element, and reject an empty value,
+CSS-wide keywords, `currentColor`, system colors, `transparent`, unresolved
+`var()` or `env()` references, relative colors, and any result whose alpha is
+less than `1`. Removing the brand MUST remove the attribute rather than set an
+empty seed.
 
-`--brand-contrast` MUST take precedence when a consumer supplies it. The default
-contrast derivation MUST retain a concrete browser-safe fallback, and a brand
-whose generated foreground or state pair misses this spec MUST provide an
-approved override or different seed before release. Consumer overrides MUST be
-scoped, syntactically valid, and complete enough that a missing value cannot
-erase essential content, state, or focus indication.
+The same grammar and validation boundary MUST apply to `--brand-contrast`.
+Validation MUST occur before derivation when brand configuration is loaded and
+in the Chromium, Firefox, and WebKit brand fixtures used by the release gate. A
+missing or invalid `--brand` MUST leave the complete default root token graph in
+effect and MUST NOT derive a partial brand graph. A missing or invalid
+`--brand-contrast` MUST use the concrete browser-safe default contrast fallback;
+it MUST NOT erase an otherwise valid brand scope. An adapter that accepts brand
+configuration MUST expose the invalid field and reason to its caller or
+diagnostic channel rather than silently accepting it.
+
+Brand derivation MUST map the validated seed to accent, hover, active, soft,
+soft-text, on-accent, focus, link, and accent-border roles in both light and
+dark presentation. It MAY also map the documented radius and font inputs. It
+MUST NOT change status meanings or assume that a generated color pair satisfies
+contrast without evidence. A valid `--brand-contrast` MUST take precedence over
+the default derivation. The release gate MUST verify every generated foreground,
+state, focus, and boundary pair against the applicable text or non-text contrast
+criterion in both themes. A failing pair MUST use an approved valid override or
+a different valid seed before release. Consumer overrides MUST be scoped,
+valid, and complete enough that a missing value cannot erase essential content,
+state, or focus indication.
 
 ## Interaction-state visuals
 

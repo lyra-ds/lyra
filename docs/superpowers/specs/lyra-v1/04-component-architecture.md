@@ -26,12 +26,14 @@ deterministic and useful before enhancement wherever a CSS or server-rendered
 baseline is claimed. External primitives MUST remain replaceable behind
 internal Lyra adapters.
 
-The three packages MUST use independent SemVer version numbers. A change to a
-shared contract MUST coordinate the affected releases and migration record, but
-an unaffected package MUST NOT receive an empty lockstep version bump. The Lyra
+After the version-policy transition defined below is approved and applied, the
+three packages MUST use independent SemVer version numbers. A change to a shared
+contract MUST coordinate the affected releases and migration record, but an
+unaffected package MUST NOT receive an empty lockstep version bump. The Lyra
 v1.0 suite MUST NOT be declared released until each package has independently
 published `1.0.0` and the public support matrix identifies compatible package
-ranges.
+ranges. Until that transition is complete, the repository's current lockstep
+policy remains operative.
 
 ## Package and responsibility boundaries
 
@@ -533,14 +535,24 @@ A component or API MUST NOT be stable merely because it appears in a stable
 package. Experimental and beta surfaces MUST remain visibly distinct in editor
 documentation, generated API references, examples, and the support matrix.
 
-### Current package-version policy
+### Proposed v1.0 package-version policy and transition
 
-`@lyra-ds/styles`, `@lyra-ds/react`, and `@lyra-ds/alpine` MUST be independently
-versioned. This resolves the v1.0 version-policy decision; family specs MUST NOT
-choose lockstep package versions. The current distinct versions are valid and
-MUST NOT be normalized with empty releases. At this specification's date,
-Styles and React are `0.4.2` while Alpine is `0.5.0`; these numbers are baseline
-evidence for the independent policy, not versions frozen by this document.
+The active [0.x versioning policy](../../../../VERSIONING.md) and Changesets fixed
+group version `@lyra-ds/styles` and `@lyra-ds/react` in lockstep; they remain the
+release source of truth while this specification is `Draft`. This specification
+proposes independently versioning `@lyra-ds/styles`, `@lyra-ds/react`, and
+`@lyra-ds/alpine` for v1.0. The proposal MUST NOT govern a release until
+maintainers approve this specification and the same transition updates
+`VERSIONING.md`, `CONTRIBUTING.md`, the Changesets fixed group, release
+automation, and public compatibility guidance. If maintainers reject the
+proposal, this section and every dependent family spec MUST be revised before
+this specification can become `Approved`.
+
+After that transition, family specs MUST NOT choose lockstep package versions.
+The current distinct versions are baseline evidence for planning, not versions
+frozen by this document, and MUST NOT be normalized with empty releases under
+the new policy. At this specification's date, Styles and React are `0.4.2` while
+Alpine is `0.5.0`.
 
 Before a package reaches `1.0.0`:
 
@@ -645,21 +657,92 @@ content and stable values:
   <p>Workspace details</p>
 </section>
 
-<!-- After: semantic triggers and real panels exist in server markup. -->
+<!-- After: native links expose every panel before Alpine initializes. -->
 <div x-data="lyraTabs({ defaultValue: 'details' })" class="lyra-tabs" data-lyra-tabs>
-  <div role="tablist" class="lyra-tabs__list">
-    <button type="button" role="tab" data-value="details">Details</button>
+  <nav
+    aria-label="Workspace sections"
+    data-lyra-tabs-fallback
+    x-bind:hidden="typeof ready !== 'undefined' && ready === true"
+  >
+    <a href="#details-panel">Details</a>
+    <a href="#activity-panel">Activity</a>
+  </nav>
+  <div
+    role="tablist"
+    aria-label="Workspace sections"
+    class="lyra-tabs__list"
+    data-lyra-tabs-enhanced
+    hidden
+    x-bind:hidden="typeof ready === 'undefined' || ready !== true"
+  >
+    <button
+      id="details-tab"
+      type="button"
+      role="tab"
+      data-value="details"
+      aria-controls="details-panel"
+      aria-selected="true"
+      tabindex="0"
+      x-bind:aria-selected="typeof ready !== 'undefined' && ready === true ? active === 'details' : true"
+      x-bind:tabindex="typeof ready !== 'undefined' && ready === true ? (active === 'details' ? 0 : -1) : 0"
+      x-bind:data-state="typeof ready !== 'undefined' && ready === true ? (active === 'details' ? 'active' : 'inactive') : null"
+    >
+      Details
+    </button>
+    <button
+      id="activity-tab"
+      type="button"
+      role="tab"
+      data-value="activity"
+      aria-controls="activity-panel"
+      aria-selected="false"
+      tabindex="-1"
+      x-bind:aria-selected="typeof ready !== 'undefined' && ready === true ? active === 'activity' : false"
+      x-bind:tabindex="typeof ready !== 'undefined' && ready === true ? (active === 'activity' ? 0 : -1) : -1"
+      x-bind:data-state="typeof ready !== 'undefined' && ready === true ? (active === 'activity' ? 'active' : 'inactive') : null"
+    >
+      Activity
+    </button>
   </div>
-  <section role="tabpanel" data-value="details" class="lyra-tabs__content">
+  <section
+    id="details-panel"
+    data-value="details"
+    class="lyra-tabs__content"
+    x-bind:role="typeof ready !== 'undefined' && ready === true ? 'tabpanel' : null"
+    x-bind:aria-labelledby="typeof ready !== 'undefined' && ready === true ? 'details-tab' : null"
+    x-bind:data-state="typeof ready !== 'undefined' && ready === true ? (active === 'details' ? 'active' : 'inactive') : null"
+    x-bind:hidden="typeof ready !== 'undefined' && ready === true && active !== 'details'"
+  >
     <h2>Details</h2>
     <p>Workspace details</p>
+  </section>
+  <section
+    id="activity-panel"
+    data-value="activity"
+    class="lyra-tabs__content"
+    x-bind:role="typeof ready !== 'undefined' && ready === true ? 'tabpanel' : null"
+    x-bind:aria-labelledby="typeof ready !== 'undefined' && ready === true ? 'activity-tab' : null"
+    x-bind:data-state="typeof ready !== 'undefined' && ready === true ? (active === 'activity' ? 'active' : 'inactive') : null"
+    x-bind:hidden="typeof ready !== 'undefined' && ready === true && active !== 'activity'"
+  >
+    <h2>Activity</h2>
+    <p>Workspace activity</p>
   </section>
 </div>
 ```
 
-These examples define the required migration shape, not the final Tabs names;
-the selection-family spec MUST approve the exact signatures, attributes,
-classes, and removal version before implementation.
+Before enhancement, the native links and both headed sections remain available;
+the enhanced tablist is hidden, and no panel has gained a tab role, state, or
+hidden value.
+The adapter MUST initialize `ready` as `false` and set it to `true` only after it
+has registered the triggers, panels, active value, and bindings. That successful
+transition MUST atomically hide the fallback navigation, expose the tablist,
+synchronize `aria-selected`, `tabindex`, `data-state`, and `hidden`, and preserve
+the stable ID relationships. Failed or absent initialization MUST leave `ready`
+false and the native fallback intact. These examples define the required
+migration shape, not the final Tabs names; the selection-family spec MUST
+approve the exact signatures, attributes, classes, and removal version before
+implementation.
 
 ## Component-family specification API template
 

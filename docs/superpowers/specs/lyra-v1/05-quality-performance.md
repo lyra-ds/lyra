@@ -24,8 +24,10 @@ validation, performance measurement, and manual assistive-technology review
 MUST complement one another; a passing layer MUST NOT substitute for a missing
 layer.
 
-WCAG 2.2 Level AA is the release baseline. Current stable Chromium, Firefox,
-and WebKit are required automated engines, and every critical desktop workflow
+WCAG 2.2 Level AA is the release baseline. The required automated engines are
+the exact Chromium, Firefox, and WebKit revisions supplied by the Playwright
+version pinned in the repository lockfile; independently selected browser
+releases MUST NOT be substituted in that gate. Every critical desktop workflow
 MUST receive the Windows/NVDA and macOS/VoiceOver reviews defined by the
 [interaction and accessibility specification](./03-interaction-accessibility.md#supported-browser-and-assistive-technology-matrix).
 The release artifact MUST also prove SSR, hydration, package exports, emitted
@@ -143,12 +145,13 @@ presence, form, event, and announcement contracts MUST run in real browsers.
 DOM emulation MUST NOT be the sole evidence for behavior that depends on CSS,
 layout, focus, accessibility trees, media queries, or browser event ordering.
 
-The automated v1.0 gate MUST use the current stable Chromium, Firefox, and
-WebKit builds supplied by the Playwright version pinned in the repository
-lockfile. Pull-request selection MAY be limited to affected families and shared
-infrastructure, but every selected interactive contract MUST run in all three
-engines. A Playwright upgrade MUST trigger the full interactive conformance
-suite in all three engines before the new version becomes the supported gate.
+The automated v1.0 gate MUST use the exact Chromium, Firefox, and WebKit
+revisions supplied by the Playwright version pinned in the repository lockfile;
+independently selected releases MUST NOT be substituted. Pull-request selection
+MAY be limited to affected families and shared infrastructure, but every
+selected interactive contract MUST run in all three engines. A Playwright
+upgrade MUST trigger the full interactive conformance suite in all three engines
+before the new version becomes the supported gate.
 
 ### 4. SSR and hydration tests
 
@@ -252,10 +255,17 @@ as a pass.
 ## Cadence, merge gates, and release gates
 
 All runs MUST identify the exact revision, lockfile, commands, selected tests,
-tool and browser versions, operating system, artifacts, and result. A cadence
-MAY reuse an unchanged, still-current artifact from a stricter run only when
-the manifest proves the artifact applies byte-for-byte to the candidate and no
-affected dependency, fixture, browser pin, or acceptance criterion changed.
+tool and browser versions, operating system and architecture, artifacts, and
+result. A cadence MAY reuse an unchanged, still-current artifact from a stricter
+run only when the manifest proves that the candidate artifact is byte-for-byte
+identical and every recorded measurement input is exactly equal. Those inputs
+include source and packed artifacts, dependency graph and lockfile, fixtures,
+acceptance criteria, tool and browser versions and configuration, operating
+system and architecture, production mode, target, define values, tree-shaking
+settings, externals, entry source, cache state, measurement command, and Brotli
+mode, quality, and dictionary parameters. A missing, unrecorded, or different
+input MUST rerun the applicable gate; an affected-input assertion alone MUST
+NOT authorize reuse.
 
 | Cadence                 | Required execution and evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Gate                                                                                                                                                                                                                                                                                                      |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -485,8 +495,10 @@ for the exact artifacts proposed for release. The manifest MUST contain:
   states, acceptance-criterion matrix, and approval links;
 - every package name, candidate version, source revision, tarball checksum,
   registry provenance or candidate artifact link, and compatible package range;
-- the operating systems, lockfile, exact commands, tool versions, selected and
-  omitted tests with reasons, start and completion times, and raw results;
+- the operating systems and versions, architectures, lockfile, exact commands,
+  tool versions including Playwright, exact automated browser revisions,
+  selected and omitted tests with reasons, start and completion times, and raw
+  results;
 - links to static, unit, Chromium, Firefox, WebKit, SSR, hydration,
   accessibility, visual, React/Alpine conformance, packaging, export, tarball,
   consumer-smoke, and exploratory artifacts;
@@ -554,9 +566,10 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
       React/Alpine conformance, packaging and consumer smoke, and manual review
       form cumulative layers with explicit pull-request, nightly, release-candidate,
       and release cadence;
-- [ ] the automated matrix preserves current stable Chromium, Firefox, and
-      WebKit from the pinned Playwright version plus required Windows/NVDA,
-      macOS/VoiceOver, and conditional mobile records;
+- [ ] the automated matrix preserves the exact Chromium, Firefox, and WebKit
+      revisions from the pinned Playwright version plus required Windows/NVDA,
+      macOS/VoiceOver, and conditional mobile records, and evidence records the
+      Playwright, browser, operating-system, and assistive-technology versions;
 - [ ] deterministic clocks, animations, environments, unique ports, isolated
       fixtures, retry evidence, failure classification, and owned quarantine
       prevent retry-only acceptance from proving a contract;
