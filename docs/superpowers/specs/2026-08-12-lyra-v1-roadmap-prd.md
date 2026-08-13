@@ -327,6 +327,12 @@ The phases are quality gates rather than calendar commitments. Work can be devel
 
 **Exit gate:** reproducible CI baseline, approved foundational specs, and no unresolved policy required by the first component-family spec.
 
+**Evidence:** Phase 0 completion is recorded in the
+[Lyra v1.0 Phase 0 evidence index](../baselines/lyra-v1/README.md). Phase 0
+defines the supported browser and assistive-technology matrix; Phase 1
+implements and exercises the three-browser automated gate and the manual
+assistive-technology workflows.
+
 ### Phase 1 — System accessibility
 
 **Outcome:** remove cross-catalog accessibility blockers.

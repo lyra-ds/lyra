@@ -38,6 +38,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
+      - run: pnpm phase0:check
+      - run: pnpm release-policy:check
       # actionlint — checksum-verified binary (never a remote script piped into a
       # shell). The download is tamper-evident: the release tarball is verified
       # against the sha256 checksum literal committed below before it executes.
@@ -111,6 +113,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
+      - run: pnpm baseline:bundles --check
       # Phase 5, GEN-01..GEN-03: declaration-driven docs drift guard; consumes dist.
       - run: node tools/docgen/generate.mjs --check
       - run: node tools/docgen/alpine.mjs --check
