@@ -679,9 +679,10 @@ each requirement objective enough to become an acceptance case:
 11. forced colors and reduced motion;
 12. errors, asynchronous states, cancellation, recovery, and announcements;
 13. React, Alpine, CSS, SSR, no-JavaScript, and unsupported-adapter boundaries;
-14. simple or complex migration classification, the applicable `+1.5 kB` or
-    `+3 kB` Brotli per-consumer-entry bundle budget, external dependency
-    decision, ADR exception when exceeded, and removal scope;
+14. simple or complex migration classification, the applicable
+    [bundle budget](./05-quality-performance.md#budgets-and-replacement-scope),
+    external dependency decision, ADR when that budget is exceeded, and removal
+    scope;
 15. browser, SSR, hydration, accessibility, visual, parity, and manual test
     matrix;
 16. breaking changes, deprecation timing, package versions, codemod decision,
@@ -766,10 +767,10 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
 - [ ] the external-primitive ADR template requires contract gain, rejected
       alternatives, browser and assistive-technology evidence, SSR result,
       standalone and scenario bundle deltas, removed code, and migration impact;
-- [ ] simple primitive migrations add at most `+1.5 kB` Brotli per consumer
-      entry, complex component migrations add at most `+3 kB`, and a larger
-      delta has an explicit approved ADR exception after replaced code is
-      removed and the production entry is measured;
+- [ ] migration classification and the applicable limit match the
+      [canonical Quality budgets](./05-quality-performance.md#budgets-and-replacement-scope),
+      and a larger delta has an explicit approved ADR exception after replaced
+      code is removed and the production entry is measured;
 - [ ] independent package SemVer, coordinated shared-contract releases, the
       three-package `1.0.0` suite gate, deprecation, unsafe removal, codemods, and
       migration examples form one resolved version policy;
