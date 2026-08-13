@@ -104,6 +104,22 @@ required classes and public data states, async outcomes, and the declared SSR
 and no-JavaScript baseline. Source structure and dependency choice are not parity
 requirements.
 
+## Accessibility conformance gate
+
+WCAG 2.2 Level AA MUST be the baseline and release gate for every component and
+adapter across all claimed states, themes, input methods, browsers, and
+assistive-technology support. A known WCAG 2.2 Level AA violation MUST NOT be
+hidden, filtered, allowlisted, silenced, or otherwise suppressed in a helper,
+test, report, support matrix, or release record. Missing evidence MUST NOT be
+recorded as a pass.
+
+Automated results MUST supplement rather than replace the keyboard, focus,
+zoom, reflow, forced-colors, and manual browser and assistive-technology evidence
+required by the interaction and accessibility specification. A component,
+adapter, primitive adoption, or release MUST NOT pass its architecture gate
+while a known Level AA violation remains in accepted output or a required
+browser or assistive-technology result is missing.
+
 ## React public API contract
 
 ### Native props and deliberate conflicts
@@ -437,26 +453,37 @@ dependencies. A temporary spike MAY compare alternatives outside the production
 entry, but the accepted implementation MUST have one owner and MUST NOT retain a
 fallback implementation without an approved separate responsibility.
 
+A simple primitive migration MUST add at most `+1.5 kB` Brotli per consumer
+entry. A complex component migration MUST add at most `+3 kB` Brotli per
+consumer entry. A delta above either limit MUST receive an explicit bundle
+exception in the adoption ADR with user-facing benefits, rejected alternatives,
+and maintainer approval. The production entry MUST be measured after replaced
+code and dependencies are removed; an existing budget MUST NOT be raised first
+to make a candidate pass. This specification owns the thresholds and adoption
+gate. The quality and performance specification MUST own the common measurement
+method, tooling, scenario definitions, and CI enforcement.
+
 ### External-primitive ADR evidence template
 
 Every adoption or replacement ADR MUST contain all fields below:
 
-| Field                            | Required evidence                                                                                                                                                    |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contract gain                    | Name the approved requirement the primitive satisfies better, the current failure, and the observable Lyra contract that remains unchanged or intentionally changes. |
-| Rejected alternatives            | Compare native HTML, the existing Lyra implementation, and viable primitive candidates against the same requirements; record why each was rejected.                  |
-| Browser and assistive technology | Provide automated Chromium, Firefox, and WebKit results plus the applicable manual Windows/NVDA and macOS/VoiceOver scenarios and any required mobile evidence.      |
-| SSR result                       | Record server render, first-client-render, hydration, portal, generated-ID, and no-JavaScript results for the exact revision.                                        |
-| Standalone bundle delta          | Report the built component entry before and after, with externals, compression method, tool version, and budget result.                                              |
-| Scenario delta                   | Report every representative application composition affected by the shared dependency and whether deduplication changes the total.                                   |
-| Removed code                     | List superseded Lyra files, exports, tests, dependencies, and byte totals removed; explain any retained responsibility.                                              |
-| Migration impact                 | Identify public API, DOM, state, event, CSS, package, adapter, and documentation effects with before/after examples and the release plan.                            |
+| Field                            | Required evidence                                                                                                                                                                                                                                                                                                           |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contract gain                    | Name the approved requirement the primitive satisfies better, the current failure, and the observable Lyra contract that remains unchanged or intentionally changes.                                                                                                                                                        |
+| Rejected alternatives            | Compare native HTML, the existing Lyra implementation, and viable primitive candidates against the same requirements; record why each was rejected.                                                                                                                                                                         |
+| Browser and assistive technology | Provide automated Chromium, Firefox, and WebKit results plus the applicable manual Windows/NVDA and macOS/VoiceOver scenarios and any required mobile evidence.                                                                                                                                                             |
+| SSR result                       | Record server render, first-client-render, hydration, portal, generated-ID, and no-JavaScript results for the exact revision.                                                                                                                                                                                               |
+| Standalone bundle delta          | Classify the change as a simple primitive migration with a `+1.5 kB` Brotli per-consumer-entry limit or a complex component migration with a `+3 kB` limit. Report the built component entry before and after, with externals, compression method, tool version, removed code, and budget or approved ADR-exception result. |
+| Scenario delta                   | Report every representative application composition affected by the shared dependency and whether deduplication changes the total.                                                                                                                                                                                          |
+| Removed code                     | List superseded Lyra files, exports, tests, dependencies, and byte totals removed; explain any retained responsibility.                                                                                                                                                                                                     |
+| Migration impact                 | Identify public API, DOM, state, event, CSS, package, adapter, and documentation effects with before/after examples and the release plan.                                                                                                                                                                                   |
 
 The ADR MUST identify the exact candidate and version, revision, measurement
 commands, expected results, actual results, owner, and approval. Adoption MUST
 NOT proceed when the gain is only reduced implementation effort, public types
-leak, SSR or accessibility evidence fails, the bundle gate fails without an
-approved exception, or replaced infrastructure remains duplicated.
+leak, SSR or WCAG 2.2 Level AA evidence fails, a known violation is suppressed,
+the bundle gate fails without an approved exception, or replaced infrastructure
+remains duplicated.
 
 ## API lifecycle, versioning, and migration
 
@@ -493,7 +520,10 @@ Before a package reaches `1.0.0`:
 After a package reaches `1.0.0`, SemVer MUST apply to its stable public
 contract:
 
-- a patch MUST contain backward-compatible fixes and documentation only;
+- a patch MUST preserve the stable public contract and MUST NOT add a public
+  feature or introduce an incompatible public API or behavior; it MAY contain
+  backward-compatible fixes, documentation, internal refactors, build or test
+  changes, and dependency updates that preserve that contract;
 - a minor MAY add backward-compatible APIs, states, components, or adapters and
   MAY deprecate existing ones; and
 - a major MUST identify any removal or incompatible source, type, package
@@ -616,7 +646,9 @@ each requirement objective enough to become an acceptance case:
 11. forced colors and reduced motion;
 12. errors, asynchronous states, cancellation, recovery, and announcements;
 13. React, Alpine, CSS, SSR, no-JavaScript, and unsupported-adapter boundaries;
-14. bundle budget, external dependency decision, and removal scope;
+14. simple or complex migration classification, the applicable `+1.5 kB` or
+    `+3 kB` Brotli per-consumer-entry bundle budget, external dependency
+    decision, ADR exception when exceeded, and removal scope;
 15. browser, SSR, hydration, accessibility, visual, parity, and manual test
     matrix;
 16. breaking changes, deprecation timing, package versions, codemod decision,
@@ -680,6 +712,10 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
       and token specifications;
 - [ ] observable parity permits stack-appropriate internals without weakening
       semantics, state, interaction, CSS, SSR, or no-JavaScript contracts;
+- [ ] WCAG 2.2 Level AA is the component, adapter, primitive-adoption, and
+      release baseline; known violations cannot be hidden or suppressed, and
+      automated evidence does not replace required manual browser and
+      assistive-technology evidence;
 - [ ] native props, deliberate conflicts, refs, DOM ownership, controlled,
       uncontrolled, read-only, compound, data-driven, slot, handler, provider,
       and async React rules each yield an unambiguous API decision;
@@ -697,6 +733,10 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
 - [ ] the external-primitive ADR template requires contract gain, rejected
       alternatives, browser and assistive-technology evidence, SSR result,
       standalone and scenario bundle deltas, removed code, and migration impact;
+- [ ] simple primitive migrations add at most `+1.5 kB` Brotli per consumer
+      entry, complex component migrations add at most `+3 kB`, and a larger
+      delta has an explicit approved ADR exception after replaced code is
+      removed and the production entry is measured;
 - [ ] independent package SemVer, coordinated shared-contract releases, the
       three-package `1.0.0` suite gate, deprecation, unsafe removal, codemods, and
       migration examples form one resolved version policy;
