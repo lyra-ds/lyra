@@ -176,6 +176,7 @@ normal repository review.
 
 | Date       | Change                                                                                                                             |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-13 | PRD owner and Lyra maintainer approved all five foundational specifications after technical and interaction-standard review.       |
 | 2026-08-13 | Recognized the released Blade port and added a non-blocking follow-up track after affected React contracts become stable.          |
 | 2026-08-12 | Restricted normative language to the five permitted terms and made lifecycle, authority, and inclusion gates explicitly normative. |
 | 2026-08-12 | Created the Lyra v1.0 specification index, lifecycle, vocabulary, and governance rules.                                            |

@@ -1,10 +1,12 @@
 # Lyra v1.0 — Product Requirements Document
 
-**Status:** Draft for repository review
+**Status:** Approved
 
 **Date:** 2026-08-12
 
 **Owners:** Lyra maintainers
+
+**Approved:** 2026-08-13 by the PRD owner and Lyra maintainer
 
 **Scope:** `@lyra-ds/styles`, `@lyra-ds/react`, and `@lyra-ds/alpine`
 

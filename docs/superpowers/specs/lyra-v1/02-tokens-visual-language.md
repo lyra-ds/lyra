@@ -1,10 +1,13 @@
 # Lyra v1.0 tokens and visual language
 
-**Status:** Draft
+**Status:** Approved
 
 **Date:** 2026-08-12
 
 **Owner:** Lyra maintainers
+
+**Approved:** 2026-08-13 by the PRD owner and Lyra maintainer after review
+against the published interaction standard
 
 **Scope:** Public visual tokens, theme and white-label contracts, component
 styling, interaction-state presentation, and visual accessibility requirements
@@ -418,36 +421,36 @@ or semantic-state assertion.
 
 Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
-- [ ] the three derived token tiers plus the external brand-input roots form an
+- [x] the three derived token tiers plus the external brand-input roots form an
       acyclic dependency model, preserve the closed radius and font exceptions,
       and distinguish public overrides from private implementation details;
-- [ ] naming, addition, value change, alias, deprecation, removal, fallback, and
+- [x] naming, addition, value change, alias, deprecation, removal, fallback, and
       browser-enhancement rules produce one reviewable decision path;
-- [ ] ownership covers `fonts.css`, `colors.css`, `typography.css`,
+- [x] ownership covers `fonts.css`, `colors.css`, `typography.css`,
       `spacing.css`, `effects.css`, `brand.css`, `base.css`, component CSS, and
       `compat-shadcn.css` without competing canonical sources;
-- [ ] baseline light, explicit light, dark, system preference, nested dark
+- [x] baseline light, explicit light, dark, system preference, nested dark
       scope, branded light, and branded dark behavior match the documented v1.0
       support boundary;
-- [ ] color roles, status meanings, typography roles, font loading, density,
+- [x] color roles, status meanings, typography roles, font loading, density,
       spacing, sizing, radius, elevation, borders, and focus requirements are
       explicit and verifiable;
-- [ ] rest, hover, active, focus-visible, selected, disabled, read-only,
+- [x] rest, hover, active, focus-visible, selected, disabled, read-only,
       loading, error, warning, and success each have visual requirements and a
       defined coexistence rule;
-- [ ] normal text, large text, required non-text UI, focus, generated brand
+- [x] normal text, large text, required non-text UI, focus, generated brand
       colors, and composited states have measured contrast requirements with no
       general color-pair allowlist;
-- [ ] forced-colors, color independence, reduced motion, and RTL rules preserve
+- [x] forced-colors, color independence, reduced motion, and RTL rules preserve
       meaning without color or motion alone;
-- [ ] raw-value exceptions are limited to intrinsic data visualization and
+- [x] raw-value exceptions are limited to intrinsic data visualization and
       documented consumer-provided values with contrast, forced-color, and
       non-color responsibilities;
-- [ ] change evidence identifies every impacted theme, state, public token,
+- [x] change evidence identifies every impacted theme, state, public token,
       class, component, adapter, compatibility mapping, parity result,
       screenshot, contrast result, and migration obligation;
-- [ ] downstream interaction, component architecture, quality, and
+- [x] downstream interaction, component architecture, quality, and
       component-family specifications can cite these contracts without an
       unresolved visual-language decision;
-- [ ] the PRD owner, design-system maintainers, and required accessibility
+- [x] the PRD owner, design-system maintainers, and required accessibility
       reviewer have recorded the approvals assigned to them by governance.

@@ -1,10 +1,13 @@
 # Lyra v1.0 component architecture
 
-**Status:** Draft
+**Status:** Approved
 
 **Date:** 2026-08-12
 
 **Owner:** Lyra maintainers
+
+**Approved:** 2026-08-13 by the PRD owner and Lyra maintainer, including the
+independent package SemVer transition
 
 **Scope:** Package responsibilities, public component APIs, composition,
 adapter equivalence, external-primitive isolation, server rendering, API
@@ -824,43 +827,43 @@ the user-visible failure rather than leave compatibility implicit.
 
 Before this document moves to `Approved`, reviewers MUST verify every criterion:
 
-- [ ] Styles, React, and Alpine have non-overlapping responsibilities, public
+- [x] Styles, React, and Alpine have non-overlapping responsibilities, public
       export boundaries, and CSS markup ownership consistent with the principles
       and token specifications;
-- [ ] observable parity permits stack-appropriate internals without weakening
+- [x] observable parity permits stack-appropriate internals without weakening
       semantics, state, interaction, CSS, SSR, or no-JavaScript contracts;
-- [ ] WCAG 2.2 Level AA is the component, adapter, primitive-adoption, and
+- [x] WCAG 2.2 Level AA is the component, adapter, primitive-adoption, and
       release baseline; known violations cannot be hidden or suppressed, and
       automated evidence does not replace required manual browser and
       assistive-technology evidence;
-- [ ] native props, deliberate conflicts, refs, DOM ownership, controlled,
+- [x] native props, deliberate conflicts, refs, DOM ownership, controlled,
       uncontrolled, read-only, compound, data-driven, slot, handler, provider,
       and async React rules each yield an unambiguous API decision;
-- [ ] React 18 and 19 remain in the required peer and verification range until a
+- [x] React 18 and 19 remain in the required peer and verification range until a
       separately approved package-policy change permits a major transition;
-- [ ] Alpine initialization, state reflection, events, cleanup, idempotency,
+- [x] Alpine initialization, state reflection, events, cleanup, idempotency,
       progressive enhancement, server markup, and React mapping are explicit;
-- [ ] React-only classification requires evidence and appears consistently in
+- [x] React-only classification requires evidence and appears consistently in
       the public support matrix and component documentation;
-- [ ] SSR, hydration, portals, IDs, environment-derived state, Alpine
+- [x] SSR, hydration, portals, IDs, environment-derived state, Alpine
       reconciliation, and no-JavaScript fallbacks have testable requirements;
-- [ ] every external primitive remains behind a Lyra adapter, leaks no public
+- [x] every external primitive remains behind a Lyra adapter, leaks no public
       types or documented vendor attributes, and replaces rather than duplicates
       superseded infrastructure;
-- [ ] the external-primitive ADR template requires contract gain, rejected
+- [x] the external-primitive ADR template requires contract gain, rejected
       alternatives, browser and assistive-technology evidence, SSR result,
       standalone and scenario bundle deltas, removed code, and migration impact;
-- [ ] migration classification and the applicable limit match the
+- [x] migration classification and the applicable limit match the
       [canonical Quality budgets](./05-quality-performance.md#budgets-and-replacement-scope),
       and a larger delta has an explicit approved ADR exception after replaced
       code is removed and the production entry is measured;
-- [ ] independent package SemVer, coordinated shared-contract releases, the
+- [x] independent package SemVer, coordinated shared-contract releases, the
       three-package `1.0.0` suite gate, deprecation, unsafe removal, codemods, and
       migration examples form one resolved version policy;
-- [ ] the family-spec template contains every PRD section plus exact TypeScript,
+- [x] the family-spec template contains every PRD section plus exact TypeScript,
       Alpine, CSS, semantic-outline, transition, compatibility, and migration
       artifacts; and
-- [ ] approval authority follows the [shared lifecycle](./README.md#lifecycle):
+- [x] approval authority follows the [shared lifecycle](./README.md#lifecycle):
       design-system maintainers approve the transition, the PRD owner also
       approves any product scope or v1.0 gate change, and required technical or
       accessibility reviews are recorded as evidence rather than as additional
