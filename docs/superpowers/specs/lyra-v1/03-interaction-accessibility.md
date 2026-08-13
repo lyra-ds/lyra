@@ -90,10 +90,11 @@ that produces the same outcome. A primary action MUST NOT be pointer-only.
 ## Focus contract
 
 Focus-visible presentation MUST satisfy the visual-state, contrast, and
-forced-colors requirements in the tokens and visual-language specification. It
-MUST remain visible while keyboard focus remains, MUST be distinct from hover,
-selection, validation, and active states, and MUST NOT be clipped by component
-overflow.
+forced-colors requirements in the
+[tokens and visual-language specification](./02-tokens-visual-language.md#interaction-state-visuals).
+It MUST remain visible while keyboard focus remains, MUST be distinct from
+hover, selection, validation, and active states, and MUST NOT be clipped by
+component overflow.
 
 DOM order MUST define a meaningful reading and focus sequence. Responsive CSS,
 portals, and visual reordering MUST NOT create a sequence that changes meaning
@@ -147,8 +148,8 @@ spec MUST define whether a read-only control remains in sequential focus based
 on its native semantics and user need.
 
 Disabled and read-only presentation MUST satisfy the interaction-state rules in
-the visual-language specification. Neither state MAY hide required validation,
-status, or explanatory content.
+the [tokens and visual-language specification](./02-tokens-visual-language.md#interaction-state-visuals).
+Neither state MAY hide required validation, status, or explanatory content.
 
 ## Pointer, touch, and target contract
 
@@ -270,7 +271,8 @@ records that the condition is semantically inapplicable:
 
 - Light, dark, branded, and forced-color presentations MUST preserve the same
   content, accessible name, state, focus, and available operations. Their visual
-  output MUST satisfy the tokens and visual-language specification.
+  output MUST satisfy the
+  [tokens and visual-language specification](./02-tokens-visual-language.md#themes-and-white-label-behavior).
 - Under `prefers-reduced-motion: reduce`, state transitions MUST remain complete
   and understandable without decorative or spatial motion. Focus, dismissal,
   restoration, and asynchronous completion MUST NOT depend on an animation end
@@ -342,14 +344,16 @@ release matrix.
 
 Every family spec MUST name its critical desktop workflows and map each one to
 manual scenario identifiers. The classification MUST include every workflow
-whose failure would meet the shared `P1` definition, including loss of access to
-a critical task, required accessibility guarantee, or safety guarantee.
+whose failure would meet the shared [`P1`](./README.md#p1) definition, including
+loss of access to a critical task, required accessibility guarantee, or safety
+guarantee.
 
 Quality evidence MUST publish the aggregate list, owning family spec, scenario
 identifiers, and current review status. If a family claims that it has no
 critical desktop workflow, it MUST enumerate its supported workflows, record
-the evidence that none meets the `P1` definition, and receive Lyra-maintainer
-approval; omission or an empty matrix MUST NOT satisfy this requirement.
+the evidence that none meets the [`P1`](./README.md#p1) definition, and receive
+Lyra-maintainer approval; omission or an empty matrix MUST NOT satisfy this
+requirement.
 
 Every named critical desktop workflow MUST receive both of these manual reviews:
 
@@ -377,9 +381,10 @@ Every manual evidence record MUST contain:
 - artifact link.
 
 An artifact MAY be a test record, recording, screenshot, trace, or linked issue
-appropriate to the result. A failure MUST be assigned the shared `P1`, `P2`, or
-`P3` severity and MUST link to the affected acceptance criterion. Missing
-evidence MUST NOT be recorded as a pass.
+appropriate to the result. A failure MUST be assigned the shared
+[`P1`](./README.md#p1), [`P2`](./README.md#p2), or [`P3`](./README.md#p3)
+severity and MUST link to the affected acceptance criterion. Missing evidence
+MUST NOT be recorded as a pass.
 
 Automated browser, axe, DOM, and keyboard coverage MUST NOT replace manual
 assistive-technology review for critical workflows. A Lyra v1.0 release

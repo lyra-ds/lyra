@@ -17,13 +17,14 @@ lifecycle, and versioning for `@lyra-ds/styles`, `@lyra-ds/react`, and
 ## Decision summary
 
 Lyra v1.0 MUST expose Lyra-owned contracts through a CSS visual core and
-stack-appropriate React and Alpine adapters. Public parity means equivalent
-observable semantics, states, operations, and outcomes for every adapter that
-claims support; it does not require identical source, dependencies, or catalog
-coverage. React MUST remain compatible with React 18 and 19. Server-rendered
-content MUST be deterministic and useful before enhancement wherever a CSS or
-server-rendered baseline is claimed. External primitives MUST remain replaceable
-behind internal Lyra adapters.
+stack-appropriate React and Alpine adapters. Public
+[parity](./README.md#shared-vocabulary) means equivalent observable semantics,
+states, operations, and outcomes for every adapter that claims support; it does
+not require identical source, dependencies, or catalog coverage. React MUST
+remain compatible with React 18 and 19. Server-rendered content MUST be
+deterministic and useful before enhancement wherever a CSS or server-rendered
+baseline is claimed. External primitives MUST remain replaceable behind
+internal Lyra adapters.
 
 The three packages MUST use independent SemVer version numbers. A change to a
 shared contract MUST coordinate the affected releases and migration record, but
@@ -34,11 +35,12 @@ ranges.
 
 ## Package and responsibility boundaries
 
-The ownership levels and entry and exit rules in the design and product
-principles specification determine whether a unit is a primitive, design-system
-component, or domain component. Moving an implementation between native HTML,
-Lyra-owned infrastructure, and an external primitive MUST NOT change that public
-ownership level by itself.
+The ownership levels and entry and exit rules in the
+[design and product principles specification](./01-design-product-principles.md#ownership-levels)
+determine whether a unit is a primitive, design-system component, or domain
+component. Moving an implementation between native HTML, Lyra-owned
+infrastructure, and an external primitive MUST NOT change that public ownership
+level by itself.
 
 | Package           | Public responsibility                                                                                                                                         | Boundary                                                                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -49,7 +51,8 @@ ownership level by itself.
 The Styles package is the visual source of truth. React and Alpine MUST emit or
 enhance the required `.lyra-*` classes and documented semantic states instead of
 reimplementing appearance. They MUST consume semantic or approved component
-tokens according to the tokens and visual-language specification.
+tokens according to the
+[tokens and visual-language specification](./02-tokens-visual-language.md#token-tiers).
 
 ### Public and internal modules
 
@@ -115,10 +118,11 @@ recorded as a pass.
 
 Automated results MUST supplement rather than replace the keyboard, focus,
 zoom, reflow, forced-colors, and manual browser and assistive-technology evidence
-required by the interaction and accessibility specification. A component,
-adapter, primitive adoption, or release MUST NOT pass its architecture gate
-while a known Level AA violation remains in accepted output or a required
-browser or assistive-technology result is missing.
+required by the
+[interaction and accessibility specification](./03-interaction-accessibility.md#supported-browser-and-assistive-technology-matrix).
+A component, adapter, primitive adoption, or release MUST NOT pass its
+architecture gate while a known Level AA violation remains in accepted output
+or a required browser or assistive-technology result is missing.
 
 ## React public API contract
 
@@ -488,6 +492,11 @@ remains duplicated.
 ## API lifecycle, versioning, and migration
 
 ### Stability guarantees
+
+The [shared stability vocabulary](./README.md#shared-vocabulary) and the
+[product stability model](./01-design-product-principles.md#stability-model) are
+canonical. The guarantees below refine their source, package, and migration
+effects for public APIs.
 
 | Stability    | Guarantee                                                                                                                                                                                                                                                        |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

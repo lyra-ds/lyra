@@ -125,6 +125,10 @@ models and APIs even when lower-level interactions use an external foundation.
 
 ## Ownership levels
 
+The [shared vocabulary](./README.md#shared-vocabulary) defines primitive,
+component, and domain component. This section owns their catalog entry and exit
+rules.
+
 | Level                   | Entry rule                                                                                                                                                                | Exit rule                                                                                                                                                                                                                              |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primitive               | The capability MUST be a smallest reusable semantic or interaction building block that native HTML or a bounded internal/external primitive can express.                  | Lyra MUST promote it to a design-system component when Lyra needs to own a reusable public state, styling, or composition contract. Lyra MUST remove or replace it when evidence shows it no longer meets its internal responsibility. |
@@ -133,7 +137,7 @@ models and APIs even when lower-level interactions use an external foundation.
 
 An internal implementation MAY move between native, external, and Lyra-owned
 behavior without changing its ownership level. A public ownership-level change
-is substantive and MUST follow the specification change protocol.
+is substantive and MUST follow the [Change protocol](./README.md#change-protocol).
 
 ## Component inclusion scorecard
 
@@ -192,6 +196,11 @@ Base UI foundations. A dependency adopted for internal behavior MUST remain
 replaceable behind the Lyra public contract.
 
 ## Stability model
+
+The [shared lifecycle and stability vocabulary](./README.md#shared-vocabulary)
+is canonical. This model applies the `Beta` pre-stable stage and
+product-specific eligibility rules without redefining `Experimental`, `Stable`,
+or `Deprecated`.
 
 | Stability      | Required spec lifecycle                           | Public meaning                                                                                                                                                    |
 | -------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |

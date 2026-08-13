@@ -222,26 +222,26 @@ Only `Approved` specs may generate an implementation plan.
 
 The following specs must be approved before the first implementation wave:
 
-1. **Design and product principles**
+1. **[Design and product principles](./lyra-v1/01-design-product-principles.md)**
    - identity and differentiation;
    - component inclusion criteria;
    - boundary between primitive, design-system component, and domain component;
    - native versus external versus custom implementation rules.
 
-2. **Tokens and visual language**
+2. **[Tokens and visual language](./lyra-v1/02-tokens-visual-language.md)**
    - color, typography, spacing, radius, elevation, and density;
    - interaction states;
    - light, dark, white-label, and forced-colors behavior;
    - contrast requirements and exception policy.
 
-3. **Interaction and accessibility**
+3. **[Interaction and accessibility](./lyra-v1/03-interaction-accessibility.md)**
    - keyboard and focus contracts;
    - overlays, live regions, and announcements;
    - touch targets, reduced motion, RTL, locale, zoom, and reflow;
    - WCAG/APG baseline;
    - browser and assistive-technology support matrix.
 
-4. **Component architecture**
+4. **[Component architecture](./lyra-v1/04-component-architecture.md)**
    - compound versus monolithic APIs;
    - controlled and uncontrolled state;
    - slots, refs, DOM attributes, and composition;
@@ -249,7 +249,7 @@ The following specs must be approved before the first implementation wave:
    - React, Alpine, and CSS contract boundaries;
    - semver and deprecation.
 
-5. **Quality and performance**
+5. **[Quality and performance](./lyra-v1/05-quality-performance.md)**
    - per-entry and scenario bundle budgets;
    - SSR and hydration requirements;
    - contract, accessibility, screenshot, and cross-browser testing;

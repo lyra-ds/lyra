@@ -75,8 +75,8 @@ implementation, framework, tenant, or visual value.
   `--lyra-<component>-<part-or-property>[-<state>]`. A state suffix MUST use the
   state vocabulary in this document.
 - A consumer brand input MUST use one of the four names in the brand contract.
-  An additional brand input MUST pass the substantive-change protocol before it
-  becomes public.
+  An additional brand input MUST pass the
+  [Change protocol](./README.md#change-protocol) before it becomes public.
 
 A proposal to add a token MUST demonstrate repeated semantic need or a necessary
 consumer override, identify its tier and owner, and show that an existing token
@@ -369,8 +369,9 @@ dependency of Lyra components.
 
 A shadcn naming collision MUST be documented and tested as adapter behavior.
 Changes to shadcn expectations MAY update the adapter mapping only after the
-canonical Lyra token meaning remains unchanged or passes the substantive-change
-protocol. Lyra documentation MUST teach Lyra token names first.
+canonical Lyra token meaning remains unchanged or passes the
+[Change protocol](./README.md#change-protocol). Lyra documentation MUST teach
+Lyra token names first.
 
 ## Change evidence
 
