@@ -9,18 +9,20 @@ const [changesetsText, versioning, contributing, releaseWorkflow] = await Promis
 ]);
 
 const changesets = JSON.parse(changesetsText);
-const normalizedVersioning = versioning.replace(/[`*_@/—-]/g, ' ').replace(/\s+/g, ' ');
+const normalizedPolicy = `${versioning}\n${contributing}`
+  .replace(/[`*_@/—-]/g, ' ')
+  .replace(/\s+/g, ' ');
 
 assert.deepEqual(changesets.fixed, []);
 assert.deepEqual(changesets.linked, []);
 assert.match(versioning, /independent SemVer/);
 assert.match(versioning, /all three packages.*1\.0\.0/s);
 assert.doesNotMatch(
-  normalizedVersioning,
+  normalizedPolicy,
   /(?:lyra ds )?styles and (?:lyra ds )?react.{0,120}always share (?:a|one|the same).{0,30}version/i,
 );
 assert.doesNotMatch(
-  normalizedVersioning,
+  normalizedPolicy,
   /(?:lyra ds )?styles and (?:lyra ds )?react(?: packages)? (?:always )?(?:receive|publish|get) empty lockstep releases?/i,
 );
 assert.match(contributing, /affected package/);
