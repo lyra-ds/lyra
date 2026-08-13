@@ -352,7 +352,8 @@ are not workflow failures.
 Quality evidence MUST publish the aggregate list, owning family spec, scenario
 identifiers, and current review status. If a family claims that it has no
 critical desktop workflow, it MUST enumerate its supported workflows, record
-the evidence that none meets the [`P1`](./README.md#p1) definition, and receive
+the evidence that none meets the shared
+[critical-workflow](./README.md#critical-workflow) definition, and receive
 Lyra-maintainer approval; omission or an empty matrix MUST NOT satisfy this
 requirement.
 
