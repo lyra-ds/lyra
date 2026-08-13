@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import bladeApi from '../../../tools/blade-api/api.json';
 import { components } from './components';
 import { getSupportMatrixRows, supportLevels } from './support-matrix';
 
@@ -48,6 +49,66 @@ describe('public support matrix', () => {
         });
       }
     }
+  });
+
+  it('publishes all 71 released Blade entries at their declared behavioral level', () => {
+    const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
+    const bladeEntries = components.filter((entry) => entry.stacks.includes('blade'));
+
+    expect(bladeEntries).toHaveLength(71);
+    for (const entry of bladeEntries) {
+      const declaredBehavior = (['html', 'alpine'] as const).filter((stack) =>
+        entry.stacks.includes(stack),
+      );
+      expect(declaredBehavior, entry.slug).toHaveLength(1);
+      expect(rows.get(entry.slug)?.stacks.blade.level).toBe(
+        declaredBehavior[0] === 'html' ? 'css' : 'alpine-enhanced',
+      );
+    }
+  });
+
+  it('maps static and interactive Blade entries to CSS and Alpine-enhanced support', () => {
+    const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
+
+    expect(rows.get('button')?.stacks.blade).toMatchObject({
+      level: 'css',
+      evidence: {
+        href: '#blade-timing',
+        reevaluationOwnerKey: 'supportOwnerBladeMaintainers',
+        statusKey: 'supportEvidenceBladeReleased',
+      },
+    });
+    expect(rows.get('dialog')?.stacks.blade).toMatchObject({
+      level: 'alpine-enhanced',
+      evidence: {
+        href: '#blade-timing',
+        reevaluationOwnerKey: 'supportOwnerBladeMaintainers',
+        statusKey: 'supportEvidenceBladeReleased',
+      },
+    });
+  });
+
+  it('keeps components absent from Blade unsupported with gap metadata', () => {
+    const themeProvider = getSupportMatrixRows().find((row) => row.slug === 'theme-provider');
+
+    expect(themeProvider?.stacks.blade).toMatchObject({
+      level: 'unsupported',
+      gap: {
+        evidenceHref: '#blade-timing',
+        reevaluationOwnerKey: 'supportOwnerBladeMaintainers',
+        reasonKey: 'absenceBladeThemeProvider',
+      },
+    });
+  });
+
+  it('does not claim a released Blade component missing from the v0.10.0 API snapshot', () => {
+    expect(bladeApi.version).toBe('0.10.0');
+    const apiSlugs = new Set(bladeApi.components.map((component) => component.slug));
+    const supportedBladeSlugs = getSupportMatrixRows()
+      .filter((row) => row.stacks.blade.level !== 'unsupported')
+      .map((row) => row.slug);
+
+    expect(supportedBladeSlugs.filter((slug) => !apiSlugs.has(slug))).toEqual([]);
   });
 
   it('links every evidence status to a stable anchor in both support guides', () => {

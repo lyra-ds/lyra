@@ -16,6 +16,7 @@ import { arch, platform, release, tmpdir } from 'node:os';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { constants, brotliCompressSync } from 'node:zlib';
+import { format } from 'prettier';
 import { build } from 'vite';
 
 const TOOL_DIR = dirname(fileURLToPath(import.meta.url));
@@ -533,7 +534,7 @@ function formatBytes(bytes) {
   return `${bytes.toLocaleString('en-US')} B`;
 }
 
-function markdown(baseline) {
+async function markdown(baseline) {
   const lines = [
     '# Lyra v1 bundle baseline',
     '',
@@ -605,7 +606,7 @@ function markdown(baseline) {
     'The JSON beside this report is the machine-readable source of truth, including the complete Rolldown module-contribution records.',
     '',
   );
-  return lines.join('\n');
+  return format(lines.join('\n'), { parser: 'markdown', printWidth: 100, proseWrap: 'preserve' });
 }
 
 function assertCleanForWrite() {
@@ -613,7 +614,21 @@ function assertCleanForWrite() {
   if (dirty) throw new Error(`refusing --write from a dirty worktree:\n${dirty}`);
 }
 
-function compareBaseline(expected, actual) {
+export function portableBaselineProjection(baseline) {
+  const { operatingSystem: _operatingSystem, ...environment } = baseline.environment;
+
+  return {
+    schemaVersion: baseline.schemaVersion,
+    owner: baseline.owner,
+    environment,
+    externals: baseline.externals,
+    standalone: baseline.standalone,
+    scenarios: baseline.scenarios,
+    css: baseline.css,
+  };
+}
+
+export function compareBaseline(expected, actual) {
   const sections = [
     'schemaVersion',
     'owner',
@@ -623,10 +638,57 @@ function compareBaseline(expected, actual) {
     'scenarios',
     'css',
   ];
+  const expectedPortable = portableBaselineProjection(expected);
+  const actualPortable = portableBaselineProjection(actual);
   const drift = sections.filter(
-    (section) => JSON.stringify(expected[section]) !== JSON.stringify(actual[section]),
+    (section) =>
+      JSON.stringify(expectedPortable[section]) !== JSON.stringify(actualPortable[section]),
   );
   if (drift.length > 0) throw new Error(`bundle baseline drift in: ${drift.join(', ')}`);
+}
+
+function baselineArtifactPaths(options = {}) {
+  return {
+    baselineJson: options.baselineJson ?? BASELINE_JSON,
+    baselineMarkdown: options.baselineMarkdown ?? BASELINE_MARKDOWN,
+  };
+}
+
+function assertBaselineArtifactsWritable(options) {
+  const { baselineJson, baselineMarkdown } = baselineArtifactPaths(options);
+  if (existsSync(baselineJson) || existsSync(baselineMarkdown)) {
+    throw new Error('refusing to overwrite immutable bundle baseline evidence');
+  }
+}
+
+export async function writeBaselineArtifacts(baseline, options) {
+  const { baselineJson, baselineMarkdown } = baselineArtifactPaths(options);
+  assertBaselineArtifactsWritable({ baselineJson, baselineMarkdown });
+  const report = await markdown(baseline);
+  mkdirSync(dirname(baselineJson), { recursive: true });
+  mkdirSync(dirname(baselineMarkdown), { recursive: true });
+  writeFileSync(baselineJson, `${JSON.stringify(baseline, null, 2)}\n`);
+  writeFileSync(baselineMarkdown, report);
+}
+
+async function readBaselineArtifacts(options) {
+  const { baselineJson, baselineMarkdown } = baselineArtifactPaths(options);
+  if (!existsSync(baselineJson)) {
+    throw new Error(`bundle baseline does not exist: ${relative(REPO, baselineJson)}`);
+  }
+  if (!existsSync(baselineMarkdown)) {
+    throw new Error(`bundle baseline Markdown does not exist: ${relative(REPO, baselineMarkdown)}`);
+  }
+
+  const expected = readJson(baselineJson);
+  if (readFileSync(baselineMarkdown, 'utf8') !== (await markdown(expected))) {
+    throw new Error(`bundle baseline Markdown drift: ${relative(REPO, baselineMarkdown)}`);
+  }
+  return expected;
+}
+
+export async function checkBaselineArtifacts(actual, options) {
+  compareBaseline(await readBaselineArtifacts(options), actual);
 }
 
 async function main() {
@@ -636,23 +698,19 @@ async function main() {
   }
   if (mode === '--write') {
     assertCleanForWrite();
-    if (existsSync(BASELINE_JSON) || existsSync(BASELINE_MARKDOWN)) {
-      throw new Error('refusing to overwrite immutable bundle baseline evidence');
-    }
-  } else if (!existsSync(BASELINE_JSON)) {
-    throw new Error(`bundle baseline does not exist: ${relative(REPO, BASELINE_JSON)}`);
+    assertBaselineArtifactsWritable();
+  } else {
+    await readBaselineArtifacts();
   }
 
   const current = await collectBaseline();
   if (mode === '--write') {
-    mkdirSync(BASELINE_DIR, { recursive: true });
-    writeFileSync(BASELINE_JSON, `${JSON.stringify(current, null, 2)}\n`);
-    writeFileSync(BASELINE_MARKDOWN, markdown(current));
+    await writeBaselineArtifacts(current);
     console.log(`Wrote ${relative(REPO, BASELINE_JSON)} and ${relative(REPO, BASELINE_MARKDOWN)}`);
     return;
   }
 
-  compareBaseline(readJson(BASELINE_JSON), current);
+  await checkBaselineArtifacts(current);
   console.log('Bundle baseline check OK: package checksums, environment, and measurements match.');
 }
 

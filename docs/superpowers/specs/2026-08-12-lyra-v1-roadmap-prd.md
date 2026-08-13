@@ -126,17 +126,16 @@ Lyra v1.0 will use a hybrid primitive architecture:
 - a shared conformance contract for React and Alpine;
 - no simultaneous Radix and Base UI overlay foundations in production.
 
-The active repository guidance currently excludes Radix and assigns a future
-behavior layer to Zag.js. This `Draft` proposes reconsidering that locked
-decision; it does not bypass it or authorize dependency adoption. Before any
-Radix, Base UI, or React Aria production change, maintainers MUST approve this
-PRD and the governing foundational and family specifications, approve an ADR
-that explicitly supersedes the conflicting repository decision, and update the
-repository guidance in the same decision wave. If that transition is rejected,
-this architecture and its implementation phases MUST be revised to comply with
-the active guidance before approval.
+The active repository primitive guidance still excludes Radix and assigns a
+future behavior layer to Zag.js. Approval of this PRD and the foundational
+specifications authorizes evaluation; it does not supersede that restriction or
+authorize dependency adoption. Before any Radix, Base UI, or React Aria
+production change, maintainers MUST approve the governing family specification
+and an ADR that explicitly supersedes the conflicting repository decision, and
+update the repository guidance in the same decision wave. If the ADR retains
+the active guidance, the implementation MUST comply with it.
 
-### 7.1 Proposed Radix evaluation
+### 7.1 Radix evaluation
 
 | Lyra component        | Candidate primitive                      | Evaluation intent                                                                                |
 | --------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ |

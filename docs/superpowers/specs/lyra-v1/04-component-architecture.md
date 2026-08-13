@@ -7,7 +7,7 @@
 **Owner:** Lyra maintainers
 
 **Approved:** 2026-08-13 by the PRD owner and Lyra maintainer, including the
-independent package SemVer transition
+applied independent package SemVer policy
 
 **Scope:** Package responsibilities, public component APIs, composition,
 adapter equivalence, external-primitive isolation, server rendering, API
@@ -29,14 +29,11 @@ deterministic and useful before enhancement wherever a CSS or server-rendered
 baseline is claimed. External primitives MUST remain replaceable behind
 internal Lyra adapters.
 
-After the version-policy transition defined below is approved and applied, the
-three packages MUST use independent SemVer version numbers. A change to a shared
+The three packages use independent SemVer version numbers. A change to a shared
 contract MUST coordinate the affected releases and migration record, but an
-unaffected package MUST NOT receive an empty lockstep version bump. The Lyra
-v1.0 suite MUST NOT be declared released until each package has independently
-published `1.0.0` and the public support matrix identifies compatible package
-ranges. Until that transition is complete, the repository's current lockstep
-policy remains operative.
+unaffected package MUST NOT receive an empty version bump. The Lyra v1.0 suite
+MUST NOT be declared released until each package has independently published
+`1.0.0` and the public support matrix identifies compatible package ranges.
 
 ## Package and responsibility boundaries
 
@@ -538,23 +535,17 @@ A component or API MUST NOT be stable merely because it appears in a stable
 package. Experimental and beta surfaces MUST remain visibly distinct in editor
 documentation, generated API references, examples, and the support matrix.
 
-### Proposed v1.0 package-version policy and transition
+### v1.0 package-version policy
 
-The active [0.x versioning policy](../../../../VERSIONING.md) and Changesets fixed
-group version `@lyra-ds/styles` and `@lyra-ds/react` in lockstep; they remain the
-release source of truth while this specification is `Draft`. This specification
-proposes independently versioning `@lyra-ds/styles`, `@lyra-ds/react`, and
-`@lyra-ds/alpine` for v1.0. The proposal MUST NOT govern a release until
-maintainers approve this specification and the same transition updates
-`VERSIONING.md`, `CONTRIBUTING.md`, the Changesets fixed group, release
-automation, and public compatibility guidance. If maintainers reject the
-proposal, this section and every dependent family spec MUST be revised before
-this specification can become `Approved`.
+The approved and applied [0.x versioning policy](../../../../VERSIONING.md)
+independently versions `@lyra-ds/styles`, `@lyra-ds/react`, and
+`@lyra-ds/alpine`. `CONTRIBUTING.md`, the empty Changesets fixed and linked
+groups, release automation, and public compatibility guidance apply the same
+policy. Family specs MUST NOT choose lockstep package versions.
 
-After that transition, family specs MUST NOT choose lockstep package versions.
 The current distinct versions are baseline evidence for planning, not versions
 frozen by this document, and MUST NOT be normalized with empty releases under
-the new policy. At this specification's date, Styles and React are `0.4.2` while
+this policy. At this specification's date, Styles and React are `0.4.2` while
 Alpine is `0.5.0`.
 
 Before a package reaches `1.0.0`:

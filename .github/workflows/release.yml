@@ -183,13 +183,11 @@ jobs:
       - name: Version packages for snapshot
         run: pnpm changeset version --snapshot snapshot
       - run: pnpm run build
-      - name: Publish @lyra-ds/styles snapshot (OIDC)
-        working-directory: packages/styles
+      - name: Publish versioned snapshots to npm (OIDC)
         # Top-level `run` on purpose — the OIDC exchange needs the step's own
-        # env (npm/cli#8976).
-        run: pnpm publish --tag snapshot --no-git-checks
-      - name: Publish @lyra-ds/react snapshot (OIDC)
-        working-directory: packages/react
-        # Top-level `run` on purpose — the OIDC exchange needs the step's own
-        # env (npm/cli#8976).
-        run: pnpm publish --tag snapshot --no-git-checks
+        # env (npm/cli#8976). Changesets publishes only packages versioned by
+        # the snapshot changesets, so independent Styles, React, and Alpine
+        # snapshots do not create empty releases for unaffected packages.
+        run: pnpm changeset publish --tag snapshot
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
