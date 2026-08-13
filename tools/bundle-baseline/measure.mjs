@@ -20,6 +20,7 @@ import { build } from 'vite';
 
 const TOOL_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(TOOL_DIR, '..', '..');
+const FIXTURE_SOURCE = join(TOOL_DIR, 'fixture');
 const BASELINE_DIR = join(REPO, 'docs', 'superpowers', 'baselines', 'lyra-v1');
 const BASELINE_JSON = join(BASELINE_DIR, 'bundles.json');
 const BASELINE_MARKDOWN = join(BASELINE_DIR, 'bundles.md');
@@ -134,11 +135,15 @@ function moduleContributions(result, fixtureRoot) {
     .sort((left, right) => left.module.localeCompare(right.module));
 }
 
-async function viteBuild({ entry, externals, minify, name, root }) {
-  return build({
+async function viteBuild({ buildFunction, entry, externals, minify, name, root }) {
+  return buildFunction({
     configFile: false,
     root,
     logLevel: 'silent',
+    mode: 'production',
+    define: {
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    },
     build: {
       target: 'es2022',
       minify,
@@ -150,7 +155,7 @@ async function viteBuild({ entry, externals, minify, name, root }) {
         fileName: () => `${name}.js`,
       },
       rolldownOptions: {
-        external: externals,
+        external: (id) => externals.some((peer) => id === peer || id.startsWith(`${peer}/`)),
         output: {
           assetFileNames: `${name}.[ext]`,
           entryFileNames: `${name}.js`,
@@ -162,11 +167,33 @@ async function viteBuild({ entry, externals, minify, name, root }) {
 }
 
 export async function measureScenario(options) {
-  const { entry, name = 'scenario', root = dirname(entry), externals = EXTERNALS } = options;
-  const raw = await viteBuild({ entry, externals, minify: false, name, root });
-  const minified = await viteBuild({ entry, externals, minify: 'esbuild', name, root });
+  const {
+    buildFunction = build,
+    entry,
+    name = 'scenario',
+    root = dirname(entry),
+    externals = EXTERNALS,
+  } = options;
+  const raw = await viteBuild({ buildFunction, entry, externals, minify: false, name, root });
+  const minified = await viteBuild({
+    buildFunction,
+    entry,
+    externals,
+    minify: 'esbuild',
+    name,
+    root,
+  });
   const rawSummary = summarizeAssets(emittedAssets(raw));
-  const minifiedSummary = summarizeAssets(emittedAssets(minified));
+  const minifiedAssets = emittedAssets(minified);
+  const minifiedSummary = summarizeAssets(minifiedAssets);
+  const modules = moduleContributions(minified, root);
+  const developmentRuntime = 'react-jsx-runtime.development.js';
+  if (
+    modules.some(({ module }) => module.includes(developmentRuntime)) ||
+    minifiedAssets.some(({ source }) => textSource(source).includes(developmentRuntime))
+  ) {
+    throw new Error(`${name} bundled the React development JSX runtime`);
+  }
   const assets = {};
   for (const type of ['javascript', 'css']) {
     if (!rawSummary[type] && !minifiedSummary[type]) continue;
@@ -179,7 +206,7 @@ export async function measureScenario(options) {
   }
   return {
     assets,
-    modules: moduleContributions(minified, root),
+    modules,
   };
 }
 
@@ -207,42 +234,66 @@ function packArtifacts(tempRoot) {
 
 function installFixture(tempRoot, tarballs) {
   const fixture = join(tempRoot, 'consumer');
-  const cache = join(tempRoot, 'npm-cache');
-  mkdirSync(fixture, { recursive: true });
-  const dependencies = {
-    '@lyra-ds/alpine': `file:${tarballs.alpine}`,
-    '@lyra-ds/react': `file:${tarballs.react}`,
-    '@lyra-ds/styles': `file:${tarballs.styles}`,
-    '@size-limit/preset-small-lib': packageVersion(
-      join(REPO, 'node_modules', '@size-limit', 'preset-small-lib', 'package.json'),
-    ),
-    alpinejs: packageVersion(
-      join(REPO, 'packages', 'alpine', 'node_modules', 'alpinejs', 'package.json'),
-    ),
-    react: packageVersion(join(REPO, 'node_modules', 'react', 'package.json')),
-    'react-dom': packageVersion(join(REPO, 'node_modules', 'react-dom', 'package.json')),
-    'size-limit': packageVersion(join(REPO, 'node_modules', 'size-limit', 'package.json')),
-    vite: packageVersion(join(REPO, 'node_modules', 'vite', 'package.json')),
-  };
-  writeFileSync(
-    join(fixture, 'package.json'),
-    `${JSON.stringify({ name: 'lyra-bundle-baseline-consumer', private: true, type: 'module', dependencies }, null, 2)}\n`,
-  );
+  const store = join(tempRoot, 'pnpm-store');
+  cpSync(FIXTURE_SOURCE, fixture, { recursive: true });
+  const fixtureTarballs = join(fixture, 'tarballs');
+  mkdirSync(fixtureTarballs, { recursive: true });
+  for (const tarball of Object.values(tarballs)) {
+    cpSync(tarball, join(fixtureTarballs, basename(tarball)));
+  }
+  const packageManager = readJson(join(fixture, 'package.json')).packageManager;
+  const pnpmVersion = run('pnpm', ['--version'], { cwd: REPO });
+  if (packageManager !== `pnpm@${pnpmVersion}`) {
+    throw new Error(`fixture requires ${packageManager}, current pnpm is ${pnpmVersion}`);
+  }
   run(
-    'npm',
+    'pnpm',
     [
       'install',
+      '--frozen-lockfile',
+      '--ignore-workspace',
       '--ignore-scripts',
-      '--no-audit',
-      '--no-fund',
-      '--package-lock=false',
-      '--loglevel=error',
-      '--cache',
-      cache,
+      '--store-dir',
+      store,
     ],
     { cwd: fixture },
   );
-  return fixture;
+  const installed = JSON.parse(
+    run('pnpm', ['list', '--json', '--depth', 'Infinity', '--ignore-workspace'], { cwd: fixture }),
+  );
+  return {
+    directory: fixture,
+    lockfileSha256: sha256(readFileSync(join(fixture, 'pnpm-lock.yaml'))),
+    packageManager,
+    resolvedGraph: normalizeResolvedGraph(installed),
+  };
+}
+
+function normalizeResolvedDependencies(dependencies = {}) {
+  return Object.fromEntries(
+    Object.entries(dependencies)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, dependency]) => [
+        name,
+        {
+          version: dependency.version,
+          dependencies: normalizeResolvedDependencies(dependency.dependencies),
+        },
+      ]),
+  );
+}
+
+function normalizeResolvedGraph(installed) {
+  return installed.map((project) => ({
+    name: project.name,
+    dependencies: normalizeResolvedDependencies(project.dependencies),
+  }));
+}
+
+async function fixtureViteBuild(fixture) {
+  const vitePackage = readJson(join(fixture, 'node_modules', 'vite', 'package.json'));
+  const viteEntry = join(fixture, 'node_modules', 'vite', vitePackage.exports['.']);
+  return (await import(pathToFileURL(viteEntry).href)).build;
 }
 
 function tarballMetadata(tarballs) {
@@ -289,7 +340,13 @@ function measureSizeLimit(fixture, reactEntries, alpineEntries) {
   return JSON.parse(run(binary, ['--json'], { cwd: fixture }));
 }
 
-async function measureStandalone(fixture, reactEntries, alpineEntries, sizeLimitResults) {
+async function measureStandalone(
+  fixture,
+  reactEntries,
+  alpineEntries,
+  sizeLimitResults,
+  buildFunction,
+) {
   const standaloneDir = join(fixture, 'standalone');
   mkdirSync(standaloneDir, { recursive: true });
   const sizeByName = new Map(sizeLimitResults.map((result) => [result.name, result]));
@@ -299,6 +356,7 @@ async function measureStandalone(fixture, reactEntries, alpineEntries, sizeLimit
     const entryPath = join(standaloneDir, `react-${String(index + 1).padStart(2, '0')}.ts`);
     writeFileSync(entryPath, standaloneSource(packageName, entry.import));
     const measurement = await measureScenario({
+      buildFunction,
       entry: entryPath,
       externals: EXTERNALS,
       name: `react-${String(index + 1).padStart(2, '0')}`,
@@ -318,6 +376,7 @@ async function measureStandalone(fixture, reactEntries, alpineEntries, sizeLimit
     const entryPath = join(standaloneDir, `alpine-${String(index + 1).padStart(2, '0')}.ts`);
     writeFileSync(entryPath, standaloneSource('@lyra-ds/alpine', entry.import));
     const measurement = await measureScenario({
+      buildFunction,
       entry: entryPath,
       externals: ['alpinejs'],
       name: `alpine-${String(index + 1).padStart(2, '0')}`,
@@ -334,7 +393,7 @@ async function measureStandalone(fixture, reactEntries, alpineEntries, sizeLimit
   return { react, alpine };
 }
 
-async function measureScenarios(fixture) {
+async function measureScenarios(fixture, buildFunction) {
   const scenarioDir = join(fixture, 'scenarios');
   mkdirSync(scenarioDir, { recursive: true });
   const measurements = {};
@@ -342,6 +401,7 @@ async function measureScenarios(fixture) {
     const entry = join(scenarioDir, `${name}.ts`);
     cpSync(join(TOOL_DIR, 'scenarios', `${name}.ts`), entry);
     measurements[name] = await measureScenario({
+      buildFunction,
       entry,
       externals: EXTERNALS,
       name,
@@ -351,7 +411,7 @@ async function measureScenarios(fixture) {
   return measurements;
 }
 
-async function measureCss(fixture) {
+async function measureCss(fixture, buildFunction) {
   const cssDir = join(fixture, 'css');
   mkdirSync(cssDir, { recursive: true });
   const measurements = {};
@@ -361,6 +421,7 @@ async function measureCss(fixture) {
     const entry = join(cssDir, `entry-${index}.css`);
     writeFileSync(entry, `@import '${publicEntry}';\n`);
     const measurement = await measureScenario({
+      buildFunction,
       entry,
       externals: [],
       name: `css-${index}`,
@@ -382,11 +443,18 @@ function environment(fixture, tarballs) {
     architecture: arch(),
     node: process.version,
     pnpm: run('pnpm', ['--version'], { cwd: REPO }),
-    vite: packageVersion(join(fixture, 'node_modules', 'vite', 'package.json')),
-    sizeLimit: packageVersion(join(fixture, 'node_modules', 'size-limit', 'package.json')),
+    vite: packageVersion(join(fixture.directory, 'node_modules', 'vite', 'package.json')),
+    sizeLimit: packageVersion(
+      join(fixture.directory, 'node_modules', 'size-limit', 'package.json'),
+    ),
     lockfileSha256: sha256(readFileSync(join(REPO, 'pnpm-lock.yaml'))),
+    fixture: {
+      packageManager: fixture.packageManager,
+      lockfileSha256: fixture.lockfileSha256,
+      resolvedGraph: fixture.resolvedGraph,
+    },
     exactCommand: 'pnpm baseline:bundles --write',
-    cacheState: 'cold: fresh temporary consumer and npm cache',
+    cacheState: 'cold: fresh temporary consumer and pnpm store',
     brotli: {
       mode: 'text',
       quality: 11,
@@ -402,11 +470,12 @@ async function collectBaseline() {
     const tarballs = packArtifacts(tempRoot);
     console.log('Installing packed artifacts into a cold consumer fixture...');
     const fixture = installFixture(tempRoot, tarballs);
+    const buildFunction = await fixtureViteBuild(fixture.directory);
     const reactPackage = readJson(join(REPO, 'packages', 'react', 'package.json'));
     const alpinePackage = readJson(join(REPO, 'packages', 'alpine', 'package.json'));
     console.log('Running Size Limit against installed tarballs...');
     const sizeLimitResults = measureSizeLimit(
-      fixture,
+      fixture.directory,
       reactPackage['size-limit'],
       alpinePackage['size-limit'],
     );
@@ -414,15 +483,16 @@ async function collectBaseline() {
       `Measuring ${reactPackage['size-limit'].length + alpinePackage['size-limit'].length} standalone entries...`,
     );
     const standalone = await measureStandalone(
-      fixture,
+      fixture.directory,
       reactPackage['size-limit'],
       alpinePackage['size-limit'],
       sizeLimitResults,
+      buildFunction,
     );
     console.log('Measuring five fixed scenarios...');
-    const scenarios = await measureScenarios(fixture);
+    const scenarios = await measureScenarios(fixture.directory, buildFunction);
     console.log('Measuring four CSS public entries...');
-    const css = await measureCss(fixture);
+    const css = await measureCss(fixture.directory, buildFunction);
     return {
       schemaVersion: 1,
       measuredAt: new Date().toISOString(),
@@ -454,9 +524,11 @@ function markdown(baseline) {
     `- Environment: ${baseline.environment.operatingSystem}, ${baseline.environment.architecture}, Node ${baseline.environment.node}, pnpm ${baseline.environment.pnpm}`,
     `- Tools: Vite ${baseline.environment.vite}, Size Limit ${baseline.environment.sizeLimit}`,
     `- Cache: ${baseline.environment.cacheState}`,
+    `- Fixture package manager: ${baseline.environment.fixture.packageManager}`,
+    `- Fixture lockfile SHA-256: \`${baseline.environment.fixture.lockfileSha256}\``,
     `- Externals: ${baseline.externals.map((item) => `\`${item}\``).join(', ')}`,
     `- Brotli: mode=${baseline.environment.brotli.mode}, quality=${baseline.environment.brotli.quality}`,
-    `- Lockfile SHA-256: \`${baseline.environment.lockfileSha256}\``,
+    `- Repository lockfile SHA-256: \`${baseline.environment.lockfileSha256}\``,
     '',
     '## Packed artifacts',
     '',
