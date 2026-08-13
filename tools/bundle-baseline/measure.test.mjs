@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
@@ -11,6 +19,7 @@ import {
   compareBaseline,
   installPackedArtifacts,
   measureScenario,
+  runBundleBaselineCli,
   summarizeAssets,
   writeBaselineArtifacts,
 } from './measure.mjs';
@@ -199,6 +208,158 @@ test('committed baseline JSON and Markdown are canonical peers', async () => {
   const baseline = JSON.parse(readFileSync(paths.baselineJson, 'utf8'));
 
   await assert.doesNotReject(() => checkBaselineArtifacts(baseline, paths));
+});
+
+test('bundle CLI rejects anything except one mode argument', async () => {
+  for (const args of [[], ['--unknown'], ['--check', 'extra']]) {
+    await assert.rejects(
+      () => runBundleBaselineCli(args),
+      /usage: node tools\/bundle-baseline\/measure\.mjs --write\|--check/,
+    );
+  }
+});
+
+test('bundle CLI rejects a dirty --write before collection or file creation', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-cli-test-'));
+  try {
+    const paths = {
+      baselineJson: join(fixture, 'bundles.json'),
+      baselineMarkdown: join(fixture, 'bundles.md'),
+    };
+    let collections = 0;
+
+    await assert.rejects(
+      () =>
+        runBundleBaselineCli(['--write'], {
+          paths,
+          collect: async () => {
+            collections += 1;
+            return baselineFixture();
+          },
+          ensureClean: () => {
+            throw new Error('refusing --write from a dirty worktree:\n M tracked-file');
+          },
+        }),
+      /refusing --write from a dirty worktree/,
+    );
+    assert.equal(collections, 0);
+    assert.equal(existsSync(paths.baselineJson), false);
+    assert.equal(existsSync(paths.baselineMarkdown), false);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('bundle CLI --write creates immutable artifacts and refuses an overwrite before collection', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-cli-test-'));
+  try {
+    const paths = {
+      baselineJson: join(fixture, 'bundles.json'),
+      baselineMarkdown: join(fixture, 'bundles.md'),
+    };
+    const baseline = baselineFixture();
+    let collections = 0;
+    const collect = async () => {
+      collections += 1;
+      return baseline;
+    };
+
+    await runBundleBaselineCli(['--write'], {
+      paths,
+      collect,
+      ensureClean: () => {},
+    });
+    const originalJson = readFileSync(paths.baselineJson, 'utf8');
+    const originalMarkdown = readFileSync(paths.baselineMarkdown, 'utf8');
+
+    await assert.rejects(
+      () =>
+        runBundleBaselineCli(['--write'], {
+          paths,
+          collect,
+          ensureClean: () => {},
+        }),
+      /refusing to overwrite immutable bundle baseline evidence/,
+    );
+    assert.equal(collections, 1);
+    assert.equal(readFileSync(paths.baselineJson, 'utf8'), originalJson);
+    assert.equal(readFileSync(paths.baselineMarkdown, 'utf8'), originalMarkdown);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('bundle CLI --check rejects missing and stale Markdown before collection', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-cli-test-'));
+  try {
+    const paths = {
+      baselineJson: join(fixture, 'bundles.json'),
+      baselineMarkdown: join(fixture, 'bundles.md'),
+    };
+    const baseline = baselineFixture();
+    writeFileSync(paths.baselineJson, `${JSON.stringify(baseline, null, 2)}\n`);
+    let collections = 0;
+    const collect = async () => {
+      collections += 1;
+      return structuredClone(baseline);
+    };
+
+    await assert.rejects(
+      () => runBundleBaselineCli(['--check'], { paths, collect }),
+      /bundle baseline Markdown does not exist/,
+    );
+    writeFileSync(paths.baselineMarkdown, 'stale report\n');
+    await assert.rejects(
+      () => runBundleBaselineCli(['--check'], { paths, collect }),
+      /bundle baseline Markdown drift/,
+    );
+    assert.equal(collections, 0);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('bundle CLI --check compares one collection without modifying artifacts', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-cli-test-'));
+  try {
+    const paths = {
+      baselineJson: join(fixture, 'bundles.json'),
+      baselineMarkdown: join(fixture, 'bundles.md'),
+    };
+    const baseline = baselineFixture();
+    await writeBaselineArtifacts(baseline, paths);
+    const originalJson = readFileSync(paths.baselineJson, 'utf8');
+    const originalMarkdown = readFileSync(paths.baselineMarkdown, 'utf8');
+    let collections = 0;
+
+    const message = await runBundleBaselineCli(['--check'], {
+      paths,
+      collect: async () => {
+        collections += 1;
+        return structuredClone(baseline);
+      },
+    });
+    assert.match(message, /Bundle baseline check OK/);
+
+    const drift = structuredClone(baseline);
+    drift.environment.vite = '9.0.0';
+    await assert.rejects(
+      () =>
+        runBundleBaselineCli(['--check'], {
+          paths,
+          collect: async () => {
+            collections += 1;
+            return drift;
+          },
+        }),
+      /bundle baseline drift in: environment/,
+    );
+    assert.equal(collections, 2);
+    assert.equal(readFileSync(paths.baselineJson, 'utf8'), originalJson);
+    assert.equal(readFileSync(paths.baselineMarkdown, 'utf8'), originalMarkdown);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test('measureScenario builds a CSS library entry', async () => {

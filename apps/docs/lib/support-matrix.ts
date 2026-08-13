@@ -1,3 +1,4 @@
+import bladeApi from '../../../tools/blade-api/api.json';
 import {
   components,
   DEFAULT_SUPPORT_GAPS,
@@ -26,6 +27,11 @@ export type SupportMatrixRow = {
   slug: string;
   name: string;
   stacks: Record<DocStack, SupportCell>;
+};
+
+type BladeApiComponent = Pick<(typeof bladeApi.components)[number], 'binding' | 'slug'>;
+type SupportMatrixOptions = {
+  bladeComponents?: readonly BladeApiComponent[];
 };
 
 const CURRENT_EVIDENCE: SupportEvidence = {
@@ -61,25 +67,29 @@ function supportCell(
 }
 
 function bladeSupportCell(
+  slug: string,
   documented: DocStack[],
+  bladeComponents: readonly BladeApiComponent[],
   absence?: Partial<Record<DocStack, string>>,
 ): SupportCell {
   if (!documented.includes('blade')) return unsupported('blade', absence?.blade);
 
-  const behavioralStacks = (['html', 'alpine'] as const).filter((stack) =>
-    documented.includes(stack),
-  );
-  if (behavioralStacks.length !== 1) {
-    throw new Error('A documented Blade entry must declare exactly one HTML or Alpine contract.');
+  const releasedComponents = bladeComponents.filter((component) => component.slug === slug);
+  if (releasedComponents.length !== 1) {
+    throw new Error(
+      `Released Blade API snapshot must contain exactly one component for ${slug}; found ${releasedComponents.length}.`,
+    );
   }
 
   return {
-    level: behavioralStacks[0] === 'html' ? 'css' : 'alpine-enhanced',
+    level: releasedComponents[0].binding === null ? 'css' : 'alpine-enhanced',
     evidence: BLADE_EVIDENCE,
   };
 }
 
-export function getSupportMatrixRows(): SupportMatrixRow[] {
+export function getSupportMatrixRows({
+  bladeComponents = bladeApi.components,
+}: SupportMatrixOptions = {}): SupportMatrixRow[] {
   return components.map((entry) => ({
     slug: entry.slug,
     name: entry.name,
@@ -87,7 +97,7 @@ export function getSupportMatrixRows(): SupportMatrixRow[] {
       react: supportCell('react', entry.stacks, entry.absence),
       html: supportCell('html', entry.stacks, entry.absence),
       alpine: supportCell('alpine', entry.stacks, entry.absence),
-      blade: bladeSupportCell(entry.stacks, entry.absence),
+      blade: bladeSupportCell(entry.slug, entry.stacks, bladeComponents, entry.absence),
     },
   }));
 }

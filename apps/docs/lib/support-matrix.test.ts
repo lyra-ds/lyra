@@ -51,26 +51,26 @@ describe('public support matrix', () => {
     }
   });
 
-  it('publishes all 71 released Blade entries at their declared behavioral level', () => {
+  it('publishes all 71 released Blade entries at their snapshot binding level', () => {
     const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
     const bladeEntries = components.filter((entry) => entry.stacks.includes('blade'));
 
     expect(bladeEntries).toHaveLength(71);
     for (const entry of bladeEntries) {
-      const declaredBehavior = (['html', 'alpine'] as const).filter((stack) =>
-        entry.stacks.includes(stack),
+      const releasedComponents = bladeApi.components.filter(
+        (component) => component.slug === entry.slug,
       );
-      expect(declaredBehavior, entry.slug).toHaveLength(1);
+      expect(releasedComponents, entry.slug).toHaveLength(1);
       expect(rows.get(entry.slug)?.stacks.blade.level).toBe(
-        declaredBehavior[0] === 'html' ? 'css' : 'alpine-enhanced',
+        releasedComponents[0].binding === null ? 'css' : 'alpine-enhanced',
       );
     }
   });
 
-  it('maps static and interactive Blade entries to CSS and Alpine-enhanced support', () => {
+  it('uses the released Blade binding when page-level behavior differs', () => {
     const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
 
-    expect(rows.get('button')?.stacks.blade).toMatchObject({
+    expect(rows.get('toast')?.stacks.blade).toMatchObject({
       level: 'css',
       evidence: {
         href: '#blade-timing',
@@ -86,6 +86,25 @@ describe('public support matrix', () => {
         statusKey: 'supportEvidenceBladeReleased',
       },
     });
+  });
+
+  it('rejects a supported Blade slug missing from the released snapshot', () => {
+    const bladeComponents = bladeApi.components.filter((component) => component.slug !== 'toast');
+
+    expect(() => getSupportMatrixRows({ bladeComponents })).toThrow(
+      'Released Blade API snapshot must contain exactly one component for toast; found 0.',
+    );
+  });
+
+  it('rejects a duplicate supported Blade slug in the released snapshot', () => {
+    const dialogs = bladeApi.components.filter((component) => component.slug === 'dialog');
+    expect(dialogs).toHaveLength(1);
+
+    expect(() =>
+      getSupportMatrixRows({ bladeComponents: [...bladeApi.components, ...dialogs] }),
+    ).toThrow(
+      'Released Blade API snapshot must contain exactly one component for dialog; found 2.',
+    );
   });
 
   it('keeps components absent from Blade unsupported with gap metadata', () => {

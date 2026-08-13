@@ -691,32 +691,37 @@ export async function checkBaselineArtifacts(actual, options) {
   compareBaseline(await readBaselineArtifacts(options), actual);
 }
 
-async function main() {
-  const mode = process.argv[2];
-  if (!['--write', '--check'].includes(mode) || process.argv.length !== 3) {
+export async function runBundleBaselineCli(
+  args,
+  { paths, collect = collectBaseline, ensureClean = assertCleanForWrite } = {},
+) {
+  const mode = args[0];
+  if (!['--write', '--check'].includes(mode) || args.length !== 1) {
     throw new Error('usage: node tools/bundle-baseline/measure.mjs --write|--check');
   }
   if (mode === '--write') {
-    assertCleanForWrite();
-    assertBaselineArtifactsWritable();
+    ensureClean();
+    assertBaselineArtifactsWritable(paths);
   } else {
-    await readBaselineArtifacts();
+    await readBaselineArtifacts(paths);
   }
 
-  const current = await collectBaseline();
+  const current = await collect();
   if (mode === '--write') {
-    await writeBaselineArtifacts(current);
-    console.log(`Wrote ${relative(REPO, BASELINE_JSON)} and ${relative(REPO, BASELINE_MARKDOWN)}`);
-    return;
+    await writeBaselineArtifacts(current, paths);
+    const { baselineJson, baselineMarkdown } = baselineArtifactPaths(paths);
+    return `Wrote ${relative(REPO, baselineJson)} and ${relative(REPO, baselineMarkdown)}`;
   }
 
-  await checkBaselineArtifacts(current);
-  console.log('Bundle baseline check OK: package checksums, environment, and measurements match.');
+  await checkBaselineArtifacts(current, paths);
+  return 'Bundle baseline check OK: package checksums, environment, and measurements match.';
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => {
-    console.error(`bundle-baseline FAILED: ${error.message}`);
-    process.exitCode = 1;
-  });
+  runBundleBaselineCli(process.argv.slice(2))
+    .then((message) => console.log(message))
+    .catch((error) => {
+      console.error(`bundle-baseline FAILED: ${error.message}`);
+      process.exitCode = 1;
+    });
 }
