@@ -11,9 +11,10 @@ description: Component support and the environments Lyra v1.0 requires.
 
 ## Automated browser gate
 
-The automated browser gate uses Playwright 1.62.1 with Chromium revision 1234 (`151.0.7922.34`),
-Firefox revision 1538 (`153.0`), and WebKit revision 2336 (`26.5`). Interactive contracts are
-validated across all three engines.
+Lyra v1.0 requires an automated gate using Playwright 1.62.1 with Chromium revision 1234
+(`151.0.7922.34`), Firefox revision 1538 (`153.0`), and WebKit revision 2336 (`26.5`). The current
+CI is Chromium-only; Firefox and WebKit execution are a Phase 1 gap and no current matrix entry
+claims three-engine parity.
 
 ## Manual assistive technology
 
@@ -23,9 +24,11 @@ workflow has a mobile-specific scenario that differs from desktop.
 
 ## What support means
 
-Support means the documented adapter works with keyboard interaction, focus management and semantic
-markup; survives SSR and hydration; and honors themes, forced colors, RTL, reduced motion, and zoom
-and reflow. Each adapter's documented differences remain part of its contract.
+The matrix uses only the CSS, Alpine-enhanced, React, and Unsupported levels. A level describes the
+documented adapter contract, not cross-adapter parity. Support means the applicable contract covers
+keyboard interaction, focus management and semantic markup; SSR and hydration; themes, forced
+colors, RTL, reduced motion, zoom, and reflow. Every Unsupported entry exposes its missing
+capability, reason, user impact, fallback, evidence status, and reevaluation owner.
 
 ## Blade timing
 

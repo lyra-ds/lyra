@@ -11,9 +11,10 @@ description: Suporte dos componentes e os ambientes exigidos pelo Lyra v1.0.
 
 ## Gate automatizado de navegadores
 
-O gate automatizado usa Playwright 1.62.1 com Chromium revisão 1234 (`151.0.7922.34`), Firefox
-revisão 1538 (`153.0`) e WebKit revisão 2336 (`26.5`). Os contratos interativos são validados nos
-três engines.
+O Lyra v1.0 exige um gate automatizado com Playwright 1.62.1, Chromium revisão 1234
+(`151.0.7922.34`), Firefox revisão 1538 (`153.0`) e WebKit revisão 2336 (`26.5`). O CI atual usa
+apenas Chromium; executar Firefox e WebKit é uma lacuna da Fase 1, e nenhuma entrada atual da matriz
+afirma paridade entre os três engines.
 
 ## Tecnologia assistiva manual
 
@@ -23,9 +24,12 @@ quando um fluxo tiver um cenário específico de mobile que difira do desktop.
 
 ## O que suporte significa
 
-Suporte significa que o adaptador documentado funciona com teclado, gerenciamento de foco e markup
-semântico; sobrevive a SSR e hidratação; e respeita temas, cores forçadas, RTL, movimento reduzido,
-zoom e reflow. As diferenças documentadas de cada adaptador continuam parte de seu contrato.
+A matriz usa apenas os níveis CSS, com aprimoramento Alpine, React e Não compatível. Um nível
+descreve o contrato do adaptador documentado, não paridade entre adaptadores. Suporte significa que
+o contrato aplicável cobre teclado, gerenciamento de foco e markup semântico; SSR e hidratação;
+temas, cores forçadas, RTL, movimento reduzido, zoom e reflow. Toda entrada Não compatível expõe a
+capacidade ausente, o motivo, o impacto para quem usa, a alternativa, o status da evidência e quem
+reavaliará.
 
 ## Momento do Blade
 

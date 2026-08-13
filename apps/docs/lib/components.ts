@@ -15,6 +15,75 @@
  */
 import { SIBLING, type DocStack } from './stacks';
 
+/** The only support levels the public matrix may publish (Architecture §React, Alpine, and CSS equivalence). */
+export const supportLevels = ['css', 'alpine-enhanced', 'react', 'unsupported'] as const;
+
+export type SupportLevel = (typeof supportLevels)[number];
+
+/** A documented stack is classified separately from the set of tabs that a page happens to render. */
+export const DOCUMENTED_SUPPORT_LEVEL: Record<
+  Exclude<DocStack, 'blade'>,
+  Exclude<SupportLevel, 'unsupported'>
+> = {
+  react: 'react',
+  html: 'css',
+  alpine: 'alpine-enhanced',
+};
+
+export type SupportGapMetadata = {
+  missingCapabilityKey: string;
+  reasonKey: string;
+  userImpactKey: string;
+  fallbackKey: string;
+  evidenceStatusKey: string;
+  evidenceHref: string;
+  reevaluationOwnerKey: string;
+};
+
+/**
+ * Baseline disclosure for every missing adapter. Individual manifest entries may replace the
+ * reason key; the remaining fields stay centralized so a generic gap can never publish partial
+ * information.
+ */
+export const DEFAULT_SUPPORT_GAPS: Record<DocStack, SupportGapMetadata> = {
+  react: {
+    missingCapabilityKey: 'supportMissingReact',
+    reasonKey: 'absenceReactMissing',
+    userImpactKey: 'supportImpactReact',
+    fallbackKey: 'supportFallbackCssAlpine',
+    evidenceStatusKey: 'supportEvidenceNotRecorded',
+    evidenceHref: '#what-support-means',
+    reevaluationOwnerKey: 'supportOwnerComponentArchitecture',
+  },
+  html: {
+    missingCapabilityKey: 'supportMissingCss',
+    reasonKey: 'absenceHtmlNever',
+    userImpactKey: 'supportImpactCss',
+    fallbackKey: 'supportFallbackReact',
+    evidenceStatusKey: 'supportEvidenceNotRecorded',
+    evidenceHref: '#what-support-means',
+    reevaluationOwnerKey: 'supportOwnerComponentArchitecture',
+  },
+  alpine: {
+    missingCapabilityKey: 'supportMissingAlpine',
+    reasonKey: 'absenceAlpineStatic',
+    userImpactKey: 'supportImpactAlpine',
+    fallbackKey: 'supportFallbackReact',
+    evidenceStatusKey: 'supportEvidenceNotRecorded',
+    evidenceHref: '#what-support-means',
+    reevaluationOwnerKey: 'supportOwnerComponentArchitecture',
+  },
+  blade: {
+    missingCapabilityKey: 'supportMissingBladeV1Contract',
+    reasonKey: 'supportReasonBladeDownstream',
+    userImpactKey: 'supportImpactBlade',
+    fallbackKey: 'supportFallbackReact',
+    evidenceStatusKey: 'supportEvidenceNotRecorded',
+    evidenceHref: '#blade-timing',
+    reevaluationOwnerKey: 'supportOwnerBladeMaintainers',
+  },
+};
+
 export type ComponentGroup =
   | 'layout'
   | 'action'
@@ -47,12 +116,9 @@ export type ComponentEntry = {
  * Blade, "é estático" para Alpine —, e declarar isso 74 vezes no manifesto esconderia as
  * ausências que têm motivo próprio, que são as que interessam ao leitor.
  */
-const DEFAULT_ABSENCE: Record<DocStack, string> = {
-  react: 'absenceReactMissing',
-  html: 'absenceHtmlNever',
-  alpine: 'absenceAlpineStatic',
-  blade: 'absenceBladePending',
-};
+const DEFAULT_ABSENCE: Record<DocStack, string> = Object.fromEntries(
+  Object.entries(DEFAULT_SUPPORT_GAPS).map(([stack, gap]) => [stack, gap.reasonKey]),
+) as Record<DocStack, string>;
 
 const manifest: ComponentEntry[] = [
   { slug: 'container', name: 'Container', group: 'layout', stacks: ['react', 'html', 'blade'] },
