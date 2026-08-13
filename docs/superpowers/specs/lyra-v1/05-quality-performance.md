@@ -37,6 +37,11 @@ reported as the complete browser or SSR-and-hydration gate.
 
 ## Quality levels, severity, and service-level objectives
 
+The shared [`P1`](./README.md#p1), [`P2`](./README.md#p2),
+[`P3`](./README.md#p3), and
+[critical-workflow](./README.md#critical-workflow) definitions are canonical.
+This section refines their response expectations and merge and release effects.
+
 Severity describes user and contract impact, not implementation difficulty,
 component popularity, or the number of failing tests. A missing required result
 has the severity of the contract it leaves unproved. Each finding MUST link its
@@ -325,8 +330,9 @@ comparison MUST compress the identical minified production bytes in text mode
 at quality 11 with no custom dictionary; changing compression parameters
 invalidates the comparison.
 
-A standalone fixture MUST import one documented public consumer entry and only
-the component or adapter surface under measurement. Framework peers such as
+A standalone fixture MUST import one documented public
+[consumer entry](./README.md#consumer-entry) and only the component or adapter
+surface under measurement. Framework peers such as
 React, React DOM, or Alpine MAY be external only when the report lists them and
 uses the same external set before and after. A dependency introduced by the
 migration MUST NOT be excluded merely to improve the result. Shared-dependency
@@ -343,15 +349,18 @@ bytes; reports MAY additionally show binary units but MUST evaluate the limits
 in decimal bytes.
 
 A larger delta MUST receive an explicit exception in the external-primitive or
-architecture ADR. The ADR MUST identify the user-facing contract gain, rejected
-native, existing, and vendor alternatives, standalone and scenario results,
-CSS and runtime impact, removed code and dependencies, migration impact, owner,
-and maintainer approval. Existing budgets MUST NOT be raised before all replaced
-production runtime paths, exports, tests tied only to them, and dead dependencies
-are removed and the resulting production entry is measured. Reduced
-implementation effort alone MUST NOT justify an exception.
+architecture [ADR](./README.md#adr). The ADR MUST identify the user-facing
+contract gain, rejected native, existing, and vendor alternatives, standalone
+and scenario results, CSS and runtime impact, removed code and dependencies,
+migration impact, owner, and maintainer approval. Existing budgets MUST NOT be
+raised before all replaced production runtime paths, exports, tests tied only to
+them, and dead dependencies are removed and the resulting production entry is
+measured. Reduced implementation effort alone MUST NOT justify an exception.
 
 ### Representative scenario bundles
+
+The [scenario-bundle](./README.md#scenario-bundle) definition is canonical.
+This section owns the fixed compositions, measurement fields, and CI gate.
 
 CI MUST protect these five PRD compositions with fixed, reviewable entry
 fixtures:

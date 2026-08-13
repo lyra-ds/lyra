@@ -457,17 +457,22 @@ dependencies. A temporary spike MAY compare alternatives outside the production
 entry, but the accepted implementation MUST have one owner and MUST NOT retain a
 fallback implementation without an approved separate responsibility.
 
-A simple primitive migration MUST add at most `+1.5 kB` Brotli per consumer
-entry. A complex component migration MUST add at most `+3 kB` Brotli per
-consumer entry. A delta above either limit MUST receive an explicit bundle
-exception in the adoption ADR with user-facing benefits, rejected alternatives,
-and maintainer approval. The production entry MUST be measured after replaced
-code and dependencies are removed; an existing budget MUST NOT be raised first
-to make a candidate pass. This specification owns the thresholds and adoption
-gate. The quality and performance specification MUST own the common measurement
-method, tooling, scenario definitions, and CI enforcement.
+A simple primitive migration MUST add at most `+1.5 kB` Brotli per
+[consumer entry](./README.md#consumer-entry). A complex component migration MUST
+add at most `+3 kB` Brotli per consumer entry. A delta above either limit MUST
+receive an explicit bundle exception in the adoption [ADR](./README.md#adr) with
+user-facing benefits, rejected alternatives, and maintainer approval. The
+production entry MUST be measured after replaced code and dependencies are
+removed; an existing budget MUST NOT be raised first to make a candidate pass.
+This specification owns the thresholds and adoption gate. The
+[quality and performance specification](./05-quality-performance.md#reproducible-brotli-protocol)
+MUST own the common measurement method, tooling, scenario definitions, and CI
+enforcement.
 
 ### External-primitive ADR evidence template
+
+The shared [ADR definition](./README.md#adr) is canonical. This template owns
+the evidence required for an external-primitive adoption or replacement.
 
 Every adoption or replacement ADR MUST contain all fields below:
 
