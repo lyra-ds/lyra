@@ -579,6 +579,8 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
       commands and results, artifact links, the browser and assistive-technology
       matrix, bundle and runtime reports, known issues, consumer validations,
       migration guide, and approvals for the exact published bytes; and
-- [ ] design-system maintainers, the PRD owner for scope or v1.0 gate changes,
-      and required interaction, accessibility, security, and performance
-      reviewers have recorded the approvals assigned by specification governance.
+- [ ] approval authority follows the [shared lifecycle](./README.md#lifecycle):
+      design-system maintainers approve the transition, the PRD owner also
+      approves any product scope or v1.0 gate change, and required technical or
+      accessibility reviews are recorded as evidence rather than as additional
+      approval authorities.

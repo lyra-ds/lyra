@@ -452,11 +452,12 @@ sequence, accessibility-tree assertion, contrast measurement, reflow inspection,
 or assistive-technology record.
 
 A production migration or dependency-adoption record MUST additionally prove
-that public API types do not expose the selected primitive library and MUST
-include before/after standalone and [scenario bundle](./README.md#scenario-bundle)
-evidence against the approved budgets. Public-type isolation and bundle evidence MUST
-supplement, not replace, the interaction, accessibility, SSR, hydration, browser,
-and manual assistive-technology gates.
+that public API types do not expose the selected primitive library. It MUST
+include before/after standalone evidence and
+[scenario bundle](./README.md#scenario-bundle) evidence against the approved
+budgets. Public-type isolation and bundle evidence MUST supplement, not replace,
+the interaction, accessibility, SSR, hydration, browser, and manual
+assistive-technology gates.
 
 A substantive behavior change MUST include migration guidance and before/after
 examples for every affected public adapter. A known failure MUST retain its
@@ -494,8 +495,9 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
       evidence aggregates their owners, scenarios, and review status, and an
       empty classification cannot satisfy the manual-review gate by omission;
 - [ ] implementation evidence makes semantic, keyboard, browser, SSR, hydration,
-      axe, public-type isolation, standalone bundle, [scenario bundle](./README.md#scenario-bundle),
-      and manual review gates cumulative rather than substitutive;
+      axe, public-type isolation, standalone bundle,
+      [scenario bundle](./README.md#scenario-bundle), and manual review gates
+      cumulative rather than substitutive;
 - [ ] every named component pattern has a semantic owner and minimum family-spec
       keyboard and focus obligations;
 - [ ] the Tabs, FileUpload, DataTable, overlay, and contrast-helper findings are

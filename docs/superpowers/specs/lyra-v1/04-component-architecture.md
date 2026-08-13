@@ -166,15 +166,25 @@ A stateful React API MUST use a consistent triad such as `value`,
 `defaultValue`, and `onValueChange`, or `open`, `defaultOpen`, and
 `onOpenChange`. A value other than `undefined` MUST mean controlled. Controlled
 state MUST be derived from the prop, MUST NOT be mutated internally, and MUST
-notify the owner after an accepted transition. Uncontrolled state MUST use the
-default only for initialization and MUST then be owned internally.
+reflect a requested next value only after the owner supplies that value through
+the controlled prop and the corresponding render commits. After Lyra accepts a
+controlled interaction, it MUST invoke the state callback with the requested
+next value without presenting that value as current state. Uncontrolled state
+MUST use the default only for initialization and MUST then be owned internally;
+after accepting an uncontrolled interaction, Lyra MUST enqueue the internal
+state update and notify the callback with the same next value.
 
 A component MUST NOT switch between controlled and uncontrolled ownership
 during one mounted lifetime. Development builds SHOULD diagnose such a switch.
 The callback for a value-shaped state MUST receive the next value, not a native
-DOM event. When the public contract inherits a native event such as input
-`onChange`, the implementation MUST update its value from that event and forward
-the original event separately.
+DOM event. Invoking that callback MUST NOT imply that a React render has
+committed or that DOM, ARIA, focus, or other observable semantics already
+reflect the next value. If a family requires a post-commit notification, its
+spec MUST define a separate callback or event with explicit timing, payload,
+at-most-once behavior, and adapter mapping; it MUST NOT reuse the common state
+callback for that purpose. When the public contract inherits a native event such
+as input `onChange`, the implementation MUST derive the next value from that
+event and forward the original event separately.
 
 Read-only is an interaction permission, not a third state-ownership mode. A
 read-only component MUST reflect controlled prop updates and its existing
@@ -227,20 +237,25 @@ handler merge order, invalid-child behavior, and test cases before exposing it.
 
 ### Event ordering and cancelation
 
-For a native event that Lyra enhances, ordering MUST be:
+For a native event that Lyra enhances into a state operation, ordering MUST be:
 
 1. the consumer's handler receives the original event;
 2. Lyra checks `defaultPrevented` for a cancellable default operation;
-3. if not canceled, Lyra performs the state transition and updates observable
-   semantics; and
-4. a value or state callback reports the accepted result.
+3. if not canceled, Lyra accepts the operation and determines the next value;
+4. for controlled state, Lyra requests that value through the state callback;
+   for uncontrolled state, Lyra enqueues its internal update and notifies the
+   same value through the callback; and
+5. observable semantics reflect the current state when the corresponding render
+   commits, which for controlled state occurs only after the owner supplies the
+   requested prop value.
 
 `stopPropagation()` MUST retain its platform meaning and MUST NOT be repurposed
-as state cancelation. A value callback such as `onOpenChange` is a notification,
-not a veto. When a transition needs an explicit veto independent of a native
-event, the family spec MUST define a dedicated cancellable `onBefore*` contract
-and the corresponding Alpine event. A canceled transition MUST NOT partially
-update state, focus, ARIA, data attributes, or announcements.
+as state cancelation. A value callback such as `onOpenChange` reports the next
+accepted value; it is neither a veto nor a post-commit signal. When a transition
+needs an explicit veto independent of a native event, the family spec MUST
+define a dedicated cancellable `onBefore*` contract and the corresponding Alpine
+event. A canceled transition MUST NOT partially update state, focus, ARIA, data
+attributes, or announcements.
 
 Consumer and Lyra handlers MUST each run at most once per semantic operation.
 Async completion MUST report the operation identity so late results, retries,
@@ -761,6 +776,8 @@ Before this document moves to `Approved`, reviewers MUST verify every criterion:
 - [ ] the family-spec template contains every PRD section plus exact TypeScript,
       Alpine, CSS, semantic-outline, transition, compatibility, and migration
       artifacts; and
-- [ ] design-system maintainers, the PRD owner for scope or v1.0 gate changes,
-      and the required interaction, accessibility, or security reviewers have
-      recorded the approvals assigned by specification governance.
+- [ ] approval authority follows the [shared lifecycle](./README.md#lifecycle):
+      design-system maintainers approve the transition, the PRD owner also
+      approves any product scope or v1.0 gate change, and required technical or
+      accessibility reviews are recorded as evidence rather than as additional
+      approval authorities.
