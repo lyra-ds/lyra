@@ -246,7 +246,7 @@ The v1.0 scope MUST NOT include any of the following anti-goals, copied verbatim
 from the roadmap PRD and not expanded by this specification.
 
 - Shipping Vue, Svelte, or Web Components adapters before v1.0.
-- Refining the Blade project within this roadmap.
+- Making Blade evolution or release a Lyra v1.0 release blocker.
 - Making Zag.js the cross-framework foundation before those adapters become active scope.
 - Building an enterprise data grid with virtualization, editing, pivoting, or column authoring.
 - Replacing semantic CSS with Tailwind utilities.

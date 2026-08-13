@@ -14,7 +14,11 @@ Lyra v1.0 will turn the current CSS-first component library into a stable, audit
 
 The v1.0 program is spec-first. No implementation wave starts from this PRD alone. The relevant foundational specifications must reach `Approved`; work that changes component contracts also requires an approved component-family specification before an implementation plan or production code is created.
 
-The target runtime scope is CSS, React, and Alpine. Blade will be evaluated after the core is refined. Vue, Svelte, Web Components, MCP, and a broad multi-framework abstraction do not block v1.0.
+The target runtime scope is CSS, React, and Alpine. The existing Blade port in
+the sibling `lyra-ds/blade` repository is a downstream adapter, not an unbuilt
+candidate. Its evolution follows affected React contract stabilization as a
+separate track and does not block v1.0. Vue, Svelte, Web Components, MCP, and a
+broad multi-framework abstraction do not block v1.0.
 
 ## 2. Context
 
@@ -78,7 +82,7 @@ Lyra does not need to maximize component count. It needs to make every shipped c
 ## 5. Non-goals
 
 - Shipping Vue, Svelte, or Web Components adapters before v1.0.
-- Refining the Blade project within this roadmap.
+- Making Blade evolution or release a Lyra v1.0 release blocker.
 - Making Zag.js the cross-framework foundation before those adapters become active scope.
 - Building an enterprise data grid with virtualization, editing, pivoting, or column authoring.
 - Replacing semantic CSS with Tailwind utilities.
@@ -404,6 +408,28 @@ The phases are quality gates rather than calendar commitments. Work can be devel
 
 **Exit gate:** a consumer with no repository context can install, evaluate, migrate, and contribute using public documentation.
 
+### Blade follow-up — after React contract stabilization
+
+**Outcome:** the existing Blade port evolves against stable React, Alpine, and
+CSS contracts without delaying Lyra v1.0.
+
+The governing sequencing decision is recorded in the
+[Blade follow-up integration design](./2026-08-13-blade-follow-up-design.md).
+
+- Record the affected stable React contract, CSS markup and class contract,
+  Alpine behavior, migration examples, and compatible package ranges.
+- Create a scoped plan in the sibling `lyra-ds/blade` repository.
+- Update only Blade components affected by approved contract changes.
+- Verify class parity, observable interaction conformance, rendered HTML,
+  documentation-artifact freshness, Laravel/PHP support, and compatibility
+  ranges.
+- Publish Blade independently when its evidence is complete.
+
+**Scheduling rule:** this track MUST start only after the affected React
+family specification reaches `Implemented`, its public API and migration
+material are published, and compatible Styles and Alpine ranges are known. It
+MAY complete before or after Lyra v1.0 and MUST NOT block the v1.0 release gate.
+
 ### Phase 7 — Release candidate and v1.0
 
 **Outcome:** stable release with an explicit support promise.
@@ -471,17 +497,18 @@ Unsafe contracts such as empty tab panels, simulated uploads, or pointer-only ro
 
 ## 13. Risks and mitigations
 
-| Risk                                     | Mitigation                                                                                                          |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Radix or Base UI increases bundles       | Enforce before/after scenario measurements, delete replaced code, and require ADR approval above default thresholds |
-| React and Alpine behavior diverge        | Share conformance specifications and fixtures at the observable-contract level                                      |
-| Vendor APIs leak into Lyra               | Wrap primitives behind Lyra-owned props and compile-time public-type checks                                         |
-| React Aria date stack is too heavy       | Evaluate the family as a spike; rejection is allowed and documented                                                 |
-| Migration breadth delays v1.0            | Prioritize P1 contracts and gates; component count and registry work do not override core readiness                 |
-| Visual identity becomes generic          | Keep tokens, class contracts, motion, composition, and domain components owned by Lyra                              |
-| Specs become ceremony without decisions  | Require executable acceptance criteria, examples, and named exit gates; reject specs with unresolved placeholders   |
-| Cross-browser CI becomes slow or flaky   | Separate fast PR gates from scheduled full matrices while keeping release gates mandatory                           |
-| Existing consumers face breaking changes | Provide migration guides, codemods where safe, release candidates, and real-consumer validation                     |
+| Risk                                      | Mitigation                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Radix or Base UI increases bundles        | Enforce before/after scenario measurements, delete replaced code, and require ADR approval above default thresholds |
+| React and Alpine behavior diverge         | Share conformance specifications and fixtures at the observable-contract level                                      |
+| Blade drifts after React contract changes | Run the post-React Blade track against explicit CSS, Alpine, markup, migration, and compatibility evidence          |
+| Vendor APIs leak into Lyra                | Wrap primitives behind Lyra-owned props and compile-time public-type checks                                         |
+| React Aria date stack is too heavy        | Evaluate the family as a spike; rejection is allowed and documented                                                 |
+| Migration breadth delays v1.0             | Prioritize P1 contracts and gates; component count and registry work do not override core readiness                 |
+| Visual identity becomes generic           | Keep tokens, class contracts, motion, composition, and domain components owned by Lyra                              |
+| Specs become ceremony without decisions   | Require executable acceptance criteria, examples, and named exit gates; reject specs with unresolved placeholders   |
+| Cross-browser CI becomes slow or flaky    | Separate fast PR gates from scheduled full matrices while keeping release gates mandatory                           |
+| Existing consumers face breaking changes  | Provide migration guides, codemods where safe, release candidates, and real-consumer validation                     |
 
 ## 14. Governance
 
