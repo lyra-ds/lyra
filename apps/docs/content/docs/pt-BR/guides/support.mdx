@@ -1,0 +1,34 @@
+---
+title: Suporte
+description: Suporte dos componentes e os ambientes exigidos pelo Lyra v1.0.
+---
+
+# Suporte
+
+## Suporte dos componentes
+
+<SupportMatrix />
+
+## Gate automatizado de navegadores
+
+O gate automatizado usa Playwright 1.62.1 com Chromium revisão 1234 (`151.0.7922.34`), Firefox
+revisão 1538 (`153.0`) e WebKit revisão 2336 (`26.5`). Os contratos interativos são validados nos
+três engines.
+
+## Tecnologia assistiva manual
+
+Todo fluxo crítico de desktop exige um registro de Windows/NVDA e outro de macOS/VoiceOver. Os
+resultados automatizados não substituem essas revisões. Revise iOS VoiceOver e Android TalkBack
+quando um fluxo tiver um cenário específico de mobile que difira do desktop.
+
+## O que suporte significa
+
+Suporte significa que o adaptador documentado funciona com teclado, gerenciamento de foco e markup
+semântico; sobrevive a SSR e hidratação; e respeita temas, cores forçadas, RTL, movimento reduzido,
+zoom e reflow. As diferenças documentadas de cada adaptador continuam parte de seu contrato.
+
+## Momento do Blade
+
+O suporte a Blade é publicado a partir do artefato Blade lançado. Uma mudança posterior no contrato
+React exige uma atualização de compatibilidade separada para Blade. Blade é um adaptador downstream
+existente e não bloqueia o Lyra v1.0.

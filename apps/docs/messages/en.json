@@ -91,5 +91,8 @@
   "absenceBladeCalendarView": "Deferred by decision — CalendarView has no Blade counterpart yet.",
   "stackHtml": "HTML",
   "absenceHtmlNever": "This component has no canonical HTML of its own.",
-  "compatibility": "Compatibility"
+  "compatibility": "Compatibility",
+  "support": "Support",
+  "supported": "Supported",
+  "notSupported": "Not supported"
 }

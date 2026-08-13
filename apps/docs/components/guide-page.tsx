@@ -5,6 +5,7 @@ import { ExampleView, type ExampleLayout } from './example-view';
 import { examples } from './examples';
 import { Pre } from './pre';
 import { StackPanel, StackTabs } from './stack-tabs';
+import { SupportMatrix } from './support-matrix';
 
 type MdxModule = {
   default: ComponentType<{ components?: Record<string, ComponentType<any>> }>;
@@ -67,5 +68,15 @@ export async function GuidePage({ locale, slug }: { locale: Locale; slug: string
     return <StackTabs available={['react', 'alpine', 'blade']}>{children}</StackTabs>;
   }
 
-  return <MDX components={{ Example, StackPanel, StackTabs: Tabs, pre: Pre }} />;
+  return (
+    <MDX
+      components={{
+        Example,
+        StackPanel,
+        StackTabs: Tabs,
+        SupportMatrix: () => <SupportMatrix locale={locale} />,
+        pre: Pre,
+      }}
+    />
+  );
 }

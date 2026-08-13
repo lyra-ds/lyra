@@ -91,5 +91,8 @@
   "absenceBladeCalendarView": "Adiado por decisão — CalendarView ainda não tem equivalente em Blade.",
   "stackHtml": "HTML",
   "absenceHtmlNever": "Este componente não tem HTML canônico próprio.",
-  "compatibility": "Compatibilidade"
+  "compatibility": "Compatibilidade",
+  "support": "Suporte",
+  "supported": "Compatível",
+  "notSupported": "Não compatível"
 }

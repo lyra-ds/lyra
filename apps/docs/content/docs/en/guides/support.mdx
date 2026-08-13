@@ -1,0 +1,34 @@
+---
+title: Support
+description: Component support and the environments Lyra v1.0 requires.
+---
+
+# Support
+
+## Component support
+
+<SupportMatrix />
+
+## Automated browser gate
+
+The automated browser gate uses Playwright 1.62.1 with Chromium revision 1234 (`151.0.7922.34`),
+Firefox revision 1538 (`153.0`), and WebKit revision 2336 (`26.5`). Interactive contracts are
+validated across all three engines.
+
+## Manual assistive technology
+
+Every critical desktop workflow requires a Windows/NVDA record and a macOS/VoiceOver record.
+Automated results do not replace those reviews. Review iOS VoiceOver and Android TalkBack when a
+workflow has a mobile-specific scenario that differs from desktop.
+
+## What support means
+
+Support means the documented adapter works with keyboard interaction, focus management and semantic
+markup; survives SSR and hydration; and honors themes, forced colors, RTL, reduced motion, and zoom
+and reflow. Each adapter's documented differences remain part of its contract.
+
+## Blade timing
+
+Blade support is published from the released Blade artifact. A later React-contract change requires
+a separate compatibility update for Blade. Blade is an existing downstream adapter and does not
+block Lyra v1.0.
