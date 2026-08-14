@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
@@ -6,6 +7,7 @@ import {
   PLAYWRIGHT_BROWSER_INSTANCES,
   PLAYWRIGHT_IMAGE_REFERENCE,
   createBrowserEvidenceConfig,
+  validateBrowserMatrix,
 } from './browser-matrix.mjs';
 
 test('defines the digest-pinned three-browser matrix', () => {
@@ -59,4 +61,21 @@ test('keeps failure evidence under the supplied artifact root', () => {
       process.env.CI = previousCi;
     }
   }
+});
+
+test('validates the local browser matrix entry point', () => {
+  const projectRoot = resolve(import.meta.dirname, '../..');
+  const composePath = resolve(projectRoot, 'compose.playwright.yml');
+  const errors = validateBrowserMatrix({
+    compose: existsSync(composePath) ? readFileSync(composePath, 'utf8') : 'services: {}\n',
+    scripts: readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+    configs: {
+      styles: readFileSync(resolve(projectRoot, 'packages/styles/vitest.config.ts'), 'utf8'),
+      react: readFileSync(resolve(projectRoot, 'packages/react/vitest.config.ts'), 'utf8'),
+      alpine: readFileSync(resolve(projectRoot, 'packages/alpine/vitest.config.ts'), 'utf8'),
+    },
+    workflow: readFileSync(resolve(projectRoot, '.github/workflows/ci.yml'), 'utf8'),
+  });
+
+  assert.deepEqual(errors, []);
 });
