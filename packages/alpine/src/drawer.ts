@@ -1,7 +1,6 @@
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
-import { whenVisible } from './internal/when-visible';
 
 const INITIAL_FOCUS_SELECTOR = [
   'a[href]',
@@ -111,19 +110,11 @@ export function lyraDrawer({
         this.scrollLocked = true;
       }
       this.opener = document.activeElement;
-      // The panel is revealed by x-show through a DEFERRED rAF/setTimeout whose ordering
-      // against $nextTick is nondeterministic — focus() silently no-ops on display:none when
-      // the tick loses the race. whenVisible polls for real layout before trapping/focusing.
-      const panel = this.panelElement();
-      if (!panel) return;
-      whenVisible(
-        panel,
-        () => !this.open,
-        () => {
-          this.attachFocusTrap();
-          this.focusInitial();
-        },
-      );
+      this.$nextTick(() => {
+        if (!this.open) return;
+        this.attachFocusTrap();
+        this.focusInitial();
+      });
     },
 
     activateClose() {
@@ -160,12 +151,8 @@ export function lyraDrawer({
     },
 
     overlay: {
-      // x-show must read the single `mounted` flag, never `open || closing`: on close, `open`
-      // flips false one scheduler tick before the watcher sets `closing`, and that transient
-      // false→true flap arms Alpine's requestAnimationFrame-deferred show, which lands AFTER
-      // the final microtask-deferred hide and re-reveals the dismissed overlay.
-      ['x-show']() {
-        return this.mounted;
+      [':style']() {
+        return { display: this.mounted ? null : 'none' };
       },
       [':class']() {
         return this.closing ? 'lyra-drawer-overlay--closing' : '';

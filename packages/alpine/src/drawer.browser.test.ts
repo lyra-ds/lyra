@@ -35,13 +35,8 @@ function mountDrawer(
   return host;
 }
 
-// Bare microtasks race Alpine's scheduler on loaded CI runners (bit three suites in a row on
-// GitHub Actions). Synchronize with Alpine's own flush, then hop a frame (x-show shows via
-// requestAnimationFrame) and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -73,7 +68,7 @@ async function openDrawer(host: HTMLElement): Promise<void> {
   control.focus();
   await userEvent.click(control);
   await flush();
-  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'), { timeout: 3000 });
+  expect(overlay(host).style.display).not.toBe('none');
 }
 
 async function dismissWithBackdrop(host: HTMLElement): Promise<void> {
