@@ -27,7 +27,9 @@ export function createBrowserEvidenceConfig(artifactRoot) {
 }
 
 function includesBrowserMatrix(config) {
-  return /^\s*(?!\/\/)instances:\s*PLAYWRIGHT_BROWSER_INSTANCES\b/m.test(config);
+  const uncommentedConfig = config.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  return /^\s*(?!\/\/)instances:\s*PLAYWRIGHT_BROWSER_INSTANCES\b/m.test(uncommentedConfig);
 }
 
 function getComposeServiceBlock(compose, serviceName) {

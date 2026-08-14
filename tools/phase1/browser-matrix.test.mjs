@@ -142,6 +142,19 @@ test('rejects a browser matrix reference that appears only in a comment', () => 
   assert.deepEqual(errors, ['Vitest config "styles" must run chromium, firefox, and webkit.']);
 });
 
+test('rejects a browser matrix reference that appears only in a block comment', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: {
+      ...validConfigs,
+      styles: '/*\ninstances: PLAYWRIGHT_BROWSER_INSTANCES\n*/',
+    },
+  });
+
+  assert.deepEqual(errors, ['Vitest config "styles" must run chromium, firefox, and webkit.']);
+});
+
 test('rejects a pinned image reference that appears only in a service comment', () => {
   const errors = validateBrowserMatrix({
     compose: `services:
