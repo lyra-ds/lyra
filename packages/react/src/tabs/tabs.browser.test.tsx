@@ -21,7 +21,9 @@ function parseRgb(color: string): RGB {
   if (
     !channels ||
     (channels.length !== 3 && (channels.length !== 4 || channels[3] !== 1)) ||
-    channels.slice(0, 3).some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255)
+    channels
+      .slice(0, 3)
+      .some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255)
   ) {
     throw new Error(`Expected a resolved opaque rgb color, received ${color}`);
   }

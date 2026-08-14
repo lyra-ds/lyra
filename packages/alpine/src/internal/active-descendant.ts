@@ -20,5 +20,6 @@ export function scrollActiveIntoView(list: HTMLElement, option: HTMLElement | nu
   const listRect = list.getBoundingClientRect();
   const optionRect = option.getBoundingClientRect();
   if (optionRect.top < listRect.top) list.scrollTop += optionRect.top - listRect.top;
-  else if (optionRect.bottom > listRect.bottom) list.scrollTop += optionRect.bottom - listRect.bottom;
+  else if (optionRect.bottom > listRect.bottom)
+    list.scrollTop += optionRect.bottom - listRect.bottom;
 }

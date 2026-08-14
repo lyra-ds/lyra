@@ -61,7 +61,8 @@ function parseOklch(value: string): RGB | undefined {
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ].map((channel) => {
-    const srgb = channel <= 0.0031308 ? 12.92 * channel : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055;
+    const srgb =
+      channel <= 0.0031308 ? 12.92 * channel : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055;
     return Math.round(255 * Math.min(1, Math.max(0, srgb)));
   });
 

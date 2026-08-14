@@ -105,9 +105,9 @@ describe('lyraSlotPicker', () => {
     await flush();
     expect((Alpine.$data(picker(saoPaulo)) as { day(): string }).day()).toBe('2026-08-03');
     expect((Alpine.$data(picker(tokyo)) as { day(): string }).day()).toBe('2026-08-04');
-    expect(picker(saoPaulo).querySelectorAll('.lyra-slotpicker__main [role="option"]')).toHaveLength(
-      1,
-    );
+    expect(
+      picker(saoPaulo).querySelectorAll('.lyra-slotpicker__main [role="option"]'),
+    ).toHaveLength(1);
     expect(picker(tokyo).querySelectorAll('.lyra-slotpicker__main [role="option"]')).toHaveLength(
       2,
     );

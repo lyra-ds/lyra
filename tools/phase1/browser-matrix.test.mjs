@@ -157,6 +157,48 @@ test('requires the CI test job to use the Playwright browser matrix container', 
   ]);
 });
 
+test('rejects Chromium-only Playwright installs when flags precede the browser argument', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace(
+      '- run: pnpm run test',
+      '- run: pnpm exec playwright install --with-deps chromium --force\n      - run: pnpm run test',
+    ),
+  });
+
+  assert.deepEqual(errors, ['CI job "test" must not install Chromium separately.']);
+});
+
+test('allows Playwright installs that include more than Chromium', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace(
+      '- run: pnpm run test',
+      '- run: pnpm exec playwright install --with-deps chromium firefox\n      - run: pnpm run test',
+    ),
+  });
+
+  assert.deepEqual(errors, []);
+});
+
+test('does not mistake a non-install Playwright command for a Chromium-only install', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace(
+      '- run: pnpm run test',
+      '- run: pnpm exec playwright install-deps chromium\n      - run: pnpm run test',
+    ),
+  });
+
+  assert.deepEqual(errors, []);
+});
+
 test('accepts a CI test job with the pinned browser matrix and failure diagnostics', () => {
   const errors = validateBrowserMatrix({
     compose: validCompose,
