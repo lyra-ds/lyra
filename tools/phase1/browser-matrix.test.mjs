@@ -10,6 +10,21 @@ import {
   validateBrowserMatrix,
 } from './browser-matrix.mjs';
 
+const validCompose = `services:
+  browser-tests:
+    image: ${PLAYWRIGHT_IMAGE_REFERENCE}
+    init: true
+    ipc: host
+`;
+
+const validScripts = '{"scripts":{"test:browsers":"pnpm -r run test:browser"}}';
+
+const validConfigs = {
+  styles: 'instances: PLAYWRIGHT_BROWSER_INSTANCES',
+  react: 'instances: PLAYWRIGHT_BROWSER_INSTANCES',
+  alpine: 'instances: PLAYWRIGHT_BROWSER_INSTANCES',
+};
+
 test('defines the digest-pinned three-browser matrix', () => {
   assert.equal(
     PLAYWRIGHT_IMAGE_REFERENCE,
@@ -78,4 +93,38 @@ test('validates the local browser matrix entry point', () => {
   });
 
   assert.deepEqual(errors, []);
+});
+
+test('requires browser infrastructure settings in the browser-tests service', () => {
+  const errors = validateBrowserMatrix({
+    compose: `services:
+  browser-tests:
+    image: node:22
+  unrelated:
+    image: ${PLAYWRIGHT_IMAGE_REFERENCE}
+    init: true
+    ipc: host
+`,
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must use the pinned Playwright image.',
+    'Compose service "browser-tests" must set init: true.',
+    'Compose service "browser-tests" must set ipc: host.',
+  ]);
+});
+
+test('requires each config to operationally use the browser instances', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: {
+      ...validConfigs,
+      styles: '// chromium firefox webkit only appear in this comment',
+    },
+  });
+
+  assert.deepEqual(errors, ['Vitest config "styles" must run chromium, firefox, and webkit.']);
 });

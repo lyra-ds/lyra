@@ -26,32 +26,40 @@ export function createBrowserEvidenceConfig(artifactRoot) {
   };
 }
 
-const BROWSER_NAMES = ['chromium', 'firefox', 'webkit'];
-
 function includesBrowserMatrix(config) {
-  return (
-    /instances:\s*PLAYWRIGHT_BROWSER_INSTANCES/.test(config) ||
-    BROWSER_NAMES.every((browser) => config.includes(browser))
-  );
+  return /instances:\s*PLAYWRIGHT_BROWSER_INSTANCES/.test(config);
+}
+
+function getComposeServiceBlock(compose, serviceName) {
+  const service = new RegExp(`^  ${serviceName}:\\s*$`, 'm').exec(compose);
+
+  if (!service) {
+    return undefined;
+  }
+
+  const content = compose.slice(service.index + service[0].length);
+  const nextService = /^  [^\s][^\n]*:\s*$/m.exec(content);
+
+  return nextService ? content.slice(0, nextService.index) : content;
 }
 
 export function validateBrowserMatrix({ compose, scripts, configs }) {
   const errors = [];
-  const hasBrowserTestsService = /^  browser-tests:\s*$/m.test(compose);
+  const browserTestsService = getComposeServiceBlock(compose, 'browser-tests');
 
-  if (!hasBrowserTestsService) {
+  if (!browserTestsService) {
     return ['Compose service "browser-tests" is missing.'];
   }
 
-  if (!compose.includes(`image: ${PLAYWRIGHT_IMAGE_REFERENCE}`)) {
+  if (!browserTestsService.includes(`image: ${PLAYWRIGHT_IMAGE_REFERENCE}`)) {
     errors.push('Compose service "browser-tests" must use the pinned Playwright image.');
   }
 
-  if (!/^    init: true\s*$/m.test(compose)) {
+  if (!/^    init: true\s*$/m.test(browserTestsService)) {
     errors.push('Compose service "browser-tests" must set init: true.');
   }
 
-  if (!/^    ipc: host\s*$/m.test(compose)) {
+  if (!/^    ipc: host\s*$/m.test(browserTestsService)) {
     errors.push('Compose service "browser-tests" must set ipc: host.');
   }
 
