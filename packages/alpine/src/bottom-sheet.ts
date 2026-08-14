@@ -1,7 +1,6 @@
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
-import { whenVisible } from './internal/when-visible';
 
 const INITIAL_FOCUS_SELECTOR = [
   'a[href]',
@@ -114,16 +113,9 @@ export function lyraBottomSheet({
       }
       this.opener = document.activeElement;
       this.$nextTick(() => {
-        const panel = this.panelElement();
-        if (!panel) return;
-        whenVisible(
-          panel,
-          () => !this.open,
-          () => {
-            this.attachFocusTrap();
-            this.focusInitial();
-          },
-        );
+        if (!this.open) return;
+        this.attachFocusTrap();
+        this.focusInitial();
       });
     },
 
@@ -166,8 +158,8 @@ export function lyraBottomSheet({
     },
 
     overlay: {
-      ['x-show']() {
-        return this.mounted;
+      [':style']() {
+        return { display: this.mounted ? null : 'none' };
       },
       [':class']() {
         return { 'lyra-bottomsheet-overlay--closing': this.closing };

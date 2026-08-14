@@ -1,6 +1,6 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
@@ -37,8 +37,6 @@ function mountBottomSheet(
 
 async function flush(): Promise<void> {
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -70,7 +68,7 @@ async function openBottomSheet(host: HTMLElement): Promise<void> {
   control.focus();
   await userEvent.click(control);
   await flush();
-  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'), { timeout: 3000 });
+  expect(overlay(host).style.display).not.toBe('none');
 }
 
 function backdropDismiss(host: HTMLElement): void {
@@ -109,9 +107,7 @@ describe('lyraBottomSheet', () => {
 
     // React parity: the header's close button precedes the body in DOM order, so it is the
     // first focusable descendant (the React suite asserts exactly this).
-    await vi.waitFor(() =>
-      expect(document.activeElement).toBe(host.querySelector('.lyra-bottomsheet__close')),
-    );
+    expect(document.activeElement).toBe(host.querySelector('.lyra-bottomsheet__close'));
   });
 
   it('focuses the panel and traps both Tab directions when it has no focusable descendants', async () => {
@@ -120,7 +116,7 @@ describe('lyraBottomSheet', () => {
     await openBottomSheet(host);
     const sheet = panel(host);
 
-    await vi.waitFor(() => expect(document.activeElement).toBe(sheet));
+    expect(document.activeElement).toBe(sheet);
     await userEvent.keyboard('{Tab}');
     expect(document.activeElement).toBe(sheet);
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
@@ -202,7 +198,8 @@ describe('lyraBottomSheet', () => {
     expect(document.body.style.overflow).toBe('');
 
     panel(host).dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
-    await vi.waitFor(() => expect(overlay(host).style.display).toBe('none'), { timeout: 3000 });
+    await flush();
+    expect(overlay(host).style.display).toBe('none');
   });
 
   it('synchronizes open with x-modelable and x-model in both directions', async () => {

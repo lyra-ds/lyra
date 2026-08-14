@@ -1,6 +1,6 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
@@ -51,8 +51,6 @@ function mountWorkspaceSwitcher({
 
 async function flush(): Promise<void> {
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -115,33 +113,25 @@ describe('lyraWorkspaceSwitcher', () => {
     control.focus();
     await userEvent.keyboard('{Enter}');
     await flush();
-    await vi.waitFor(() => expect(document.activeElement).toBe(options(host)[1]), {
-      timeout: 3000,
-    });
+    expect(document.activeElement).toBe(options(host)[1]);
 
     await userEvent.keyboard('{Escape}');
     await flush();
     await userEvent.keyboard(' ');
     await flush();
-    await vi.waitFor(() => expect(document.activeElement).toBe(options(host)[1]), {
-      timeout: 3000,
-    });
+    expect(document.activeElement).toBe(options(host)[1]);
 
     await userEvent.keyboard('{Escape}');
     await flush();
     await userEvent.keyboard('{ArrowDown}');
     await flush();
-    await vi.waitFor(() => expect(document.activeElement).toBe(options(host)[0]), {
-      timeout: 3000,
-    });
+    expect(document.activeElement).toBe(options(host)[0]);
 
     await userEvent.keyboard('{Escape}');
     await flush();
     await userEvent.keyboard('{ArrowUp}');
     await flush();
-    await vi.waitFor(() => expect(document.activeElement).toBe(options(host)[2]), {
-      timeout: 3000,
-    });
+    expect(document.activeElement).toBe(options(host)[2]);
   });
 
   it('roves option focus circularly, supports Home and End, and restores the trigger on Escape', async () => {
@@ -150,9 +140,7 @@ describe('lyraWorkspaceSwitcher', () => {
 
     await userEvent.click(control);
     await flush();
-    await vi.waitFor(() => expect(document.activeElement).toBe(options(host)[1]), {
-      timeout: 3000,
-    });
+    expect(document.activeElement).toBe(options(host)[1]);
 
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(options(host)[2]);

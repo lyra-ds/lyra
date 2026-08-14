@@ -1,5 +1,4 @@
 import { observeFlipPlacement, type FlipPlacement } from './internal/flip-placement';
-import { whenVisible } from './internal/when-visible';
 
 /** Initial configuration accepted by `x-data="lyraWorkspaceSwitcher(...)"`. */
 export interface LyraWorkspaceSwitcherOptions {
@@ -68,32 +67,17 @@ export function lyraWorkspaceSwitcher({
           return;
         }
 
-        // x-show reveals the popover after Alpine's reactive flush. Queue that flush before
-        // polling for layout, otherwise focus and flip measurement can target display:none.
         this.startOutsideClick();
         this.$nextTick(() => {
-          const popover = this.popoverElement();
-          if (!popover) return;
-          whenVisible(
-            popover,
-            () => !this.open,
-            () => {
-              this.startPlacement();
-              this.focusPendingOption();
-            },
-          );
+          if (!this.open) return;
+          this.startPlacement();
+          this.focusPendingOption();
         });
       });
       if (this.open) {
         this.startOutsideClick();
         this.$nextTick(() => {
-          const popover = this.popoverElement();
-          if (!popover) return;
-          whenVisible(
-            popover,
-            () => !this.open,
-            () => this.startPlacement(),
-          );
+          if (this.open) this.startPlacement();
         });
       }
     },
@@ -238,8 +222,8 @@ export function lyraWorkspaceSwitcher({
         // Object syntax removes a server-rendered up modifier again after placement changes.
         return { 'lyra-wssw__pop--up': this.placement.side === 'up' };
       },
-      ['x-show']() {
-        return this.open;
+      [':style']() {
+        return { display: this.open ? null : 'none' };
       },
     },
 
