@@ -21,6 +21,7 @@ const browserEvidence = createBrowserEvidenceConfig(
 export default defineConfig({
   test: {
     include: ['src/**/*.browser.test.ts'],
+    setupFiles: ['src/browser-test-setup.ts'],
     browser: {
       enabled: true,
       provider: playwright({ contextOptions: browserEvidence.contextOptions }),
