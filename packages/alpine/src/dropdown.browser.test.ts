@@ -28,13 +28,8 @@ function mountDropdown(options = '{}'): HTMLElement {
   return host;
 }
 
-// Two bare microtasks raced Alpine's scheduler under CI load (two different assertions bit on
-// GitHub runners). Synchronize with Alpine's own flush, then hop a frame (x-show shows via
-// requestAnimationFrame) and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function dropdown(host: HTMLElement): HTMLElement {

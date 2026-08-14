@@ -115,10 +115,7 @@ function visibleOptions(host: HTMLElement): HTMLButtonElement[] {
 }
 
 async function flush(): Promise<void> {
-  await Promise.resolve();
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 async function expectVisible(element: HTMLElement): Promise<void> {

@@ -1,6 +1,5 @@
 import { observeFlipPlacement } from './internal/flip-placement';
 import type { FlipPlacement } from './internal/flip-placement';
-import { whenVisible } from './internal/when-visible';
 
 /** Initial configuration accepted by `x-data="lyraDropdown(...)"`. */
 export interface LyraDropdownOptions {
@@ -79,34 +78,18 @@ export function lyraDropdown({
           return;
         }
 
-        // At this point the menu is still display:none: x-show reveals it through a DEFERRED
-        // rAF/setTimeout whose ordering against $nextTick (also a setTimeout) is
-        // nondeterministic — focusing would silently no-op and measuring would read 0 when
-        // the tick loses the race (bit three CI runs). whenVisible polls for real layout.
-        // The document-level listener does not depend on the menu being visible — arm it
-        // immediately (mirrors the React effect). Placement and focus need the revealed menu.
         this.startOutsideClick();
-        const menu = this.menuElement();
-        if (!menu) return;
-        whenVisible(
-          menu,
-          () => !this.open,
-          () => {
-            this.startPlacement();
-            this.focusPendingItem();
-          },
-        );
+        this.$nextTick(() => {
+          if (!this.open) return;
+          this.startPlacement();
+          this.focusPendingItem();
+        });
       });
       if (this.open) {
         this.startOutsideClick();
-        const menu = this.menuElement();
-        if (menu) {
-          whenVisible(
-            menu,
-            () => !this.open,
-            () => this.startPlacement(),
-          );
-        }
+        this.$nextTick(() => {
+          if (this.open) this.startPlacement();
+        });
       }
     },
 
@@ -255,8 +238,8 @@ export function lyraDropdown({
           this.placement.side === 'up' ? ' lyra-menu--up' : ''
         }`;
       },
-      ['x-show']() {
-        return this.open;
+      [':style']() {
+        return { display: this.open ? null : 'none' };
       },
     },
 
