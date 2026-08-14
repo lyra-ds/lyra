@@ -115,6 +115,12 @@ function runsBrowserMatrix(job) {
   return /^      - run: pnpm run test:browsers\s*(?:#.*)?$/m.test(job);
 }
 
+function hasRootHomeForFirefox(job) {
+  const environment = /^    env:\s*\n((?:      [^\n]*\n?)*)/m.exec(job)?.[1];
+
+  return /^      HOME:\s*\/root\s*$/m.test(environment ?? '');
+}
+
 function validateCiBrowserMatrix(workflow) {
   const errors = [];
   const testJob = getWorkflowJobBlock(workflow, 'test');
@@ -134,6 +140,10 @@ function validateCiBrowserMatrix(workflow) {
 
   if (container && !/^      options: .*--ipc=host(?:\s|$)/m.test(container)) {
     errors.push('CI job "test" container must enable --ipc=host.');
+  }
+
+  if (!hasRootHomeForFirefox(testJob)) {
+    errors.push('CI job "test" must set HOME: /root for Firefox.');
   }
 
   if (!runsBrowserMatrix(testJob)) {

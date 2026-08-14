@@ -28,6 +28,8 @@ const validConfigs = {
 const validWorkflow = `jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      HOME: /root
     container:
       image: ${PLAYWRIGHT_IMAGE_REFERENCE}
       options: --init --ipc=host
@@ -153,6 +155,7 @@ test('requires the CI test job to use the Playwright browser matrix container', 
 
   assert.deepEqual(errors, [
     'CI job "test" must run in the pinned Playwright container.',
+    'CI job "test" must set HOME: /root for Firefox.',
     'CI job "test" must run the browser matrix.',
     'CI job "test" must not install Playwright browsers.',
     'CI job "test" must upload browser diagnostics only on failure.',
@@ -251,6 +254,17 @@ test('requires the CI test container image and IPC setting to remain pinned', ()
     'CI job "test" must run in the pinned Playwright container.',
     'CI job "test" container must enable --ipc=host.',
   ]);
+});
+
+test('requires a root-owned home for Firefox in the CI container', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace('    env:\n      HOME: /root\n', ''),
+  });
+
+  assert.deepEqual(errors, ['CI job "test" must set HOME: /root for Firefox.']);
 });
 
 test('requires CI browser diagnostics to upload only after a failure', () => {
