@@ -38,7 +38,7 @@ Browser Mode is deliberately run in the pinned Playwright container, which suppl
 Chromium, Firefox, and WebKit without installing browser binaries on your machine:
 
 ```bash
-UID=$(id -u) GID=$(id -g) docker compose -f compose.playwright.yml run --rm browser-tests
+env UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm browser-tests
 ```
 
 Run this browser matrix before opening a PR that changes browser-tested behavior.
