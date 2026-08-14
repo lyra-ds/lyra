@@ -42,8 +42,8 @@ function sidebarMarkup({
       <div class="lyra-appsidebar__footer"><a href="/account">Account</a></div>
       <button class="lyra-appsidebar__toggle" x-bind="toggle">
         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path data-testid="collapse-chevron" d="m15 18-6-6 6-6" :hidden="collapsed"></path>
-          <path data-testid="expand-chevron" d="m9 18 6-6-6-6" :hidden="!collapsed"></path>
+          <path data-testid="collapse-chevron" d="m15 18-6-6 6-6" :style="{ display: collapsed ? 'none' : null }"></path>
+          <path data-testid="expand-chevron" d="m9 18 6-6-6-6" :style="{ display: collapsed ? null : 'none' }"></path>
         </svg>
       </button>
     </nav>
@@ -181,14 +181,14 @@ describe('lyraAppSidebar', () => {
     const expandChevron = host.querySelector<SVGPathElement>('[data-testid="expand-chevron"]');
     if (!collapseChevron || !expandChevron) throw new Error('Expected served chevrons');
 
-    expect(collapseChevron.hasAttribute('hidden')).toBe(false);
-    expect(expandChevron.hasAttribute('hidden')).toBe(true);
+    expect(getComputedStyle(collapseChevron).display).not.toBe('none');
+    expect(getComputedStyle(expandChevron).display).toBe('none');
 
     await userEvent.click(toggle(host));
     await flush();
 
-    expect(collapseChevron.hasAttribute('hidden')).toBe(true);
-    expect(expandChevron.hasAttribute('hidden')).toBe(false);
+    expect(getComputedStyle(collapseChevron).display).toBe('none');
+    expect(getComputedStyle(expandChevron).display).not.toBe('none');
   });
 
   it('synchronizes collapsed with x-modelable in both directions', async () => {
