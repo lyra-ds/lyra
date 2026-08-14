@@ -49,6 +49,7 @@ describe('Tooltip', () => {
 
       expect(blurred).toBe(true);
       expect(document.activeElement).toBe(after);
+      await vi.waitFor(() => expect(root.dataset.state).toBe('closed'));
     });
   });
 

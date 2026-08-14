@@ -375,6 +375,10 @@ export function lyraCommandPalette({
 
     activateClose() {
       this.presence?.update(false);
+      if (this.scrollLocked) {
+        unlockScroll();
+        this.scrollLocked = false;
+      }
       this.detachFocusTrap();
       this.restoreOpener();
     },

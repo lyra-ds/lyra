@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { loadConfigFromFile } from 'vite';
@@ -84,4 +84,25 @@ test('keeps Browser Mode Docker-only while the root test command runs every non-
   assert.equal(packageScripts['packages/styles/package.json'].test, undefined);
   assert.equal(packageScripts['packages/react/package.json'].test, 'pnpm run test:ssr');
   assert.equal(packageScripts['packages/alpine/package.json'].test, undefined);
+});
+
+test('does not leave future styles or Alpine test files outside Browser Mode', async () => {
+  const stylesTestFiles = readdirSync('packages/styles/tests', { recursive: true }).filter((file) =>
+    file.endsWith('.test.ts'),
+  );
+  const alpineTestFiles = readdirSync('packages/alpine/src', { recursive: true }).filter((file) =>
+    file.endsWith('.test.ts'),
+  );
+
+  assert.match(
+    readFileSync(resolve('packages/styles/vitest.config.ts'), 'utf8'),
+    /include:\s*\['tests\/\*\*\/\*.test\.ts'\]/,
+  );
+  assert.match(
+    readFileSync(resolve('packages/alpine/vitest.config.ts'), 'utf8'),
+    /include:\s*\['src\/\*\*\/\*.browser\.test\.ts'\]/,
+  );
+  assert.ok(stylesTestFiles.length > 0);
+  assert.ok(alpineTestFiles.length > 0);
+  assert.ok(alpineTestFiles.every((file) => file.endsWith('.browser.test.ts')));
 });

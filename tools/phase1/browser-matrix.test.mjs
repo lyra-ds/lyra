@@ -204,6 +204,26 @@ test('rejects Playwright installs inside YAML block scalar run steps', () => {
   assert.deepEqual(errors, ['CI job "test" must not install Playwright browsers.']);
 });
 
+test('rejects browser installs regardless of the package runner', () => {
+  for (const command of [
+    'npx playwright install chromium',
+    'playwright install --with-deps firefox',
+    'pnpm --filter @lyra-ds/react exec playwright install webkit',
+  ]) {
+    const errors = validateBrowserMatrix({
+      compose: validCompose,
+      scripts: validScripts,
+      configs: validConfigs,
+      workflow: validWorkflow.replace(
+        '- run: pnpm run test',
+        `- run: ${command}\n      - run: pnpm run test`,
+      ),
+    });
+
+    assert.deepEqual(errors, ['CI job "test" must not install Playwright browsers.']);
+  }
+});
+
 test('requires the CI test job to run the Docker-only browser matrix', () => {
   const errors = validateBrowserMatrix({
     compose: validCompose,

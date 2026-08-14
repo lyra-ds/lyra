@@ -204,7 +204,7 @@ describe('lyraCommandPalette', () => {
     await userEvent.keyboard('{Escape}');
     await flush();
     await vi.waitFor(() => expect(document.activeElement).toBe(opener(host)), { timeout: 3000 });
-    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.body.style.overflow).toBe('');
     await finishExit(host);
     expect(document.body.style.overflow).toBe('');
 

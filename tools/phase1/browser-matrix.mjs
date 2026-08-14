@@ -108,7 +108,7 @@ function hasBrowserDiagnosticsUpload(job) {
 function installsPlaywrightBrowsers(job) {
   const uncommentedJob = job.replace(/^\s*#.*$/gm, '');
 
-  return /^\s*(?:-\s+run:\s*)?pnpm exec playwright install(?:\s|$)/m.test(uncommentedJob);
+  return /(?:^|\s)playwright install(?:\s|$)/m.test(uncommentedJob);
 }
 
 function runsBrowserMatrix(job) {
