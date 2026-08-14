@@ -133,20 +133,20 @@ export function lyraFileManager({
     },
 
     list: {
-      ['x-show']() {
-        return this.view === 'list';
+      [':style']() {
+        return { display: this.view === 'list' ? null : 'none' };
       },
     },
 
     grid: {
-      ['x-show']() {
-        return this.view === 'grid';
+      [':style']() {
+        return { display: this.view === 'grid' ? null : 'none' };
       },
     },
 
     empty: {
-      ['x-show']() {
-        return this.matchCount() === 0;
+      [':style']() {
+        return { display: this.matchCount() === 0 ? null : 'none' };
       },
     },
   };
