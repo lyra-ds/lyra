@@ -16,9 +16,16 @@ const items = [
 type RGB = readonly [number, number, number];
 
 function parseRgb(color: string): RGB {
-  const match = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-  if (!match) throw new Error(`Expected a resolved opaque rgb color, received ${color}`);
-  return [Number(match[1]), Number(match[2]), Number(match[3])];
+  const match = color.match(/^rgba?\((.*)\)$/);
+  const channels = match?.[1].match(/\d+(?:\.\d+)?/g)?.map(Number);
+  if (
+    !channels ||
+    (channels.length !== 3 && (channels.length !== 4 || channels[3] !== 1)) ||
+    channels.slice(0, 3).some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255)
+  ) {
+    throw new Error(`Expected a resolved opaque rgb color, received ${color}`);
+  }
+  return [channels[0], channels[1], channels[2]];
 }
 
 function relativeLuminance([red, green, blue]: RGB): number {
@@ -48,11 +55,11 @@ afterEach(async () => {
 });
 
 describe('Tabs', () => {
-  it('renders the dark active line tab at WCAG AA contrast on a card surface', async () => {
+  it('renders the dark active line tab at WCAG AA contrast on a card surface at rest and hover', async () => {
     setTheme('dark');
     const { container } = await render(
       <div style={{ background: 'var(--surface-card)' }}>
-        <Tabs items={items} active="one" onChange={() => {}} />
+        <Tabs items={items} active="one" variant="line" onChange={() => {}} />
       </div>,
     );
     const surface = container.querySelector<HTMLElement>('div')!;
@@ -63,6 +70,16 @@ describe('Tabs', () => {
     expect(foreground).toBe('rgb(165, 167, 238)');
     expect(background).toBe('rgb(18, 20, 48)');
     expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(4.5);
+
+    await userEvent.hover(activeTab);
+    activeTab.getAnimations().forEach((animation) => animation.finish());
+    const hoverForeground = getComputedStyle(activeTab).color;
+
+    expect(hoverForeground).toBe('rgb(165, 167, 238)');
+    expect(contrastRatio(hoverForeground, background)).toBeGreaterThanOrEqual(4.5);
+
+    await userEvent.unhover(activeTab);
+    activeTab.getAnimations().forEach((animation) => animation.finish());
   });
 
   for (const theme of themes)
