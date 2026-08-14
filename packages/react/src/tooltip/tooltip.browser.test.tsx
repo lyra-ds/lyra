@@ -15,6 +15,63 @@ afterEach(async () => {
   setTheme('light');
 });
 describe('Tooltip', () => {
+  describe('focused lifecycle isolation', () => {
+    let previousLifecycle:
+      | {
+          blurredBeforeNextAction: boolean;
+          focused: boolean;
+          hovered: boolean;
+          open: boolean;
+        }
+      | undefined;
+
+    it('leaves an unhovered tooltip open while its trigger retains focus', async () => {
+      const { container } = await render(
+        <div>
+          <button type="button">Before target</button>
+          <Tooltip tip="Focused lifecycle">
+            <button
+              type="button"
+              onBlur={() => {
+                if (previousLifecycle) previousLifecycle.blurredBeforeNextAction = true;
+              }}
+            >
+              Focused target
+            </button>
+          </Tooltip>
+        </div>,
+      );
+      const root = container.querySelector<HTMLElement>('.lyra-tooltip')!;
+      const [before, trigger] = container.querySelectorAll<HTMLButtonElement>('button');
+
+      await userEvent.unhover(root);
+      before!.focus();
+      await userEvent.keyboard('{Tab}');
+      previousLifecycle = {
+        blurredBeforeNextAction: false,
+        focused: document.activeElement === trigger,
+        hovered: root.matches(':hover'),
+        open: root.dataset.state === 'open',
+      };
+
+      expect(previousLifecycle).toEqual({
+        blurredBeforeNextAction: false,
+        focused: true,
+        hovered: false,
+        open: true,
+      });
+    });
+
+    it('dismisses the focused lifecycle before the next case acts', () => {
+      expect(previousLifecycle).toEqual({
+        blurredBeforeNextAction: true,
+        focused: true,
+        hovered: false,
+        open: true,
+      });
+    });
+  });
+
   for (const theme of themes)
     it(`wires its target and is axe clean in ${theme}`, async () => {
       setTheme(theme);
