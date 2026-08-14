@@ -25,12 +25,12 @@ function calendarTemplate(): string {
 
 function timeZoneTemplate(): string {
   return `
-    <template x-if="tzOpen"><div x-data="{ get pickerTimeZone() { return timeZoneValue() }, set pickerTimeZone(v) { setTimeZone(v) } }">
+    <div x-show="tzOpen" x-data="{ get pickerTimeZone() { return timeZoneValue() }, set pickerTimeZone(v) { setTimeZone(v) } }">
       <div class="lyra-combobox lyra-tzpicker" x-data="lyraTimeZonePicker({ value: pickerTimeZone, detectedZone, locale, labels: tzLabels })" x-modelable="value" x-model="pickerTimeZone">
         <button class="lyra-input lyra-combobox__trigger" x-bind="trigger"><span x-bind="triggerValue"></span></button>
         <div class="lyra-combobox__pop" x-bind="pop"><div class="lyra-combobox__search"><input x-bind="search" aria-label="Search time zones"></div><div class="lyra-combobox__list" x-bind="list"><span class="lyra-combobox__empty" x-bind="empty" x-text="emptyMessage"></span><template x-for="({ option, index }, filteredIndex) in filtered()" :key="option.value"><div><template x-if="showGroup(filteredIndex)"><span class="lyra-combobox__group" role="presentation" x-text="option.group"></span></template><button class="lyra-combobox__option" type="button" tabindex="-1" role="option" :id="optionId(index)" :class="optionClass(filteredIndex)" :aria-selected="optionSelected(option)" :data-zone="option.value" @mouseenter="setActive(filteredIndex)" @click="pick(option)"><span class="lyra-combobox__option-label" x-text="option.label"></span><span class="lyra-combobox__trailing" x-text="option.trailing"></span></button></div></template></div></div>
       </div>
-    </div></template>`;
+    </div>`;
 }
 
 /** Canonical server-rendered SlotPicker template, including both nested alias scopes. */
@@ -105,8 +105,12 @@ describe('lyraSlotPicker', () => {
     await flush();
     expect((Alpine.$data(picker(saoPaulo)) as { day(): string }).day()).toBe('2026-08-03');
     expect((Alpine.$data(picker(tokyo)) as { day(): string }).day()).toBe('2026-08-04');
-    expect(picker(saoPaulo).querySelectorAll('[role="option"]')).toHaveLength(1);
-    expect(picker(tokyo).querySelectorAll('[role="option"]')).toHaveLength(2);
+    expect(picker(saoPaulo).querySelectorAll('.lyra-slotpicker__main [role="option"]')).toHaveLength(
+      1,
+    );
+    expect(picker(tokyo).querySelectorAll('.lyra-slotpicker__main [role="option"]')).toHaveLength(
+      2,
+    );
   });
 
   it('marks only available calendar days, changes days, resets selection, and emits the combined change', async () => {
@@ -118,14 +122,16 @@ describe('lyraSlotPicker', () => {
     picker(host).addEventListener('lyra:change', (event) =>
       changes.push((event as CustomEvent).detail),
     );
-    await userEvent.click(picker(host).querySelector<HTMLButtonElement>('[role="option"]')!);
+    await userEvent.click(
+      picker(host).querySelector<HTMLButtonElement>('.lyra-slotpicker__main [role="option"]')!,
+    );
     await userEvent.click(day(host, '2026-08-05'));
     await flush();
     expect(
       day(host, '2026-08-03').querySelector<HTMLElement>('.lyra-cal__dot')?.style.display,
     ).not.toBe('none');
     expect(day(host, '2026-08-04').getAttribute('aria-disabled')).toBe('true');
-    expect(picker(host).querySelector('[aria-selected="true"]')).toBeNull();
+    expect(picker(host).querySelector('.lyra-slotpicker__main [aria-selected="true"]')).toBeNull();
     expect(changes).toContainEqual({ date: '2026-08-05', timezone: 'UTC' });
   });
 
@@ -143,11 +149,15 @@ describe('lyraSlotPicker', () => {
     picker(host).addEventListener('lyra:change', (event) =>
       changes.push((event as CustomEvent).detail),
     );
-    const option = picker(host).querySelector<HTMLButtonElement>('[role="option"]')!;
+    const option = picker(host).querySelector<HTMLButtonElement>(
+      '.lyra-slotpicker__main [role="option"]',
+    )!;
     const before = option.textContent;
     await userEvent.click(option);
     await flush();
-    expect(picker(host).querySelector('[aria-selected="true"]')).not.toBeNull();
+    expect(
+      picker(host).querySelector('.lyra-slotpicker__main [aria-selected="true"]'),
+    ).not.toBeNull();
     await userEvent.click(
       picker(host).querySelector<HTMLButtonElement>('.lyra-slotpicker__pair button')!,
     );
@@ -165,10 +175,16 @@ describe('lyraSlotPicker', () => {
     );
     await flush();
     const state = Alpine.$data(picker(host)) as { timezone: string; tzOpen: boolean };
+    const timeZonePicker = picker(host).querySelector<HTMLElement>('.lyra-tzpicker');
+    const timeZoneRegion = timeZonePicker?.parentElement;
+    if (!timeZoneRegion) throw new Error('Expected mounted time-zone picker region');
     expect(state.timezone).toBe('Asia/Tokyo');
     expect(state.tzOpen).toBe(false);
-    expect(picker(host).querySelector('.lyra-tzpicker')).toBeNull();
-    expect(picker(host).querySelector('[role="option"]')?.textContent).not.toBe(before);
+    expect(getComputedStyle(timeZoneRegion).display).toBe('none');
+    expect(timeZoneRegion.contains(document.activeElement)).toBe(false);
+    expect(
+      picker(host).querySelector('.lyra-slotpicker__main [role="option"]')?.textContent,
+    ).not.toBe(before);
     expect(changes).toContainEqual({ date: '2026-08-03', timezone: 'Asia/Tokyo' });
   });
 
@@ -216,7 +232,7 @@ describe('lyraSlotPicker', () => {
     );
     await flush();
     expect(picker(empty).textContent).toContain('No available times on this day.');
-    expect(picker(empty).querySelector('[role="listbox"]')).toBeNull();
+    expect(picker(empty).querySelector('.lyra-slotpicker__main [role="listbox"]')).toBeNull();
     await expectNoAxeViolations(picker(empty));
     await userEvent.click(
       picker(empty).querySelector<HTMLButtonElement>('.lyra-slotpicker__empty button')!,
