@@ -238,9 +238,7 @@ describe('lyraDrawer', () => {
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await flush();
     expect(overlay(host).classList).not.toContain('lyra-drawer-overlay--closing');
-    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true), {
-      timeout: 3000,
-    });
+    expect(panel(host).contains(document.activeElement)).toBe(true);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
   });

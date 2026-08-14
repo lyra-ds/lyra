@@ -255,10 +255,7 @@ describe('lyraDialog', () => {
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await flush();
     expect(overlay(host).classList).not.toContain('lyra-dialog-overlay--closing');
-    // Initial focus re-entry rides $nextTick, which flushes after the watcher microtasks.
-    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true), {
-      timeout: 3000,
-    });
+    expect(panel(host).contains(document.activeElement)).toBe(true);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
   });

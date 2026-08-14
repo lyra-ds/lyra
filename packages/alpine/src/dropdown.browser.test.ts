@@ -123,9 +123,7 @@ describe('lyraDropdown', () => {
     await userEvent.keyboard('{ArrowDown}');
     await flush();
     const commands = menu(host).querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
-    // Focus entry rides $nextTick, which can flush after the two-microtask flush() under CI
-    // load — poll instead of asserting a single tick (same fix as the Dialog WR-03 test).
-    await vi.waitFor(() => expect(document.activeElement).toBe(commands[0]), { timeout: 3000 });
+    expect(document.activeElement).toBe(commands[0]);
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(commands[1]);
     await userEvent.keyboard('{ArrowDown}');
@@ -141,7 +139,7 @@ describe('lyraDropdown', () => {
 
     await userEvent.keyboard('{ArrowUp}');
     await flush();
-    await vi.waitFor(() => expect(document.activeElement).toBe(commands[1]), { timeout: 3000 });
+    expect(document.activeElement).toBe(commands[1]);
   });
 
   it('closes after a command selection with focus restored, while Tab keeps native focus order', async () => {

@@ -118,10 +118,6 @@ async function flush(): Promise<void> {
   await Alpine.nextTick();
 }
 
-async function expectVisible(element: HTMLElement): Promise<void> {
-  await vi.waitFor(() => expect(element.style.display).not.toBe('none'), { timeout: 3000 });
-}
-
 afterEach(() => {
   for (const host of mountedHosts.splice(0)) {
     Alpine.destroyTree(host);
@@ -138,8 +134,8 @@ describe('lyraCombobox', () => {
     await flush();
 
     expect(trigger(host).getAttribute('aria-expanded')).toBe('true');
-    await expectVisible(pop(host));
-    await vi.waitFor(() => expect(document.activeElement).toBe(search(host)), { timeout: 3000 });
+    expect(pop(host).style.display).not.toBe('none');
+    expect(document.activeElement).toBe(search(host));
   });
 
   it('keeps focus on search while clamped arrows, Home, and End change original-index descendants', async () => {
@@ -346,7 +342,7 @@ describe('lyraCombobox', () => {
     if (!setOpen) throw new Error('Expected external open control');
     await userEvent.click(setOpen);
     await flush();
-    await expectVisible(pop(openHost));
+    expect(pop(openHost).style.display).not.toBe('none');
     await userEvent.click(trigger(openHost));
     await flush();
     expect(
@@ -359,7 +355,7 @@ describe('lyraCombobox', () => {
     await expectNoAxeViolations(host);
     await userEvent.click(trigger(host));
     await flush();
-    await expectVisible(pop(host));
+    expect(pop(host).style.display).not.toBe('none');
     await expectNoAxeViolations(host);
   });
 });
