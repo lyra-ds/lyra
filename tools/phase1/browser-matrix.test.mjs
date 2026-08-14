@@ -25,6 +25,27 @@ const validConfigs = {
   alpine: 'instances: PLAYWRIGHT_BROWSER_INSTANCES',
 };
 
+const validWorkflow = `jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: ${PLAYWRIGHT_IMAGE_REFERENCE}
+      options: --init --ipc=host
+    steps:
+      - run: pnpm run test
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: browser-diagnostics-\${{ github.run_id }}
+          path: |
+            packages/styles/.artifacts/browser/
+            packages/react/.artifacts/browser/
+            packages/alpine/.artifacts/browser/
+          if-no-files-found: ignore
+          retention-days: 14
+`;
+
 test('defines the digest-pinned three-browser matrix', () => {
   assert.equal(
     PLAYWRIGHT_IMAGE_REFERENCE,
@@ -114,6 +135,64 @@ test('requires browser infrastructure settings in the browser-tests service', ()
     'Compose service "browser-tests" must set init: true.',
     'Compose service "browser-tests" must set ipc: host.',
   ]);
+});
+
+test('requires the CI test job to use the Playwright browser matrix container', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: `jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: pnpm exec playwright install chromium --with-deps
+`,
+  });
+
+  assert.deepEqual(errors, [
+    'CI job "test" must run in the pinned Playwright container.',
+    'CI job "test" must not install Chromium separately.',
+    'CI job "test" must upload browser diagnostics only on failure.',
+  ]);
+});
+
+test('accepts a CI test job with the pinned browser matrix and failure diagnostics', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow,
+  });
+
+  assert.deepEqual(errors, []);
+});
+
+test('requires the CI test container image and IPC setting to remain pinned', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow
+      .replace(PLAYWRIGHT_IMAGE_REFERENCE, 'mcr.microsoft.com/playwright:v1.62.1-noble')
+      .replace('options: --init --ipc=host', 'options: --init'),
+  });
+
+  assert.deepEqual(errors, [
+    'CI job "test" must run in the pinned Playwright container.',
+    'CI job "test" container must enable --ipc=host.',
+  ]);
+});
+
+test('requires CI browser diagnostics to upload only after a failure', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace('if: failure()', 'if: always()'),
+  });
+
+  assert.deepEqual(errors, ['CI job "test" must upload browser diagnostics only on failure.']);
 });
 
 test('requires each config to operationally use the browser instances', () => {

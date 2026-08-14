@@ -82,6 +82,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+      options: --init --ipc=host
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -90,11 +93,18 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Chromium MUST be installed BEFORE `pnpm run test`: the root test script recurses
-      # into packages/styles' Browser Mode suite (STY-03/STY-04). A fresh runner has no
-      # browser, so this install has to precede the test step or CI fails deterministically.
-      - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm run test # recurses into @lyra-ds/styles Browser Mode suite (Phase 2)
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: browser-diagnostics-${{ github.run_id }}
+          path: |
+            packages/styles/.artifacts/browser/
+            packages/react/.artifacts/browser/
+            packages/alpine/.artifacts/browser/
+          if-no-files-found: ignore
+          retention-days: 14
       # Phase 2, STY-06: token/class parity script (fails on any handoff drift)
       - run: pnpm run parity
       # Phase 3, RCT-05: icon-registry drift guard (D-02) — regenerates in-memory and
