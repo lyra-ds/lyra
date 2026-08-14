@@ -1,7 +1,16 @@
+import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
+import {
+  PLAYWRIGHT_BROWSER_INSTANCES,
+  createBrowserEvidenceConfig,
+} from '../../tools/phase1/browser-matrix.mjs';
 
-// Browser Mode (chromium via @vitest/browser-playwright) is REQUIRED for @lyra-ds/styles:
+const browserEvidence = createBrowserEvidenceConfig(
+  resolve(import.meta.dirname, '.artifacts/browser'),
+);
+
+// Browser Mode (Playwright via @vitest/browser-playwright) is REQUIRED for @lyra-ds/styles:
 // jsdom applies zero CSS, so `color-mix()` and the [data-theme]/[data-brand] custom-property
 // cascade cannot resolve there (false negatives/positives). Only a real browser resolves the
 // white-label derivation (STY-04) and dark theming (STY-03). See UI-SPEC "Validation contract (D-04)".
@@ -17,7 +26,7 @@ import { playwright } from '@vitest/browser-playwright';
 // We deliberately keep Vitest's default tester page (no browser.testerHtmlPath); the test does the
 // DOM + CSS setup itself so the mechanism is explicit and self-contained.
 //
-// LOCAL/CI PREREQUISITE: `pnpm exec playwright install chromium --with-deps` must run BEFORE any
+// LOCAL/CI PREREQUISITE: the Playwright browsers must be installed BEFORE any
 // step that triggers Browser Mode. CI wires this ahead of the root test command in plan 02-06.
 export default defineConfig({
   test: {
@@ -26,7 +35,11 @@ export default defineConfig({
       enabled: true,
       provider: playwright(),
       headless: true,
-      instances: [{ browser: 'chromium' }],
+      instances: PLAYWRIGHT_BROWSER_INSTANCES,
+      contextOptions: browserEvidence.contextOptions,
+      screenshotFailures: browserEvidence.screenshotFailures,
+      screenshotDirectory: browserEvidence.screenshotDirectory,
+      trace: browserEvidence.trace,
     },
   },
 });

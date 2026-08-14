@@ -41,7 +41,8 @@
   ],
   "scripts": {
     "lint:css": "stylelint \"**/*.css\"",
-    "test": "vitest run"
+    "test:browser": "vitest run",
+    "test": "pnpm run test:browser"
   },
   "publishConfig": {
     "access": "public",

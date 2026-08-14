@@ -38,7 +38,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "test": "vitest run",
+    "test:browser": "vitest run",
+    "test": "pnpm run test:browser",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

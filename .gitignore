@@ -20,6 +20,7 @@ apps/docs/public/_headers
 # Vitest Browser Mode generated artifacts (failure screenshots / attachments)
 **/__screenshots__/
 **/.vitest-attachments/
+packages/*/.artifacts/browser/
 
 # Playwright MCP screenshots/artifacts
 .playwright-mcp/
