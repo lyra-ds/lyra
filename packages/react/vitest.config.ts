@@ -30,10 +30,9 @@ export default defineConfig({
           include: ['src/**/*.browser.test.tsx'],
           browser: {
             enabled: true,
-            provider: playwright(),
+            provider: playwright({ contextOptions: browserEvidence.contextOptions }),
             headless: true,
             instances: PLAYWRIGHT_BROWSER_INSTANCES,
-            contextOptions: browserEvidence.contextOptions,
             screenshotFailures: browserEvidence.screenshotFailures,
             screenshotDirectory: browserEvidence.screenshotDirectory,
             trace: browserEvidence.trace,
