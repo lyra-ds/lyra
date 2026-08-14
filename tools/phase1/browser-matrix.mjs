@@ -27,7 +27,7 @@ export function createBrowserEvidenceConfig(artifactRoot) {
 }
 
 function includesBrowserMatrix(config) {
-  return /instances:\s*PLAYWRIGHT_BROWSER_INSTANCES/.test(config);
+  return /^\s*(?!\/\/)instances:\s*PLAYWRIGHT_BROWSER_INSTANCES\b/m.test(config);
 }
 
 function getComposeServiceBlock(compose, serviceName) {
@@ -51,7 +51,9 @@ export function validateBrowserMatrix({ compose, scripts, configs }) {
     return ['Compose service "browser-tests" is missing.'];
   }
 
-  if (!browserTestsService.includes(`image: ${PLAYWRIGHT_IMAGE_REFERENCE}`)) {
+  if (
+    !new RegExp(`^    image: ${PLAYWRIGHT_IMAGE_REFERENCE}\\s*$`, 'm').test(browserTestsService)
+  ) {
     errors.push('Compose service "browser-tests" must use the pinned Playwright image.');
   }
 

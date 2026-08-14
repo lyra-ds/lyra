@@ -128,3 +128,34 @@ test('requires each config to operationally use the browser instances', () => {
 
   assert.deepEqual(errors, ['Vitest config "styles" must run chromium, firefox, and webkit.']);
 });
+
+test('rejects a browser matrix reference that appears only in a comment', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: {
+      ...validConfigs,
+      styles: '// instances: PLAYWRIGHT_BROWSER_INSTANCES',
+    },
+  });
+
+  assert.deepEqual(errors, ['Vitest config "styles" must run chromium, firefox, and webkit.']);
+});
+
+test('rejects a pinned image reference that appears only in a service comment', () => {
+  const errors = validateBrowserMatrix({
+    compose: `services:
+  browser-tests:
+    image: node:22
+    # image: ${PLAYWRIGHT_IMAGE_REFERENCE}
+    init: true
+    ipc: host
+`,
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must use the pinned Playwright image.',
+  ]);
+});
