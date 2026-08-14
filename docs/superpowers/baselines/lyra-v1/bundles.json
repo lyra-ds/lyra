@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-08-13T17:39:04.086Z",
-  "revision": "319a962b233d11bbd1776dd74ca25af409f3e294",
+  "measuredAt": "2026-08-14T22:23:11.709Z",
+  "revision": "554c6d2588d9aa6bcf59e71c5c1d967b803d8c05",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "linux 6.18.42-1-MANJARO",
@@ -418,17 +418,17 @@
       "@lyra-ds/react": {
         "version": "0.4.2",
         "tarball": "lyra-ds-react-0.4.2.tgz",
-        "sha256": "5e51331c99907127e4de3358e5eec63fd3d6d4cb5b4e5ed3886370856693e8fe"
+        "sha256": "ed7111ade672b945c23db206073623fba3eb9b5e26c01d285d4be9b748404da6"
       },
       "@lyra-ds/alpine": {
         "version": "0.5.0",
         "tarball": "lyra-ds-alpine-0.5.0.tgz",
-        "sha256": "3b4a12be3ba4ef25f41cfa7be69f6111fd847c3ec6c7a859216e580344da8241"
+        "sha256": "29ea1fa64b2dbbf4d477d7920d5c4105277e5c14c816710041d1ed2d0ffd0d7c"
       },
       "@lyra-ds/styles": {
         "version": "0.4.2",
         "tarball": "lyra-ds-styles-0.4.2.tgz",
-        "sha256": "fe414bc17e16dae4c86bdfb5220b286058ed3c6fb2663c8883d6bc113d561a0b"
+        "sha256": "b72d4b9034cc47cb18fda65f24e2a1f1b06f1894970032454b7ba8ba2bfece56"
       }
     }
   },
@@ -1793,14 +1793,14 @@
         "sizeLimit": {
           "name": "import lyra from '@lyra-ds/alpine'",
           "passed": true,
-          "size": 18866,
+          "size": 18806,
           "sizeLimit": 18900
         },
         "assets": {
           "javascript": {
-            "rawBytes": 195164,
-            "minifiedBytes": 114387,
-            "brotliBytes": 20784,
+            "rawBytes": 194833,
+            "minifiedBytes": 114140,
+            "brotliBytes": 20711,
             "files": ["alpine-01.js"]
           }
         }

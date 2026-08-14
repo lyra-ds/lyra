@@ -35,13 +35,8 @@ function mountDialog(
   return host;
 }
 
-// Bare microtasks race Alpine's scheduler on loaded CI runners (bit three suites in a row on
-// GitHub Actions). Synchronize with Alpine's own flush, then hop a frame (x-show shows via
-// requestAnimationFrame) and a macrotask so every deferred DOM effect has landed.
 async function flush(): Promise<void> {
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -73,7 +68,7 @@ async function openDialog(host: HTMLElement): Promise<void> {
   control.focus();
   await userEvent.click(control);
   await flush();
-  await vi.waitFor(() => expect(panel(host).style.display).not.toBe('none'), { timeout: 3000 });
+  expect(overlay(host).style.display).not.toBe('none');
 }
 
 // Alpine flushes watchers/effects on a microtask, so state driven by the dismissal (focus
@@ -260,10 +255,7 @@ describe('lyraDialog', () => {
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await flush();
     expect(overlay(host).classList).not.toContain('lyra-dialog-overlay--closing');
-    // Initial focus re-entry rides $nextTick, which flushes after the watcher microtasks.
-    await vi.waitFor(() => expect(panel(host).contains(document.activeElement)).toBe(true), {
-      timeout: 3000,
-    });
+    expect(panel(host).contains(document.activeElement)).toBe(true);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
   });

@@ -41,7 +41,7 @@
   ],
   "scripts": {
     "lint:css": "stylelint \"**/*.css\"",
-    "test": "vitest run"
+    "test:browser": "vitest run --browser.name chromium && vitest run --browser.name firefox && vitest run --browser.name webkit"
   },
   "publishConfig": {
     "access": "public",

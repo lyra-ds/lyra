@@ -64,6 +64,12 @@ async function flush(): Promise<void> {
   await new Promise<void>((resolve) => queueMicrotask(resolve));
 }
 
+async function flushShow(): Promise<void> {
+  await Alpine.nextTick();
+  // x-show commits visibility through Alpine's transition frame after the reactive flush.
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 function root(host: HTMLElement): HTMLElement {
   const element = host.querySelector<HTMLElement>('.lyra-appsidebar');
   if (!element) throw new Error('Expected app sidebar root');
@@ -181,11 +187,13 @@ describe('lyraAppSidebar', () => {
     const expandChevron = host.querySelector<SVGPathElement>('[data-testid="expand-chevron"]');
     if (!collapseChevron || !expandChevron) throw new Error('Expected served chevrons');
 
+    expect(collapseChevron.getAttribute('x-show')).toBe('!collapsed');
+    expect(expandChevron.getAttribute('x-show')).toBe('collapsed');
     expect(getComputedStyle(collapseChevron).display).not.toBe('none');
     expect(getComputedStyle(expandChevron).display).toBe('none');
 
     await userEvent.click(toggle(host));
-    await flush();
+    await flushShow();
 
     expect(getComputedStyle(collapseChevron).display).toBe('none');
     expect(getComputedStyle(expandChevron).display).not.toBe('none');

@@ -17,8 +17,9 @@ export function moveActiveIndex(key: string, current: number, count: number): nu
 /** Keep an active option within its list's visible scroll band without unnecessary scrolling. */
 export function scrollActiveIntoView(list: HTMLElement, option: HTMLElement | null): void {
   if (!option) return;
-  if (option.offsetTop < list.scrollTop) list.scrollTop = option.offsetTop;
-  else if (option.offsetTop + option.offsetHeight > list.scrollTop + list.clientHeight) {
-    list.scrollTop = option.offsetTop + option.offsetHeight - list.clientHeight;
-  }
+  const listRect = list.getBoundingClientRect();
+  const optionRect = option.getBoundingClientRect();
+  if (optionRect.top < listRect.top) list.scrollTop += optionRect.top - listRect.top;
+  else if (optionRect.bottom > listRect.bottom)
+    list.scrollTop += optionRect.bottom - listRect.bottom;
 }

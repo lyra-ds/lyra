@@ -10,10 +10,49 @@ function setTheme(theme: (typeof themes)[number]): void {
   else document.documentElement.removeAttribute('data-theme');
 }
 afterEach(async () => {
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   await cleanup();
   setTheme('light');
 });
 describe('Tooltip', () => {
+  describe('focused lifecycle isolation', () => {
+    it('dismisses its focused lifecycle when the trigger loses focus', async () => {
+      let blurred = false;
+      const { container } = await render(
+        <div>
+          <button type="button">Before target</button>
+          <Tooltip tip="Focused lifecycle">
+            <button
+              type="button"
+              onBlur={() => {
+                blurred = true;
+              }}
+            >
+              Focused target
+            </button>
+          </Tooltip>
+          <button type="button">After target</button>
+        </div>,
+      );
+      const root = container.querySelector<HTMLElement>('.lyra-tooltip')!;
+      const [before, trigger, after] = container.querySelectorAll<HTMLButtonElement>('button');
+
+      await userEvent.unhover(root);
+      before!.focus();
+      await userEvent.keyboard('{Tab}');
+
+      expect(document.activeElement).toBe(trigger);
+      expect(root.matches(':hover')).toBe(false);
+      expect(root.dataset.state).toBe('open');
+
+      after!.focus();
+
+      expect(blurred).toBe(true);
+      expect(document.activeElement).toBe(after);
+      await vi.waitFor(() => expect(root.dataset.state).toBe('closed'));
+    });
+  });
+
   for (const theme of themes)
     it(`wires its target and is axe clean in ${theme}`, async () => {
       setTheme(theme);

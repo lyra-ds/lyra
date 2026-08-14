@@ -30,9 +30,18 @@ pnpm install          # install the whole workspace
 pnpm lint             # prettier --check .
 pnpm format           # prettier --write .
 pnpm typecheck        # recursive, per-package (when packages define it)
-pnpm test             # recursive, per-package (when packages define it)
+pnpm test             # non-browser workspace tests, SSR checks, and repository guardrails
 pnpm build            # recursive, per-package (when packages define it)
 ```
+
+Browser Mode is deliberately run in the pinned Playwright container, which supplies
+Chromium, Firefox, and WebKit without installing browser binaries on your machine:
+
+```bash
+env UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm browser-tests
+```
+
+Run this browser matrix before opening a PR that changes browser-tested behavior.
 
 ## Changesets
 

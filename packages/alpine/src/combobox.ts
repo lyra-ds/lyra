@@ -1,7 +1,6 @@
 import { moveActiveIndex, scrollActiveIntoView } from './internal/active-descendant';
 import { observeFlipPlacement } from './internal/flip-placement';
 import type { FlipPlacement } from './internal/flip-placement';
-import { whenVisible } from './internal/when-visible';
 
 /** A data option rendered by {@link lyraCombobox}. */
 export interface LyraComboboxOption {
@@ -300,17 +299,10 @@ export function lyraCombobox({
       this.activeIndex = 0;
       this.startOutsideClick();
       this.$nextTick(() => {
-        const pop = this.popElement();
-        if (!pop) return;
-        whenVisible(
-          pop,
-          () => !this.open,
-          () => {
-            this.startPlacement();
-            this.searchElement()?.focus({ preventScroll: true });
-            this.scheduleActiveScroll();
-          },
-        );
+        if (!this.open) return;
+        this.startPlacement();
+        this.searchElement()?.focus({ preventScroll: true });
+        this.scheduleActiveScroll();
       });
     },
 
@@ -391,8 +383,8 @@ export function lyraCombobox({
     },
 
     pop: {
-      ['x-show']() {
-        return this.open;
+      [':style']() {
+        return { display: this.open ? null : 'none' };
       },
       [':class']() {
         return { 'lyra-combobox__pop--up': this.placement.side === 'up' };
@@ -433,8 +425,8 @@ export function lyraCombobox({
     },
 
     empty: {
-      ['x-show']() {
-        return this.filtered().length === 0;
+      [':style']() {
+        return { display: this.filtered().length === 0 ? null : 'none' };
       },
     },
   };

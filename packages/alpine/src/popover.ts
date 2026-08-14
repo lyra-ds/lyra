@@ -1,5 +1,4 @@
 import { observeFlipPlacement, type FlipPlacement } from './internal/flip-placement';
-import { whenVisible } from './internal/when-visible';
 
 /** Initial configuration accepted by `x-data="lyraPopover(...)"`. */
 export interface LyraPopoverOptions {
@@ -43,6 +42,7 @@ interface LyraPopoverData {
 
 interface LyraPopoverMagics {
   $el: HTMLElement;
+  $nextTick(callback: () => void): void;
   $watch(path: string, callback: (value: boolean) => void): void;
 }
 
@@ -83,28 +83,16 @@ export function lyraPopover({
           return;
         }
 
-        // React's effect installs document listeners as soon as open changes. The panel still
-        // needs to become visible before it can be measured, because x-show reveals it later.
         this.startDocumentListeners();
-        const panel = this.panelElement();
-        if (panel) {
-          whenVisible(
-            panel,
-            () => !this.open,
-            () => this.startPlacement(),
-          );
-        }
+        this.$nextTick(() => {
+          if (this.open) this.startPlacement();
+        });
       });
       if (this.open) {
         this.startDocumentListeners();
-        const panel = this.panelElement();
-        if (panel) {
-          whenVisible(
-            panel,
-            () => !this.open,
-            () => this.startPlacement(),
-          );
-        }
+        this.$nextTick(() => {
+          if (this.open) this.startPlacement();
+        });
       }
     },
 
@@ -200,16 +188,16 @@ export function lyraPopover({
         return this.ariaLabel;
       },
       [':style']() {
-        return this.width === undefined ? {} : { width: `${this.width}px` };
+        return {
+          display: this.open ? null : 'none',
+          width: this.width === undefined ? null : `${this.width}px`,
+        };
       },
       [':class']() {
         const resolvedSide =
           this.side === 'auto' ? this.placement.side : this.side === 'bottom' ? 'down' : 'up';
         const resolvedAlign = this.align ?? this.placement.align;
         return `lyra-popover--${resolvedSide === 'down' ? 'bottom' : 'top'} lyra-popover--align-${resolvedAlign}`;
-      },
-      ['x-show']() {
-        return this.open;
       },
     },
   };

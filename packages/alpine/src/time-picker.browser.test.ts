@@ -239,7 +239,7 @@ describe('lyraTimePicker', () => {
     await userEvent.click(trigger(host));
     await flush();
 
-    await vi.waitFor(() => expect(list(host).scrollTop).toBe(416), { timeout: 3000 });
+    await vi.waitFor(() => expect(list(host).scrollTop).toBeCloseTo(416, 0), { timeout: 3000 });
   });
 
   it('clamps list arrow navigation and supports Home and End', async () => {

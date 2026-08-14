@@ -78,10 +78,8 @@ export function lyraFileManager({
       }
     },
 
-    // Derived on demand instead of held as watcher-written state: a reactive property mutated
-    // inside a $watch callback can miss scheduling the dependent x-show effect during the same
-    // flush, leaving the empty state stuck. Reading query and view here makes the x-show effect
-    // itself re-run and recount from the served markup.
+    // Derive on demand so the visibility binding tracks query and view while recounting the
+    // currently served markup in the same flush.
     matchCount() {
       const normalizedQuery = this.query.trim().toLowerCase();
       return Array.from(
@@ -133,20 +131,20 @@ export function lyraFileManager({
     },
 
     list: {
-      ['x-show']() {
-        return this.view === 'list';
+      [':style']() {
+        return { display: this.view === 'list' ? null : 'none' };
       },
     },
 
     grid: {
-      ['x-show']() {
-        return this.view === 'grid';
+      [':style']() {
+        return { display: this.view === 'grid' ? null : 'none' };
       },
     },
 
     empty: {
-      ['x-show']() {
-        return this.matchCount() === 0;
+      [':style']() {
+        return { display: this.matchCount() === 0 ? null : 'none' };
       },
     },
   };

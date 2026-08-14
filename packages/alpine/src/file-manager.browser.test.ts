@@ -1,6 +1,6 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
@@ -142,13 +142,11 @@ describe('lyraFileManager', () => {
     const empty = host.querySelector<HTMLElement>('.lyra-fm__empty');
     if (!empty) throw new Error('Expected empty state');
 
-    // x-show reveals on a deferred frame (wave-1 lesson): wait for each transition to LAND
-    // before triggering the next, or the pending reveal can arrive after the later hide.
     await setQuery(host, 'missing');
-    await vi.waitFor(() => expect(getComputedStyle(empty).display).not.toBe('none'));
+    expect(getComputedStyle(empty).display).not.toBe('none');
 
     await setQuery(host, 'notes');
-    await vi.waitFor(() => expect(getComputedStyle(empty).display).toBe('none'));
+    expect(getComputedStyle(empty).display).toBe('none');
   });
 
   it('switches the served view bindings and removes a server-rendered active modifier', async () => {

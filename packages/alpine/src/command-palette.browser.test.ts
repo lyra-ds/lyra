@@ -202,9 +202,9 @@ describe('lyraCommandPalette', () => {
     await userEvent.fill(search(host), 'settings');
     await userEvent.keyboard('{ArrowDown}');
     await userEvent.keyboard('{Escape}');
+    expect(document.body.style.overflow).toBe('hidden');
     await flush();
     await vi.waitFor(() => expect(document.activeElement).toBe(opener(host)), { timeout: 3000 });
-    expect(document.body.style.overflow).toBe('hidden');
     await finishExit(host);
     expect(document.body.style.overflow).toBe('');
 
@@ -292,19 +292,17 @@ describe('lyraCommandPalette', () => {
     await openPalette(host);
     const target = options(host)[10];
     if (!target) throw new Error('Expected tenth command item');
-    Object.defineProperties(list(host), {
-      clientHeight: { configurable: true, value: 100 },
+    const commandList = list(host);
+    Object.defineProperties(commandList, {
       scrollTop: { configurable: true, value: 0, writable: true },
     });
-    Object.defineProperties(target, {
-      offsetTop: { configurable: true, value: 240 },
-      offsetHeight: { configurable: true, value: 24 },
-    });
+    vi.spyOn(commandList, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 200, 100));
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 340, 200, 24));
 
     target.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     await flush();
     expect(search(host).getAttribute('aria-activedescendant')).toBe(target.id);
-    await vi.waitFor(() => expect(list(host).scrollTop).toBe(164), { timeout: 3000 });
+    await vi.waitFor(() => expect(commandList.scrollTop).toBe(164), { timeout: 3000 });
   });
 
   it('selects by Enter and click, dispatches the item, then closes in overlay mode', async () => {

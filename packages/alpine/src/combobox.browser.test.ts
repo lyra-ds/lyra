@@ -115,14 +115,7 @@ function visibleOptions(host: HTMLElement): HTMLButtonElement[] {
 }
 
 async function flush(): Promise<void> {
-  await Promise.resolve();
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
-}
-
-async function expectVisible(element: HTMLElement): Promise<void> {
-  await vi.waitFor(() => expect(element.style.display).not.toBe('none'), { timeout: 3000 });
 }
 
 afterEach(() => {
@@ -141,8 +134,8 @@ describe('lyraCombobox', () => {
     await flush();
 
     expect(trigger(host).getAttribute('aria-expanded')).toBe('true');
-    await expectVisible(pop(host));
-    await vi.waitFor(() => expect(document.activeElement).toBe(search(host)), { timeout: 3000 });
+    expect(pop(host).style.display).not.toBe('none');
+    expect(document.activeElement).toBe(search(host));
   });
 
   it('keeps focus on search while clamped arrows, Home, and End change original-index descendants', async () => {
@@ -294,18 +287,38 @@ describe('lyraCombobox', () => {
     const items = visibleOptions(host);
     const target = items[10]!;
     Object.defineProperties(list(host), {
-      clientHeight: { configurable: true, value: 100 },
       scrollTop: { configurable: true, value: 0, writable: true },
     });
-    Object.defineProperties(target, {
-      offsetTop: { configurable: true, value: 240 },
-      offsetHeight: { configurable: true, value: 24 },
-    });
+    vi.spyOn(list(host), 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 200, 100));
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 340, 200, 24));
 
     target.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     await flush();
     expect(search(host).getAttribute('aria-activedescendant')).toBe('country-combobox-option-10');
     await vi.waitFor(() => expect(list(host).scrollTop).toBe(164), { timeout: 3000 });
+  });
+
+  it('does not scroll an already visible hovered option from nested offset coordinates', async () => {
+    const host = mountCombobox();
+    await userEvent.click(trigger(host));
+    await flush();
+    const option = visibleOptions(host)[2]!;
+    const optionsList = list(host);
+    Object.defineProperties(optionsList, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollTop: { configurable: true, value: 0, writable: true },
+    });
+    Object.defineProperties(option, {
+      offsetTop: { configurable: true, value: 140 },
+      offsetHeight: { configurable: true, value: 24 },
+    });
+    vi.spyOn(optionsList, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 200, 100));
+    vi.spyOn(option, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 140, 200, 24));
+
+    option.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flush();
+
+    expect(optionsList.scrollTop).toBe(0);
   });
 
   it('synchronizes value and open through x-modelable in both directions without external change events', async () => {
@@ -349,7 +362,7 @@ describe('lyraCombobox', () => {
     if (!setOpen) throw new Error('Expected external open control');
     await userEvent.click(setOpen);
     await flush();
-    await expectVisible(pop(openHost));
+    expect(pop(openHost).style.display).not.toBe('none');
     await userEvent.click(trigger(openHost));
     await flush();
     expect(
@@ -362,7 +375,7 @@ describe('lyraCombobox', () => {
     await expectNoAxeViolations(host);
     await userEvent.click(trigger(host));
     await flush();
-    await expectVisible(pop(host));
+    expect(pop(host).style.display).not.toBe('none');
     await expectNoAxeViolations(host);
   });
 });

@@ -35,12 +35,8 @@ function mountPopover({
   return host;
 }
 
-// Wait for Alpine's state effects, x-show's deferred frame, and the visibility polling used
-// before flip placement begins.
 async function flush(): Promise<void> {
   await Alpine.nextTick();
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function root(host: HTMLElement): HTMLElement {

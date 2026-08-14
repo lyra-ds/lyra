@@ -4,19 +4,33 @@
 // Alpine port is proven HERE, against the real @lyra-ds/styles CSS imported inside
 // each test (never in src).
 //
-// LOCAL/CI PREREQUISITE: `pnpm exec playwright install chromium --with-deps` must run
+// LOCAL/CI PREREQUISITE: the Playwright browsers must be installed
 // BEFORE any step that triggers Browser Mode (CI wires this ahead of the root test).
+import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
+import {
+  PLAYWRIGHT_BROWSER_INSTANCES,
+  createBrowserEvidenceConfig,
+} from '../../tools/phase1/browser-matrix.mjs';
+
+const browserEvidence = createBrowserEvidenceConfig(
+  resolve(import.meta.dirname, '.artifacts/browser'),
+);
 
 export default defineConfig({
   test: {
     include: ['src/**/*.browser.test.ts'],
+    setupFiles: ['src/browser-test-setup.ts'],
     browser: {
       enabled: true,
-      provider: playwright(),
+      provider: playwright({ contextOptions: browserEvidence.contextOptions }),
       headless: true,
-      instances: [{ browser: 'chromium' }],
+      fileParallelism: false,
+      instances: PLAYWRIGHT_BROWSER_INSTANCES,
+      screenshotFailures: browserEvidence.screenshotFailures,
+      screenshotDirectory: browserEvidence.screenshotDirectory,
+      trace: browserEvidence.trace,
     },
   },
 });

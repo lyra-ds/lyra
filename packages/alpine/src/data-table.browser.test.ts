@@ -27,16 +27,16 @@ function dataTableTemplate(
               </th>
               <th data-sort-key="name" x-bind="header">
                 <button class="lyra-table__sortbtn" x-bind="sortButton">Name
-                  <span data-testid="name-unsorted" x-show="sortDir('name') === null">↕</span>
-                  <span data-testid="name-asc" x-show="sortDir('name') === 'asc'">↑</span>
-                  <span data-testid="name-desc" x-show="sortDir('name') === 'desc'">↓</span>
+                  <span data-testid="name-unsorted" :hidden="sortDir('name') !== null">↕</span>
+                  <span data-testid="name-asc" :hidden="sortDir('name') !== 'asc'">↑</span>
+                  <span data-testid="name-desc" :hidden="sortDir('name') !== 'desc'">↓</span>
                 </button>
               </th>
               <th data-sort-key="total" x-bind="header">
                 <button class="lyra-table__sortbtn" x-bind="sortButton">Total
-                  <span data-testid="total-unsorted" x-show="sortDir('total') === null">↕</span>
-                  <span data-testid="total-asc" x-show="sortDir('total') === 'asc'">↑</span>
-                  <span data-testid="total-desc" x-show="sortDir('total') === 'desc'">↓</span>
+                  <span data-testid="total-unsorted" :hidden="sortDir('total') !== null">↕</span>
+                  <span data-testid="total-asc" :hidden="sortDir('total') !== 'asc'">↑</span>
+                  <span data-testid="total-desc" :hidden="sortDir('total') !== 'desc'">↓</span>
                 </button>
               </th>
             </tr>
@@ -188,9 +188,7 @@ describe('lyraDataTable', () => {
     await flush();
     expect(header(host, 'name').getAttribute('aria-sort')).toBe('ascending');
     expect(sortButton(host, 'name').classList.contains('lyra-table__sortbtn--active')).toBe(true);
-    expect(host.querySelector<HTMLElement>('[data-testid="name-asc"]')?.style.display).not.toBe(
-      'none',
-    );
+    expect(host.querySelector<HTMLElement>('[data-testid="name-asc"]')?.hidden).toBe(false);
 
     await userEvent.click(sortButton(host, 'name'));
     await flush();

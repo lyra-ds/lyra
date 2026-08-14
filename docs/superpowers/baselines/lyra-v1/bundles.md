@@ -1,7 +1,7 @@
 # Lyra v1 bundle baseline
 
-- Revision: `319a962b233d11bbd1776dd74ca25af409f3e294`
-- Measured at: `2026-08-13T17:39:04.086Z`
+- Revision: `554c6d2588d9aa6bcf59e71c5c1d967b803d8c05`
+- Measured at: `2026-08-14T22:23:11.709Z`
 - Owner: Lyra maintainers
 - Exact command: `pnpm baseline:bundles --write`
 - Environment: linux 6.18.42-1-MANJARO, x64, Node v24.18.0, pnpm 11.13.1
@@ -19,9 +19,9 @@
 
 | Package         | Version | Tarball                    | SHA-256                                                            |
 | --------------- | ------- | -------------------------- | ------------------------------------------------------------------ |
-| @lyra-ds/react  | 0.4.2   | `lyra-ds-react-0.4.2.tgz`  | `5e51331c99907127e4de3358e5eec63fd3d6d4cb5b4e5ed3886370856693e8fe` |
-| @lyra-ds/alpine | 0.5.0   | `lyra-ds-alpine-0.5.0.tgz` | `3b4a12be3ba4ef25f41cfa7be69f6111fd847c3ec6c7a859216e580344da8241` |
-| @lyra-ds/styles | 0.4.2   | `lyra-ds-styles-0.4.2.tgz` | `fe414bc17e16dae4c86bdfb5220b286058ed3c6fb2663c8883d6bc113d561a0b` |
+| @lyra-ds/react  | 0.4.2   | `lyra-ds-react-0.4.2.tgz`  | `ed7111ade672b945c23db206073623fba3eb9b5e26c01d285d4be9b748404da6` |
+| @lyra-ds/alpine | 0.5.0   | `lyra-ds-alpine-0.5.0.tgz` | `29ea1fa64b2dbbf4d477d7920d5c4105277e5c14c816710041d1ed2d0ffd0d7c` |
+| @lyra-ds/styles | 0.4.2   | `lyra-ds-styles-0.4.2.tgz` | `b72d4b9034cc47cb18fda65f24e2a1f1b06f1894970032454b7ba8ba2bfece56` |
 
 ## Standalone entries
 
@@ -98,7 +98,7 @@
 | react   | `@lyra-ds/react/weekly-schedule-editor`  |  98,620 B |    61,497 B |  15,087 B |   13,947 B | 14.5 kB |
 | react   | `@lyra-ds/react/slot-picker`             |  84,937 B |    55,395 B |  13,936 B |   13,090 B |   14 kB |
 | react   | `@lyra-ds/react/calendar-view`           |  58,972 B |    35,988 B |   9,242 B |    8,884 B |  9.5 kB |
-| alpine  | `@lyra-ds/alpine`                        | 195,164 B |   114,387 B |  20,784 B |   18,866 B | 18.9 kB |
+| alpine  | `@lyra-ds/alpine`                        | 194,833 B |   114,140 B |  20,711 B |   18,806 B | 18.9 kB |
 
 ## Scenarios
 
