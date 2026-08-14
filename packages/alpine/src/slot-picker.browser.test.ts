@@ -164,6 +164,9 @@ describe('lyraSlotPicker', () => {
       picker(host).querySelector<HTMLButtonElement>('[data-zone="Asia/Tokyo"]')!,
     );
     await flush();
+    const state = Alpine.$data(picker(host)) as { timezone: string; tzOpen: boolean };
+    expect(state.timezone).toBe('Asia/Tokyo');
+    expect(state.tzOpen).toBe(false);
     expect(picker(host).querySelector('.lyra-tzpicker')).toBeNull();
     expect(picker(host).querySelector('[role="option"]')?.textContent).not.toBe(before);
     expect(changes).toContainEqual({ date: '2026-08-03', timezone: 'Asia/Tokyo' });
