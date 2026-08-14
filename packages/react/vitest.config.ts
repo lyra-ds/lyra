@@ -32,6 +32,7 @@ export default defineConfig({
             enabled: true,
             provider: playwright({ contextOptions: browserEvidence.contextOptions }),
             headless: true,
+            fileParallelism: false,
             instances: PLAYWRIGHT_BROWSER_INSTANCES,
             screenshotFailures: browserEvidence.screenshotFailures,
             screenshotDirectory: browserEvidence.screenshotDirectory,

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { loadConfigFromFile } from 'vite';
@@ -7,6 +8,12 @@ const browserConfigs = [
   'packages/styles/vitest.config.ts',
   'packages/react/vitest.config.ts',
   'packages/alpine/vitest.config.ts',
+];
+
+const browserPackages = [
+  'packages/styles/package.json',
+  'packages/react/package.json',
+  'packages/alpine/package.json',
 ];
 
 async function loadBrowserConfig(configFile) {
@@ -39,5 +46,24 @@ test('passes CI video evidence to every Playwright provider', async () => {
     } else {
       process.env.CI = previousCi;
     }
+  }
+});
+
+test('serializes Browser Mode files before persisting shared trace evidence', async () => {
+  for (const configFile of browserConfigs) {
+    const browser = await loadBrowserConfig(configFile);
+
+    assert.equal(browser.fileParallelism, false);
+  }
+});
+
+test('runs each browser instance serially before persisting shared trace evidence', () => {
+  for (const packageFile of browserPackages) {
+    const { scripts } = JSON.parse(readFileSync(resolve(packageFile), 'utf8'));
+
+    assert.match(
+      scripts['test:browser'],
+      /--browser\.name chromium && vitest run(?: --project browser)? --browser\.name firefox && vitest run(?: --project browser)? --browser\.name webkit$/,
+    );
   }
 });
