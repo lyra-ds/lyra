@@ -42,8 +42,8 @@ function sidebarMarkup({
       <div class="lyra-appsidebar__footer"><a href="/account">Account</a></div>
       <button class="lyra-appsidebar__toggle" x-bind="toggle">
         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path data-testid="collapse-chevron" d="m15 18-6-6 6-6" :style="{ display: collapsed ? 'none' : null }"></path>
-          <path data-testid="expand-chevron" d="m9 18 6-6-6-6" :style="{ display: collapsed ? null : 'none' }"></path>
+          <path data-testid="collapse-chevron" d="m15 18-6-6 6-6" x-show="!collapsed"></path>
+          <path data-testid="expand-chevron" d="m9 18 6-6-6-6" x-show="collapsed"></path>
         </svg>
       </button>
     </nav>
@@ -62,6 +62,12 @@ function mountAppSidebar(options: SidebarOptions = {}): HTMLElement {
 async function flush(): Promise<void> {
   await Alpine.nextTick();
   await new Promise<void>((resolve) => queueMicrotask(resolve));
+}
+
+async function flushShow(): Promise<void> {
+  await Alpine.nextTick();
+  // x-show commits visibility through Alpine's transition frame after the reactive flush.
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
 function root(host: HTMLElement): HTMLElement {
@@ -181,11 +187,13 @@ describe('lyraAppSidebar', () => {
     const expandChevron = host.querySelector<SVGPathElement>('[data-testid="expand-chevron"]');
     if (!collapseChevron || !expandChevron) throw new Error('Expected served chevrons');
 
+    expect(collapseChevron.getAttribute('x-show')).toBe('!collapsed');
+    expect(expandChevron.getAttribute('x-show')).toBe('collapsed');
     expect(getComputedStyle(collapseChevron).display).not.toBe('none');
     expect(getComputedStyle(expandChevron).display).toBe('none');
 
     await userEvent.click(toggle(host));
-    await flush();
+    await flushShow();
 
     expect(getComputedStyle(collapseChevron).display).toBe('none');
     expect(getComputedStyle(expandChevron).display).not.toBe('none');
