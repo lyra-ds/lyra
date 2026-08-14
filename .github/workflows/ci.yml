@@ -93,7 +93,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run test # recurses into @lyra-ds/styles Browser Mode suite (Phase 2)
+      - run: pnpm run test
+      - run: pnpm run test:browsers
       - name: Upload browser diagnostics
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

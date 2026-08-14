@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test:browsers": "pnpm --filter @lyra-ds/styles run test:browser && pnpm --filter @lyra-ds/react run test:browser && pnpm --filter @lyra-ds/alpine run test:browser",
-    "test": "pnpm --filter @lyra-ds/react run build && node --test tools/phase0/check-artifacts.test.mjs tools/bundle-baseline/measure.test.mjs && pnpm test:browsers && pnpm --filter @lyra-ds/react run test:ssr",
+    "test": "pnpm --filter @lyra-ds/react run build && node --test tools/phase0/check-artifacts.test.mjs tools/bundle-baseline/measure.test.mjs tools/phase1/browser-matrix.test.mjs tools/phase1/browser-config.test.mjs && pnpm -r --if-present run test",
     "build": "pnpm -r --if-present run build",
     "docgen": "node tools/docgen/generate.mjs",
     "docgen:alpine": "node tools/docgen/alpine.mjs",

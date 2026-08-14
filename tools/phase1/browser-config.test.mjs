@@ -67,3 +67,21 @@ test('runs each browser instance serially before persisting shared trace evidenc
     );
   }
 });
+
+test('keeps Browser Mode Docker-only while the root test command runs every non-browser suite', () => {
+  const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
+  const packageScripts = Object.fromEntries(
+    browserPackages.map((packageFile) => [
+      packageFile,
+      JSON.parse(readFileSync(resolve(packageFile), 'utf8')).scripts,
+    ]),
+  );
+
+  assert.match(rootScripts.test, /tools\/phase1\/browser-matrix\.test\.mjs/);
+  assert.match(rootScripts.test, /tools\/phase1\/browser-config\.test\.mjs/);
+  assert.match(rootScripts.test, /pnpm -r --if-present run test/);
+  assert.doesNotMatch(rootScripts.test, /pnpm test:browsers/);
+  assert.equal(packageScripts['packages/styles/package.json'].test, undefined);
+  assert.equal(packageScripts['packages/react/package.json'].test, 'pnpm run test:ssr');
+  assert.equal(packageScripts['packages/alpine/package.json'].test, undefined);
+});

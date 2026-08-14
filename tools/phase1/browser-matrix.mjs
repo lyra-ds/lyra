@@ -105,21 +105,14 @@ function hasBrowserDiagnosticsUpload(job) {
   );
 }
 
-function installsOnlyChromium(job) {
-  const commandPrefix = '      - run: pnpm exec playwright install';
-  const installCommands = job
-    .split('\n')
-    .filter((line) => /^\s|$/.test(line.slice(commandPrefix.length)))
-    .filter((line) => line.startsWith(commandPrefix))
-    .map((line) => line.slice(commandPrefix.length).replace(/\s+#.*$/, ''));
+function installsPlaywrightBrowsers(job) {
+  const uncommentedJob = job.replace(/^\s*#.*$/gm, '');
 
-  return installCommands.some((command) => {
-    const browsers = command
-      .split(/\s+/)
-      .filter((argument) => argument && !argument.startsWith('--'));
+  return /^\s*(?:-\s+run:\s*)?pnpm exec playwright install(?:\s|$)/m.test(uncommentedJob);
+}
 
-    return browsers.length > 0 && browsers.every((browser) => browser === 'chromium');
-  });
+function runsBrowserMatrix(job) {
+  return /^      - run: pnpm run test:browsers\s*(?:#.*)?$/m.test(job);
 }
 
 function validateCiBrowserMatrix(workflow) {
@@ -143,8 +136,12 @@ function validateCiBrowserMatrix(workflow) {
     errors.push('CI job "test" container must enable --ipc=host.');
   }
 
-  if (installsOnlyChromium(testJob)) {
-    errors.push('CI job "test" must not install Chromium separately.');
+  if (!runsBrowserMatrix(testJob)) {
+    errors.push('CI job "test" must run the browser matrix.');
+  }
+
+  if (installsPlaywrightBrowsers(testJob)) {
+    errors.push('CI job "test" must not install Playwright browsers.');
   }
 
   if (!hasBrowserDiagnosticsUpload(testJob)) {

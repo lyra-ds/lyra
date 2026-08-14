@@ -788,7 +788,7 @@
     "build": "NODE_OPTIONS='--max-old-space-size=8192' tsdown --concurrency 2 && node scripts/use-client.mjs",
     "test:browser": "vitest run --project browser --browser.name chromium && vitest run --project browser --browser.name firefox && vitest run --project browser --browser.name webkit",
     "test:ssr": "vitest run --project ssr",
-    "test": "pnpm run test:browser && pnpm run test:ssr",
+    "test": "pnpm run test:ssr",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

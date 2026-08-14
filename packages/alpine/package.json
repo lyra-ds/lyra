@@ -39,7 +39,6 @@
   "scripts": {
     "build": "tsdown",
     "test:browser": "vitest run --browser.name chromium && vitest run --browser.name firefox && vitest run --browser.name webkit",
-    "test": "pnpm run test:browser",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

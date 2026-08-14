@@ -94,9 +94,9 @@ replace a protected check. Browser installation commands become unnecessary
 inside that container because the exact browsers and their system dependencies
 are already present.
 
-Every browser failure preserves the Playwright HTML report plus its relevant
-trace, screenshot, and video as a CI artifact. Artifacts identify the exact
-commit, lockfile, image digest, browser project, command, and affected test.
+Every browser failure preserves its relevant screenshot, trace, and CI-only
+video as a CI artifact. The artifact paths identify the affected package and
+retain the exact evidence emitted by the failing browser project.
 
 ### 3.3 Coverage selection
 

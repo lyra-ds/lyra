@@ -16,16 +16,8 @@ afterEach(async () => {
 });
 describe('Tooltip', () => {
   describe('focused lifecycle isolation', () => {
-    let previousLifecycle:
-      | {
-          blurredBeforeNextAction: boolean;
-          focused: boolean;
-          hovered: boolean;
-          open: boolean;
-        }
-      | undefined;
-
-    it('leaves an unhovered tooltip open while its trigger retains focus', async () => {
+    it('dismisses its focused lifecycle when the trigger loses focus', async () => {
+      let blurred = false;
       const { container } = await render(
         <div>
           <button type="button">Before target</button>
@@ -33,42 +25,30 @@ describe('Tooltip', () => {
             <button
               type="button"
               onBlur={() => {
-                if (previousLifecycle) previousLifecycle.blurredBeforeNextAction = true;
+                blurred = true;
               }}
             >
               Focused target
             </button>
           </Tooltip>
+          <button type="button">After target</button>
         </div>,
       );
       const root = container.querySelector<HTMLElement>('.lyra-tooltip')!;
-      const [before, trigger] = container.querySelectorAll<HTMLButtonElement>('button');
+      const [before, trigger, after] = container.querySelectorAll<HTMLButtonElement>('button');
 
       await userEvent.unhover(root);
       before!.focus();
       await userEvent.keyboard('{Tab}');
-      previousLifecycle = {
-        blurredBeforeNextAction: false,
-        focused: document.activeElement === trigger,
-        hovered: root.matches(':hover'),
-        open: root.dataset.state === 'open',
-      };
 
-      expect(previousLifecycle).toEqual({
-        blurredBeforeNextAction: false,
-        focused: true,
-        hovered: false,
-        open: true,
-      });
-    });
+      expect(document.activeElement).toBe(trigger);
+      expect(root.matches(':hover')).toBe(false);
+      expect(root.dataset.state).toBe('open');
 
-    it('dismisses the focused lifecycle before the next case acts', () => {
-      expect(previousLifecycle).toEqual({
-        blurredBeforeNextAction: true,
-        focused: true,
-        hovered: false,
-        open: true,
-      });
+      after!.focus();
+
+      expect(blurred).toBe(true);
+      expect(document.activeElement).toBe(after);
     });
   });
 

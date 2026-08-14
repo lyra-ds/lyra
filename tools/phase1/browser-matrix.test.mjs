@@ -33,6 +33,7 @@ const validWorkflow = `jobs:
       options: --init --ipc=host
     steps:
       - run: pnpm run test
+      - run: pnpm run test:browsers
       - name: Upload browser diagnostics
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -152,7 +153,8 @@ test('requires the CI test job to use the Playwright browser matrix container', 
 
   assert.deepEqual(errors, [
     'CI job "test" must run in the pinned Playwright container.',
-    'CI job "test" must not install Chromium separately.',
+    'CI job "test" must run the browser matrix.',
+    'CI job "test" must not install Playwright browsers.',
     'CI job "test" must upload browser diagnostics only on failure.',
   ]);
 });
@@ -168,10 +170,10 @@ test('rejects Chromium-only Playwright installs when flags precede the browser a
     ),
   });
 
-  assert.deepEqual(errors, ['CI job "test" must not install Chromium separately.']);
+  assert.deepEqual(errors, ['CI job "test" must not install Playwright browsers.']);
 });
 
-test('allows Playwright installs that include more than Chromium', () => {
+test('rejects Playwright installs that download more than Chromium', () => {
   const errors = validateBrowserMatrix({
     compose: validCompose,
     scripts: validScripts,
@@ -182,7 +184,32 @@ test('allows Playwright installs that include more than Chromium', () => {
     ),
   });
 
-  assert.deepEqual(errors, []);
+  assert.deepEqual(errors, ['CI job "test" must not install Playwright browsers.']);
+});
+
+test('rejects Playwright installs inside YAML block scalar run steps', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace(
+      '- run: pnpm run test',
+      '- run: |\n        pnpm exec playwright install --with-deps chromium firefox\n      - run: pnpm run test',
+    ),
+  });
+
+  assert.deepEqual(errors, ['CI job "test" must not install Playwright browsers.']);
+});
+
+test('requires the CI test job to run the Docker-only browser matrix', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: validScripts,
+    configs: validConfigs,
+    workflow: validWorkflow.replace('      - run: pnpm run test:browsers\n', ''),
+  });
+
+  assert.deepEqual(errors, ['CI job "test" must run the browser matrix.']);
 });
 
 test('does not mistake a non-install Playwright command for a Chromium-only install', () => {
