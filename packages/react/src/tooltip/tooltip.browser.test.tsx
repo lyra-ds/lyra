@@ -10,6 +10,7 @@ function setTheme(theme: (typeof themes)[number]): void {
   else document.documentElement.removeAttribute('data-theme');
 }
 afterEach(async () => {
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   await cleanup();
   setTheme('light');
 });
