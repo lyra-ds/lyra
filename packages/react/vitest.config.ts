@@ -28,6 +28,7 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['src/**/*.browser.test.tsx'],
+          setupFiles: ['src/internal/browser-test-setup.ts'],
           browser: {
             enabled: true,
             provider: playwright({ contextOptions: browserEvidence.contextOptions }),
