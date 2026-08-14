@@ -58,16 +58,18 @@ describe('Toast', () => {
   });
 
   it('gives the close button a hit area that clears the WCAG minimum', async () => {
-    // Regression: the close glyph measured 12x19 — the one control in the system that failed
-    // WCAG 2.2 AA's 24x24 minimum outright. It keeps its visible size; the area is the ::after.
+    // Regression: the close glyph did not have a 24px hit area. It keeps its visible size; the
+    // ::after expansion is the interactive area and must meet WCAG 2.2 AA in every browser.
     const { container } = await render(<Toast onClose={() => {}}>Saved</Toast>);
     const close = container.querySelector<HTMLElement>('.lyra-toast__close')!;
-    expect(Math.round(close.getBoundingClientRect().width)).toBe(12);
-
     const hit = getComputedStyle(close, '::after');
+    const box = close.getBoundingClientRect();
+
     expect(hit.content).not.toBe('none');
     expect(hit.top).toBe('-12px');
     expect(hit.left).toBe('-12px');
+    expect(box.width - parseFloat(hit.left) - parseFloat(hit.right)).toBeGreaterThanOrEqual(24);
+    expect(box.height - parseFloat(hit.top) - parseFloat(hit.bottom)).toBeGreaterThanOrEqual(24);
   });
 
   it('calls onClose from its labelled close button without moving focus itself', async () => {
