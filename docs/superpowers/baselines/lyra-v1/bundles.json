@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-08-14T19:58:42.951Z",
-  "revision": "370cdaedd012c23f7641890cef798406a8ab53a4",
+  "measuredAt": "2026-08-14T21:55:43.549Z",
+  "revision": "1766b370cd662740325ea56edccd4b92a5500439",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "linux 6.18.42-1-MANJARO",
@@ -423,7 +423,7 @@
       "@lyra-ds/alpine": {
         "version": "0.5.0",
         "tarball": "lyra-ds-alpine-0.5.0.tgz",
-        "sha256": "29ea1fa64b2dbbf4d477d7920d5c4105277e5c14c816710041d1ed2d0ffd0d7c"
+        "sha256": "afe3e3ecb5aec31d7b36b33dc7b9aafb570bf5f1460eced3a88bb9b6ed97356d"
       },
       "@lyra-ds/styles": {
         "version": "0.4.2",
@@ -1793,14 +1793,14 @@
         "sizeLimit": {
           "name": "import lyra from '@lyra-ds/alpine'",
           "passed": true,
-          "size": 18806,
+          "size": 18789,
           "sizeLimit": 18900
         },
         "assets": {
           "javascript": {
-            "rawBytes": 194833,
-            "minifiedBytes": 114140,
-            "brotliBytes": 20711,
+            "rawBytes": 194917,
+            "minifiedBytes": 114192,
+            "brotliBytes": 20742,
             "files": ["alpine-01.js"]
           }
         }

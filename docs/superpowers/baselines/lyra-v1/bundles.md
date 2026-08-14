@@ -1,7 +1,7 @@
 # Lyra v1 bundle baseline
 
-- Revision: `370cdaedd012c23f7641890cef798406a8ab53a4`
-- Measured at: `2026-08-14T19:58:42.951Z`
+- Revision: `1766b370cd662740325ea56edccd4b92a5500439`
+- Measured at: `2026-08-14T21:55:43.549Z`
 - Owner: Lyra maintainers
 - Exact command: `pnpm baseline:bundles --write`
 - Environment: linux 6.18.42-1-MANJARO, x64, Node v24.18.0, pnpm 11.13.1
@@ -20,7 +20,7 @@
 | Package         | Version | Tarball                    | SHA-256                                                            |
 | --------------- | ------- | -------------------------- | ------------------------------------------------------------------ |
 | @lyra-ds/react  | 0.4.2   | `lyra-ds-react-0.4.2.tgz`  | `ed7111ade672b945c23db206073623fba3eb9b5e26c01d285d4be9b748404da6` |
-| @lyra-ds/alpine | 0.5.0   | `lyra-ds-alpine-0.5.0.tgz` | `29ea1fa64b2dbbf4d477d7920d5c4105277e5c14c816710041d1ed2d0ffd0d7c` |
+| @lyra-ds/alpine | 0.5.0   | `lyra-ds-alpine-0.5.0.tgz` | `afe3e3ecb5aec31d7b36b33dc7b9aafb570bf5f1460eced3a88bb9b6ed97356d` |
 | @lyra-ds/styles | 0.4.2   | `lyra-ds-styles-0.4.2.tgz` | `b72d4b9034cc47cb18fda65f24e2a1f1b06f1894970032454b7ba8ba2bfece56` |
 
 ## Standalone entries
@@ -98,7 +98,7 @@
 | react   | `@lyra-ds/react/weekly-schedule-editor`  |  98,620 B |    61,497 B |  15,087 B |   13,947 B | 14.5 kB |
 | react   | `@lyra-ds/react/slot-picker`             |  84,937 B |    55,395 B |  13,936 B |   13,090 B |   14 kB |
 | react   | `@lyra-ds/react/calendar-view`           |  58,972 B |    35,988 B |   9,242 B |    8,884 B |  9.5 kB |
-| alpine  | `@lyra-ds/alpine`                        | 194,833 B |   114,140 B |  20,711 B |   18,806 B | 18.9 kB |
+| alpine  | `@lyra-ds/alpine`                        | 194,917 B |   114,192 B |  20,742 B |   18,789 B | 18.9 kB |
 
 ## Scenarios
 
