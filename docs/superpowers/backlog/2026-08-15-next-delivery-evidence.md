@@ -229,3 +229,97 @@ churn alone does not reopen it as a candidate.
   the current assertion remain green.
 - **Eligibility:** excluded because the cycle does not select internal test
   cleanup without demonstrated consumer or release impact.
+
+## Candidates
+
+| Identifier | Priority class                  | User impact                                                                                                       | Evidence                                                                                                                  | Bounded scope                                                                                          | Proof                                                                                                                  | Exclusions                                                                                                                 |
+| ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `BKL-02`   | Confirmed v1 release blocker    | React and Alpine consumers receive artificial completion state instead of a consumer-controlled upload lifecycle. | Both implementations use timers; both locale docs call progress simulated; the approved interaction spec assigns P1.      | Specify a production FileUpload lifecycle shared at the observable-contract level by React and Alpine. | Focused React browser/SSR tests, Alpine browser tests, public API comparison, then applicable package/build gates.     | No transport client, server endpoint, FileManager redesign, dependency adoption, or implementation in this evidence cycle. |
+| `BKL-03`   | Confirmed v1 release blocker    | React consumers get focusable empty panels disconnected from the application content users actually operate.      | React source and docs generate empty panels; Alpine authors real panels; the approved interaction spec assigns P1.        | Specify a compound React Tabs trigger/content contract and explicit Alpine parity boundary.            | Focused React browser/SSR tests, Alpine browser tests, anatomy comparison, then cross-browser and accessibility gates. | No Select/Combobox migration, primitive selection, or implementation in this evidence cycle.                               |
+| `BKL-04`   | Confirmed accessibility blocker | Keyboard and assistive-technology users cannot invoke a primary row action exposed through `onRowClick`.          | React installs only `<tr onClick>`; docs warn the row is not keyboard operable; the approved interaction spec assigns P1. | Specify semantic row-action ownership and the Table/DataTable boundary.                                | Focused React browser/SSR tests, source/API comparison, and keyboard/axe acceptance cases in the later delivery.       | No enterprise grid, virtualization, Alpine behavior not currently claimed, or implementation in this cycle.                |
+| `BKL-05`   | Confirmed accessibility gap     | Screen-reader users lack a localized relation between the visible start and end dates.                            | Issue #95, current interpolated trigger text, absent `rangeAnnouncement`, and existing Browser Mode coverage.             | Specify and implement a translatable accessible range announcement without changing visible text.      | Focused DateRangePicker Browser Mode and SSR tests plus generated public-type documentation.                           | No calendar arithmetic, segmented date input, visible separator change, or date-family migration.                          |
+| `BKL-06`   | Supported-flow defect           | Content-mode shell consumers can get clipped content, unreachable footer content, and phantom spacing.            | Issue #185 and current CSS retain page-mode alignment, gap, sidebar padding, and self-alignment.                          | Correct content-mode resets with a focused scrolling and layout regression fixture.                    | Styles browser test at representative viewport sizes, parity check, and starter-like smoke composition.                | No AppSidebar redesign, navigation API change, new tokens, or broader application-chrome refactor.                         |
+
+The SlotPicker mobile-overflow signal remains eligible below the five-candidate
+cap: its provisional score is `2 + 2 + 1 + 2 = 7`, below every table entry.
+The TimeZonePicker hook mismatch is also eligible but belongs to the lowest
+documentation/DX priority class and scores `1 + 1 + 2 + 1 = 5`. Neither can
+displace a higher-priority current blocker or supported-flow defect.
+
+## Scoring
+
+| Identifier | User impact | Release/accessibility risk | Automated proof | Supported-surface reach | Arithmetic      | Total |
+| ---------- | ----------: | -------------------------: | --------------: | ----------------------: | --------------- | ----: |
+| `BKL-02`   |           3 |                          3 |               2 |                       2 | `3 + 3 + 2 + 2` |    10 |
+| `BKL-03`   |           3 |                          3 |               2 |                       1 | `3 + 3 + 2 + 1` |     9 |
+| `BKL-04`   |           3 |                          3 |               2 |                       1 | `3 + 3 + 2 + 1` |     9 |
+| `BKL-05`   |           2 |                          3 |               2 |                       1 | `2 + 3 + 2 + 1` |     8 |
+| `BKL-06`   |           3 |                          2 |               1 |                       2 | `3 + 2 + 1 + 2` |     8 |
+
+`BKL-03` and `BKL-04` tie on score, priority class, and automated proof. The
+selection-family contract that governs Tabs appears before the data-and-files
+family in the approved implementation-family order, so `BKL-03` wins that
+tie. `BKL-05` and `BKL-06` tie on score, but the confirmed accessibility gap
+has a higher priority class than the supported-flow defect. No tie-break is
+needed for `BKL-02`, the unique highest score.
+
+## Focused Audit
+
+**Target:** `BKL-02`
+
+**Falsifiable claim:** the current React and Alpine FileUpload public contracts
+autonomously advance files from selection to successful completion without a
+consumer-controlled upload operation, and therefore cannot represent the
+approved real progress, failure, retry, cancellation, and completion lifecycle.
+
+### Source and contract comparison
+
+The focused source query returned 83 matches across the two implementations,
+their tests, and both locale docs. It confirmed the same observable model in
+both adapters:
+
+- `FileUploadItem.status` is limited to `uploading`, `done`, or `error` and is
+  documented as simulated state;
+- accepted files start at five percent and schedule a local interval;
+- each interval increments progress until the component itself writes
+  `progress: 100` and `status: 'done'`;
+- `onFiles` hands real `File` objects to the consumer, but no public input lets
+  the consumer control an item's progress, transport failure, retry,
+  cancellation, or completion;
+- both locale docs explicitly present `onChange` as reporting simulated
+  progress.
+
+The React browser suite covers dropzone keyboard operation, file handoff,
+validation, removal, accessible names, axe, and consumer-supplied completed
+items. It does not exercise or constrain the timer-driven transition. The
+Alpine suite explicitly asserts that the adapter advances an accepted item to
+`done` and emits progress ticks, proving that autonomous completion is an
+intentional tested contract rather than dead code.
+
+### Focused command evidence
+
+| Command                                                                                                                                   | Result                 | Material observation                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `rtk pnpm --filter @lyra-ds/react exec vitest run --project browser --browser.name chromium src/file-upload/file-upload.browser.test.tsx` | PASS — 1 file, 8 tests | Current React selection, validation, removal, accessible-name, and axe behavior is green. |
+| `rtk pnpm --filter @lyra-ds/react exec vitest run --project ssr src/file-upload/file-upload.ssr.test.ts`                                  | PASS — 1 file, 1 test  | Current FileUpload remains SSR renderable.                                                |
+| `rtk pnpm --filter @lyra-ds/alpine exec vitest run --browser.name chromium src/file-upload.browser.test.ts`                               | PASS — 1 file, 9 tests | Alpine explicitly protects automatic progress ticks and transition to `done`.             |
+
+**Classification:** `Confirmed`
+
+The passing tests establish the current baseline but do not satisfy the
+approved contract. The implementation, docs, and Alpine regression test all
+confirm that Lyra currently presents synthetic success without a real upload
+lifecycle. No second candidate audit is necessary.
+
+## Recommendation
+
+**Selected:** BKL-02
+
+**Classification:** Confirmed
+
+**Reason:** `BKL-02` has the unique highest score (`10/10`), affects both
+runtime adapters, and is an explicit P1 v1 release criterion. The focused audit
+confirmed its claim in source, public documentation, and existing tests. The
+next delivery must define the data-and-files family contract for
+consumer-controlled FileUpload state before any runtime change; it must not
+mistake an implementation plan for permission to invent that public API.
