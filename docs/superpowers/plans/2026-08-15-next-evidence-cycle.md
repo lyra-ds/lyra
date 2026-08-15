@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Start from the latest fetched `origin/main`; run a fast-forward-only pull from `origin/main` before collecting evidence and record the resulting commit SHA and collection time.
+- Start from the latest fetched `origin/main`; run a fast-forward-only pull from `origin/main` before collecting evidence, record the `origin/main` product-baseline SHA and collection time, and record the planning branch `HEAD` separately.
 - Preserve the divergent local `main` checkout and its unrelated `.pnpm-store/` directory; do not rewrite, rebase, reset, stage, or delete either.
 - Run every shell command through `rtk`.
 - Create only `docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md` during execution; do not alter production source, dependencies, public APIs, package versions, generated artifacts, budgets, test infrastructure, or changesets.
@@ -51,6 +51,7 @@
 
   ```bash
   rtk git pull --ff-only origin main
+  rtk git rev-parse origin/main
   rtk git rev-parse HEAD
   rtk git log -1 --format='%H%n%ad%n%s' --date=iso-strict
   rtk git status --short --branch
@@ -70,7 +71,7 @@
   ## Candidate Evidence
   ```
 
-  Under `Baseline`, record the SHA, timestamp, branch relationship, runtime versions, and whether the worktree was clean before the artifact was created. Do not copy facts from the earlier baseline without checking them against the current SHA.
+  Under `Baseline`, record `origin/main` as the product-baseline SHA and `HEAD` as the planning-branch SHA, followed by the timestamp, branch relationship, runtime versions, and whether the worktree was clean before the artifact was created. Default-branch CI evidence must match the product-baseline SHA, not the documentation-only planning SHA. Do not copy facts from the earlier baseline without checking them against the current product baseline.
 
 - [ ] **Step 2: Capture current default-branch and GitHub signals**
 
