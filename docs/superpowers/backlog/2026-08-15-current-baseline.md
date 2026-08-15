@@ -26,13 +26,13 @@ $ rtk pnpm --version
 
 ## Package Surface
 
-| Package | Version | Public purpose | Verification command |
-| --- | --- | --- | --- |
-| `@lyra-ds/styles` | `0.4.2` | CSS-first design tokens and component styles with zero JavaScript. | `pnpm --filter @lyra-ds/styles run test` |
-| `@lyra-ds/react` | `0.4.2` | Thin, tree-shakable React wrappers over `@lyra-ds/styles`, with appearance supplied by `.lyra-*` classes. | `pnpm --filter @lyra-ds/react run test` |
-| `@lyra-ds/alpine` | `0.5.0` | Alpine.js plugin that ports the interactive React component state machines. | `pnpm --filter @lyra-ds/alpine run test` |
-| `@lyra-ds/docs` | `private` | Private documentation application; no public description field is present. | `pnpm --filter @lyra-ds/docs run test` |
-| `@lyra-ds/site` | `private` | Private site application; no public description field is present. | `pnpm --filter @lyra-ds/site run test` |
+| Package           | Version   | Public purpose                                                                                            | Verification command                     |
+| ----------------- | --------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `@lyra-ds/styles` | `0.4.2`   | CSS-first design tokens and component styles with zero JavaScript.                                        | `pnpm --filter @lyra-ds/styles run test` |
+| `@lyra-ds/react`  | `0.4.2`   | Thin, tree-shakable React wrappers over `@lyra-ds/styles`, with appearance supplied by `.lyra-*` classes. | `pnpm --filter @lyra-ds/react run test`  |
+| `@lyra-ds/alpine` | `0.5.0`   | Alpine.js plugin that ports the interactive React component state machines.                               | `pnpm --filter @lyra-ds/alpine run test` |
+| `@lyra-ds/docs`   | `private` | Private documentation application; no public description field is present.                                | `pnpm --filter @lyra-ds/docs run test`   |
+| `@lyra-ds/site`   | `private` | Private site application; no public description field is present.                                         | `pnpm --filter @lyra-ds/site run test`   |
 
 Repeatable inventory commands and their outputs:
 
