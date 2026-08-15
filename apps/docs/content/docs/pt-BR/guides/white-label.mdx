@@ -57,12 +57,12 @@ descendentes recebem os valores da marca, como acontece com os três cards acima
 
 ## O que o Lyra recalcula
 
-No modo claro, o Lyra mantém `--accent` como o `--brand` cru, escurece hover e active com preto e
-deriva `--accent-soft`, `--accent-soft-text` e `--focus-ring` com `color-mix()` em `oklab`. Ele
-também define `--on-accent`, `--text-link`, `--border-accent`, `--radius-md`, `--font-sans` e
-`--font-display`.
+No modo claro, o Lyra mantém `--accent` como o `--brand` cru, clareia hover e active com branco
+em `srgb` e deriva `--accent-soft`, `--accent-soft-text` e `--focus-ring` com `color-mix()` em
+`oklab`. Ele também define `--on-accent`, `--text-link`, `--border-accent`, `--radius-md`,
+`--font-sans` e `--font-display`.
 
-Dentro de `data-theme="dark"`, as misturas de accent, hover, active, soft-text e link usam branco.
+Dentro de `data-theme="dark"`, as misturas da marca para accent, hover, active, soft-text e link usam branco.
 A regra escura funciona quando `data-theme="dark"` e `data-brand` estão no mesmo elemento ou quando
 o elemento com marca fica dentro do elemento tematizado.
 
