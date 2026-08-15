@@ -176,9 +176,9 @@
 .lyra-calview__evt:focus-visible { outline: none; box-shadow: var(--shadow-focus); z-index: 4; }
 .lyra-calview__evt-time { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 10px; opacity: 0.85; }
 .lyra-calview__evt-title { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lyra-calview__evt--session { background: var(--accent-soft); color: var(--accent-soft-text); }
+.lyra-calview__evt--session { background: var(--accent-soft); color: var(--text-primary); }
 .lyra-calview__evt--session::before { background: var(--accent); }
-.lyra-calview__evt--program-session { background: var(--success-soft); color: var(--success-text); }
+.lyra-calview__evt--program-session { background: var(--success-soft); color: var(--text-primary); }
 .lyra-calview__evt--program-session::before { background: var(--success); }
 .lyra-calview__evt--pending { background: var(--surface-card); color: var(--text-secondary); border: 1.5px dashed var(--border-strong); }
 .lyra-calview__evt--pending::before { background: var(--text-faint); }

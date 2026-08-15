@@ -152,7 +152,7 @@
   color: var(--text-faint);
   padding: var(--space-2) var(--space-3) var(--space-1);
 }
-.lyra-combobox__trailing { margin-left: auto; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); flex: none; }
+.lyra-combobox__trailing { margin-left: auto; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-secondary); flex: none; }
 .lyra-combobox__option-label {
   flex: 1;
   display: flex;
@@ -161,7 +161,7 @@
   overflow: hidden;
   white-space: nowrap;
 }
-.lyra-combobox__option-hint { font-size: var(--text-xs); color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; }
+.lyra-combobox__option-hint { font-size: var(--text-xs); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; }
 .lyra-combobox__empty {
   font-size: var(--text-sm);
   color: var(--text-muted);

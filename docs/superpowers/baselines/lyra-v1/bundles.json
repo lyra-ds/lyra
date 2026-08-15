@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-08-14T22:23:11.709Z",
-  "revision": "554c6d2588d9aa6bcf59e71c5c1d967b803d8c05",
+  "measuredAt": "2026-08-15T04:18:31.879Z",
+  "revision": "6b26a35ea0c047561510b6e52837a93929b035b9",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "linux 6.18.42-1-MANJARO",
@@ -428,7 +428,7 @@
       "@lyra-ds/styles": {
         "version": "0.4.2",
         "tarball": "lyra-ds-styles-0.4.2.tgz",
-        "sha256": "b72d4b9034cc47cb18fda65f24e2a1f1b06f1894970032454b7ba8ba2bfece56"
+        "sha256": "378deeaf8abb090e80390f26b094e9781ab22b4297d83975cfc6de0fa4b996cf"
       }
     }
   },
@@ -3024,25 +3024,25 @@
   "css": {
     "root": {
       "publicEntry": "@lyra-ds/styles",
-      "rawBytes": 146764,
-      "minifiedBytes": 103871,
-      "brotliBytes": 13274,
+      "rawBytes": 146781,
+      "minifiedBytes": 103888,
+      "brotliBytes": 13291,
       "files": ["css-1.css"],
       "modules": []
     },
     "styles.css": {
       "publicEntry": "@lyra-ds/styles/styles.css",
-      "rawBytes": 146764,
-      "minifiedBytes": 103871,
-      "brotliBytes": 13274,
+      "rawBytes": 146781,
+      "minifiedBytes": 103888,
+      "brotliBytes": 13291,
       "files": ["css-2.css"],
       "modules": []
     },
     "tokens/brand.css": {
       "publicEntry": "@lyra-ds/styles/tokens/brand.css",
-      "rawBytes": 1706,
-      "minifiedBytes": 1296,
-      "brotliBytes": 352,
+      "rawBytes": 1702,
+      "minifiedBytes": 1292,
+      "brotliBytes": 361,
       "files": ["css-3.css"],
       "modules": []
     },

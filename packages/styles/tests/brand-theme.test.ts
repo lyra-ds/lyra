@@ -244,17 +244,28 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     expect(isTealFamily(bg('accent'))).toBe(true);
   });
 
-  it('light acme: hover/active are ordered DARKER than accent (black 12% / 22%), teal-family', () => {
+  it('light acme: hover/active are ordered lighter than accent, teal-family', () => {
     setPermutation('light', 'acme');
     const accentL = luminance(bg('accent'));
     const hoverL = luminance(bg('accent-hover'));
     const activeL = luminance(bg('accent-active'));
-    // brand.css:5-6 — black-mix darkens; active (22%) darker than hover (12%) darker than accent.
-    expect(hoverL).toBeLessThan(accentL);
-    expect(activeL).toBeLessThan(hoverL);
+    // brand.css:5-6 — white-mix keeps the derived states distinct while preserving black ink AA.
+    expect(hoverL).toBeGreaterThan(accentL);
+    expect(activeL).toBeGreaterThan(hoverL);
     // Still teal-family (proves it's the derived teal, not the indigo fallback).
     expect(isTealFamily(bg('accent-hover'))).toBe(true);
     expect(isTealFamily(bg('accent-active'))).toBe(true);
+  });
+
+  it('light acme: resolved primary ink is AA on rest, hover, and active fills', () => {
+    setPermutation('light', 'acme');
+    const onAccent = fg('on-accent');
+    for (const state of ['accent', 'accent-hover', 'accent-active'] as const) {
+      expect(
+        contrast(onAccent, bg(state)),
+        `acme ${state} must meet normal-text AA`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('light acme: soft / soft-text / focus-ring resolve to teal-family channels', () => {
@@ -269,7 +280,7 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     const rawL = luminance(RAW_ACME);
     const accentL = luminance(bg('accent')); // white 14%
     const hoverL = luminance(bg('accent-hover')); // white 26%
-    const activeL = luminance(bg('accent-active')); // white 38%
+    const activeL = luminance(bg('accent-active')); // white 30%
     const softTextL = luminance(fg('accent-soft-text')); // white 45%
     // brand.css:20-24 — each derived value is lighter than raw acme, increasing in that order.
     expect(accentL).toBeGreaterThan(rawL);
@@ -310,15 +321,25 @@ describe('white-label --on-accent contrast guarantee', () => {
     for (const seed of BRAND_SEEDS) {
       const key: `${BrandSeed}:${BrandTheme}` = `${seed}:${theme}`;
       const isKnownBelowAA = KNOWN_BELOW_AA.has(key);
-      it(`${theme} ${seed}: primary ink is AA-large${isKnownBelowAA ? ' (known AA crossover)' : ''}`, () => {
+      it(`${theme} ${seed}: automatic primary ink covers every interaction fill${isKnownBelowAA ? ' (known rest crossover)' : ''}`, () => {
         setBrandSeed(theme, seed);
-        const ratio = contrast(fg('on-accent'), bg('accent'));
-        expect(ratio, `${theme} ${seed} must meet AA-large`).toBeGreaterThanOrEqual(3);
-        if (isKnownBelowAA) {
-          expect(ratio, `${theme} ${seed} must remain below normal-text AA`).toBeLessThan(4.5);
-          expect(ratio, `${theme} ${seed} must remain near AA`).toBeGreaterThanOrEqual(4.4);
-        } else
-          expect(ratio, `${theme} ${seed} must meet normal-text AA`).toBeGreaterThanOrEqual(4.5);
+        for (const state of ['accent', 'accent-hover', 'accent-active'] as const) {
+          const ratio = contrast(fg('on-accent'), bg(state));
+          expect(ratio, `${theme} ${seed} ${state} must meet AA-large`).toBeGreaterThanOrEqual(3);
+          if (isKnownBelowAA && state === 'accent') {
+            expect(
+              ratio,
+              `${theme} ${seed} ${state} must remain below normal-text AA`,
+            ).toBeLessThan(4.5);
+            expect(ratio, `${theme} ${seed} ${state} must remain near AA`).toBeGreaterThanOrEqual(
+              4.4,
+            );
+          } else
+            expect(
+              ratio,
+              `${theme} ${seed} ${state} must meet normal-text AA`,
+            ).toBeGreaterThanOrEqual(4.5);
+        }
       });
     }
   }

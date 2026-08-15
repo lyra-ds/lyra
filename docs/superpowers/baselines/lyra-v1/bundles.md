@@ -1,7 +1,7 @@
 # Lyra v1 bundle baseline
 
-- Revision: `554c6d2588d9aa6bcf59e71c5c1d967b803d8c05`
-- Measured at: `2026-08-14T22:23:11.709Z`
+- Revision: `6b26a35ea0c047561510b6e52837a93929b035b9`
+- Measured at: `2026-08-15T04:18:31.879Z`
 - Owner: Lyra maintainers
 - Exact command: `pnpm baseline:bundles --write`
 - Environment: linux 6.18.42-1-MANJARO, x64, Node v24.18.0, pnpm 11.13.1
@@ -21,7 +21,7 @@
 | --------------- | ------- | -------------------------- | ------------------------------------------------------------------ |
 | @lyra-ds/react  | 0.4.2   | `lyra-ds-react-0.4.2.tgz`  | `ed7111ade672b945c23db206073623fba3eb9b5e26c01d285d4be9b748404da6` |
 | @lyra-ds/alpine | 0.5.0   | `lyra-ds-alpine-0.5.0.tgz` | `29ea1fa64b2dbbf4d477d7920d5c4105277e5c14c816710041d1ed2d0ffd0d7c` |
-| @lyra-ds/styles | 0.4.2   | `lyra-ds-styles-0.4.2.tgz` | `b72d4b9034cc47cb18fda65f24e2a1f1b06f1894970032454b7ba8ba2bfece56` |
+| @lyra-ds/styles | 0.4.2   | `lyra-ds-styles-0.4.2.tgz` | `378deeaf8abb090e80390f26b094e9781ab22b4297d83975cfc6de0fa4b996cf` |
 
 ## Standalone entries
 
@@ -114,9 +114,9 @@
 
 | Entry                               |   Raw CSS | Minified CSS | Brotli CSS |
 | ----------------------------------- | --------: | -----------: | ---------: |
-| `@lyra-ds/styles`                   | 146,764 B |    103,871 B |   13,274 B |
-| `@lyra-ds/styles/styles.css`        | 146,764 B |    103,871 B |   13,274 B |
-| `@lyra-ds/styles/tokens/brand.css`  |   1,706 B |      1,296 B |      352 B |
+| `@lyra-ds/styles`                   | 146,781 B |    103,888 B |   13,291 B |
+| `@lyra-ds/styles/styles.css`        | 146,781 B |    103,888 B |   13,291 B |
+| `@lyra-ds/styles/tokens/brand.css`  |   1,702 B |      1,292 B |      361 B |
 | `@lyra-ds/styles/compat-shadcn.css` |   1,400 B |        649 B |      208 B |
 
 The JSON beside this report is the machine-readable source of truth, including the complete Rolldown module-contribution records.

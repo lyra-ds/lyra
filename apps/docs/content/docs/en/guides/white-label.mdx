@@ -56,12 +56,13 @@ brand values, which is how the three cards above coexist.
 
 ## What Lyra re-derives
 
-In light mode, Lyra keeps `--accent` as the raw `--brand`, darkens hover and active with black,
-and derives `--accent-soft`, `--accent-soft-text`, and `--focus-ring` with `color-mix()` in
-`oklab`. It also sets `--on-accent`, `--text-link`, `--border-accent`, `--radius-md`,
-`--font-sans`, and `--font-display`.
+In light mode, Lyra keeps `--accent` as the raw `--brand`, lightens hover and active with white
+at 3% and 4% in `srgb`, and derives `--accent-soft`, `--accent-soft-text`, and `--focus-ring` with
+`color-mix()` in `oklab`. It also sets `--on-accent`, `--text-link`, `--border-accent`,
+`--radius-md`, `--font-sans`, and `--font-display`.
 
-Inside `data-theme="dark"`, the accent, hover, active, soft-text, and link mixes use white instead.
+Inside `data-theme="dark"`, the branded accent, hover, and active mixes use white at 14%, 26%, and
+30% in `oklab`; soft-text and link retain their own white mixes.
 The dark rule works whether `data-theme="dark"` and `data-brand` are on the same element or the
 branded element is inside the themed one.
 

@@ -1,0 +1,48 @@
+<div
+  id="contrast-root"
+  style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start"
+>
+  <p data-probe="faint-card" style="background: var(--surface-card); color: var(--text-faint)">
+    Quiet card text
+  </p>
+  <p data-probe="faint-page" style="background: var(--surface-page); color: var(--text-faint)">
+    Quiet page text
+  </p>
+  <p data-probe="faint-sunken" style="background: var(--surface-sunken); color: var(--text-faint)">
+    Quiet sunken text
+  </p>
+  <button class="lyra-calview__evt lyra-calview__evt--session" data-probe="session">
+    <span class="lyra-calview__evt-time">09:00</span><span>Session</span>
+  </button>
+  <button class="lyra-calview__evt lyra-calview__evt--program-session" data-probe="program-session">
+    <span class="lyra-calview__evt-time">10:00</span><span>Program session</span>
+  </button>
+  <span class="lyra-kbd" data-probe="sunken-label">⌘K</span>
+  <button class="lyra-btn lyra-btn--primary" data-probe="primary">Save</button>
+  <span class="lyra-wscreate__slug">
+    <span class="lyra-wscreate__slug-prefix" data-probe="workspace-slug-prefix">lyra.dev/</span>
+  </span>
+  <div class="lyra-fm__views" data-probe="file-manager-views">
+    <button class="lyra-fm__view" data-probe="file-manager-view">Grid</button>
+  </div>
+  <div class="lyra-combobox">
+    <div class="lyra-combobox__pop">
+      <div class="lyra-combobox__list">
+        <button
+          class="lyra-combobox__option lyra-combobox__option--active"
+          data-probe="combobox-active-option"
+        >
+          <span class="lyra-combobox__option-label">
+            Brazil
+            <span class="lyra-combobox__option-hint" data-probe="combobox-option-hint"
+              >South America</span
+            >
+          </span>
+          <span class="lyra-combobox__trailing" data-probe="combobox-option-trailing"
+            >02:20 AM</span
+          >
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

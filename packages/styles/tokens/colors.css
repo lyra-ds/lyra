@@ -90,8 +90,8 @@
 
 [data-theme="dark"] {
   --accent:          var(--indigo-600);
-  --accent-hover:    var(--indigo-500);
-  --accent-active:   var(--indigo-400);
+  --accent-hover:    var(--indigo-700);
+  --accent-active:   var(--indigo-800);
   --accent-soft:     rgba(110, 106, 222, 0.16);
   --accent-soft-text: var(--indigo-300);
   --on-accent:       #FFFFFF;
@@ -106,7 +106,7 @@
   --text-primary:   var(--night-100);
   --text-secondary: #C3C8E8;
   --text-muted:     var(--night-300);
-  --text-faint:     #6C739E;
+  --text-faint:     var(--night-300);
   --text-inverse:   var(--slate-900);
   --text-link:      var(--indigo-300);
 
