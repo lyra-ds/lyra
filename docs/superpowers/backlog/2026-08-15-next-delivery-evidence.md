@@ -84,6 +84,14 @@ interaction spec:
 - `DataTable.onRowClick` without keyboard-equivalent row activation;
 - generated empty focusable React Tabs panels.
 
+The roadmap comparison used all five approved foundational specifications:
+
+- `docs/superpowers/specs/lyra-v1/01-design-product-principles.md`;
+- `docs/superpowers/specs/lyra-v1/02-tokens-visual-language.md`;
+- `docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md`;
+- `docs/superpowers/specs/lyra-v1/04-component-architecture.md`;
+- `docs/superpowers/specs/lyra-v1/05-quality-performance.md`.
+
 Recent path-scoped churn over the trailing 40 commits is Alpine `1,622` changed
 lines, Styles `557`, and React `288`. The completed Alpine public API audit
 already examined the highest-churn adapter surface and found no mismatch, so
@@ -96,7 +104,8 @@ churn alone does not reopen it as a candidate.
 - **Source:** `packages/react/src/file-upload/file-upload.tsx:71`,
   `packages/react/src/file-upload/file-upload.tsx:152`,
   `packages/alpine/src/file-upload.ts:120`, both FileUpload documentation
-  pages, and `03-interaction-accessibility.md:432`
+  pages, and
+  `docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md:432`
 - **Observed state:** React and Alpine start timers after file selection,
   increment display progress, and mark items complete without a
   consumer-controlled upload operation. The English and Portuguese docs call
@@ -113,7 +122,8 @@ churn alone does not reopen it as a candidate.
 
 - **Source:** `packages/react/src/data-table/data-table.tsx:88`,
   `packages/react/src/data-table/data-table.tsx:322`, both DataTable
-  documentation pages, and `03-interaction-accessibility.md:433`
+  documentation pages, and
+  `docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md:433`
 - **Observed state:** `onRowClick` installs an `onClick` handler on `<tr>` with
   no row `tabIndex`, semantic action, or keyboard handler. The docs explicitly
   warn that the row is not keyboard operable.
@@ -128,7 +138,8 @@ churn alone does not reopen it as a candidate.
 ### Signal: React Tabs owns empty focusable panels instead of real content
 
 - **Source:** `packages/react/src/tabs/tabs.tsx:99`, both Tabs documentation
-  pages, and `03-interaction-accessibility.md:431`
+  pages, and
+  `docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md:431`
 - **Observed state:** React renders generated `role="tabpanel"` elements with
   `tabIndex={0}` but no content, while applications render their actual view
   elsewhere. The public docs describe and demonstrate that split ownership.
@@ -256,12 +267,14 @@ displace a higher-priority current blocker or supported-flow defect.
 | `BKL-05`   |           2 |                          3 |               2 |                       1 | `2 + 3 + 2 + 1` |     8 |
 | `BKL-06`   |           3 |                          2 |               1 |                       2 | `3 + 2 + 1 + 2` |     8 |
 
-`BKL-03` and `BKL-04` tie on score, priority class, and automated proof. The
-selection-family contract that governs Tabs appears before the data-and-files
-family in the approved implementation-family order, so `BKL-03` wins that
-tie. `BKL-05` and `BKL-06` tie on score, but the confirmed accessibility gap
-has a higher priority class than the supported-flow defect. No tie-break is
-needed for `BKL-02`, the unique highest score.
+`BKL-03` and `BKL-04` tie on score, priority class, automated proof, and the
+applicable Phase 1 roadmap gate. The remaining declared tie-break is older
+independently recorded consumer-facing evidence: Tabs first shipped in commit
+`3f852fc2e1248053258c3303346eff66631beed4` on 2026-07-21, while DataTable first
+shipped in commit `b608c6115851991cace5a62247b742f6396bee6f` on 2026-08-03, so
+`BKL-03` wins that tie. `BKL-05` and `BKL-06` tie on score, but the confirmed
+accessibility gap has a higher priority class than the supported-flow defect.
+No tie-break is needed for `BKL-02`, the unique highest score.
 
 ## Focused Audit
 
@@ -288,6 +301,12 @@ both adapters:
   cancellation, or completion;
 - both locale docs explicitly present `onChange` as reporting simulated
   progress.
+
+The public-export comparison read `packages/react/package.json`,
+`packages/react/src/index.ts`, `packages/react/src/file-upload/index.ts`,
+`packages/alpine/package.json`, and `packages/alpine/src/index.ts`. The selected
+contract remains publicly exported from both packages; none of these export
+surfaces provides a separate consumer-controlled lifecycle.
 
 The React browser suite covers dropzone keyboard operation, file handoff,
 validation, removal, accessible names, axe, and consumer-supplied completed
@@ -328,11 +347,11 @@ mistake an implementation plan for permission to invent that public API.
 
 ### Affected Contract
 
-The next delivery is the approved component-family specification
-`docs/superpowers/specs/2026-08-15-data-files-family-design.md`. It governs
-Table, DataTable, FileUpload, and FileManager as the PRD's Data and Files
-family, with FileUpload named as the first and only implementation wave
-authorized after that specification is approved.
+The next delivery is the component-family specification
+`docs/superpowers/specs/2026-08-15-data-files-family-design.md`. Once approved,
+it governs Table, DataTable, FileUpload, and FileManager as the PRD's Data and
+Files family, with FileUpload named as the first and only implementation wave
+authorized after that approval.
 
 The specification must replace the current React `FileUploadProps`,
 `FileUploadItem`, `onFiles`, and `onChange` lifecycle assumptions and the
@@ -470,7 +489,10 @@ only if its public classes or selectors change.
 
 Release notes and a migration guide must identify affected versions, explain
 consumer ownership of asynchronous work, and provide complete React and
-Alpine/HTML before-and-after examples. No codemod is expected because mapping a
+Alpine/HTML before-and-after examples. The release window must also update
+`apps/docs/content/docs/en/guides/compatibility.mdx` and
+`apps/docs/content/docs/pt-BR/guides/compatibility.mdx` with the tested
+Styles/React/Alpine package ranges. No codemod is expected because mapping a
 synthetic component-owned timer to a real transport, retry, and cancellation
 policy requires a consumer product decision rather than a semantics-preserving
 mechanical rewrite.
@@ -502,6 +524,14 @@ begins before that approval.
 - **PASS — Delivery-contract completeness:** affected surfaces, exact scope,
   adapter/docs impact, proof locations, full gates, bundle policy,
   compatibility, changesets, migration, and objective completion are resolved.
-- **PASS — Documentation-only branch scope:** this cycle has changed only its
-  approved design, execution plan, and evidence artifact; the final path and
-  changeset checks below provide executable confirmation.
+- **PASS — Documentation-only branch scope:**
+  `rtk git diff --name-only origin/main...HEAD` returned exactly:
+
+  ```text
+  docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md
+  docs/superpowers/plans/2026-08-15-next-evidence-cycle.md
+  docs/superpowers/specs/2026-08-15-next-evidence-cycle-design.md
+  ```
+
+  `rtk git diff --name-only origin/main...HEAD -- .changeset packages apps tools .github package.json pnpm-lock.yaml`
+  returned no output.

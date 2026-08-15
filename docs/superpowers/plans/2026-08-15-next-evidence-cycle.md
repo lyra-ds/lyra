@@ -30,15 +30,16 @@
 - Read `docs/superpowers/specs/2026-08-15-next-evidence-cycle-design.md` — authoritative scope, scoring, fallback, and completion rules.
 - Read `docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md` — approved v1 risks, phase order, family-spec order, success metrics, and fallback authority.
 - Read `docs/superpowers/specs/2026-08-15-sequential-delivery-cycle-design.md` — selection classes and handoff order.
+- Read all five approved foundational specifications: `docs/superpowers/specs/lyra-v1/01-design-product-principles.md`, `docs/superpowers/specs/lyra-v1/02-tokens-visual-language.md`, `docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md`, `docs/superpowers/specs/lyra-v1/04-component-architecture.md`, and `docs/superpowers/specs/lyra-v1/05-quality-performance.md`.
 - Read `docs/superpowers/backlog/2026-08-15-current-baseline.md`, `docs/superpowers/backlog/2026-08-15-prioritized-backlog.md`, and `docs/superpowers/backlog/2026-08-15-alpine-public-api-audit.md` — prior evidence that must not be mistaken for a new open candidate.
-- Read candidate-specific React, Alpine, and English/Portuguese documentation files listed in Task 2 only after ranking selects that family.
+- Read candidate-specific React, Alpine, package-export, and English/Portuguese documentation files listed in Task 2 only after ranking selects that family.
 
 ### Task 1: Capture the Current Evidence Baseline and Candidate Signals
 
 **Files:**
 
 - Create: `docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md`
-- Read: `.github/workflows/ci.yml`, `package.json`, the three approved specs, and the three prior backlog records listed above
+- Read: `.github/workflows/ci.yml`, `package.json`, the three cycle/roadmap specs, all five foundational specs, and the three prior backlog records listed above
 
 **Interfaces:**
 
@@ -139,6 +140,7 @@
 - Read when selected: `packages/react/src/data-table/data-table.tsx`, `packages/react/src/data-table/data-table.browser.test.tsx`, `packages/react/src/data-table/data-table.ssr.test.ts`, `packages/alpine/src/data-table.ts`, `packages/alpine/src/data-table.browser.test.ts`, and both `apps/docs/content/docs/*/components/data-table.mdx`
 - Read when selected: `packages/react/src/tabs/tabs.tsx`, `packages/react/src/tabs/tabs.browser.test.tsx`, `packages/react/src/tabs/tabs.ssr.test.ts`, `packages/alpine/src/tabs.ts`, `packages/alpine/src/tabs.browser.test.ts`, and both `apps/docs/content/docs/*/components/tabs.mdx`
 - Read for the fallback: the Dialog, Drawer, BottomSheet, Popover, Dropdown, and Tooltip source/browser-test pairs under `packages/react/src/` and `packages/alpine/src/`, plus both locale documentation pages for those six components
+- Read package exports for the selected family: `packages/react/package.json`, `packages/react/src/index.ts`, the selected component's `packages/react/src/<family>/index.ts`, `packages/alpine/package.json`, and `packages/alpine/src/index.ts`
 
 **Interfaces:**
 
@@ -173,7 +175,7 @@
 
 - [ ] **Step 3: State the target as a falsifiable claim and inspect its complete contract**
 
-  Add `## Focused Audit` and write one sentence that can be confirmed or rejected from current behavior. Compare the selected family's React implementation, React browser and SSR tests, Alpine implementation when the adapter exposes it, Alpine browser tests, English docs, Portuguese docs, package exports, and the applicable foundational requirements.
+  Add `## Focused Audit` and write one sentence that can be confirmed or rejected from current behavior. Compare the selected family's React implementation, React browser and SSR tests, Alpine implementation when the adapter exposes it, Alpine browser tests, English docs, Portuguese docs, package exports, and the applicable foundational requirements. The audit's evidence entry must cite every applicable repository-relative path from the selected read set, including each package-export file; grouped or filename-only references are insufficient.
 
   Use the matching source inspection command:
 
@@ -311,7 +313,7 @@
   Run this exact check. It fails when a required section, candidate, recommendation, or allowed audit classification is missing:
 
   ```bash
-  rtk node --input-type=module -e "import { readFileSync } from 'node:fs'; const file = 'docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md'; const text = readFileSync(file, 'utf8'); const headings = ['Baseline','Evidence Sources','Candidate Evidence','Candidates','Scoring','Focused Audit','Recommendation','Next Delivery Contract','Verification']; for (const heading of headings) if (!new RegExp('^## ' + heading + '$', 'm').test(text)) throw new Error('Missing heading: ' + heading); const candidates = [...new Set(text.match(/\\bBKL-\\d{2}\\b/g) ?? [])]; if (candidates.length === 0) throw new Error('No candidate recorded'); const selected = text.match(/^\\*\\*Selected:\\*\\* (BKL-\\d{2})$/m); if (!selected || !candidates.includes(selected[1])) throw new Error('Recommendation must select one recorded candidate'); const classes = text.match(/^\\*\\*Classification:\\*\\* (Confirmed|Rejected|Inconclusive)$/gm) ?? []; if (classes.length !== 1) throw new Error('Recommendation must contain one allowed classification');"
+  rtk node --input-type=module -e "import { readFileSync } from 'node:fs'; const file = 'docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md'; const text = readFileSync(file, 'utf8'); const headings = ['Baseline','Evidence Sources','Candidate Evidence','Candidates','Scoring','Focused Audit','Recommendation','Next Delivery Contract','Verification']; for (const heading of headings) if (!new RegExp('^## ' + heading + '$', 'm').test(text)) throw new Error('Missing heading: ' + heading); const candidates = [...new Set(text.match(/\\bBKL-\\d{2}\\b/g) ?? [])]; if (candidates.length === 0) throw new Error('No candidate recorded'); const recommendation = text.split(/^## /m).find((section) => section.startsWith('Recommendation\\n')); if (!recommendation) throw new Error('Missing Recommendation section'); const selected = recommendation.match(/^\\*\\*Selected:\\*\\* (BKL-\\d{2})$/m); if (!selected || !candidates.includes(selected[1])) throw new Error('Recommendation must select one recorded candidate'); const classes = recommendation.match(/^\\*\\*Classification:\\*\\* (Confirmed|Rejected|Inconclusive)$/gm) ?? []; if (classes.length !== 1) throw new Error('Recommendation must contain one allowed classification');"
   ```
 
   Recompute each scoring row manually from its four integer dimensions. Confirm table ordering and every applied tie-break against the design before continuing.
@@ -322,13 +324,13 @@
 
   ```bash
   rtk pnpm exec prettier --check docs/superpowers/specs/2026-08-15-next-evidence-cycle-design.md docs/superpowers/plans/2026-08-15-next-evidence-cycle.md docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md
-  rtk git diff --check origin/main...HEAD
-  rtk git diff --name-only origin/main...HEAD
+  rtk git diff --check
+  rtk git diff --name-only
+  rtk git diff --name-only -- .changeset packages apps tools .github package.json pnpm-lock.yaml
   rtk git status --short --branch
-  rtk git diff --name-only origin/main...HEAD -- .changeset packages apps tools .github package.json pnpm-lock.yaml
   ```
 
-  The final command must print nothing. The full changed-path list may contain only the approved design, this plan, and the evidence artifact. Preserve any user-owned untracked entry and report it separately.
+  Run these commands before the final commit so the checks include Task 3's uncommitted contract and verification edits. The scoped path command must print nothing, and the working-tree path list may contain only the evidence artifact. Preserve any user-owned untracked entry and report it separately.
 
 - [ ] **Step 5: Commit the final contract and hand off**
 
@@ -337,9 +339,12 @@
   ```bash
   rtk git add docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md
   rtk git commit -m "docs: complete next delivery contract"
+  rtk git diff --check origin/main...HEAD
+  rtk git diff --name-only origin/main...HEAD
+  rtk git diff --name-only origin/main...HEAD -- .changeset packages apps tools .github package.json pnpm-lock.yaml
   ```
 
-  Report the selected identifier, score, classification, affected public surfaces, applicable gates, and exact path to `Next Delivery Contract`. Do not begin the selected capability in this plan.
+  After the commit, the scoped path command must again print nothing, and the full committed path list may contain only the approved design, this plan, and the evidence artifact. Report the selected identifier, score, classification, affected public surfaces, applicable gates, and exact path to `Next Delivery Contract`. Do not begin the selected capability in this plan.
 
 ## Plan Self-Review
 
