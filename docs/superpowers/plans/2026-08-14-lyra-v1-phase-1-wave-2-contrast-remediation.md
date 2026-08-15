@@ -20,10 +20,16 @@
 
 ### Browser command runner
 
-Every focused Browser Mode command in this plan runs inside the pinned `browser-tests` service, never against a locally installed browser. Use this wrapper and substitute only the final `pnpm` command shown in each step:
+Every focused Browser Mode command in this plan runs inside the pinned `browser-tests` service,
+never against a locally installed browser. Define this wrapper once; every later command uses
+`browser_mode`, never bare `pnpm`:
 
 ```bash
-UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm --entrypoint sh browser-tests -lc 'mkdir -p /tmp/corepack-shims && corepack enable --install-directory /tmp/corepack-shims && export PATH="/tmp/corepack-shims:$PATH" && corepack pnpm@11.13.1 install --frozen-lockfile && corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name firefox'
+browser_mode() {
+  env UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm \
+    --entrypoint sh browser-tests -lc \
+    'mkdir -p /tmp/corepack-shims && corepack enable --install-directory /tmp/corepack-shims && export PATH="/tmp/corepack-shims:$PATH" && corepack pnpm@11.13.1 install --frozen-lockfile && '"$1"
+}
 ```
 
 The Docker image already supplies Chromium, Firefox, and WebKit. No command may invoke `playwright install`.
@@ -89,7 +95,7 @@ Import `../styles.css` and fixture `?raw`. Copy the canvas color conversion and 
 Run:
 
 ```bash
-pnpm --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name firefox
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name firefox'
 ```
 
 Expected: FAIL on baseline pairs including dark faint text, CalendarView time text, light sunken label, or dark primary hover. Record exact computed colors and ratios; do not relax an assertion.
@@ -99,8 +105,8 @@ Expected: FAIL on baseline pairs including dark faint text, CalendarView time te
 Run:
 
 ```bash
-pnpm --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name chromium
-pnpm --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name webkit
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name chromium'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name webkit'
 ```
 
 Expected: each known rendered pair is red. A serialization difference may change the parser implementation, never the AA threshold.
@@ -167,12 +173,12 @@ Measure those values in all three engines. Do not introduce `--calendar-event-te
 Run:
 
 ```bash
-pnpm --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name chromium
-pnpm --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name firefox
-pnpm --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name webkit
-pnpm --filter @lyra-ds/styles exec vitest run tests/brand-theme.test.ts --browser.name chromium
-pnpm --filter @lyra-ds/styles exec vitest run tests/brand-theme.test.ts --browser.name firefox
-pnpm --filter @lyra-ds/styles exec vitest run tests/brand-theme.test.ts --browser.name webkit
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name chromium'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name firefox'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/contrast-regressions.test.ts --browser.name webkit'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/brand-theme.test.ts --browser.name chromium'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/brand-theme.test.ts --browser.name firefox'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/styles exec vitest run tests/brand-theme.test.ts --browser.name webkit'
 ```
 
 Expected: every probe reaches AA and the brand ordering/override contract stays green.
@@ -230,9 +236,9 @@ Delete `ACCEPTED_CONTRAST_PAIRS`, every `flatMap` filter, and accepted-design co
 - [ ] **Step 3: Run React CalendarView in every engine**
 
 ```bash
-pnpm --filter @lyra-ds/react exec vitest run src/calendar-view/calendar-view.browser.test.tsx --browser.name chromium
-pnpm --filter @lyra-ds/react exec vitest run src/calendar-view/calendar-view.browser.test.tsx --browser.name firefox
-pnpm --filter @lyra-ds/react exec vitest run src/calendar-view/calendar-view.browser.test.tsx --browser.name webkit
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/react exec vitest run src/calendar-view/calendar-view.browser.test.tsx --browser.name chromium'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/react exec vitest run src/calendar-view/calendar-view.browser.test.tsx --browser.name firefox'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/react exec vitest run src/calendar-view/calendar-view.browser.test.tsx --browser.name webkit'
 ```
 
 Expected: zero axe violations and both chips meet 4.5:1.
@@ -270,7 +276,7 @@ Delete the pair set, contrast filters, and their comments. Do not change Alpine 
 - [ ] **Step 2: Prove full Alpine coverage in Chromium**
 
 ```bash
-pnpm --filter @lyra-ds/alpine exec vitest run --browser.name chromium
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/alpine exec vitest run --browser.name chromium'
 ```
 
 Expected: PASS. If axe reports a node, add that exact final composite to Task 1, write its red ratio assertion, correct the narrow Styles source in Task 2, and rerun the red/green cycle. Never restore an exception.
@@ -278,8 +284,8 @@ Expected: PASS. If axe reports a node, add that exact final composite to Task 1,
 - [ ] **Step 3: Prove full Alpine coverage in Firefox and WebKit**
 
 ```bash
-pnpm --filter @lyra-ds/alpine exec vitest run --browser.name firefox
-pnpm --filter @lyra-ds/alpine exec vitest run --browser.name webkit
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/alpine exec vitest run --browser.name firefox'
+browser_mode 'corepack pnpm@11.13.1 --filter @lyra-ds/alpine exec vitest run --browser.name webkit'
 ```
 
 Expected: PASS with no browser-specific contrast code path.
@@ -287,7 +293,11 @@ Expected: PASS with no browser-specific contrast code path.
 - [ ] **Step 4: Commit Alpine enforcement**
 
 ```bash
-git add packages/alpine/src/internal/test-axe.ts packages/styles
+git add packages/alpine/src/internal/test-axe.ts \
+  packages/styles/components/files/files.css \
+  packages/styles/components/forms/forms.css \
+  packages/styles/tests/contrast-regressions.test.ts \
+  packages/styles/tests/fixtures/contrast-regressions.html
 git commit -m "test(alpine): enforce unfiltered axe contrast"
 ```
 

@@ -11,7 +11,11 @@
 - Task 1 RED, in the pinned Docker browser service: dark faint card `3.923:1`, light CalendarView session time `4.169:1`, and Acme primary hover `4.138:1` in Chromium/Firefox/WebKit. `.lyra-kbd` was already green.
 - Focused Task-2-owned contrast probes: 4 passed, 1 deferred probe skipped, in each of Chromium, Firefox, and WebKit.
 - `brand-theme.test.ts`: 48 passed in each of Chromium, Firefox, and WebKit.
-- Full canonical contrast runs now report four corrected passes plus the same intentionally deferred generic `faint-sunken` RED (`4.344:1`) in Chromium and Firefox. The concurrent WebKit full run hit an unrelated `tracing.stopChunk` byte-stream error after the CalendarView and keyboard probes passed; the subsequent isolated focused WebKit command passed all four Task-2-owned probes.
+- Historical Task-2 canonical runs reported four corrected passes plus the intentionally deferred
+  generic light `faint-sunken` RED (`4.344:1`) in Chromium and Firefox. The concurrent WebKit
+  diagnostic hit an unrelated `tracing.stopChunk` byte-stream error after the CalendarView and
+  keyboard probes passed; it did not block acceptance because the later complete pinned matrix
+  exited 0 in all three engines.
 
 ## Deferred concern
 
@@ -26,3 +30,10 @@ The generic light `faint-sunken` fixture remains RED by design. It is not a meas
 ## Task 5 disposition
 
 The synthetic light `faint-sunken` assertion was retired after the unfiltered React and Alpine runs identified and corrected the actual shipped nodes. The same fixture remains in the dark-only token-surface contract, where `--text-faint` on `--surface-sunken` is a real dark regression target.
+
+The final light-sunken owners are the Combobox option hint/trailing text, File Manager inactive
+view, and Workspace slug prefix; their narrow source declarations now use `--text-secondary`,
+yielding `rgb(71, 85, 105)` on `rgb(241, 245, 249)` at `6.917:1` in Chromium, Firefox, and
+WebKit. `.lyra-kbd`/`sunken-label` remains an additional, already-green regression and was not the
+owner of the original axe finding. The historical generic light `faint-sunken` RED is therefore
+not part of the final assertion; only the real dark token-surface probe remains.

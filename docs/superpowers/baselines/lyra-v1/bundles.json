@@ -432,11 +432,7 @@
       }
     }
   },
-  "externals": [
-    "react",
-    "react-dom",
-    "react-dom/client"
-  ],
+  "externals": ["react", "react-dom", "react-dom/client"],
   "standalone": {
     "react": [
       {
@@ -454,9 +450,7 @@
             "rawBytes": 2605,
             "minifiedBytes": 1526,
             "brotliBytes": 529,
-            "files": [
-              "react-01.js"
-            ]
+            "files": ["react-01.js"]
           }
         }
       },
@@ -475,9 +469,7 @@
             "rawBytes": 2322,
             "minifiedBytes": 1288,
             "brotliBytes": 453,
-            "files": [
-              "react-02.js"
-            ]
+            "files": ["react-02.js"]
           }
         }
       },
@@ -496,9 +488,7 @@
             "rawBytes": 3357,
             "minifiedBytes": 1664,
             "brotliBytes": 681,
-            "files": [
-              "react-03.js"
-            ]
+            "files": ["react-03.js"]
           }
         }
       },
@@ -517,9 +507,7 @@
             "rawBytes": 2263,
             "minifiedBytes": 1242,
             "brotliBytes": 428,
-            "files": [
-              "react-04.js"
-            ]
+            "files": ["react-04.js"]
           }
         }
       },
@@ -538,9 +526,7 @@
             "rawBytes": 4589,
             "minifiedBytes": 2635,
             "brotliBytes": 894,
-            "files": [
-              "react-05.js"
-            ]
+            "files": ["react-05.js"]
           }
         }
       },
@@ -559,9 +545,7 @@
             "rawBytes": 12601,
             "minifiedBytes": 5689,
             "brotliBytes": 1758,
-            "files": [
-              "react-06.js"
-            ]
+            "files": ["react-06.js"]
           }
         }
       },
@@ -580,9 +564,7 @@
             "rawBytes": 13117,
             "minifiedBytes": 5914,
             "brotliBytes": 1822,
-            "files": [
-              "react-07.js"
-            ]
+            "files": ["react-07.js"]
           }
         }
       },
@@ -601,9 +583,7 @@
             "rawBytes": 26906,
             "minifiedBytes": 13276,
             "brotliBytes": 3665,
-            "files": [
-              "react-08.js"
-            ]
+            "files": ["react-08.js"]
           }
         }
       },
@@ -622,9 +602,7 @@
             "rawBytes": 53948,
             "minifiedBytes": 32070,
             "brotliBytes": 8388,
-            "files": [
-              "react-09.js"
-            ]
+            "files": ["react-09.js"]
           }
         }
       },
@@ -643,9 +621,7 @@
             "rawBytes": 4727,
             "minifiedBytes": 2346,
             "brotliBytes": 895,
-            "files": [
-              "react-10.js"
-            ]
+            "files": ["react-10.js"]
           }
         }
       },
@@ -664,9 +640,7 @@
             "rawBytes": 43457,
             "minifiedBytes": 24507,
             "brotliBytes": 6457,
-            "files": [
-              "react-11.js"
-            ]
+            "files": ["react-11.js"]
           }
         }
       },
@@ -685,9 +659,7 @@
             "rawBytes": 1420,
             "minifiedBytes": 514,
             "brotliBytes": 270,
-            "files": [
-              "react-12.js"
-            ]
+            "files": ["react-12.js"]
           }
         }
       },
@@ -706,9 +678,7 @@
             "rawBytes": 4380,
             "minifiedBytes": 1635,
             "brotliBytes": 665,
-            "files": [
-              "react-13.js"
-            ]
+            "files": ["react-13.js"]
           }
         }
       },
@@ -727,9 +697,7 @@
             "rawBytes": 3513,
             "minifiedBytes": 1036,
             "brotliBytes": 491,
-            "files": [
-              "react-14.js"
-            ]
+            "files": ["react-14.js"]
           }
         }
       },
@@ -748,9 +716,7 @@
             "rawBytes": 3487,
             "minifiedBytes": 1027,
             "brotliBytes": 492,
-            "files": [
-              "react-15.js"
-            ]
+            "files": ["react-15.js"]
           }
         }
       },
@@ -769,9 +735,7 @@
             "rawBytes": 5477,
             "minifiedBytes": 2645,
             "brotliBytes": 899,
-            "files": [
-              "react-16.js"
-            ]
+            "files": ["react-16.js"]
           }
         }
       },
@@ -790,9 +754,7 @@
             "rawBytes": 5632,
             "minifiedBytes": 2680,
             "brotliBytes": 914,
-            "files": [
-              "react-17.js"
-            ]
+            "files": ["react-17.js"]
           }
         }
       },
@@ -811,9 +773,7 @@
             "rawBytes": 2157,
             "minifiedBytes": 1129,
             "brotliBytes": 415,
-            "files": [
-              "react-18.js"
-            ]
+            "files": ["react-18.js"]
           }
         }
       },
@@ -832,9 +792,7 @@
             "rawBytes": 1696,
             "minifiedBytes": 731,
             "brotliBytes": 291,
-            "files": [
-              "react-19.js"
-            ]
+            "files": ["react-19.js"]
           }
         }
       },
@@ -853,9 +811,7 @@
             "rawBytes": 3556,
             "minifiedBytes": 1170,
             "brotliBytes": 516,
-            "files": [
-              "react-20.js"
-            ]
+            "files": ["react-20.js"]
           }
         }
       },
@@ -874,9 +830,7 @@
             "rawBytes": 50377,
             "minifiedBytes": 30513,
             "brotliBytes": 7992,
-            "files": [
-              "react-21.js"
-            ]
+            "files": ["react-21.js"]
           }
         }
       },
@@ -895,9 +849,7 @@
             "rawBytes": 62900,
             "minifiedBytes": 38476,
             "brotliBytes": 9747,
-            "files": [
-              "react-22.js"
-            ]
+            "files": ["react-22.js"]
           }
         }
       },
@@ -916,9 +868,7 @@
             "rawBytes": 13745,
             "minifiedBytes": 9092,
             "brotliBytes": 2413,
-            "files": [
-              "react-23.js"
-            ]
+            "files": ["react-23.js"]
           }
         }
       },
@@ -937,9 +887,7 @@
             "rawBytes": 28007,
             "minifiedBytes": 15063,
             "brotliBytes": 4402,
-            "files": [
-              "react-24.js"
-            ]
+            "files": ["react-24.js"]
           }
         }
       },
@@ -958,9 +906,7 @@
             "rawBytes": 9281,
             "minifiedBytes": 5045,
             "brotliBytes": 1782,
-            "files": [
-              "react-25.js"
-            ]
+            "files": ["react-25.js"]
           }
         }
       },
@@ -979,9 +925,7 @@
             "rawBytes": 37759,
             "minifiedBytes": 22623,
             "brotliBytes": 5684,
-            "files": [
-              "react-26.js"
-            ]
+            "files": ["react-26.js"]
           }
         }
       },
@@ -1000,9 +944,7 @@
             "rawBytes": 38146,
             "minifiedBytes": 22908,
             "brotliBytes": 5789,
-            "files": [
-              "react-27.js"
-            ]
+            "files": ["react-27.js"]
           }
         }
       },
@@ -1021,9 +963,7 @@
             "rawBytes": 1417,
             "minifiedBytes": 540,
             "brotliBytes": 287,
-            "files": [
-              "react-28.js"
-            ]
+            "files": ["react-28.js"]
           }
         }
       },
@@ -1042,9 +982,7 @@
             "rawBytes": 44011,
             "minifiedBytes": 24981,
             "brotliBytes": 6608,
-            "files": [
-              "react-29.js"
-            ]
+            "files": ["react-29.js"]
           }
         }
       },
@@ -1063,9 +1001,7 @@
             "rawBytes": 4060,
             "minifiedBytes": 2444,
             "brotliBytes": 829,
-            "files": [
-              "react-30.js"
-            ]
+            "files": ["react-30.js"]
           }
         }
       },
@@ -1084,9 +1020,7 @@
             "rawBytes": 1478,
             "minifiedBytes": 514,
             "brotliBytes": 298,
-            "files": [
-              "react-31.js"
-            ]
+            "files": ["react-31.js"]
           }
         }
       },
@@ -1105,9 +1039,7 @@
             "rawBytes": 3115,
             "minifiedBytes": 1836,
             "brotliBytes": 679,
-            "files": [
-              "react-32.js"
-            ]
+            "files": ["react-32.js"]
           }
         }
       },
@@ -1126,9 +1058,7 @@
             "rawBytes": 3358,
             "minifiedBytes": 1810,
             "brotliBytes": 742,
-            "files": [
-              "react-33.js"
-            ]
+            "files": ["react-33.js"]
           }
         }
       },
@@ -1147,9 +1077,7 @@
             "rawBytes": 1804,
             "minifiedBytes": 797,
             "brotliBytes": 393,
-            "files": [
-              "react-34.js"
-            ]
+            "files": ["react-34.js"]
           }
         }
       },
@@ -1168,9 +1096,7 @@
             "rawBytes": 2049,
             "minifiedBytes": 1152,
             "brotliBytes": 364,
-            "files": [
-              "react-35.js"
-            ]
+            "files": ["react-35.js"]
           }
         }
       },
@@ -1189,9 +1115,7 @@
             "rawBytes": 1873,
             "minifiedBytes": 805,
             "brotliBytes": 397,
-            "files": [
-              "react-36.js"
-            ]
+            "files": ["react-36.js"]
           }
         }
       },
@@ -1210,9 +1134,7 @@
             "rawBytes": 1840,
             "minifiedBytes": 931,
             "brotliBytes": 442,
-            "files": [
-              "react-37.js"
-            ]
+            "files": ["react-37.js"]
           }
         }
       },
@@ -1231,9 +1153,7 @@
             "rawBytes": 1612,
             "minifiedBytes": 774,
             "brotliBytes": 326,
-            "files": [
-              "react-38.js"
-            ]
+            "files": ["react-38.js"]
           }
         }
       },
@@ -1252,9 +1172,7 @@
             "rawBytes": 1332,
             "minifiedBytes": 451,
             "brotliBytes": 261,
-            "files": [
-              "react-39.js"
-            ]
+            "files": ["react-39.js"]
           }
         }
       },
@@ -1273,9 +1191,7 @@
             "rawBytes": 1399,
             "minifiedBytes": 534,
             "brotliBytes": 293,
-            "files": [
-              "react-40.js"
-            ]
+            "files": ["react-40.js"]
           }
         }
       },
@@ -1294,9 +1210,7 @@
             "rawBytes": 1532,
             "minifiedBytes": 653,
             "brotliBytes": 333,
-            "files": [
-              "react-41.js"
-            ]
+            "files": ["react-41.js"]
           }
         }
       },
@@ -1315,9 +1229,7 @@
             "rawBytes": 5613,
             "minifiedBytes": 3825,
             "brotliBytes": 1123,
-            "files": [
-              "react-42.js"
-            ]
+            "files": ["react-42.js"]
           }
         }
       },
@@ -1336,9 +1248,7 @@
             "rawBytes": 1740,
             "minifiedBytes": 879,
             "brotliBytes": 364,
-            "files": [
-              "react-43.js"
-            ]
+            "files": ["react-43.js"]
           }
         }
       },
@@ -1357,9 +1267,7 @@
             "rawBytes": 1723,
             "minifiedBytes": 844,
             "brotliBytes": 311,
-            "files": [
-              "react-44.js"
-            ]
+            "files": ["react-44.js"]
           }
         }
       },
@@ -1378,9 +1286,7 @@
             "rawBytes": 1875,
             "minifiedBytes": 925,
             "brotliBytes": 376,
-            "files": [
-              "react-45.js"
-            ]
+            "files": ["react-45.js"]
           }
         }
       },
@@ -1399,9 +1305,7 @@
             "rawBytes": 3252,
             "minifiedBytes": 1824,
             "brotliBytes": 748,
-            "files": [
-              "react-46.js"
-            ]
+            "files": ["react-46.js"]
           }
         }
       },
@@ -1420,9 +1324,7 @@
             "rawBytes": 2787,
             "minifiedBytes": 1698,
             "brotliBytes": 627,
-            "files": [
-              "react-47.js"
-            ]
+            "files": ["react-47.js"]
           }
         }
       },
@@ -1441,9 +1343,7 @@
             "rawBytes": 2230,
             "minifiedBytes": 1354,
             "brotliBytes": 518,
-            "files": [
-              "react-48.js"
-            ]
+            "files": ["react-48.js"]
           }
         }
       },
@@ -1462,9 +1362,7 @@
             "rawBytes": 2847,
             "minifiedBytes": 1768,
             "brotliBytes": 639,
-            "files": [
-              "react-49.js"
-            ]
+            "files": ["react-49.js"]
           }
         }
       },
@@ -1483,9 +1381,7 @@
             "rawBytes": 6503,
             "minifiedBytes": 3367,
             "brotliBytes": 1147,
-            "files": [
-              "react-50.js"
-            ]
+            "files": ["react-50.js"]
           }
         }
       },
@@ -1504,9 +1400,7 @@
             "rawBytes": 4406,
             "minifiedBytes": 1819,
             "brotliBytes": 705,
-            "files": [
-              "react-51.js"
-            ]
+            "files": ["react-51.js"]
           }
         }
       },
@@ -1525,9 +1419,7 @@
             "rawBytes": 10457,
             "minifiedBytes": 5652,
             "brotliBytes": 1893,
-            "files": [
-              "react-52.js"
-            ]
+            "files": ["react-52.js"]
           }
         }
       },
@@ -1546,9 +1438,7 @@
             "rawBytes": 9958,
             "minifiedBytes": 4595,
             "brotliBytes": 1639,
-            "files": [
-              "react-53.js"
-            ]
+            "files": ["react-53.js"]
           }
         }
       },
@@ -1567,9 +1457,7 @@
             "rawBytes": 56064,
             "minifiedBytes": 32320,
             "brotliBytes": 8538,
-            "files": [
-              "react-54.js"
-            ]
+            "files": ["react-54.js"]
           }
         }
       },
@@ -1588,9 +1476,7 @@
             "rawBytes": 62511,
             "minifiedBytes": 38334,
             "brotliBytes": 10148,
-            "files": [
-              "react-55.js"
-            ]
+            "files": ["react-55.js"]
           }
         }
       },
@@ -1609,9 +1495,7 @@
             "rawBytes": 2145,
             "minifiedBytes": 1162,
             "brotliBytes": 453,
-            "files": [
-              "react-56.js"
-            ]
+            "files": ["react-56.js"]
           }
         }
       },
@@ -1630,9 +1514,7 @@
             "rawBytes": 10586,
             "minifiedBytes": 6830,
             "brotliBytes": 2062,
-            "files": [
-              "react-57.js"
-            ]
+            "files": ["react-57.js"]
           }
         }
       },
@@ -1651,9 +1533,7 @@
             "rawBytes": 2610,
             "minifiedBytes": 1566,
             "brotliBytes": 572,
-            "files": [
-              "react-58.js"
-            ]
+            "files": ["react-58.js"]
           }
         }
       },
@@ -1672,9 +1552,7 @@
             "rawBytes": 2295,
             "minifiedBytes": 1488,
             "brotliBytes": 548,
-            "files": [
-              "react-59.js"
-            ]
+            "files": ["react-59.js"]
           }
         }
       },
@@ -1693,9 +1571,7 @@
             "rawBytes": 3131,
             "minifiedBytes": 2168,
             "brotliBytes": 699,
-            "files": [
-              "react-60.js"
-            ]
+            "files": ["react-60.js"]
           }
         }
       },
@@ -1714,9 +1590,7 @@
             "rawBytes": 8023,
             "minifiedBytes": 4979,
             "brotliBytes": 1458,
-            "files": [
-              "react-61.js"
-            ]
+            "files": ["react-61.js"]
           }
         }
       },
@@ -1735,9 +1609,7 @@
             "rawBytes": 1804,
             "minifiedBytes": 911,
             "brotliBytes": 376,
-            "files": [
-              "react-62.js"
-            ]
+            "files": ["react-62.js"]
           }
         }
       },
@@ -1756,9 +1628,7 @@
             "rawBytes": 1693,
             "minifiedBytes": 850,
             "brotliBytes": 367,
-            "files": [
-              "react-63.js"
-            ]
+            "files": ["react-63.js"]
           }
         }
       },
@@ -1777,9 +1647,7 @@
             "rawBytes": 5095,
             "minifiedBytes": 3484,
             "brotliBytes": 1139,
-            "files": [
-              "react-64.js"
-            ]
+            "files": ["react-64.js"]
           }
         }
       },
@@ -1798,9 +1666,7 @@
             "rawBytes": 8659,
             "minifiedBytes": 4322,
             "brotliBytes": 1502,
-            "files": [
-              "react-65.js"
-            ]
+            "files": ["react-65.js"]
           }
         }
       },
@@ -1819,9 +1685,7 @@
             "rawBytes": 62040,
             "minifiedBytes": 36141,
             "brotliBytes": 9435,
-            "files": [
-              "react-66.js"
-            ]
+            "files": ["react-66.js"]
           }
         }
       },
@@ -1840,9 +1704,7 @@
             "rawBytes": 4247,
             "minifiedBytes": 1641,
             "brotliBytes": 664,
-            "files": [
-              "react-67.js"
-            ]
+            "files": ["react-67.js"]
           }
         }
       },
@@ -1861,9 +1723,7 @@
             "rawBytes": 49274,
             "minifiedBytes": 33462,
             "brotliBytes": 7723,
-            "files": [
-              "react-68.js"
-            ]
+            "files": ["react-68.js"]
           }
         }
       },
@@ -1882,9 +1742,7 @@
             "rawBytes": 98620,
             "minifiedBytes": 61497,
             "brotliBytes": 15087,
-            "files": [
-              "react-69.js"
-            ]
+            "files": ["react-69.js"]
           }
         }
       },
@@ -1903,9 +1761,7 @@
             "rawBytes": 84937,
             "minifiedBytes": 55395,
             "brotliBytes": 13936,
-            "files": [
-              "react-70.js"
-            ]
+            "files": ["react-70.js"]
           }
         }
       },
@@ -1924,9 +1780,7 @@
             "rawBytes": 58972,
             "minifiedBytes": 35988,
             "brotliBytes": 9242,
-            "files": [
-              "react-71.js"
-            ]
+            "files": ["react-71.js"]
           }
         }
       }
@@ -1947,9 +1801,7 @@
             "rawBytes": 194833,
             "minifiedBytes": 114140,
             "brotliBytes": 20711,
-            "files": [
-              "alpine-01.js"
-            ]
+            "files": ["alpine-01.js"]
           }
         }
       }
@@ -1962,9 +1814,7 @@
           "rawBytes": 20243,
           "minifiedBytes": 7686,
           "brotliBytes": 1878,
-          "files": [
-            "form.js"
-          ]
+          "files": ["form.js"]
         }
       },
       "modules": [
@@ -2000,9 +1850,7 @@
           "rawBytes": 53547,
           "minifiedBytes": 24600,
           "brotliBytes": 4912,
-          "files": [
-            "overlays.js"
-          ]
+          "files": ["overlays.js"]
         }
       },
       "modules": [
@@ -2038,9 +1886,7 @@
           "rawBytes": 89660,
           "minifiedBytes": 53211,
           "brotliBytes": 12644,
-          "files": [
-            "application-shell.js"
-          ]
+          "files": ["application-shell.js"]
         }
       },
       "modules": [
@@ -2424,9 +2270,7 @@
           "rawBytes": 170470,
           "minifiedBytes": 106059,
           "brotliBytes": 19594,
-          "files": [
-            "scheduling.js"
-          ]
+          "files": ["scheduling.js"]
         }
       },
       "modules": [
@@ -2806,9 +2650,7 @@
           "rawBytes": 84813,
           "minifiedBytes": 53243,
           "brotliBytes": 12508,
-          "files": [
-            "files-data.js"
-          ]
+          "files": ["files-data.js"]
         }
       },
       "modules": [
@@ -3185,9 +3027,7 @@
       "rawBytes": 146782,
       "minifiedBytes": 103889,
       "brotliBytes": 13278,
-      "files": [
-        "css-1.css"
-      ],
+      "files": ["css-1.css"],
       "modules": []
     },
     "styles.css": {
@@ -3195,9 +3035,7 @@
       "rawBytes": 146782,
       "minifiedBytes": 103889,
       "brotliBytes": 13278,
-      "files": [
-        "css-2.css"
-      ],
+      "files": ["css-2.css"],
       "modules": []
     },
     "tokens/brand.css": {
@@ -3205,9 +3043,7 @@
       "rawBytes": 1703,
       "minifiedBytes": 1293,
       "brotliBytes": 362,
-      "files": [
-        "css-3.css"
-      ],
+      "files": ["css-3.css"],
       "modules": []
     },
     "compat-shadcn.css": {
@@ -3215,9 +3051,7 @@
       "rawBytes": 1400,
       "minifiedBytes": 649,
       "brotliBytes": 208,
-      "files": [
-        "css-4.css"
-      ],
+      "files": ["css-4.css"],
       "modules": []
     }
   }
