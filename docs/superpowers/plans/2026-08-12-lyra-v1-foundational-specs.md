@@ -15,7 +15,8 @@
   follow affected React contract stabilization, while Vue, Svelte, Web
   Components, MCP, and production component changes remain out of scope.
 - The roadmap PRD at `docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md` is the governing product document.
-- Every new specification starts with `Status: Draft`, `Owner: Lyra maintainers`, and `Governing PRD` metadata.
+- Every new specification starts with the exact metadata lines `**Status:** Draft`, `**Owner:** Lyra maintainers`, and `**Governing PRD:** <link>`.
+- Every specification created by Tasks 1–5 contains a `## Acceptance criteria` heading whose requirements can be checked before the document moves to `Approved`.
 - Use RFC 2119 terms `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` only for normative requirements; define them once in the index.
 - Do not weaken the PRD gates: WCAG 2.2 AA, Chromium/Firefox/WebKit, NVDA/VoiceOver critical-flow review, SSR, public-type isolation, and bundle evidence remain mandatory.
 - Simple primitive migrations may add at most `+1.5 kB` Brotli per consumer entry; complex migrations may add at most `+3 kB`; larger changes require an ADR.
@@ -46,6 +47,7 @@
 Run:
 
 ```bash
+set -euo pipefail
 test ! -e docs/superpowers/specs/lyra-v1/README.md
 test ! -e docs/superpowers/specs/lyra-v1/01-design-product-principles.md
 ```
@@ -79,13 +81,14 @@ Create `01-design-product-principles.md` with:
 8. Stability model: experimental, beta, stable, and deprecated, mapped to the shared spec lifecycle.
 9. Public commitments and explicit anti-goals copied from the PRD without broadening scope.
 10. Icon direction: retain Lucide, curated registry, escape hatch, organization adapter path, and separate brand-icon policy.
-11. Acceptance criteria that can be checked before the document moves to `Approved`.
+11. An exact `## Acceptance criteria` section whose requirements can be checked before the document moves to `Approved`.
 
 - [ ] **Step 4: Verify structure and cross-links**
 
 Run:
 
 ```bash
+set -euo pipefail
 pnpm exec prettier --write docs/superpowers/specs/lyra-v1/README.md docs/superpowers/specs/lyra-v1/01-design-product-principles.md
 pnpm exec prettier --check docs/superpowers/specs/lyra-v1/README.md docs/superpowers/specs/lyra-v1/01-design-product-principles.md
 rg -q '^## Shared vocabulary$' docs/superpowers/specs/lyra-v1/README.md
@@ -99,6 +102,7 @@ Expected: Prettier reports both files formatted; every `rg` and `git diff --chec
 - [ ] **Step 5: Commit the shared foundation**
 
 ```bash
+set -euo pipefail
 git add docs/superpowers/specs/lyra-v1/README.md docs/superpowers/specs/lyra-v1/01-design-product-principles.md
 git commit -m "docs: define Lyra v1 product principles"
 ```
@@ -130,6 +134,7 @@ git commit -m "docs: define Lyra v1 product principles"
 Run:
 
 ```bash
+set -euo pipefail
 node tools/parity/parity.mjs
 rg -oP --no-filename -- '--[a-z0-9-]+(?=\s*:)' packages/styles/tokens/*.css | sort -u > /tmp/lyra-v1-token-inventory.txt
 wc -l /tmp/lyra-v1-token-inventory.txt
@@ -167,13 +172,14 @@ Add explicit requirements for:
 
 - [ ] **Step 4: Define change evidence and acceptance criteria**
 
-Require each token change to include impacted themes, contrast evidence, affected public classes/components, parity result, screenshots for relevant themes/states, and migration notes for public-token changes. Add approval criteria that cover all token files and every state listed in Step 3.
+Require each token change to include impacted themes, contrast evidence, affected public classes/components, parity result, screenshots for relevant themes/states, and migration notes for public-token changes. Add an exact `## Acceptance criteria` section that covers all token files and every state listed in Step 3.
 
 - [ ] **Step 5: Verify and commit**
 
 Run:
 
 ```bash
+set -euo pipefail
 pnpm exec prettier --write docs/superpowers/specs/lyra-v1/02-tokens-visual-language.md
 pnpm exec prettier --check docs/superpowers/specs/lyra-v1/02-tokens-visual-language.md
 rg -q '^## Token tiers$' docs/superpowers/specs/lyra-v1/02-tokens-visual-language.md
@@ -239,13 +245,14 @@ Define:
 
 - [ ] **Step 5: Define component-pattern obligations**
 
-Add a table mapping buttons, fields, composites, tabs, disclosures, menus/listboxes, dialogs, tooltips, tables, progress/status, drag-and-drop, and date/time widgets to the semantic owner and the minimum keyboard/focus behaviors that family specs must complete. Name the current Tabs, FileUpload, DataTable, Drawer, and contrast-helper findings as contracts that the v1.0 specs must not preserve.
+Add a table mapping buttons, fields, composites, tabs, disclosures, menus/listboxes, dialogs, tooltips, tables, progress/status, drag-and-drop, and date/time widgets to the semantic owner and the minimum keyboard/focus behaviors that family specs must complete. Name the current Tabs, FileUpload, DataTable, Drawer, and contrast-helper findings as contracts that the v1.0 specs must not preserve. Add an exact `## Acceptance criteria` section for this specification.
 
 - [ ] **Step 6: Verify and commit**
 
 Run:
 
 ```bash
+set -euo pipefail
 pnpm exec prettier --write docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md
 pnpm exec prettier --check docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md
 rg -q '^## Focus contract$' docs/superpowers/specs/lyra-v1/03-interaction-accessibility.md
@@ -307,7 +314,7 @@ Require a Lyra-owned adapter boundary for Radix, Base UI, or React Aria; prohibi
 
 - [ ] **Step 5: Define API lifecycle and migration**
 
-Specify experimental, beta, stable, and deprecated API guarantees; semver rules across the three packages; synchronized versus independent package versions; deprecation communication; unsafe-contract removal; codemod criteria; and before/after examples. Resolve the current version-policy decision explicitly rather than leaving it open for family specs.
+Specify experimental, beta, stable, and deprecated API guarantees; the independent SemVer policy for Styles, React, and Alpine; the coordinated shared-contract release requirements; and the pre-1.0 changeset convention from `VERSIONING.md`; deprecation communication; unsafe-contract removal; codemod criteria; and before/after examples. Preserve the existing versioning policy rather than reopening it. Add an exact `## Acceptance criteria` section.
 
 - [ ] **Step 6: Define the family-spec API template**
 
@@ -318,6 +325,7 @@ Include the PRD's required component-spec sections and add exact API artifacts: 
 Run:
 
 ```bash
+set -euo pipefail
 pnpm exec prettier --write docs/superpowers/specs/lyra-v1/04-component-architecture.md
 pnpm exec prettier --check docs/superpowers/specs/lyra-v1/04-component-architecture.md
 rg -q '^## React public API contract$' docs/superpowers/specs/lyra-v1/04-component-architecture.md
@@ -380,13 +388,14 @@ Specify Brotli measurement, pinned tooling, cold-cache standalone entries, the f
 
 - [ ] **Step 5: Define traceability and release evidence**
 
-Require every normative family-spec acceptance criterion to map to an automated test, manual test record, or documented non-automatable review. Define the release evidence manifest with spec version, package version, commands, results, artifact links, browser/AT matrix, bundle report, known issues, and migration guide.
+Require every normative family-spec acceptance criterion to map to an automated test, manual test record, or documented non-automatable review. Define the release evidence manifest with spec version, package version, commands, results, artifact links, browser/AT matrix, bundle report, known issues, and migration guide. Add an exact `## Acceptance criteria` section.
 
 - [ ] **Step 6: Verify and commit**
 
 Run:
 
 ```bash
+set -euo pipefail
 pnpm exec prettier --write docs/superpowers/specs/lyra-v1/05-quality-performance.md
 pnpm exec prettier --check docs/superpowers/specs/lyra-v1/05-quality-performance.md
 rg -q '^## Test architecture$' docs/superpowers/specs/lyra-v1/05-quality-performance.md
@@ -444,7 +453,7 @@ Record resolved wording directly in the owning spec. Do not create a separate un
 Run:
 
 ```bash
-set -e
+set -euo pipefail
 pnpm exec prettier --write docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md docs/superpowers/specs/lyra-v1/*.md
 pnpm exec prettier --check docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md docs/superpowers/specs/lyra-v1/*.md
 for file in docs/superpowers/specs/lyra-v1/0*.md; do
@@ -462,6 +471,7 @@ Expected: all commands exit `0`; all five specs remain `Draft` pending human app
 Run:
 
 ```bash
+set -euo pipefail
 git status --short
 git diff --stat HEAD~5
 git diff -- docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md docs/superpowers/specs/lyra-v1
@@ -472,6 +482,7 @@ Expected: only the PRD links, index, and five foundational specification files a
 - [ ] **Step 6: Commit the integrated spec set**
 
 ```bash
+set -euo pipefail
 git add docs/superpowers/specs/2026-08-12-lyra-v1-roadmap-prd.md docs/superpowers/specs/lyra-v1
 git commit -m "docs: integrate Lyra v1 foundational specs"
 ```
