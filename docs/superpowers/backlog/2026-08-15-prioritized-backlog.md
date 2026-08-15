@@ -22,15 +22,18 @@ Alpine's two utility exports, `TIME_ZONE_PICKER_ZONES` and
 claim: Alpine's default plugin and registered bindings remain explicit audit
 inputs for `BKL-01`.
 
-The latest 40 commits record Alpine adapter work leading up to the 0.5.0
-release commit `b1d77b5e993804add2c14746f66974ec8c04bbc3` (2026-08-12,
+Within the trailing 40 commits, `packages/alpine` has 1,291 added and 331
+deleted lines (1,622 total), compared with 557 total changed lines in
+`packages/styles` and 288 in `packages/react`. The ranking rule selects the
+highest total changed lines, then path-scoped commit count and older relevant
+commit if needed; Alpine is therefore the highest-churn supported adapter
+surface. Its recent work leads up to the 0.5.0 release commit
+`b1d77b5e993804add2c14746f66974ec8c04bbc3` (2026-08-12,
 `chore(release): version packages (#181)`), including
 `fdbafe0a77adb5ab37d9e1b2d9735b2e0c8de774` (2026-08-10,
 `feat(alpine): rótulo traduzível no time picker + chave de storage…`) and
 `84a7112e44e9c192944a51718ce7ea06fd638295` (2026-08-11,
 `fix(alpine): datas relativas nos testes de exceção do weekly-schedule…`).
-These relevant adapter commits make Alpine the highest-churn supported adapter
-surface in the available history.
 
 Sources consulted: `docs/superpowers/backlog/2026-08-15-current-baseline.md`;
 `docs/superpowers/specs/2026-08-15-sequential-delivery-cycle-design.md`;
@@ -39,15 +42,18 @@ Sources consulted: `docs/superpowers/backlog/2026-08-15-current-baseline.md`;
 
 ```text
 rtk git log -40 --format='%H%x09%ad%x09%s' --date=short
+rtk git log HEAD~40..HEAD --format= --numstat -- packages/alpine
+rtk git log HEAD~40..HEAD --format= --numstat -- packages/styles
+rtk git log HEAD~40..HEAD --format= --numstat -- packages/react
 rtk rg -n "TODO|FIXME|TBD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
-rtk rg -n "export \{.*\}|export function lyra" packages/react/src/index.ts packages/alpine/src/index.ts
+rtk node --input-type=module -e 'import ts from "typescript"; import { readFileSync } from "node:fs"; for (const file of ["packages/react/src/index.ts", "packages/alpine/src/index.ts"]) { const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true); const forms = []; for (const statement of source.statements) { if (ts.isExportDeclaration(statement)) forms.push(statement.exportClause?.getText(source) ?? "*"); else if (ts.isExportAssignment(statement)) forms.push("default"); else if (statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) forms.push(statement.name?.getText(source) ?? statement.getText(source).split(/\s+/).slice(0, 4).join(" ")); } console.log(`${file}: ${forms.length} direct export forms`); }'
 ```
 
 ## Candidates
 
-| Identifier | User impact                                                                                                                                                                          | Evidence                                                                                                                                                                                                                                                                                                              | Scope                                                                                                                                                                                                                                                                                                                                 | Proof                                                                                                                                                                                                 | Exclusions                                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| BKL-01     | Consumers of `@lyra-ds/alpine` need its registered component bindings, controllable state, labels, and root exports to remain compatible with the documented React-derived contract. | Baseline versions: Alpine 0.5.0 and React 0.4.2; Alpine README's exact-state-machine and public binding contract; root-barrel exports in `packages/alpine/src/index.ts`; adapter-related commits `fdbafe0a77adb5ab37d9e1b2d9735b2e0c8de774` (2026-08-10) and `84a7112e44e9c192944a51718ce7ea06fd638295` (2026-08-11). | Perform a public API compatibility audit of the highest-churn adapter surface: compare the documented Alpine registrations, bindings, controllable state, labels, and root exports against the relevant React contract; record a follow-up delivery plan for any demonstrated mismatch. This is read-only and makes no source change. | `pnpm --filter @lyra-ds/alpine run test`; `pnpm --filter @lyra-ds/react run test`; plus a documented comparison of `packages/alpine/src/index.ts`, the relevant adapter modules, and the two READMEs. | No Alpine implementation, React implementation, documentation-tab change, generated output, release, version change, or changeset is included. |
+| Identifier | User impact                                                                                                                                                                          | Evidence                                                                                                                                                                                                                                                                      | Scope                                                                                                                                                                                                                                                                                                                                                      | Proof                                                                                                                                                                                                                                                                                                                                                                                                                               | Exclusions                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BKL-01     | Consumers of `@lyra-ds/alpine` need its registered component bindings, controllable state, labels, and root exports to remain compatible with the documented React-derived contract. | Baseline versions: Alpine 0.5.0 and React 0.4.2; Alpine's 1,622 changed lines in the trailing 40 commits, exceeding Styles (557) and React (288); Alpine README's exact-state-machine and public binding contract; and root-barrel exports in `packages/alpine/src/index.ts`. | Perform a public API compatibility audit of the highest-churn adapter surface: compare the documented Alpine registrations, bindings, controllable state, labels, and root exports against the relevant React contract; record a follow-up delivery plan for any demonstrated mismatch. This is read-only for versioned source and makes no source change. | `pnpm --filter @lyra-ds/alpine run test:browser`; `pnpm --filter @lyra-ds/react run test`; `pnpm --filter @lyra-ds/alpine run build`; `pnpm --filter @lyra-ds/alpine exec attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm`; plus a documented comparison of the React and Alpine source entrypoints, relevant adapter modules, the two READMEs, Alpine `dist/index.js`, `dist/index.d.ts`, and packed entrypoint. | No Alpine implementation, React implementation, documentation-tab change, committed generated output, release, version change, or changeset is included. |
 
 ## Scoring
 
@@ -90,19 +96,24 @@ against, a future behavior change.
   do not add empty tabs.
 - **Test-first files and focused commands:** no test-first production test file
   is required because this block changes no production behavior. Run
-  `pnpm --filter @lyra-ds/alpine run test` and
-  `pnpm --filter @lyra-ds/react run test` after recording the comparison;
+  `pnpm --filter @lyra-ds/alpine run test:browser` and
+  `pnpm --filter @lyra-ds/react run test`, build Alpine, and run its packed
+  `attw` check after recording the comparison. Compare source entrypoints with
+  Alpine `dist/index.js`, `dist/index.d.ts`, and the packed entrypoint;
   use existing focused component test files if an observed mismatch is planned
   for a subsequent block.
-- **Applicable gates:** no SSR, Browser Mode, axe, build, or packaging gate is
-  required to complete this read-only audit. A follow-up behavior change must
-  select applicable existing SSR, Browser Mode, axe, build, and packaging
-  gates before implementation.
+- **Applicable gates:** no SSR, Browser Mode, or axe gate is required to
+  complete this read-only audit. Build and package-surface verification are
+  required because root exports are in scope. A follow-up behavior change must
+  select applicable existing SSR, Browser Mode, axe, build, and packaging gates
+  before implementation.
 - **Compatibility and release policy:** preserve every public contract. This
   audit changes no package behavior, so no changeset is expected. A later
   user-visible package correction requires a changeset under the delivery
   cycle's release policy.
 - **Completion condition:** the block is complete when the audit records each
-  compared public contract, cites its evidence, states whether a mismatch is
-  demonstrated, and creates a bounded follow-up delivery plan only for a
-  demonstrated mismatch. It does not start that capability.
+  compared public contract, cites its evidence, documents that Alpine source
+  exports, `dist/index.js`, `dist/index.d.ts`, and the packed entrypoint agree
+  or identifies a demonstrated mismatch, and creates a bounded follow-up
+  delivery plan only for a demonstrated mismatch. It does not start that
+  capability.

@@ -45,7 +45,8 @@ Git, GitHub Actions workflow definitions, Markdown.
 
 - Create: `docs/superpowers/backlog/2026-08-15-current-baseline.md`
 - Read: `package.json`, `packages/react/package.json`,
-  `packages/alpine/package.json`, `packages/styles/package.json`, and
+  `packages/alpine/package.json`, `packages/styles/package.json`,
+  `apps/docs/package.json`, `apps/site/package.json`, and
   `.github/workflows/ci.yml`
 
 **Interfaces:**
@@ -104,8 +105,9 @@ Surface`, `Verification Evidence`, and `CI Gates`. Task 2 consumes those
 
   Record the command exit status and the per-package passed/failed test-file
   and test counts reported for `packages/styles`, `packages/react`, and
-  `packages/alpine`. If a package fails, record its first failing test file
-  and stop this plan: the failure becomes the only recommended next item.
+  `packages/alpine`. If a package fails, record its first failing test file and
+  continue this plan. Create exactly one candidate for the failed gate, then
+  complete Tasks 2 and 3 so the backlog records the required handoff.
 
 - [ ] **Step 4: Inventory the enforced CI gates**
 
@@ -153,14 +155,28 @@ Surface`, `Verification Evidence`, and `CI Gates`. Task 2 consumes those
 
   ```bash
   rtk git log -40 --format='%H%x09%ad%x09%s' --date=short
+  rtk git log HEAD~40..HEAD --format= --numstat -- packages/alpine | awk '{ added += $1; deleted += $2 } END { print "alpine", added, deleted, added + deleted }'
+  rtk git log HEAD~40..HEAD --format= --numstat -- packages/styles | awk '{ added += $1; deleted += $2 } END { print "styles", added, deleted, added + deleted }'
+  rtk git log HEAD~40..HEAD --format= --numstat -- packages/react | awk '{ added += $1; deleted += $2 } END { print "react", added, deleted, added + deleted }'
   rtk rg -n "TODO|FIXME|TBD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
-  rtk rg -n "export \{.*\}|export function lyra" packages/react/src/index.ts packages/alpine/src/index.ts
+  rtk node --input-type=module -e 'import ts from "typescript"; import { readFileSync } from "node:fs"; for (const file of ["packages/react/src/index.ts", "packages/alpine/src/index.ts"]) { const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true); const forms = []; for (const statement of source.statements) { if (ts.isExportDeclaration(statement)) forms.push(statement.exportClause?.getText(source) ?? "*"); else if (ts.isExportAssignment(statement)) forms.push("default"); else if (statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) forms.push(statement.name?.getText(source) ?? statement.getText(source).split(/\s+/).slice(0, 4).join(" ")); } console.log(`${file}: ${forms.length} direct export forms`); }'
+  rtk pnpm --filter @lyra-ds/alpine run build
+  rtk pnpm --filter @lyra-ds/alpine exec attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm
   ```
 
   Classify matches inside test fixtures, explicit defensive errors, generated
   outputs, and historical planning documents as non-candidates unless they
   identify a currently broken public behavior. A candidate must cite a file,
   commit, failed gate, or documented public-contract mismatch.
+
+  Rank the three public package surfaces by total changed lines (`added +
+deleted`) over `HEAD~40..HEAD`; record the three totals and select the highest
+  adapter surface. If totals tie, select the package with more path-scoped
+  commits, then the older relevant commit. The public-export command must list
+  direct value, type, interface, wildcard, named, and default export forms. For
+  an Alpine audit, compare that source inventory with
+  `packages/alpine/dist/index.js`, `packages/alpine/dist/index.d.ts`, and the
+  packed entrypoint validated by `attw` after the package build.
 
 - [ ] **Step 2: Define bounded, evidence-backed candidates**
 
