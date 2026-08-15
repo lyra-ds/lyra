@@ -53,7 +53,6 @@
   --accent-active:   var(--indigo-800);
   --accent-soft:     var(--indigo-100);
   --accent-soft-text: var(--indigo-700);
-  --calendar-event-text: var(--text-primary);
   --on-accent:       #FFFFFF;
   --focus-ring:      rgba(91, 91, 214, 0.22);
 
@@ -92,10 +91,9 @@
 [data-theme="dark"] {
   --accent:          var(--indigo-600);
   --accent-hover:    var(--indigo-700);
-  --accent-active:   var(--indigo-400);
+  --accent-active:   var(--indigo-800);
   --accent-soft:     rgba(110, 106, 222, 0.16);
   --accent-soft-text: var(--indigo-300);
-  --calendar-event-text: var(--text-primary);
   --on-accent:       #FFFFFF;
   --focus-ring:      rgba(130, 133, 228, 0.28);
 

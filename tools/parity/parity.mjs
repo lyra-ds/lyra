@@ -190,29 +190,114 @@ const OVERLAY_ENTRANCE_DIVERGENCE = new Map([
   ],
 ]);
 
-// Approved dark-theme fill contrast repair. The handoff lightens the accent ramp and danger token
-// for dark surfaces, but the same tokens also fill controls under white text. These exact four
-// replacements keep those solid fills at WCAG AA contrast while preserving the ramp's direction.
-// The selector, canonical handoff value, and approved package value are all pinned so any other
-// dark-token drift remains a parity failure.
-const DARK_FILL_CONTRAST_DIVERGENCES = new Map([
-  ['--accent', { handoff: 'var(--indigo-500)', package: 'var(--indigo-600)' }],
-  ['--accent-hover', { handoff: 'var(--indigo-400)', package: 'var(--indigo-500)' }],
-  ['--accent-active', { handoff: 'var(--indigo-300)', package: 'var(--indigo-400)' }],
-  ['--danger', { handoff: 'var(--red-500)', package: 'var(--red-600)' }],
-]);
+// Every contrast departure from the handoff is a complete declaration identity: file, selector,
+// property, canonical value, and package value. The same token records transform only the named
+// token multiset entry and validate its placement, so a matching value on another token layer is
+// not accidentally approved. The two pre-existing solid-fill corrections remain explicit here;
+// Wave 2 adds the dark interaction ramp and faint-text records.
+const APPROVED_TOKEN_DIVERGENCES = [
+  {
+    file: 'tokens/colors.css',
+    selector: '[data-theme="dark"]',
+    property: '--accent',
+    handoff: 'var(--indigo-500)',
+    package: 'var(--indigo-600)',
+  },
+  {
+    file: 'tokens/colors.css',
+    selector: '[data-theme="dark"]',
+    property: '--accent-hover',
+    handoff: 'var(--indigo-400)',
+    package: 'var(--indigo-700)',
+  },
+  {
+    file: 'tokens/colors.css',
+    selector: '[data-theme="dark"]',
+    property: '--accent-active',
+    handoff: 'var(--indigo-300)',
+    package: 'var(--indigo-800)',
+  },
+  {
+    file: 'tokens/colors.css',
+    selector: '[data-theme="dark"]',
+    property: '--danger',
+    handoff: 'var(--red-500)',
+    package: 'var(--red-600)',
+  },
+  {
+    file: 'tokens/colors.css',
+    selector: '[data-theme="dark"]',
+    property: '--text-faint',
+    handoff: '#6C739E',
+    package: 'var(--night-300)',
+  },
+  {
+    file: 'tokens/colors.css',
+    selector: ':root',
+    property: '--text-faint',
+    handoff: 'var(--slate-400)',
+    package: 'var(--slate-500)',
+  },
+];
 
-// Approved light-theme text contrast repair (2026-08-04 axe color-contrast sweep). The handoff's
-// `--text-faint: var(--slate-400)` measures 2.34–2.56:1 against the light surfaces it colors
-// (placeholders, group labels, CalendarView hour rail, Calendar outside-month days) — far below
-// the 4.5:1 AA floor for normal-size text. Raised one palette step to slate-500 (4.76:1 on white),
-// deliberately collapsing the light-theme faint/muted distinction: text that only "worked" below
-// 3:1 was noise, not hierarchy. The dark-theme `--text-faint` (#6C739E, 3.9–4.2:1) is unchanged —
-// borderline, accepted and allowlisted in the Browser Mode axe suites. Same exact-pin contract as
-// the dark map above: any other light-token drift remains a parity failure.
-const LIGHT_TEXT_CONTRAST_DIVERGENCES = new Map([
-  ['--text-faint', { handoff: 'var(--slate-400)', package: 'var(--slate-500)' }],
-]);
+const APPROVED_DECLARATION_DIVERGENCES = [
+  {
+    file: 'tokens/brand.css',
+    selector: '[data-brand]',
+    property: '--accent-hover',
+    handoff: 'color-mix(in oklab, var(--brand), black 12%)',
+    package: 'color-mix(in srgb, var(--brand), white 8%)',
+  },
+  {
+    file: 'tokens/brand.css',
+    selector: '[data-brand]',
+    property: '--accent-active',
+    handoff: 'color-mix(in oklab, var(--brand), black 22%)',
+    package: 'color-mix(in srgb, var(--brand), white 16%)',
+  },
+  {
+    file: 'components/scheduling/scheduling.css',
+    selector: '.lyra-calview__evt--session',
+    property: 'color',
+    handoff: 'var(--accent-soft-text)',
+    package: 'var(--text-primary)',
+  },
+  {
+    file: 'components/scheduling/scheduling.css',
+    selector: '.lyra-calview__evt--program-session',
+    property: 'color',
+    handoff: 'var(--success-text)',
+    package: 'var(--text-primary)',
+  },
+  {
+    file: 'components/forms/forms.css',
+    selector: '.lyra-combobox__option-hint',
+    property: 'color',
+    handoff: 'var(--text-faint)',
+    package: 'var(--text-secondary)',
+  },
+  {
+    file: 'components/forms/forms.css',
+    selector: '.lyra-combobox__trailing',
+    property: 'color',
+    handoff: 'var(--text-muted)',
+    package: 'var(--text-secondary)',
+  },
+  {
+    file: 'components/files/files.css',
+    selector: '.lyra-fm__view',
+    property: 'color',
+    handoff: 'var(--text-muted)',
+    package: 'var(--text-secondary)',
+  },
+  {
+    file: 'components/navigation/navigation.css',
+    selector: '.lyra-wscreate__slug-prefix',
+    property: 'color',
+    handoff: 'var(--text-muted)',
+    package: 'var(--text-secondary)',
+  },
+];
 
 // Approved white-label ink derivation. The handoff's valid white default must remain outside
 // @supports so engines without relative-color syntax do not inherit the page text color. Inside
@@ -772,8 +857,8 @@ function tokenNameCounts(pairs) {
 
 /**
  * The token inventory check compares per-name value multisets before the placement-aware diff
- * below runs. Permit only the same exact approved substitutions pinned for dark solid fills;
- * placementCheck() then proves each replacement is in [data-theme="dark"].
+ * below runs. It applies only the exact records above; placementCheck() consumes those same
+ * records and proves each substitution belongs to its pinned token-layer selector.
  */
 function isAllowedTokenDivergence(name, handoffValues, packageValues) {
   if (name === '--on-accent') {
@@ -788,16 +873,22 @@ function isAllowedTokenDivergence(name, handoffValues, packageValues) {
     );
   }
 
-  const divergence =
-    DARK_FILL_CONTRAST_DIVERGENCES.get(name) ?? LIGHT_TEXT_CONTRAST_DIVERGENCES.get(name);
-  if (divergence === undefined) return false;
-
   const expectedPackageValues = [...handoffValues];
-  const index = expectedPackageValues.indexOf(divergence.handoff);
-  if (index === -1) return false;
-  expectedPackageValues[index] = divergence.package;
+  const divergences = [...APPROVED_TOKEN_DIVERGENCES, ...APPROVED_DECLARATION_DIVERGENCES].filter(
+    (divergence) => divergence.property === name,
+  );
+  if (divergences.length === 0) return false;
+
+  for (const divergence of divergences) {
+    const index = expectedPackageValues.indexOf(divergence.handoff);
+    if (index === -1) return false;
+    expectedPackageValues[index] = divergence.package;
+  }
   expectedPackageValues.sort();
-  return expectedPackageValues.every((value, index) => value === packageValues[index]);
+  return (
+    packageValues.length === expectedPackageValues.length &&
+    expectedPackageValues.every((value, index) => value === packageValues[index])
+  );
 }
 
 function tokenCheck(baseline) {
@@ -857,27 +948,15 @@ function isAllowedDivergence(relPath, hd, pd) {
     pd.val === expected.payload; // EXACT canonical data: payload — no truncation/swap
   if (allowsMaskDivergence) return true;
 
-  const darkFill = DARK_FILL_CONTRAST_DIVERGENCES.get(hd.prop);
-  if (
-    relPath === 'tokens/colors.css' &&
-    darkFill !== undefined &&
-    hd.blockPath.at(-1) === '[data-theme="dark"]' &&
-    hd.val === darkFill.handoff &&
-    pd.val === darkFill.package
-  ) {
-    return true;
-  }
+  const matchesRecord = (record) =>
+    relPath === record.file &&
+    hd.blockPath.at(-1) === record.selector &&
+    hd.prop === record.property &&
+    hd.val === record.handoff &&
+    pd.val === record.package;
 
-  const lightText = LIGHT_TEXT_CONTRAST_DIVERGENCES.get(hd.prop);
-  if (
-    relPath === 'tokens/colors.css' &&
-    lightText !== undefined &&
-    hd.blockPath.at(-1) === ':root' &&
-    hd.val === lightText.handoff &&
-    pd.val === lightText.package
-  ) {
-    return true;
-  }
+  if (APPROVED_TOKEN_DIVERGENCES.some(matchesRecord)) return true;
+  if (APPROVED_DECLARATION_DIVERGENCES.some(matchesRecord)) return true;
 
   const overlay = OVERLAY_ENTRANCE_DIVERGENCE.get(relPath);
   return (

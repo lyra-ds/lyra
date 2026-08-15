@@ -261,7 +261,10 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     setPermutation('light', 'acme');
     const onAccent = fg('on-accent');
     for (const state of ['accent', 'accent-hover', 'accent-active'] as const) {
-      expect(contrast(onAccent, bg(state)), `acme ${state} must meet normal-text AA`).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrast(onAccent, bg(state)),
+        `acme ${state} must meet normal-text AA`,
+      ).toBeGreaterThanOrEqual(4.5);
     }
   });
 

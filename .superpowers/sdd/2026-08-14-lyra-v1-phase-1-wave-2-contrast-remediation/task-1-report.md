@@ -5,7 +5,7 @@
 - Added `packages/styles/tests/fixtures/contrast-regressions.html` with the seven required probes and shipped classes.
 - Added `packages/styles/tests/contrast-regressions.test.ts`, importing `../styles.css` and the fixture via `?raw`.
 - Added canvas CSS-color conversion, WCAG relative luminance, and exported `contrast(foreground, background)` helper.
-- Dark translucent CalendarView surfaces are composited onto the rendered page surface before the AA assertion; primary hover is driven with `userEvent.hover` and polled after transition settlement.
+- Dark translucent CalendarView surfaces are composited onto the rendered page surface before the AA assertion; primary hover is driven with `userEvent.hover`, then finite animations are settled directly before the final computed-style assertion.
 
 ## RED evidence
 

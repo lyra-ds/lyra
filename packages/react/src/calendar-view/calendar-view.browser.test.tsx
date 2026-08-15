@@ -17,8 +17,8 @@ function parseColor(color: string): RGBA {
     (channels.length !== 3 && channels.length !== 4) ||
     channels
       .slice(0, 3)
-      .some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255)
-    || (channels.length === 4 && (channels[3] < 0 || channels[3] > 1))
+      .some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255) ||
+    (channels.length === 4 && (channels[3] < 0 || channels[3] > 1))
   ) {
     throw new Error(`Expected a resolved rgb(a) color, received ${color}`);
   }
@@ -29,13 +29,17 @@ function composite(foreground: RGBA, background: RGBA): RGBA {
   const alpha = foreground.alpha + background.alpha * (1 - foreground.alpha);
   if (alpha === 0) return { red: 0, green: 0, blue: 0, alpha: 0 };
   return {
-    red: (foreground.red * foreground.alpha + background.red * background.alpha * (1 - foreground.alpha)) / alpha,
+    red:
+      (foreground.red * foreground.alpha +
+        background.red * background.alpha * (1 - foreground.alpha)) /
+      alpha,
     green:
       (foreground.green * foreground.alpha +
         background.green * background.alpha * (1 - foreground.alpha)) /
       alpha,
     blue:
-      (foreground.blue * foreground.alpha + background.blue * background.alpha * (1 - foreground.alpha)) /
+      (foreground.blue * foreground.alpha +
+        background.blue * background.alpha * (1 - foreground.alpha)) /
       alpha,
     alpha,
   };
@@ -81,7 +85,9 @@ function expectChipTextContrast(chip: HTMLElement): void {
   for (const text of chip.querySelectorAll<HTMLElement>(
     '.lyra-calview__evt-time, .lyra-calview__evt-title',
   )) {
-    expect(contrastRatio(renderedTextColor(text, background), background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(renderedTextColor(text, background), background)).toBeGreaterThanOrEqual(
+      4.5,
+    );
   }
 }
 

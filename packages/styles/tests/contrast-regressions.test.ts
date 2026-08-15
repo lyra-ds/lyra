@@ -105,7 +105,6 @@ describe('rendered Styles composites retain WCAG AA contrast', () => {
     setTheme('light');
     assertContrast('faint-card');
     assertContrast('faint-page');
-    assertContrast('faint-sunken');
   });
 
   it('keeps faint text readable on each dark surface', () => {
@@ -171,12 +170,37 @@ describe('rendered Styles composites retain WCAG AA contrast', () => {
     assertContrast('sunken-label');
   });
 
+  it('keeps the workspace slug prefix readable', () => {
+    setTheme('light');
+    assertContrast('workspace-slug-prefix');
+  });
+
   it('keeps the branded primary hover readable after its transition settles', async () => {
     setTheme('light', true);
     await userEvent.hover(probe('primary'));
     finishAnimations();
     void getComputedStyle(probe('primary')).backgroundColor;
     assertContrast('primary');
+  });
+
+  it('keeps the default dark primary hover readable after its transition settles', async () => {
+    setTheme('dark');
+    await userEvent.unhover(probe('primary'));
+    await userEvent.hover(probe('primary'));
+    finishAnimations();
+    void getComputedStyle(probe('primary')).backgroundColor;
+    assertContrast('primary');
+  });
+
+  it('keeps the default dark primary interaction ramp readable', () => {
+    setTheme('dark');
+
+    const foreground = parseColor(getComputedStyle(probe('primary')).color);
+    for (const state of ['--accent-hover', '--accent-active']) {
+      const background = parseColor(getComputedStyle(root).getPropertyValue(state).trim());
+      const ratio = contrast(foreground, background);
+      expect(ratio, `${state} contrast (${ratio.toFixed(3)}:1)`).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 

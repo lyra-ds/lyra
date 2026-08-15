@@ -4,9 +4,9 @@
 
 **Goal:** Remove all seven axe `color-contrast` exceptions by fixing their final rendered CSS sources and make React and Alpine fail on every future contrast violation.
 
-**Architecture:** A Styles Browser Mode fixture is the canonical final-composite contract for the seven known pairs. Correct global semantic tokens only for the three dark `--text-faint` failures; correct CalendarView and the dark accent hover state at their local source. React’s CalendarView test exercises the published adapter, while the unfiltered shared axe helpers make every existing React and Alpine accessibility fixture enforce the result.
+**Architecture:** A Styles Browser Mode fixture is the canonical final-composite contract for the seven known pairs. Correct global semantic tokens only for the three dark `--text-faint` failures; correct CalendarView and dark accent states at their local source. Every intentional package-versus-handoff difference is an exact, reviewed parity divergence. React’s CalendarView test exercises the published adapter, while the unfiltered shared axe helpers make every existing React and Alpine accessibility fixture enforce the result.
 
-**Tech Stack:** CSS custom properties, CSS Color 4/color-mix, Vitest Browser Mode, Playwright Chromium/Firefox/WebKit, axe-core, Docker Compose, Changesets.
+**Tech Stack:** CSS custom properties, CSS Color 4/color-mix, Vitest Browser Mode, Playwright Chromium/Firefox/WebKit, axe-core, Docker Compose, Changesets, parity validator.
 
 ## Global Constraints
 
@@ -15,6 +15,7 @@
 - Treat Styles as the CSS source of truth; React and Alpine import it rather than duplicating visual behavior.
 - Test every state in Chromium, Firefox, and WebKit before the full Docker matrix.
 - Preserve the current Phase 1 serial browser/evidence configuration; do not install browsers at runtime.
+- `pnpm run parity` is a hard gate. New package CSS drift must be represented by exact, selector-aware divergence records in `tools/parity/parity.mjs`; never weaken, bypass, or regenerate the canonical handoff baseline for this wave.
 - Add a patch changeset for `@lyra-ds/styles`; test-only adapter changes do not create package releases.
 
 ### Browser command runner
@@ -38,6 +39,7 @@ The Docker image already supplies Chromium, Firefox, and WebKit. No command may 
 | `packages/styles/tokens/colors.css`                                                   | Dark semantic faint text and dark default accent-hover values.                                                       |
 | `packages/styles/tokens/brand.css`                                                    | Only if a measured branded hover state fails; it must retain `--brand-contrast` derivation.                          |
 | `packages/styles/components/scheduling/scheduling.css`                                | CalendarView session/program-session text treatment.                                                                 |
+| `tools/parity/parity.mjs`                                                             | Exact approved contrast-divergence records for tokens and component declarations.                                    |
 | `packages/react/src/calendar-view/calendar-view.browser.test.tsx`                     | Published React CalendarView regression.                                                                             |
 | `packages/react/src/internal/test-axe.ts`, `packages/alpine/src/internal/test-axe.ts` | Direct, unfiltered axe assertion.                                                                                    |
 | `.changeset/bright-contrast-remediation.md`                                           | Styles patch-release note.                                                                                           |
@@ -80,7 +82,7 @@ Create a fixture with real shipped classes:
 </div>
 ```
 
-Import `../styles.css` and fixture `?raw`. Copy the canvas color conversion and WCAG relative-luminance formula from `packages/styles/tests/brand-theme.test.ts`. For each probe, assert opaque computed foreground/background and `contrast(...) >= 4.5`; set `data-theme="dark"` for dark cases, drive `userEvent.hover(primary)`, then finish its animations before the primary assertion. Set `data-brand="acme"` and `--brand: #0D9488` for a representative brand hover assertion.
+Import `../styles.css` and fixture `?raw`. Copy the canvas color conversion and WCAG relative-luminance formula from `packages/styles/tests/brand-theme.test.ts`. For each probe, assert opaque computed foreground/background and `contrast(...) >= 4.5`; set `data-theme="dark"` for dark cases, drive `userEvent.hover(primary)`, then finish its animations before the primary assertion. Set `data-brand="acme"` and `--brand: #0D9488` for a representative brand hover assertion. Keep `faint-sunken` in the fixture permanently: assert it only in the dark-surface test after the generic light assertion is replaced by real axe-owner probes.
 
 - [ ] **Step 2: Prove the baseline is red in Firefox**
 
@@ -147,19 +149,18 @@ Use existing semantic tokens first; keep modifiers, surfaces, event bars, and br
 ```css
 /* colors.css, [data-theme="dark"] */
 --text-faint: var(--night-300);
-/* choose a darker AA-compliant hover stop that remains visibly distinct from --accent */
+/* Dark controls use white ink: interaction advances darker through the same direction. */
 --accent-hover: var(--indigo-700);
+--accent-active: var(--indigo-800);
 
 /* scheduling.css: selectors stay stable; only their semantic foreground pairing changes */
-.lyra-calview__evt--session {
-  color: var(--accent-soft-text);
-}
+.lyra-calview__evt--session,
 .lyra-calview__evt--program-session {
-  color: var(--success-text);
+  color: var(--text-primary);
 }
 ```
 
-Measure those values in all three engines. If either event still misses 4.5:1, introduce one narrow semantic event-text token in `colors.css` and consume it in the two rules; never hard-code color literals in a component. Change `brand.css` only if the Acme probe proves its own derived hover below AA, deriving from `--brand` and preserving `--brand-contrast` plus the `@supports` fallback.
+Measure those values in all three engines. Do not introduce `--calendar-event-text`: both event rules use existing semantic `--text-primary`, avoiding an unnecessary token and declaration-order drift. Change `brand.css` only if the Acme probe proves its own derived hover below AA, deriving from `--brand` and preserving `--brand-contrast` plus the `@supports` fallback.
 
 - [ ] **Step 3: Verify all focused Styles contracts**
 
@@ -297,6 +298,9 @@ Stage only the helper and any Styles correction proven necessary by an axe node;
 **Files:**
 
 - Create: `.changeset/bright-contrast-remediation.md`
+- Modify: `tools/parity/parity.mjs`
+- Modify: `packages/styles/tokens/colors.css`, `packages/styles/tokens/brand.css`, and measured component sources only as required to preserve the parity contract
+- Modify: `packages/styles/tests/fixtures/contrast-regressions.html` and `packages/styles/tests/contrast-regressions.test.ts`
 - Create or update: `.superpowers/sdd/2026-08-14-lyra-v1-phase-1-browser-infrastructure/wave-2-contrast-report.md` if repository evidence policy keeps it ignored.
 
 **Interfaces:**
@@ -304,17 +308,44 @@ Stage only the helper and any Styles correction proven necessary by an axe node;
 - Consumes: Tasks 1–4 and the pinned container in `compose.playwright.yml`.
 - Produces: release note, fresh three-engine evidence, and a review-ready branch.
 
-- [ ] **Step 1: Add the Styles patch changeset**
+- [ ] **Step 1: Reconcile final CSS with exact parity divergences**
+
+First run:
+
+```bash
+pnpm run parity
+```
+
+Expected before this step: RED, naming every changed token/declaration against `handoff/`.
+
+Remove the unnecessary `--calendar-event-text` declaration and use `var(--text-primary)` in both CalendarView event rules, so no package-only token or declaration-order shift remains. Keep `faint-sunken` in the fixture and restore only `assertContrast('faint-sunken')` inside the dark-surface test; the generic light assertion stays removed because Task 4 replaced it with real Combobox/FileManager owners.
+
+In `tools/parity/parity.mjs`, replace the single-value token exception mechanism with exact records keyed by token name, token-layer selector, handoff value, and package value. Cover precisely these approved dark-token substitutions:
+
+```text
+[data-theme="dark"] --accent-hover: handoff var(--indigo-400), package var(--indigo-700)
+[data-theme="dark"] --accent-active: handoff var(--indigo-300), package var(--indigo-800)
+[data-theme="dark"] --text-faint: handoff #6C739E, package var(--night-300)
+:root --text-faint: handoff var(--slate-400), package var(--slate-500)
+```
+
+The same records must drive both token-multiset validation and placement-aware declaration validation. Add exact declaration records for the approved brand hover/active mixes and the five measured component foreground changes (CalendarView two rules, Combobox hint, Combobox trailing, File Manager inactive view). Each record must pin file, selector, property, canonical handoff value, and package value; no wildcard, prefix, or blanket file exemption is allowed.
+
+Run `pnpm run parity` again.
+
+Expected after this step: exit `0`. A one-character drift in any approved record or any unlisted CSS change remains RED.
+
+- [ ] **Step 2: Add the Styles patch changeset**
 
 ```md
 ---
 '@lyra-ds/styles': patch
 ---
 
-Fix WCAG AA contrast for CalendarView event chips, quiet dark text, and dark hover controls.
+Fix WCAG AA contrast for CalendarView event chips, quiet dark text, and dark primary-control interaction states. Dark `--text-faint` now shares the AA-safe `--text-muted` value.
 ```
 
-- [ ] **Step 2: Run the complete pinned browser matrix**
+- [ ] **Step 3: Run the complete pinned browser matrix**
 
 ```bash
 UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm browser-tests
@@ -322,38 +353,40 @@ UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm 
 
 Expected: exit 0 with Styles, React, and Alpine passing in Chromium, Firefox, and WebKit. Preserve screenshots/traces if red and fix each reported node at source.
 
-- [ ] **Step 3: Run release, lint, type, and Phase 1 guards**
+- [ ] **Step 4: Run release, lint, type, parity, and Phase 1 guards**
 
 ```bash
 pnpm test
 pnpm lint
 pnpm --filter @lyra-ds/alpine typecheck
+pnpm run parity
 node --test tools/phase1/browser-matrix.test.mjs tools/phase1/browser-config.test.mjs
 git diff --check
 ```
 
 Expected: every command exits 0, apart from a documented pre-existing warning only when its command exits 0. Confirm `git status --short` shows no Docker cache or generated artifacts.
 
-- [ ] **Step 4: Record evidence and commit metadata**
+- [ ] **Step 5: Record evidence and commit metadata**
 
 Record the seven before/after foreground/background ratios, owning selector/token, focused three-engine outcomes, matrix exit, and all command exits. Then:
 
 ```bash
-git add .changeset/bright-contrast-remediation.md
+git add .changeset/bright-contrast-remediation.md tools/parity/parity.mjs packages/styles
 git commit -m "docs: record Phase 1 contrast evidence"
 ```
 
 Do not force-add ignored evidence; cite its on-disk path in the future PR description.
 
-- [ ] **Step 5: Request independent review before PR creation**
+- [ ] **Step 6: Request independent review before PR creation**
 
 Ask a read-only reviewer to verify:
 
 ```text
 1. Neither helper retains ACCEPTED_CONTRAST_PAIRS or color-contrast filtering.
-2. All seven ledger pairs have rendered regression coverage, including dark hover.
-3. CSS source preserves CalendarView classes, brand derivation, and public APIs.
-4. Fresh Docker matrix and Phase 1 guardrails are green.
+2. All seven ledger pairs have rendered regression coverage, including dark `faint-sunken` and dark hover.
+3. Every package-versus-handoff contrast change is an exact parity divergence; `pnpm run parity` is green.
+4. CSS source preserves CalendarView classes, brand derivation, and public APIs.
+5. Fresh Docker matrix and Phase 1 guardrails are green.
 ```
 
 Address every confirmed finding with a new RED/GREEN cycle, rerun affected engines and the complete matrix, then request re-review before creating the PR.

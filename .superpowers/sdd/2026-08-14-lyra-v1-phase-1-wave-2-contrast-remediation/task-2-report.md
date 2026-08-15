@@ -3,8 +3,8 @@
 ## Changes
 
 - Corrected dark `--text-faint` to `var(--night-300)` and dark default `--accent-hover` to `var(--indigo-700)`.
-- Added the narrow `--calendar-event-text` semantic token, paired with `--text-primary` in each theme, and used it for CalendarView session/program-session event text. The event bars and class selectors are unchanged.
-- Retained Acme’s `--brand` derivation, `--brand-contrast`, and `@supports` fallback. Its light hover/active mixes now use the smallest measured black-on-hover AA-safe steps (`5%` / `9%`) in sRGB; the ordering contract test was updated so its description matches the source.
+- CalendarView session/program-session event text now uses the existing `--text-primary` token. The temporary `--calendar-event-text` alias was removed during Task 5 final reconciliation; event bars and class selectors are unchanged.
+- Retained Acme’s `--brand` derivation, `--brand-contrast`, and `@supports` fallback. Its light hover/active mixes use `8%` / `16%` white sRGB mixes; the ordering contract test matches the source.
 
 ## Evidence
 
@@ -22,3 +22,7 @@ The generic light `faint-sunken` fixture remains RED by design. It is not a meas
 - RED: the new light-Acme ordering contract required derived hover/active fills to be lighter than the base brand, but the prior black mixes made hover darker (`112.7082` versus base `118.4326` perceived luminance) in pinned Chromium.
 - GREEN: light brand hover/active now derive from `var(--brand)` through 8%/16% white sRGB mixes. The test asserts their lighter ordered relationship, teal-family preservation, and normal-text AA using the final resolved `--on-accent` against rest, hover, and active fills.
 - Pinned Docker verification: `brand-theme.test.ts` passed 49/49 in Chromium, Firefox, and WebKit; the four Task-2-owned canonical contrast assertions passed in each engine. The generic deferred light-sunken probe remained excluded from the focused command as documented above.
+
+## Task 5 disposition
+
+The synthetic light `faint-sunken` assertion was retired after the unfiltered React and Alpine runs identified and corrected the actual shipped nodes. The same fixture remains in the dark-only token-surface contract, where `--text-faint` on `--surface-sunken` is a real dark regression target.
