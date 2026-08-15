@@ -9,7 +9,7 @@ No failing baseline gate selects a corrective delivery.
 The prescribed unresolved-work search returned no matches:
 
 ```text
-rtk rg -n "T''ODO|FIX''ME|T''BD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
+rtk rg -n "TODO|FIXME|TBD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
 exit status: 1 (no matches)
 ```
 
@@ -21,14 +21,15 @@ state. The root-barrel inventory reports 76 matching export declarations across
 Alpine's `TIME_ZONE_PICKER_ZONES` and `DEFAULT_LABELS, describeRecurrence`
 exports.
 
-The latest 40 commits contain repeated Alpine adapter deliveries after the
-current 0.5.0 release line, including `fdbafe0a77adb5ab37d9e1b2d9735b2e0c8de774`
-(2026-08-10, `feat(alpine): rótulo traduzível no time picker + chave de storage…`),
+The latest 40 commits record Alpine adapter work leading up to the 0.5.0
+release commit `b1d77b5e993804add2c14746f66974ec8c04bbc3` (2026-08-12,
+`chore(release): version packages (#181)`), including
+`fdbafe0a77adb5ab37d9e1b2d9735b2e0c8de774` (2026-08-10,
+`feat(alpine): rótulo traduzível no time picker + chave de storage…`) and
 `84a7112e44e9c192944a51718ce7ea06fd638295` (2026-08-11,
-`fix(alpine): datas relativas nos testes de exceção do weekly-schedule…`), and
-`e75c4b4ee14519993a90499b60a244d0f80189db` (2026-08-12,
-`feat(site): Blade API tab lit from the v0.10.0 release snapshot (…)`).
-This is the highest-churn supported adapter surface in the available history.
+`fix(alpine): datas relativas nos testes de exceção do weekly-schedule…`).
+These relevant adapter commits make Alpine the highest-churn supported adapter
+surface in the available history.
 
 Sources consulted: `docs/superpowers/backlog/2026-08-15-current-baseline.md`;
 `docs/superpowers/specs/2026-08-15-sequential-delivery-cycle-design.md`;
@@ -37,7 +38,7 @@ Sources consulted: `docs/superpowers/backlog/2026-08-15-current-baseline.md`;
 
 ```text
 rtk git log -40 --format='%H%x09%ad%x09%s' --date=short
-rtk rg -n "T''ODO|FIX''ME|T''BD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
+rtk rg -n "TODO|FIXME|TBD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
 rtk rg -n "export \{.*\}|export function lyra" packages/react/src/index.ts packages/alpine/src/index.ts
 ```
 
@@ -82,8 +83,10 @@ against, a future behavior change.
   audit; no parity implementation begins in this block.
 - **Documentation stacks:** no docs stack tab or example changes are required
   for the read-only audit. If a demonstrated mismatch becomes a delivery,
-  update only the applicable `react`, `alpine`, and sibling `html` stack tabs
-  and examples according to `apps/docs/lib/stacks.ts`; do not add empty tabs.
+  select exactly one applicable documentation representation: `alpine` or
+  `html`. Update `react` only if React behavior changes, and update the
+  selected representation's examples according to `apps/docs/lib/stacks.ts`;
+  do not add empty tabs.
 - **Test-first files and focused commands:** no test-first production test file
   is required because this block changes no production behavior. Run
   `pnpm --filter @lyra-ds/alpine run test` and
