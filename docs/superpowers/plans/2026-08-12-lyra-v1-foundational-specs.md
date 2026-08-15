@@ -314,7 +314,7 @@ Require a Lyra-owned adapter boundary for Radix, Base UI, or React Aria; prohibi
 
 - [ ] **Step 5: Define API lifecycle and migration**
 
-Specify experimental, beta, stable, and deprecated API guarantees; the existing lockstep versioning and pre-1.0 changeset convention for Styles and React from `VERSIONING.md`; Alpine's independently documented relationship to that lockstep; deprecation communication; unsafe-contract removal; codemod criteria; and before/after examples. Resolve only Alpine's relationship to the existing policy rather than reopening the locked Styles/React policy. Add an exact `## Acceptance criteria` section.
+Specify experimental, beta, stable, and deprecated API guarantees; the independent SemVer policy for Styles, React, and Alpine; the coordinated shared-contract release requirements; and the pre-1.0 changeset convention from `VERSIONING.md`; deprecation communication; unsafe-contract removal; codemod criteria; and before/after examples. Preserve the existing versioning policy rather than reopening it. Add an exact `## Acceptance criteria` section.
 
 - [ ] **Step 6: Define the family-spec API template**
 
