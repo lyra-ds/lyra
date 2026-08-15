@@ -63,8 +63,8 @@ proof without a new test harness.
 
 ## Recommendation
 
-Recommend **BKL-01 — perform a public API compatibility audit of the
-highest-churn adapter surface**.
+BKL-01: Perform a public API compatibility audit of the highest-churn adapter
+surface.
 
 No observed defect, failed gate, or documented public-contract mismatch was
 found in the allowed evidence. The selection therefore follows the required
