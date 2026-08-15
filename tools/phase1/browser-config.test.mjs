@@ -68,7 +68,7 @@ test('runs each browser instance serially before persisting shared trace evidenc
   }
 });
 
-test('keeps Browser Mode Docker-only while the root test command runs every non-browser suite', () => {
+test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild React dist', () => {
   const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
   const packageScripts = Object.fromEntries(
     browserPackages.map((packageFile) => [
@@ -79,7 +79,7 @@ test('keeps Browser Mode Docker-only while the root test command runs every non-
 
   assert.match(rootScripts.test, /tools\/phase1\/browser-matrix\.test\.mjs/);
   assert.match(rootScripts.test, /tools\/phase1\/browser-config\.test\.mjs/);
-  assert.match(rootScripts.test, /pnpm -r --if-present run test/);
+  assert.match(rootScripts.test, /pnpm -r --workspace-concurrency=1 --if-present run test/);
   assert.doesNotMatch(rootScripts.test, /pnpm test:browsers/);
   assert.equal(packageScripts['packages/styles/package.json'].test, undefined);
   assert.equal(packageScripts['packages/react/package.json'].test, 'pnpm run test:ssr');

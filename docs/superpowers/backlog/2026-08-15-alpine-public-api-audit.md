@@ -28,7 +28,9 @@ surface: `dist/`, `README.md`, `LICENSE`, and `package.json`.
 default `lyra(alpine: LyraAlpine): void` plugin registers two stores (`theme`
 and `lyraToasts`) and 30 `Alpine.data()` factories. Its named runtime exports
 are the three values listed above; option and data contracts are type-only
-exports in the declaration file. There is no source-to-artifact export drift.
+exports in the declaration file. No runtime source-to-artifact export drift is
+demonstrated here; this audit does not make a name-for-name parity claim about
+type-only exports.
 
 ## Documented Wave 1 Contract
 
@@ -58,8 +60,9 @@ both directions and axe checks for the Wave 1 components.
 
 ## Verification Evidence
 
-All commands were run from the repository worktree after building the Alpine
-package.
+The browser and React tests were run from the repository worktree before the
+Alpine build. The artifact, package, and packed-entrypoint checks were run
+after that build; `pnpm pack` was run from `packages/alpine`.
 
 ```text
 $ rtk pnpm --filter @lyra-ds/alpine run test:browser
@@ -77,8 +80,12 @@ dist/index.d.ts     34.88 kB
 $ rtk pnpm --filter @lyra-ds/alpine exec attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm
 No problems found
 
+$ cd packages/alpine
 $ rtk pnpm pack --pack-destination /tmp/lyra-bkl-01-audit
 package: @lyra-ds/alpine@0.5.0
+
+$ cd ../..
+$ rtk tar -xzf /tmp/lyra-bkl-01-audit/lyra-ds-alpine-0.5.0.tgz -C /tmp/lyra-bkl-01-audit/package
 
 $ rtk node --input-type=module -e "import * as packed from 'file:///tmp/lyra-bkl-01-audit/package/package/dist/index.js'; console.log(Object.keys(packed).sort())"
 DEFAULT_LABELS, TIME_ZONE_PICKER_ZONES, default, describeRecurrence
@@ -86,11 +93,11 @@ DEFAULT_LABELS, TIME_ZONE_PICKER_ZONES, default, describeRecurrence
 
 ## Result
 
-No documented public-contract mismatch or publication-surface mismatch was
-demonstrated. `BKL-01` is complete: the source entrypoint, built entrypoint,
-declaration file, and packed entrypoint agree, and the documented Wave 1
-bindings and controllable state agree with the relevant React-derived
-behavior.
+No documented public-contract mismatch or runtime publication-surface mismatch
+was demonstrated. `BKL-01` is complete: the source, built, and packed runtime
+entrypoints agree; the declaration file is published identically and passes
+the packed `attw` check; and the documented Wave 1 bindings and controllable
+state agree with the relevant React-derived behavior.
 
 No follow-up implementation plan, changeset, release, or documentation-stack
 change is warranted by this audit. A future delivery must be selected from new
