@@ -143,6 +143,29 @@ describe('rendered Styles composites retain WCAG AA contrast', () => {
     }
   });
 
+  it('keeps the active Combobox option hint readable', () => {
+    setTheme('light');
+    assertContrast(
+      'combobox-option-hint',
+      probe('combobox-option-hint'),
+      probe('combobox-active-option'),
+    );
+  });
+
+  it('keeps the active Combobox option trailing text readable', () => {
+    setTheme('light');
+    assertContrast(
+      'combobox-option-trailing',
+      probe('combobox-option-trailing'),
+      probe('combobox-active-option'),
+    );
+  });
+
+  it('keeps the inactive File Manager view control readable', () => {
+    setTheme('light');
+    assertContrast('file-manager-view', probe('file-manager-view'), probe('file-manager-views'));
+  });
+
   it('keeps the light sunken keyboard label readable', () => {
     setTheme('light');
     assertContrast('sunken-label');
