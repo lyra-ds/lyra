@@ -13,9 +13,10 @@ audit. That audit found no product defect or public-contract mismatch, so it
 does not supply an automatic follow-up implementation.
 
 This cycle will inspect current repository and product evidence, rank a small
-set of eligible candidates, and audit only the highest-ranked candidate. Its
-output is a reproducible decision about the next delivery, not a production
-change.
+set of eligible candidates, and audit the highest-ranked candidate first. It
+may audit the next-ranked candidate after a rejection, with at most two focused
+audits for the entire cycle as defined in section 5. Its output is a
+reproducible decision about the next delivery, not a production change.
 
 ## 2. Outcome
 
@@ -101,10 +102,13 @@ Each eligible candidate receives a score out of ten:
 | Automated proof available now |   0–2 | Strength of existing reproducible verification                  |
 | Supported-surface reach       |   0–2 | Number and importance of affected public stacks or flows        |
 
-The artifact shows the arithmetic rather than only the total. Ties are broken
-by priority class, then stronger automated proof, then the earliest applicable
-v1 roadmap phase. If a tie still remains, the older independently recorded
-consumer-facing evidence wins. The selected candidate must therefore be unique.
+The artifact shows the arithmetic rather than only the total. Ties follow the
+governing rule in the sequential-delivery cycle design: after priority class,
+prefer the smallest independently releasable change with clear automated
+proof. For deterministic application, compare the smaller bounded scope, then
+stronger automated proof, then the earliest applicable v1 roadmap phase. If a
+tie still remains, the older independently recorded consumer-facing evidence
+wins. The selected candidate must therefore be unique.
 
 ## 5. Focused audit
 

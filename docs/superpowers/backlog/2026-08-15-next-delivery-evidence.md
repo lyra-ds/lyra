@@ -92,10 +92,22 @@ The roadmap comparison used all five approved foundational specifications:
 - `docs/superpowers/specs/lyra-v1/04-component-architecture.md`;
 - `docs/superpowers/specs/lyra-v1/05-quality-performance.md`.
 
-Recent path-scoped churn over the trailing 40 commits is Alpine `1,622` changed
-lines, Styles `557`, and React `288`. The completed Alpine public API audit
-already examined the highest-churn adapter surface and found no mismatch, so
-churn alone does not reopen it as a candidate.
+Recent path-scoped churn over the trailing 40 commits at planning SHA
+`610872ad5710ef397d286f6205bf1f390533d76a` is Alpine `7,052` changed lines
+(`6,715` added and `337` deleted), Styles `557` (`526` added and `31` deleted),
+and React `288` (`234` added and `54` deleted). These totals use raw Git output
+through `rtk proxy`; filtering `git log --numstat` before the final aggregation
+can truncate the input. The completed Alpine public API audit already examined
+the highest-churn adapter surface and found no mismatch, so churn alone does
+not reopen it as a candidate.
+
+The Alpine total was reproduced with the following raw-output command; replacing
+the final path with `packages/styles` or `packages/react` reproduces the other
+two totals:
+
+```text
+rtk proxy sh -c 'git log 610872a~40..610872a --format= --numstat -- packages/alpine | awk "{a+=\$1;d+=\$2} END{print a,d,a+d}"'
+```
 
 ## Candidate Evidence
 
@@ -211,7 +223,7 @@ churn alone does not reopen it as a candidate.
 - **Reproduction:** compare the React root class and docs markup with the
   Styles package inventory.
 - **Eligibility:** eligible as a documentation or CSS-contract mismatch, but
-  it has lower priority class than confirmed release and supported-flow gaps.
+  it has lower priority class than release blockers and supported-flow gaps.
 
 ### Signal: reported Container keyword failure does not match the current React contract
 
@@ -243,13 +255,13 @@ churn alone does not reopen it as a candidate.
 
 ## Candidates
 
-| Identifier | Priority class                  | User impact                                                                                                       | Evidence                                                                                                                  | Bounded scope                                                                                          | Proof                                                                                                                  | Exclusions                                                                                                                 |
-| ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `BKL-02`   | Confirmed v1 release blocker    | React and Alpine consumers receive artificial completion state instead of a consumer-controlled upload lifecycle. | Both implementations use timers; both locale docs call progress simulated; the approved interaction spec assigns P1.      | Specify a production FileUpload lifecycle shared at the observable-contract level by React and Alpine. | Focused React browser/SSR tests, Alpine browser tests, public API comparison, then applicable package/build gates.     | No transport client, server endpoint, FileManager redesign, dependency adoption, or implementation in this evidence cycle. |
-| `BKL-03`   | Confirmed v1 release blocker    | React consumers get focusable empty panels disconnected from the application content users actually operate.      | React source and docs generate empty panels; Alpine authors real panels; the approved interaction spec assigns P1.        | Specify a compound React Tabs trigger/content contract and explicit Alpine parity boundary.            | Focused React browser/SSR tests, Alpine browser tests, anatomy comparison, then cross-browser and accessibility gates. | No Select/Combobox migration, primitive selection, or implementation in this evidence cycle.                               |
-| `BKL-04`   | Confirmed accessibility blocker | Keyboard and assistive-technology users cannot invoke a primary row action exposed through `onRowClick`.          | React installs only `<tr onClick>`; docs warn the row is not keyboard operable; the approved interaction spec assigns P1. | Specify semantic row-action ownership and the Table/DataTable boundary.                                | Focused React browser/SSR tests, source/API comparison, and keyboard/axe acceptance cases in the later delivery.       | No enterprise grid, virtualization, Alpine behavior not currently claimed, or implementation in this cycle.                |
-| `BKL-05`   | Confirmed accessibility gap     | Screen-reader users lack a localized relation between the visible start and end dates.                            | Issue #95, current interpolated trigger text, absent `rangeAnnouncement`, and existing Browser Mode coverage.             | Specify and implement a translatable accessible range announcement without changing visible text.      | Focused DateRangePicker Browser Mode and SSR tests plus generated public-type documentation.                           | No calendar arithmetic, segmented date input, visible separator change, or date-family migration.                          |
-| `BKL-06`   | Supported-flow defect           | Content-mode shell consumers can get clipped content, unreachable footer content, and phantom spacing.            | Issue #185 and current CSS retain page-mode alignment, gap, sidebar padding, and self-alignment.                          | Correct content-mode resets with a focused scrolling and layout regression fixture.                    | Styles browser test at representative viewport sizes, parity check, and starter-like smoke composition.                | No AppSidebar redesign, navigation API change, new tokens, or broader application-chrome refactor.                         |
+| Identifier | Priority class                    | User impact                                                                                                       | Evidence                                                                                                                  | Bounded scope                                                                                          | Proof                                                                                                                  | Exclusions                                                                                                                 |
+| ---------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `BKL-02`   | 1 — v1 release blocker            | React and Alpine consumers receive artificial completion state instead of a consumer-controlled upload lifecycle. | Both implementations use timers; both locale docs call progress simulated; the approved interaction spec assigns P1.      | Specify a production FileUpload lifecycle shared at the observable-contract level by React and Alpine. | Focused React browser/SSR tests, Alpine browser tests, public API comparison, then applicable package/build gates.     | No transport client, server endpoint, FileManager redesign, dependency adoption, or implementation in this evidence cycle. |
+| `BKL-04`   | 1 — v1 release blocker            | Keyboard and assistive-technology users cannot invoke a primary row action exposed through `onRowClick`.          | React installs only `<tr onClick>`; docs warn the row is not keyboard operable; the approved interaction spec assigns P1. | Specify semantic row-action ownership and the Table/DataTable boundary.                                | Focused React browser/SSR tests, source/API comparison, and keyboard/axe acceptance cases in the later delivery.       | No enterprise grid, virtualization, Alpine behavior not currently claimed, or implementation in this cycle.                |
+| `BKL-03`   | 1 — v1 release blocker            | React consumers get focusable empty panels disconnected from the application content users actually operate.      | React source and docs generate empty panels; Alpine authors real panels; the approved interaction spec assigns P1.        | Specify a compound React Tabs trigger/content contract and explicit Alpine parity boundary.            | Focused React browser/SSR tests, Alpine browser tests, anatomy comparison, then cross-browser and accessibility gates. | No Select/Combobox migration, primitive selection, or implementation in this evidence cycle.                               |
+| `BKL-05`   | 2 — documented supported-flow gap | Screen-reader users lack a localized relation between the visible start and end dates.                            | Issue #95, current interpolated trigger text, absent `rangeAnnouncement`, and existing Browser Mode coverage.             | Specify and implement a translatable accessible range announcement without changing visible text.      | Focused DateRangePicker Browser Mode and SSR tests plus generated public-type documentation.                           | No calendar arithmetic, segmented date input, visible separator change, or date-family migration.                          |
+| `BKL-06`   | 2 — documented supported-flow gap | Content-mode shell consumers can get clipped content, unreachable footer content, and phantom spacing.            | Issue #185 and current CSS retain page-mode alignment, gap, sidebar padding, and self-alignment.                          | Correct content-mode resets with a focused scrolling and layout regression fixture.                    | Styles browser test at representative viewport sizes, parity check, and starter-like smoke composition.                | No AppSidebar redesign, navigation API change, new tokens, or broader application-chrome refactor.                         |
 
 The SlotPicker mobile-overflow signal remains eligible below the five-candidate
 cap: its provisional score is `2 + 2 + 1 + 2 = 7`, below every table entry.
@@ -262,19 +274,19 @@ displace a higher-priority current blocker or supported-flow defect.
 | Identifier | User impact | Release/accessibility risk | Automated proof | Supported-surface reach | Arithmetic      | Total |
 | ---------- | ----------: | -------------------------: | --------------: | ----------------------: | --------------- | ----: |
 | `BKL-02`   |           3 |                          3 |               2 |                       2 | `3 + 3 + 2 + 2` |    10 |
-| `BKL-03`   |           3 |                          3 |               2 |                       1 | `3 + 3 + 2 + 1` |     9 |
 | `BKL-04`   |           3 |                          3 |               2 |                       1 | `3 + 3 + 2 + 1` |     9 |
+| `BKL-03`   |           3 |                          3 |               2 |                       1 | `3 + 3 + 2 + 1` |     9 |
 | `BKL-05`   |           2 |                          3 |               2 |                       1 | `2 + 3 + 2 + 1` |     8 |
 | `BKL-06`   |           3 |                          2 |               1 |                       2 | `3 + 2 + 1 + 2` |     8 |
 
-`BKL-03` and `BKL-04` tie on score, priority class, automated proof, and the
-applicable Phase 1 roadmap gate. The remaining declared tie-break is older
-independently recorded consumer-facing evidence: Tabs first shipped in commit
-`3f852fc2e1248053258c3303346eff66631beed4` on 2026-07-21, while DataTable first
-shipped in commit `b608c6115851991cace5a62247b742f6396bee6f` on 2026-08-03, so
-`BKL-03` wins that tie. `BKL-05` and `BKL-06` tie on score, but the confirmed
-accessibility gap has a higher priority class than the supported-flow defect.
-No tie-break is needed for `BKL-02`, the unique highest score.
+`BKL-03` and `BKL-04` tie on score and class 1 priority. Both belong to PRD
+Phase 3, not Phase 1. Under the governing smallest-independently-releasable
+rule, `BKL-04` ranks first because its React-only semantic row-action boundary
+is smaller than `BKL-03`'s React compound API plus Alpine parity boundary; both
+have equally strong automated proof. `BKL-05` and `BKL-06` tie on score and
+class 2 priority, but `BKL-05` has the smaller independently releasable scope
+and stronger automated proof. No tie-break is needed for `BKL-02`, the unique
+highest score.
 
 ## Focused Audit
 
@@ -342,6 +354,12 @@ confirmed its claim in source, public documentation, and existing tests. The
 next delivery must define the data-and-files family contract for
 consumer-controlled FileUpload state before any runtime change; it must not
 mistake an implementation plan for permission to invent that public API.
+
+**Governance:** This selection exercises the demonstrated-harm priority in the
+evidence-cycle design section 4.3 and temporarily overrides the family-spec
+order in PRD section 9.3 by advancing Data and Files before Overlay. After the
+Data and Files specification and its FileUpload-only implementation wave, the
+PRD order resumes with Overlay; no other implementation family is reordered.
 
 ## Next Delivery Contract
 

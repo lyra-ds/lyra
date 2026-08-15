@@ -17,7 +17,7 @@
 - Accept only candidates backed by a public behavior, release gate, or documented support claim; exclude speculative features, unsupported adapters, and internal cleanup without consumer impact.
 - Rank candidates by priority class first: failing gate or confirmed blocker, supported-flow gap, React/Alpine/CSS parity gap, then documentation or developer-experience mismatch.
 - Score each candidate out of ten: user impact `0–3`, release or accessibility risk `0–3`, automated proof available now `0–2`, and supported-surface reach `0–2`.
-- Break score ties by priority class, stronger automated proof, earliest applicable v1 roadmap phase, then older independently recorded consumer-facing evidence.
+- Break score ties by priority class, smaller independently releasable scope, stronger automated proof, earliest applicable v1 roadmap phase, then older independently recorded consumer-facing evidence.
 - Run at most two focused candidate audits. A rejected claim cannot authorize implementation; an inconclusive claim may select only a bounded evidence-producing spike.
 - If no candidate survives, select the overlay-foundation readiness audit defined by the approved design; do not choose or adopt a primitive dependency.
 - Use canonical English in the evidence artifact.
@@ -149,7 +149,7 @@
 
 - [ ] **Step 1: Build the eligible candidate table**
 
-  Append this exact structure, assigning sequential identifiers from `BKL-02` through `BKL-06`:
+  Append this exact structure, assigning sequential identifiers starting at `BKL-02` (`BKL-01` is already used by the prior prioritized backlog):
 
   ```markdown
   ## Candidates
@@ -171,7 +171,7 @@
   | ---------- | ----------: | -------------------------: | --------------: | ----------------------: | ---------- | ----: |
   ```
 
-  Assign integer values using the approved ranges. Show arithmetic in the form `3 + 3 + 2 + 2`, recompute every total, then sort by total descending. Apply tie-breaks in this exact order: priority class, automated proof, earliest v1 phase, older independent consumer evidence. State each applied tie-break beneath the table. Name the highest-ranked candidate only as the provisional audit target; scoring alone does not confirm its claim.
+  Assign integer values using the approved ranges. Show arithmetic in the form `3 + 3 + 2 + 2`, recompute every total, then sort by total descending. Apply tie-breaks in this exact order: priority class, smaller independently releasable scope, automated proof, earliest v1 phase, older independent consumer evidence. This is the deterministic expansion of the governing sequential-delivery rule, not a replacement for it. State each applied tie-break beneath the table. Name the highest-ranked candidate only as the provisional audit target; scoring alone does not confirm its claim.
 
 - [ ] **Step 3: State the target as a falsifiable claim and inspect its complete contract**
 
