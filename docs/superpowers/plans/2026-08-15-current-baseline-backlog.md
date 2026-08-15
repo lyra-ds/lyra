@@ -153,7 +153,7 @@ Surface`, `Verification Evidence`, and `CI Gates`. Task 2 consumes those
 
   ```bash
   rtk git log -40 --format='%H%x09%ad%x09%s' --date=short
-  rtk rg -n "T''ODO|FIX''ME|T''BD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
+  rtk rg -n "TODO|FIXME|TBD|not implemented" packages apps tools .github --glob '!**/dist/**' --glob '!**/node_modules/**'
   rtk rg -n "export \{.*\}|export function lyra" packages/react/src/index.ts packages/alpine/src/index.ts
   ```
 
@@ -247,7 +247,7 @@ Delivery Contract`, state all of the following explicitly:
   report:
 
   ```bash
-  rtk node --input-type=module -e "import { readFileSync } from 'node:fs'; const checks = [['docs/superpowers/backlog/2026-08-15-current-baseline.md',['Identity','Package Surface','Verification Evidence','CI Gates']],['docs/superpowers/backlog/2026-08-15-prioritized-backlog.md',['Evidence','Candidates','Scoring','Recommendation','Next Delivery Contract']]]; for (const [file, headings] of checks) { const text = readFileSync(file, 'utf8'); for (const heading of headings) { if (!text.includes('## ' + heading)) throw new Error(file + ' is missing: ' + heading); } }"
+  rtk node --input-type=module -e "import { readFileSync } from 'node:fs'; const fence = String.fromCharCode(96).repeat(3); const checks = [['docs/superpowers/backlog/2026-08-15-current-baseline.md',['Identity','Package Surface','Verification Evidence','CI Gates']],['docs/superpowers/backlog/2026-08-15-prioritized-backlog.md',['Evidence','Candidates','Scoring','Recommendation','Next Delivery Contract']]]; for (const [file, headings] of checks) { const text = readFileSync(file, 'utf8').replace(new RegExp('^' + fence + '[\\s\\S]*?^' + fence + '$', 'gm'), ''); for (const heading of headings) { if (!new RegExp('^## ' + heading + '$', 'm').test(text)) throw new Error(file + ' is missing: ' + heading); } }"
   ```
 
 - [ ] **Step 2: Run candidate consistency checks**
@@ -256,7 +256,7 @@ Delivery Contract`, state all of the following explicitly:
   uniquely named recommendation:
 
   ```bash
-  rtk node --input-type=module -e "import { readFileSync } from 'node:fs'; const text = readFileSync('docs/superpowers/backlog/2026-08-15-prioritized-backlog.md', 'utf8'); const candidates = text.match(/BKL-\\d{2}/g) ?? []; if (candidates.length === 0) throw new Error('No backlog candidate recorded'); const recommendation = text.match(/^## Recommendation\\n\\n([^\\n]+)/m)?.[1]?.trim() ?? ''; if (!/^BKL-\\d{2}:/.test(recommendation)) throw new Error('Recommendation must name exactly one BKL item');"
+  rtk node --input-type=module -e "import { readFileSync } from 'node:fs'; const text = readFileSync('docs/superpowers/backlog/2026-08-15-prioritized-backlog.md', 'utf8'); const candidates = [...new Set(text.match(/\\bBKL-\\d{2}\\b/g) ?? [])]; if (candidates.length === 0) throw new Error('No backlog candidate recorded'); const recommendations = [...text.matchAll(/^## Recommendation\\n\\n(BKL-\\d{2}):/gm)]; if (recommendations.length !== 1 || !candidates.includes(recommendations[0][1])) throw new Error('Recommendation must name exactly one recorded BKL item');"
   ```
 
 - [ ] **Step 3: Verify documentation formatting and tracked changes**

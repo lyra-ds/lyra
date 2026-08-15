@@ -26,10 +26,10 @@ broad multi-framework abstraction do not block v1.0.
 
 The current repository already has a strong engineering base:
 
-- 74 React component directories and 78 documented React exports;
-- 98 browser-test files and 74 SSR test files;
+- 76 React component source files, 76 browser-test files, and 74 SSR test
+  files, as recorded by the reproducible delivery baseline;
 - 665 React tests, 268 Alpine tests, and 69 styles tests;
-- 180 documentation examples in English and Brazilian Portuguese;
+- 75 component documentation pages in English and 75 in Brazilian Portuguese;
 - 211 semantic tokens and 433 public CSS classes protected by parity checks;
 - subpath exports, per-entry bundle budgets, package smoke tests, and a real Vite consumer build;
 - OIDC publishing with provenance, changesets, security policy, and automated releases.
@@ -225,7 +225,8 @@ CI will protect at least these representative compositions:
 
 ## 9. Spec Gate
 
-No implementation plan, spike code intended for merge, or production migration may begin until the relevant specs are approved.
+No component-family or production implementation plan, spike code intended for
+merge, or production migration may begin until the relevant specs are approved.
 
 ### 9.1 Lifecycle
 
@@ -235,7 +236,10 @@ Every spec uses one of three states:
 - `Approved`: all required decisions and acceptance criteria are present;
 - `Implemented`: the shipped behavior and documentation satisfy the approved spec.
 
-Only `Approved` specs may generate an implementation plan.
+Only `Approved` specs may generate a component-family or production
+implementation plan. The dedicated foundational-spec plan may author and
+integrate the five `Draft` foundational specifications for maintainer review;
+it does not authorize component or production implementation.
 
 ### 9.2 Foundational frontend specs
 

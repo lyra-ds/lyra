@@ -16,10 +16,11 @@ exit status: 1 (no matches)
 The baseline records current public versions `@lyra-ds/react` 0.4.2 and
 `@lyra-ds/alpine` 0.5.0. The public adapter documentation states that Alpine
 ports the exact React state machines and lists its bindings and controllable
-state. The root-barrel inventory reports 76 matching export declarations across
-`packages/react/src/index.ts` and `packages/alpine/src/index.ts`, including
-Alpine's `TIME_ZONE_PICKER_ZONES` and `DEFAULT_LABELS, describeRecurrence`
-exports.
+state. The root-barrel inventory reports 74 React export declarations and
+Alpine's two utility exports, `TIME_ZONE_PICKER_ZONES` and
+`DEFAULT_LABELS, describeRecurrence`. This is inventory evidence, not a parity
+claim: Alpine's default plugin and registered bindings remain explicit audit
+inputs for `BKL-01`.
 
 The latest 40 commits record Alpine adapter work leading up to the 0.5.0
 release commit `b1d77b5e993804add2c14746f66974ec8c04bbc3` (2026-08-12,
@@ -59,8 +60,8 @@ proof available now (0–2) + supported-surface reach (0–2).
 
 `BKL-01` is the sole candidate and therefore uniquely highest-ranked. It has
 no existing failing gate, so it does not receive the failing-gate risk score.
-Its existing package tests and explicit contract comparison provide automated
-proof without a new test harness.
+Its existing package tests provide automated proof without a new test harness;
+the explicit contract comparison remains manual evidence.
 
 ## Recommendation
 
