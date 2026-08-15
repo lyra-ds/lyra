@@ -7,6 +7,40 @@ import { CalendarView } from './index';
 const THEMES = ['light', 'dark'] as const;
 const KINDS = ['session', 'program-session', 'pending', 'block', 'external'] as const;
 
+type RGB = readonly [number, number, number];
+
+function parseRgb(color: string): RGB {
+  const match = color.match(/^rgba?\((.*)\)$/);
+  const channels = match?.[1].match(/\d+(?:\.\d+)?/g)?.map(Number);
+  if (
+    !channels ||
+    (channels.length !== 3 && (channels.length !== 4 || channels[3] !== 1)) ||
+    channels
+      .slice(0, 3)
+      .some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255)
+  ) {
+    throw new Error(`Expected a resolved opaque rgb color, received ${color}`);
+  }
+  return [channels[0], channels[1], channels[2]];
+}
+
+function relativeLuminance([red, green, blue]: RGB): number {
+  const channels = [red, green, blue].map((channel) => {
+    const srgb = channel / 255;
+    return srgb <= 0.03928 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const foregroundLuminance = relativeLuminance(parseRgb(foreground));
+  const backgroundLuminance = relativeLuminance(parseRgb(background));
+  return (
+    (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+    (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+  );
+}
+
 function setTheme(theme: (typeof THEMES)[number]): void {
   document.documentElement.toggleAttribute('data-theme', theme === 'dark');
 }
@@ -59,6 +93,19 @@ describe('CalendarView', () => {
         getComputedStyle(screen.container.querySelector('.lyra-calview__evt--external')!)
           .borderTopStyle,
       ).toBe('solid');
+      const session = screen.container.querySelector<HTMLElement>('.lyra-calview__evt--session')!;
+      const programSession = screen.container.querySelector<HTMLElement>(
+        '.lyra-calview__evt--program-session',
+      )!;
+      expect(
+        contrastRatio(getComputedStyle(session).color, getComputedStyle(session).backgroundColor),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(
+          getComputedStyle(programSession).color,
+          getComputedStyle(programSession).backgroundColor,
+        ),
+      ).toBeGreaterThanOrEqual(4.5);
       await expectNoAxeViolations(screen.container);
     });
   }
