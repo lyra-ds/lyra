@@ -16,11 +16,10 @@ exit status: 1 (no matches)
 The baseline records current public versions `@lyra-ds/react` 0.4.2 and
 `@lyra-ds/alpine` 0.5.0. The public adapter documentation states that Alpine
 ports the exact React state machines and lists its bindings and controllable
-state. The root-barrel inventory reports 74 React export declarations and
-Alpine's two utility exports, `TIME_ZONE_PICKER_ZONES` and
-`DEFAULT_LABELS, describeRecurrence`. This is inventory evidence, not a parity
-claim: Alpine's default plugin and registered bindings remain explicit audit
-inputs for `BKL-01`.
+state. The TypeScript AST inventory reports 148 direct export forms in React and
+33 in Alpine, including named, type, interface, wildcard, and default forms.
+This is inventory evidence, not a parity claim: Alpine's default plugin and
+registered bindings remain explicit audit inputs for `BKL-01`.
 
 Within the trailing 40 commits, `packages/alpine` has 1,291 added and 331
 deleted lines (1,622 total), compared with 557 total changed lines in
