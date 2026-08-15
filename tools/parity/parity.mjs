@@ -246,14 +246,21 @@ const APPROVED_DECLARATION_DIVERGENCES = [
     selector: '[data-brand]',
     property: '--accent-hover',
     handoff: 'color-mix(in oklab, var(--brand), black 12%)',
-    package: 'color-mix(in srgb, var(--brand), white 8%)',
+    package: 'color-mix(in srgb, var(--brand), white 3%)',
   },
   {
     file: 'tokens/brand.css',
     selector: '[data-brand]',
     property: '--accent-active',
     handoff: 'color-mix(in oklab, var(--brand), black 22%)',
-    package: 'color-mix(in srgb, var(--brand), white 16%)',
+    package: 'color-mix(in srgb, var(--brand), white 4%)',
+  },
+  {
+    file: 'tokens/brand.css',
+    selector: '[data-theme="dark"][data-brand], [data-theme="dark"] [data-brand]',
+    property: '--accent-active',
+    handoff: 'color-mix(in oklab, var(--brand), white 38%)',
+    package: 'color-mix(in oklab, var(--brand), white 30%)',
   },
   {
     file: 'components/scheduling/scheduling.css',

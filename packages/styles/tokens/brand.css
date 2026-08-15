@@ -2,8 +2,8 @@
 
 [data-brand] {
   --accent:           var(--brand);
-  --accent-hover:     color-mix(in srgb, var(--brand), white 8%);
-  --accent-active:    color-mix(in srgb, var(--brand), white 16%);
+  --accent-hover:     color-mix(in srgb, var(--brand), white 3%);
+  --accent-active:    color-mix(in srgb, var(--brand), white 4%);
   --accent-soft:      color-mix(in oklab, var(--brand) 12%, var(--surface-card));
   --accent-soft-text: color-mix(in oklab, var(--brand), var(--text-primary) 32%);
   --on-accent:        var(--brand-contrast, #FFFFFF);
@@ -26,7 +26,7 @@
 [data-theme="dark"] [data-brand] {
   --accent:           color-mix(in oklab, var(--brand), white 14%);
   --accent-hover:     color-mix(in oklab, var(--brand), white 26%);
-  --accent-active:    color-mix(in oklab, var(--brand), white 38%);
+  --accent-active:    color-mix(in oklab, var(--brand), white 30%);
   --accent-soft:      color-mix(in oklab, var(--brand) 18%, transparent);
   --accent-soft-text: color-mix(in oklab, var(--brand), white 45%);
   --focus-ring:       color-mix(in oklab, var(--brand) 30%, transparent);

@@ -4,7 +4,7 @@
 
 - Corrected dark `--text-faint` to `var(--night-300)` and dark default `--accent-hover` to `var(--indigo-700)`.
 - CalendarView session/program-session event text now uses the existing `--text-primary` token. The temporary `--calendar-event-text` alias was removed during Task 5 final reconciliation; event bars and class selectors are unchanged.
-- Retained Acme’s `--brand` derivation, `--brand-contrast`, and `@supports` fallback. Its light hover/active mixes use `8%` / `16%` white sRGB mixes; the ordering contract test matches the source.
+- Retained Acme’s `--brand` derivation, `--brand-contrast`, and `@supports` fallback. Its light hover/active mixes use `3%` / `4%` white sRGB mixes; dark branded hover/active use `26%` / `30%` white OKLab mixes.
 
 ## Evidence
 
@@ -24,7 +24,7 @@ The generic light `faint-sunken` fixture remains RED by design. It is not a meas
 ## Fix round 1 — branded state calibration
 
 - RED: the new light-Acme ordering contract required derived hover/active fills to be lighter than the base brand, but the prior black mixes made hover darker (`112.7082` versus base `118.4326` perceived luminance) in pinned Chromium.
-- GREEN: light brand hover/active now derive from `var(--brand)` through 8%/16% white sRGB mixes. The test asserts their lighter ordered relationship, teal-family preservation, and normal-text AA using the final resolved `--on-accent` against rest, hover, and active fills.
+- GREEN: light brand hover/active derive from `var(--brand)` through 3%/4% white sRGB mixes. The test asserts their lighter ordered relationship, teal-family preservation, and normal-text AA using the final resolved `--on-accent` against rest, hover, and active fills.
 - Pinned Docker verification: `brand-theme.test.ts` passed 49/49 in Chromium, Firefox, and WebKit; the four Task-2-owned canonical contrast assertions passed in each engine. The generic deferred light-sunken probe remained excluded from the focused command as documented above.
 
 ## Task 5 disposition
