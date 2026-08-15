@@ -49,6 +49,16 @@ function composite(foreground: RGB, background: RGB): RGB {
   };
 }
 
+function finishAnimations(): void {
+  document.getAnimations().forEach((animation) => {
+    try {
+      animation.finish();
+    } catch {
+      // Infinite animations cannot finish.
+    }
+  });
+}
+
 let root: HTMLElement;
 const probe = (name: string): HTMLElement => {
   const element = root.querySelector<HTMLElement>(`[data-probe="${name}"]`);
@@ -111,15 +121,23 @@ describe('rendered Styles composites retain WCAG AA contrast', () => {
       const surface = parseColor(getComputedStyle(root).backgroundColor);
       for (const name of ['session', 'program-session']) {
         const element = probe(name);
-        const background = parseColor(getComputedStyle(element).backgroundColor);
-        const foreground = parseColor(getComputedStyle(element).color);
-        expect(foreground.a, `${theme} ${name} foreground must be opaque`).toBe(1);
+        const backgroundStyle = getComputedStyle(element);
+        const background = parseColor(backgroundStyle.backgroundColor);
+        const time = element.querySelector<HTMLElement>('.lyra-calview__evt-time')!;
+        const timeStyle = getComputedStyle(time);
+        const foreground = parseColor(timeStyle.color);
+        expect(foreground.a, `${theme} ${name} time foreground must be opaque`).toBe(1);
         const renderedBackground = composite(background, surface);
         expect(renderedBackground.a, `${theme} ${name} rendered background must be opaque`).toBe(1);
-        const ratio = contrast(foreground, renderedBackground);
+        const renderedForeground = composite(
+          { ...foreground, a: foreground.a * Number.parseFloat(timeStyle.opacity) },
+          renderedBackground,
+        );
+        expect(renderedForeground.a, `${theme} ${name} time foreground must be opaque`).toBe(1);
+        const ratio = contrast(renderedForeground, renderedBackground);
         expect(
           ratio,
-          `${theme} ${name} contrast (${ratio.toFixed(3)}:1; fg ${getComputedStyle(element).color}; bg ${getComputedStyle(element).backgroundColor})`,
+          `${theme} ${name} time contrast (${ratio.toFixed(3)}:1; fg ${timeStyle.color}; bg ${backgroundStyle.backgroundColor})`,
         ).toBeGreaterThanOrEqual(4.5);
       }
     }
@@ -133,7 +151,8 @@ describe('rendered Styles composites retain WCAG AA contrast', () => {
   it('keeps the branded primary hover readable after its transition settles', async () => {
     setTheme('light', true);
     await userEvent.hover(probe('primary'));
-    await expect.poll(() => getComputedStyle(probe('primary')).backgroundColor, { timeout: 2000 }).not.toBe('');
+    finishAnimations();
+    void getComputedStyle(probe('primary')).backgroundColor;
     assertContrast('primary');
   });
 });
