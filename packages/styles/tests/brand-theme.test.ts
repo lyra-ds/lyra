@@ -244,17 +244,25 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     expect(isTealFamily(bg('accent'))).toBe(true);
   });
 
-  it('light acme: hover/active are ordered darker than accent, teal-family', () => {
+  it('light acme: hover/active are ordered lighter than accent, teal-family', () => {
     setPermutation('light', 'acme');
     const accentL = luminance(bg('accent'));
     const hoverL = luminance(bg('accent-hover'));
     const activeL = luminance(bg('accent-active'));
-    // brand.css:5-6 — black-mix darkens; active remains darker than hover and accent.
-    expect(hoverL).toBeLessThan(accentL);
-    expect(activeL).toBeLessThan(hoverL);
+    // brand.css:5-6 — white-mix keeps the derived states distinct while preserving black ink AA.
+    expect(hoverL).toBeGreaterThan(accentL);
+    expect(activeL).toBeGreaterThan(hoverL);
     // Still teal-family (proves it's the derived teal, not the indigo fallback).
     expect(isTealFamily(bg('accent-hover'))).toBe(true);
     expect(isTealFamily(bg('accent-active'))).toBe(true);
+  });
+
+  it('light acme: resolved primary ink is AA on rest, hover, and active fills', () => {
+    setPermutation('light', 'acme');
+    const onAccent = fg('on-accent');
+    for (const state of ['accent', 'accent-hover', 'accent-active'] as const) {
+      expect(contrast(onAccent, bg(state)), `acme ${state} must meet normal-text AA`).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('light acme: soft / soft-text / focus-ring resolve to teal-family channels', () => {

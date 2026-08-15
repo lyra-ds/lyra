@@ -16,3 +16,9 @@
 ## Deferred concern
 
 The generic light `faint-sunken` fixture remains RED by design. It is not a measured component ownership target, and the plan requires Task 3’s unfiltered React axe result to supply the real selector before replacing that fixture probe. No global light `--text-muted` or `--text-faint` was changed.
+
+## Fix round 1 — branded state calibration
+
+- RED: the new light-Acme ordering contract required derived hover/active fills to be lighter than the base brand, but the prior black mixes made hover darker (`112.7082` versus base `118.4326` perceived luminance) in pinned Chromium.
+- GREEN: light brand hover/active now derive from `var(--brand)` through 8%/16% white sRGB mixes. The test asserts their lighter ordered relationship, teal-family preservation, and normal-text AA using the final resolved `--on-accent` against rest, hover, and active fills.
+- Pinned Docker verification: `brand-theme.test.ts` passed 49/49 in Chromium, Firefox, and WebKit; the four Task-2-owned canonical contrast assertions passed in each engine. The generic deferred light-sunken probe remained excluded from the focused command as documented above.

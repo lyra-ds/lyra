@@ -2,8 +2,8 @@
 
 [data-brand] {
   --accent:           var(--brand);
-  --accent-hover:     color-mix(in srgb, var(--brand), black 5%);
-  --accent-active:    color-mix(in srgb, var(--brand), black 9%);
+  --accent-hover:     color-mix(in srgb, var(--brand), white 8%);
+  --accent-active:    color-mix(in srgb, var(--brand), white 16%);
   --accent-soft:      color-mix(in oklab, var(--brand) 12%, var(--surface-card));
   --accent-soft-text: color-mix(in oklab, var(--brand), var(--text-primary) 32%);
   --on-accent:        var(--brand-contrast, #FFFFFF);
