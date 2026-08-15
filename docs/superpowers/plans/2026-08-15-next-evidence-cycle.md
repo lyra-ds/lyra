@@ -330,13 +330,13 @@
 
   The final command must print nothing. The full changed-path list may contain only the approved design, this plan, and the evidence artifact. Preserve any user-owned untracked entry and report it separately.
 
-- [ ] **Step 5: Commit corrections only when needed and hand off**
+- [ ] **Step 5: Commit the final contract and hand off**
 
-  If Steps 3–4 require a factual, arithmetic, or contract correction, commit only the evidence artifact:
+  Apply any factual, arithmetic, or contract correction required by Steps 3–4, then commit the completed evidence artifact:
 
   ```bash
   rtk git add docs/superpowers/backlog/2026-08-15-next-delivery-evidence.md
-  rtk git commit -m "docs: verify next delivery evidence"
+  rtk git commit -m "docs: complete next delivery contract"
   ```
 
   Report the selected identifier, score, classification, affected public surfaces, applicable gates, and exact path to `Next Delivery Contract`. Do not begin the selected capability in this plan.
