@@ -323,3 +323,185 @@ confirmed its claim in source, public documentation, and existing tests. The
 next delivery must define the data-and-files family contract for
 consumer-controlled FileUpload state before any runtime change; it must not
 mistake an implementation plan for permission to invent that public API.
+
+## Next Delivery Contract
+
+### Affected Contract
+
+The next delivery is the approved component-family specification
+`docs/superpowers/specs/2026-08-15-data-files-family-design.md`. It governs
+Table, DataTable, FileUpload, and FileManager as the PRD's Data and Files
+family, with FileUpload named as the first and only implementation wave
+authorized after that specification is approved.
+
+The specification must replace the current React `FileUploadProps`,
+`FileUploadItem`, `onFiles`, and `onChange` lifecycle assumptions and the
+corresponding Alpine `lyraFileUpload` options, state, bindings, and events with
+one Lyra-owned observable contract. Consumers own the asynchronous upload
+operation. Lyra owns file selection, validation presentation, operation
+identity, semantic state rendering, recovery controls, announcements, and
+adapter mapping. Styles remains the visual source of truth.
+
+Table, DataTable, and FileManager enter the specification only far enough to
+make data/file ownership and composition boundaries complete. Their runtime
+APIs are not part of the first implementation wave.
+
+### Scope
+
+The family specification must make these FileUpload decisions explicit and
+executable:
+
+- anatomy and ownership for the dropzone, native file input, item list,
+  progress, status, error, retry, cancellation, completion, and removal;
+- stable per-file and per-attempt identity, including stale completion and
+  replacement-file behavior;
+- the complete `idle`, `selected`, `uploading`, `success`, `error`, `canceled`,
+  and removed state transitions;
+- whether the public collection is controlled, uncontrolled, or a deliberately
+  bounded combination, including exact React callbacks and Alpine custom-event
+  timing;
+- real determinate progress, indeterminate work, validation failure, transport
+  failure, retry, consumer-requested cancel, successful completion, and
+  teardown;
+- semantic HTML, accessible names, live announcements, deduplication, focus
+  retention, keyboard operation, touch targets, forced colors, reduced motion,
+  RTL, long file names, zoom, and narrow-viewport reflow;
+- SSR output, hydration stability, no-JavaScript file-selection fallback, and
+  Alpine idempotent initialization and cleanup;
+- exact TypeScript signatures, Alpine options/bindings/events, CSS classes and
+  state attributes, rendered outlines, transition tables, compatibility table,
+  and before/after examples required by the component-architecture template;
+- manual migration from autonomous timers to consumer-owned operations, with
+  no compatibility shim that preserves synthetic success.
+
+The specification and first implementation wave exclude an HTTP client,
+server endpoint, storage provider, multipart/chunk scheduling, background
+uploads, persistence across navigation, FileManager redesign, DataTable
+correction, new primitive dependency, Blade changes, release publication, and
+unrelated file-family styling.
+
+### Adapter and Documentation Impact
+
+- **React:** affected. The final spec must expose complete React 18/19-compatible
+  public types and preserve native file selection while moving asynchronous
+  outcome ownership to the consumer.
+- **Alpine:** affected. It must expose equivalent observable states and
+  operations through serializable options, bindings, and bubbling composed
+  custom events; it need not share React implementation code.
+- **CSS:** affected only if the approved state model needs new stable classes,
+  attributes, or selectors. Existing visual classes must remain unless the
+  spec documents a breaking replacement and migration.
+- **English and Portuguese docs:** affected. Both FileUpload pages must teach
+  real consumer-owned operation state, recovery, cancellation, and migration
+  examples without calling synthetic progress production behavior.
+- **Stack tabs:** the React and Alpine/HTML representations must each contain a
+  working example for the contract they actually support. Empty or aspirational
+  tabs are prohibited.
+- **Blade:** deferred under the approved post-React sequencing rule. The family
+  spec records the later compatibility boundary but the first wave does not
+  modify the sibling adapter.
+
+### Verification Gates
+
+The specification delivery is documentation-only. It must pass:
+
+```text
+rtk pnpm exec prettier --check docs/superpowers/specs/2026-08-15-data-files-family-design.md
+rtk git diff --check
+```
+
+Before the later FileUpload implementation can reach `Implemented`, the
+approved family spec must turn the current P1 behavior into failing acceptance
+cases in these existing test-first locations:
+
+- `packages/react/src/file-upload/file-upload.browser.test.tsx`;
+- `packages/react/src/file-upload/file-upload.ssr.test.ts`;
+- `packages/alpine/src/file-upload.browser.test.ts`.
+
+The acceptance matrix must prove the selected API across Chromium, Firefox,
+and WebKit; light, dark, and forced-colors output; keyboard and touch-equivalent
+selection/removal/retry/cancel actions; real and indeterminate progress; error,
+stale result, retry, cancel, completion, removal, and teardown; React SSR and
+hydration; Alpine initialization/reconnection cleanup; narrow viewport, long
+names, RTL, reduced motion, and 200% zoom. The family spec must name the exact
+hydration fixture or consumer-smoke scenario before approval because the
+repository does not currently contain a FileUpload-specific hydration test.
+
+The implementation wave must run, at minimum:
+
+```text
+rtk pnpm --filter @lyra-ds/react run test:ssr
+rtk pnpm --filter @lyra-ds/react run test:browser
+rtk pnpm --filter @lyra-ds/alpine run test:browser
+rtk pnpm --filter @lyra-ds/react run typecheck
+rtk pnpm --filter @lyra-ds/alpine run typecheck
+rtk pnpm --filter @lyra-ds/react run build
+rtk pnpm --filter @lyra-ds/alpine run build
+rtk pnpm run parity
+rtk pnpm baseline:bundles --check
+rtk pnpm --filter @lyra-ds/react exec attw --pack . --profile node16
+rtk pnpm --filter @lyra-ds/alpine exec attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm
+rtk pnpm --filter @lyra-ds/react exec size-limit
+rtk pnpm --filter @lyra-ds/alpine exec size-limit
+rtk node tools/docgen/generate.mjs --check
+rtk node tools/docgen/alpine.mjs --check
+rtk node tools/pack-smoke/pack-smoke.mjs
+rtk node tools/smoke/smoke.mjs
+rtk pnpm test
+rtk pnpm test:browsers
+```
+
+Any complex-migration bundle increase is limited to `+3 kB` Brotli per
+consumer entry after synthetic timers and superseded behavior are removed. A
+larger delta or any new primitive dependency requires the governing ADR and
+maintainer approval before production adoption.
+
+### Compatibility and Release
+
+Creating and approving the family specification changes no package behavior,
+so that delivery has no changeset.
+
+The later runtime migration follows the unsafe-contract path: synthetic upload
+success must not remain as a compatibility mode. Because React and Alpine are
+both pre-`1.0.0` and their public behavior changes, each affected package must
+receive its own controlled-breaking minor changeset, coordinated in one release
+window with compatible Styles ranges. Styles receives no empty bump; it changes
+only if its public classes or selectors change.
+
+Release notes and a migration guide must identify affected versions, explain
+consumer ownership of asynchronous work, and provide complete React and
+Alpine/HTML before-and-after examples. No codemod is expected because mapping a
+synthetic component-owned timer to a real transport, retry, and cancellation
+policy requires a consumer product decision rather than a semantics-preserving
+mechanical rewrite.
+
+### Completion Condition
+
+The next delivery is complete when
+`docs/superpowers/specs/2026-08-15-data-files-family-design.md` reaches
+`Approved` with every artifact in the component-family template, resolves the
+FileUpload public API and all adapter/state/migration decisions above, names
+the exact test and manual acceptance matrix, records required approvers, and
+limits the first implementation wave to FileUpload. No production plan or code
+begins before that approval.
+
+## Verification
+
+- **PASS — Baseline and evidence-source completeness:** product and planning
+  SHAs, timestamp, runtime, worktree state, exact green CI run, all open issues,
+  the open PR, approved specs, repository scans, and recent churn are recorded.
+- **PASS — Candidate eligibility and score arithmetic:** five candidates meet
+  the public-contract rule; two lower eligible signals and two exclusions are
+  explained; every row recomputes correctly and the applied ties follow the
+  approved order.
+- **PASS — Focused audit result:** source, public docs, 8 React browser tests,
+  1 React SSR test, and 9 Alpine browser tests confirm the current synthetic
+  lifecycle without a consumer-controlled operation.
+- **PASS — Unique recommendation:** `BKL-02` is the sole `10/10` candidate and
+  the only identifier named by `Recommendation`.
+- **PASS — Delivery-contract completeness:** affected surfaces, exact scope,
+  adapter/docs impact, proof locations, full gates, bundle policy,
+  compatibility, changesets, migration, and objective completion are resolved.
+- **PASS — Documentation-only branch scope:** this cycle has changed only its
+  approved design, execution plan, and evidence artifact; the final path and
+  changeset checks below provide executable confirmation.
