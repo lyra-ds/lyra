@@ -244,12 +244,12 @@ describe('STY-04 — acme brand color-mix accent group', () => {
     expect(isTealFamily(bg('accent'))).toBe(true);
   });
 
-  it('light acme: hover/active are ordered DARKER than accent (black 12% / 22%), teal-family', () => {
+  it('light acme: hover/active are ordered darker than accent, teal-family', () => {
     setPermutation('light', 'acme');
     const accentL = luminance(bg('accent'));
     const hoverL = luminance(bg('accent-hover'));
     const activeL = luminance(bg('accent-active'));
-    // brand.css:5-6 — black-mix darkens; active (22%) darker than hover (12%) darker than accent.
+    // brand.css:5-6 — black-mix darkens; active remains darker than hover and accent.
     expect(hoverL).toBeLessThan(accentL);
     expect(activeL).toBeLessThan(hoverL);
     // Still teal-family (proves it's the derived teal, not the indigo fallback).
