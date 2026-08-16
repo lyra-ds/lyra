@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ChangeEvent } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import '@lyra-ds/styles/styles.css';
 import { FILE_UPLOAD_SCENARIOS } from '../../../../tools/file-upload/scenarios';
+import { expectNoAxeViolations } from '../internal/test-axe';
 import { FileUpload } from './index';
 import type { FileUploadItem } from './file-upload.types';
 import {
@@ -212,6 +214,191 @@ describe('FileUpload', () => {
     );
     expect(onSelect.mock.calls[0][0].selections[0].proposedAttemptId).toEqual(expect.any(String));
     expect(screen.container.querySelector('.lyra-upload__item')).toBeNull();
+  });
+
+  it(FILE_UPLOAD_SCENARIOS.lifecycle, async () => {
+    const onCancel = vi.fn();
+    const onRemove = vi.fn();
+    const screen = await render(
+      <FileUpload
+        items={[
+          {
+            id: 'selected',
+            name: 'selected.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'selected',
+          },
+          {
+            id: 'uploading',
+            name: 'uploading.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'uploading',
+            attemptId: 'uploading-1',
+            progress: { kind: 'determinate', value: 100 },
+          },
+          {
+            id: 'canceling',
+            name: 'canceling.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'canceling',
+            attemptId: 'canceling-1',
+            progress: { kind: 'indeterminate' },
+          },
+          {
+            id: 'transport-error',
+            name: 'transport-error.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'error',
+            attemptId: 'transport-error-1',
+            error: { kind: 'transport', message: 'Offline', retryable: true },
+          },
+          {
+            id: 'validation-error',
+            name: 'validation-error.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'error',
+            error: { kind: 'validation', code: 'accept', message: 'Not a PDF', retryable: false },
+          },
+          {
+            id: 'canceled',
+            name: 'canceled.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'canceled',
+            attemptId: 'canceled-1',
+          },
+          {
+            id: 'success',
+            name: 'success.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'success',
+            attemptId: 'success-1',
+          },
+        ]}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onCancel={onCancel}
+        onRemove={onRemove}
+      />,
+    );
+
+    expect(screen.container.querySelector('.lyra-upload')).toHaveAttribute('data-state', 'active');
+    expect(screen.container.querySelectorAll('.lyra-upload__item')).toHaveLength(7);
+    expect(screen.container.querySelector('[data-state="uploading"]')).toHaveAttribute(
+      'data-state',
+      'uploading',
+    );
+    expect(screen.container.querySelector('[data-state="canceling"]')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Cancel uploading.pdf' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Remove selected.pdf' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Retry transport-error.pdf' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Retry canceled.pdf' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Remove canceling.pdf' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel uploading.pdf' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Remove selected.pdf' }));
+    expect(onCancel).toHaveBeenCalledWith({ id: 'uploading', attemptId: 'uploading-1' });
+    expect(onRemove).toHaveBeenCalledWith({ id: 'selected' });
+  });
+
+  it(FILE_UPLOAD_SCENARIOS.progress, async () => {
+    const screen = await render(
+      <FileUpload
+        items={[
+          {
+            id: 'a',
+            name: 'a.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'uploading',
+            attemptId: 'a-1',
+            progress: { kind: 'determinate', value: 48 },
+          },
+          {
+            id: 'b',
+            name: 'b.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'canceling',
+            attemptId: 'b-1',
+            progress: { kind: 'indeterminate' },
+          },
+        ]}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    const progress = screen.container.querySelectorAll('progress.lyra-upload__bar');
+    expect(progress[0]).toHaveAttribute('value', '48');
+    expect(progress[1]).not.toHaveAttribute('value');
+    expect(screen.container.querySelector('[data-state="uploading"]')).not.toBeNull();
+    expect(screen.container.querySelector('[data-state="canceling"]')).not.toBeNull();
+    await expectNoAxeViolations(screen.container);
+  });
+
+  it('keeps controlled content readable while disabled and required', async () => {
+    const screen = await render(
+      <FileUpload
+        disabled
+        required
+        items={[
+          {
+            id: 'selected',
+            name: 'selected.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'selected',
+          },
+        ]}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    expect(screen.container.querySelector('.lyra-upload')).toHaveAttribute('data-disabled', 'true');
+    expect(screen.getByLabelText('Drag files here or click to select')).toBeDisabled();
+    expect(screen.getByLabelText('Drag files here or click to select')).toBeRequired();
+    expect(screen.container.querySelector('.lyra-upload__item-name')).toHaveTextContent(
+      'selected.pdf',
+    );
+    expect(screen.getByRole('button', { name: 'Remove selected.pdf' })).toBeDisabled();
+  });
+
+  it('runs the inherited change handler before checking whether selection was prevented', async () => {
+    const onSelect = vi.fn();
+    const onChange = vi.fn((event: ChangeEvent<HTMLDivElement>) => event.preventDefault());
+    const screen = await render(
+      <FileUpload
+        items={[]}
+        onChange={onChange}
+        onSelect={onSelect}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    const input = screen
+      .getByLabelText('Drag files here or click to select')
+      .element() as HTMLInputElement;
+    const files = new DataTransfer();
+    files.items.add(new File(['pdf'], 'report.pdf', { type: 'application/pdf' }));
+    Object.defineProperty(input, 'files', { configurable: true, value: files.files });
+
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() => expect(onChange).toHaveBeenCalledOnce());
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   it('proposes validation errors without attempts for rejected files', async () => {
