@@ -16,7 +16,7 @@ function matchesAccept(file: Pick<File, 'name' | 'type'>, accept: string): boole
       continue;
     }
 
-    if (/^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(token)) {
+    if (/^[!#$%&'+.^_`|~0-9A-Za-z-]+\/[!#$%&'+.^_`|~0-9A-Za-z-]+$/.test(token)) {
       hasSupportedToken = true;
       if (file.type === token) return true;
     }
