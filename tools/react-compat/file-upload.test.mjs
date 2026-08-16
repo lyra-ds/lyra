@@ -44,6 +44,19 @@ function collectStringValues(value, values = []) {
   return values;
 }
 
+function hasLocalProtocol(values) {
+  for (const value of values) {
+    for (const protocol of ['workspace:', 'link:', 'file:']) {
+      if (value.startsWith(protocol)) return true;
+    }
+  }
+  return false;
+}
+
+test('local lock protocol detection rejects unrelated file tarballs', () => {
+  assert.equal(hasLocalProtocol(['file:/tmp/unrelated.tgz']), true);
+});
+
 test('compatibility matrix names React 18 and 19 and every required layer', () => {
   assert.deepEqual(
     REACT_COMPATIBILITY_MATRIX.map(({ react, checks }) => ({ react, checks })),
@@ -298,18 +311,7 @@ test('fixtures freeze the exact external React 18 and React 19 dependency graphs
       }
 
       const lockValues = collectStringValues(lockfile);
-      assert.equal(
-        lockValues.some((value) => value.startsWith('workspace:')),
-        false,
-      );
-      assert.equal(
-        lockValues.some((value) => value.startsWith('link:')),
-        false,
-      );
-      assert.equal(
-        lockValues.some((value) => value.startsWith('file:') && value.includes('lyra')),
-        false,
-      );
+      assert.equal(hasLocalProtocol(lockValues), false);
     });
   }
 });
