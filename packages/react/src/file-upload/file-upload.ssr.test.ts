@@ -18,6 +18,8 @@ describe('FileUpload SSR', () => {
             progress: { kind: 'determinate', value: 48 },
           },
         ],
+        name: 'attachments',
+        required: true,
         onSelect: () => {},
         onRetry: () => {},
         onCancel: () => {},
@@ -27,6 +29,8 @@ describe('FileUpload SSR', () => {
 
     expect(html).toContain('<label');
     expect(html).toContain('type="file"');
+    expect(html).toContain('name="attachments"');
+    expect(html).toContain('required=""');
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain('aria-atomic="true"');
     expect(html).toMatch(/aria-live="polite" aria-atomic="true"><\/span>/);

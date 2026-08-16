@@ -50,6 +50,16 @@ function announce(node: HTMLSpanElement | null, message: string): void {
   node.replaceChildren(document.createTextNode(message));
 }
 
+function replaceInputFiles(input: HTMLInputElement, files: readonly File[]): void {
+  const transfer = new DataTransfer();
+  for (const file of files) transfer.items.add(file);
+  input.files = transfer.files;
+}
+
+function isValidationItem(item: FileUploadItem): boolean {
+  return item.status === 'error' && item.error.kind === 'validation';
+}
+
 function firstAvailableAction(
   root: HTMLDivElement | null,
   itemId: string,
@@ -99,6 +109,10 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     const previousItemsRef = useRef<
       readonly { id: string; name: string; attemptId: string | null }[]
     >([]);
+    const proposedFilesRef = useRef<Map<string, File>>(new Map());
+    const committedFilesRef = useRef<Map<string, File>>(new Map());
+    const didSynchronizeInputRef = useRef(false);
+    const preservedPreHydrationFilesRef = useRef(false);
     const lastFocusedActionRef = useRef<string | null>(null);
     const [attemptHistory, setAttemptHistory] = useState<FileUploadAttemptHistory>(
       () => reconcileAttemptHistory(items, new Map()).history,
@@ -133,6 +147,53 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       },
       [ref],
     );
+
+    const setInputRef = useCallback((node: HTMLInputElement | null) => {
+      if (inputRef.current === null && node !== null) {
+        preservedPreHydrationFilesRef.current = (node.files?.length ?? 0) > 0;
+      }
+      inputRef.current = node;
+    }, []);
+
+    useEffect(() => {
+      const input = inputRef.current;
+      if (input === null) return;
+
+      if (!didSynchronizeInputRef.current) {
+        didSynchronizeInputRef.current = true;
+        if (preservedPreHydrationFilesRef.current) return;
+      }
+
+      if (name === undefined) {
+        proposedFilesRef.current.clear();
+        committedFilesRef.current.clear();
+        return;
+      }
+
+      const controlledItems = new Map(items.map((item) => [item.id, item]));
+      for (const [itemId, file] of proposedFilesRef.current) {
+        const item = controlledItems.get(itemId);
+        if (item !== undefined && !isValidationItem(item)) {
+          committedFilesRef.current.set(itemId, file);
+        }
+        proposedFilesRef.current.delete(itemId);
+      }
+
+      for (const itemId of committedFilesRef.current.keys()) {
+        const item = controlledItems.get(itemId);
+        if (item === undefined || isValidationItem(item)) {
+          committedFilesRef.current.delete(itemId);
+        }
+      }
+
+      const committedFiles = items.flatMap((item) => {
+        const file = committedFilesRef.current.get(item.id);
+        return file === undefined || isValidationItem(item) ? [] : [file];
+      });
+      replaceInputFiles(input, committedFiles);
+      if (committedFiles.length === 0) input.removeAttribute('name');
+      else input.name = name;
+    }, [items, name]);
 
     useEffect(() => {
       const handleDocumentFocusIn = (event: globalThis.FocusEvent): void => {
@@ -193,6 +254,8 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       }
 
       const previousItems = previousItemsRef.current;
+      const suppressInitialAnnouncements =
+        previousItems.length === 0 && preservedPreHydrationFilesRef.current;
       const currentIds = new Set(visibleItems.map((item) => item.id));
       const controlledIds = new Set(items.map((item) => item.id));
       const retainedProgressKeys = new Set<string>();
@@ -272,10 +335,12 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
           itemKeys.add(candidate.key);
           announcedKeysRef.current.set(candidate.itemId, itemKeys);
         }
-        announce(
-          liveRegionRef.current,
-          announcementCandidates.map((candidate) => candidate.message).join(' '),
-        );
+        if (!suppressInitialAnnouncements) {
+          announce(
+            liveRegionRef.current,
+            announcementCandidates.map((candidate) => candidate.message).join(' '),
+          );
+        }
       }
       announcedKeysRef.current = pruneAnnouncementHistory(announcedKeysRef.current, visibleItems);
 
@@ -388,8 +453,28 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
         } satisfies FileUploadSelection;
       });
 
+      if (name !== undefined) {
+        for (const selection of selections) {
+          if (!isValidationItem(selection.proposedItem)) {
+            proposedFilesRef.current.set(selection.id, selection.file);
+          }
+        }
+      }
+
       if (selections.length > 0) onSelect({ selections });
-      input.value = '';
+      if (name === undefined) input.value = '';
+      else {
+        replaceInputFiles(input, []);
+        input.removeAttribute('name');
+      }
+
+      if (name !== undefined) {
+        const proposedIds = selections.map((selection) => selection.id);
+        queueMicrotask(() => {
+          for (const itemId of proposedIds) proposedFilesRef.current.delete(itemId);
+          if ((input.files?.length ?? 0) === 0) input.removeAttribute('name');
+        });
+      }
     };
 
     const handleActionFocus = (itemId: string, event: FocusEvent<HTMLButtonElement>): void => {
@@ -517,7 +602,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
         </label>
         <input
           id={inputId}
-          ref={inputRef}
+          ref={setInputRef}
           className="lyra-upload__input"
           type="file"
           name={name}

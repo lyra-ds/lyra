@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
@@ -22,6 +22,51 @@ const VALIDATION_MESSAGES = {
   validationMaxSize: (name: string, maxSizeMB: number) =>
     `${name} must not exceed ${maxSizeMB} MB.`,
 };
+
+function ControlledFormUpload() {
+  const [items, setItems] = useState<FileUploadItem[]>([
+    {
+      id: 'remote',
+      name: 'remote.pdf',
+      size: 1,
+      type: 'application/pdf',
+      status: 'success',
+      attemptId: 'remote-1',
+    },
+  ]);
+
+  return (
+    <form>
+      <FileUpload
+        name="attachments"
+        items={items}
+        onSelect={({ selections }) =>
+          setItems((current) => [...current, ...selections.map(({ proposedItem }) => proposedItem)])
+        }
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={({ id }) => setItems((current) => current.filter((item) => item.id !== id))}
+      />
+    </form>
+  );
+}
+
+function ValidationFormUpload() {
+  const [items, setItems] = useState<FileUploadItem[]>([]);
+  return (
+    <form>
+      <FileUpload
+        name="attachments"
+        accept=".pdf"
+        items={items}
+        onSelect={({ selections }) => setItems(selections.map(({ proposedItem }) => proposedItem))}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    </form>
+  );
+}
 
 afterEach(async () => {
   await cleanup();
@@ -821,6 +866,101 @@ describe('FileUpload', () => {
     expect(screen.getByRole('button', { name: 'Retry second.pdf' })).toBeEnabled();
     await screen.getByRole('button', { name: 'Retry second.pdf' }).click();
     expect(onRetry).toHaveBeenCalledTimes(2);
+  });
+
+  it(FILE_UPLOAD_SCENARIOS.form, async () => {
+    const screen = await render(<ControlledFormUpload />);
+    const file = new File(['one'], 'one.pdf', { type: 'application/pdf' });
+    await userEvent.upload(screen.getByLabelText('Drag files here or click to select'), file);
+
+    const form = screen.container.querySelector('form')!;
+    await vi.waitFor(() => expect(new FormData(form).getAll('attachments')).toEqual([file]));
+    await screen.getByRole('button', { name: 'Remove one.pdf' }).click();
+    await vi.waitFor(() => expect(new FormData(form).getAll('attachments')).toEqual([]));
+    expect(screen.container.querySelector('.lyra-upload__item-name')).toHaveTextContent(
+      'remote.pdf',
+    );
+  });
+
+  it('DF-FU-09 excludes an ignored proposal from native form data', async () => {
+    const ignoredSelect = vi.fn();
+    const ignored = await render(
+      <form>
+        <FileUpload
+          name="attachments"
+          items={[]}
+          onSelect={ignoredSelect}
+          onRetry={vi.fn()}
+          onCancel={vi.fn()}
+          onRemove={vi.fn()}
+        />
+      </form>,
+    );
+    await userEvent.upload(
+      ignored.getByLabelText('Drag files here or click to select'),
+      new File(['ignored'], 'ignored.pdf', { type: 'application/pdf' }),
+    );
+    expect(ignoredSelect).toHaveBeenCalledOnce();
+    expect(new FormData(ignored.container.querySelector('form')!).getAll('attachments')).toEqual(
+      [],
+    );
+  });
+
+  it('DF-FU-09 excludes a committed validation proposal from native form data', async () => {
+    const validation = await render(<ValidationFormUpload />);
+    await userEvent.upload(
+      validation.getByLabelText('Drag files here or click to select'),
+      new File(['invalid'], 'invalid.txt', { type: 'text/plain' }),
+    );
+    expect(validation.container.querySelector('.lyra-upload__item-meta')).toHaveTextContent(
+      'invalid.txt must match .pdf.',
+    );
+    expect(new FormData(validation.container.querySelector('form')!).getAll('attachments')).toEqual(
+      [],
+    );
+  });
+
+  it('DF-FU-09 keeps required native validation without creating a nameless entry', async () => {
+    const screen = await render(
+      <form>
+        <FileUpload
+          required
+          items={[]}
+          onSelect={vi.fn()}
+          onRetry={vi.fn()}
+          onCancel={vi.fn()}
+          onRemove={vi.fn()}
+        />
+      </form>,
+    );
+    const form = screen.container.querySelector('form')!;
+    const input = screen.getByLabelText('Drag files here or click to select');
+
+    expect(input).toBeRequired();
+    expect(form.checkValidity()).toBe(false);
+    expect(Array.from(new FormData(form).entries())).toEqual([]);
+  });
+
+  it('DF-FU-09 resets a nameless input so the same file can be selected again', async () => {
+    const onSelect = vi.fn();
+    const screen = await render(
+      <FileUpload
+        items={[]}
+        onSelect={onSelect}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    const input = screen.getByLabelText('Drag files here or click to select');
+    const file = new File(['same'], 'same.pdf', { type: 'application/pdf' });
+
+    await userEvent.upload(input, file);
+    await userEvent.upload(input, file);
+
+    expect(onSelect).toHaveBeenCalledTimes(2);
+    expect(onSelect.mock.calls[0][0].selections[0].file.name).toBe('same.pdf');
+    expect(onSelect.mock.calls[1][0].selections[0].file.name).toBe('same.pdf');
   });
 
   it(FILE_UPLOAD_SCENARIOS.announcements, async () => {
