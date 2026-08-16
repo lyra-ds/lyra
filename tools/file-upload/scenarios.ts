@@ -1,0 +1,18 @@
+export const FILE_UPLOAD_SCENARIOS = {
+  selection: 'DF-FU-01 native selection and validation proposals',
+  lifecycle: 'DF-FU-02 controlled state graph and no synthetic progress',
+  progress: 'DF-FU-03 determinate and indeterminate native progress',
+  retry: 'DF-FU-04 retry creates a new attempt and rejects stale results',
+  cancellation: 'DF-FU-05 cancel, canceling race, canceled, and teardown',
+  removal: 'DF-FU-06 confirmed removal and post-commit focus fallback',
+  single: 'DF-FU-07 single-file atomic replacement and active rejection',
+  idempotence: 'DF-FU-08 pending-intent idempotence',
+  form: 'DF-FU-09 native form synchronization and same-file reselection',
+  hydration: 'DF-FU-10 SSR, hydration, and pre-hydration input preservation',
+  alpine: 'DF-FU-11 Alpine delayed init, reconnect, no-JS, and cleanup',
+  announcements: 'DF-FU-12 announcements and 25 percent milestones',
+  presentation: 'DF-FU-13 themes, RTL, long names, zoom, reflow, forced colors, motion',
+  packaging: 'DF-FU-14 public types, exports, packaging, and consumer installs',
+  performance: 'DF-FU-15 standalone, CSS, scenario bundle, and runtime budgets',
+  conformance: 'DF-FU-16 React/Alpine classes, data states, operations, and outcomes',
+} as const;

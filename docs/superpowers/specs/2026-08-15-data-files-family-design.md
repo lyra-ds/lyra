@@ -283,7 +283,7 @@ export interface FileUploadMessages {
 
 export interface FileUploadProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
-  'children' | 'defaultValue'
+  'children' | 'defaultValue' | 'onSelect' | 'onCancel'
 > {
   items: readonly FileUploadItem[];
   onSelect: (intent: FileUploadSelectIntent) => void;
@@ -300,16 +300,17 @@ export interface FileUploadProps extends Omit<
   hint?: string;
   messages?: FileUploadMessages;
 }
-
-export const FileUpload: React.ForwardRefExoticComponent<
-  FileUploadProps & React.RefAttributes<HTMLDivElement>
->;
 ```
 
 `items` is intentionally controlled-only. An uncontrolled triad would make
 Lyra a second source of truth for an asynchronous operation it cannot observe
 or cancel. Selection proposals let a reducer add items, while all transport
 updates remain ordinary consumer state updates.
+
+`onSelect` and `onCancel` are omitted from inherited root attributes because
+their controlled intent callbacks intentionally replace same-named native
+event handlers. The `FileUpload` value and its forwarded-ref signature are
+exported by the runtime component.
 
 `onRetry`, `onCancel`, and `onRemove` are required even when a rendered
 collection currently has no applicable action; this keeps operation ownership
