@@ -700,6 +700,56 @@ describe('lyraFileUpload', () => {
     }
   });
 
+  it('isolates the private file proposal from mutable event detail', async () => {
+    const host = mountControlledFileUpload(
+      [],
+      { name: 'attachments' },
+      { form: true, id: 'snapshot-upload' },
+    );
+    const form = host.querySelector('form');
+    if (!form) throw new Error('Expected upload form');
+    const file = new File(['local'], 'local.pdf', { type: 'application/pdf' });
+    let originalEcho: LyraFileUploadItem | null = null;
+
+    root(host).addEventListener('lyra:file-upload:select', (event) => {
+      const selection = (event as CustomEvent<LyraFileUploadSelectDetail>).detail.selections[0];
+      if (!selection || selection.proposedAttemptId === undefined) {
+        throw new Error('Expected an accepted selection proposal');
+      }
+      originalEcho = {
+        ...selection.proposedItem,
+        status: 'uploading',
+        attemptId: selection.proposedAttemptId,
+        progress: { kind: 'determinate', value: 10 },
+      };
+
+      selection.name = 'mutated.pdf';
+      selection.size = 999;
+      selection.type = 'text/plain';
+      selection.proposedAttemptId = 'mutated-attempt';
+      selection.proposedItem.name = selection.name;
+      selection.proposedItem.size = selection.size;
+      selection.proposedItem.type = selection.type;
+      data(host).setItems([
+        {
+          ...selection.proposedItem,
+          status: 'uploading',
+          attemptId: selection.proposedAttemptId,
+          progress: { kind: 'determinate', value: 10 },
+        },
+      ]);
+    });
+
+    selectFiles(input(host), file);
+    await flush();
+    expect(new FormData(form).getAll('attachments')).toEqual([]);
+
+    if (originalEcho === null) throw new Error('Expected an independent original echo');
+    data(host).setItems([originalEcho]);
+    await flush();
+    expect(new FormData(form).getAll('attachments')).toEqual([file]);
+  });
+
   it('DF-FU-09 preserves required validation and resets a nameless same-file selection', async () => {
     const host = mountControlledFileUpload([], { required: true }, { form: true });
     const form = host.querySelector('form');

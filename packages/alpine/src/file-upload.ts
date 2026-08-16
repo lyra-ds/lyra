@@ -163,6 +163,15 @@ interface AttemptRecord {
 
 type AcceptedFileProposal = Extract<LyraFileUploadSelection, { proposedAttemptId: string }>;
 
+interface PendingFileProposal {
+  id: string;
+  file: File;
+  name: string;
+  size: number;
+  type: string;
+  proposedAttemptId: string;
+}
+
 const DEFAULT_MESSAGES: Required<LyraFileUploadMessages> = {
   selectionUnavailable: 'File replacement is unavailable while an upload is active.',
   validationAccept: '{name} must match {accept}.',
@@ -238,13 +247,13 @@ function isValidationItem(item: LyraFileUploadItem): boolean {
   return item.status === 'error' && item.error.kind === 'validation';
 }
 
-function matchesFileProposal(item: LyraFileUploadItem, proposal: AcceptedFileProposal): boolean {
-  const proposedItem = proposal.proposedItem;
+function matchesFileProposal(item: LyraFileUploadItem, proposal: PendingFileProposal): boolean {
   if (
     isValidationItem(item) ||
-    item.name !== proposedItem.name ||
-    item.size !== proposedItem.size ||
-    item.type !== proposedItem.type
+    item.id !== proposal.id ||
+    item.name !== proposal.name ||
+    item.size !== proposal.size ||
+    item.type !== proposal.type
   ) {
     return false;
   }
@@ -299,7 +308,7 @@ export function lyraFileUpload({
   const pendingKeys = new Set<string>();
   const usedItemIds = new Set<string>();
   const usedAttemptIds = new Set<string>();
-  const proposedFiles = new Map<string, AcceptedFileProposal>();
+  const proposedFiles = new Map<string, PendingFileProposal>();
   const committedFiles = new Map<string, File>();
   const attemptHistory = new Map<string, AttemptRecord>();
   let announcedKeys = new Set<string>();
@@ -725,7 +734,16 @@ export function lyraFileUpload({
           },
           proposedAttemptId,
         };
-        if (name !== undefined) proposedFiles.set(id, proposal);
+        if (name !== undefined) {
+          proposedFiles.set(id, {
+            id,
+            file,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            proposedAttemptId,
+          });
+        }
         return proposal;
       });
 
