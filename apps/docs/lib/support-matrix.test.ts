@@ -4,6 +4,8 @@ import bladeApi from '../../../tools/blade-api/api.json';
 import { components } from './components';
 import { getSupportMatrixRows, supportLevels } from './support-matrix';
 
+const releasedBladeExceptions = new Set(['file-upload']);
+
 describe('public support matrix', () => {
   it('contains every documented component exactly once', () => {
     const rows = getSupportMatrixRows();
@@ -55,17 +57,12 @@ describe('public support matrix', () => {
     const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
     const bladeEntries = components.filter((entry) => entry.stacks.includes('blade'));
     const documentedSlugs = new Set(components.map((entry) => entry.slug));
-    const intentionallyUnsupportedReleased = components.filter(
-      (entry) =>
-        !entry.stacks.includes('blade') &&
-        bladeApi.components.some((component) => component.slug === entry.slug),
-    );
     const releasedDocumentedEntries = bladeApi.components.filter((component) =>
       documentedSlugs.has(component.slug),
     );
 
     expect(bladeEntries).toHaveLength(
-      releasedDocumentedEntries.length - intentionallyUnsupportedReleased.length,
+      releasedDocumentedEntries.length - releasedBladeExceptions.size,
     );
     for (const entry of bladeEntries) {
       const releasedComponents = bladeApi.components.filter(
@@ -76,6 +73,16 @@ describe('public support matrix', () => {
         releasedComponents[0].binding === null ? 'css' : 'alpine-enhanced',
       );
     }
+  });
+
+  it('allows only the explicitly reviewed released Blade exceptions', () => {
+    const releasedSlugs = new Set(bladeApi.components.map((component) => component.slug));
+    const unsupportedReleasedSlugs = components
+      .filter((entry) => releasedSlugs.has(entry.slug) && !entry.stacks.includes('blade'))
+      .map((entry) => entry.slug)
+      .sort();
+
+    expect(unsupportedReleasedSlugs).toEqual([...releasedBladeExceptions].sort());
   });
 
   it('uses the released Blade binding when page-level behavior differs', () => {

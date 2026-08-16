@@ -92,6 +92,14 @@ document.addEventListener('alpine:init', () => {
     uploadItems: [],
     files: new Map(),
     controllers: new Map(),
+    statusLabels: {
+      selected: 'Selecionado',
+      uploading: 'Enviando',
+      canceling: 'Cancelando',
+      success: 'Concluído',
+      error: 'Falhou',
+      canceled: 'Cancelado',
+    },
 
     updateAttempt(id, attemptId, statuses, update) {
       this.uploadItems = this.uploadItems.map((item) =>
@@ -99,6 +107,17 @@ document.addEventListener('alpine:init', () => {
           ? update(item)
           : item,
       );
+    },
+
+    uploadProgress(event) {
+      if (event.lengthComputable && event.total > 0) {
+        return {
+          kind: 'determinate',
+          value: Math.min(100, Math.max(0, Math.round((event.loaded / event.total) * 100))),
+        };
+      }
+
+      return { kind: 'indeterminate' };
     },
 
     beginUpload(file, id, attemptId) {
@@ -111,7 +130,7 @@ document.addEventListener('alpine:init', () => {
             source.error.kind === 'transport' &&
             source.error.retryable));
       if (!canStart) {
-        throw new Error(`Upload ${id} is not ready for a new attempt.`);
+        throw new Error(`O upload ${id} não está pronto para uma nova tentativa.`);
       }
 
       this.uploadItems = this.uploadItems.map((item) =>
@@ -135,12 +154,9 @@ document.addEventListener('alpine:init', () => {
       controller.signal.addEventListener('abort', abortRequest, { once: true });
 
       request.upload.addEventListener('progress', (event) => {
-        const progress = event.lengthComputable
-          ? { kind: 'determinate', value: Math.round((event.loaded / event.total) * 100) }
-          : { kind: 'indeterminate' };
         this.updateAttempt(id, attemptId, ['uploading', 'canceling'], (item) => ({
           ...item,
-          progress,
+          progress: this.uploadProgress(event),
         }));
       });
       request.addEventListener('load', () => {
@@ -156,10 +172,14 @@ document.addEventListener('alpine:init', () => {
           return;
         }
 
-        this.failUpload(id, attemptId, `The server rejected the upload (${request.status}).`);
+        this.failUpload(id, attemptId, `O servidor rejeitou o upload (${request.status}).`);
       });
       request.addEventListener('error', () => {
-        this.failUpload(id, attemptId, 'The upload could not reach the server.');
+        this.failUpload(
+          id,
+          attemptId,
+          'Não foi possível conectar ao servidor para enviar o arquivo.',
+        );
       });
       request.addEventListener('abort', () => {
         this.updateAttempt(id, attemptId, ['canceling'], (item) => ({
@@ -211,13 +231,13 @@ document.addEventListener('alpine:init', () => {
 
     retryUpload({ id, proposedAttemptId }) {
       const file = this.files.get(id);
-      if (!file) throw new Error(`No local File is available to retry upload ${id}.`);
+      if (!file) throw new Error(`Não há um arquivo local para repetir o upload ${id}.`);
       this.beginUpload(file, id, proposedAttemptId);
     },
 
     cancelUpload({ id, attemptId }) {
       const controller = this.controllers.get(attemptId);
-      if (!controller) throw new Error(`No active transport exists for upload ${id}.`);
+      if (!controller) throw new Error(`Não há transporte ativo para o upload ${id}.`);
       this.updateAttempt(id, attemptId, ['uploading'], (item) => ({
         ...item,
         status: 'canceling',
@@ -243,7 +263,23 @@ document.addEventListener('alpine:init', () => {
       name: 'attachments[]',
       accept: 'image/*,.pdf',
       maxSizeMB: 10,
-      multiple: true
+      multiple: true,
+      messages: {
+        selectionUnavailable: 'A substituição de arquivo fica indisponível enquanto há um upload ativo.',
+        validationAccept: '{name} precisa corresponder a {accept}.',
+        validationMaxSize: '{name} não pode exceder {maxSizeMB} MB.',
+        selected: '{name} selecionado.',
+        progress: 'Upload de {name} em {percent}%.',
+        progressIndeterminate: 'Enviando {name}.',
+        canceling: 'Cancelando {name}.',
+        success: '{name} enviado.',
+        error: '{name}: falha no upload.',
+        canceled: 'Upload de {name} cancelado.',
+        removed: '{name} removido.',
+        retry: 'Tentar novamente: {name}',
+        cancel: 'Cancelar {name}',
+        remove: 'Remover {name}'
+      }
     })"
     x-modelable="items"
     x-model="uploadItems"
@@ -275,7 +311,7 @@ document.addEventListener('alpine:init', () => {
               <span class="lyra-upload__item-name" x-text="item.name"></span>
               <span
                 class="lyra-upload__item-meta"
-                x-text="item.status === 'error' ? item.error.message : item.status"
+                x-text="item.status === 'error' ? item.error.message : statusLabels[item.status]"
               ></span>
             </span>
             <template x-if="item.status === 'uploading' || item.status === 'canceling'">

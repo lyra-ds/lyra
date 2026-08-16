@@ -120,6 +120,17 @@ function isAcceptedSelection(
   return selection.proposedItem.status === 'selected';
 }
 
+function uploadProgress(event: ProgressEvent): FileUploadProgress {
+  if (event.lengthComputable && event.total > 0) {
+    return {
+      kind: 'determinate',
+      value: Math.min(100, Math.max(0, Math.round((event.loaded / event.total) * 100))),
+    };
+  }
+
+  return { kind: 'indeterminate' };
+}
+
 export function FileUploadTransport() {
   const [items, dispatch] = useReducer(uploadReducer, []);
   const controllers = useRef(new Map<string, AbortController>());
@@ -148,9 +159,7 @@ export function FileUploadTransport() {
         type: 'progressed',
         id,
         attemptId,
-        progress: event.lengthComputable
-          ? { kind: 'determinate', value: Math.round((event.loaded / event.total) * 100) }
-          : { kind: 'indeterminate' },
+        progress: uploadProgress(event),
       });
     });
     request.addEventListener('load', () => {
