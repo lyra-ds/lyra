@@ -73,14 +73,23 @@
         <li class="lyra-upload__item" data-state="error" data-testid="file-upload-transport-error">
           <span class="lyra-upload__item-body">
             <span class="lyra-upload__item-row">
-              <span class="lyra-upload__item-name">conexao-instavel.pdf</span>
-              <span class="lyra-upload__item-meta">Não foi possível concluir o envio.</span>
+              <span class="lyra-upload__item-name" data-testid="file-upload-action-name"
+                >evidencia-financeira-para-revisao-internacional-com-identificador-longo-que-o-consumidor-precisa-ouvir-por-inteiro.pdf</span
+              >
+              <span class="lyra-upload__item-meta" data-testid="file-upload-action-status"
+                >Não foi possível concluir o envio deste arquivo devido a uma indisponibilidade
+                temporária do serviço. Verifique a conexão e tente novamente.</span
+              >
             </span>
           </span>
           <button class="lyra-upload__retry" type="button" disabled data-testid="file-upload-retry">
             Tentar novamente
+            evidencia-financeira-para-revisao-internacional-com-identificador-longo-que-o-consumidor-precisa-ouvir-por-inteiro.pdf
           </button>
-          <button class="lyra-upload__remove" type="button">Remover</button>
+          <button class="lyra-upload__remove" type="button" data-testid="file-upload-remove">
+            Remover
+            evidencia-financeira-para-revisao-internacional-com-identificador-longo-que-o-consumidor-precisa-ouvir-por-inteiro.pdf
+          </button>
         </li>
       </ul>
 
@@ -103,6 +112,25 @@
         aria-label="اختيار الملفات"
       />
       <ul class="lyra-upload__list">
+        <li class="lyra-upload__item" data-state="error" data-testid="file-upload-rtl-error">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name"
+                >ملف-إثبات-المعاملة-الدولية-الطويل-الذي-يجب-أن-يبقى-متاحًا-للقارئ.pdf</span
+              >
+              <span class="lyra-upload__item-meta" data-testid="file-upload-rtl-status"
+                >تعذر إكمال الرفع بسبب انقطاع مؤقت في الخدمة. تحقق من الاتصال ثم أعد المحاولة لإرسال
+                هذا الملف.</span
+              >
+            </span>
+          </span>
+          <button class="lyra-upload__retry" type="button" data-testid="file-upload-rtl-retry">
+            أعد محاولة رفع ملف إثبات المعاملة الدولية الطويل
+          </button>
+          <button class="lyra-upload__remove" type="button" data-testid="file-upload-rtl-remove">
+            أزل ملف إثبات المعاملة الدولية الطويل
+          </button>
+        </li>
         <li class="lyra-upload__item" data-state="success">
           <span class="lyra-upload__item-body">
             <span class="lyra-upload__item-row">
@@ -111,6 +139,47 @@
             </span>
           </span>
           <button class="lyra-upload__remove" type="button">إزالة</button>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-testid="file-upload-disabled-root">
+    <div class="lyra-upload" data-disabled="true" data-state="active">
+      <label
+        class="lyra-upload__zone lyra-upload__zone--drag"
+        for="file-upload-disabled-input"
+        aria-disabled="true"
+        data-testid="file-upload-disabled-zone"
+      >
+        <span class="lyra-upload__zone-label">Selecionar arquivos</span>
+        <span class="lyra-upload__zone-hint"
+          >Envio indisponível enquanto este formulário está bloqueado.</span
+        >
+      </label>
+      <input
+        id="file-upload-disabled-input"
+        class="lyra-upload__input"
+        data-testid="file-upload-disabled-input"
+        type="file"
+        disabled
+      />
+      <ul class="lyra-upload__list">
+        <li class="lyra-upload__item" data-state="uploading">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name">arquivo-bloqueado.pdf</span>
+              <span class="lyra-upload__item-meta">Envio bloqueado</span>
+            </span>
+          </span>
+          <button
+            class="lyra-upload__cancel"
+            type="button"
+            data-testid="file-upload-disabled-action"
+            disabled
+          >
+            Cancelar arquivo-bloqueado.pdf
+          </button>
         </li>
       </ul>
     </div>

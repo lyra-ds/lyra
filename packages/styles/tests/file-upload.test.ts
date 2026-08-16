@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { commands, page } from 'vitest/browser';
+import { commands, page, userEvent } from 'vitest/browser';
 import '../styles.css';
 import fixtureHtml from './fixtures/file-upload.html?raw';
 
@@ -74,50 +74,115 @@ describe('FileUpload native lifecycle presentation', () => {
     expect(live.getAttribute('aria-live')).toBe('polite');
   });
 
-  it('keeps long filenames, metadata, actions, and RTL content inside a real 320-pixel viewport', async () => {
+  it('wraps localized status and actions below a truncated filename at a real 320-pixel viewport', async () => {
     await page.viewport(320, 640);
     const viewport = testId('file-upload-viewport');
     const upload = testId('file-upload');
     const longName = testId('file-upload-long-name');
-    const longMeta = testId('file-upload-long-meta');
+    const status = testId('file-upload-action-status');
     const transport = testId('file-upload-transport-error');
     const retry = testId<HTMLButtonElement>('file-upload-retry');
+    const remove = testId<HTMLButtonElement>('file-upload-remove');
     const rtl = testId('file-upload-rtl');
+    const rtlStatus = testId('file-upload-rtl-status');
+    const rtlError = testId('file-upload-rtl-error');
+    const rtlRetry = testId<HTMLButtonElement>('file-upload-rtl-retry');
+    const rtlRemove = testId<HTMLButtonElement>('file-upload-rtl-remove');
     const dark = testId('file-upload-dark');
 
     expect(window.innerWidth).toBe(320);
     expect(getComputedStyle(upload).minWidth).toBe('0px');
     expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth);
     expect(longName.scrollWidth).toBeGreaterThan(longName.clientWidth);
-    expect(longMeta.scrollWidth).toBeGreaterThan(longMeta.clientWidth);
-    expect(retry.getBoundingClientRect().right).toBeLessThanOrEqual(
-      transport.getBoundingClientRect().right,
+    expect(status.scrollWidth).toBeLessThanOrEqual(status.clientWidth);
+    expect(status.getBoundingClientRect().height).toBeGreaterThan(
+      Number.parseFloat(getComputedStyle(status).fontSize) * 1.5,
     );
+    for (const action of [retry, remove]) {
+      expect(action.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+        transport.getBoundingClientRect().left,
+      );
+      expect(action.getBoundingClientRect().right).toBeLessThanOrEqual(
+        transport.getBoundingClientRect().right,
+      );
+      expect(action.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+        status.getBoundingClientRect().bottom,
+      );
+    }
     expect(retry.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
     expect(retry.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
     expect(rtl.scrollWidth).toBeLessThanOrEqual(rtl.clientWidth);
     expect(getComputedStyle(rtl).direction).toBe('rtl');
+    expect(rtlStatus.scrollWidth).toBeLessThanOrEqual(rtlStatus.clientWidth);
+    expect(rtlStatus.getBoundingClientRect().height).toBeGreaterThan(
+      Number.parseFloat(getComputedStyle(rtlStatus).fontSize) * 1.5,
+    );
+    for (const action of [rtlRetry, rtlRemove]) {
+      expect(action.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+        rtlError.getBoundingClientRect().left,
+      );
+      expect(action.getBoundingClientRect().right).toBeLessThanOrEqual(
+        rtlError.getBoundingClientRect().right,
+      );
+      expect(action.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+        rtlStatus.getBoundingClientRect().bottom,
+      );
+    }
     expect(getComputedStyle(dark).getPropertyValue('--surface-card').trim()).not.toBe(
       getComputedStyle(root).getPropertyValue('--surface-card').trim(),
     );
   });
 
+  it('renders disabled roots as unavailable and suppresses hover and drag presentation', async () => {
+    const zone = testId('file-upload-zone');
+    const disabledZone = testId('file-upload-disabled-zone');
+    const input = testId<HTMLInputElement>('file-upload-disabled-input');
+    const action = testId<HTMLButtonElement>('file-upload-disabled-action');
+
+    await userEvent.hover(disabledZone);
+
+    expect(input.disabled).toBe(true);
+    expect(action.disabled).toBe(true);
+    expect(getComputedStyle(disabledZone).cursor).toBe('not-allowed');
+    expect(getComputedStyle(disabledZone).borderStyle).toBe('solid');
+    expect(getComputedStyle(disabledZone).backgroundColor).toBe(
+      getComputedStyle(zone).backgroundColor,
+    );
+  });
+
   it('renders reduced-motion and forced-color states through Playwright media emulation', async () => {
     const zone = testId('file-upload-zone');
-    const progress = testId<HTMLProgressElement>('file-upload-progress');
+    const input = testId<HTMLInputElement>('file-upload-input');
+    const determinate = testId<HTMLProgressElement>('file-upload-progress');
+    const indeterminate = testId<HTMLProgressElement>('file-upload-indeterminate-progress');
+    const uploading = testId('file-upload-determinate');
+    const error = testId('file-upload-transport-error');
     const retry = testId<HTMLButtonElement>('file-upload-retry');
+    const disabledZone = testId('file-upload-disabled-zone');
 
     await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
     expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
     expect(getComputedStyle(zone).transitionDuration).toBe('0s');
+    expect(getComputedStyle(determinate).transitionDuration).toBe('0s');
+    expect(getComputedStyle(indeterminate).transitionDuration).toBe('0s');
+    expect(getComputedStyle(zone).animationName).toBe('none');
+    expect(getComputedStyle(determinate).animationName).toBe('none');
+    expect(getComputedStyle(indeterminate).animationName).toBe('none');
 
     await commands.emulateFileUploadMedia({ forcedColors: 'active' });
+    input.focus();
     expect(window.matchMedia('(forced-colors: active)').matches).toBe(true);
     expect(getComputedStyle(zone).outlineStyle).toBe('solid');
-    expect(getComputedStyle(progress).borderStyle).toBe('solid');
+    expect(getComputedStyle(zone).outlineWidth).toBe('2px');
+    expect(getComputedStyle(error).borderColor).not.toBe(getComputedStyle(uploading).borderColor);
+    expect(getComputedStyle(determinate).borderStyle).toBe('solid');
+    expect(getComputedStyle(indeterminate).borderStyle).toBe('solid');
     expect(getComputedStyle(retry).borderStyle).toBe('solid');
     expect(getComputedStyle(retry).borderWidth).toBe('1px');
     expect(getComputedStyle(retry).color).toBe(getComputedStyle(retry).borderColor);
+    expect(getComputedStyle(disabledZone).outlineStyle).toBe('solid');
+    expect(getComputedStyle(disabledZone).outlineWidth).not.toBe('0px');
+    expect(getComputedStyle(disabledZone).borderStyle).toBe('solid');
   });
 
   it('reserves practical default action targets', () => {

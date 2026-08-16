@@ -24,6 +24,18 @@
 }
 .lyra-upload__zone:hover { border-color: var(--accent); }
 .lyra-upload__zone--drag { border-color: var(--accent); background: var(--accent-soft); }
+.lyra-upload[data-disabled] .lyra-upload__zone,
+.lyra-upload__zone[aria-disabled="true"] {
+  cursor: not-allowed;
+  border-style: solid;
+}
+.lyra-upload[data-disabled] .lyra-upload__zone:hover,
+.lyra-upload[data-disabled] .lyra-upload__zone--drag,
+.lyra-upload__zone[aria-disabled="true"]:hover,
+.lyra-upload__zone[aria-disabled="true"].lyra-upload__zone--drag {
+  background: var(--surface-sunken);
+  border-color: var(--border-strong);
+}
 .lyra-upload__zone:has(+ .lyra-upload__input:focus-visible) {
   outline: 2px solid transparent;
   box-shadow: var(--shadow-focus);
@@ -82,7 +94,6 @@
   flex-direction: column;
   gap: var(--space-2);
   min-inline-size: 0;
-  overflow: hidden;
 }
 .lyra-upload__item-row {
   display: flex;
@@ -103,12 +114,11 @@
   text-overflow: ellipsis;
 }
 .lyra-upload__item-meta {
+  flex: 1 1 100%;
   max-inline-size: 100%;
-  overflow: hidden;
   font-size: var(--text-xs);
   color: var(--text-muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .lyra-upload__item--error .lyra-upload__item-meta,
 .lyra-upload__item[data-state="error"] .lyra-upload__item-meta { color: var(--danger-text); }
@@ -125,7 +135,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: none;
+  flex: 0 1 auto;
+  max-inline-size: 100%;
   min-inline-size: 24px;
   min-block-size: 24px;
   padding: var(--space-1) var(--space-2);
@@ -134,6 +145,8 @@
   border: 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 .lyra-upload__retry:hover:not(:disabled),
 .lyra-upload__cancel:hover:not(:disabled),
@@ -144,6 +157,7 @@
 .lyra-upload__live { display: block; }
 
 @media (pointer: coarse), (max-width: 320px) {
+  .lyra-upload__item-body { flex-basis: 100%; }
   .lyra-upload__retry,
   .lyra-upload__cancel,
   .lyra-upload__remove {
@@ -169,6 +183,12 @@
   .lyra-upload__zone:has(+ .lyra-upload__input:focus-visible) {
     outline-color: Highlight;
     box-shadow: 0 0 0 3px Highlight;
+  }
+  .lyra-upload[data-disabled] .lyra-upload__zone,
+  .lyra-upload__zone[aria-disabled="true"] {
+    outline: 1px solid GrayText;
+    outline-offset: 2px;
+    border-color: GrayText;
   }
   .lyra-upload__item { border-color: CanvasText; }
   .lyra-upload__item[data-state="error"] { border-color: Highlight; }
