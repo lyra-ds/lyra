@@ -161,7 +161,7 @@
     }
   },
   "classes": {
-    "count": 433,
+    "count": 436,
     "names": [
       ".lyra-acc__chevron",
       ".lyra-acc__item",
@@ -561,8 +561,9 @@
       ".lyra-tooltip",
       ".lyra-upload",
       ".lyra-upload__bar",
-      ".lyra-upload__bar-fill",
+      ".lyra-upload__cancel",
       ".lyra-upload__check",
+      ".lyra-upload__input",
       ".lyra-upload__item",
       ".lyra-upload__item--error",
       ".lyra-upload__item-body",
@@ -571,7 +572,9 @@
       ".lyra-upload__item-name",
       ".lyra-upload__item-row",
       ".lyra-upload__list",
+      ".lyra-upload__live",
       ".lyra-upload__remove",
+      ".lyra-upload__retry",
       ".lyra-upload__zone",
       ".lyra-upload__zone--drag",
       ".lyra-upload__zone-hint",

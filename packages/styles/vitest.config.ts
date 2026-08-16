@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
+import { playwright, PlaywrightBrowserProvider } from '@vitest/browser-playwright';
 import {
   PLAYWRIGHT_BROWSER_INSTANCES,
   createBrowserEvidenceConfig,
@@ -40,6 +40,12 @@ export default defineConfig({
       screenshotFailures: browserEvidence.screenshotFailures,
       screenshotDirectory: browserEvidence.screenshotDirectory,
       trace: browserEvidence.trace,
+      commands: {
+        async emulateFileUploadMedia({ provider, sessionId }, options) {
+          const page = (provider as PlaywrightBrowserProvider).getPage(sessionId);
+          await page.emulateMedia(options);
+        },
+      },
     },
   },
 });
