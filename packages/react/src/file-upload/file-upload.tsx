@@ -1,5 +1,5 @@
-import { forwardRef, useId, useRef } from 'react';
-import type { ChangeEvent } from 'react';
+import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, FocusEvent, MouseEvent } from 'react';
 import { cx } from '../internal/cx';
 import type {
   FileUploadItem,
@@ -7,7 +7,17 @@ import type {
   FileUploadProps,
   FileUploadSelection,
 } from './file-upload.types';
-import { canRemove, canRetry, validateFile } from './file-upload.utils';
+import {
+  canRemove,
+  canRetry,
+  intentKey,
+  isActive,
+  itemAttemptId,
+  progressMilestone,
+  reconcileAttemptHistory,
+  validateFile,
+} from './file-upload.utils';
+import type { FileUploadAttemptHistory, FileUploadIntentKey } from './file-upload.utils';
 
 const DEFAULT_MESSAGES: Required<FileUploadMessages> = {
   label: 'Drag files here or click to select',
@@ -33,6 +43,25 @@ function toIdSegment(value: string): string {
   return Array.from(value, (character) => character.codePointAt(0)!.toString(36)).join('-');
 }
 
+function announce(node: HTMLSpanElement | null, message: string): void {
+  if (node === null) return;
+  node.replaceChildren(document.createTextNode(message));
+}
+
+function firstAvailableAction(
+  root: HTMLDivElement | null,
+  itemId: string,
+): HTMLButtonElement | null {
+  if (root === null) return null;
+
+  for (const row of root.querySelectorAll<HTMLElement>('.lyra-upload__item')) {
+    if (row.dataset.uploadId !== itemId) continue;
+    return row.querySelector<HTMLButtonElement>('button:not(:disabled)');
+  }
+
+  return null;
+}
+
 export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadProps>(
   function FileUpload(
     {
@@ -56,14 +85,184 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     },
     ref,
   ) {
-    void onRetry;
-
     const instanceId = useId();
     const counter = useRef(0);
+    const rootRef = useRef<HTMLDivElement | null>(null);
+    const zoneRef = useRef<HTMLLabelElement | null>(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const liveRegionRef = useRef<HTMLSpanElement | null>(null);
+    const pendingIntentKeysRef = useRef<Set<FileUploadIntentKey>>(new Set());
+    const announcedKeysRef = useRef<Set<string>>(new Set());
+    const previousProgressRef = useRef<Map<string, number>>(new Map());
+    const previousItemsRef = useRef<
+      readonly { id: string; name: string; attemptId: string | null }[]
+    >([]);
+    const lastFocusedActionRef = useRef<string | null>(null);
+    const [attemptHistory, setAttemptHistory] = useState<FileUploadAttemptHistory>(
+      () => reconcileAttemptHistory(items, new Map()).history,
+    );
+    const [pendingIntentKeys, setPendingIntentKeys] = useState<ReadonlySet<FileUploadIntentKey>>(
+      () => new Set(),
+    );
     const inputId = `lyra-file-upload-${instanceId}-input`;
-    const resolvedMessages = { ...DEFAULT_MESSAGES, ...messages };
+    const resolvedMessages = useMemo(() => ({ ...DEFAULT_MESSAGES, ...messages }), [messages]);
     const resolvedLabel = label ?? resolvedMessages.label;
     const resolvedHint = hint ?? resolvedMessages.hint;
+    const reconciledAttempts = useMemo(
+      () => reconcileAttemptHistory(items, attemptHistory),
+      [attemptHistory, items],
+    );
+    if (reconciledAttempts.history !== attemptHistory) {
+      setAttemptHistory(reconciledAttempts.history);
+    }
+    const visibleItems = reconciledAttempts.visibleItems;
+    const visibleIntentKeys = useMemo(() => new Set(visibleItems.map(intentKey)), [visibleItems]);
+    const reconciledPendingIntentKeys = new Set(
+      [...pendingIntentKeys].filter((key) => visibleIntentKeys.has(key)),
+    );
+    if (reconciledPendingIntentKeys.size !== pendingIntentKeys.size) {
+      setPendingIntentKeys(reconciledPendingIntentKeys);
+    }
+    const selectionBlocked = !multiple && visibleItems.some(isActive);
+
+    const setRootRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        rootRef.current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref !== null) ref.current = node;
+      },
+      [ref],
+    );
+
+    useEffect(() => {
+      for (const key of pendingIntentKeysRef.current) {
+        if (!visibleIntentKeys.has(key)) pendingIntentKeysRef.current.delete(key);
+      }
+
+      const previousItems = previousItemsRef.current;
+      const currentIds = new Set(visibleItems.map((item) => item.id));
+      const controlledIds = new Set(items.map((item) => item.id));
+      let nextAnnouncement: string | null = null;
+
+      for (const item of visibleItems) {
+        const attemptId = itemAttemptId(item) ?? 'none';
+        const stateKey = `${item.id}:${attemptId}:${item.status}`;
+
+        if (item.status === 'uploading' && item.progress.kind === 'determinate') {
+          const progressKey = `${item.id}:${attemptId}`;
+          const previousProgress = previousProgressRef.current.get(progressKey) ?? 0;
+          const milestone = progressMilestone(previousProgress, item.progress.value);
+          previousProgressRef.current.set(
+            progressKey,
+            Math.max(previousProgress, item.progress.value),
+          );
+          if (milestone !== null) {
+            const milestoneKey = `${stateKey}:${milestone}`;
+            if (!announcedKeysRef.current.has(milestoneKey)) {
+              announcedKeysRef.current.add(milestoneKey);
+              nextAnnouncement = resolvedMessages.progress(item.name, milestone);
+            }
+          }
+          continue;
+        }
+
+        if (announcedKeysRef.current.has(stateKey)) continue;
+
+        const stateAnnouncement =
+          item.status === 'selected'
+            ? resolvedMessages.selected(item.name)
+            : item.status === 'canceling'
+              ? resolvedMessages.canceling(item.name)
+              : item.status === 'success'
+                ? resolvedMessages.success(item.name)
+                : item.status === 'error'
+                  ? resolvedMessages.error(item.name, item.error.message)
+                  : item.status === 'canceled'
+                    ? resolvedMessages.canceled(item.name)
+                    : null;
+
+        if (stateAnnouncement !== null) {
+          announcedKeysRef.current.add(stateKey);
+          nextAnnouncement = stateAnnouncement;
+        }
+      }
+
+      for (const previousItem of previousItems) {
+        if (controlledIds.has(previousItem.id)) continue;
+        const removalKey = `${previousItem.id}:${previousItem.attemptId ?? 'none'}:removed`;
+        if (!announcedKeysRef.current.has(removalKey)) {
+          announcedKeysRef.current.add(removalKey);
+          nextAnnouncement = resolvedMessages.removed(previousItem.name);
+        }
+      }
+
+      if (nextAnnouncement !== null) announce(liveRegionRef.current, nextAnnouncement);
+
+      const focusedItemId = lastFocusedActionRef.current;
+      const removedFocusedIndex =
+        focusedItemId === null
+          ? -1
+          : previousItems.findIndex(
+              (previousItem) =>
+                previousItem.id === focusedItemId && !controlledIds.has(focusedItemId),
+            );
+      if (removedFocusedIndex >= 0) {
+        const followingIds = previousItems.slice(removedFocusedIndex + 1).map((item) => item.id);
+        const precedingIds = previousItems
+          .slice(0, removedFocusedIndex)
+          .map((item) => item.id)
+          .reverse();
+        let focusTarget: HTMLButtonElement | null = null;
+
+        for (const itemId of [...followingIds, ...precedingIds]) {
+          if (!currentIds.has(itemId)) continue;
+          focusTarget = firstAvailableAction(rootRef.current, itemId);
+          if (focusTarget !== null) break;
+        }
+
+        lastFocusedActionRef.current = null;
+        (focusTarget ?? inputRef.current)?.focus();
+      }
+
+      previousItemsRef.current = visibleItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        attemptId: itemAttemptId(item),
+      }));
+    }, [items, resolvedMessages, visibleIntentKeys, visibleItems]);
+
+    const lockIntent = (item: FileUploadItem): boolean => {
+      const key = intentKey(item);
+      if (pendingIntentKeysRef.current.has(key)) return false;
+
+      pendingIntentKeysRef.current.add(key);
+      setPendingIntentKeys((currentKeys) => new Set(currentKeys).add(key));
+      return true;
+    };
+
+    const announceSelectionUnavailable = (): void => {
+      announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
+    };
+
+    useEffect(() => {
+      const zone = zoneRef.current;
+      if (zone === null || !selectionBlocked) return;
+
+      const preventDragOver = (event: globalThis.DragEvent): void => {
+        event.preventDefault();
+      };
+      const rejectDrop = (event: globalThis.DragEvent): void => {
+        event.preventDefault();
+        announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
+      };
+
+      zone.addEventListener('dragover', preventDragOver);
+      zone.addEventListener('drop', rejectDrop);
+      return () => {
+        zone.removeEventListener('dragover', preventDragOver);
+        zone.removeEventListener('drop', rejectDrop);
+      };
+    }, [resolvedMessages.selectionUnavailable, selectionBlocked]);
 
     const handleRootChange = (event: ChangeEvent<HTMLDivElement>): void => {
       onRootChange?.(event);
@@ -71,6 +270,12 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
 
       const input = event.target;
       if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
+
+      if (selectionBlocked) {
+        announceSelectionUnavailable();
+        input.value = '';
+        return;
+      }
 
       const files = Array.from(input.files ?? []);
       const proposedFiles = multiple ? files : files.slice(0, 1);
@@ -120,6 +325,16 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       input.value = '';
     };
 
+    const handleInputClick = (event: MouseEvent<HTMLInputElement>): void => {
+      if (!selectionBlocked) return;
+      event.preventDefault();
+      announceSelectionUnavailable();
+    };
+
+    const handleActionFocus = (itemId: string, event: FocusEvent<HTMLButtonElement>): void => {
+      if (event.currentTarget === event.target) lastFocusedActionRef.current = itemId;
+    };
+
     const renderItem = (item: FileUploadItem) => {
       const statusId = `lyra-file-upload-${instanceId}-status-${toIdSegment(item.id)}`;
       const status =
@@ -142,6 +357,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
           key={item.id}
           className={cx('lyra-upload__item', item.status === 'error' && 'lyra-upload__item--error')}
           data-state={item.status}
+          data-upload-id={item.id}
         >
           <span className="lyra-upload__item-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor">
@@ -168,14 +384,33 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
             <button
               type="button"
               className="lyra-upload__cancel"
-              disabled={disabled}
-              onClick={() => onCancel({ id: item.id, attemptId: item.attemptId })}
+              disabled={disabled || pendingIntentKeys.has(intentKey(item))}
+              onFocus={(event) => handleActionFocus(item.id, event)}
+              onClick={() => {
+                if (lockIntent(item)) onCancel({ id: item.id, attemptId: item.attemptId });
+              }}
             >
               {resolvedMessages.cancel(item.name)}
             </button>
           ) : null}
           {canRetry(item) ? (
-            <button type="button" className="lyra-upload__retry" disabled>
+            <button
+              type="button"
+              className="lyra-upload__retry"
+              disabled={disabled || pendingIntentKeys.has(intentKey(item))}
+              onFocus={(event) => handleActionFocus(item.id, event)}
+              onClick={() => {
+                if (!lockIntent(item)) return;
+                const previousAttemptId = itemAttemptId(item);
+                if (previousAttemptId === null) return;
+                counter.current += 1;
+                onRetry({
+                  id: item.id,
+                  previousAttemptId,
+                  proposedAttemptId: `lyra-file-upload-${instanceId}-attempt-${counter.current}`,
+                });
+              }}
+            >
               {resolvedMessages.retry(item.name)}
             </button>
           ) : null}
@@ -183,8 +418,11 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
             <button
               type="button"
               className="lyra-upload__remove"
-              disabled={disabled}
-              onClick={() => onRemove({ id: item.id })}
+              disabled={disabled || pendingIntentKeys.has(intentKey(item))}
+              onFocus={(event) => handleActionFocus(item.id, event)}
+              onClick={() => {
+                if (lockIntent(item)) onRemove({ id: item.id });
+              }}
             >
               {resolvedMessages.remove(item.name)}
             </button>
@@ -195,17 +433,18 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
 
     return (
       <div
-        ref={ref}
+        ref={setRootRef}
         {...rootProps}
         className={cx('lyra-upload', className)}
         data-disabled={disabled ? 'true' : undefined}
-        data-state={items.length === 0 ? 'idle' : 'active'}
+        data-state={visibleItems.length === 0 ? 'idle' : 'active'}
         onChange={handleRootChange}
       >
         <label
+          ref={zoneRef}
           className="lyra-upload__zone"
           htmlFor={inputId}
-          aria-disabled={disabled || undefined}
+          aria-disabled={disabled || selectionBlocked || undefined}
         >
           <span className="lyra-upload__zone-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor">
@@ -217,6 +456,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
         </label>
         <input
           id={inputId}
+          ref={inputRef}
           className="lyra-upload__input"
           type="file"
           name={name}
@@ -224,9 +464,13 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
           multiple={multiple}
           disabled={disabled}
           required={required}
+          onClick={handleInputClick}
         />
-        {items.length > 0 ? <ul className="lyra-upload__list">{items.map(renderItem)}</ul> : null}
+        {visibleItems.length > 0 ? (
+          <ul className="lyra-upload__list">{visibleItems.map(renderItem)}</ul>
+        ) : null}
         <span
+          ref={liveRegionRef}
           className="lyra-upload__live lyra-visually-hidden"
           aria-live="polite"
           aria-atomic="true"

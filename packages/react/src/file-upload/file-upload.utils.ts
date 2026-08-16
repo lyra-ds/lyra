@@ -64,3 +64,56 @@ export function canRemove(item: FileUploadItem): boolean {
 export function progressMilestone(previous: number, next: number): 25 | 50 | 75 | 100 | null {
   return ([100, 75, 50, 25] as const).find((value) => previous < value && next >= value) ?? null;
 }
+
+export type FileUploadIntentKey = `${string}:${FileUploadItem['status']}:${string}`;
+export interface FileUploadAttemptRecord {
+  attemptIds: readonly string[];
+  latestItem: FileUploadItem;
+}
+export type FileUploadAttemptHistory = ReadonlyMap<string, FileUploadAttemptRecord>;
+
+export function itemAttemptId(item: FileUploadItem): string | null {
+  return 'attemptId' in item ? item.attemptId : null;
+}
+
+export function intentKey(item: FileUploadItem): FileUploadIntentKey {
+  return `${item.id}:${item.status}:${itemAttemptId(item) ?? 'none'}`;
+}
+
+export function reconcileAttemptHistory(
+  items: readonly FileUploadItem[],
+  previousHistory: FileUploadAttemptHistory,
+): { history: FileUploadAttemptHistory; visibleItems: readonly FileUploadItem[] } {
+  let nextHistory: Map<string, FileUploadAttemptRecord> | null = null;
+  const visibleItems: FileUploadItem[] = [];
+
+  for (const item of items) {
+    const attemptId = itemAttemptId(item);
+    if (attemptId === null) {
+      visibleItems.push(item);
+      continue;
+    }
+
+    const record = (nextHistory ?? previousHistory).get(item.id);
+    const knownAttempts = record?.attemptIds ?? [];
+    const latestAttempt = knownAttempts.at(-1);
+    if (latestAttempt === attemptId) {
+      visibleItems.push(item);
+      if (record?.latestItem !== item) {
+        nextHistory ??= new Map(previousHistory);
+        nextHistory.set(item.id, { attemptIds: knownAttempts, latestItem: item });
+      }
+      continue;
+    }
+    if (knownAttempts.includes(attemptId)) {
+      if (record !== undefined) visibleItems.push(record.latestItem);
+      continue;
+    }
+
+    nextHistory ??= new Map(previousHistory);
+    nextHistory.set(item.id, { attemptIds: [...knownAttempts, attemptId], latestItem: item });
+    visibleItems.push(item);
+  }
+
+  return { history: nextHistory ?? previousHistory, visibleItems };
+}
