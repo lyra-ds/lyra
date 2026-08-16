@@ -733,15 +733,29 @@ function numericDelta(before, after) {
   };
 }
 
-function moduleDelta(beforeModules = [], afterModules = []) {
-  const beforeByName = new Map(beforeModules.map((entry) => [entry.module, entry]));
-  const afterByName = new Map(afterModules.map((entry) => [entry.module, entry]));
+function moduleDelta(beforeModules, afterModules) {
+  const beforeAvailable = Array.isArray(beforeModules);
+  const afterAvailable = Array.isArray(afterModules);
+  const deltaAvailable = beforeAvailable && afterAvailable;
+  const normalizedBefore = beforeAvailable ? beforeModules : null;
+  const normalizedAfter = afterAvailable ? afterModules : null;
+  const beforeByName = new Map((normalizedBefore ?? []).map((entry) => [entry.module, entry]));
+  const afterByName = new Map((normalizedAfter ?? []).map((entry) => [entry.module, entry]));
   return {
-    removedModules: beforeModules.filter((entry) => !afterByName.has(entry.module)),
-    addedModules: afterModules.filter((entry) => !beforeByName.has(entry.module)),
+    moduleTelemetry: {
+      before: beforeAvailable ? 'available' : 'unavailable',
+      after: afterAvailable ? 'available' : 'unavailable',
+      delta: deltaAvailable ? 'available' : 'unavailable',
+    },
+    removedModules: deltaAvailable
+      ? normalizedBefore.filter((entry) => !afterByName.has(entry.module))
+      : null,
+    addedModules: deltaAvailable
+      ? normalizedAfter.filter((entry) => !beforeByName.has(entry.module))
+      : null,
     moduleContributions: {
-      before: beforeModules,
-      after: afterModules,
+      before: normalizedBefore,
+      after: normalizedAfter,
     },
   };
 }
@@ -751,21 +765,22 @@ function comparisonEntry(beforeSource, afterSource, assetTypeName = 'javascript'
   const after = bundleMetrics(afterSource, assetTypeName);
   const beforeAssets = assetTypeName === 'css' ? beforeSource : beforeSource.assets[assetTypeName];
   const afterAssets = assetTypeName === 'css' ? afterSource : afterSource.assets[assetTypeName];
+  const modules = moduleDelta(beforeSource.modules, afterSource.modules);
   return {
     before,
     after,
     deltas: Object.fromEntries(
       Object.keys(before).map((metric) => [metric, numericDelta(before[metric], after[metric])]),
     ),
-    ...moduleDelta(beforeSource.modules, afterSource.modules),
+    ...modules,
     metafiles: {
       before: {
         emittedFiles: beforeAssets.files ?? [],
-        modules: beforeSource.modules ?? [],
+        modules: modules.moduleContributions.before,
       },
       after: {
         emittedFiles: afterAssets.files ?? [],
-        modules: afterSource.modules ?? [],
+        modules: modules.moduleContributions.after,
       },
     },
   };
@@ -876,7 +891,17 @@ export async function renderComparisonMarkdown(comparison) {
     '',
     '## Module contributions and removed code',
     '',
-    'The JSON peer contains the complete before/after module-contribution records. Modules present only before are recorded as removed code; modules present only after are recorded as added code.',
+    'Added and removed module deltas are available only when both revisions captured module telemetry.',
+    '',
+    '| Entry | Before telemetry | After telemetry | Added/removed delta |',
+    '| --- | --- | --- | --- |',
+  );
+  for (const [name, entry] of Object.entries(comparison.entries)) {
+    lines.push(
+      `| ${labels[name]} | ${entry.moduleTelemetry.before} | ${entry.moduleTelemetry.after} | ${entry.moduleTelemetry.delta} |`,
+    );
+  }
+  lines.push(
     '',
     '## Packed artifacts',
     '',
@@ -1022,6 +1047,20 @@ function currentDirtyPaths() {
   return output ? output.split('\n') : [];
 }
 
+function assertRuntimeArtifactPair(comparison, runtime) {
+  for (const [label, packageName, runtimeArtifact] of [
+    ['React', '@lyra-ds/react', runtime.environment.reactArtifact],
+    ['Styles', '@lyra-ds/styles', runtime.environment.stylesArtifact],
+  ]) {
+    const bundleSha = comparison.after.environment.packages[packageName]?.sha256;
+    if (bundleSha !== runtimeArtifact.sha256) {
+      throw new Error(
+        `packed ${label} artifact mismatch: bundle=${bundleSha}, runtime=${runtimeArtifact.sha256}`,
+      );
+    }
+  }
+}
+
 export async function acceptComparison(
   kind,
   {
@@ -1073,6 +1112,7 @@ export async function acceptComparison(
     runtimeMarkdown: join(directory, `${headRevision}-runtime.md`),
   });
   if (runtime.revision !== headRevision) throw new Error('runtime revision does not match HEAD');
+  assertRuntimeArtifactPair(comparison, runtime);
 
   const pointer = { schemaVersion: 1, fileUpload: { revision: headRevision } };
   mkdirSync(dirname(currentJson), { recursive: true });

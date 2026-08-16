@@ -4,6 +4,7 @@ import '@lyra-ds/styles/styles.css';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
+import { isConfirmedRemovalFocusRecovery } from './removal-focus.mjs';
 
 type OperationName =
   | 'selectionIntentDispatch'
@@ -178,18 +179,20 @@ async function execute(operation: OperationName): Promise<void> {
     const controls = document.querySelectorAll<HTMLButtonElement>('.lyra-upload__remove');
     const control = controls.item(controls.length - 1);
     if (control === null) throw new Error('fixture removal control is missing');
+    const expectedTarget = controls.item(controls.length - 2);
+    if (expectedTarget === null) throw new Error('fixture previous removal control is missing');
     control.focus();
     await new Promise<void>((resolve) => {
       const observer = new MutationObserver(checkCompletion);
       function checkCompletion() {
-        const activeElement = document.activeElement;
         if (
-          control.isConnected ||
-          !(activeElement instanceof HTMLElement) ||
-          activeElement === document.body
-        ) {
+          !isConfirmedRemovalFocusRecovery({
+            removedControl: control,
+            expectedTarget,
+            activeElement: document.activeElement,
+          })
+        )
           return;
-        }
         observer.disconnect();
         document.removeEventListener('focusin', handleFocus);
         resolve();

@@ -14,6 +14,7 @@ import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { format } from 'prettier';
+import { writeRuntimeArtifacts } from '../file-upload-performance/measure.mjs';
 import {
   acceptComparison,
   brotliBytes,
@@ -102,6 +103,11 @@ function baselineFixture() {
           tarball: 'lyra-ds-react-0.4.2.tgz',
           sha256: 'react-tarball',
         },
+        '@lyra-ds/styles': {
+          version: '0.4.2',
+          tarball: 'lyra-ds-styles-0.4.2.tgz',
+          sha256: 'styles-tarball',
+        },
       },
     },
     externals: ['react'],
@@ -168,6 +174,58 @@ function fileUploadBaselineFixture({
   return baseline;
 }
 
+function runtimeEvidenceFixture({
+  revision = 'after-revision',
+  reactSha = 'react-tarball',
+  stylesSha = 'styles-tarball',
+} = {}) {
+  const result = {
+    iterations: 30,
+    medianMs: 10,
+    p95Ms: 10,
+    worstMs: 10,
+    longestTaskMs: 0,
+  };
+  return {
+    schemaVersion: 1,
+    scenario: 'DF-FU-15',
+    revision,
+    measuredAt: '2026-08-16T00:00:00.000Z',
+    environment: {
+      chromium: { version: 'Chromium 140.0.0', executablePath: '/pinned/chromium' },
+      viewport: { width: 1280, height: 720, deviceScaleFactor: 1 },
+      locale: 'en-US',
+      colorScheme: 'light',
+      warmupIterations: 3,
+      recordedIterations: 30,
+      itemCount: 100,
+      activeAttemptCount: 20,
+      exactCommand: 'pnpm evidence:file-upload',
+      reactArtifact: {
+        version: '0.4.2',
+        tarball: 'lyra-ds-react-0.4.2.tgz',
+        sha256: reactSha,
+      },
+      stylesArtifact: {
+        version: '0.4.2',
+        tarball: 'lyra-ds-styles-0.4.2.tgz',
+        sha256: stylesSha,
+      },
+    },
+    thresholds: { p95Ms: 100, worstMsExclusive: 250, longTaskMsExclusive: 50 },
+    operations: Object.fromEntries(
+      [
+        'selectionIntentDispatch',
+        'controlledProgressReconciliation',
+        'cancelIntent',
+        'retryIntent',
+        'confirmedRemovalFocusRecovery',
+        'teardown',
+      ].map((name) => [name, { ...result }]),
+    ),
+  };
+}
+
 test('FileUpload comparison reports separate deltas and enforces both budgets', () => {
   const before = fileUploadBaselineFixture();
   const after = fileUploadBaselineFixture({
@@ -225,6 +283,33 @@ test('FileUpload comparison preserves module contributions and removed code', ()
   assert.deepEqual(comparison.entries.filesData.metafiles.after.modules, [
     { module: '<fixture>/file-upload-next.js', renderedBytes: 22_000 },
   ]);
+});
+
+test('module deltas stay unavailable when either side lacks module telemetry', async () => {
+  const before = fileUploadBaselineFixture();
+  const after = fileUploadBaselineFixture({ revision: 'after-revision' });
+  after.standalone.react[0].modules = [
+    { module: '<fixture>/file-upload.js', renderedBytes: 16_000 },
+  ];
+
+  const comparison = createComparison('file-upload', before, after);
+  const entry = comparison.entries.reactFileUpload;
+
+  assert.deepEqual(entry.moduleTelemetry, {
+    before: 'unavailable',
+    after: 'available',
+    delta: 'unavailable',
+  });
+  assert.equal(entry.moduleContributions.before, null);
+  assert.deepEqual(entry.moduleContributions.after, [
+    { module: '<fixture>/file-upload.js', renderedBytes: 16_000 },
+  ]);
+  assert.equal(entry.removedModules, null);
+  assert.equal(entry.addedModules, null);
+  assert.equal(entry.metafiles.before.modules, null);
+
+  const report = await renderComparisonMarkdown(comparison);
+  assert.match(report, /React FileUpload\s+\| unavailable\s+\| available\s+\| unavailable/);
 });
 
 test('comparison artifacts are immutable canonical JSON and Markdown peers', async () => {
@@ -375,6 +460,63 @@ test('acceptance rejects unrelated dirt, missing peers, revision mismatch, and a
         }),
       /ambiguous|unrelated dirty path/,
     );
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('acceptance rejects runtime peers packed from different React or Styles artifacts', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-accept-artifact-test-'));
+  try {
+    const revision = 'after-revision';
+    const dirtyPaths = [
+      `?? comparisons/file-upload/${revision}.json`,
+      `?? comparisons/file-upload/${revision}.md`,
+      `?? comparisons/file-upload/${revision}-runtime.json`,
+      `?? comparisons/file-upload/${revision}-runtime.md`,
+    ];
+    for (const [name, runtime, message] of [
+      [
+        'styles',
+        runtimeEvidenceFixture({ stylesSha: 'different-styles-tarball' }),
+        /packed Styles artifact mismatch/,
+      ],
+      [
+        'react',
+        runtimeEvidenceFixture({ reactSha: 'different-react-tarball' }),
+        /packed React artifact mismatch/,
+      ],
+    ]) {
+      const caseRoot = join(fixture, name);
+      const comparisonDirectory = join(caseRoot, 'comparisons', 'file-upload');
+      const currentJson = join(caseRoot, 'current.json');
+      const comparison = createComparison(
+        'file-upload',
+        fileUploadBaselineFixture(),
+        fileUploadBaselineFixture({ revision }),
+      );
+      await writeComparisonArtifacts(comparison, {
+        comparisonJson: join(comparisonDirectory, `${revision}.json`),
+        comparisonMarkdown: join(comparisonDirectory, `${revision}.md`),
+      });
+      await writeRuntimeArtifacts(runtime, {
+        runtimeJson: join(comparisonDirectory, `${revision}-runtime.json`),
+        runtimeMarkdown: join(comparisonDirectory, `${revision}-runtime.md`),
+      });
+
+      await assert.rejects(
+        () =>
+          acceptComparison('file-upload', {
+            comparisonDirectory: join(caseRoot, 'comparisons'),
+            currentJson,
+            dirtyPaths,
+            headRevision: revision,
+            repositoryRelativeComparisonDirectory: 'comparisons/file-upload',
+          }),
+        message,
+      );
+      assert.equal(existsSync(currentJson), false);
+    }
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

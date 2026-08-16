@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { format } from 'prettier';
 import { validateEvidencePair } from './evidence.mjs';
 import {
   operationResult,
@@ -10,6 +11,7 @@ import {
   selectLongTaskDurations,
   renderRuntimeMarkdown,
   runPerformanceCli,
+  validateRuntimeArtifacts,
   validateRuntimeEvidence,
   withDeadline,
   writeRuntimeArtifacts,
@@ -93,6 +95,32 @@ test('long-task attribution includes entries that overlap the measured operation
   );
 });
 
+test('confirmed removal requires focus on the deterministic fallback action', async () => {
+  const focusContract = await import('./fixture/removal-focus.mjs').catch(() => ({}));
+  assert.equal(typeof focusContract.isConfirmedRemovalFocusRecovery, 'function');
+
+  const removedControl = { isConnected: false };
+  const expectedTarget = { isConnected: true, disabled: false };
+  const incidentalTarget = { isConnected: true, disabled: false };
+
+  assert.equal(
+    focusContract.isConfirmedRemovalFocusRecovery({
+      removedControl,
+      expectedTarget,
+      activeElement: incidentalTarget,
+    }),
+    false,
+  );
+  assert.equal(
+    focusContract.isConfirmedRemovalFocusRecovery({
+      removedControl,
+      expectedTarget,
+      activeElement: expectedTarget,
+    }),
+    true,
+  );
+});
+
 test('semantic operation deadlines fail instead of hanging the runner', async () => {
   await assert.rejects(
     () =>
@@ -155,6 +183,10 @@ test('runtime JSON and Markdown are immutable canonical peers', async () => {
 
     await writeRuntimeArtifacts(evidence, paths);
     assert.equal(
+      readFileSync(paths.runtimeJson, 'utf8'),
+      await format(`${JSON.stringify(evidence, null, 2)}\n`, { parser: 'json' }),
+    );
+    assert.equal(
       readFileSync(paths.runtimeMarkdown, 'utf8'),
       await renderRuntimeMarkdown(evidence),
     );
@@ -163,6 +195,30 @@ test('runtime JSON and Markdown are immutable canonical peers', async () => {
       () => writeRuntimeArtifacts(evidence, paths),
       /refusing to overwrite immutable FileUpload runtime evidence/,
     );
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('runtime artifact validation rejects reformatted or reordered JSON', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-runtime-canonical-test-'));
+  try {
+    const evidence = passingRuntimeFixture();
+    const paths = {
+      runtimeJson: join(fixture, 'candidate-revision-runtime.json'),
+      runtimeMarkdown: join(fixture, 'candidate-revision-runtime.md'),
+    };
+    await writeRuntimeArtifacts(evidence, paths);
+
+    const { revision, ...rest } = evidence;
+    writeFileSync(
+      paths.runtimeJson,
+      await format(`${JSON.stringify({ revision, ...rest }, null, 2)}\n`, { parser: 'json' }),
+    );
+    await assert.rejects(() => validateRuntimeArtifacts(paths), /runtime JSON is not canonical/);
+
+    writeFileSync(paths.runtimeJson, JSON.stringify(evidence));
+    await assert.rejects(() => validateRuntimeArtifacts(paths), /runtime JSON is not canonical/);
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
@@ -190,6 +246,33 @@ test('performance --check recollects once against the accepted profile without w
   assert.match(afterEvidenceCommit, /accepted candidate-revision/);
 });
 
+test('performance --check rejects fresh React or Styles artifacts that differ from accepted peers', async () => {
+  const expected = passingRuntimeFixture();
+
+  for (const [mutate, message] of [
+    [
+      (evidence) => (evidence.environment.reactArtifact.sha256 = 'different-react-artifact'),
+      /accepted packed React artifact mismatch/,
+    ],
+    [
+      (evidence) => (evidence.environment.stylesArtifact.sha256 = 'different-styles-artifact'),
+      /accepted packed Styles artifact mismatch/,
+    ],
+  ]) {
+    const actual = passingRuntimeFixture({ revision: 'later-documentation-revision' });
+    mutate(actual);
+
+    await assert.rejects(
+      () =>
+        runPerformanceCli(['--check'], {
+          collect: async () => actual,
+          readAccepted: async () => expected,
+        }),
+      message,
+    );
+  }
+});
+
 test('performance collection mode refuses a dirty worktree before launching Chromium', async () => {
   let collections = 0;
   await assert.rejects(
@@ -206,6 +289,61 @@ test('performance collection mode refuses a dirty worktree before launching Chro
     /dirty worktree/,
   );
   assert.equal(collections, 0);
+});
+
+test('runtime cleanup attempts browser, server, and temp removal while preserving primary errors', async () => {
+  const performanceMeasure = await import('./measure.mjs');
+  assert.equal(typeof performanceMeasure.cleanupRuntimeResources, 'function');
+  assert.equal(typeof performanceMeasure.runWithCleanup, 'function');
+
+  const calls = [];
+  const browserFailure = new Error('browser close failed');
+  await assert.rejects(
+    () =>
+      performanceMeasure.cleanupRuntimeResources({
+        browser: {
+          close: async () => {
+            calls.push('browser');
+            throw browserFailure;
+          },
+        },
+        server: {
+          close: async () => {
+            calls.push('server');
+          },
+        },
+        tempRoot: '/tmp/runtime-cleanup-fixture',
+        remove: () => {
+          calls.push('temp');
+        },
+      }),
+    (error) => {
+      assert.match(error.message, /browser cleanup failed/);
+      assert.deepEqual(error.errors, [browserFailure]);
+      return true;
+    },
+  );
+  assert.deepEqual(calls, ['browser', 'server', 'temp']);
+
+  const primary = new Error('collection failed');
+  const cleanup = new Error('cleanup also failed');
+  await assert.rejects(
+    () =>
+      performanceMeasure.runWithCleanup(
+        async () => {
+          throw primary;
+        },
+        async () => {
+          throw cleanup;
+        },
+      ),
+    (error) => {
+      assert.equal(error, primary);
+      assert.equal(error.cleanupError, cleanup);
+      assert.match(error.message, /collection failed/);
+      return true;
+    },
+  );
 });
 
 test('evidence pairing requires one revision and the identical packed React artifact', () => {

@@ -205,6 +205,75 @@ function runtimeArtifactPaths(options = {}) {
   };
 }
 
+function canonicalRuntimeEvidence(evidence) {
+  const environment = evidence.environment;
+  return {
+    schemaVersion: evidence.schemaVersion,
+    scenario: evidence.scenario,
+    revision: evidence.revision,
+    measuredAt: evidence.measuredAt,
+    environment: {
+      operatingSystem: environment.operatingSystem,
+      architecture: environment.architecture,
+      node: environment.node,
+      playwright: environment.playwright,
+      vite: environment.vite,
+      chromium: {
+        version: environment.chromium.version,
+        executablePath: environment.chromium.executablePath,
+      },
+      viewport: {
+        width: environment.viewport.width,
+        height: environment.viewport.height,
+        deviceScaleFactor: environment.viewport.deviceScaleFactor,
+      },
+      locale: environment.locale,
+      colorScheme: environment.colorScheme,
+      warmupIterations: environment.warmupIterations,
+      recordedIterations: environment.recordedIterations,
+      itemCount: environment.itemCount,
+      activeAttemptCount: environment.activeAttemptCount,
+      exactCommand: environment.exactCommand,
+      reactArtifact: {
+        version: environment.reactArtifact.version,
+        tarball: environment.reactArtifact.tarball,
+        sha256: environment.reactArtifact.sha256,
+      },
+      stylesArtifact: {
+        version: environment.stylesArtifact.version,
+        tarball: environment.stylesArtifact.tarball,
+        sha256: environment.stylesArtifact.sha256,
+      },
+    },
+    thresholds: {
+      p95Ms: evidence.thresholds.p95Ms,
+      worstMsExclusive: evidence.thresholds.worstMsExclusive,
+      longTaskMsExclusive: evidence.thresholds.longTaskMsExclusive,
+    },
+    operations: Object.fromEntries(
+      OPERATION_NAMES.map((name) => {
+        const result = evidence.operations[name];
+        return [
+          name,
+          {
+            iterations: result.iterations,
+            medianMs: result.medianMs,
+            p95Ms: result.p95Ms,
+            worstMs: result.worstMs,
+            longestTaskMs: result.longestTaskMs,
+          },
+        ];
+      }),
+    ),
+  };
+}
+
+async function renderRuntimeJson(evidence) {
+  return format(`${JSON.stringify(canonicalRuntimeEvidence(evidence), null, 2)}\n`, {
+    parser: 'json',
+  });
+}
+
 export async function writeRuntimeArtifacts(evidence, options) {
   validateRuntimeEvidence(evidence);
   const { runtimeJson, runtimeMarkdown } = runtimeArtifactPaths(options);
@@ -213,8 +282,9 @@ export async function writeRuntimeArtifacts(evidence, options) {
     throw new Error('refusing to overwrite immutable FileUpload runtime evidence');
   }
   const report = await renderRuntimeMarkdown(evidence);
+  const json = await renderRuntimeJson(evidence);
   mkdirSync(dirname(runtimeJson), { recursive: true });
-  writeFileSync(runtimeJson, `${JSON.stringify(evidence, null, 2)}\n`);
+  writeFileSync(runtimeJson, json);
   writeFileSync(runtimeMarkdown, report);
 }
 
@@ -222,7 +292,11 @@ export async function validateRuntimeArtifacts(options) {
   const { runtimeJson, runtimeMarkdown } = runtimeArtifactPaths(options);
   if (!existsSync(runtimeJson)) throw new Error('runtime JSON does not exist');
   if (!existsSync(runtimeMarkdown)) throw new Error('runtime Markdown does not exist');
+  const jsonSource = readFileSync(runtimeJson, 'utf8');
   const evidence = validateRuntimeEvidence(readJson(runtimeJson));
+  if (jsonSource !== (await renderRuntimeJson(evidence))) {
+    throw new Error('runtime JSON is not canonical');
+  }
   if (readFileSync(runtimeMarkdown, 'utf8') !== (await renderRuntimeMarkdown(evidence))) {
     throw new Error('runtime Markdown is not the canonical peer');
   }
@@ -334,60 +408,119 @@ async function measurePage(page) {
   return operationResults;
 }
 
+export async function cleanupRuntimeResources({ browser, server, tempRoot, remove = rmSync }) {
+  const failures = [];
+  for (const [label, cleanup] of [
+    ['browser', browser ? () => browser.close() : null],
+    ['server', server ? () => server.close() : null],
+    ['temporary directory', () => remove(tempRoot, { recursive: true, force: true })],
+  ]) {
+    if (cleanup === null) continue;
+    try {
+      await cleanup();
+    } catch (error) {
+      failures.push({ label, error });
+    }
+  }
+  if (failures.length > 0) {
+    throw new AggregateError(
+      failures.map(({ error }) => error),
+      `runtime cleanup failed: ${failures
+        .map(
+          ({ label, error }) =>
+            `${label} cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
+        )
+        .join('; ')}`,
+    );
+  }
+}
+
+export async function runWithCleanup(operation, cleanup) {
+  let result;
+  let primaryError;
+  let operationFailed = false;
+  try {
+    result = await operation();
+  } catch (error) {
+    operationFailed = true;
+    primaryError = error;
+  }
+
+  let cleanupError;
+  try {
+    await cleanup();
+  } catch (error) {
+    cleanupError = error;
+  }
+
+  if (operationFailed) {
+    if (cleanupError && primaryError instanceof Error) {
+      Object.defineProperty(primaryError, 'cleanupError', {
+        configurable: true,
+        enumerable: false,
+        value: cleanupError,
+      });
+      primaryError.message = `${primaryError.message}\nRuntime cleanup also failed: ${cleanupError.message}`;
+    }
+    throw primaryError;
+  }
+  if (cleanupError) throw cleanupError;
+  return result;
+}
+
 export async function collectRuntimeEvidence({
   exactCommand = 'pnpm performance:file-upload',
 } = {}) {
   const tempRoot = mkdtempSync(join(tmpdir(), 'lyra-file-upload-performance-'));
   let server;
   let browser;
-  try {
-    const fixture = await prepareProductionFixture(tempRoot);
-    server = await preview({
-      configFile: false,
-      root: fixture.fixture,
-      logLevel: 'silent',
-      preview: { host: '127.0.0.1', port: 0, strictPort: false },
-    });
-    const executablePath = chromium.executablePath();
-    browser = await chromium.launch({ headless: true });
-    const chromiumVersion = browser.version();
-    const context = await browser.newContext(PROFILE);
-    const page = await context.newPage();
-    await page.goto(previewUrl(server), { waitUntil: 'load' });
-    await page.evaluate(() => window.fileUploadPerformance.ready());
-    const operations = await measurePage(page);
-    const evidence = {
-      schemaVersion: 1,
-      scenario: 'DF-FU-15',
-      revision: run('git', ['rev-parse', 'HEAD'], { cwd: REPOSITORY }),
-      measuredAt: new Date().toISOString(),
-      environment: {
-        operatingSystem: `${platform()} ${release()}`,
-        architecture: arch(),
-        node: process.version,
-        playwright: readJson(join(packageDirectory('playwright'), 'package.json')).version,
-        vite: readJson(join(packageDirectory('vite'), 'package.json')).version,
-        chromium: { version: chromiumVersion, executablePath },
-        viewport: { ...PROFILE.viewport, deviceScaleFactor: PROFILE.deviceScaleFactor },
-        locale: PROFILE.locale,
-        colorScheme: PROFILE.colorScheme,
-        warmupIterations: WARMUP_ITERATIONS,
-        recordedIterations: RECORDED_ITERATIONS,
-        itemCount: 100,
-        activeAttemptCount: 20,
-        exactCommand,
-        reactArtifact: fixture.reactArtifact,
-        stylesArtifact: fixture.stylesArtifact,
-      },
-      thresholds: THRESHOLDS,
-      operations,
-    };
-    return validateRuntimeEvidence(evidence);
-  } finally {
-    if (browser) await browser.close();
-    if (server) await server.close();
-    rmSync(tempRoot, { recursive: true, force: true });
-  }
+  return runWithCleanup(
+    async () => {
+      const fixture = await prepareProductionFixture(tempRoot);
+      server = await preview({
+        configFile: false,
+        root: fixture.fixture,
+        logLevel: 'silent',
+        preview: { host: '127.0.0.1', port: 0, strictPort: false },
+      });
+      const executablePath = chromium.executablePath();
+      browser = await chromium.launch({ headless: true });
+      const chromiumVersion = browser.version();
+      const context = await browser.newContext(PROFILE);
+      const page = await context.newPage();
+      await page.goto(previewUrl(server), { waitUntil: 'load' });
+      await page.evaluate(() => window.fileUploadPerformance.ready());
+      const operations = await measurePage(page);
+      const evidence = {
+        schemaVersion: 1,
+        scenario: 'DF-FU-15',
+        revision: run('git', ['rev-parse', 'HEAD'], { cwd: REPOSITORY }),
+        measuredAt: new Date().toISOString(),
+        environment: {
+          operatingSystem: `${platform()} ${release()}`,
+          architecture: arch(),
+          node: process.version,
+          playwright: readJson(join(packageDirectory('playwright'), 'package.json')).version,
+          vite: readJson(join(packageDirectory('vite'), 'package.json')).version,
+          chromium: { version: chromiumVersion, executablePath },
+          viewport: { ...PROFILE.viewport, deviceScaleFactor: PROFILE.deviceScaleFactor },
+          locale: PROFILE.locale,
+          colorScheme: PROFILE.colorScheme,
+          warmupIterations: WARMUP_ITERATIONS,
+          recordedIterations: RECORDED_ITERATIONS,
+          itemCount: 100,
+          activeAttemptCount: 20,
+          exactCommand,
+          reactArtifact: fixture.reactArtifact,
+          stylesArtifact: fixture.stylesArtifact,
+        },
+        thresholds: THRESHOLDS,
+        operations,
+      };
+      return validateRuntimeEvidence(evidence);
+    },
+    () => cleanupRuntimeResources({ browser, server, tempRoot }),
+  );
 }
 
 function assertCleanWorktree() {
@@ -408,6 +541,19 @@ async function readAcceptedRuntime() {
   });
 }
 
+function assertAcceptedArtifactPair(expected, actual) {
+  for (const [label, expectedArtifact, actualArtifact] of [
+    ['React', expected.environment.reactArtifact, actual.environment.reactArtifact],
+    ['Styles', expected.environment.stylesArtifact, actual.environment.stylesArtifact],
+  ]) {
+    if (expectedArtifact.sha256 !== actualArtifact.sha256) {
+      throw new Error(
+        `accepted packed ${label} artifact mismatch: accepted=${expectedArtifact.sha256}, fresh=${actualArtifact.sha256}`,
+      );
+    }
+  }
+}
+
 export async function runPerformanceCli(
   args,
   {
@@ -423,6 +569,7 @@ export async function runPerformanceCli(
     const expected = await readAccepted();
     const actual = await collect({ exactCommand: expected.environment.exactCommand });
     validateRuntimeEvidence(actual);
+    assertAcceptedArtifactPair(expected, actual);
     return `FileUpload runtime check OK at ${actual.revision} against accepted ${expected.revision}.`;
   }
 
