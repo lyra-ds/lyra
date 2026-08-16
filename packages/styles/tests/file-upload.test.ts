@@ -150,7 +150,7 @@ describe('FileUpload native lifecycle presentation', () => {
     );
   });
 
-  it('renders reduced-motion and forced-color states through Playwright media emulation', async () => {
+  it('renders discriminating reduced-motion and forced-color states through Playwright media emulation', async () => {
     const zone = testId('file-upload-zone');
     const input = testId<HTMLInputElement>('file-upload-input');
     const determinate = testId<HTMLProgressElement>('file-upload-progress');
@@ -159,21 +159,58 @@ describe('FileUpload native lifecycle presentation', () => {
     const error = testId('file-upload-transport-error');
     const retry = testId<HTMLButtonElement>('file-upload-retry');
     const disabledZone = testId('file-upload-disabled-zone');
+    const unfocusedZone = root.querySelector<HTMLElement>(
+      '.lyra-upload__zone[for="file-upload-rtl-input"]',
+    );
+    const barRule = Array.from(document.styleSheets)
+      .flatMap((sheet) => Array.from(sheet.cssRules))
+      .find(
+        (rule): rule is CSSStyleRule =>
+          rule instanceof CSSStyleRule && rule.selectorText === '.lyra-upload__bar',
+      );
 
-    await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
-    expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
-    expect(getComputedStyle(zone).transitionDuration).toBe('0s');
-    expect(getComputedStyle(determinate).transitionDuration).toBe('0s');
-    expect(getComputedStyle(indeterminate).transitionDuration).toBe('0s');
-    expect(getComputedStyle(zone).animationName).toBe('none');
-    expect(getComputedStyle(determinate).animationName).toBe('none');
-    expect(getComputedStyle(indeterminate).animationName).toBe('none');
+    if (!unfocusedZone || !barRule) throw new Error('Missing file-upload media evidence target');
 
-    await commands.emulateFileUploadMedia({ forcedColors: 'active' });
+    await commands.emulateFileUploadMedia({ forcedColors: 'none', reducedMotion: 'no-preference' });
     input.focus();
+    const normalOutline = getComputedStyle(zone).outlineColor;
+    expect(normalOutline === 'transparent' || /,\s*0\)$/.test(normalOutline)).toBe(true);
+
+    const baseTransition = barRule.style.transition;
+    try {
+      barRule.style.transition = 'opacity 1s linear';
+      expect(getComputedStyle(determinate).transitionDuration).not.toBe('0s');
+      expect(getComputedStyle(indeterminate).transitionDuration).not.toBe('0s');
+
+      await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
+      expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
+      expect(getComputedStyle(zone).transitionDuration).toBe('0s');
+      expect(getComputedStyle(determinate).transitionDuration).toBe('0s');
+      expect(getComputedStyle(indeterminate).transitionDuration).toBe('0s');
+      expect(getComputedStyle(zone).animationName).toBe('none');
+      expect(getComputedStyle(determinate).animationName).toBe('none');
+      expect(getComputedStyle(indeterminate).animationName).toBe('none');
+    } finally {
+      barRule.style.transition = baseTransition;
+    }
+
+    await commands.emulateFileUploadMedia({
+      forcedColors: 'active',
+      reducedMotion: 'no-preference',
+    });
     expect(window.matchMedia('(forced-colors: active)').matches).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(zone.matches('.lyra-upload__zone:has(+ .lyra-upload__input:focus-visible)')).toBe(true);
     expect(getComputedStyle(zone).outlineStyle).toBe('solid');
     expect(getComputedStyle(zone).outlineWidth).toBe('2px');
+    expect(getComputedStyle(zone).outlineColor).not.toBe(normalOutline);
+    expect(
+      getComputedStyle(zone).outlineColor === 'transparent' ||
+        /,\s*0\)$/.test(getComputedStyle(zone).outlineColor),
+    ).toBe(false);
+    expect(getComputedStyle(zone).outlineColor).not.toBe(
+      getComputedStyle(unfocusedZone).outlineColor,
+    );
     expect(getComputedStyle(error).borderColor).not.toBe(getComputedStyle(uploading).borderColor);
     expect(getComputedStyle(determinate).borderStyle).toBe('solid');
     expect(getComputedStyle(indeterminate).borderStyle).toBe('solid');
