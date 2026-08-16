@@ -154,12 +154,23 @@ Implement the public type block verbatim from specification section 5.1 in `file
 export function validateFile(
   file: Pick<File, 'name' | 'size' | 'type'>,
   { accept, maxSizeMB }: { accept?: string; maxSizeMB?: number },
+  messages: Pick<Required<FileUploadMessages>, 'validationAccept' | 'validationMaxSize'>,
 ): Extract<FileUploadError, { kind: 'validation' }> | null {
   if (accept && !matchesAccept(file, accept)) {
-    return { kind: 'validation', code: 'accept', message: '', retryable: false };
+    return {
+      kind: 'validation',
+      code: 'accept',
+      message: messages.validationAccept(file.name, accept),
+      retryable: false,
+    };
   }
   if (maxSizeMB !== undefined && file.size > maxSizeMB * 1_000_000) {
-    return { kind: 'validation', code: 'max-size', message: '', retryable: false };
+    return {
+      kind: 'validation',
+      code: 'max-size',
+      message: messages.validationMaxSize(file.name, maxSizeMB),
+      retryable: false,
+    };
   }
   return null;
 }
@@ -642,8 +653,8 @@ Expected: the new fixture fails on missing classes/selectors. Parity still passe
 }
 
 .lyra-upload__zone:has(+ .lyra-upload__input:focus-visible) {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
+  outline: 2px solid transparent;
+  box-shadow: var(--shadow-focus);
 }
 
 .lyra-upload__bar {
