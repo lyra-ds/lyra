@@ -637,6 +637,7 @@ export type LyraFileUploadAction = 'retry' | 'cancel' | 'remove';
 export interface LyraFileUploadData {
   items: LyraFileUploadItem[];
   dragging: boolean;
+  pendingIntentKeys: string[];
   setItems(items: LyraFileUploadItem[]): void;
   select(fileList: FileList | null): void;
   retry(item: Extract<LyraFileUploadItem, { status: 'error' | 'canceled' }>): void;

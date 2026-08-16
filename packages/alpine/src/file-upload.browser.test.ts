@@ -13,6 +13,10 @@ import type {
 } from './index';
 
 const mountedHosts: HTMLElement[] = [];
+type AcceptedSelection = Extract<
+  LyraFileUploadSelectDetail['selections'][number],
+  { proposedAttemptId: string }
+>;
 
 Alpine.plugin(lyra);
 
@@ -430,6 +434,38 @@ describe('lyraFileUpload', () => {
     expect(liveRegion(host)).toHaveTextContent('middle.pdf removed.');
   });
 
+  it('recovers focus after a delayed removal unless focus moved outside', async () => {
+    const items = [succeeded('first'), succeeded('middle'), succeeded('last')];
+    const delayed = mountControlledFileUpload(items, {}, { id: 'delayed-focus-upload' });
+    await flush();
+    const delayedButton = button(delayed, '[aria-label="Remove middle.pdf"]');
+    delayedButton.focus();
+    delayedButton.click();
+    await flush();
+
+    data(delayed).setItems([items[0], items[2]]);
+    await flush();
+
+    expect(button(delayed, '[aria-label="Remove last.pdf"]')).toHaveFocus();
+
+    const abandoned = mountControlledFileUpload(items, {}, { id: 'abandoned-focus-upload' });
+    await flush();
+    const external = document.createElement('button');
+    external.type = 'button';
+    external.textContent = 'External target';
+    abandoned.appendChild(external);
+    const abandonedButton = button(abandoned, '[aria-label="Remove middle.pdf"]');
+    abandonedButton.focus();
+    abandonedButton.click();
+    await flush();
+    external.focus();
+
+    data(abandoned).setItems([items[0], items[2]]);
+    await flush();
+
+    expect(external).toHaveFocus();
+  });
+
   it(FILE_UPLOAD_SCENARIOS.idempotence, async () => {
     const host = mountControlledFileUpload([failed(), uploading('active'), succeeded('done')]);
     const retry = vi.fn();
@@ -454,6 +490,7 @@ describe('lyraFileUpload', () => {
     expect(retry).toHaveBeenCalledOnce();
     expect(cancel).toHaveBeenCalledOnce();
     expect(remove).toHaveBeenCalledOnce();
+    expect(data(host).pendingIntentKeys).toHaveLength(3);
 
     data(host).setItems([
       uploading('failed', 'test-upload-attempt-1', 0),
@@ -462,6 +499,7 @@ describe('lyraFileUpload', () => {
     ]);
     await flush();
     expect(root(host).querySelectorAll('button:disabled')).toHaveLength(0);
+    expect(data(host).pendingIntentKeys).toEqual([]);
   });
 
   it(FILE_UPLOAD_SCENARIOS.single, async () => {
@@ -517,6 +555,44 @@ describe('lyraFileUpload', () => {
     expect(root(host).querySelector('[data-upload-id="remote"]')).not.toBeNull();
   });
 
+  it('keeps a named input out of FormData until an exact local file is confirmed', async () => {
+    const remote = succeeded('remote');
+    const host = mountControlledFileUpload(
+      [],
+      { name: 'attachments', required: true },
+      { form: true },
+    );
+    const form = host.querySelector('form');
+    if (!form) throw new Error('Expected upload form');
+    let selection: LyraFileUploadSelectDetail['selections'][number] | undefined;
+    root(host).addEventListener('lyra:file-upload:select', (event) => {
+      selection = (event as CustomEvent<LyraFileUploadSelectDetail>).detail.selections[0];
+    });
+
+    expect(Array.from(new FormData(form).entries())).toEqual([]);
+    expect(input(host)).not.toHaveAttribute('name');
+    expect(input(host)).toBeRequired();
+
+    data(host).setItems([remote]);
+    expect(Array.from(new FormData(form).entries())).toEqual([]);
+
+    const file = new File(['local'], 'local.pdf', { type: 'application/pdf' });
+    selectFiles(input(host), file);
+    await flush();
+    expect(Array.from(new FormData(form).entries())).toEqual([]);
+    if (!selection) throw new Error('Expected a selection proposal');
+
+    data(host).setItems([remote, selection.proposedItem]);
+    await flush();
+    expect(new FormData(form).getAll('attachments')).toEqual([file]);
+
+    data(host).setItems([remote]);
+    await flush();
+    expect(Array.from(new FormData(form).entries())).toEqual([]);
+    expect(input(host)).not.toHaveAttribute('name');
+    expect(input(host)).toBeRequired();
+  });
+
   it('DF-FU-09 retains delayed and concurrent local files only for exact controlled echoes', async () => {
     const host = mountControlledFileUpload([], { name: 'attachments' }, { form: true });
     const form = host.querySelector('form');
@@ -559,6 +635,69 @@ describe('lyraFileUpload', () => {
     data(host).setItems([{ ...proposals[0], id: 'substituted' }]);
     await flush();
     expect(new FormData(form).getAll('attachments')).toEqual([]);
+  });
+
+  it('DF-FU-09 associates an immediate upload only with the exact proposed identity', async () => {
+    const cases: Array<{
+      id: string;
+      echo(selection: AcceptedSelection): LyraFileUploadItem;
+      associates: boolean;
+    }> = [
+      {
+        id: 'changed-metadata-upload',
+        echo: (selection) => ({
+          ...selection.proposedItem,
+          name: 'substituted.pdf',
+          status: 'uploading' as const,
+          attemptId: selection.proposedAttemptId,
+          progress: { kind: 'determinate' as const, value: 10 },
+        }),
+        associates: false,
+      },
+      {
+        id: 'wrong-attempt-upload',
+        echo: (selection) => ({
+          ...selection.proposedItem,
+          status: 'uploading' as const,
+          attemptId: 'wrong-attempt',
+          progress: { kind: 'determinate' as const, value: 10 },
+        }),
+        associates: false,
+      },
+      {
+        id: 'exact-attempt-upload',
+        echo: (selection) => ({
+          ...selection.proposedItem,
+          status: 'uploading' as const,
+          attemptId: selection.proposedAttemptId,
+          progress: { kind: 'determinate' as const, value: 10 },
+        }),
+        associates: true,
+      },
+    ];
+
+    for (const testCase of cases) {
+      const host = mountControlledFileUpload(
+        [],
+        { name: 'attachments' },
+        { form: true, id: testCase.id },
+      );
+      const form = host.querySelector('form');
+      if (!form) throw new Error('Expected upload form');
+      const file = new File(['local'], 'local.pdf', { type: 'application/pdf' });
+      root(host).addEventListener('lyra:file-upload:select', (event) => {
+        const selection = (event as CustomEvent<LyraFileUploadSelectDetail>).detail.selections[0];
+        if (!selection || selection.proposedAttemptId === undefined) {
+          throw new Error('Expected an accepted selection proposal');
+        }
+        data(host).setItems([testCase.echo(selection as AcceptedSelection)]);
+      });
+
+      selectFiles(input(host), file);
+      await flush();
+
+      expect(new FormData(form).getAll('attachments')).toEqual(testCase.associates ? [file] : []);
+    }
   });
 
   it('DF-FU-09 preserves required validation and resets a nameless same-file selection', async () => {
@@ -682,6 +821,46 @@ describe('lyraFileUpload', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
+  it('skips server-authored item and attempt identities after reconnect', async () => {
+    const host = document.createElement('div');
+    const serverMarkup = markup('reconnect-upload').replace(
+      '<ul class="lyra-upload__list">',
+      `<ul class="lyra-upload__list">
+        <li class="lyra-upload__item" data-upload-id="reconnect-upload-1"
+          data-attempt-id="reconnect-upload-attempt-1">Server item</li>`,
+    );
+    host.innerHTML = serverMarkup;
+    document.body.appendChild(host);
+    Alpine.initTree(host);
+    Alpine.destroyTree(host);
+    host.innerHTML = serverMarkup;
+    Alpine.initTree(host);
+    mountedHosts.push(host);
+    const onSelect = vi.fn();
+    const onRetry = vi.fn();
+    root(host).addEventListener('lyra:file-upload:select', onSelect);
+    root(host).addEventListener('lyra:file-upload:retry', onRetry);
+
+    selectFiles(input(host), new File(['new'], 'new.pdf', { type: 'application/pdf' }));
+    await flush();
+    const selection = (onSelect.mock.calls[0][0] as CustomEvent<LyraFileUploadSelectDetail>).detail
+      .selections[0];
+    expect(selection).toMatchObject({
+      id: 'reconnect-upload-2',
+      proposedAttemptId: 'reconnect-upload-attempt-2',
+    });
+
+    data(host).setItems([failed('retry', 'reconnect-upload-attempt-1')]);
+    await flush();
+    button(host, '.lyra-upload__retry').click();
+    const retry = onRetry.mock.calls[0][0] as CustomEvent;
+    expect(retry.detail).toEqual({
+      id: 'retry',
+      previousAttemptId: 'reconnect-upload-attempt-1',
+      proposedAttemptId: 'reconnect-upload-attempt-3',
+    });
+  });
+
   it(FILE_UPLOAD_SCENARIOS.alpine, async () => {
     const host = document.createElement('div');
     const serverMarkup = `
@@ -701,8 +880,11 @@ describe('lyraFileUpload', () => {
       </div>`;
     host.innerHTML = serverMarkup;
     document.body.appendChild(host);
-    mountedHosts.push(host);
     const originalInput = input(host);
+    const form = document.createElement('form');
+    host.replaceWith(form);
+    form.appendChild(host);
+    mountedHosts.push(form);
     const originalRow = root(host).querySelector('.lyra-upload__item');
     const preInitFile = new File(['native'], 'native.pdf', { type: 'application/pdf' });
     originalInput.files = fileList(preInitFile);
@@ -719,11 +901,14 @@ describe('lyraFileUpload', () => {
     }
 
     expect(root(host).querySelector('.lyra-upload__item-name')).toHaveTextContent('server.pdf');
+    expect(new FormData(form).getAll('attachments')).toEqual([preInitFile]);
     Alpine.initTree(host);
     await flush();
     expect(input(host)).toBe(originalInput);
     expect(root(host).querySelector('.lyra-upload__item')).toBe(originalRow);
     expect(input(host).files).toEqual(fileList(preInitFile));
+    expect(input(host)).toHaveAttribute('name', 'attachments');
+    expect(new FormData(form).getAll('attachments')).toEqual([preInitFile]);
     expect(liveRegion(host)).toBeEmptyDOMElement();
     expect(onSelect).not.toHaveBeenCalled();
     expect(onAnyIntent).not.toHaveBeenCalled();

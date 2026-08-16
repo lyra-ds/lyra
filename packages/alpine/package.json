@@ -60,7 +60,7 @@
       "ignore": [
         "alpinejs"
       ],
-      "limit": "21 kB"
+      "limit": "21.2 kB"
     }
   ]
 }

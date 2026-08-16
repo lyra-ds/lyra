@@ -125,6 +125,7 @@ export type LyraFileUploadAction = 'retry' | 'cancel' | 'remove';
 export interface LyraFileUploadData {
   items: LyraFileUploadItem[];
   dragging: boolean;
+  pendingIntentKeys: string[];
   setItems(items: LyraFileUploadItem[]): void;
   select(fileList: FileList | null): void;
   retry(item: Extract<LyraFileUploadItem, { status: 'error' | 'canceled' }>): void;
@@ -143,7 +144,6 @@ export interface LyraFileUploadData {
 }
 
 interface LyraFileUploadState extends LyraFileUploadData {
-  pendingIntentKeys: string[];
   init(): void;
   destroy(): void;
 }
@@ -160,6 +160,8 @@ interface AttemptRecord {
   attemptIds: string[];
   latestItem: LyraFileUploadItem | null;
 }
+
+type AcceptedFileProposal = Extract<LyraFileUploadSelection, { proposedAttemptId: string }>;
 
 const DEFAULT_MESSAGES: Required<LyraFileUploadMessages> = {
   selectionUnavailable: 'File replacement is unavailable while an upload is active.',
@@ -236,6 +238,20 @@ function isValidationItem(item: LyraFileUploadItem): boolean {
   return item.status === 'error' && item.error.kind === 'validation';
 }
 
+function matchesFileProposal(item: LyraFileUploadItem, proposal: AcceptedFileProposal): boolean {
+  const proposedItem = proposal.proposedItem;
+  if (
+    isValidationItem(item) ||
+    item.name !== proposedItem.name ||
+    item.size !== proposedItem.size ||
+    item.type !== proposedItem.type
+  ) {
+    return false;
+  }
+  const attemptId = itemAttemptId(item);
+  return attemptId === null || attemptId === proposal.proposedAttemptId;
+}
+
 function canRetry(item: LyraFileUploadItem): boolean {
   return item.status === 'canceled' || (item.status === 'error' && item.error.retryable);
 }
@@ -278,9 +294,12 @@ export function lyraFileUpload({
   let liveElement: HTMLElement | null = null;
   let counter = 0;
   let nativeSyncRequested = false;
+  let preservedNativeInput = false;
   let lastFocusedAction: string | null = null;
   const pendingKeys = new Set<string>();
-  const proposedFiles = new Map<string, File>();
+  const usedItemIds = new Set<string>();
+  const usedAttemptIds = new Set<string>();
+  const proposedFiles = new Map<string, AcceptedFileProposal>();
   const committedFiles = new Map<string, File>();
   const attemptHistory = new Map<string, AttemptRecord>();
   let announcedKeys = new Set<string>();
@@ -295,7 +314,39 @@ export function lyraFileUpload({
     liveElement?.replaceChildren(document.createTextNode(text));
   };
 
+  const trackFocus = (event: FocusEvent): void => {
+    const target = event.target;
+    if (
+      !(target instanceof HTMLButtonElement) ||
+      root?.contains(target) !== true ||
+      target.closest('.lyra-upload__item') === null
+    ) {
+      lastFocusedAction = null;
+    }
+  };
+
   const selectionBlocked = (): boolean => !multiple && currentItems.some(isActive);
+
+  const rememberIdentities = (items: LyraFileUploadItem[]): void => {
+    for (const item of items) {
+      usedItemIds.add(item.id);
+      const attemptId = itemAttemptId(item);
+      if (attemptId !== null) usedAttemptIds.add(attemptId);
+    }
+  };
+
+  const reserveCounter = (rootId: string, reserveItemId: boolean): number => {
+    let itemId: string;
+    let attemptId: string;
+    do {
+      counter += 1;
+      itemId = `${rootId}-${counter}`;
+      attemptId = `${rootId}-attempt-${counter}`;
+    } while (usedAttemptIds.has(attemptId) || (reserveItemId && usedItemIds.has(itemId)));
+    if (reserveItemId) usedItemIds.add(itemId);
+    usedAttemptIds.add(attemptId);
+    return counter;
+  };
 
   const reconcileAttempts = (items: LyraFileUploadItem[]): LyraFileUploadItem[] => {
     const visible: LyraFileUploadItem[] = [];
@@ -340,10 +391,15 @@ export function lyraFileUpload({
     if (!nativeSyncRequested || name === undefined || inputElement === null) return;
 
     const controlled = new Map(controlledItems.map((item) => [item.id, item]));
-    for (const [id, file] of proposedFiles) {
+    for (const [id, proposal] of proposedFiles) {
       const item = controlled.get(id);
       if (item === undefined) continue;
-      if (!isValidationItem(item)) committedFiles.set(id, file);
+      if (isValidationItem(item)) {
+        proposedFiles.delete(id);
+        continue;
+      }
+      if (!matchesFileProposal(item, proposal)) continue;
+      committedFiles.set(id, proposal.file);
       proposedFiles.delete(id);
     }
     for (const id of committedFiles.keys()) {
@@ -475,6 +531,7 @@ export function lyraFileUpload({
     controlledItems: LyraFileUploadItem[],
     suppressAnnouncements = false,
   ): void => {
+    rememberIdentities(controlledItems);
     const previousItems = currentItems;
     const visibleItems = reconcileAttempts(controlledItems);
     currentItems = visibleItems;
@@ -513,33 +570,41 @@ export function lyraFileUpload({
     root?.dispatchEvent(new CustomEvent(eventName, { detail, bubbles: true, composed: true })) ??
     false;
 
-  const retryItem = (context: InternalState, item: LyraFileUploadItem): void => {
+  const dispatchAction = (
+    context: InternalState,
+    action: LyraFileUploadAction,
+    item: LyraFileUploadItem,
+  ): void => {
     const visible = currentItem(item);
-    if (disabled || visible === null || !canRetry(visible) || !lock(context, visible)) return;
-    const previousAttemptId = itemAttemptId(visible);
-    if (previousAttemptId === null || root === null || root.id === '') return;
-    counter += 1;
-    dispatchIntent('lyra:file-upload:retry', {
-      id: visible.id,
-      previousAttemptId,
-      proposedAttemptId: `${root.id}-attempt-${counter}`,
-    } satisfies LyraFileUploadRetryDetail);
-  };
-
-  const cancelItem = (context: InternalState, item: LyraFileUploadItem): void => {
-    const visible = currentItem(item);
-    if (disabled || visible === null || visible.status !== 'uploading' || !lock(context, visible)) {
+    if (disabled || visible === null) return;
+    if (action === 'retry') {
+      const previousAttemptId = itemAttemptId(visible);
+      if (
+        !canRetry(visible) ||
+        previousAttemptId === null ||
+        root === null ||
+        root.id === '' ||
+        !lock(context, visible)
+      ) {
+        return;
+      }
+      const sequence = reserveCounter(root.id, false);
+      dispatchIntent('lyra:file-upload:retry', {
+        id: visible.id,
+        previousAttemptId,
+        proposedAttemptId: `${root.id}-attempt-${sequence}`,
+      } satisfies LyraFileUploadRetryDetail);
       return;
     }
-    dispatchIntent('lyra:file-upload:cancel', {
-      id: visible.id,
-      attemptId: visible.attemptId,
-    } satisfies LyraFileUploadCancelDetail);
-  };
-
-  const removeItem = (context: InternalState, item: LyraFileUploadItem): void => {
-    const visible = currentItem(item);
-    if (disabled || visible === null || !canRemove(visible) || !lock(context, visible)) return;
+    if (action === 'cancel') {
+      if (visible.status !== 'uploading' || !lock(context, visible)) return;
+      dispatchIntent('lyra:file-upload:cancel', {
+        id: visible.id,
+        attemptId: visible.attemptId,
+      } satisfies LyraFileUploadCancelDetail);
+      return;
+    }
+    if (!canRemove(visible) || !lock(context, visible)) return;
     dispatchIntent('lyra:file-upload:remove', {
       id: visible.id,
     } satisfies LyraFileUploadRemoveDetail);
@@ -554,24 +619,37 @@ export function lyraFileUpload({
       root = this.$el;
       inputElement = root.querySelector<HTMLInputElement>('input[type="file"]');
       liveElement = root.querySelector<HTMLElement>('.lyra-upload__live');
+      preservedNativeInput = (inputElement?.files?.length ?? 0) > 0;
+      for (const element of root.querySelectorAll<HTMLElement>(
+        '[data-upload-id],[data-attempt-id]',
+      )) {
+        const { uploadId, attemptId } = element.dataset;
+        if (uploadId) usedItemIds.add(uploadId);
+        if (attemptId) usedAttemptIds.add(attemptId);
+      }
       if (root.id === '') {
         console.error('[Lyra FileUpload] The server-authored root requires a unique id.');
       }
+      document.addEventListener('focusin', trackFocus);
       replaceItems(this, currentItems, true);
       this.$watch('items', (items) => replaceItems(this, items));
     },
 
     destroy() {
+      document.removeEventListener('focusin', trackFocus);
       liveElement?.replaceChildren();
       this.dragging = false;
       this.pendingIntentKeys = [];
       pendingKeys.clear();
+      usedItemIds.clear();
+      usedAttemptIds.clear();
       proposedFiles.clear();
       committedFiles.clear();
       attemptHistory.clear();
       announcedKeys.clear();
       previousProgress.clear();
       lastFocusedAction = null;
+      preservedNativeInput = false;
       inputElement = null;
       liveElement = null;
       root = null;
@@ -594,8 +672,6 @@ export function lyraFileUpload({
       const files = Array.from(fileList ?? []);
       const proposedFilesForOperation = multiple ? files : files.slice(0, 1);
       const selections = proposedFilesForOperation.map((file): LyraFileUploadSelection => {
-        counter += 1;
-        const id = `${rootId}-${counter}`;
         const validationError: Extract<LyraFileUploadError, { kind: 'validation' }> | null =
           accept && !matchesAccept(file, accept)
             ? {
@@ -612,6 +688,9 @@ export function lyraFileUpload({
                   retryable: false,
                 }
               : null;
+        const sequence = reserveCounter(rootId, true);
+        const id = `${rootId}-${sequence}`;
+        const proposedAttemptId = `${rootId}-attempt-${sequence}`;
 
         if (validationError !== null) {
           return {
@@ -631,8 +710,7 @@ export function lyraFileUpload({
           };
         }
 
-        if (name !== undefined) proposedFiles.set(id, file);
-        return {
+        const proposal: AcceptedFileProposal = {
           id,
           file,
           name: file.name,
@@ -645,12 +723,15 @@ export function lyraFileUpload({
             type: file.type,
             status: 'selected',
           },
-          proposedAttemptId: `${rootId}-attempt-${counter}`,
+          proposedAttemptId,
         };
+        if (name !== undefined) proposedFiles.set(id, proposal);
+        return proposal;
       });
 
       if (name !== undefined) {
         nativeSyncRequested = true;
+        preservedNativeInput = false;
         syncNativeInput(currentItems);
       }
       if (selections.length > 0) {
@@ -662,15 +743,15 @@ export function lyraFileUpload({
     },
 
     retry(item) {
-      retryItem(this, item);
+      dispatchAction(this, 'retry', item);
     },
 
     cancel(item) {
-      cancelItem(this, item);
+      dispatchAction(this, 'cancel', item);
     },
 
     remove(item) {
-      removeItem(this, item);
+      dispatchAction(this, 'remove', item);
     },
 
     itemBindings(item) {
@@ -710,13 +791,8 @@ export function lyraFileUpload({
         ['@focus']() {
           lastFocusedAction = item.id;
         },
-        ['@blur']() {
-          lastFocusedAction = null;
-        },
         ['@click'](this: InternalState, event: MouseEvent) {
-          if (action === 'retry' && canRetry(item)) retryItem(this, item);
-          else if (action === 'cancel' && item.status === 'uploading') cancelItem(this, item);
-          else if (action === 'remove' && canRemove(item)) removeItem(this, item);
+          dispatchAction(this, action, item);
           if (
             pendingKeys.has(intentKey(item)) &&
             event.currentTarget instanceof HTMLButtonElement
@@ -758,8 +834,11 @@ export function lyraFileUpload({
 
     input: {
       type: 'file',
-      [':name']() {
-        return name ?? null;
+      [':name'](this: InternalState) {
+        void this.items;
+        return name !== undefined && (preservedNativeInput || committedFiles.size > 0)
+          ? name
+          : null;
       },
       [':accept']() {
         return accept ?? null;
