@@ -2,13 +2,21 @@ import * as React from 'react';
 import { renderToString } from 'react-dom/server';
 import { hydrateRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FILE_UPLOAD_SCENARIOS } from '../../../../tools/file-upload/scenarios';
 import { FileUpload } from './index';
 import type { FileUploadItem } from './file-upload.types';
 
 let hydratedRoot: Root | null = null;
 let hydrationContainer: HTMLDivElement | null = null;
+const reactActEnvironment = globalThis as typeof globalThis & {
+  IS_REACT_ACT_ENVIRONMENT?: boolean;
+};
+const previousReactActEnvironment = reactActEnvironment.IS_REACT_ACT_ENVIRONMENT;
+
+beforeEach(() => {
+  reactActEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
+});
 
 async function runInReactAct(callback: () => void | Promise<void>): Promise<void> {
   const reactAct = (React as unknown as { act?: typeof import('react-dom/test-utils').act }).act;
@@ -28,11 +36,15 @@ afterEach(async () => {
   }
   hydrationContainer?.remove();
   hydrationContainer = null;
+  reactActEnvironment.IS_REACT_ACT_ENVIRONMENT = previousReactActEnvironment;
   vi.restoreAllMocks();
 });
 
 describe('FileUpload hydration', () => {
   it(FILE_UPLOAD_SCENARIOS.hydration, async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const onRecoverableError = vi.fn();
     const uploading = {
       id: 'controlled-upload',
       name: 'controlled.pdf',
@@ -46,16 +58,19 @@ describe('FileUpload hydration', () => {
     const onRetry = vi.fn();
     const onCancel = vi.fn();
     const onRemove = vi.fn();
-    const element = (
-      <FileUpload
-        name="attachments"
-        items={[uploading]}
-        onSelect={onSelect}
-        onRetry={onRetry}
-        onCancel={onCancel}
-        onRemove={onRemove}
-      />
+    const renderUpload = (item: FileUploadItem) => (
+      <React.StrictMode>
+        <FileUpload
+          name="attachments"
+          items={[item]}
+          onSelect={onSelect}
+          onRetry={onRetry}
+          onCancel={onCancel}
+          onRemove={onRemove}
+        />
+      </React.StrictMode>
     );
+    const element = renderUpload(uploading);
     hydrationContainer = document.createElement('div');
     hydrationContainer.innerHTML = renderToString(element);
     document.body.append(hydrationContainer);
@@ -68,12 +83,12 @@ describe('FileUpload hydration', () => {
     const transfer = new DataTransfer();
     transfer.items.add(preHydrationFile);
     input.files = transfer.files;
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const onRecoverableError = vi.fn();
-
     await runInReactAct(async () => {
       hydratedRoot = hydrateRoot(hydrationContainer!, element, { onRecoverableError });
+    });
+
+    await runInReactAct(async () => {
+      hydratedRoot?.render(renderUpload({ ...uploading }));
     });
 
     expect(hydrationContainer.querySelector('input[type="file"]')).toBe(input);
@@ -82,6 +97,7 @@ describe('FileUpload hydration', () => {
     );
     expect(input.files).toHaveLength(1);
     expect(input.files?.[0]).toBe(preHydrationFile);
+    expect(input).toHaveAttribute('name', 'attachments');
     expect(onSelect).not.toHaveBeenCalled();
     expect(onRetry).not.toHaveBeenCalled();
     expect(onCancel).not.toHaveBeenCalled();
@@ -99,5 +115,14 @@ describe('FileUpload hydration', () => {
     expect(onSelect).not.toHaveBeenCalled();
     expect(onRetry).not.toHaveBeenCalled();
     expect(onRemove).not.toHaveBeenCalled();
+
+    await runInReactAct(async () => {
+      hydratedRoot?.unmount();
+    });
+    hydratedRoot = null;
+
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(consoleWarn).not.toHaveBeenCalled();
+    expect(onRecoverableError).not.toHaveBeenCalled();
   });
 });

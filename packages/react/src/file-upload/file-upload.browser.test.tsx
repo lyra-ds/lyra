@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { StrictMode, useState } from 'react';
+import { StrictMode, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
@@ -60,6 +60,90 @@ function ValidationFormUpload() {
         accept=".pdf"
         items={items}
         onSelect={({ selections }) => setItems(selections.map(({ proposedItem }) => proposedItem))}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    </form>
+  );
+}
+
+function DelayedCommitFormUpload() {
+  const [items, setItems] = useState<FileUploadItem[]>([]);
+  const [revision, setRevision] = useState(0);
+  const proposalsRef = useRef<readonly FileUploadItem[]>([]);
+
+  return (
+    <form>
+      <FileUpload
+        name="attachments"
+        items={items}
+        onSelect={({ selections }) => {
+          proposalsRef.current = selections.map(({ proposedItem }) => proposedItem);
+        }}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />
+      <button type="button" onClick={() => setRevision((current) => current + 1)}>
+        Unrelated render
+      </button>
+      <button type="button" onClick={() => setItems([...proposalsRef.current])}>
+        Commit proposal
+      </button>
+      <output>{revision}</output>
+    </form>
+  );
+}
+
+function ReverseCommitFormUpload() {
+  const [items, setItems] = useState<FileUploadItem[]>([]);
+  const proposalsRef = useRef<FileUploadItem[]>([]);
+
+  return (
+    <form>
+      <FileUpload
+        name="attachments"
+        items={items}
+        onSelect={({ selections }) => {
+          proposalsRef.current.push(...selections.map(({ proposedItem }) => proposedItem));
+        }}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />
+      <button
+        type="button"
+        onClick={() => setItems((current) => [...current, proposalsRef.current[1]!])}
+      >
+        Commit second
+      </button>
+      <button
+        type="button"
+        onClick={() => setItems((current) => [...current, proposalsRef.current[0]!])}
+      >
+        Commit first
+      </button>
+    </form>
+  );
+}
+
+function SubstitutedIdentityFormUpload() {
+  const [items, setItems] = useState<FileUploadItem[]>([]);
+
+  return (
+    <form>
+      <FileUpload
+        name="attachments"
+        items={items}
+        onSelect={({ selections }) => {
+          setItems(
+            selections.map(({ proposedItem }) => ({
+              ...proposedItem,
+              id: `substituted-${proposedItem.id}`,
+            })),
+          );
+        }}
         onRetry={vi.fn()}
         onCancel={vi.fn()}
         onRemove={vi.fn()}
@@ -961,6 +1045,98 @@ describe('FileUpload', () => {
     expect(onSelect).toHaveBeenCalledTimes(2);
     expect(onSelect.mock.calls[0][0].selections[0].file.name).toBe('same.pdf');
     expect(onSelect.mock.calls[1][0].selections[0].file.name).toBe('same.pdf');
+  });
+
+  it('DF-FU-09 promotes a proposal committed after a microtask and unrelated render', async () => {
+    const screen = await render(<DelayedCommitFormUpload />);
+    const form = screen.container.querySelector('form')!;
+    const file = new File(['delayed'], 'delayed.pdf', { type: 'application/pdf' });
+
+    await userEvent.upload(screen.getByLabelText('Drag files here or click to select'), file);
+    await Promise.resolve();
+    await screen.getByRole('button', { name: 'Unrelated render' }).click();
+    expect(new FormData(form).getAll('attachments')).toEqual([]);
+
+    await screen.getByRole('button', { name: 'Commit proposal' }).click();
+
+    await vi.waitFor(() => expect(new FormData(form).getAll('attachments')).toEqual([file]));
+  });
+
+  it('DF-FU-09 promotes concurrent proposals committed in reverse order', async () => {
+    const screen = await render(<ReverseCommitFormUpload />);
+    const form = screen.container.querySelector('form')!;
+    const first = new File(['first'], 'first.pdf', { type: 'application/pdf' });
+    const second = new File(['second'], 'second.pdf', { type: 'application/pdf' });
+    const input = screen.getByLabelText('Drag files here or click to select');
+
+    await userEvent.upload(input, first);
+    await userEvent.upload(input, second);
+    await screen.getByRole('button', { name: 'Commit second' }).click();
+    await vi.waitFor(() => expect(new FormData(form).getAll('attachments')).toEqual([second]));
+
+    await screen.getByRole('button', { name: 'Commit first' }).click();
+
+    await vi.waitFor(() =>
+      expect(new FormData(form).getAll('attachments')).toEqual([second, first]),
+    );
+  });
+
+  it('DF-FU-09 never associates a local file with a substituted identity', async () => {
+    const screen = await render(<SubstitutedIdentityFormUpload />);
+    const form = screen.container.querySelector('form')!;
+
+    await userEvent.upload(
+      screen.getByLabelText('Drag files here or click to select'),
+      new File(['local'], 'local.pdf', { type: 'application/pdf' }),
+    );
+
+    expect(screen.container.querySelector('.lyra-upload__item-name')).toHaveTextContent(
+      'local.pdf',
+    );
+    expect(new FormData(form).getAll('attachments')).toEqual([]);
+  });
+
+  it('DF-FU-09 releases pending proposals with the mounted instance on unmount', async () => {
+    const onSelect = vi.fn();
+    const onRetry = vi.fn();
+    const onCancel = vi.fn();
+    const onRemove = vi.fn();
+    const first = await render(
+      <FileUpload
+        name="attachments"
+        items={[]}
+        onSelect={onSelect}
+        onRetry={onRetry}
+        onCancel={onCancel}
+        onRemove={onRemove}
+      />,
+    );
+    const file = new File(['orphan'], 'orphan.pdf', { type: 'application/pdf' });
+    await userEvent.upload(first.getByLabelText('Drag files here or click to select'), file);
+    const proposedItem = onSelect.mock.calls[0][0].selections[0].proposedItem;
+
+    await cleanup();
+    const second = await render(
+      <form>
+        <FileUpload
+          name="attachments"
+          items={[proposedItem]}
+          onSelect={onSelect}
+          onRetry={onRetry}
+          onCancel={onCancel}
+          onRemove={onRemove}
+        />
+      </form>,
+    );
+
+    expect(
+      (second.getByLabelText('Drag files here or click to select').element() as HTMLInputElement)
+        .files,
+    ).toHaveLength(0);
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(onRetry).not.toHaveBeenCalled();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(onRemove).not.toHaveBeenCalled();
   });
 
   it(FILE_UPLOAD_SCENARIOS.announcements, async () => {

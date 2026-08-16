@@ -111,7 +111,8 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     >([]);
     const proposedFilesRef = useRef<Map<string, File>>(new Map());
     const committedFilesRef = useRef<Map<string, File>>(new Map());
-    const didSynchronizeInputRef = useRef(false);
+    const previousNameRef = useRef(name);
+    const nativeResetRequestedRef = useRef(false);
     const preservedPreHydrationFilesRef = useRef(false);
     const lastFocusedActionRef = useRef<string | null>(null);
     const [attemptHistory, setAttemptHistory] = useState<FileUploadAttemptHistory>(
@@ -120,6 +121,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     const [pendingIntentKeys, setPendingIntentKeys] = useState<ReadonlySet<FileUploadIntentKey>>(
       () => new Set(),
     );
+    const [nativeSyncRevision, setNativeSyncRevision] = useState(0);
     const inputId = `lyra-file-upload-${instanceId}-input`;
     const resolvedMessages = useMemo(() => ({ ...DEFAULT_MESSAGES, ...messages }), [messages]);
     const resolvedLabel = label ?? resolvedMessages.label;
@@ -138,6 +140,12 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       [pendingIntentKeys, visibleIntentKeys],
     );
     const selectionBlocked = !multiple && visibleItems.some(isActive);
+    const hasConfirmedLocalFile = items.some(
+      (item) =>
+        !isValidationItem(item) &&
+        (committedFilesRef.current.has(item.id) || proposedFilesRef.current.has(item.id)),
+    );
+    const nativeInputName = nativeSyncRevision === 0 || hasConfirmedLocalFile ? name : undefined;
 
     const setRootRef = useCallback(
       (node: HTMLDivElement | null) => {
@@ -159,14 +167,18 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       const input = inputRef.current;
       if (input === null) return;
 
-      if (!didSynchronizeInputRef.current) {
-        didSynchronizeInputRef.current = true;
-        if (preservedPreHydrationFilesRef.current) return;
-      }
+      let shouldSynchronize = nativeResetRequestedRef.current;
+      nativeResetRequestedRef.current = false;
+      const nameChanged = previousNameRef.current !== name;
+      previousNameRef.current = name;
 
       if (name === undefined) {
+        if (proposedFilesRef.current.size > 0 || committedFilesRef.current.size > 0) {
+          shouldSynchronize = true;
+        }
         proposedFilesRef.current.clear();
         committedFilesRef.current.clear();
+        if (shouldSynchronize || nameChanged) input.value = '';
         return;
       }
 
@@ -175,16 +187,21 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
         const item = controlledItems.get(itemId);
         if (item !== undefined && !isValidationItem(item)) {
           committedFilesRef.current.set(itemId, file);
+          shouldSynchronize = true;
         }
-        proposedFilesRef.current.delete(itemId);
+        if (item !== undefined) proposedFilesRef.current.delete(itemId);
       }
 
       for (const itemId of committedFilesRef.current.keys()) {
         const item = controlledItems.get(itemId);
         if (item === undefined || isValidationItem(item)) {
           committedFilesRef.current.delete(itemId);
+          shouldSynchronize = true;
         }
       }
+
+      if (nameChanged && committedFilesRef.current.size > 0) shouldSynchronize = true;
+      if (!shouldSynchronize) return;
 
       const committedFiles = items.flatMap((item) => {
         const file = committedFilesRef.current.get(item.id);
@@ -193,7 +210,15 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       replaceInputFiles(input, committedFiles);
       if (committedFiles.length === 0) input.removeAttribute('name');
       else input.name = name;
-    }, [items, name]);
+    }, [items, name, nativeSyncRevision]);
+
+    useEffect(
+      () => () => {
+        proposedFilesRef.current.clear();
+        committedFilesRef.current.clear();
+      },
+      [],
+    );
 
     useEffect(() => {
       const handleDocumentFocusIn = (event: globalThis.FocusEvent): void => {
@@ -464,16 +489,10 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       if (selections.length > 0) onSelect({ selections });
       if (name === undefined) input.value = '';
       else {
+        nativeResetRequestedRef.current = true;
         replaceInputFiles(input, []);
         input.removeAttribute('name');
-      }
-
-      if (name !== undefined) {
-        const proposedIds = selections.map((selection) => selection.id);
-        queueMicrotask(() => {
-          for (const itemId of proposedIds) proposedFilesRef.current.delete(itemId);
-          if ((input.files?.length ?? 0) === 0) input.removeAttribute('name');
-        });
+        setNativeSyncRevision((current) => current + 1);
       }
     };
 
@@ -605,7 +624,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
           ref={setInputRef}
           className="lyra-upload__input"
           type="file"
-          name={name}
+          name={nativeInputName}
           accept={accept}
           multiple={multiple}
           disabled={disabled}
