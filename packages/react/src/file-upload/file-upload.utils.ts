@@ -71,6 +71,7 @@ export interface FileUploadAttemptRecord {
   latestItem: FileUploadItem | null;
 }
 export type FileUploadAttemptHistory = ReadonlyMap<string, FileUploadAttemptRecord>;
+export type FileUploadAnnouncementHistory = ReadonlyMap<string, ReadonlySet<string>>;
 
 export function itemAttemptId(item: FileUploadItem): string | null {
   return 'attemptId' in item ? item.attemptId : null;
@@ -82,6 +83,23 @@ export function identityKey(...parts: readonly (string | number | null)[]): stri
 
 export function intentKey(item: FileUploadItem): FileUploadIntentKey {
   return identityKey(item.id, item.status, itemAttemptId(item));
+}
+
+export function pruneAnnouncementHistory(
+  history: FileUploadAnnouncementHistory,
+  items: readonly FileUploadItem[],
+): Map<string, Set<string>> {
+  const nextHistory = new Map<string, Set<string>>();
+
+  for (const item of items) {
+    if (item.status === 'uploading') continue;
+    const currentKey = identityKey(item.id, itemAttemptId(item), item.status);
+    if (history.get(item.id)?.has(currentKey)) {
+      nextHistory.set(item.id, new Set([currentKey]));
+    }
+  }
+
+  return nextHistory;
 }
 
 export function reconcileAttemptHistory(

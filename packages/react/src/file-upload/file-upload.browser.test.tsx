@@ -12,6 +12,7 @@ import {
   canRemove,
   canRetry,
   isActive,
+  pruneAnnouncementHistory,
   progressMilestone,
   validateFile,
 } from './file-upload.utils';
@@ -27,6 +28,46 @@ afterEach(async () => {
 });
 
 describe('FileUpload', () => {
+  it('DF-FU-12 retains announcement keys only for the current item attempt and state', () => {
+    const attempt3 = {
+      id: 'report',
+      name: 'report.pdf',
+      size: 1,
+      type: 'application/pdf',
+      status: 'error',
+      attemptId: 'attempt-3',
+      error: { kind: 'transport', message: 'Offline', retryable: true },
+    } as const satisfies FileUploadItem;
+    const history = new Map([
+      [
+        'report',
+        new Set([
+          '["report","attempt-1","error"]',
+          '["report","attempt-1","uploading",25]',
+          '["report","attempt-2","success"]',
+          '["report","attempt-3","uploading",25]',
+          '["report","attempt-3","error"]',
+        ]),
+      ],
+    ]);
+
+    const current = pruneAnnouncementHistory(history, [attempt3]);
+
+    expect(current).toEqual(new Map([['report', new Set(['["report","attempt-3","error"]'])]]));
+    expect(pruneAnnouncementHistory(current, [attempt3])).toEqual(current);
+    expect(history.get('report')?.size).toBe(5);
+
+    const attempt4 = { ...attempt3, attemptId: 'attempt-4' };
+    const nextHistory = new Map(current);
+    nextHistory.set(
+      'report',
+      new Set([...(current.get('report') ?? []), '["report","attempt-4","error"]']),
+    );
+    expect(pruneAnnouncementHistory(nextHistory, [attempt4])).toEqual(
+      new Map([['report', new Set(['["report","attempt-4","error"]'])]]),
+    );
+  });
+
   it('ignores unsupported MIME wildcards', () => {
     expect(
       validateFile(

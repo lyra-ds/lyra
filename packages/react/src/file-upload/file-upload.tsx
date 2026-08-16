@@ -14,6 +14,7 @@ import {
   intentKey,
   isActive,
   itemAttemptId,
+  pruneAnnouncementHistory,
   progressMilestone,
   reconcileAttemptHistory,
   validateFile,
@@ -276,9 +277,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
           announcementCandidates.map((candidate) => candidate.message).join(' '),
         );
       }
-      for (const previousItem of previousItems) {
-        if (!controlledIds.has(previousItem.id)) announcedKeysRef.current.delete(previousItem.id);
-      }
+      announcedKeysRef.current = pruneAnnouncementHistory(announcedKeysRef.current, visibleItems);
 
       const focusedItemId = lastFocusedActionRef.current;
       const removedFocusedIndex =
