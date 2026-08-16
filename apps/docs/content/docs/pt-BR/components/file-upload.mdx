@@ -1,86 +1,332 @@
 ---
 title: FileUpload
-description: Uma área de upload com seletor de arquivos, progresso, retorno de validação e remoção de arquivos.
+description: Seleção nativa de arquivos e uma visão acessível de um ciclo de upload controlado pelo consumidor.
 ---
 
 # FileUpload
 
-FileUpload é uma área de upload não controlada para adicionar arquivos pelo seletor do navegador ou por
-arrastar e soltar. Escolha `accept`, `multiple` e `maxSizeMB` conforme as regras reais do servidor; o
-retorno de tamanho ajuda a recuperar, mas não substitui validação no servidor.
+FileUpload renderiza seleção de arquivos, propostas de validação, estados do ciclo de vida, ações e
+anúncios. Sua aplicação é dona do array `items` e do transporte. Lyra nunca inicia uma requisição,
+avança o progresso, deduz sucesso nem remove um item por conta própria.
 
 ## Exemplos
 
-<Example id="default-items" title="Tipos aceitos e arquivos existentes" layout="block">
-  `accept` chega ao input de arquivo oculto e também compõe o texto auxiliar visível. `defaultItems`
-  inicia uma lista não controlada existente, útil quando o formulário já tem assets enviados.
+<Example id="default-items" title="Transporte controlado real" layout="block">
+  Este exemplo completo ecoa no reducer as identidades propostas pelo Lyra, retém o `File`
+  selecionado e o envia com `XMLHttpRequest`. O progresso vem de `XMLHttpRequest.upload`; um
+  `AbortController` controla cada tentativa, e o reducer rejeita resultados cujo `attemptId` não é
+  mais o atual.
 </Example>
 
-<Example id="on-files" title="Entrega de arquivo único" layout="block">
-  Defina `multiple={false}` quando a próxima etapa precisar de um arquivo. `onFiles` recebe objetos
-  `File` do navegador, enquanto `onChange` informa os itens de exibição e o progresso simulado.
+<Example id="on-files" title="Galeria de estados controlada" layout="block">
+  A galeria renderiza itens selecionados, em upload determinado e indeterminado, cancelando, com
+  sucesso, com erro de transporte repetível, com erro de validação e cancelados. Seus controles
+  confirmam mudanças de estado visíveis, mas nenhum transporte é iniciado.
 </Example>
 
-## Quando usar
+## Responsabilidade controlada
 
-Use FileUpload quando pessoas precisam adicionar um ou mais arquivos e necessitam de drop, seletor, validação e progresso no mesmo lugar.
+`items` é a única fonte de verdade renderizada. `onSelect` recebe objetos `File` reais junto das
+identidades propostas para item e tentativa. Ecoe cada `proposedItem` aceito antes de iniciar seu
+transporte e reutilize `proposedAttemptId` ao confirmar `uploading`. Uma falha de validação também é
+uma proposta: ecoe-a para exibir o erro ou ignore-a para rejeitar o arquivo sem criar uma linha.
+Trocar a identidade proposta por outra não é suportado.
 
-Prefira outro componente quando:
+Retry propõe uma nova identidade de tentativa. Vincule cada resultado assíncrono à identidade que o
+iniciou e descarte progresso, sucesso, erro ou confirmação de aborto vindos de tentativas antigas.
+Uma intenção de cancelamento não significa que a requisição já foi cancelada: primeiro confirme
+`canceling`, aborte o transporte correspondente e confirme `canceled` apenas quando o transporte
+confirmar o aborto. Um sucesso ou erro que vencer essa corrida ainda pode ser confirmado e será
+renderizado de forma fiel.
 
-- **O formulário só precisa do campo de arquivo simples do navegador** — use Input com `type="file"` quando não for necessária área de drop nem lista de upload.
-- **As pessoas editam metadados digitados, não adicionam um arquivo** — use Input ou Textarea para o valor.
-- **Arquivos remotos existentes precisam ser navegados e gerenciados** — use uma visualização de gerenciador de arquivos, não uma área só de upload.
+A remoção segue a mesma regra controlada. `onRemove` é uma intenção; a linha permanece até que o
+próximo valor de `items` omita seu ID. Depois dessa confirmação, Lyra restaura o foco para uma ação
+disponível próxima ou para o input nativo. Retry, cancelamento e remoção permanecem desabilitados
+enquanto a intenção atual está pendente, evitando ativações duplicadas.
 
-## Acessibilidade
+## Formulários nativos e melhoria progressiva
 
-- A área de drop é um `<button>` nativo, então recebe foco e abre o input de arquivo nativo oculto ao clicar.
-- Arrastar altera o estado visual, enquanto pessoas no teclado mantêm o mesmo caminho do seletor pelo botão.
-- Cada item concluído inclui `.lyra-upload__check` com `role="img"` e nome acessível “Upload complete” por padrão. Passe `doneLabel` para traduzi-lo; `removeLabel` recebe o nome de cada arquivo para que o rótulo de remoção siga a ordem natural do idioma.
-- O `label` visível é texto do botão, não um `<label>` de formulário. Deixe ação e regras de arquivo claras com `label`, `hint`, `accept` e instruções próximas.
+A área visível é um `<label>` real associado a um `<input type="file">` focalizável. Com `name`,
+Lyra retém arquivos válidos selecionados por esse input e sincroniza itens locais confirmados de
+volta para `input.files`; assim, o `FormData` reflete remoções. Um item inserido externamente não
+possui um objeto `File` do navegador e não pode ser sintetizado no envio nativo; quando necessário,
+envie seu identificador do servidor em outro campo. Sem `name`, a seleção serve apenas ao transporte
+e não cria entrada no formulário.
 
-## API e código
+O markup renderizado pelo servidor e a primeira renderização React mantêm as mesmas relações do
+input, estados, atributos de progresso e região viva vazia. Antes do JavaScript, o input rotulado
+continua permitindo seleção e envio nativos. Arrastar e soltar, atualizações ao vivo, retry,
+cancelamento e remoção são melhorias e não devem aparecer como controles inativos sem JavaScript.
+
+## Anúncios e foco
+
+Lyra anuncia seleção, validação, cancelamento em andamento, sucesso, erros de transporte, upload
+cancelado e remoção confirmada por uma única região viva persistente e polida. O progresso
+determinado é anunciado apenas ao cruzar 25%, 50%, 75% ou 100%, não a cada evento. Tentativas
+antigas não substituem o estado visível nem geram anúncio. O seletor nativo e todas as ações mantêm
+foco visível; remover a linha em foco só move o foco após a remoção controlada ser confirmada.
+
+## API e adaptadores
 
 <StackTabs>
   <StackPanel stack="react">
     <StackApi stack="react" />
+
+As mensagens de callback do React podem ser funções localizadas. `FileUpload` encaminha uma ref
+para sua raiz e mantém o input nativo habilitado durante o bloqueio temporário de substituição de
+arquivo único, preservando a participação no formulário.
+
   </StackPanel>
 
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-O componente React cuida do seletor, eventos de drop e progresso. Esta marcação mostra as classes públicas usadas pelo estado renderizado do upload:
+O controller Alpine pai `attachmentUpload` abaixo é dono de `items`, do transporte real, da política
+de aborto e das verificações contra tentativas antigas. `x-model` envia toda substituição confirmada
+de volta pelo caminho único de reconciliação do Lyra. Os quatro eventos são notificações de
+intenção; nenhum inicia ou conclui transporte dentro do Lyra.
 
-```html
-<div class="lyra-upload">
-  <button class="lyra-upload__zone" type="button">
-    <span class="lyra-upload__zone-icon" aria-hidden="true"></span>
-    <span class="lyra-upload__zone-label">Arraste arquivos aqui ou clique para selecionar</span>
-    <span class="lyra-upload__zone-hint">.pdf,.png · Até 5 MB por arquivo</span>
-    <input type="file" accept=".pdf,.png" multiple hidden tabindex="-1" />
-  </button>
-  <ul class="lyra-upload__list">
-    <li class="lyra-upload__item">
-      <span class="lyra-upload__item-icon" aria-hidden="true"></span>
-      <span class="lyra-upload__item-body">
-        <span class="lyra-upload__item-row">
-          <span class="lyra-upload__item-name">guia-da-marca.pdf</span>
-          <span class="lyra-upload__item-meta">825 KB</span>
-        </span>
-      </span>
-      <span class="lyra-upload__check" role="img" aria-label="Upload complete"></span>
-      <button
-        class="lyra-upload__remove"
-        type="button"
-        aria-label="Remove guia-da-marca.pdf"
-      ></button>
-    </li>
-  </ul>
-</div>
+```js
+document.addEventListener('alpine:init', () => {
+  Alpine.data('attachmentUpload', () => ({
+    uploadItems: [],
+    files: new Map(),
+    controllers: new Map(),
+
+    updateAttempt(id, attemptId, statuses, update) {
+      this.uploadItems = this.uploadItems.map((item) =>
+        item.id === id && item.attemptId === attemptId && statuses.includes(item.status)
+          ? update(item)
+          : item,
+      );
+    },
+
+    beginUpload(file, id, attemptId) {
+      const source = this.uploadItems.find((item) => item.id === id);
+      const canStart =
+        source &&
+        (source.status === 'selected' ||
+          source.status === 'canceled' ||
+          (source.status === 'error' &&
+            source.error.kind === 'transport' &&
+            source.error.retryable));
+      if (!canStart) {
+        throw new Error(`Upload ${id} is not ready for a new attempt.`);
+      }
+
+      this.uploadItems = this.uploadItems.map((item) =>
+        item.id === id
+          ? {
+              id: item.id,
+              name: item.name,
+              size: item.size,
+              type: item.type,
+              status: 'uploading',
+              attemptId,
+              progress: { kind: 'indeterminate' },
+            }
+          : item,
+      );
+
+      const controller = new AbortController();
+      const request = new XMLHttpRequest();
+      const abortRequest = () => request.abort();
+      this.controllers.set(attemptId, controller);
+      controller.signal.addEventListener('abort', abortRequest, { once: true });
+
+      request.upload.addEventListener('progress', (event) => {
+        const progress = event.lengthComputable
+          ? { kind: 'determinate', value: Math.round((event.loaded / event.total) * 100) }
+          : { kind: 'indeterminate' };
+        this.updateAttempt(id, attemptId, ['uploading', 'canceling'], (item) => ({
+          ...item,
+          progress,
+        }));
+      });
+      request.addEventListener('load', () => {
+        if (request.status >= 200 && request.status < 300) {
+          this.updateAttempt(id, attemptId, ['uploading', 'canceling'], (item) => ({
+            id: item.id,
+            name: item.name,
+            size: item.size,
+            type: item.type,
+            status: 'success',
+            attemptId,
+          }));
+          return;
+        }
+
+        this.failUpload(id, attemptId, `The server rejected the upload (${request.status}).`);
+      });
+      request.addEventListener('error', () => {
+        this.failUpload(id, attemptId, 'The upload could not reach the server.');
+      });
+      request.addEventListener('abort', () => {
+        this.updateAttempt(id, attemptId, ['canceling'], (item) => ({
+          id: item.id,
+          name: item.name,
+          size: item.size,
+          type: item.type,
+          status: 'canceled',
+          attemptId,
+        }));
+      });
+      request.addEventListener('loadend', () => {
+        controller.signal.removeEventListener('abort', abortRequest);
+        if (this.controllers.get(attemptId) === controller) {
+          this.controllers.delete(attemptId);
+        }
+      });
+
+      request.open('POST', '/api/uploads');
+      request.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      request.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
+      request.send(file);
+    },
+
+    failUpload(id, attemptId, message) {
+      this.updateAttempt(id, attemptId, ['uploading', 'canceling'], (item) => ({
+        id: item.id,
+        name: item.name,
+        size: item.size,
+        type: item.type,
+        status: 'error',
+        attemptId,
+        error: { kind: 'transport', message, retryable: true },
+      }));
+    },
+
+    startUploads({ selections }) {
+      this.uploadItems = [
+        ...this.uploadItems,
+        ...selections.map(({ proposedItem }) => proposedItem),
+      ];
+
+      for (const selection of selections) {
+        if (typeof selection.proposedAttemptId !== 'string') continue;
+        this.files.set(selection.id, selection.file);
+        this.beginUpload(selection.file, selection.id, selection.proposedAttemptId);
+      }
+    },
+
+    retryUpload({ id, proposedAttemptId }) {
+      const file = this.files.get(id);
+      if (!file) throw new Error(`No local File is available to retry upload ${id}.`);
+      this.beginUpload(file, id, proposedAttemptId);
+    },
+
+    cancelUpload({ id, attemptId }) {
+      const controller = this.controllers.get(attemptId);
+      if (!controller) throw new Error(`No active transport exists for upload ${id}.`);
+      this.updateAttempt(id, attemptId, ['uploading'], (item) => ({
+        ...item,
+        status: 'canceling',
+      }));
+      controller.abort();
+    },
+
+    removeUpload({ id }) {
+      this.files.delete(id);
+      this.uploadItems = this.uploadItems.filter((item) => item.id !== id);
+    },
+  }));
+});
 ```
 
-  </StackPanel>
+```html
+<form x-data="attachmentUpload" method="post" enctype="multipart/form-data">
+  <div
+    id="attachment-upload"
+    class="lyra-upload"
+    data-state="idle"
+    x-data="lyraFileUpload({
+      name: 'attachments[]',
+      accept: 'image/*,.pdf',
+      maxSizeMB: 10,
+      multiple: true
+    })"
+    x-modelable="items"
+    x-model="uploadItems"
+    @lyra:file-upload:select="startUploads($event.detail)"
+    @lyra:file-upload:retry="retryUpload($event.detail)"
+    @lyra:file-upload:cancel="cancelUpload($event.detail)"
+    @lyra:file-upload:remove="removeUpload($event.detail)"
+  >
+    <label class="lyra-upload__zone" for="attachment-upload-input" x-bind="zone">
+      <span class="lyra-upload__zone-icon" aria-hidden="true"></span>
+      <span class="lyra-upload__zone-label">Escolha anexos</span>
+      <span class="lyra-upload__zone-hint">Imagens ou PDF, até 10 MB por arquivo</span>
+    </label>
+    <input
+      id="attachment-upload-input"
+      class="lyra-upload__input"
+      type="file"
+      name="attachments[]"
+      accept="image/*,.pdf"
+      multiple
+      x-bind="input"
+    />
 
-  <StackPanel stack="blade">
-    <StackApi stack="blade" />
+    <ul class="lyra-upload__list">
+      <template x-for="item in items" :key="item.id">
+        <li class="lyra-upload__item" x-bind="itemBindings(item)">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name" x-text="item.name"></span>
+              <span
+                class="lyra-upload__item-meta"
+                x-text="item.status === 'error' ? item.error.message : item.status"
+              ></span>
+            </span>
+            <template x-if="item.status === 'uploading' || item.status === 'canceling'">
+              <progress class="lyra-upload__bar" x-bind="progressBindings(item)"></progress>
+            </template>
+          </span>
+
+          <template x-if="item.status === 'uploading'">
+            <button class="lyra-upload__cancel" x-bind="actionBindings('cancel', item)">
+              Cancelar
+            </button>
+          </template>
+          <template
+            x-if="item.status === 'canceled' || (item.status === 'error' && item.error.retryable)"
+          >
+            <button class="lyra-upload__retry" x-bind="actionBindings('retry', item)">
+              Tentar novamente
+            </button>
+          </template>
+          <template
+            x-if="item.status === 'selected' || item.status === 'success' || item.status === 'canceled' || item.status === 'error'"
+          >
+            <button class="lyra-upload__remove" x-bind="actionBindings('remove', item)">
+              Remover
+            </button>
+          </template>
+        </li>
+      </template>
+    </ul>
+
+    <span
+      class="lyra-upload__live lyra-visually-hidden"
+      aria-live="polite"
+      aria-atomic="true"
+      x-bind="liveRegion"
+    ></span>
+  </div>
+
+  <button type="submit">Enviar</button>
+</form>
+```
+
+A raiz precisa de um `id` único criado no servidor. Renderize no servidor o label, as restrições do
+input, o conteúdo conhecido de item/status e a região viva vazia. Coloque botões de operação dentro
+dos templates Alpine para que não se tornem controles inativos antes da melhoria. Mensagens Alpine
+são strings serializáveis e aceitam `{name}`, `{percent}`, `{accept}` e `{maxSizeMB}`.
+
   </StackPanel>
 </StackTabs>
+
+O Blade v0.10.0 ainda implementa o comportamento anterior de upload e, por isso, está
+intencionalmente adiado neste ciclo de vida. O aviso de ausência do Blade nesta página vem dos
+metadados de suporte do componente e permanecerá até uma versão Blade comprovar o mesmo contrato
+controlado.

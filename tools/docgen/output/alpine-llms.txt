@@ -131,10 +131,14 @@ Documented as `file-manager`. Mount with `x-data="lyraFileManager({ … })"`.
 
 Documented as `file-upload`. Mount with `x-data="lyraFileUpload({ … })"`.
 
-- `maxSizeMB?: number` — Files larger than this many megabytes are added as error items.
-- `multiple?: boolean` — Whether more than one file can be added. Defaults to `true`.
-- `uploadDuration?: number` — Simulated upload duration in milliseconds. Defaults to `1800`.
-- `defaultItems?: LyraFileUploadItem[]` — Items used to seed the upload list.
+- `items?: LyraFileUploadItem[]`
+- `name?: string`
+- `accept?: string`
+- `maxSizeMB?: number`
+- `multiple?: boolean`
+- `disabled?: boolean`
+- `required?: boolean`
+- `messages?: LyraFileUploadMessages`
 ### lyraPopover
 
 Documented as `popover`. Mount with `x-data="lyraPopover({ … })"`.

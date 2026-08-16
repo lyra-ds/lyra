@@ -51,11 +51,22 @@ describe('public support matrix', () => {
     }
   });
 
-  it('publishes all 71 released Blade entries at their snapshot binding level', () => {
+  it('publishes every claimed Blade entry at its snapshot binding level', () => {
     const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
     const bladeEntries = components.filter((entry) => entry.stacks.includes('blade'));
+    const documentedSlugs = new Set(components.map((entry) => entry.slug));
+    const intentionallyUnsupportedReleased = components.filter(
+      (entry) =>
+        !entry.stacks.includes('blade') &&
+        bladeApi.components.some((component) => component.slug === entry.slug),
+    );
+    const releasedDocumentedEntries = bladeApi.components.filter((component) =>
+      documentedSlugs.has(component.slug),
+    );
 
-    expect(bladeEntries).toHaveLength(71);
+    expect(bladeEntries).toHaveLength(
+      releasedDocumentedEntries.length - intentionallyUnsupportedReleased.length,
+    );
     for (const entry of bladeEntries) {
       const releasedComponents = bladeApi.components.filter(
         (component) => component.slug === entry.slug,
@@ -117,6 +128,15 @@ describe('public support matrix', () => {
         reevaluationOwnerKey: 'supportOwnerBladeMaintainers',
         reasonKey: 'absenceBladeThemeProvider',
       },
+    });
+  });
+
+  it('defers Blade for the controlled FileUpload lifecycle', () => {
+    const fileUpload = getSupportMatrixRows().find((row) => row.slug === 'file-upload');
+
+    expect(fileUpload?.stacks.blade).toMatchObject({
+      level: 'unsupported',
+      gap: { reasonKey: 'absenceBladeFileUploadLifecycle' },
     });
   });
 

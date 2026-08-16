@@ -88,6 +88,7 @@
   "absenceAlpineCalendarView": "Deferred by decision — CalendarView has no Alpine binding yet.",
   "absenceBladePending": "The released Blade v0.10.0 API snapshot has no component for this catalog entry.",
   "absenceBladeThemeProvider": "Blade has no provider shape. The theme lives in the @lyraThemeScript directive plus the Alpine theme store.",
+  "absenceBladeFileUploadLifecycle": "Blade v0.10.0 still exposes the previous upload contract. Use React or Alpine until a Blade release proves the controlled lifecycle.",
   "absenceBladeCalendarView": "Deferred by decision — CalendarView has no Blade counterpart yet.",
   "stackHtml": "HTML",
   "absenceHtmlNever": "This component has no canonical HTML of its own.",

@@ -679,32 +679,21 @@ export declare function FileManager(props: FileManagerProps): JSX.Element;
 
 ### FileUpload
 ```ts
-/** Props for {@link FileUpload}. */
-export interface FileUploadProps {
-  /** Primary dropzone text. */
-  label?: string;
-  /** Helper text, overriding the generated accept/size description. */
-  hint?: string;
-  /** Accepted file types, forwarded to the hidden file input and shown in the helper text. */
+export interface FileUploadProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'defaultValue' | 'onCancel' | 'onSelect'> {
+  items: readonly FileUploadItem[];
+  onSelect: (intent: FileUploadSelectIntent) => void;
+  onRetry: (intent: FileUploadRetryIntent) => void;
+  onCancel: (intent: FileUploadCancelIntent) => void;
+  onRemove: (intent: FileUploadRemoveIntent) => void;
+  name?: string;
   accept?: string;
-  /** Files larger than this many megabytes are added as error items. */
   maxSizeMB?: number;
-  /** Whether more than one file can be added. Default `true`. */
   multiple?: boolean;
-  /** Simulated upload duration in milliseconds. Default `1800`. */
-  uploadDuration?: number;
-  /** Items used to seed the uncontrolled list. */
-  defaultItems?: FileUploadItem[];
-  /** Called with the real browser `File` objects whenever files are added. */
-  onFiles?: (files: File[]) => void;
-  /** Called whenever the internal item list changes. */
-  onChange?: (items: FileUploadItem[]) => void;
-  /** Accessible name for the completed-upload icon. Default: `"Upload complete"`. */
-  doneLabel?: string;
-  /** Accessible name for each remove button. Receives the file name. Default: `` (name) => `Remove ${name}` ``. */
-  removeLabel?: (name: string) => string;
-  /** Class appended after the public `.lyra-upload` class. */
-  className?: string;
+  disabled?: boolean;
+  required?: boolean;
+  label?: string;
+  hint?: string;
+  messages?: FileUploadMessages;
 }
 export declare function FileUpload(props: FileUploadProps): JSX.Element;
 ```

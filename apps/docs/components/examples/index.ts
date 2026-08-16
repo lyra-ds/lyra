@@ -23,8 +23,8 @@ import { SelectBasic } from './select/basic';
 import { SelectSizesAndError } from './select/sizes-and-error';
 import { ComboboxBasic } from './combobox/basic';
 import { ComboboxControlled } from './combobox/controlled';
-import { FileUploadDefaultItems } from './file-upload/default-items';
-import { FileUploadOnFiles } from './file-upload/on-files';
+import { FileUploadTransport } from './file-upload/default-items';
+import { FileUploadStates } from './file-upload/on-files';
 import { AvatarInitialsAndStatus } from './avatar/initials-and-status';
 import { AvatarSizesAndShapes } from './avatar/sizes-and-shapes';
 import { AvatarImage } from './avatar/image';
@@ -373,8 +373,8 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     controlled: ComboboxControlled,
   },
   'file-upload': {
-    'default-items': FileUploadDefaultItems,
-    'on-files': FileUploadOnFiles,
+    'default-items': FileUploadTransport,
+    'on-files': FileUploadStates,
   },
   avatar: {
     'initials-and-status': AvatarInitialsAndStatus,
