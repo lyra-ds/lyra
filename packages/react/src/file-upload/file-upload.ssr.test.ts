@@ -28,6 +28,8 @@ describe('FileUpload SSR', () => {
     expect(html).toContain('<label');
     expect(html).toContain('type="file"');
     expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-atomic="true"');
+    expect(html).toMatch(/aria-live="polite" aria-atomic="true"><\/span>/);
     expect(html).toContain('data-state="active"');
     expect(html).toContain('<progress');
   });

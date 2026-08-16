@@ -345,6 +345,32 @@ describe('FileUpload', () => {
     await expectNoAxeViolations(screen.container);
   });
 
+  it('names controlled progress when the consumer item ID contains whitespace', async () => {
+    const screen = await render(
+      <FileUpload
+        items={[
+          {
+            id: 'upload 1',
+            name: 'upload.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'uploading',
+            attemptId: 'upload-1',
+            progress: { kind: 'determinate', value: 48 },
+          },
+        ]}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    await expect(
+      screen.getByRole('progressbar', { name: 'upload.pdf is 48% uploaded.' }),
+    ).toBeVisible();
+  });
+
   it('keeps controlled content readable while disabled and required', async () => {
     const screen = await render(
       <FileUpload

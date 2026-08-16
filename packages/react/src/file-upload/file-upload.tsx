@@ -29,6 +29,10 @@ const DEFAULT_MESSAGES: Required<FileUploadMessages> = {
   removed: (name) => `${name} removed.`,
 };
 
+function toIdSegment(value: string): string {
+  return Array.from(value, (character) => character.codePointAt(0)!.toString(36)).join('-');
+}
+
 export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadProps>(
   function FileUpload(
     {
@@ -117,7 +121,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     };
 
     const renderItem = (item: FileUploadItem) => {
-      const statusId = `lyra-file-upload-${instanceId}-status-${item.id}`;
+      const statusId = `lyra-file-upload-${instanceId}-status-${toIdSegment(item.id)}`;
       const status =
         item.status === 'selected'
           ? resolvedMessages.selected(item.name)
