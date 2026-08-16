@@ -1,9 +1,17 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REQUIRED_CHECKS = Object.freeze(['types', 'build', 'ssr', 'hydration', 'browser']);
@@ -19,17 +27,29 @@ function formatCommand(command, args) {
   return [command, ...args].join(' ');
 }
 
+function formatCommandFailure(command, args, cwd, result, summary) {
+  return (
+    `${summary}: ${formatCommand(command, args)}\n` +
+    `cwd: ${cwd}\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`
+  );
+}
+
 export function runCommand(command, args, { cwd, env = process.env, spawn = spawnSync }) {
   const result = spawn(command, args, { cwd, env, encoding: 'utf8' });
   if (result.error) {
     throw new Error(
-      `Command failed to start: ${formatCommand(command, args)}\ncwd: ${cwd}\n${result.error.message}`,
+      formatCommandFailure(
+        command,
+        args,
+        cwd,
+        result,
+        `Command failed to start (${result.error.message})`,
+      ),
     );
   }
   if (result.status !== 0) {
     throw new Error(
-      `Command failed (${result.status}): ${formatCommand(command, args)}\n` +
-        `cwd: ${cwd}\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`,
+      formatCommandFailure(command, args, cwd, result, `Command failed (${result.status})`),
     );
   }
   return { stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
@@ -92,14 +112,36 @@ export default defineConfig({
   );
 }
 
-function findPackedArtifacts(packDirectory) {
-  const tarballs = readdirSync(packDirectory).filter((entry) => entry.endsWith('.tgz'));
-  const react = tarballs.find((entry) => entry.startsWith('lyra-ds-react-'));
-  const styles = tarballs.find((entry) => entry.startsWith('lyra-ds-styles-'));
-  if (react === undefined || styles === undefined) {
-    throw new Error(`Expected React and Styles tarballs in ${packDirectory}`);
+function expectedTarball(repoRoot, packageDirectory) {
+  const manifest = JSON.parse(
+    readFileSync(join(repoRoot, 'packages', packageDirectory, 'package.json'), 'utf8'),
+  );
+  const packageName = manifest.name.replace(/^@/, '').replaceAll('/', '-');
+  return `${packageName}-${manifest.version}.tgz`;
+}
+
+export function findPackedArtifacts(packDirectory, repoRoot = defaultRepoRoot) {
+  const expected = {
+    react: expectedTarball(repoRoot, 'react'),
+    styles: expectedTarball(repoRoot, 'styles'),
+  };
+  const expectedEntries = Object.values(expected).toSorted();
+  const actualEntries = readdirSync(packDirectory)
+    .filter((entry) => entry.endsWith('.tgz'))
+    .toSorted();
+  if (
+    actualEntries.length !== expectedEntries.length ||
+    !actualEntries.every((entry, index) => entry === expectedEntries[index])
+  ) {
+    throw new Error(
+      `Expected exactly these packed artifacts in ${packDirectory}: ${expectedEntries.join(', ')}; ` +
+        `received: ${actualEntries.join(', ') || '(none)'}`,
+    );
   }
-  return { react: join(packDirectory, react), styles: join(packDirectory, styles) };
+  return {
+    react: join(packDirectory, expected.react),
+    styles: join(packDirectory, expected.styles),
+  };
 }
 
 function createRuntime(repoRoot = defaultRepoRoot) {
@@ -114,7 +156,9 @@ function createRuntime(repoRoot = defaultRepoRoot) {
       copyDirectoryContents(join(fixtureRoot, 'shared'), join(destination, 'src'));
     },
     writeScaffolding,
-    findTarballs: findPackedArtifacts,
+    findTarballs(packDirectory) {
+      return findPackedArtifacts(packDirectory, repoRoot);
+    },
     run: runCommand,
     remove(path) {
       rmSync(path, { recursive: true, force: true });
