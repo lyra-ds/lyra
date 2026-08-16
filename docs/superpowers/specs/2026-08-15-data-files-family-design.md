@@ -1,6 +1,6 @@
 # Data and Files Family Design
 
-**Status:** Proposed — awaiting document review
+**Status:** Approved
 
 **Date:** 2026-08-15
 
@@ -941,25 +941,25 @@ React and Alpine/HTML examples.
 
 The specification is approved when:
 
-- [ ] the P1 synthetic lifecycle is replaced by one consumer-controlled state
+- [x] the P1 synthetic lifecycle is replaced by one consumer-controlled state
       and intent contract with no unresolved state, identity, or race decision;
-- [ ] React signatures, Alpine options/events/bindings, CSS classes/selectors,
+- [x] React signatures, Alpine options/events/bindings, CSS classes/selectors,
       and adapter differences are exact and complete;
-- [ ] controlled-only ownership and native form participation have complete
+- [x] controlled-only ownership and native form participation have complete
       rationale and examples;
-- [ ] keyboard, focus, native semantics, announcements, responsive behavior,
+- [x] keyboard, focus, native semantics, announcements, responsive behavior,
       RTL, localization, zoom, forced colors, and reduced motion are objective;
-- [ ] React 18/19, three-engine browser, SSR, hydration, Alpine reconnection,
+- [x] React 18/19, three-engine browser, SSR, hydration, Alpine reconnection,
       no-JavaScript, automated accessibility, visual, parity, package, bundle,
       runtime, and manual evidence each have a stable scenario;
-- [ ] the immutable baseline and versioned comparison path preserve both
+- [x] the immutable baseline and versioned comparison path preserve both
       historical evidence and enforceable current gates;
-- [ ] the migration names every removed API, coordinated package changeset,
+- [x] the migration names every removed API, coordinated package changeset,
       documentation update, and Blade absence boundary;
-- [ ] Table, DataTable, and FileManager remain boundary-only and the first
+- [x] Table, DataTable, and FileManager remain boundary-only and the first
       implementation plan is limited to FileUpload;
-- [ ] the Lyra maintainer approves this document and the accessibility reviewer
-      approves `DF-FU-M01` through `DF-FU-M04` before runtime merge.
+- [x] the Lyra maintainer approves this document; runtime merge remains gated on
+      accessibility-reviewer approval of `DF-FU-M01` through `DF-FU-M04`.
 
 Once this document reaches `Approved`, the next artifact is a test-first,
 FileUpload-only implementation plan. Production code must not begin before that
