@@ -25,6 +25,8 @@ const FIXTURE_SOURCE = join(TOOL_DIR, 'fixture');
 const BASELINE_DIR = join(REPO, 'docs', 'superpowers', 'baselines', 'lyra-v1');
 const BASELINE_JSON = join(BASELINE_DIR, 'bundles.json');
 const BASELINE_MARKDOWN = join(BASELINE_DIR, 'bundles.md');
+const COMPARISON_ROOT = join(BASELINE_DIR, 'comparisons');
+const CURRENT_JSON = join(BASELINE_DIR, 'current.json');
 const EXTERNALS = ['react', 'react-dom', 'react-dom/client'];
 const SCENARIO_NAMES = ['form', 'overlays', 'application-shell', 'scheduling', 'files-data'];
 const CSS_ENTRIES = {
@@ -406,6 +408,7 @@ async function measureStandalone(
       configuredLimit: entry.limit,
       sizeLimit: sizeByName.get(entry.name),
       assets: measurement.assets,
+      modules: measurement.modules,
     });
   }
 
@@ -426,6 +429,7 @@ async function measureStandalone(
       configuredLimit: entry.limit,
       sizeLimit: sizeByName.get(entry.name),
       assets: measurement.assets,
+      modules: measurement.modules,
     });
   }
   return { react, alpine };
@@ -475,7 +479,7 @@ async function measureCss(fixture, buildFunction) {
   return measurements;
 }
 
-function environment(fixture, tarballs) {
+function environment(fixture, tarballs, exactCommand) {
   return {
     operatingSystem: `${platform()} ${release()}`,
     architecture: arch(),
@@ -493,7 +497,7 @@ function environment(fixture, tarballs) {
       resolvedGraph: fixture.resolvedGraph,
       resolvedGraphSha256: fixture.resolvedGraphSha256,
     },
-    exactCommand: 'pnpm baseline:bundles --write',
+    exactCommand,
     cacheState: 'cold: fresh temporary consumer and pnpm store',
     brotli: {
       mode: 'text',
@@ -503,7 +507,7 @@ function environment(fixture, tarballs) {
   };
 }
 
-async function collectBaseline() {
+export async function collectBaseline({ exactCommand = 'pnpm baseline:bundles --write' } = {}) {
   const tempRoot = mkdtempSync(join(tmpdir(), 'lyra-bundle-baseline-'));
   try {
     console.log('Building and packing Lyra packages...');
@@ -538,7 +542,7 @@ async function collectBaseline() {
       measuredAt: new Date().toISOString(),
       revision: run('git', ['rev-parse', 'HEAD'], { cwd: REPO }),
       owner: 'Lyra maintainers',
-      environment: environment(fixture, tarballs),
+      environment: environment(fixture, tarballs, exactCommand),
       externals: EXTERNALS,
       standalone,
       scenarios,
@@ -703,6 +707,235 @@ export function compareBaseline(expected, actual) {
   }
 }
 
+function requiredEntry(entries, predicate, label) {
+  const matches = entries.filter(predicate);
+  if (matches.length !== 1) {
+    throw new Error(`expected exactly one ${label} measurement, found ${matches.length}`);
+  }
+  return matches[0];
+}
+
+function bundleMetrics(entry, assetTypeName = 'javascript') {
+  const assets = assetTypeName === 'css' ? entry : entry.assets?.[assetTypeName];
+  if (!assets) throw new Error(`missing ${assetTypeName} bundle measurements`);
+  return {
+    rawBytes: assets.rawBytes,
+    minifiedBytes: assets.minifiedBytes,
+    brotliBytes: assets.brotliBytes,
+  };
+}
+
+function numericDelta(before, after) {
+  const absolute = after - before;
+  return {
+    absolute,
+    percentage: before === 0 ? null : Number(((absolute / before) * 100).toFixed(2)),
+  };
+}
+
+function moduleDelta(beforeModules = [], afterModules = []) {
+  const beforeByName = new Map(beforeModules.map((entry) => [entry.module, entry]));
+  const afterByName = new Map(afterModules.map((entry) => [entry.module, entry]));
+  return {
+    removedModules: beforeModules.filter((entry) => !afterByName.has(entry.module)),
+    addedModules: afterModules.filter((entry) => !beforeByName.has(entry.module)),
+    moduleContributions: {
+      before: beforeModules,
+      after: afterModules,
+    },
+  };
+}
+
+function comparisonEntry(beforeSource, afterSource, assetTypeName = 'javascript') {
+  const before = bundleMetrics(beforeSource, assetTypeName);
+  const after = bundleMetrics(afterSource, assetTypeName);
+  const beforeAssets = assetTypeName === 'css' ? beforeSource : beforeSource.assets[assetTypeName];
+  const afterAssets = assetTypeName === 'css' ? afterSource : afterSource.assets[assetTypeName];
+  return {
+    before,
+    after,
+    deltas: Object.fromEntries(
+      Object.keys(before).map((metric) => [metric, numericDelta(before[metric], after[metric])]),
+    ),
+    ...moduleDelta(beforeSource.modules, afterSource.modules),
+    metafiles: {
+      before: {
+        emittedFiles: beforeAssets.files ?? [],
+        modules: beforeSource.modules ?? [],
+      },
+      after: {
+        emittedFiles: afterAssets.files ?? [],
+        modules: afterSource.modules ?? [],
+      },
+    },
+  };
+}
+
+function fileUploadSources(baseline) {
+  return {
+    reactFileUpload: requiredEntry(
+      baseline.standalone.react,
+      (entry) => entry.publicEntry === '@lyra-ds/react/file-upload',
+      'React FileUpload',
+    ),
+    alpineAdapter: requiredEntry(
+      baseline.standalone.alpine,
+      (entry) => entry.publicEntry === '@lyra-ds/alpine',
+      'Alpine adapter',
+    ),
+    css: baseline.css['styles.css'],
+    filesData: baseline.scenarios['files-data'],
+  };
+}
+
+export function createComparison(kind, before, after) {
+  if (kind !== 'file-upload') throw new Error(`unsupported bundle comparison: ${kind}`);
+  if (before.revision === after.revision) {
+    throw new Error('comparison before and after revisions must differ');
+  }
+  const beforeSources = fileUploadSources(before);
+  const afterSources = fileUploadSources(after);
+  if (!beforeSources.css || !afterSources.css) throw new Error('missing styles.css measurement');
+  if (!beforeSources.filesData || !afterSources.filesData) {
+    throw new Error('missing files-data scenario measurement');
+  }
+  const entries = {
+    reactFileUpload: comparisonEntry(beforeSources.reactFileUpload, afterSources.reactFileUpload),
+    alpineAdapter: comparisonEntry(beforeSources.alpineAdapter, afterSources.alpineAdapter),
+    css: comparisonEntry(beforeSources.css, afterSources.css, 'css'),
+    filesData: comparisonEntry(beforeSources.filesData, afterSources.filesData),
+  };
+  entries.reactFileUpload.sizeLimit = {
+    before: beforeSources.reactFileUpload.sizeLimit,
+    after: afterSources.reactFileUpload.sizeLimit,
+  };
+  const reactSizeLimit = afterSources.reactFileUpload.sizeLimit;
+  if (reactSizeLimit?.sizeLimit !== 8_000) {
+    throw new Error('React FileUpload Size Limit must remain exactly 8 kB');
+  }
+  const affectedEntries = Object.entries(entries).map(([name, entry]) => ({
+    name,
+    deltaBytes: entry.deltas.brotliBytes.absolute,
+    passed: entry.deltas.brotliBytes.absolute <= 3_000,
+  }));
+  const budgets = {
+    reactFileUploadAbsolute: {
+      limitBytes: 8_000,
+      actualBytes: reactSizeLimit.size,
+      passed: reactSizeLimit.passed === true && reactSizeLimit.size <= 8_000,
+    },
+    complexDelta: {
+      limitBytesPerEntry: 3_000,
+      entries: affectedEntries,
+      passed: affectedEntries.every((entry) => entry.passed),
+    },
+  };
+  return {
+    schemaVersion: 1,
+    kind,
+    before,
+    after,
+    entries,
+    budgets,
+    result: budgets.reactFileUploadAbsolute.passed && budgets.complexDelta.passed ? 'pass' : 'fail',
+  };
+}
+
+function signedBytes(value) {
+  return `${value >= 0 ? '+' : ''}${formatBytes(value)}`;
+}
+
+export async function renderComparisonMarkdown(comparison) {
+  const lines = [
+    '# FileUpload bundle comparison',
+    '',
+    `- Before revision: \`${comparison.before.revision}\``,
+    `- After revision: \`${comparison.after.revision}\``,
+    `- Result: **${comparison.result.toUpperCase()}**`,
+    `- React FileUpload absolute budget: ${formatBytes(comparison.budgets.reactFileUploadAbsolute.actualBytes)} / ${formatBytes(comparison.budgets.reactFileUploadAbsolute.limitBytes)} (${comparison.budgets.reactFileUploadAbsolute.passed ? 'PASS' : 'FAIL'})`,
+    `- Complex migration delta ceiling: ${formatBytes(comparison.budgets.complexDelta.limitBytesPerEntry)} per affected entry (${comparison.budgets.complexDelta.passed ? 'PASS' : 'FAIL'})`,
+    '',
+    '## Bundle deltas',
+    '',
+    '| Entry | Before raw | After raw | Delta raw | Before minified | After minified | Delta minified | Before Brotli | After Brotli | Delta Brotli | Result |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
+  ];
+  const labels = {
+    reactFileUpload: 'React FileUpload',
+    alpineAdapter: 'Alpine adapter',
+    css: 'CSS styles.css',
+    filesData: 'Files and Data scenario',
+  };
+  for (const [name, entry] of Object.entries(comparison.entries)) {
+    const budget = comparison.budgets.complexDelta.entries.find((item) => item.name === name);
+    lines.push(
+      `| ${labels[name]} | ${formatBytes(entry.before.rawBytes)} | ${formatBytes(entry.after.rawBytes)} | ${signedBytes(entry.deltas.rawBytes.absolute)} (${entry.deltas.rawBytes.percentage ?? 'n/a'}%) | ${formatBytes(entry.before.minifiedBytes)} | ${formatBytes(entry.after.minifiedBytes)} | ${signedBytes(entry.deltas.minifiedBytes.absolute)} (${entry.deltas.minifiedBytes.percentage ?? 'n/a'}%) | ${formatBytes(entry.before.brotliBytes)} | ${formatBytes(entry.after.brotliBytes)} | ${signedBytes(entry.deltas.brotliBytes.absolute)} (${entry.deltas.brotliBytes.percentage ?? 'n/a'}%) | ${budget.passed ? 'PASS' : 'FAIL'} |`,
+    );
+  }
+  lines.push(
+    '',
+    '## Module contributions and removed code',
+    '',
+    'The JSON peer contains the complete before/after module-contribution records. Modules present only before are recorded as removed code; modules present only after are recorded as added code.',
+    '',
+    '## Packed artifacts',
+    '',
+    '| Revision | Package | Version | SHA-256 |',
+    '| --- | --- | --- | --- |',
+  );
+  for (const side of ['before', 'after']) {
+    for (const [name, artifact] of Object.entries(comparison[side].environment.packages)) {
+      lines.push(
+        `| ${side} \`${comparison[side].revision}\` | ${name} | ${artifact.version} | \`${artifact.sha256}\` |`,
+      );
+    }
+  }
+  lines.push('');
+  return format(lines.join('\n'), { parser: 'markdown', printWidth: 100, proseWrap: 'preserve' });
+}
+
+function comparisonArtifactPaths(options = {}) {
+  return {
+    comparisonJson: options.comparisonJson,
+    comparisonMarkdown: options.comparisonMarkdown,
+  };
+}
+
+export async function writeComparisonArtifacts(comparison, options) {
+  const { comparisonJson, comparisonMarkdown } = comparisonArtifactPaths(options);
+  if (!comparisonJson || !comparisonMarkdown) throw new Error('comparison artifact paths required');
+  if (existsSync(comparisonJson) || existsSync(comparisonMarkdown)) {
+    throw new Error('refusing to overwrite immutable FileUpload comparison evidence');
+  }
+  const report = await renderComparisonMarkdown(comparison);
+  const json = await format(`${JSON.stringify(comparison, null, 2)}\n`, { parser: 'json' });
+  mkdirSync(dirname(comparisonJson), { recursive: true });
+  writeFileSync(comparisonJson, json);
+  writeFileSync(comparisonMarkdown, report);
+}
+
+export async function validateComparisonArtifacts(options) {
+  const { comparisonJson, comparisonMarkdown } = comparisonArtifactPaths(options);
+  if (!existsSync(comparisonJson)) throw new Error('comparison JSON does not exist');
+  if (!existsSync(comparisonMarkdown)) throw new Error('comparison Markdown does not exist');
+  const jsonSource = readFileSync(comparisonJson, 'utf8');
+  const comparison = readJson(comparisonJson);
+  if (
+    jsonSource !== (await format(`${JSON.stringify(comparison, null, 2)}\n`, { parser: 'json' }))
+  ) {
+    throw new Error('comparison JSON is not canonical');
+  }
+  if (comparison.kind !== 'file-upload') throw new Error('comparison is not FileUpload evidence');
+  if (readFileSync(comparisonMarkdown, 'utf8') !== (await renderComparisonMarkdown(comparison))) {
+    throw new Error('comparison Markdown is not the canonical peer');
+  }
+  const recalculated = createComparison(comparison.kind, comparison.before, comparison.after);
+  if (JSON.stringify(recalculated) !== JSON.stringify(comparison)) {
+    throw new Error('comparison JSON contains noncanonical or stale calculations');
+  }
+  return comparison;
+}
+
 function baselineArtifactPaths(options = {}) {
   return {
     baselineJson: options.baselineJson ?? BASELINE_JSON,
@@ -743,6 +976,110 @@ async function readBaselineArtifacts(options) {
   return expected;
 }
 
+function acceptedPointerPaths(options = {}) {
+  const baselineJson = options.baselineJson ?? BASELINE_JSON;
+  const baselineRoot = dirname(baselineJson);
+  return {
+    baselineJson,
+    baselineMarkdown:
+      options.baselineMarkdown ??
+      (options.baselineJson ? join(baselineRoot, 'bundles.md') : BASELINE_MARKDOWN),
+    comparisonDirectory:
+      options.comparisonDirectory ??
+      (options.baselineJson ? join(baselineRoot, 'comparisons') : COMPARISON_ROOT),
+    currentJson:
+      options.currentJson ??
+      (options.baselineJson ? join(baselineRoot, 'current.json') : CURRENT_JSON),
+  };
+}
+
+export async function resolveBaselineReference(options = {}) {
+  const paths = acceptedPointerPaths(options);
+  if (!existsSync(paths.currentJson)) return readBaselineArtifacts(paths);
+  const pointer = readJson(paths.currentJson);
+  const revision = pointer.fileUpload?.revision;
+  if (pointer.schemaVersion !== 1 || typeof revision !== 'string' || revision.length === 0) {
+    throw new Error('invalid FileUpload current baseline pointer');
+  }
+  const comparison = await validateComparisonArtifacts({
+    comparisonJson: join(paths.comparisonDirectory, 'file-upload', `${revision}.json`),
+    comparisonMarkdown: join(paths.comparisonDirectory, 'file-upload', `${revision}.md`),
+  });
+  if (comparison.after.revision !== revision) {
+    throw new Error('current pointer revision does not match comparison content');
+  }
+  return comparison.after;
+}
+
+function porcelainPath(line) {
+  const path = line.slice(3);
+  const renameMarker = ' -> ';
+  return path.includes(renameMarker) ? path.slice(path.lastIndexOf(renameMarker) + 4) : path;
+}
+
+function currentDirtyPaths() {
+  const output = run('git', ['status', '--porcelain=v1', '--untracked-files=all'], { cwd: REPO });
+  return output ? output.split('\n') : [];
+}
+
+export async function acceptComparison(
+  kind,
+  {
+    comparisonDirectory = COMPARISON_ROOT,
+    currentJson = CURRENT_JSON,
+    dirtyPaths = currentDirtyPaths(),
+    headRevision = run('git', ['rev-parse', 'HEAD'], { cwd: REPO }),
+    repositoryRelativeComparisonDirectory = relative(REPO, join(comparisonDirectory, kind)),
+  } = {},
+) {
+  if (kind !== 'file-upload') throw new Error('only the FileUpload comparison can be accepted');
+  const expectedNames = [
+    `${headRevision}.json`,
+    `${headRevision}.md`,
+    `${headRevision}-runtime.json`,
+    `${headRevision}-runtime.md`,
+  ];
+  const expectedDirty = new Set(
+    expectedNames.map((name) => `${repositoryRelativeComparisonDirectory}/${name}`),
+  );
+  const actualPaths = dirtyPaths.map(porcelainPath);
+  const unrelated = actualPaths.filter((path) => !expectedDirty.has(path));
+  if (unrelated.length > 0) {
+    throw new Error(`refusing acceptance with unrelated dirty path: ${unrelated.join(', ')}`);
+  }
+  if (
+    actualPaths.length !== expectedDirty.size ||
+    actualPaths.some((path) => !expectedDirty.has(path))
+  ) {
+    throw new Error('acceptance requires exactly four canonical peers');
+  }
+  const duplicateCount = new Set(actualPaths).size;
+  if (duplicateCount !== expectedDirty.size) {
+    throw new Error('ambiguous FileUpload comparison evidence');
+  }
+  const directory = join(comparisonDirectory, kind);
+  const comparison = await validateComparisonArtifacts({
+    comparisonJson: join(directory, `${headRevision}.json`),
+    comparisonMarkdown: join(directory, `${headRevision}.md`),
+  });
+  if (comparison.after.revision !== headRevision) {
+    throw new Error('comparison revision does not match HEAD');
+  }
+  if (comparison.result !== 'pass') throw new Error('cannot accept a failed bundle comparison');
+
+  const { validateRuntimeArtifacts } = await import('../file-upload-performance/measure.mjs');
+  const runtime = await validateRuntimeArtifacts({
+    runtimeJson: join(directory, `${headRevision}-runtime.json`),
+    runtimeMarkdown: join(directory, `${headRevision}-runtime.md`),
+  });
+  if (runtime.revision !== headRevision) throw new Error('runtime revision does not match HEAD');
+
+  const pointer = { schemaVersion: 1, fileUpload: { revision: headRevision } };
+  mkdirSync(dirname(currentJson), { recursive: true });
+  writeFileSync(currentJson, `${JSON.stringify(pointer, null, 2)}\n`);
+  return `Accepted FileUpload bundle and runtime evidence for ${headRevision}.`;
+}
+
 export async function checkBaselineArtifacts(actual, options) {
   compareBaseline(await readBaselineArtifacts(options), actual);
 }
@@ -752,24 +1089,29 @@ export async function runBundleBaselineCli(
   { paths, collect = collectBaseline, ensureClean = assertCleanForWrite } = {},
 ) {
   const mode = args[0];
-  if (!['--write', '--check'].includes(mode) || args.length !== 1) {
-    throw new Error('usage: node tools/bundle-baseline/measure.mjs --write|--check');
+  const acceptsComparison = mode === '--accept-comparison' && args.length === 2;
+  if ((!['--write', '--check'].includes(mode) || args.length !== 1) && !acceptsComparison) {
+    throw new Error(
+      'usage: node tools/bundle-baseline/measure.mjs --write|--check|--accept-comparison file-upload',
+    );
+  }
+  if (acceptsComparison) {
+    return acceptComparison(args[1], paths);
   }
   if (mode === '--write') {
     ensureClean();
     assertBaselineArtifactsWritable(paths);
-  } else {
-    await readBaselineArtifacts(paths);
   }
 
-  const current = await collect();
+  const expected = mode === '--check' ? await resolveBaselineReference(paths) : null;
+  const current = await collect({ exactCommand: expected?.environment.exactCommand });
   if (mode === '--write') {
     await writeBaselineArtifacts(current, paths);
     const { baselineJson, baselineMarkdown } = baselineArtifactPaths(paths);
     return `Wrote ${relative(REPO, baselineJson)} and ${relative(REPO, baselineMarkdown)}`;
   }
 
-  await checkBaselineArtifacts(current, paths);
+  compareBaseline(expected, current);
   return 'Bundle baseline check OK: package checksums, environment, and measurements match.';
 }
 
