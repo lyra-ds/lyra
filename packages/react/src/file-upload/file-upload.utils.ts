@@ -65,10 +65,10 @@ export function progressMilestone(previous: number, next: number): 25 | 50 | 75 
   return ([100, 75, 50, 25] as const).find((value) => previous < value && next >= value) ?? null;
 }
 
-export type FileUploadIntentKey = `${string}:${FileUploadItem['status']}:${string}`;
+export type FileUploadIntentKey = string;
 export interface FileUploadAttemptRecord {
   attemptIds: readonly string[];
-  latestItem: FileUploadItem;
+  latestItem: FileUploadItem | null;
 }
 export type FileUploadAttemptHistory = ReadonlyMap<string, FileUploadAttemptRecord>;
 
@@ -76,8 +76,12 @@ export function itemAttemptId(item: FileUploadItem): string | null {
   return 'attemptId' in item ? item.attemptId : null;
 }
 
+export function identityKey(...parts: readonly (string | number | null)[]): string {
+  return JSON.stringify(parts);
+}
+
 export function intentKey(item: FileUploadItem): FileUploadIntentKey {
-  return `${item.id}:${item.status}:${itemAttemptId(item) ?? 'none'}`;
+  return identityKey(item.id, item.status, itemAttemptId(item));
 }
 
 export function reconcileAttemptHistory(
@@ -86,6 +90,13 @@ export function reconcileAttemptHistory(
 ): { history: FileUploadAttemptHistory; visibleItems: readonly FileUploadItem[] } {
   let nextHistory: Map<string, FileUploadAttemptRecord> | null = null;
   const visibleItems: FileUploadItem[] = [];
+  const itemIds = new Set(items.map((item) => item.id));
+
+  for (const [id, record] of previousHistory) {
+    if (itemIds.has(id) || record.latestItem === null) continue;
+    nextHistory ??= new Map(previousHistory);
+    nextHistory.set(id, { attemptIds: record.attemptIds, latestItem: null });
+  }
 
   for (const item of items) {
     const attemptId = itemAttemptId(item);
@@ -97,6 +108,7 @@ export function reconcileAttemptHistory(
     const record = (nextHistory ?? previousHistory).get(item.id);
     const knownAttempts = record?.attemptIds ?? [];
     const latestAttempt = knownAttempts.at(-1);
+    if (record?.latestItem === null && knownAttempts.includes(attemptId)) continue;
     if (latestAttempt === attemptId) {
       visibleItems.push(item);
       if (record?.latestItem !== item) {
@@ -106,7 +118,9 @@ export function reconcileAttemptHistory(
       continue;
     }
     if (knownAttempts.includes(attemptId)) {
-      if (record !== undefined) visibleItems.push(record.latestItem);
+      if (record?.latestItem !== null && record?.latestItem !== undefined) {
+        visibleItems.push(record.latestItem);
+      }
       continue;
     }
 

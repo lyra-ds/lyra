@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, FocusEvent, MouseEvent } from 'react';
+import type { ChangeEvent, FocusEvent } from 'react';
 import { cx } from '../internal/cx';
 import type {
   FileUploadItem,
@@ -10,6 +10,7 @@ import type {
 import {
   canRemove,
   canRetry,
+  identityKey,
   intentKey,
   isActive,
   itemAttemptId,
@@ -92,7 +93,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     const inputRef = useRef<HTMLInputElement | null>(null);
     const liveRegionRef = useRef<HTMLSpanElement | null>(null);
     const pendingIntentKeysRef = useRef<Set<FileUploadIntentKey>>(new Set());
-    const announcedKeysRef = useRef<Set<string>>(new Set());
+    const announcedKeysRef = useRef<Map<string, Set<string>>>(new Map());
     const previousProgressRef = useRef<Map<string, number>>(new Map());
     const previousItemsRef = useRef<
       readonly { id: string; name: string; attemptId: string | null }[]
@@ -117,12 +118,10 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     }
     const visibleItems = reconciledAttempts.visibleItems;
     const visibleIntentKeys = useMemo(() => new Set(visibleItems.map(intentKey)), [visibleItems]);
-    const reconciledPendingIntentKeys = new Set(
-      [...pendingIntentKeys].filter((key) => visibleIntentKeys.has(key)),
+    const visiblePendingIntentKeys = useMemo(
+      () => new Set([...pendingIntentKeys].filter((key) => visibleIntentKeys.has(key))),
+      [pendingIntentKeys, visibleIntentKeys],
     );
-    if (reconciledPendingIntentKeys.size !== pendingIntentKeys.size) {
-      setPendingIntentKeys(reconciledPendingIntentKeys);
-    }
     const selectionBlocked = !multiple && visibleItems.some(isActive);
 
     const setRootRef = useCallback(
@@ -135,6 +134,59 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
     );
 
     useEffect(() => {
+      const handleDocumentFocusIn = (event: globalThis.FocusEvent): void => {
+        const focusedNode = event.target;
+        const root = rootRef.current;
+        if (!(focusedNode instanceof Node) || root === null) return;
+
+        if (!root.contains(focusedNode)) {
+          lastFocusedActionRef.current = null;
+          return;
+        }
+
+        if (
+          !(focusedNode instanceof HTMLButtonElement) ||
+          focusedNode.closest('.lyra-upload__item') === null
+        ) {
+          lastFocusedActionRef.current = null;
+        }
+      };
+
+      document.addEventListener('focusin', handleDocumentFocusIn);
+      return () => document.removeEventListener('focusin', handleDocumentFocusIn);
+    }, []);
+
+    useEffect(() => {
+      if (!selectionBlocked) return;
+
+      const isSelectionEvent = (event: Event): boolean => {
+        const target = event.target;
+        return (
+          target === inputRef.current ||
+          (target instanceof Node && zoneRef.current?.contains(target) === true)
+        );
+      };
+      const preventSelection = (event: Event): void => {
+        if (event.defaultPrevented || !isSelectionEvent(event)) return;
+        event.preventDefault();
+      };
+      const rejectSelection = (event: Event): void => {
+        if (event.defaultPrevented || !isSelectionEvent(event)) return;
+        event.preventDefault();
+        announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
+      };
+
+      document.addEventListener('click', rejectSelection);
+      document.addEventListener('dragover', preventSelection);
+      document.addEventListener('drop', rejectSelection);
+      return () => {
+        document.removeEventListener('click', rejectSelection);
+        document.removeEventListener('dragover', preventSelection);
+        document.removeEventListener('drop', rejectSelection);
+      };
+    }, [resolvedMessages.selectionUnavailable, selectionBlocked]);
+
+    useEffect(() => {
       for (const key of pendingIntentKeysRef.current) {
         if (!visibleIntentKeys.has(key)) pendingIntentKeysRef.current.delete(key);
       }
@@ -142,14 +194,18 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       const previousItems = previousItemsRef.current;
       const currentIds = new Set(visibleItems.map((item) => item.id));
       const controlledIds = new Set(items.map((item) => item.id));
-      let nextAnnouncement: string | null = null;
+      const retainedProgressKeys = new Set<string>();
+      const announcementCandidates: { itemId: string; key: string; message: string }[] = [];
+      const wasAnnounced = (itemId: string, key: string): boolean =>
+        announcedKeysRef.current.get(itemId)?.has(key) === true;
 
       for (const item of visibleItems) {
-        const attemptId = itemAttemptId(item) ?? 'none';
-        const stateKey = `${item.id}:${attemptId}:${item.status}`;
+        const attemptId = itemAttemptId(item);
+        const stateKey = identityKey(item.id, attemptId, item.status);
+        if (attemptId !== null) retainedProgressKeys.add(identityKey(item.id, attemptId));
 
         if (item.status === 'uploading' && item.progress.kind === 'determinate') {
-          const progressKey = `${item.id}:${attemptId}`;
+          const progressKey = identityKey(item.id, attemptId);
           const previousProgress = previousProgressRef.current.get(progressKey) ?? 0;
           const milestone = progressMilestone(previousProgress, item.progress.value);
           previousProgressRef.current.set(
@@ -157,16 +213,19 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
             Math.max(previousProgress, item.progress.value),
           );
           if (milestone !== null) {
-            const milestoneKey = `${stateKey}:${milestone}`;
-            if (!announcedKeysRef.current.has(milestoneKey)) {
-              announcedKeysRef.current.add(milestoneKey);
-              nextAnnouncement = resolvedMessages.progress(item.name, milestone);
+            const milestoneKey = identityKey(item.id, attemptId, item.status, milestone);
+            if (!wasAnnounced(item.id, milestoneKey)) {
+              announcementCandidates.push({
+                itemId: item.id,
+                key: milestoneKey,
+                message: resolvedMessages.progress(item.name, milestone),
+              });
             }
           }
           continue;
         }
 
-        if (announcedKeysRef.current.has(stateKey)) continue;
+        if (wasAnnounced(item.id, stateKey)) continue;
 
         const stateAnnouncement =
           item.status === 'selected'
@@ -182,21 +241,44 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
                     : null;
 
         if (stateAnnouncement !== null) {
-          announcedKeysRef.current.add(stateKey);
-          nextAnnouncement = stateAnnouncement;
+          announcementCandidates.push({
+            itemId: item.id,
+            key: stateKey,
+            message: stateAnnouncement,
+          });
         }
+      }
+
+      for (const key of previousProgressRef.current.keys()) {
+        if (!retainedProgressKeys.has(key)) previousProgressRef.current.delete(key);
       }
 
       for (const previousItem of previousItems) {
         if (controlledIds.has(previousItem.id)) continue;
-        const removalKey = `${previousItem.id}:${previousItem.attemptId ?? 'none'}:removed`;
-        if (!announcedKeysRef.current.has(removalKey)) {
-          announcedKeysRef.current.add(removalKey);
-          nextAnnouncement = resolvedMessages.removed(previousItem.name);
+        const removalKey = identityKey(previousItem.id, previousItem.attemptId, 'removed');
+        if (!wasAnnounced(previousItem.id, removalKey)) {
+          announcementCandidates.push({
+            itemId: previousItem.id,
+            key: removalKey,
+            message: resolvedMessages.removed(previousItem.name),
+          });
         }
       }
 
-      if (nextAnnouncement !== null) announce(liveRegionRef.current, nextAnnouncement);
+      if (announcementCandidates.length > 0) {
+        for (const candidate of announcementCandidates) {
+          const itemKeys = announcedKeysRef.current.get(candidate.itemId) ?? new Set<string>();
+          itemKeys.add(candidate.key);
+          announcedKeysRef.current.set(candidate.itemId, itemKeys);
+        }
+        announce(
+          liveRegionRef.current,
+          announcementCandidates.map((candidate) => candidate.message).join(' '),
+        );
+      }
+      for (const previousItem of previousItems) {
+        if (!controlledIds.has(previousItem.id)) announcedKeysRef.current.delete(previousItem.id);
+      }
 
       const focusedItemId = lastFocusedActionRef.current;
       const removedFocusedIndex =
@@ -236,33 +318,19 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       if (pendingIntentKeysRef.current.has(key)) return false;
 
       pendingIntentKeysRef.current.add(key);
-      setPendingIntentKeys((currentKeys) => new Set(currentKeys).add(key));
+      setPendingIntentKeys((currentKeys) => {
+        const nextKeys = new Set(
+          [...currentKeys].filter((currentKey) => visibleIntentKeys.has(currentKey)),
+        );
+        nextKeys.add(key);
+        return nextKeys;
+      });
       return true;
     };
 
     const announceSelectionUnavailable = (): void => {
       announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
     };
-
-    useEffect(() => {
-      const zone = zoneRef.current;
-      if (zone === null || !selectionBlocked) return;
-
-      const preventDragOver = (event: globalThis.DragEvent): void => {
-        event.preventDefault();
-      };
-      const rejectDrop = (event: globalThis.DragEvent): void => {
-        event.preventDefault();
-        announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
-      };
-
-      zone.addEventListener('dragover', preventDragOver);
-      zone.addEventListener('drop', rejectDrop);
-      return () => {
-        zone.removeEventListener('dragover', preventDragOver);
-        zone.removeEventListener('drop', rejectDrop);
-      };
-    }, [resolvedMessages.selectionUnavailable, selectionBlocked]);
 
     const handleRootChange = (event: ChangeEvent<HTMLDivElement>): void => {
       onRootChange?.(event);
@@ -325,12 +393,6 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
       input.value = '';
     };
 
-    const handleInputClick = (event: MouseEvent<HTMLInputElement>): void => {
-      if (!selectionBlocked) return;
-      event.preventDefault();
-      announceSelectionUnavailable();
-    };
-
     const handleActionFocus = (itemId: string, event: FocusEvent<HTMLButtonElement>): void => {
       if (event.currentTarget === event.target) lastFocusedActionRef.current = itemId;
     };
@@ -384,7 +446,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
             <button
               type="button"
               className="lyra-upload__cancel"
-              disabled={disabled || pendingIntentKeys.has(intentKey(item))}
+              disabled={disabled || visiblePendingIntentKeys.has(intentKey(item))}
               onFocus={(event) => handleActionFocus(item.id, event)}
               onClick={() => {
                 if (lockIntent(item)) onCancel({ id: item.id, attemptId: item.attemptId });
@@ -397,7 +459,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
             <button
               type="button"
               className="lyra-upload__retry"
-              disabled={disabled || pendingIntentKeys.has(intentKey(item))}
+              disabled={disabled || visiblePendingIntentKeys.has(intentKey(item))}
               onFocus={(event) => handleActionFocus(item.id, event)}
               onClick={() => {
                 if (!lockIntent(item)) return;
@@ -418,7 +480,7 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
             <button
               type="button"
               className="lyra-upload__remove"
-              disabled={disabled || pendingIntentKeys.has(intentKey(item))}
+              disabled={disabled || visiblePendingIntentKeys.has(intentKey(item))}
               onFocus={(event) => handleActionFocus(item.id, event)}
               onClick={() => {
                 if (lockIntent(item)) onRemove({ id: item.id });
@@ -464,7 +526,6 @@ export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadPro
           multiple={multiple}
           disabled={disabled}
           required={required}
-          onClick={handleInputClick}
         />
         {visibleItems.length > 0 ? (
           <ul className="lyra-upload__list">{visibleItems.map(renderItem)}</ul>

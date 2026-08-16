@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
 import type { ChangeEvent } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
@@ -384,6 +385,54 @@ describe('FileUpload', () => {
     );
   });
 
+  it('DF-FU-04 keeps StrictMode replay finite and does not resurrect a removed stale attempt', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const sharedProps = {
+      onSelect: vi.fn(),
+      onRetry: vi.fn(),
+      onCancel: vi.fn(),
+      onRemove: vi.fn(),
+    };
+    const item = (attemptId: string) =>
+      ({
+        id: 'report',
+        name: 'report.pdf',
+        size: 1,
+        type: 'application/pdf',
+        status: 'uploading',
+        attemptId,
+        progress: { kind: 'determinate', value: 25 },
+      }) as const satisfies FileUploadItem;
+
+    try {
+      const screen = await render(
+        <StrictMode>
+          <FileUpload items={[item('attempt-1')]} {...sharedProps} />
+        </StrictMode>,
+      );
+      await screen.rerender(
+        <StrictMode>
+          <FileUpload items={[item('attempt-2')]} {...sharedProps} />
+        </StrictMode>,
+      );
+      await screen.rerender(
+        <StrictMode>
+          <FileUpload items={[]} {...sharedProps} />
+        </StrictMode>,
+      );
+      await screen.rerender(
+        <StrictMode>
+          <FileUpload items={[item('attempt-1')]} {...sharedProps} />
+        </StrictMode>,
+      );
+
+      expect(screen.container.querySelector('.lyra-upload__item')).toBeNull();
+      expect(consoleError).not.toHaveBeenCalled();
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
   it(FILE_UPLOAD_SCENARIOS.cancellation, async () => {
     const onCancel = vi.fn();
     const uploadingItem = {
@@ -485,6 +534,43 @@ describe('FileUpload', () => {
     expect(onRemove).toHaveBeenCalledTimes(3);
   });
 
+  it('DF-FU-06 does not steal focus after the user leaves a pending removed row', async () => {
+    const item = {
+      id: 'report',
+      name: 'report.pdf',
+      size: 1,
+      type: 'application/pdf',
+      status: 'success',
+      attemptId: 'report-1',
+    } as const satisfies FileUploadItem;
+    const sharedProps = {
+      onSelect: vi.fn(),
+      onRetry: vi.fn(),
+      onCancel: vi.fn(),
+      onRemove: vi.fn(),
+    };
+    const screen = await render(
+      <>
+        <FileUpload items={[item]} {...sharedProps} />
+        <button type="button">Outside control</button>
+      </>,
+    );
+
+    await screen.getByRole('button', { name: 'Remove report.pdf' }).click();
+    await screen.getByRole('button', { name: 'Outside control' }).click();
+    expect(screen.getByRole('button', { name: 'Outside control' })).toHaveFocus();
+
+    await screen.rerender(
+      <>
+        <FileUpload items={[]} {...sharedProps} />
+        <button type="button">Outside control</button>
+      </>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Outside control' })).toHaveFocus();
+    expect(screen.getByLabelText('Drag files here or click to select')).not.toHaveFocus();
+  });
+
   it(FILE_UPLOAD_SCENARIOS.single, async () => {
     const onSelect = vi.fn();
     const screen = await render(
@@ -531,6 +617,80 @@ describe('FileUpload', () => {
     const drop = new DragEvent('drop', { bubbles: true, cancelable: true });
     expect(screen.container.querySelector('.lyra-upload__zone')!.dispatchEvent(drop)).toBe(false);
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('DF-FU-07 lets the inherited root click prevent active-selection feedback first', async () => {
+    let clickCurrentTarget: EventTarget | null = null;
+    const onClick = vi.fn((event: React.MouseEvent<HTMLDivElement>) => {
+      clickCurrentTarget = event.currentTarget;
+      event.preventDefault();
+    });
+    const screen = await render(
+      <FileUpload
+        multiple={false}
+        items={[
+          {
+            id: 'active',
+            name: 'active.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'uploading',
+            attemptId: 'active-1',
+            progress: { kind: 'indeterminate' },
+          },
+        ]}
+        onClick={onClick}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    const root = screen.container.querySelector('.lyra-upload');
+    const input = screen.getByLabelText('Drag files here or click to select').element();
+
+    input.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(clickCurrentTarget).toBe(root);
+    expect(screen.container.querySelector('.lyra-upload__live')).toBeEmptyDOMElement();
+  });
+
+  it('DF-FU-07 lets the inherited root drop prevent active-selection feedback first', async () => {
+    let dropCurrentTarget: EventTarget | null = null;
+    const onDrop = vi.fn((event: React.DragEvent<HTMLDivElement>) => {
+      dropCurrentTarget = event.currentTarget;
+      event.preventDefault();
+    });
+    const screen = await render(
+      <FileUpload
+        multiple={false}
+        items={[
+          {
+            id: 'active',
+            name: 'active.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'uploading',
+            attemptId: 'active-1',
+            progress: { kind: 'indeterminate' },
+          },
+        ]}
+        onDrop={onDrop}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    const root = screen.container.querySelector('.lyra-upload');
+    const zone = screen.container.querySelector('.lyra-upload__zone');
+
+    zone!.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true }));
+
+    expect(onDrop).toHaveBeenCalledOnce();
+    expect(dropCurrentTarget).toBe(root);
+    expect(screen.container.querySelector('.lyra-upload__live')).toBeEmptyDOMElement();
   });
 
   it(FILE_UPLOAD_SCENARIOS.idempotence, async () => {
@@ -592,6 +752,36 @@ describe('FileUpload', () => {
     expect(remove).toBeDisabled();
   });
 
+  it('DF-FU-08 keeps adversarial intent identities independently lockable', async () => {
+    const onRetry = vi.fn();
+    const failed = (id: string, attemptId: string, name: string) =>
+      ({
+        id,
+        name,
+        size: 1,
+        type: 'application/pdf',
+        status: 'error',
+        attemptId,
+        error: { kind: 'transport', message: 'Offline', retryable: true },
+      }) as const satisfies FileUploadItem;
+    const screen = await render(
+      <FileUpload
+        items={[failed('a:error', 'x', 'first.pdf'), failed('a', 'error:x', 'second.pdf')]}
+        onSelect={vi.fn()}
+        onRetry={onRetry}
+        onCancel={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    await screen.getByRole('button', { name: 'Retry first.pdf' }).click();
+
+    expect(screen.getByRole('button', { name: 'Retry first.pdf' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Retry second.pdf' })).toBeEnabled();
+    await screen.getByRole('button', { name: 'Retry second.pdf' }).click();
+    expect(onRetry).toHaveBeenCalledTimes(2);
+  });
+
   it(FILE_UPLOAD_SCENARIOS.announcements, async () => {
     const selected = {
       id: 'report',
@@ -651,6 +841,127 @@ describe('FileUpload', () => {
     await vi.waitFor(() => expect(live()).toHaveTextContent('report.pdf enviado.'));
     await screen.rerender(<FileUpload items={[]} {...sharedProps} />);
     await vi.waitFor(() => expect(live()).toHaveTextContent('report.pdf removido.'));
+  });
+
+  it('DF-FU-12 includes every deterministic announcement candidate from one commit', async () => {
+    const selected = (id: string) =>
+      ({
+        id,
+        name: `${id}.pdf`,
+        size: 1,
+        type: 'application/pdf',
+        status: 'selected',
+      }) as const satisfies FileUploadItem;
+    const first = selected('first');
+    const second = selected('second');
+    const sharedProps = {
+      onSelect: vi.fn(),
+      onRetry: vi.fn(),
+      onCancel: vi.fn(),
+      onRemove: vi.fn(),
+    };
+    const screen = await render(<FileUpload items={[first, second]} {...sharedProps} />);
+    const live = () => screen.container.querySelector('.lyra-upload__live');
+
+    await vi.waitFor(() =>
+      expect(live()).toHaveTextContent('first.pdf selected. second.pdf selected.'),
+    );
+
+    const uploading = (item: typeof first) =>
+      ({
+        ...item,
+        status: 'uploading',
+        attemptId: `${item.id}-attempt`,
+        progress: { kind: 'determinate', value: 25 },
+      }) as const satisfies FileUploadItem;
+    await screen.rerender(
+      <FileUpload items={[uploading(first), uploading(second)]} {...sharedProps} />,
+    );
+    await vi.waitFor(() =>
+      expect(live()).toHaveTextContent('first.pdf is 25% uploaded. second.pdf is 25% uploaded.'),
+    );
+
+    const failed = (item: typeof first) =>
+      ({
+        ...item,
+        status: 'error',
+        attemptId: `${item.id}-attempt`,
+        error: { kind: 'transport', message: `${item.id} offline`, retryable: true },
+      }) as const satisfies FileUploadItem;
+    await screen.rerender(<FileUpload items={[failed(first), failed(second)]} {...sharedProps} />);
+    await vi.waitFor(() =>
+      expect(live()).toHaveTextContent('first.pdf: first offline second.pdf: second offline'),
+    );
+
+    await screen.rerender(
+      <FileUpload
+        items={[
+          {
+            ...first,
+            status: 'success',
+            attemptId: 'first-attempt',
+          },
+        ]}
+        {...sharedProps}
+      />,
+    );
+    await vi.waitFor(() =>
+      expect(live()).toHaveTextContent('first.pdf uploaded. second.pdf removed.'),
+    );
+  });
+
+  it('DF-FU-12 does not suppress an adversarial announcement identity collision', async () => {
+    const failed = (id: string, attemptId: string, name: string) =>
+      ({
+        id,
+        name,
+        size: 1,
+        type: 'application/pdf',
+        status: 'error',
+        attemptId,
+        error: { kind: 'transport', message: 'Offline', retryable: true },
+      }) as const satisfies FileUploadItem;
+    const first = failed('a:x', 'y', 'first.pdf');
+    const second = failed('a', 'x:y', 'second.pdf');
+    const sharedProps = {
+      onSelect: vi.fn(),
+      onRetry: vi.fn(),
+      onCancel: vi.fn(),
+      onRemove: vi.fn(),
+    };
+    const screen = await render(<FileUpload items={[first]} {...sharedProps} />);
+    const live = () => screen.container.querySelector('.lyra-upload__live');
+    await vi.waitFor(() => expect(live()).toHaveTextContent('first.pdf: Offline'));
+
+    await screen.rerender(<FileUpload items={[first, second]} {...sharedProps} />);
+
+    await vi.waitFor(() => expect(live()).toHaveTextContent('second.pdf: Offline'));
+  });
+
+  it('DF-FU-12 releases announcement records after an item is removed', async () => {
+    const selected = {
+      id: 'report',
+      name: 'report.pdf',
+      size: 1,
+      type: 'application/pdf',
+      status: 'selected',
+    } as const satisfies FileUploadItem;
+    const sharedProps = {
+      onSelect: vi.fn(),
+      onRetry: vi.fn(),
+      onCancel: vi.fn(),
+      onRemove: vi.fn(),
+    };
+    const screen = await render(<FileUpload items={[selected]} {...sharedProps} />);
+    const live = () => screen.container.querySelector('.lyra-upload__live');
+    await vi.waitFor(() => expect(live()).toHaveTextContent('report.pdf selected.'));
+
+    await screen.rerender(<FileUpload items={[]} {...sharedProps} />);
+    await vi.waitFor(() => expect(live()).toHaveTextContent('report.pdf removed.'));
+
+    await screen.rerender(<FileUpload items={[selected]} {...sharedProps} />);
+
+    await vi.waitFor(() => expect(live()).toHaveTextContent('report.pdf selected.'));
   });
 
   it('DF-FU-12 announces localized validation, transport, and canceled states once', async () => {
