@@ -64,6 +64,13 @@ describe('FileManager', () => {
       }
     });
 
+    it(`is axe clean while a file row is hovered in ${theme}`, async () => {
+      setTheme(theme);
+      const { container } = await render(<FileManager files={files} />);
+      await userEvent.hover(container.querySelector<HTMLElement>('.lyra-fm__row')!);
+      await expectNoAxeViolations(container);
+    });
+
     it(`emits exact grid classes and is axe clean in ${theme}`, async () => {
       setTheme(theme);
       const { container } = await render(<FileManager files={files} defaultView="grid" />);

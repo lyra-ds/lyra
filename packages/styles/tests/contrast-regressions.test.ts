@@ -165,6 +165,16 @@ describe('rendered Styles composites retain WCAG AA contrast', () => {
     assertContrast('file-manager-view', probe('file-manager-view'), probe('file-manager-views'));
   });
 
+  it('keeps File Manager metadata readable while its row is hovered', async () => {
+    const row = probe('file-manager-row');
+    for (const theme of ['light', 'dark'] as const) {
+      setTheme(theme);
+      await userEvent.unhover(row);
+      await userEvent.hover(row);
+      assertContrast('file-manager-cell', probe('file-manager-cell'), row);
+    }
+  });
+
   it('keeps the light sunken keyboard label readable', () => {
     setTheme('light');
     assertContrast('sunken-label');

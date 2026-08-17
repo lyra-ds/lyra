@@ -319,6 +319,7 @@
 }
 .lyra-fm__row { border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); min-height: 44px; }
 .lyra-fm__row:hover { background: var(--surface-sunken); }
+.lyra-fm__row:hover .lyra-fm__cell { color: var(--text-secondary); }
 .lyra-fm__name {
   display: flex;
   align-items: center;
