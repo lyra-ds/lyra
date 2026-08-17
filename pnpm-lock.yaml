@@ -212,6 +212,46 @@ importers:
 
   packages/styles: {}
 
+  tools/file-upload-evidence:
+    dependencies:
+      '@lyra-ds/alpine':
+        specifier: workspace:*
+        version: link:../../packages/alpine
+      '@lyra-ds/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@lyra-ds/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
+      alpinejs:
+        specifier: 3.15.12
+        version: 3.15.12
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 19.2.4
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitest/browser-playwright':
+        specifier: 4.1.10
+        version: 4.1.10(playwright@1.62.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vite:
+        specifier: 8.2.1
+        version: 8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
+
 packages:
 
   '@andrewbranch/untar.js@1.0.3':

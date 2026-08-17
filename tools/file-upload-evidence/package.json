@@ -1,0 +1,27 @@
+{
+  "name": "@lyra-ds/file-upload-evidence",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "build:preview": "vite build"
+  },
+  "dependencies": {
+    "@lyra-ds/alpine": "workspace:*",
+    "@lyra-ds/react": "workspace:*",
+    "@lyra-ds/styles": "workspace:*",
+    "alpinejs": "3.15.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitest/browser-playwright": "4.1.10",
+    "typescript": "5.9.3",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}
