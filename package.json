@@ -25,6 +25,9 @@
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
     "release-policy:check": "node tools/release-policy/check.mjs",
+    "evidence:file-upload:manual:test": "pnpm --filter @lyra-ds/file-upload-evidence run test",
+    "evidence:file-upload:manual:browser": "pnpm --filter @lyra-ds/file-upload-evidence run test:browser",
+    "evidence:file-upload:manual:build": "pnpm --filter @lyra-ds/file-upload-evidence run build:preview",
     "changeset": "changeset",
     "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
   },

@@ -65,9 +65,13 @@
 }
 
 .lyra-evidence__metadata dt {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
+}
+
+.lyra-evidence .lyra-upload__zone-hint {
+  color: var(--text-secondary);
 }
 
 .lyra-evidence__metadata dd {

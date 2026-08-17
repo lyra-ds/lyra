@@ -9,11 +9,12 @@ export const PLAYWRIGHT_BROWSER_INSTANCES = [
   { browser: 'webkit' },
 ];
 
-export function createBrowserEvidenceConfig(artifactRoot) {
-  const screenshotDirectory = resolve(artifactRoot, 'screenshots');
-  const tracesDir = resolve(artifactRoot, 'traces');
+export function createBrowserEvidenceConfig(artifactRoot, browser) {
+  const evidenceRoot = browser === undefined ? artifactRoot : resolve(artifactRoot, browser);
+  const screenshotDirectory = resolve(evidenceRoot, 'screenshots');
+  const tracesDir = resolve(evidenceRoot, 'traces');
   const contextOptions =
-    process.env.CI === 'true' ? { recordVideo: { dir: resolve(artifactRoot, 'videos') } } : {};
+    process.env.CI === 'true' ? { recordVideo: { dir: resolve(evidenceRoot, 'videos') } } : {};
 
   return {
     screenshotFailures: true,

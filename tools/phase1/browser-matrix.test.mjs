@@ -102,6 +102,19 @@ test('keeps failure evidence under the supplied artifact root', () => {
   }
 });
 
+test('isolates concurrent trace evidence by browser under one artifact root', () => {
+  const artifactRoot = 'packages/example/.artifacts/browser';
+  const tracesDirectories = PLAYWRIGHT_BROWSER_INSTANCES.map(
+    ({ browser }) => createBrowserEvidenceConfig(artifactRoot, browser).trace.tracesDir,
+  );
+
+  assert.deepEqual(
+    tracesDirectories,
+    PLAYWRIGHT_BROWSER_INSTANCES.map(({ browser }) => resolve(artifactRoot, browser, 'traces')),
+  );
+  assert.equal(new Set(tracesDirectories).size, PLAYWRIGHT_BROWSER_INSTANCES.length);
+});
+
 test('validates the local browser matrix entry point', () => {
   const projectRoot = resolve(import.meta.dirname, '../..');
   const composePath = resolve(projectRoot, 'compose.playwright.yml');
