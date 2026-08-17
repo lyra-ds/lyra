@@ -77,18 +77,29 @@ jobs:
     env:
       NODE_OPTIONS: --max-old-space-size=8192
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Checkout selected evidence ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @lyra-ds/styles run lint:css
-      - run: pnpm --filter @lyra-ds/react run build
-      - run: pnpm --filter @lyra-ds/alpine run build
-      - run: pnpm --filter @lyra-ds/docs run build
-      - run: pnpm run evidence:file-upload:manual:test
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Validate Styles
+        run: pnpm --filter @lyra-ds/styles run lint:css
+      - name: Build React
+        run: pnpm --filter @lyra-ds/react run build
+      - name: Build Alpine
+        run: pnpm --filter @lyra-ds/alpine run build
+      - name: Build ordinary Docs
+        run: pnpm --filter @lyra-ds/docs run build
+      - name: Test evidence harness
+        run: pnpm run evidence:file-upload:manual:test
       - name: Build isolated evidence harness
         env:
           FILE_UPLOAD_EVIDENCE: '1'
@@ -101,6 +112,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/file-upload-evidence-wrangler-output.jsonl
         run: |
           node tools/file-upload-evidence/scripts/stage-preview.mjs \
             --workspace-root="$GITHUB_WORKSPACE" \
@@ -117,31 +129,17 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/file-upload-evidence-wrangler-output.jsonl
         run: |
           pnpm exec wrangler pages deployment list \
             --project-name=lyra-ds-docs \
             --environment=preview \
             --json > "$RUNNER_TEMP/file-upload-evidence-deployments.json"
-          node --input-type=module <<'NODE'
-          import { appendFileSync, readFileSync } from 'node:fs';
-
-          const deployments = JSON.parse(
-            readFileSync(`${process.env.RUNNER_TEMP}/file-upload-evidence-deployments.json`, 'utf8'),
-          );
-          const matches = deployments.filter(
-            (deployment) =>
-              deployment.deployment_trigger?.metadata?.branch === 'file-upload-evidence' &&
-              deployment.deployment_trigger?.metadata?.commit_hash === process.env.GITHUB_SHA,
-          );
-          if (matches.length !== 1) {
-            throw new Error(`Expected one matching preview deployment, received ${matches.length}.`);
-          }
-          const url = matches[0].url;
-          if (typeof url !== 'string' || !url.startsWith('https://')) {
-            throw new Error('Matching preview deployment did not expose an HTTPS URL.');
-          }
-          appendFileSync(process.env.GITHUB_OUTPUT, `url=${url}\n`);
-          NODE
+          node tools/file-upload-evidence/scripts/deploy-policy.mjs resolve-preview \
+            --wrangler-output="$WRANGLER_OUTPUT_FILE_PATH" \
+            --deployment-list="$RUNNER_TEMP/file-upload-evidence-deployments.json" \
+            --revision="$GITHUB_SHA" \
+            --github-output="$GITHUB_OUTPUT"
       - name: Smoke immutable evidence deployment
         run: >-
           pnpm run evidence:file-upload:manual:smoke --

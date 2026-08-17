@@ -4,11 +4,36 @@ import { parseSmokeArguments, runSmoke, validateUploadProgress } from './smoke.m
 
 const revision = '1234567890abcdef1234567890abcdef12345678';
 const url = 'https://a1b2c3d4.lyra-ds-docs.pages.dev';
+const requestId = '11111111-2222-4333-8444-555555555555';
+const payloadMarker = 'lyra-evidence-payload-test-marker';
+const nativeByteLength = 64 * 1024;
+const browserByteLength = 8 * 1024 * 1024;
+const expectedMetadata = {
+  requestId,
+  fileName: 'smoke.bin',
+  mediaType: 'application/octet-stream',
+  byteLength: browserByteLength,
+  revision,
+};
 
 function page(locale, pageRevision = revision) {
   const title =
     locale === 'en' ? 'File upload manual evidence' : 'Evidência manual de envio de arquivo';
   return `<!doctype html><html lang="${locale}"><head><meta name="robots" content="noindex,nofollow"><title>${title}</title></head><body><code>${pageRevision}</code></body></html>`;
+}
+
+function nativeHtml(overrides = {}, extra = '') {
+  const metadata = {
+    'Request ID': requestId,
+    'File name': 'smoke.bin',
+    'Media type': 'application/octet-stream',
+    'Byte length': String(nativeByteLength),
+    Revision: revision,
+    ...overrides,
+  };
+  return `<!doctype html><html lang="en"><body><h1>Passed</h1><dl>${Object.entries(metadata)
+    .map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`)
+    .join('')}</dl>${extra}</body></html>`;
 }
 
 function collaborators(overrides = {}) {
@@ -29,16 +54,26 @@ function collaborators(overrides = {}) {
       ) {
         return new Response('bad multipart fixture', { status: 400 });
       }
-      return new Response(
-        `<!doctype html><html lang="en"><body><h1>Passed</h1><dd>${revision}</dd></body></html>`,
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'X-Lyra-Evidence-Revision': revision,
-          },
+      const file = form.get('file');
+      const bytes = file instanceof File ? new Uint8Array(await file.arrayBuffer()) : undefined;
+      const marker = new TextEncoder().encode(payloadMarker);
+      if (
+        !(file instanceof File) ||
+        file.name !== 'smoke.bin' ||
+        file.type !== 'application/octet-stream' ||
+        file.size !== nativeByteLength ||
+        bytes === undefined ||
+        !marker.every((byte, index) => bytes[index] === byte)
+      ) {
+        return new Response('bad file fixture', { status: 400 });
+      }
+      return new Response(nativeHtml(), {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'X-Lyra-Evidence-Revision': revision,
         },
-      );
+      });
     }
     return new Response('not found', { status: 404 });
   });
@@ -46,11 +81,13 @@ function collaborators(overrides = {}) {
   return {
     fetch,
     uploadWithBrowser: vi.fn(async () => ({
-      bodyRevision: revision,
+      body: expectedMetadata,
       headerRevision: revision,
       progress: [{ isTrusted: true, lengthComputable: true, loaded: 1, total: 1 }],
+      responseIncludesPayloadMarker: false,
       status: 200,
     })),
+    createPayloadMarker: () => payloadMarker,
     ...overrides,
   };
 }
@@ -77,8 +114,14 @@ describe('parseSmokeArguments', () => {
 
 describe('runSmoke', () => {
   it('checks both localized pages, native multipart, Function revision, and trusted XHR progress', async () => {
-    await expect(runSmoke({ revision, url }, collaborators())).resolves.toEqual({
+    const dependencies = collaborators();
+    await expect(runSmoke({ revision, url }, dependencies)).resolves.toEqual({
       locales: ['en', 'pt-BR'],
+      revision,
+      url,
+    });
+    expect(dependencies.uploadWithBrowser).toHaveBeenCalledExactlyOnceWith({
+      payloadMarker,
       revision,
       url,
     });
@@ -88,9 +131,10 @@ describe('runSmoke', () => {
     const mismatch = 'abcdef1234567890abcdef1234567890abcdef12';
     const dependencies = collaborators({
       uploadWithBrowser: async () => ({
-        bodyRevision: mismatch,
+        body: { ...expectedMetadata, revision: mismatch },
         headerRevision: mismatch,
         progress: [{ isTrusted: true, lengthComputable: true, loaded: 1, total: 1 }],
+        responseIncludesPayloadMarker: false,
         status: 200,
       }),
     });
@@ -154,6 +198,95 @@ describe('runSmoke', () => {
 
     await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
       'native multipart response is not localized HTML',
+    );
+  });
+
+  it.each([
+    ['request ID', { 'Request ID': '' }],
+    ['file name', { 'File name': 'other.bin' }],
+    ['media type', { 'Media type': 'text/plain' }],
+    ['byte length', { 'Byte length': String(nativeByteLength - 1) }],
+    ['revision', { Revision: 'f'.repeat(40) }],
+  ])('rejects incorrect native %s metadata', async (_name, mutation) => {
+    const base = collaborators();
+    const dependencies = {
+      ...base,
+      fetch: async (input, init) => {
+        if (String(input).endsWith('/api/file-upload-evidence')) {
+          return new Response(nativeHtml(mutation), {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html; charset=utf-8',
+              'X-Lyra-Evidence-Revision': revision,
+            },
+          });
+        }
+        return base.fetch(input, init);
+      },
+    };
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'native multipart response metadata does not match smoke.bin',
+    );
+  });
+
+  it('rejects a native response that echoes the unique payload marker', async () => {
+    const base = collaborators();
+    const dependencies = {
+      ...base,
+      fetch: async (input, init) => {
+        if (String(input).endsWith('/api/file-upload-evidence')) {
+          return new Response(nativeHtml({}, payloadMarker), {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html; charset=utf-8',
+              'X-Lyra-Evidence-Revision': revision,
+            },
+          });
+        }
+        return base.fetch(input, init);
+      },
+    };
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'native multipart response exposed the payload marker',
+    );
+  });
+
+  it.each([
+    ['file name', { fileName: 'other.bin' }],
+    ['media type', { mediaType: 'text/plain' }],
+    ['byte length', { byteLength: browserByteLength - 1 }],
+    ['request ID', { requestId: '' }],
+  ])('rejects incorrect XHR %s metadata', async (_name, mutation) => {
+    const dependencies = collaborators({
+      uploadWithBrowser: async () => ({
+        body: { ...expectedMetadata, ...mutation },
+        headerRevision: revision,
+        progress: [{ isTrusted: true, lengthComputable: true, loaded: 1, total: 1 }],
+        responseIncludesPayloadMarker: false,
+        status: 200,
+      }),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'XHR response metadata does not match smoke.bin',
+    );
+  });
+
+  it('rejects an XHR response that echoes the unique payload marker', async () => {
+    const dependencies = collaborators({
+      uploadWithBrowser: async () => ({
+        body: expectedMetadata,
+        headerRevision: revision,
+        progress: [{ isTrusted: true, lengthComputable: true, loaded: 1, total: 1 }],
+        responseIncludesPayloadMarker: true,
+        status: 200,
+      }),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'XHR response exposed the payload marker',
     );
   });
 });
