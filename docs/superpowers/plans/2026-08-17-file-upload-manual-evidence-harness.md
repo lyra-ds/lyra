@@ -512,7 +512,7 @@ Reuse `PLAYWRIGHT_BROWSER_INSTANCES` and `createBrowserEvidenceConfig` from `too
 - [ ] **Step 4: Run fresh local and official-image gates**
 
 ```text
-rtk pnpm --filter @lyra-ds/styles run build
+rtk pnpm --filter @lyra-ds/styles run lint:css
 rtk pnpm --filter @lyra-ds/react run build
 rtk pnpm --filter @lyra-ds/alpine run build
 rtk pnpm run evidence:file-upload:manual:test
