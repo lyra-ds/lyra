@@ -7,6 +7,7 @@ import { HarnessApp, type HarnessAppProps } from './harness-app';
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
 const DEPLOYMENT_URL = 'https://12345678.file-upload-evidence.pages.dev/en/file-upload-evidence/';
 const EXECUTED_AT = '2026-08-17T15:30:00.000Z';
+const LATER_EXECUTED_AT = '2026-08-17T16:45:00.000Z';
 
 function telemetry(width = 1280, coarsePointer = false): EnvironmentTelemetry {
   return {
@@ -369,6 +370,56 @@ describe('bilingual file upload evidence recorder', () => {
     expect(exportedJson(writeText)).toMatchObject({ viewport: { width: 320 } });
   });
 
+  it('keeps the scenario timestamp and visible environment synchronized with exported JSON', async () => {
+    let currentTime = EXECUTED_AT;
+    let currentTelemetry = telemetry(1280, false);
+    const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
+    await render(
+      <HarnessApp
+        {...appProps('en', {
+          captureEnvironment: () => currentTelemetry,
+          now: () => new Date(currentTime),
+          clipboard: { writeText },
+        })}
+      />,
+    );
+
+    currentTime = LATER_EXECUTED_AT;
+    currentTelemetry = {
+      ...telemetry(321, true),
+      timezone: 'Europe/Lisbon',
+    };
+    await userEvent.selectOptions(page.getByLabelText('Manual scenario'), 'DF-FU-M03');
+
+    expect(inputByName('executedAt')).toHaveValue(LATER_EXECUTED_AT);
+    expect(inputByName('timezone')).toHaveValue('Europe/Lisbon');
+    expect(inputByName('viewport.width')).toHaveValue('321');
+    expect(page.getByText('(pointer: coarse): true')).toBeVisible();
+
+    await completeM03('en');
+    currentTelemetry = {
+      ...telemetry(320, true),
+      timezone: 'Asia/Tokyo',
+      mediaQueries: {
+        ...telemetry(320, true).mediaQueries,
+        '(hover: none)': false,
+      },
+    };
+    await page.getByRole('button', { name: 'Copy JSON' }).click();
+
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(inputByName('executedAt')).toHaveValue(LATER_EXECUTED_AT);
+    expect(inputByName('timezone')).toHaveValue('Asia/Tokyo');
+    expect(inputByName('viewport.width')).toHaveValue('320');
+    expect(page.getByText('(hover: none): false')).toBeVisible();
+    expect(exportedJson(writeText)).toMatchObject({
+      executedAt: LATER_EXECUTED_AT,
+      timezone: 'Asia/Tokyo',
+      viewport: { width: 320 },
+      mediaQueries: { '(pointer: coarse)': true, '(hover: none)': false },
+    });
+  });
+
   it('downloads validated JSON with a localized revision-pinned filename and revokes its URL', async () => {
     const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:evidence-json');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
@@ -418,8 +469,21 @@ describe('bilingual file upload evidence recorder', () => {
     const cancel = page.getByRole('button', { name: `Cancel ${fixtureName}` }).element();
     if (!(cancel instanceof HTMLButtonElement))
       throw new Error('Expected the public cancel button.');
+    input.focus();
+    await expect
+      .element(page.getByTestId('diagnostic-focus'))
+      .toHaveTextContent('input:controlled-evidence-file');
     cancel.focus();
     await expect.element(page.getByTestId('diagnostic-focus')).toHaveTextContent('Cancel');
+
+    const externalControl = page
+      .getByRole('button', { name: 'Advance recorded progress' })
+      .element();
+    if (!(externalControl instanceof HTMLButtonElement)) {
+      throw new Error('Expected the external operator control.');
+    }
+    externalControl.focus();
+    await expect.element(page.getByTestId('diagnostic-focus')).toHaveTextContent('—');
     expect(document.querySelector('[data-testid="lifecycle-diagnostics"] [aria-live]')).toBeNull();
   });
 });

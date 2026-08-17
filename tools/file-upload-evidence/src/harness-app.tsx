@@ -494,23 +494,9 @@ function reviewerApproval(value: string): ObservationDraft['reviewer']['approval
   throw new Error(`Unsupported reviewer approval: ${value}`);
 }
 
-function observationValue(
-  draft: ObservationDraft,
-  environment: EnvironmentTelemetry = {
-    userAgent: '',
-    timezone: draft.timezone,
-    viewport: draft.viewport,
-    mediaQueries: draft.mediaQueries,
-    coarsePointer:
-      draft.mediaQueries['(pointer: coarse)'] === true ||
-      draft.mediaQueries['(any-pointer: coarse)'] === true,
-  },
-): unknown {
+function observationValue(draft: ObservationDraft): unknown {
   return {
     ...draft,
-    timezone: environment.timezone,
-    viewport: environment.viewport,
-    mediaQueries: environment.mediaQueries,
     assistiveTechnology: draft.noAssistiveTechnologyConfirmed ? null : draft.assistiveTechnology,
     inputMethods: [...draft.inputMethods],
     artifactUrls: parseUrlLines(draft.artifactUrls),
@@ -565,6 +551,27 @@ function checkboxValue(
 ): readonly string[] {
   if (checked) return current.includes(value) ? current : [...current, value];
   return current.filter((entry) => entry !== value);
+}
+
+function draftWithEnvironment(
+  draft: ObservationDraft,
+  environment: EnvironmentTelemetry,
+): ObservationDraft {
+  return {
+    ...draft,
+    timezone: environment.timezone,
+    viewport: environment.viewport,
+    mediaQueries: environment.mediaQueries,
+  };
+}
+
+function requiredDraft(
+  drafts: Partial<Record<ManualScenario, ObservationDraft>>,
+  scenario: ManualScenario,
+): ObservationDraft {
+  const draft = drafts[scenario];
+  if (draft === undefined) throw new Error(`Missing observation draft for ${scenario}.`);
+  return draft;
 }
 
 function TextField({
@@ -662,8 +669,7 @@ function LocaleHarness({
   const readTime = now ?? currentTime;
   const [initialEnvironment] = useState(readEnvironment);
   const [scenario, setScenario] = useState<ManualScenario>('DF-FU-M01');
-  const [drafts, setDrafts] = useState<Record<ManualScenario, ObservationDraft>>(() => {
-    const executedAt = readTime().toISOString();
+  const [drafts, setDrafts] = useState<Partial<Record<ManualScenario, ObservationDraft>>>(() => {
     return {
       'DF-FU-M01': createDraft(
         'DF-FU-M01',
@@ -671,31 +677,7 @@ function LocaleHarness({
         revision,
         deploymentUrl,
         initialEnvironment,
-        executedAt,
-      ),
-      'DF-FU-M02': createDraft(
-        'DF-FU-M02',
-        locale,
-        revision,
-        deploymentUrl,
-        initialEnvironment,
-        executedAt,
-      ),
-      'DF-FU-M03': createDraft(
-        'DF-FU-M03',
-        locale,
-        revision,
-        deploymentUrl,
-        initialEnvironment,
-        executedAt,
-      ),
-      'DF-FU-M04': createDraft(
-        'DF-FU-M04',
-        locale,
-        revision,
-        deploymentUrl,
-        initialEnvironment,
-        executedAt,
+        readTime().toISOString(),
       ),
     };
   });
@@ -712,7 +694,7 @@ function LocaleHarness({
   const [showValidation, setShowValidation] = useState(false);
   const [exportBlocker, setExportBlocker] = useState<string | null>(null);
   const instrumentRef = useRef<ReactFileUploadEvidenceHandle>(null);
-  const draft = drafts[scenario];
+  const draft = requiredDraft(drafts, scenario);
   const validation = validateObservation(observationValue(draft));
   const completedM03Checks = m03CheckIds(m03Checks);
   const m03ManualRecordComplete =
@@ -726,7 +708,10 @@ function LocaleHarness({
   function updateDraft(update: (current: ObservationDraft) => ObservationDraft): void {
     setShowValidation(true);
     setExportBlocker(null);
-    setDrafts((current) => ({ ...current, [scenario]: update(current[scenario]) }));
+    setDrafts((current) => ({
+      ...current,
+      [scenario]: update(requiredDraft(current, scenario)),
+    }));
   }
 
   function updateM03<K extends keyof ManualM03State>(key: K, checked: boolean): void {
@@ -737,7 +722,9 @@ function LocaleHarness({
 
   function validatedExport(): FileUploadManualObservation | null {
     const currentEnvironment = readEnvironment();
-    const currentValidation = validateObservation(observationValue(draft, currentEnvironment));
+    const synchronizedDraft = draftWithEnvironment(draft, currentEnvironment);
+    setDrafts((current) => ({ ...current, [scenario]: synchronizedDraft }));
+    const currentValidation = validateObservation(observationValue(synchronizedDraft));
     setShowValidation(true);
     if (!currentValidation.ok) return null;
 
@@ -868,7 +855,23 @@ function LocaleHarness({
             name="scenario"
             value={scenario}
             onChange={(event) => {
-              setScenario(manualScenario(event.target.value));
+              const nextScenario = manualScenario(event.target.value);
+              if (drafts[nextScenario] === undefined) {
+                const nextDraft = createDraft(
+                  nextScenario,
+                  locale,
+                  revision,
+                  deploymentUrl,
+                  readEnvironment(),
+                  readTime().toISOString(),
+                );
+                setDrafts((current) =>
+                  current[nextScenario] === undefined
+                    ? { ...current, [nextScenario]: nextDraft }
+                    : current,
+                );
+              }
+              setScenario(nextScenario);
               setShowValidation(false);
               setExportBlocker(null);
             }}

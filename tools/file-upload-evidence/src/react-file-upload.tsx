@@ -370,6 +370,12 @@ export function ReactFileUploadEvidence({
           dispatch({ type: 'removed', id });
         }}
         onFocusCapture={(event) => setFocusTarget(describeFocusTarget(event.target))}
+        onBlurCapture={(event) => {
+          const nextTarget = event.relatedTarget;
+          if (!(nextTarget instanceof Node) || !event.currentTarget.contains(nextTarget)) {
+            setFocusTarget(null);
+          }
+        }}
       />
       {renderDiagnostics?.(diagnostics)}
     </>
