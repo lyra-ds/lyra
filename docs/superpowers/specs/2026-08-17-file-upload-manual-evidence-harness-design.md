@@ -33,13 +33,13 @@ The harness supports evidence collection; it does not replace a real environment
 
 ## Architecture
 
-### Evidence route
+### Evidence build
 
-Add unlisted static documentation routes at `/pt-BR/file-upload-evidence` and `/en/file-upload-evidence`. Their page metadata declares `robots: noindex, nofollow`. Cloudflare's preview `X-Robots-Tag: noindex` remains a second boundary, not the only boundary.
+Build the harness as an isolated Vite multi-page application under `tools/file-upload-evidence`, not as a Next route. It emits authored static documents at `/pt-BR/file-upload-evidence/` and `/en/file-upload-evidence/`; each document has the correct `<html lang>`, a `robots` value of `noindex, nofollow`, and usable native-form markup before JavaScript. Cloudflare's preview `X-Robots-Tag: noindex` remains a second boundary, not the only boundary.
 
-Both routes are build-gated by `FILE_UPLOAD_EVIDENCE=1`. The dedicated preview build sets it; the ordinary production build does not. Without the exact value `1`, both routes resolve through `notFound()` and no harness HTML is emitted. Automated build evidence MUST prove the preview routes exist when enabled and return the documentation 404 when disabled.
+The harness build refuses to run unless `FILE_UPLOAD_EVIDENCE=1` and a full Git revision are provided. It writes to its own temporary `dist` directory. Only the preview workflow copies that output into `apps/docs/out`; the ordinary Docs production build never invokes or copies the harness, so neither route nor its JavaScript assets exist in a production export. Automated build evidence MUST prove both the enabled preview output and the absence of harness paths after an ordinary Docs build.
 
-The server-rendered page owns the document title, explanatory copy, native form, build revision, and no-JavaScript instructions. A client component owns React lifecycle controls, environment telemetry, observations, and JSON export. A separate bounded client component mounts the Alpine fixture into a DOM subtree that React does not subsequently reconcile.
+Each authored HTML entry owns its document language, title, explanatory copy, native form, build revision, and no-JavaScript instructions. A React root mounted beside the native form owns lifecycle controls, environment telemetry, observations, and JSON export. A separate Alpine root exists in the authored HTML and is initialized only by the delayed Alpine bootstrap; React never owns or reconciles that subtree.
 
 The page displays:
 
@@ -107,7 +107,7 @@ Changing Android's native display or page zoom is acceptable only when the resul
 
 ### Native form workflow
 
-The server-rendered page includes a labelled native `<input type="file">` with a non-empty `name`, inside a standard multipart `POST` form targeting the same-origin evidence Function. Enhancement-only actions are absent from this form.
+Each authored HTML entry includes a labelled native `<input type="file">` with a non-empty `name`, inside a standard multipart `POST` form targeting the same-origin evidence Function. Enhancement-only actions are absent from this form.
 
 With JavaScript disabled, the tester selects a file, submits, and receives an accessible HTML response containing only:
 
@@ -124,7 +124,7 @@ The native form sends a hidden `locale` value of `pt-BR` or `en`. The Function r
 
 ### Delayed Alpine workflow
 
-The delayed-Alpine fixture server-renders its labelled native file input and enhancement container. A query parameter `alpineDelay` accepts an integer from 0 through 15000 milliseconds; absent or invalid values resolve to 5000 milliseconds.
+The delayed-Alpine fixture is present in the authored HTML with its labelled native file input and enhancement container. A query parameter `alpineDelay` accepts an integer from 0 through 15000 milliseconds; absent or invalid values resolve to 5000 milliseconds.
 
 After the delay, the fixture dynamically loads the repository's built Alpine adapter, registers the Lyra plugin once, and calls `Alpine.initTree()` once for its owned root. React does not render inside that root after initialization.
 
@@ -201,11 +201,13 @@ The workflow:
 
 1. checks out the selected `evidence/` revision;
 2. installs the repository's pinned pnpm and Node versions with the frozen lockfile;
-3. builds Styles, React, Alpine, and Docs with `FILE_UPLOAD_EVIDENCE=1` and the exact revision exposed as a public compile-time value;
-4. runs focused harness tests and the Docs production build;
-5. invokes Wrangler from `apps/docs` so its `functions` directory is included;
-6. deploys `apps/docs/out` to the existing `lyra-ds-docs` Pages project with `--branch=file-upload-evidence`;
-7. writes the immutable deployment URL, branch alias, and revision to the workflow summary.
+3. builds Styles, React, Alpine, and the ordinary Docs production export;
+4. runs focused harness tests, then builds the isolated harness with `FILE_UPLOAD_EVIDENCE=1` and the exact revision exposed to both entry documents;
+5. copies the harness output into the already-built `apps/docs/out` tree without deleting or rewriting Docs output;
+6. prepares a temporary Wrangler working directory containing the preview-only Pages Function with the same injected revision;
+7. invokes Wrangler from that temporary directory so its `functions` directory is included;
+8. deploys `apps/docs/out` to the existing `lyra-ds-docs` Pages project with `--branch=file-upload-evidence`;
+9. writes the immutable deployment URL, branch alias, and revision to the workflow summary.
 
 The preview job MUST NOT use `--branch=main`, update the Pages production branch, deploy the landing site, or modify Cloudflare configuration. It MUST use `--branch=file-upload-evidence`. Preview credentials reuse the existing repository secrets without printing them. The existing production job MUST retain its current landing-then-docs ordering and `--branch=main` behavior.
 
@@ -231,11 +233,11 @@ Implementation uses TDD and adds discriminating coverage for:
 - evidence schema validation and disabled export for missing fields;
 - Brazilian Portuguese and English copy completeness, route language, locale isolation, and localized native responses;
 - endpoint method, mode, size, timeout, headers, success, retryable error, and native multipart response;
-- SSR native form markup with no enhancement-only controls;
+- authored pre-JavaScript native form markup with the correct document language and no enhancement-only controls;
 - delayed Alpine initialization, preservation of the exact input node and `FileList`, no replay, one initialization, and one subsequent event path;
-- route metadata, absence from navigation/search/component registries, and compiled revision;
+- static entry metadata, absence from the ordinary Docs export/navigation/search/component registries, and compiled revision;
 - workflow permissions, manual trigger, `evidence/` ref guard, frozen install, build order, Pages project, preview branch, working directory, and absence of a production deploy;
-- production-disabled and preview-enabled route builds;
+- isolated harness output and an ordinary Docs build with no harness paths;
 - Docs typecheck, tests, static build, React/Alpine builds, three-engine focused Browser Mode, formatting, and diff checks.
 
 Automated tests do not claim M01 through M04. They prove only that the evidence instrument is fit for a human run.
