@@ -392,7 +392,7 @@ Make one later real selection and assert exactly one event path and one controll
 
 - [ ] **Step 4: Implement bounded delayed bootstrap and parent-owned Alpine control**
 
-`parseAlpineDelay` accepts only a base-10 integer string from 0 through 15000. Bootstrap dynamically imports `alpinejs` and `@lyra-ds/alpine`, registers the plugin once, installs the parent `uploadItems` controller, and invokes `Alpine.initTree(root)` once after the injected delay. Use the public `lyra:files-select`, `lyra:files-retry`, `lyra:files-cancel`, and `lyra:files-remove` events and `x-modelable="items"`; never call adapter-private methods.
+`parseAlpineDelay` accepts only a base-10 integer string from 0 through 15000. Bootstrap dynamically imports `alpinejs` and `@lyra-ds/alpine`, registers the plugin once, installs the parent `uploadItems` controller, and invokes `Alpine.initTree(root)` once after the injected delay. Use the public `lyra:file-upload:select`, `lyra:file-upload:retry`, `lyra:file-upload:cancel`, and `lyra:file-upload:remove` events and `x-modelable="items"`; never call adapter-private methods.
 
 - [ ] **Step 5: Verify and commit the pre-JavaScript/Alpine slice**
 
