@@ -12,6 +12,7 @@ const valid = {
   os: { name: 'Android', version: '16', build: 'BP2A.250605.031.A2' },
   browser: { name: 'Chrome', version: '139.0.7258.52' },
   assistiveTechnology: null,
+  noAssistiveTechnologyConfirmed: true,
   inputMethods: ['touch', 'keyboard'],
   viewport: { width: 320, height: 740, devicePixelRatio: 3 },
   mediaQueries: { '(pointer: coarse)': true, '(any-pointer: coarse)': true },
@@ -125,6 +126,34 @@ describe('validateObservation', () => {
       validateObservation({ ...valid, scenario: 'DF-FU-M01', assistiveTechnology: null }).ok,
     ).toBe(false);
   });
+
+  it.each(['DF-FU-M03', 'DF-FU-M04'] as const)(
+    'requires explicit no-AT confirmation before accepting %s without assistive technology',
+    (scenario) => {
+      const { noAssistiveTechnologyConfirmed: _confirmation, ...unconfirmedDraft } = valid;
+      const unconfirmed = validateObservation({
+        ...unconfirmedDraft,
+        scenario,
+        assistiveTechnology: null,
+      });
+      const confirmed = validateObservation({
+        ...valid,
+        scenario,
+        assistiveTechnology: null,
+        noAssistiveTechnologyConfirmed: true,
+      });
+
+      expect(unconfirmed).toMatchObject({
+        ok: false,
+        errors: [{ field: 'noAssistiveTechnologyConfirmation' }],
+      });
+      expect(confirmed).toMatchObject({ ok: true });
+      if (!confirmed.ok) {
+        throw new Error('expected confirmed no-AT observation to pass validation');
+      }
+      expect(confirmed.value).not.toHaveProperty('noAssistiveTechnologyConfirmed');
+    },
+  );
 
   it('returns stable localized field errors for invalid observations', () => {
     const english = validateObservation({ ...valid, locale: 'en', revision: 'not-a-sha' });

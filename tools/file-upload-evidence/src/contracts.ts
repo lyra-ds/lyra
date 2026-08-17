@@ -211,12 +211,12 @@ export function validateObservation(value: unknown): ObservationValidation {
   if (browserVersion === undefined) fail('browser.version');
 
   const assistiveTechnology = normalizedAssistiveTechnology(source.assistiveTechnology, fail);
-  if (
-    assistiveTechnology === null &&
-    scenario !== undefined &&
-    requiresAssistiveTechnology(scenario)
-  ) {
-    fail('assistiveTechnology');
+  if (assistiveTechnology === null && scenario !== undefined) {
+    if (requiresAssistiveTechnology(scenario)) {
+      fail('assistiveTechnology');
+    } else if (source.noAssistiveTechnologyConfirmed !== true) {
+      fail('noAssistiveTechnologyConfirmation');
+    }
   }
 
   const inputMethods = normalizedTextArray(source.inputMethods);

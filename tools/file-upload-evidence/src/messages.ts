@@ -25,6 +25,7 @@ export interface EvidenceMessages {
     assistiveTechnology: string;
     'assistiveTechnology.name': string;
     'assistiveTechnology.version': string;
+    noAssistiveTechnologyConfirmation: string;
     inputMethods: string;
     viewport: string;
     mediaQueries: string;
@@ -79,6 +80,7 @@ const en: EvidenceMessages = {
     assistiveTechnology: 'Assistive technology is required for this scenario.',
     'assistiveTechnology.name': 'Enter the assistive technology name.',
     'assistiveTechnology.version': 'Enter the assistive technology version.',
+    noAssistiveTechnologyConfirmation: 'Confirm that no assistive technology was active.',
     inputMethods: 'Record at least one physical input method.',
     viewport: 'Record a valid viewport and device pixel ratio.',
     mediaQueries: 'Record the evaluated media queries.',
@@ -133,6 +135,7 @@ const ptBR: EvidenceMessages = {
     assistiveTechnology: 'A tecnologia assistiva é obrigatória para este cenário.',
     'assistiveTechnology.name': 'Informe o nome da tecnologia assistiva.',
     'assistiveTechnology.version': 'Informe a versão da tecnologia assistiva.',
+    noAssistiveTechnologyConfirmation: 'Confirme que nenhuma tecnologia assistiva estava ativa.',
     inputMethods: 'Registre pelo menos um método de entrada físico.',
     viewport: 'Registre um viewport e uma proporção de pixels válidos.',
     mediaQueries: 'Registre as media queries avaliadas.',
