@@ -633,7 +633,7 @@ Use `superpowers:verification-before-completion`. Run fresh, in order:
 
 ```text
 rtk pnpm install --frozen-lockfile
-rtk pnpm --filter @lyra-ds/styles run lint
+rtk pnpm --filter @lyra-ds/styles run lint:css
 rtk pnpm --filter @lyra-ds/react run lint
 rtk pnpm --filter @lyra-ds/react run typecheck
 rtk pnpm --filter @lyra-ds/alpine run typecheck
