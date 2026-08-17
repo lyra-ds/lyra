@@ -279,7 +279,7 @@ describe('lyraCommandPalette', () => {
     expect(panel(host).querySelector('.lyra-cmdk__footer')?.textContent).toContain('close');
   });
 
-  it('scrolls the active descendant into the list viewport', async () => {
+  it('coalesces pending requests while scrolling the active descendant into view', async () => {
     const longGroups = [
       {
         items: Array.from({ length: 12 }, (_, index) => ({
@@ -299,6 +299,8 @@ describe('lyraCommandPalette', () => {
     vi.spyOn(commandList, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 200, 100));
     vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 340, 200, 24));
 
+    const data = Alpine.$data(root(host)) as { scheduleActiveScroll(): void };
+    data.scheduleActiveScroll();
     target.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     await flush();
     expect(search(host).getAttribute('aria-activedescendant')).toBe(target.id);

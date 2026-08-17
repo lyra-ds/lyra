@@ -220,6 +220,7 @@ export function lyraCommandPalette({
   inline = false,
   label = 'Command palette',
 }: LyraCommandPaletteOptions = {}): LyraCommandPaletteData {
+  let activeScrollPending = false;
   const state: LyraCommandPaletteData & ThisType<LyraCommandPaletteState> = {
     open,
     mounted: inline || open,
@@ -412,7 +413,10 @@ export function lyraCommandPalette({
     },
 
     scheduleActiveScroll() {
+      if (activeScrollPending) return;
+      activeScrollPending = true;
       this.$nextTick(() => {
+        activeScrollPending = false;
         const list = this.listElement();
         const activeId = this.activeOptionId();
         if (list) scrollActiveIntoView(list, activeId ? document.getElementById(activeId) : null);
