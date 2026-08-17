@@ -28,6 +28,9 @@
     "evidence:file-upload:manual:test": "pnpm --filter @lyra-ds/file-upload-evidence run test",
     "evidence:file-upload:manual:browser": "pnpm --filter @lyra-ds/file-upload-evidence run test:browser",
     "evidence:file-upload:manual:build": "pnpm --filter @lyra-ds/file-upload-evidence run build:preview",
+    "evidence:file-upload:manual:policy": "node tools/file-upload-evidence/scripts/deploy-policy.mjs .github/workflows/deploy.yml",
+    "evidence:file-upload:manual:stage": "node tools/file-upload-evidence/scripts/stage-preview.mjs",
+    "evidence:file-upload:manual:smoke": "node tools/file-upload-evidence/scripts/smoke.mjs",
     "changeset": "changeset",
     "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
   },

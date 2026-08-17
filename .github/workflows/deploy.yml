@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     env:
       # The declaration build of @lyra-ds/react needs more than 2.5 GB of
@@ -67,3 +68,90 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: pnpm exec wrangler pages deploy apps/docs/out --project-name=lyra-ds-docs --branch=main --commit-dirty=true
+
+  evidence-preview:
+    if: github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'evidence/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @lyra-ds/styles run lint:css
+      - run: pnpm --filter @lyra-ds/react run build
+      - run: pnpm --filter @lyra-ds/alpine run build
+      - run: pnpm --filter @lyra-ds/docs run build
+      - run: pnpm run evidence:file-upload:manual:test
+      - name: Build isolated evidence harness
+        env:
+          FILE_UPLOAD_EVIDENCE: '1'
+          LYRA_EVIDENCE_REVISION: ${{ github.sha }}
+        run: |
+          LYRA_EVIDENCE_BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
+          export LYRA_EVIDENCE_BUILD_TIME
+          pnpm run evidence:file-upload:manual:build
+      - name: Stage Function and publish evidence preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          node tools/file-upload-evidence/scripts/stage-preview.mjs \
+            --workspace-root="$GITHUB_WORKSPACE" \
+            --docs-output="$GITHUB_WORKSPACE/apps/docs/out" \
+            --harness-dist="$GITHUB_WORKSPACE/tools/file-upload-evidence/dist" \
+            --revision="$GITHUB_SHA" \
+            -- pnpm exec wrangler pages deploy "$GITHUB_WORKSPACE/apps/docs/out" \
+              --project-name=lyra-ds-docs \
+              --branch=file-upload-evidence \
+              --commit-hash="$GITHUB_SHA" \
+              --commit-dirty=true
+      - name: Resolve immutable evidence deployment
+        id: deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          pnpm exec wrangler pages deployment list \
+            --project-name=lyra-ds-docs \
+            --environment=preview \
+            --json > "$RUNNER_TEMP/file-upload-evidence-deployments.json"
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+
+          const deployments = JSON.parse(
+            readFileSync(`${process.env.RUNNER_TEMP}/file-upload-evidence-deployments.json`, 'utf8'),
+          );
+          const matches = deployments.filter(
+            (deployment) =>
+              deployment.deployment_trigger?.metadata?.branch === 'file-upload-evidence' &&
+              deployment.deployment_trigger?.metadata?.commit_hash === process.env.GITHUB_SHA,
+          );
+          if (matches.length !== 1) {
+            throw new Error(`Expected one matching preview deployment, received ${matches.length}.`);
+          }
+          const url = matches[0].url;
+          if (typeof url !== 'string' || !url.startsWith('https://')) {
+            throw new Error('Matching preview deployment did not expose an HTTPS URL.');
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, `url=${url}\n`);
+          NODE
+      - name: Smoke immutable evidence deployment
+        run: >-
+          pnpm run evidence:file-upload:manual:smoke --
+          --url="${{ steps.deployment.outputs.url }}"
+          --revision="$GITHUB_SHA"
+      - name: Summarize evidence preview
+        run: |
+          {
+            echo "## FileUpload manual evidence preview"
+            echo "- Immutable URL: ${{ steps.deployment.outputs.url }}"
+            echo "- Branch alias: https://file-upload-evidence.lyra-ds-docs.pages.dev"
+            echo "- Revision: $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
