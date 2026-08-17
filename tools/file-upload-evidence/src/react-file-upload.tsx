@@ -5,6 +5,7 @@ import {
   type FileUploadSelection,
 } from '@lyra-ds/react/file-upload';
 import { useEffect, useImperativeHandle, useReducer, useRef, type Ref } from 'react';
+import { flushSync } from 'react-dom';
 import type { Locale, UploadMode } from './contracts';
 import { MESSAGES } from './messages';
 import { uploadReducer, type UploadMachineAction } from './upload-machine';
@@ -44,6 +45,11 @@ interface RetainedResult {
   readonly action: ResultAction;
   readonly id: string;
   readonly attemptId: string;
+}
+
+interface RequestRegistration {
+  readonly request: XMLHttpRequest;
+  readonly detach: () => void;
 }
 
 function createRequest(): XMLHttpRequest {
@@ -100,19 +106,29 @@ export function ReactFileUploadEvidence({
   const [items, dispatch] = useReducer(uploadReducer, [] as readonly FileUploadItem[]);
   const files = useRef(new Map<string, File>());
   const requests = useRef(new Map<string, XMLHttpRequest>());
+  const requestRegistrations = useRef(new Map<string, RequestRegistration>());
   const attempts = useRef(new Map<string, string>());
   const recordedProgress = useRef(new Map<string, UploadMachineAction>());
   const retainedResult = useRef<RetainedResult | null>(null);
 
   useEffect(() => {
     const activeRequests = requests.current;
+    const activeRegistrations = requestRegistrations.current;
     const selectedFiles = files.current;
     const currentAttempts = attempts.current;
     const pendingProgress = recordedProgress.current;
 
     return () => {
-      for (const request of activeRequests.values()) request.abort();
-      activeRequests.clear();
+      for (const [attemptId, request] of activeRequests) {
+        const registration = activeRegistrations.get(attemptId);
+        if (registration?.request === request) {
+          registration.detach();
+          activeRegistrations.delete(attemptId);
+        }
+        if (activeRequests.get(attemptId) === request) activeRequests.delete(attemptId);
+        request.abort();
+      }
+      activeRegistrations.clear();
       selectedFiles.clear();
       currentAttempts.clear();
       pendingProgress.clear();
@@ -130,7 +146,10 @@ export function ReactFileUploadEvidence({
     requests.current.set(attemptId, request);
     attempts.current.set(id, attemptId);
 
-    request.upload.addEventListener('progress', (event) => {
+    const ownsRequest = () =>
+      requests.current.get(attemptId) === request && attempts.current.get(id) === attemptId;
+    const handleProgress = (event: ProgressEvent) => {
+      if (!ownsRequest()) return;
       const action: UploadMachineAction = {
         type: 'native-progress',
         id,
@@ -145,8 +164,9 @@ export function ReactFileUploadEvidence({
         return;
       }
       dispatch(action);
-    });
-    request.addEventListener('load', () => {
+    };
+    const handleLoad = () => {
+      if (!ownsRequest()) return;
       const action: ResultAction =
         request.status >= 200 && request.status < 300
           ? { type: 'succeeded', id, attemptId }
@@ -161,8 +181,9 @@ export function ReactFileUploadEvidence({
         retainedResult.current = { action, id, attemptId };
       }
       dispatch(action);
-    });
-    request.addEventListener('error', () => {
+    };
+    const handleError = () => {
+      if (!ownsRequest()) return;
       const action: ResultAction = {
         type: 'retryable-error',
         id,
@@ -173,15 +194,34 @@ export function ReactFileUploadEvidence({
         retainedResult.current = { action, id, attemptId };
       }
       dispatch(action);
-    });
-    request.addEventListener('abort', () => {
+    };
+    const handleAbort = () => {
+      if (!ownsRequest()) return;
       dispatch({ type: 'canceled', id, attemptId });
-    });
-    request.addEventListener('loadend', () => {
-      if (requests.current.get(attemptId) === request) {
-        requests.current.delete(attemptId);
+    };
+    const handleLoadEnd = () => {
+      if (requests.current.get(attemptId) !== request) return;
+      const registration = requestRegistrations.current.get(attemptId);
+      if (registration?.request === request) {
+        registration.detach();
+        requestRegistrations.current.delete(attemptId);
       }
-    });
+      if (requests.current.get(attemptId) === request) requests.current.delete(attemptId);
+    };
+    const detach = () => {
+      request.upload.removeEventListener('progress', handleProgress);
+      request.removeEventListener('load', handleLoad);
+      request.removeEventListener('error', handleError);
+      request.removeEventListener('abort', handleAbort);
+      request.removeEventListener('loadend', handleLoadEnd);
+    };
+
+    request.upload.addEventListener('progress', handleProgress);
+    request.addEventListener('load', handleLoad);
+    request.addEventListener('error', handleError);
+    request.addEventListener('abort', handleAbort);
+    request.addEventListener('loadend', handleLoadEnd);
+    requestRegistrations.current.set(attemptId, { request, detach });
 
     const body = new FormData();
     body.set('file', file);
@@ -212,8 +252,16 @@ export function ReactFileUploadEvidence({
   }
 
   function reset(): void {
-    for (const request of requests.current.values()) request.abort();
-    requests.current.clear();
+    for (const [attemptId, request] of requests.current) {
+      const registration = requestRegistrations.current.get(attemptId);
+      if (registration?.request === request) {
+        registration.detach();
+        requestRegistrations.current.delete(attemptId);
+      }
+      if (requests.current.get(attemptId) === request) requests.current.delete(attemptId);
+      request.abort();
+    }
+    requestRegistrations.current.clear();
     files.current.clear();
     attempts.current.clear();
     recordedProgress.current.clear();
@@ -270,7 +318,9 @@ export function ReactFileUploadEvidence({
         const request = requests.current.get(attemptId);
         if (request === undefined || attempts.current.get(id) !== attemptId) return;
 
-        dispatch({ type: 'cancel-requested', id, attemptId });
+        flushSync(() => {
+          dispatch({ type: 'cancel-requested', id, attemptId });
+        });
         request.abort();
       }}
       onRemove={({ id }) => {
