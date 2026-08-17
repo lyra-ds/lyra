@@ -4,7 +4,15 @@ import {
   type FileUploadMessages,
   type FileUploadSelection,
 } from '@lyra-ds/react/file-upload';
-import { useEffect, useImperativeHandle, useReducer, useRef, type Ref } from 'react';
+import {
+  useEffect,
+  useImperativeHandle,
+  useReducer,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { flushSync } from 'react-dom';
 import type { Locale, UploadMode } from './contracts';
 import { MESSAGES } from './messages';
@@ -22,6 +30,13 @@ export interface ReactFileUploadEvidenceHandle {
   reset(): void;
 }
 
+export interface ReactFileUploadEvidenceDiagnostics {
+  readonly itemId: string | null;
+  readonly attemptId: string | null;
+  readonly lifecycleState: FileUploadItem['status'] | 'idle';
+  readonly focusTarget: string | null;
+}
+
 export interface ReactFileUploadEvidenceProps {
   ref?: Ref<ReactFileUploadEvidenceHandle>;
   locale: Locale;
@@ -37,6 +52,7 @@ export interface ReactFileUploadEvidenceProps {
   label?: string;
   hint?: string;
   messages?: FileUploadMessages;
+  renderDiagnostics?: (diagnostics: ReactFileUploadEvidenceDiagnostics) => ReactNode;
 }
 
 type ResultAction = Extract<UploadMachineAction, { type: 'retryable-error' | 'succeeded' }>;
@@ -87,6 +103,15 @@ function responseError(request: XMLHttpRequest, locale: Locale): string {
   return MESSAGES[locale].endpoint.invalidRequest;
 }
 
+function describeFocusTarget(target: EventTarget): string | null {
+  if (target instanceof HTMLInputElement && target.type === 'file') return `input:${target.name}`;
+  if (target instanceof HTMLButtonElement) {
+    const label = target.textContent?.trim();
+    return label === undefined || label.length === 0 ? 'button' : `button:${label}`;
+  }
+  return target instanceof HTMLElement ? target.tagName.toLowerCase() : null;
+}
+
 export function ReactFileUploadEvidence({
   ref,
   locale,
@@ -102,14 +127,26 @@ export function ReactFileUploadEvidence({
   label,
   hint,
   messages,
+  renderDiagnostics,
 }: ReactFileUploadEvidenceProps) {
   const [items, dispatch] = useReducer(uploadReducer, [] as readonly FileUploadItem[]);
+  const [focusTarget, setFocusTarget] = useState<string | null>(null);
   const files = useRef(new Map<string, File>());
   const requests = useRef(new Map<string, XMLHttpRequest>());
   const requestRegistrations = useRef(new Map<string, RequestRegistration>());
   const attempts = useRef(new Map<string, string>());
   const recordedProgress = useRef(new Map<string, UploadMachineAction>());
   const retainedResult = useRef<RetainedResult | null>(null);
+  const currentItem = items.at(-1);
+  const currentAttemptId =
+    currentItem !== undefined && 'attemptId' in currentItem ? currentItem.attemptId : null;
+
+  const diagnostics: ReactFileUploadEvidenceDiagnostics = {
+    itemId: currentItem?.id ?? null,
+    attemptId: currentAttemptId,
+    lifecycleState: currentItem?.status ?? 'idle',
+    focusTarget,
+  };
 
   useEffect(() => {
     const activeRequests = requests.current;
@@ -266,70 +303,75 @@ export function ReactFileUploadEvidence({
     attempts.current.clear();
     recordedProgress.current.clear();
     retainedResult.current = null;
+    setFocusTarget(null);
     dispatch({ type: 'reset' });
   }
 
   useImperativeHandle(ref, () => ({ advanceIndeterminate, deliverStale, reset }));
 
   return (
-    <FileUpload
-      name={name}
-      maxSizeMB={maxSizeMB}
-      {...(accept === undefined ? {} : { accept })}
-      {...(multiple === undefined ? {} : { multiple })}
-      {...(disabled === undefined ? {} : { disabled })}
-      {...(required === undefined ? {} : { required })}
-      {...(label === undefined ? {} : { label })}
-      {...(hint === undefined ? {} : { hint })}
-      {...(messages === undefined ? {} : { messages })}
-      items={items}
-      onSelect={({ selections }) => {
-        dispatch({
-          type: 'selection',
-          proposedItems: selections.map(({ proposedItem }) => proposedItem),
-        });
-
-        for (const selection of selections) {
-          if (!acceptedSelection(selection)) continue;
-
-          files.current.set(selection.id, selection.file);
+    <>
+      <FileUpload
+        name={name}
+        maxSizeMB={maxSizeMB}
+        {...(accept === undefined ? {} : { accept })}
+        {...(multiple === undefined ? {} : { multiple })}
+        {...(disabled === undefined ? {} : { disabled })}
+        {...(required === undefined ? {} : { required })}
+        {...(label === undefined ? {} : { label })}
+        {...(hint === undefined ? {} : { hint })}
+        {...(messages === undefined ? {} : { messages })}
+        items={items}
+        onSelect={({ selections }) => {
           dispatch({
-            type: 'upload-start',
-            id: selection.id,
-            attemptId: selection.proposedAttemptId,
+            type: 'selection',
+            proposedItems: selections.map(({ proposedItem }) => proposedItem),
           });
-          startRequest(selection.file, selection.id, selection.proposedAttemptId, mode);
-        }
-      }}
-      onRetry={({ id, previousAttemptId, proposedAttemptId }) => {
-        const file = files.current.get(id);
-        if (
-          file === undefined ||
-          attempts.current.get(id) !== previousAttemptId ||
-          proposedAttemptId === previousAttemptId
-        ) {
-          return;
-        }
 
-        dispatch({ type: 'retry', id, previousAttemptId, proposedAttemptId });
-        startRequest(file, id, proposedAttemptId, mode);
-      }}
-      onCancel={({ id, attemptId }) => {
-        const request = requests.current.get(attemptId);
-        if (request === undefined || attempts.current.get(id) !== attemptId) return;
+          for (const selection of selections) {
+            if (!acceptedSelection(selection)) continue;
 
-        flushSync(() => {
-          dispatch({ type: 'cancel-requested', id, attemptId });
-        });
-        request.abort();
-      }}
-      onRemove={({ id }) => {
-        files.current.delete(id);
-        attempts.current.delete(id);
-        recordedProgress.current.delete(id);
-        if (retainedResult.current?.id === id) retainedResult.current = null;
-        dispatch({ type: 'removed', id });
-      }}
-    />
+            files.current.set(selection.id, selection.file);
+            dispatch({
+              type: 'upload-start',
+              id: selection.id,
+              attemptId: selection.proposedAttemptId,
+            });
+            startRequest(selection.file, selection.id, selection.proposedAttemptId, mode);
+          }
+        }}
+        onRetry={({ id, previousAttemptId, proposedAttemptId }) => {
+          const file = files.current.get(id);
+          if (
+            file === undefined ||
+            attempts.current.get(id) !== previousAttemptId ||
+            proposedAttemptId === previousAttemptId
+          ) {
+            return;
+          }
+
+          dispatch({ type: 'retry', id, previousAttemptId, proposedAttemptId });
+          startRequest(file, id, proposedAttemptId, mode);
+        }}
+        onCancel={({ id, attemptId }) => {
+          const request = requests.current.get(attemptId);
+          if (request === undefined || attempts.current.get(id) !== attemptId) return;
+
+          flushSync(() => {
+            dispatch({ type: 'cancel-requested', id, attemptId });
+          });
+          request.abort();
+        }}
+        onRemove={({ id }) => {
+          files.current.delete(id);
+          attempts.current.delete(id);
+          recordedProgress.current.delete(id);
+          if (retainedResult.current?.id === id) retainedResult.current = null;
+          dispatch({ type: 'removed', id });
+        }}
+        onFocusCapture={(event) => setFocusTarget(describeFocusTarget(event.target))}
+      />
+      {renderDiagnostics?.(diagnostics)}
+    </>
   );
 }
