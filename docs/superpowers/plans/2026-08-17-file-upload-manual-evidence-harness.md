@@ -643,8 +643,8 @@ rtk pnpm --filter @lyra-ds/docs run build
 rtk pnpm test
 rtk pnpm run test:browsers
 rtk pnpm run parity
-rtk pnpm run baseline:bundles -- --check
-rtk pnpm run performance:file-upload -- --check
+rtk pnpm run baseline:bundles --check
+rtk pnpm run performance:file-upload --check
 rtk pnpm run lint
 rtk git diff --check
 rtk git status --short
