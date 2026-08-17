@@ -76,7 +76,7 @@ The harness exposes clearly labelled operator controls outside the FileUpload co
 
 Network upload progress comes from `XMLHttpRequest.upload`. The harness records progress events and maps computable positive totals to a clamped 0–100 determinate value. Before a computable event, and in the explicit indeterminate scenario, the controlled item remains indeterminate. The operator panel may select a scenario or deliver an already-captured stale result; it MUST NOT directly mutate DOM owned by FileUpload or synthesize component events.
 
-The preview smoke gate MUST observe a real computable `XMLHttpRequest.upload` progress event before the harness is accepted for M01 or M02. If the deployed edge path produces no usable upload progress, that is a harness failure; operator controls and synthetic progress do not substitute for the missing signal.
+The preview smoke gate MUST observe a real computable `XMLHttpRequest.upload` progress event before the harness is accepted for M01 or M02. If the deployed edge path produces no usable upload progress, that is a harness failure; operator controls and synthetic progress do not substitute for the missing signal. In the same real browser session, smoke loads both localized routes, waits for the React recorder, observes the exact four scenario options, selects DF-FU-M01 through DF-FU-M04, and verifies a scenario-specific localized checklist marker plus the observation editor for each selection. Static route metadata or a constant scenario list cannot substitute for observing the deployed UI.
 
 The complete guided sequence is:
 
@@ -178,6 +178,7 @@ interface FileUploadManualObservation {
   mediaQueries: Record<string, boolean>;
   expected: string;
   actual: string;
+  checkAttestations: Record<string, boolean>;
   result: 'PASS' | 'FAIL';
   reviewer: { name: string; approval: 'approved' | 'changes-requested' };
   artifactUrls: string[];
@@ -185,9 +186,22 @@ interface FileUploadManualObservation {
 }
 ```
 
-The harness pre-fills locale, revision, deployment URL, timestamp, timezone, viewport, DPR, media queries, and user-agent supporting text. The tester must explicitly enter OS/browser/AT versions, input methods, actual observations, result, reviewer, and artifact/finding URLs. Export is disabled when a required field is empty. `assistiveTechnology` may be `null` only for a scenario that does not require AT and only after an explicit “no AT active” confirmation.
+`checkAttestations` is scenario-scoped and closed. The validator requires exactly the applicable keys below, rejects missing, additional, or cross-scenario keys, and preserves every boolean in exported JSON:
 
-A `PASS` record requires `reviewer.approval === 'approved'`. A `changes-requested` review requires `result === 'FAIL'`; the schema validator rejects contradictory combinations.
+| Scenario  | Required stable check IDs                                                                                                                                                                                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DF-FU-M01 | `DF-FU-M01-selection-and-indeterminate-announcements`, `DF-FU-M01-determinate-progress-milestones`, `DF-FU-M01-lifecycle-recovery-and-stale-result`                                                                                       |
+| DF-FU-M02 | `DF-FU-M02-selection-and-indeterminate-announcements`, `DF-FU-M02-determinate-progress-milestones`, `DF-FU-M02-lifecycle-recovery-and-stale-result`                                                                                       |
+| DF-FU-M03 | `DF-FU-M03-no-horizontal-overflow`, `DF-FU-M03-long-file-identity-retained`, `DF-FU-M03-actions-reachable`, `DF-FU-M03-active-replacement-rejected-and-announced`, `DF-FU-M03-cancel-retry-remove-completed`, `DF-FU-M03-focus-recovered` |
+| DF-FU-M04 | `DF-FU-M04-native-js-disabled-form-submitted`, `DF-FU-M04-delayed-alpine-node-filelist-preserved`, `DF-FU-M04-single-enhancement-path-removal-focus`                                                                                      |
+
+A `PASS` record requires every applicable attestation to be `true`. A `FAIL` record retains the same exact key set and may contain `false`, so a reviewer can see which workflow steps were incomplete when the failure occurred. The ingestion step re-runs this same validation; rendered checkboxes alone are not evidence.
+
+The harness pre-fills locale, revision, immutable deployment URL, timestamp, timezone, viewport, DPR, media queries, and user-agent supporting text. The tester must explicitly enter OS/browser/AT versions, input methods, applicable check attestations, actual observations, result, reviewer, and artifact/finding URLs. Export is disabled when a required field is empty. `assistiveTechnology` may be `null` only for a scenario that does not require AT and only after an explicit “no AT active” confirmation.
+
+A `PASS` record requires `reviewer.approval === 'approved'` and every scenario attestation to be `true`. A `changes-requested` review requires `result === 'FAIL'`; the schema validator rejects contradictory combinations.
+
+The recorder normalizes its deployment URL to `origin + pathname`, excluding query and fragment data used to configure a run. Export accepts only HTTPS hosts matching an immutable `<deployment>.lyra-ds-docs.pages.dev` deployment and the exact `/<locale>/file-upload-evidence/` route. It explicitly rejects the moving `file-upload-evidence.lyra-ds-docs.pages.dev` branch alias, unrelated hosts, credentials, ports, and locale/path mismatches. Local development can exercise the recorder but cannot export a manual evidence record unless a test injects a valid immutable URL.
 
 Exported JSON is local to the browser until the tester copies or downloads it. The harness does not submit evidence records to the server.
 
@@ -211,7 +225,7 @@ The workflow:
 
 The preview job MUST NOT use `--branch=main`, update the Pages production branch, deploy the landing site, or modify Cloudflare configuration. It MUST use `--branch=file-upload-evidence`. Preview credentials reuse the existing repository secrets without printing them. The existing production job MUST retain its current landing-then-docs ordering and `--branch=main` behavior.
 
-The fixed branch alias is a convenience URL only. Every evidence record uses the immutable deployment URL returned for that deployment.
+The fixed branch alias is a convenience URL only. Every evidence record uses the immutable deployment URL returned for that deployment. The client-side schema enforces this boundary again rather than trusting a read-only field or workflow summary.
 
 ## Failure handling
 
@@ -230,13 +244,15 @@ Implementation uses TDD and adds discriminating coverage for:
 
 - controlled reducer transitions, cancel identity, retry identity, stale-result rejection, and removal focus markers;
 - environment telemetry and the exact 320 CSS pixel/coarse-pointer M03 gate;
-- evidence schema validation and disabled export for missing fields;
+- evidence schema validation, exact scenario attestation keys, and disabled PASS export for missing or false workflow checks;
 - Brazilian Portuguese and English copy completeness, route language, locale isolation, and localized native responses;
 - endpoint method, mode, size, timeout, headers, success, retryable error, and native multipart response;
 - authored pre-JavaScript native form markup with the correct document language and no enhancement-only controls;
 - delayed Alpine initialization, preservation of the exact input node and `FileList`, no replay, one initialization, and one subsequent event path;
 - static entry metadata, absence from the ordinary Docs export/navigation/search/component registries, and compiled revision;
 - workflow permissions, manual trigger, `evidence/` ref guard, frozen install, build order, Pages project, preview branch, working directory, and absence of a production deploy;
+- immutable deployment URL rejection for the branch alias, unrelated hosts, credentials, ports, query/fragment leakage, and locale/path mismatch;
+- deployed React reachability in both locales by observing and selecting all four scenario options and their localized guidance in the real smoke browser;
 - isolated harness output and an ordinary Docs build with no harness paths;
 - Docs typecheck, tests, static build, React/Alpine builds, three-engine focused Browser Mode, formatting, and diff checks.
 
