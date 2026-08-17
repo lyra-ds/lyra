@@ -81,7 +81,7 @@ async function readBoundedBody(request: Request): Promise<ArrayBuffer | null> {
 
       byteLength += chunk.value.byteLength;
       if (byteLength > MAX_BODY_BYTES) {
-        await reader.cancel();
+        await Promise.allSettled([reader.cancel()]);
         return null;
       }
       chunks.push(chunk.value);

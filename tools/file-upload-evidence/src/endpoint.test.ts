@@ -193,6 +193,38 @@ describe('handleEvidenceRequest', () => {
     expectMandatoryHeaders(response);
   });
 
+  it('preserves streamed overflow when reader cancellation rejects', async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(MAX_BODY_BYTES + 1));
+      },
+      cancel() {
+        return Promise.reject(new Error('cancellation failed'));
+      },
+    });
+    const init: RequestInit & { duplex: 'half' } = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data; boundary=unused',
+        Origin: new URL(ENDPOINT_URL).origin,
+        'X-Lyra-Evidence-Client': 'xhr',
+      },
+      body: stream,
+      duplex: 'half',
+    };
+
+    const response = await handleEvidenceRequest(
+      new Request(ENDPOINT_URL, init),
+      createEnvironment(),
+    );
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toMatchObject({
+      error: MESSAGES['pt-BR'].endpoint.requestTooLarge,
+    });
+    expectMandatoryHeaders(response);
+  });
+
   it('returns only bounded upload metadata for a successful XHR request', async () => {
     const response = await handleEvidenceRequest(
       uploadRequest({
