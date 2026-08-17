@@ -146,9 +146,14 @@ describe('authored pre-JavaScript file upload entries', () => {
     expect(
       openingTagById(english, 'div', 'react-evidence-root')?.attributes['x-data'],
     ).toBeUndefined();
-    expect(openingTagById(english, 'div', 'alpine-evidence-root')?.attributes['x-data']).toBe(
-      'uploadItems',
-    );
+    for (const [source, locale] of [
+      [english, 'en'],
+      [portuguese, 'pt-BR'],
+    ]) {
+      expect(openingTagById(source, 'div', 'alpine-evidence-root')?.attributes['x-data']).toBe(
+        `uploadItems({ locale: '${locale}' })`,
+      );
+    }
     expect(openingTagById(english, 'div', 'alpine-file-upload')?.attributes['x-modelable']).toBe(
       'items',
     );

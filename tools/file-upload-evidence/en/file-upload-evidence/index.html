@@ -45,7 +45,7 @@
         <p>Select a file before the delay ends, then verify that enhancement preserves it.</p>
         <div
           id="alpine-evidence-root"
-          x-data="uploadItems"
+          x-data="uploadItems({ locale: 'en' })"
           @lyra:file-upload:select="selectFiles($event.detail)"
           @lyra:file-upload:retry="retryFile($event.detail)"
           @lyra:file-upload:cancel="cancelFile($event.detail)"
@@ -84,7 +84,7 @@
               <template x-for="item in items" :key="item.id">
                 <li class="lyra-upload__item" x-bind="itemBindings(item)">
                   <span class="lyra-upload__item-name" x-text="item.name"></span>
-                  <span class="lyra-upload__item-meta" x-text="item.status"></span>
+                  <span class="lyra-upload__item-meta" x-text="statusLabel(item)"></span>
                   <template
                     x-if="item.status === 'canceled' || (item.status === 'error' && item.error.retryable)"
                   >

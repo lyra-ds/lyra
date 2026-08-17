@@ -5,6 +5,32 @@ import type {
   LyraFileUploadRetryDetail,
   LyraFileUploadSelectDetail,
 } from '@lyra-ds/alpine';
+import type { Locale } from './contracts';
+
+type UploadStatus = LyraFileUploadItem['status'];
+
+const STATUS_LABELS = {
+  en: {
+    selected: 'Selected',
+    uploading: 'Uploading',
+    canceling: 'Canceling',
+    success: 'Uploaded',
+    error: 'Upload failed',
+    canceled: 'Canceled',
+  },
+  'pt-BR': {
+    selected: 'Selecionado',
+    uploading: 'Enviando',
+    canceling: 'Cancelando',
+    success: 'Enviado',
+    error: 'Falha no envio',
+    canceled: 'Cancelado',
+  },
+} as const satisfies Record<Locale, Record<UploadStatus, string>>;
+
+export interface UploadItemsControllerOptions {
+  locale: Locale;
+}
 
 export interface UploadItemsController {
   uploadItems: LyraFileUploadItem[];
@@ -13,6 +39,7 @@ export interface UploadItemsController {
   controlledEchoes: number;
   init(): void;
   controlledIdentities(): string;
+  statusLabel(item: LyraFileUploadItem): string;
   selectFiles(detail: LyraFileUploadSelectDetail): void;
   retryFile(detail: LyraFileUploadRetryDetail): void;
   cancelFile(detail: LyraFileUploadCancelDetail): void;
@@ -31,7 +58,11 @@ function uploadingItem(item: LyraFileUploadItem, attemptId: string): LyraFileUpl
   };
 }
 
-export function uploadItemsController(): UploadItemsController {
+export function uploadItemsController({
+  locale,
+}: UploadItemsControllerOptions): UploadItemsController {
+  const statusLabels = STATUS_LABELS[locale];
+
   return {
     uploadItems: [],
     initializations: 0,
@@ -46,6 +77,10 @@ export function uploadItemsController(): UploadItemsController {
       return this.uploadItems
         .map((item) => ('attemptId' in item ? `${item.id}/${item.attemptId}` : item.id))
         .join(', ');
+    },
+
+    statusLabel(item: LyraFileUploadItem): string {
+      return statusLabels[item.status];
     },
 
     selectFiles(this: UploadItemsController, detail: LyraFileUploadSelectDetail): void {

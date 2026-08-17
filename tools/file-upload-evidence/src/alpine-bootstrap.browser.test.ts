@@ -1,7 +1,9 @@
 /// <reference types="vite/client" />
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import englishEntry from '../en/file-upload-evidence/index.html?raw';
+import portugueseEntry from '../pt-BR/file-upload-evidence/index.html?raw';
+import type { LyraFileUploadItem } from '@lyra-ds/alpine';
 
 interface ScheduledTask {
   readonly callback: () => void;
@@ -10,8 +12,8 @@ interface ScheduledTask {
 
 const mountedHosts: HTMLElement[] = [];
 
-function mountEntry() {
-  const parsed = new DOMParser().parseFromString(englishEntry, 'text/html');
+function mountEntry(entry = englishEntry) {
+  const parsed = new DOMParser().parseFromString(entry, 'text/html');
   const host = document.createElement('div');
   for (const child of [...parsed.body.children]) host.appendChild(child.cloneNode(true));
   document.body.appendChild(host);
@@ -62,12 +64,22 @@ function counter(host: HTMLElement, id: string): number {
   return Number(value);
 }
 
+async function setControlledItems(root: HTMLElement, items: LyraFileUploadItem[]): Promise<void> {
+  const { default: Alpine } = await import('alpinejs');
+  const data: unknown = Alpine.$data(root);
+  if (typeof data !== 'object' || data === null || !('uploadItems' in data)) {
+    throw new Error('Expected the parent-owned uploadItems model.');
+  }
+  data.uploadItems = items;
+}
+
 afterEach(async () => {
   const { default: Alpine } = await import('alpinejs');
   for (const host of mountedHosts.splice(0)) {
     Alpine.destroyTree(host);
     host.remove();
   }
+  vi.restoreAllMocks();
 });
 
 describe('delayed Alpine evidence bootstrap', () => {
@@ -128,6 +140,100 @@ describe('delayed Alpine evidence bootstrap', () => {
     expect(selectionEvents).toBe(1);
     expect(counter(host, 'alpine-controlled-echoes')).toBe(1);
   });
+
+  it.each([
+    {
+      entry: englishEntry,
+      locale: 'en',
+      selected: 'Selected',
+      expected: ['Selected', 'Uploading', 'Canceling', 'Uploaded', 'Upload failed', 'Canceled'],
+    },
+    {
+      entry: portugueseEntry,
+      locale: 'pt-BR',
+      selected: 'Selecionado',
+      expected: ['Selecionado', 'Enviando', 'Cancelando', 'Enviado', 'Falha no envio', 'Cancelado'],
+    },
+  ])(
+    'renders every controlled status in $locale after a real selection',
+    async ({ entry, expected, selected }) => {
+      const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { input, root } = mountEntry(entry);
+      const { bootstrapAlpine } = await import('./alpine-bootstrap');
+      const scheduler = controlledScheduler();
+      const initialized = bootstrapAlpine(root, {
+        schedule: scheduler.schedule,
+        search: '?alpineDelay=0',
+      });
+      scheduler.runNext();
+      await initialized;
+      await flushAlpine();
+
+      selectFiles(input, [new File(['status'], 'status.pdf', { type: 'application/pdf' })]);
+      await flushAlpine();
+      expect(root.querySelector('.lyra-upload__item-meta')).toHaveTextContent(selected);
+
+      const items: LyraFileUploadItem[] = [
+        {
+          id: 'selected',
+          name: 'selected.pdf',
+          size: 1,
+          type: 'application/pdf',
+          status: 'selected',
+        },
+        {
+          id: 'uploading',
+          name: 'uploading.pdf',
+          size: 1,
+          type: 'application/pdf',
+          status: 'uploading',
+          attemptId: 'uploading-attempt',
+          progress: { kind: 'indeterminate' },
+        },
+        {
+          id: 'canceling',
+          name: 'canceling.pdf',
+          size: 1,
+          type: 'application/pdf',
+          status: 'canceling',
+          attemptId: 'canceling-attempt',
+          progress: { kind: 'indeterminate' },
+        },
+        {
+          id: 'success',
+          name: 'success.pdf',
+          size: 1,
+          type: 'application/pdf',
+          status: 'success',
+          attemptId: 'success-attempt',
+        },
+        {
+          id: 'error',
+          name: 'error.pdf',
+          size: 1,
+          type: 'application/pdf',
+          status: 'error',
+          attemptId: 'error-attempt',
+          error: { kind: 'transport', message: 'Offline', retryable: true },
+        },
+        {
+          id: 'canceled',
+          name: 'canceled.pdf',
+          size: 1,
+          type: 'application/pdf',
+          status: 'canceled',
+          attemptId: 'canceled-attempt',
+        },
+      ];
+      await setControlledItems(root, items);
+      await flushAlpine();
+
+      expect(
+        [...root.querySelectorAll('.lyra-upload__item-meta')].map((element) => element.textContent),
+      ).toEqual(expected);
+      expect(warning).not.toHaveBeenCalled();
+    },
+  );
 
   it('keeps repeated bootstrap and same-node reconnect on the original initialization', async () => {
     const { host, input, root } = mountEntry();

@@ -53,7 +53,7 @@
         </p>
         <div
           id="alpine-evidence-root"
-          x-data="uploadItems"
+          x-data="uploadItems({ locale: 'pt-BR' })"
           @lyra:file-upload:select="selectFiles($event.detail)"
           @lyra:file-upload:retry="retryFile($event.detail)"
           @lyra:file-upload:cancel="cancelFile($event.detail)"
@@ -63,7 +63,7 @@
             id="alpine-file-upload"
             class="lyra-upload"
             data-state="idle"
-            x-data="lyraFileUpload({ name: 'file', multiple: true, messages: { retry: 'Repetir {name}', cancel: 'Cancelar {name}', remove: 'Remover {name}', selected: '{name} selecionado.', progress: '{name} está com {percent}% enviado.', progressIndeterminate: '{name} está sendo enviado.', canceling: '{name} está sendo cancelado.', success: '{name} enviado.', error: '{name}: {message}', canceled: '{name} cancelado.', removed: '{name} removido.' } })"
+            x-data="lyraFileUpload({ name: 'file', multiple: true, messages: { retry: 'Repetir {name}', cancel: 'Cancelar {name}', remove: 'Remover {name}', selected: '{name} selecionado.', progress: '{name} está com {percent}% enviado.', progressIndeterminate: '{name} está sendo enviado.', canceling: '{name} está sendo cancelado.', success: '{name} enviado.', error: '{name}: falha no envio.', canceled: '{name} cancelado.', removed: '{name} removido.' } })"
             x-modelable="items"
             x-model="uploadItems"
           >
@@ -92,7 +92,7 @@
               <template x-for="item in items" :key="item.id">
                 <li class="lyra-upload__item" x-bind="itemBindings(item)">
                   <span class="lyra-upload__item-name" x-text="item.name"></span>
-                  <span class="lyra-upload__item-meta" x-text="item.status"></span>
+                  <span class="lyra-upload__item-meta" x-text="statusLabel(item)"></span>
                   <template
                     x-if="item.status === 'canceled' || (item.status === 'error' && item.error.retryable)"
                   >
