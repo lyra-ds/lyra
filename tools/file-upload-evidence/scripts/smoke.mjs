@@ -10,9 +10,121 @@ const nativePayloadBytes = 64 * 1024;
 const browserPayloadBytes = 8 * 1024 * 1024;
 
 const locales = [
-  { locale: 'en', title: 'File upload manual evidence' },
-  { locale: 'pt-BR', title: 'Evidência manual de envio de arquivo' },
+  {
+    locale: 'en',
+    title: 'File upload manual evidence',
+    scenarios: [
+      {
+        id: 'DF-FU-M01',
+        label: 'DF-FU-M01 — Windows, NVDA, and a current browser',
+        checklistMarker: 'Verify selection and indeterminate upload announcements with NVDA.',
+      },
+      {
+        id: 'DF-FU-M02',
+        label: 'DF-FU-M02 — macOS, VoiceOver, and Safari',
+        checklistMarker:
+          'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
+      },
+      {
+        id: 'DF-FU-M03',
+        label: 'DF-FU-M03 — keyboard, touch, and a 320 CSS pixel viewport',
+        checklistMarker: 'No horizontal overflow observed',
+      },
+      {
+        id: 'DF-FU-M04',
+        label: 'DF-FU-M04 — native form and delayed Alpine initialization',
+        checklistMarker:
+          'Submit the authored native form with JavaScript disabled and retain the response evidence.',
+      },
+    ],
+  },
+  {
+    locale: 'pt-BR',
+    title: 'Evidência manual de envio de arquivo',
+    scenarios: [
+      {
+        id: 'DF-FU-M01',
+        label: 'DF-FU-M01 — Windows, NVDA e navegador atual',
+        checklistMarker: 'Verifique os anúncios de seleção e envio indeterminado com NVDA.',
+      },
+      {
+        id: 'DF-FU-M02',
+        label: 'DF-FU-M02 — macOS, VoiceOver e Safari',
+        checklistMarker:
+          'Verifique os anúncios de seleção e envio indeterminado com VoiceOver e Safari.',
+      },
+      {
+        id: 'DF-FU-M03',
+        label: 'DF-FU-M03 — teclado, toque e viewport de 320 pixels CSS',
+        checklistMarker: 'Nenhum overflow horizontal observado',
+      },
+      {
+        id: 'DF-FU-M04',
+        label: 'DF-FU-M04 — formulário nativo e inicialização Alpine atrasada',
+        checklistMarker:
+          'Envie o formulário nativo autorado com JavaScript desativado e guarde a evidência da resposta.',
+      },
+    ],
+  },
 ];
+
+function scenarioOptionsMatch(options, expectedScenarios) {
+  return (
+    Array.isArray(options) &&
+    options.length === expectedScenarios.length &&
+    options.every(
+      (option, index) =>
+        option !== null &&
+        typeof option === 'object' &&
+        option.id === expectedScenarios[index].id &&
+        option.label === expectedScenarios[index].label,
+    )
+  );
+}
+
+export function validateScenarioSurfaces(value) {
+  if (!Array.isArray(value) || value.length !== locales.length) {
+    throw new Error('deployed scenario surfaces must include both localized recorder routes.');
+  }
+
+  for (const [index, expectation] of locales.entries()) {
+    const surface = value[index];
+    if (surface === null || typeof surface !== 'object' || surface.locale !== expectation.locale) {
+      throw new Error(`${expectation.locale} scenario surface has the wrong route locale.`);
+    }
+    if (surface.recorderMounted !== true) {
+      throw new Error(`${expectation.locale} scenario surface has no mounted React recorder.`);
+    }
+    if (!scenarioOptionsMatch(surface.options, expectation.scenarios)) {
+      throw new Error(
+        `${expectation.locale} scenario surface has incorrect localized scenario options.`,
+      );
+    }
+    if (
+      !Array.isArray(surface.visited) ||
+      surface.visited.length !== expectation.scenarios.length
+    ) {
+      throw new Error(`${expectation.locale} scenario surface did not visit every scenario.`);
+    }
+
+    for (const [scenarioIndex, expectedScenario] of expectation.scenarios.entries()) {
+      const visit = surface.visited[scenarioIndex];
+      if (
+        visit === null ||
+        typeof visit !== 'object' ||
+        visit.id !== expectedScenario.id ||
+        visit.checklistMarker !== expectedScenario.checklistMarker ||
+        visit.observationEditorVisible !== true
+      ) {
+        throw new Error(
+          `${expectation.locale} scenario surface did not expose localized guidance and the observation editor for ${expectedScenario.id}.`,
+        );
+      }
+    }
+  }
+
+  return value;
+}
 
 function parseImmutableUrl(value) {
   let url;
@@ -181,8 +293,51 @@ export async function uploadWithBrowser({ payloadMarker, url }) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const page = await browser.newPage();
+    const scenarioSurfaces = [];
+    for (const expectation of locales) {
+      await page.goto(`${url}/${expectation.locale}/file-upload-evidence/`, {
+        waitUntil: 'domcontentloaded',
+      });
+      const scenarioSelect = page.locator('select[name="scenario"]');
+      await scenarioSelect.waitFor({ state: 'visible' });
+      const options = await scenarioSelect.locator('option').evaluateAll((elements) =>
+        elements.map((element) => ({
+          id: element.value,
+          label: element.textContent?.trim() ?? '',
+        })),
+      );
+      const locale = (await page.locator('html').getAttribute('lang')) ?? '';
+      const recorderMounted = await scenarioSelect.isVisible();
+      if (locale !== expectation.locale) {
+        throw new Error(`${expectation.locale} scenario surface has the wrong route locale.`);
+      }
+      if (recorderMounted !== true) {
+        throw new Error(`${expectation.locale} scenario surface has no mounted React recorder.`);
+      }
+      if (!scenarioOptionsMatch(options, expectation.scenarios)) {
+        throw new Error(
+          `${expectation.locale} scenario surface has incorrect localized scenario options.`,
+        );
+      }
+
+      const visited = [];
+      for (const expectedScenario of expectation.scenarios) {
+        await scenarioSelect.selectOption(expectedScenario.id);
+        const checklist = page.getByText(expectedScenario.checklistMarker, { exact: true });
+        const observationEditor = page.locator('input[name="os.name"]');
+        await checklist.waitFor({ state: 'visible' });
+        await observationEditor.waitFor({ state: 'visible' });
+        visited.push({
+          id: await scenarioSelect.inputValue(),
+          checklistMarker: (await checklist.textContent())?.trim() ?? '',
+          observationEditorVisible: await observationEditor.isVisible(),
+        });
+      }
+      scenarioSurfaces.push({ locale, recorderMounted, options, visited });
+    }
+
     await page.goto(`${url}/en/file-upload-evidence/`, { waitUntil: 'domcontentloaded' });
-    return await page.evaluate(
+    const upload = await page.evaluate(
       ({ bytes, endpoint, marker }) =>
         new Promise((resolvePromise, reject) => {
           const xhr = new XMLHttpRequest();
@@ -240,6 +395,7 @@ export async function uploadWithBrowser({ payloadMarker, url }) {
         marker: payloadMarker,
       },
     );
+    return { ...upload, scenarioSurfaces };
   } finally {
     await browser.close();
   }
@@ -257,6 +413,7 @@ export async function runSmoke(options, dependencies = {}) {
   await checkLocalizedPages(options.url, options.revision, fetchImplementation);
   await checkNativeMultipart(options.url, options.revision, payloadMarker, fetchImplementation);
   const upload = await browserUpload({ ...options, payloadMarker });
+  const scenarioSurfaces = validateScenarioSurfaces(upload.scenarioSurfaces);
   if (
     upload.status !== 200 ||
     upload.headerRevision !== options.revision ||
@@ -278,7 +435,7 @@ export async function runSmoke(options, dependencies = {}) {
   }
   validateUploadProgress(upload.progress);
   return {
-    locales: locales.map(({ locale }) => locale),
+    locales: scenarioSurfaces.map(({ locale }) => locale),
     revision: options.revision,
     url: options.url,
   };
