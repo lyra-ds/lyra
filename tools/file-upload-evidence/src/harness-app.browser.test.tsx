@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { cleanup, render } from 'vitest-browser-react';
-import type { EnvironmentTelemetry, Locale, ManualScenario, ScenarioCheckId } from './contracts';
+import {
+  SCENARIO_CHECK_IDS,
+  type EnvironmentTelemetry,
+  type Locale,
+  type ManualScenario,
+} from './contracts';
 import { HarnessApp, type HarnessAppProps } from './harness-app';
 
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
@@ -72,127 +77,6 @@ async function choose(name: string, value: string): Promise<void> {
   await userEvent.selectOptions(selectByName(name), value);
 }
 
-const SCENARIO_CHECKS: Record<
-  ManualScenario,
-  readonly { readonly id: ScenarioCheckId; readonly label: Record<Locale, string> }[]
-> = {
-  'DF-FU-M01': [
-    {
-      id: 'DF-FU-M01-selection-and-indeterminate-announcements',
-      label: {
-        en: 'Verify selection and indeterminate upload announcements with NVDA.',
-        'pt-BR': 'Verifique os anúncios de seleção e envio indeterminado com NVDA.',
-      },
-    },
-    {
-      id: 'DF-FU-M01-determinate-progress-milestones',
-      label: {
-        en: 'Record determinate progress at 25, 50, 75, and 100 percent.',
-        'pt-BR': 'Registre o progresso determinado em 25, 50, 75 e 100 por cento.',
-      },
-    },
-    {
-      id: 'DF-FU-M01-lifecycle-recovery-and-stale-result',
-      label: {
-        en: 'Exercise cancellation, retry, a stale result, error, success, removal, and focus recovery.',
-        'pt-BR':
-          'Exercite cancelamento, repetição, resultado obsoleto, erro, sucesso, remoção e recuperação de foco.',
-      },
-    },
-  ],
-  'DF-FU-M02': [
-    {
-      id: 'DF-FU-M02-selection-and-indeterminate-announcements',
-      label: {
-        en: 'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
-        'pt-BR': 'Verifique os anúncios de seleção e envio indeterminado com VoiceOver e Safari.',
-      },
-    },
-    {
-      id: 'DF-FU-M02-determinate-progress-milestones',
-      label: {
-        en: 'Record determinate progress at 25, 50, 75, and 100 percent.',
-        'pt-BR': 'Registre o progresso determinado em 25, 50, 75 e 100 por cento.',
-      },
-    },
-    {
-      id: 'DF-FU-M02-lifecycle-recovery-and-stale-result',
-      label: {
-        en: 'Exercise cancellation, retry, a stale result, error, success, removal, and focus recovery.',
-        'pt-BR':
-          'Exercite cancelamento, repetição, resultado obsoleto, erro, sucesso, remoção e recuperação de foco.',
-      },
-    },
-  ],
-  'DF-FU-M03': [
-    {
-      id: 'DF-FU-M03-no-horizontal-overflow',
-      label: {
-        en: 'No horizontal overflow observed',
-        'pt-BR': 'Nenhum overflow horizontal observado',
-      },
-    },
-    {
-      id: 'DF-FU-M03-long-file-identity-retained',
-      label: {
-        en: 'Long file identity retained',
-        'pt-BR': 'Identidade do arquivo longo mantida',
-      },
-    },
-    {
-      id: 'DF-FU-M03-actions-reachable',
-      label: {
-        en: 'All actions remained reachable',
-        'pt-BR': 'Todas as ações permaneceram acessíveis',
-      },
-    },
-    {
-      id: 'DF-FU-M03-active-replacement-rejected-and-announced',
-      label: {
-        en: 'Active replacement was rejected and announced',
-        'pt-BR': 'Substituição ativa rejeitada e anunciada',
-      },
-    },
-    {
-      id: 'DF-FU-M03-cancel-retry-remove-completed',
-      label: {
-        en: 'Cancel, retry, and remove completed',
-        'pt-BR': 'Cancelar, repetir e remover concluídos',
-      },
-    },
-    {
-      id: 'DF-FU-M03-focus-recovered',
-      label: { en: 'Focus recovered', 'pt-BR': 'Foco recuperado' },
-    },
-  ],
-  'DF-FU-M04': [
-    {
-      id: 'DF-FU-M04-native-js-disabled-form-submitted',
-      label: {
-        en: 'Submit the authored native form with JavaScript disabled and retain the response evidence.',
-        'pt-BR':
-          'Envie o formulário nativo autorado com JavaScript desativado e guarde a evidência da resposta.',
-      },
-    },
-    {
-      id: 'DF-FU-M04-delayed-alpine-node-filelist-preserved',
-      label: {
-        en: 'Select a file before delayed Alpine initialization and verify the exact node and FileList remain.',
-        'pt-BR':
-          'Selecione um arquivo antes do Alpine atrasado e verifique que o nó exato e a FileList permanecem.',
-      },
-    },
-    {
-      id: 'DF-FU-M04-single-enhancement-path-removal-focus',
-      label: {
-        en: 'Verify one enhanced tree, no replay, one listener path, removal, and focus recovery.',
-        'pt-BR':
-          'Verifique uma árvore aprimorada, nenhum replay, um caminho de listener, remoção e recuperação de foco.',
-      },
-    },
-  ],
-};
-
 async function selectScenario(locale: Locale, scenario: ManualScenario): Promise<void> {
   await userEvent.selectOptions(
     page.getByLabelText(locale === 'en' ? 'Manual scenario' : 'Cenário manual'),
@@ -200,20 +84,16 @@ async function selectScenario(locale: Locale, scenario: ManualScenario): Promise
   );
 }
 
-async function tickScenarioChecks(
-  locale: Locale,
-  scenario: ManualScenario,
-  checks: readonly { readonly label: Record<Locale, string> }[] = SCENARIO_CHECKS[scenario],
-): Promise<void> {
-  for (const check of checks) {
-    await page.getByLabelText(check.label[locale]).click();
-  }
+function renderedScenarioChecks(): HTMLInputElement[] {
+  return Array.from(
+    document.querySelectorAll<HTMLInputElement>('.lyra-evidence__checklist input[type="checkbox"]'),
+  );
 }
 
-function lastScenarioCheck(scenario: ManualScenario) {
-  const check = SCENARIO_CHECKS[scenario].at(-1);
-  if (check === undefined) throw new Error(`Expected ${scenario} to have a checklist.`);
-  return check;
+async function tickScenarioChecks(checks = renderedScenarioChecks()): Promise<void> {
+  for (const check of checks) {
+    await userEvent.click(check);
+  }
 }
 
 async function completeObservation(
@@ -237,7 +117,7 @@ async function completeObservation(
   await fillInput('reviewer.name', 'Alex Reviewer');
   await choose('reviewer.approval', 'approved');
   await fillTextarea('artifactUrls', 'https://evidence.example/video');
-  if (completeChecklist) await tickScenarioChecks(locale, scenario);
+  if (completeChecklist) await tickScenarioChecks();
 }
 
 async function completeM03(locale: Locale): Promise<void> {
@@ -325,48 +205,54 @@ describe('bilingual file upload evidence recorder', () => {
     expect(page.getByRole('button', { name: 'Download JSON' })).toBeEnabled();
   });
 
-  it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
-    'requires every rendered %s checklist row before PASS export',
-    async (scenario) => {
-      const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
-      await render(
-        <HarnessApp
-          {...appProps('en', {
-            captureEnvironment: () => telemetry(320, true),
-            clipboard: { writeText },
-          })}
-        />,
-      );
-      await selectScenario('en', scenario);
-      if (scenario === 'DF-FU-M03') {
-        await completeM03('en');
-        await page.getByLabelText(lastScenarioCheck(scenario).label.en).click();
-      } else {
-        await completeObservation('en', false);
-        if (scenario === 'DF-FU-M04') {
-          await fillInput('assistiveTechnology.name', '');
-          await fillInput('assistiveTechnology.version', '');
-          await page.getByLabelText('I confirm that no assistive technology was active').click();
+  for (const scenario of ['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const) {
+    for (const [uncheckedIndex, uncheckedId] of SCENARIO_CHECK_IDS[scenario].entries()) {
+      it(`requires rendered ${uncheckedId} before PASS export`, async () => {
+        const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
+        await render(
+          <HarnessApp
+            {...appProps('en', {
+              captureEnvironment: () => telemetry(320, true),
+              clipboard: { writeText },
+            })}
+          />,
+        );
+        await selectScenario('en', scenario);
+        const scenarioChecks = renderedScenarioChecks();
+        expect(scenarioChecks).toHaveLength(SCENARIO_CHECK_IDS[scenario].length);
+        const uncheckedCheck = scenarioChecks[uncheckedIndex];
+        if (uncheckedCheck === undefined) throw new Error(`Missing rendered row ${uncheckedId}.`);
+        if (scenario === 'DF-FU-M03') {
+          await completeM03('en');
+          await userEvent.click(uncheckedCheck);
+        } else {
+          await completeObservation('en', false);
+          if (scenario === 'DF-FU-M04') {
+            await fillInput('assistiveTechnology.name', '');
+            await fillInput('assistiveTechnology.version', '');
+            await page.getByLabelText('I confirm that no assistive technology was active').click();
+          }
+          await tickScenarioChecks(
+            scenarioChecks.filter((_, checkIndex) => checkIndex !== uncheckedIndex),
+          );
         }
-        await tickScenarioChecks('en', scenario, SCENARIO_CHECKS[scenario].slice(0, -1));
-      }
 
-      expect(page.getByRole('button', { name: 'Copy JSON' })).toBeDisabled();
-      expect(page.getByRole('button', { name: 'Download JSON' })).toBeDisabled();
-      expect(writeText).not.toHaveBeenCalled();
+        expect(page.getByRole('button', { name: 'Copy JSON' })).toBeDisabled();
+        expect(page.getByRole('button', { name: 'Download JSON' })).toBeDisabled();
+        expect(writeText).not.toHaveBeenCalled();
 
-      await page.getByLabelText(lastScenarioCheck(scenario).label.en).click();
-      await page.getByRole('button', { name: 'Copy JSON' }).click();
+        await userEvent.click(uncheckedCheck);
+        await page.getByRole('button', { name: 'Copy JSON' }).click();
 
-      expect(writeText).toHaveBeenCalledTimes(1);
-      expect(exportedJson(writeText)).toMatchObject({
-        scenario,
-        checkAttestations: Object.fromEntries(
-          SCENARIO_CHECKS[scenario].map(({ id }) => [id, true]),
-        ),
+        expect(writeText).toHaveBeenCalledTimes(1);
+        const exported = exportedJson(writeText);
+        expect(exported.scenario).toBe(scenario);
+        expect(exported.checkAttestations).toEqual(
+          Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
+        );
       });
-    },
-  );
+    }
+  }
 
   it('preserves an incomplete M04 checklist in a FAIL export', async () => {
     const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
@@ -376,7 +262,7 @@ describe('bilingual file upload evidence recorder', () => {
     await fillInput('assistiveTechnology.name', '');
     await fillInput('assistiveTechnology.version', '');
     await page.getByLabelText('I confirm that no assistive technology was active').click();
-    await tickScenarioChecks('en', 'DF-FU-M04', SCENARIO_CHECKS['DF-FU-M04'].slice(0, -1));
+    await tickScenarioChecks(renderedScenarioChecks().slice(0, -1));
     await choose('result', 'FAIL');
     await choose('reviewer.approval', 'changes-requested');
 

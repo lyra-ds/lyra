@@ -117,25 +117,42 @@ describe('validateObservation', () => {
     (scenario) => {
       const requiredIds = SCENARIO_CHECK_IDS[scenario];
       const complete = Object.fromEntries(requiredIds.map((id) => [id, true]));
-      const missing = Object.fromEntries(requiredIds.slice(1).map((id) => [id, true]));
-      const falseValue = { ...complete, [requiredIds[0]]: false };
       const extra = { ...complete, 'DF-FU-M99-foreign-check': true };
 
       expect(validateObservation(observationFor(scenario, complete))).toMatchObject({ ok: true });
-      expect(validateObservation(observationFor(scenario, missing))).toMatchObject({
-        ok: false,
-        errors: [{ field: 'checkAttestations' }],
-      });
-      expect(validateObservation(observationFor(scenario, falseValue))).toMatchObject({
-        ok: false,
-        errors: [{ field: 'checkAttestations' }],
-      });
       expect(validateObservation(observationFor(scenario, extra))).toMatchObject({
         ok: false,
         errors: [{ field: 'checkAttestations' }],
       });
     },
   );
+
+  for (const scenario of ['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const) {
+    const requiredIds = SCENARIO_CHECK_IDS[scenario];
+    const complete = Object.fromEntries(requiredIds.map((id) => [id, true]));
+
+    for (const checkId of requiredIds) {
+      it(`rejects PASS for ${scenario} when ${checkId} is missing`, () => {
+        const missing = Object.fromEntries(
+          requiredIds.filter((requiredId) => requiredId !== checkId).map((id) => [id, true]),
+        );
+
+        expect(validateObservation(observationFor(scenario, missing))).toMatchObject({
+          ok: false,
+          errors: [{ field: 'checkAttestations' }],
+        });
+      });
+
+      it(`rejects PASS for ${scenario} when ${checkId} is false`, () => {
+        expect(
+          validateObservation(observationFor(scenario, { ...complete, [checkId]: false })),
+        ).toMatchObject({
+          ok: false,
+          errors: [{ field: 'checkAttestations' }],
+        });
+      });
+    }
+  }
 
   it('preserves false attestations in a FAIL record without sharing caller state', () => {
     const scenarioAttestations = Object.fromEntries(
