@@ -45,7 +45,7 @@ function appProps(locale: Locale) {
     locale,
     revision: REVISION,
     buildTime: BUILD_TIME,
-    deploymentUrl: `https://example.pages.dev/${locale}/file-upload-evidence/`,
+    deploymentUrl: `https://a1b2c3d4.lyra-ds-docs.pages.dev/${locale}/file-upload-evidence/`,
     alpineDelayMilliseconds: 5_000,
     captureEnvironment: () => environment(),
     now: () => new Date('2026-08-17T13:00:00.000Z'),
@@ -104,6 +104,13 @@ async function completeEnglishObservation(): Promise<void> {
   await userEvent.selectOptions(namedSelect('result'), 'PASS');
   await userEvent.selectOptions(namedSelect('reviewer.approval'), 'approved');
   await userEvent.fill(namedTextarea('artifactUrls'), 'https://evidence.example/review');
+  for (const label of [
+    'Verify selection and indeterminate upload announcements with NVDA.',
+    'Record determinate progress at 25, 50, 75, and 100 percent.',
+    'Exercise cancellation, retry, a stale result, error, success, removal, and focus recovery.',
+  ]) {
+    await page.getByLabelText(label).click();
+  }
 }
 
 afterEach(async () => {
@@ -239,6 +246,7 @@ describe('three-engine file upload evidence instrument acceptance', () => {
     expect(writeText).not.toHaveBeenCalled();
 
     await completeEnglishObservation();
+    expect(page.getByRole('button', { name: 'Copy JSON' })).toBeEnabled();
     await page.getByRole('button', { name: 'Copy JSON' }).click();
 
     expect(writeText).toHaveBeenCalledTimes(1);
@@ -248,6 +256,12 @@ describe('three-engine file upload evidence instrument acceptance', () => {
       scenario: 'DF-FU-M01',
       locale: 'en',
       revision: REVISION,
+      deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      checkAttestations: {
+        'DF-FU-M01-selection-and-indeterminate-announcements': true,
+        'DF-FU-M01-determinate-progress-milestones': true,
+        'DF-FU-M01-lifecycle-recovery-and-stale-result': true,
+      },
       result: 'PASS',
       reviewer: { name: 'Accessibility Reviewer', approval: 'approved' },
       artifactUrls: ['https://evidence.example/review'],
