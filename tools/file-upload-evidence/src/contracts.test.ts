@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { SCENARIO_CHECK_IDS, type ManualScenario, validateObservation } from './contracts';
+import {
+  deploymentUrlFromLocation,
+  SCENARIO_CHECK_IDS,
+  type ManualScenario,
+  validateObservation,
+} from './contracts';
 
 const checkAttestations = Object.fromEntries(
   SCENARIO_CHECK_IDS['DF-FU-M03'].map((id) => [id, true]),
@@ -10,7 +15,7 @@ const valid = {
   scenario: 'DF-FU-M03',
   locale: 'pt-BR',
   revision: 'a'.repeat(40),
-  deploymentUrl: 'https://abc123.lyra-ds.pages.dev/pt-BR/file-upload-evidence/',
+  deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
   executedAt: '2026-08-17T14:30:00.000Z',
   timezone: 'America/Sao_Paulo',
   os: { name: 'Android', version: '16', build: 'BP2A.250605.031.A2' },
@@ -65,7 +70,46 @@ describe('validateObservation', () => {
   );
 
   it.each(['en', 'pt-BR'] as const)('accepts the %s route locale', (locale) => {
-    expect(validateObservation({ ...valid, locale }).ok).toBe(true);
+    expect(
+      validateObservation({
+        ...valid,
+        locale,
+        deploymentUrl: `https://a1b2c3d4.lyra-ds-docs.pages.dev/${locale}/file-upload-evidence/`,
+      }).ok,
+    ).toBe(true);
+  });
+
+  it.each([
+    'https://file-upload-evidence.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
+    'https://a1b2c3d4.example.test/pt-BR/file-upload-evidence/',
+    'https://user:password@a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
+    'https://a1b2c3d4.lyra-ds-docs.pages.dev:8443/pt-BR/file-upload-evidence/',
+    'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+    'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/?alpineDelay=5000',
+    'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/#record',
+  ])('rejects a non-immutable deployment route: %s', (deploymentUrl) => {
+    expect(validateObservation({ ...valid, deploymentUrl })).toMatchObject({
+      ok: false,
+      errors: [
+        {
+          field: 'deploymentUrl',
+          message: 'Informe uma URL absoluta HTTPS de implantação.',
+        },
+      ],
+    });
+  });
+
+  it('normalizes a browser location to origin and pathname', () => {
+    const browserLocation = {
+      origin: 'https://a1b2c3d4.lyra-ds-docs.pages.dev',
+      pathname: '/pt-BR/file-upload-evidence/',
+      search: '?alpineDelay=5000',
+      hash: '#record',
+    };
+
+    expect(deploymentUrlFromLocation(browserLocation)).toBe(
+      'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
+    );
   });
 
   it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
@@ -231,7 +275,12 @@ describe('validateObservation', () => {
   );
 
   it('returns stable localized field errors for invalid observations', () => {
-    const english = validateObservation({ ...valid, locale: 'en', revision: 'not-a-sha' });
+    const english = validateObservation({
+      ...valid,
+      locale: 'en',
+      deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      revision: 'not-a-sha',
+    });
     const portuguese = validateObservation({ ...valid, locale: 'pt-BR', revision: 'not-a-sha' });
 
     expect(english).toMatchObject({

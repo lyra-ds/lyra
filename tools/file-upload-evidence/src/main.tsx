@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { bootstrapAlpine, parseAlpineDelay } from './alpine-bootstrap';
-import type { Locale } from './contracts';
+import { deploymentUrlFromLocation, type Locale } from './contracts';
 import { HarnessApp } from './harness-app';
 
 function routeLocale(): Locale {
@@ -29,7 +29,7 @@ createRoot(root).render(
     locale={routeLocale()}
     revision={requiredText('header code')}
     buildTime={requiredText('header time')}
-    deploymentUrl={window.location.href}
+    deploymentUrl={deploymentUrlFromLocation(window.location)}
     alpineDelayMilliseconds={parseAlpineDelay(window.location.search)}
   />,
 );

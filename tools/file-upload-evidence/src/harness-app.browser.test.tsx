@@ -302,6 +302,29 @@ afterEach(() => {
 });
 
 describe('bilingual file upload evidence recorder', () => {
+  it('blocks the branch alias and enables export on an immutable deployment route', async () => {
+    const branchAlias =
+      'https://file-upload-evidence.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/';
+    const screen = await render(
+      <HarnessApp {...appProps('pt-BR', { deploymentUrl: branchAlias })} />,
+    );
+    await completeObservation('pt-BR');
+
+    expect(inputByName('deploymentUrl')).toHaveValue(branchAlias);
+    expect(inputByName('deploymentUrl')).toHaveAttribute('readonly');
+    expect(page.getByText('Informe uma URL absoluta HTTPS de implantação.')).toBeVisible();
+    expect(page.getByRole('button', { name: 'Copiar JSON' })).toBeDisabled();
+    expect(page.getByRole('button', { name: 'Baixar JSON' })).toBeDisabled();
+
+    await screen.rerender(<HarnessApp {...appProps('en')} />);
+    await completeObservation('en');
+
+    expect(inputByName('deploymentUrl')).toHaveValue(DEPLOYMENT_URL);
+    expect(inputByName('deploymentUrl')).toHaveAttribute('readonly');
+    expect(page.getByRole('button', { name: 'Copy JSON' })).toBeEnabled();
+    expect(page.getByRole('button', { name: 'Download JSON' })).toBeEnabled();
+  });
+
   it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
     'requires every rendered %s checklist row before PASS export',
     async (scenario) => {

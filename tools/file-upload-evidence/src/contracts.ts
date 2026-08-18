@@ -77,6 +77,8 @@ export type ObservationValidation =
 
 const shaPattern = /^[a-f0-9]{40}$/;
 const isoTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const immutableDeploymentHostPattern = /^[a-z0-9-]{8,}\.lyra-ds-docs\.pages\.dev$/u;
+const movingBranchAlias = 'file-upload-evidence.lyra-ds-docs.pages.dev';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -108,6 +110,31 @@ function normalizedTextArray(value: unknown): string[] | undefined {
 function isHttpsUrl(value: string): boolean {
   try {
     return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export function deploymentUrlFromLocation(location: Pick<Location, 'origin' | 'pathname'>): string {
+  return new URL(location.pathname, location.origin).href;
+}
+
+export function isImmutableDeploymentRoute(value: string, locale: Locale): boolean {
+  try {
+    const url = new URL(value);
+    const expectedPathname = `/${locale}/file-upload-evidence/`;
+    return (
+      url.protocol === 'https:' &&
+      url.username === '' &&
+      url.password === '' &&
+      url.port === '' &&
+      url.search === '' &&
+      url.hash === '' &&
+      url.hostname !== movingBranchAlias &&
+      immutableDeploymentHostPattern.test(url.hostname) &&
+      url.pathname === expectedPathname &&
+      value === `https://${url.hostname}${expectedPathname}`
+    );
   } catch {
     return false;
   }
@@ -244,7 +271,7 @@ export function validateObservation(value: unknown): ObservationValidation {
     fail('revision');
   }
   const deploymentUrl = text('deploymentUrl');
-  if (deploymentUrl !== undefined && !isHttpsUrl(deploymentUrl)) {
+  if (deploymentUrl !== undefined && !isImmutableDeploymentRoute(deploymentUrl, locale)) {
     fail('deploymentUrl');
   }
   const executedAt = text('executedAt');
