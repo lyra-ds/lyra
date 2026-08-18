@@ -331,7 +331,7 @@ pnpm run evidence:file-upload:manual:build
   if (
     !sameValue(previewStep(job, 'Smoke immutable evidence deployment'), {
       name: 'Smoke immutable evidence deployment',
-      run: 'pnpm run evidence:file-upload:manual:smoke -- --url="${{ steps.deployment.outputs.url }}" --revision="$GITHUB_SHA"',
+      run: 'pnpm run evidence:file-upload:manual:smoke --url="${{ steps.deployment.outputs.url }}" --revision="$GITHUB_SHA"',
     })
   ) {
     fail('preview smoke command must use the resolved URL and exact workflow revision.');

@@ -63,6 +63,26 @@ describe('validateDeployPolicy', () => {
     });
   });
 
+  it('requires smoke flags without a separator forwarded to Node', async () => {
+    const source = await workflowSource();
+    const regressed = source.replace(
+      'pnpm run evidence:file-upload:manual:smoke\n' +
+        '          --url="${{ steps.deployment.outputs.url }}"\n' +
+        '          --revision="$GITHUB_SHA"',
+      'pnpm run evidence:file-upload:manual:smoke --\n' +
+        '          --url="${{ steps.deployment.outputs.url }}"\n' +
+        '          --revision="$GITHUB_SHA"',
+    );
+
+    await expect(validateDeployPolicy(source)).resolves.toMatchObject({
+      previewJob: 'evidence-preview',
+    });
+    expect(regressed).not.toBe(source);
+    await expect(validateDeployPolicy(regressed)).rejects.toThrow(
+      'preview smoke command must use the resolved URL and exact workflow revision',
+    );
+  });
+
   it.each([
     {
       name: 'the preview branch is changed to main',

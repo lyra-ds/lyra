@@ -142,7 +142,7 @@ jobs:
             --github-output="$GITHUB_OUTPUT"
       - name: Smoke immutable evidence deployment
         run: >-
-          pnpm run evidence:file-upload:manual:smoke --
+          pnpm run evidence:file-upload:manual:smoke
           --url="${{ steps.deployment.outputs.url }}"
           --revision="$GITHUB_SHA"
       - name: Summarize evidence preview
