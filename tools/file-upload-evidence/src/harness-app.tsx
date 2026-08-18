@@ -6,8 +6,9 @@ import type {
   FileUploadManualObservation,
   Locale,
   ManualScenario,
+  ScenarioCheckId,
 } from './contracts';
-import { validateObservation } from './contracts';
+import { SCENARIO_CHECK_IDS, validateObservation } from './contracts';
 import { MESSAGES } from './messages';
 import {
   ReactFileUploadEvidence,
@@ -98,15 +99,7 @@ interface UiMessages {
   downloadFixture: string;
   longFixtureName: string;
   longFixtureBody: string;
-  m03Checks: {
-    noOverflow: string;
-    identity: string;
-    actions: string;
-    replacement: string;
-    recoveryControls: string;
-    focus: string;
-  };
-  scenarioSteps: Record<Exclude<ManualScenario, 'DF-FU-M03'>, readonly string[]>;
+  scenarioChecks: Record<ScenarioCheckId, string>;
   fileUpload: Required<FileUploadMessages>;
 }
 
@@ -197,30 +190,32 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     longFixtureName:
       'file-upload-evidence-very-long-localized-name-for-identity-actions-and-320-css-pixel-reflow.txt',
     longFixtureBody: 'Lyra FileUpload manual evidence fixture. Contains no sensitive data.',
-    m03Checks: {
-      noOverflow: 'No horizontal overflow observed',
-      identity: 'Long file identity retained',
-      actions: 'All actions remained reachable',
-      replacement: 'Active replacement was rejected and announced',
-      recoveryControls: 'Cancel, retry, and remove completed',
-      focus: 'Focus recovered',
-    },
-    scenarioSteps: {
-      'DF-FU-M01': [
+    scenarioChecks: {
+      'DF-FU-M01-selection-and-indeterminate-announcements':
         'Verify selection and indeterminate upload announcements with NVDA.',
+      'DF-FU-M01-determinate-progress-milestones':
         'Record determinate progress at 25, 50, 75, and 100 percent.',
+      'DF-FU-M01-lifecycle-recovery-and-stale-result':
         'Exercise cancellation, retry, a stale result, error, success, removal, and focus recovery.',
-      ],
-      'DF-FU-M02': [
+      'DF-FU-M02-selection-and-indeterminate-announcements':
         'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
+      'DF-FU-M02-determinate-progress-milestones':
         'Record determinate progress at 25, 50, 75, and 100 percent.',
+      'DF-FU-M02-lifecycle-recovery-and-stale-result':
         'Exercise cancellation, retry, a stale result, error, success, removal, and focus recovery.',
-      ],
-      'DF-FU-M04': [
+      'DF-FU-M03-no-horizontal-overflow': 'No horizontal overflow observed',
+      'DF-FU-M03-long-file-identity-retained': 'Long file identity retained',
+      'DF-FU-M03-actions-reachable': 'All actions remained reachable',
+      'DF-FU-M03-active-replacement-rejected-and-announced':
+        'Active replacement was rejected and announced',
+      'DF-FU-M03-cancel-retry-remove-completed': 'Cancel, retry, and remove completed',
+      'DF-FU-M03-focus-recovered': 'Focus recovered',
+      'DF-FU-M04-native-js-disabled-form-submitted':
         'Submit the authored native form with JavaScript disabled and retain the response evidence.',
+      'DF-FU-M04-delayed-alpine-node-filelist-preserved':
         'Select a file before delayed Alpine initialization and verify the exact node and FileList remain.',
+      'DF-FU-M04-single-enhancement-path-removal-focus':
         'Verify one enhanced tree, no replay, one listener path, removal, and focus recovery.',
-      ],
     },
     fileUpload: {
       label: 'Controlled evidence file',
@@ -329,30 +324,32 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     longFixtureName:
       'evidencia-envio-arquivo-nome-localizado-muito-longo-identidade-acoes-reflow-320-pixels-css.txt',
     longFixtureBody: 'Fixture de evidência manual do FileUpload Lyra. Não contém dados sensíveis.',
-    m03Checks: {
-      noOverflow: 'Nenhum overflow horizontal observado',
-      identity: 'Identidade do arquivo longo mantida',
-      actions: 'Todas as ações permaneceram acessíveis',
-      replacement: 'Substituição ativa rejeitada e anunciada',
-      recoveryControls: 'Cancelar, repetir e remover concluídos',
-      focus: 'Foco recuperado',
-    },
-    scenarioSteps: {
-      'DF-FU-M01': [
+    scenarioChecks: {
+      'DF-FU-M01-selection-and-indeterminate-announcements':
         'Verifique os anúncios de seleção e envio indeterminado com NVDA.',
+      'DF-FU-M01-determinate-progress-milestones':
         'Registre o progresso determinado em 25, 50, 75 e 100 por cento.',
+      'DF-FU-M01-lifecycle-recovery-and-stale-result':
         'Exercite cancelamento, repetição, resultado obsoleto, erro, sucesso, remoção e recuperação de foco.',
-      ],
-      'DF-FU-M02': [
+      'DF-FU-M02-selection-and-indeterminate-announcements':
         'Verifique os anúncios de seleção e envio indeterminado com VoiceOver e Safari.',
+      'DF-FU-M02-determinate-progress-milestones':
         'Registre o progresso determinado em 25, 50, 75 e 100 por cento.',
+      'DF-FU-M02-lifecycle-recovery-and-stale-result':
         'Exercite cancelamento, repetição, resultado obsoleto, erro, sucesso, remoção e recuperação de foco.',
-      ],
-      'DF-FU-M04': [
+      'DF-FU-M03-no-horizontal-overflow': 'Nenhum overflow horizontal observado',
+      'DF-FU-M03-long-file-identity-retained': 'Identidade do arquivo longo mantida',
+      'DF-FU-M03-actions-reachable': 'Todas as ações permaneceram acessíveis',
+      'DF-FU-M03-active-replacement-rejected-and-announced':
+        'Substituição ativa rejeitada e anunciada',
+      'DF-FU-M03-cancel-retry-remove-completed': 'Cancelar, repetir e remover concluídos',
+      'DF-FU-M03-focus-recovered': 'Foco recuperado',
+      'DF-FU-M04-native-js-disabled-form-submitted':
         'Envie o formulário nativo autorado com JavaScript desativado e guarde a evidência da resposta.',
+      'DF-FU-M04-delayed-alpine-node-filelist-preserved':
         'Selecione um arquivo antes do Alpine atrasado e verifique que o nó exato e a FileList permanecem.',
+      'DF-FU-M04-single-enhancement-path-removal-focus':
         'Verifique uma árvore aprimorada, nenhum replay, um caminho de listener, remoção e recuperação de foco.',
-      ],
     },
     fileUpload: {
       label: 'Arquivo de evidência controlado',
@@ -396,6 +393,7 @@ interface ObservationDraft {
   readonly mediaQueries: Record<string, boolean>;
   readonly expected: string;
   readonly actual: string;
+  readonly checkAttestations: Record<string, boolean>;
   readonly result: '' | 'PASS' | 'FAIL';
   readonly reviewer: {
     readonly name: string;
@@ -403,15 +401,6 @@ interface ObservationDraft {
   };
   readonly artifactUrls: string;
   readonly findingUrls: string;
-}
-
-interface ManualM03State {
-  readonly noOverflow: boolean;
-  readonly identity: boolean;
-  readonly actions: boolean;
-  readonly replacement: boolean;
-  readonly recoveryControls: boolean;
-  readonly focus: boolean;
 }
 
 export interface HarnessAppProps {
@@ -458,6 +447,7 @@ function createDraft(
     mediaQueries: environment.mediaQueries,
     expected: '',
     actual: '',
+    checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, false])),
     result: '',
     reviewer: { name: '', approval: '' },
     artifactUrls: '',
@@ -502,19 +492,6 @@ function observationValue(draft: ObservationDraft): unknown {
     artifactUrls: parseUrlLines(draft.artifactUrls),
     findingUrls: parseUrlLines(draft.findingUrls),
   };
-}
-
-function m03CheckIds(checks: ManualM03State): string[] {
-  const completed: string[] = [];
-  if (checks.noOverflow) completed.push('no-horizontal-overflow');
-  if (checks.identity && checks.actions) {
-    completed.push('long-name-content-preserves-identity-and-actions');
-  }
-  if (checks.replacement) completed.push('active-replacement-rejected-and-announced');
-  if (checks.recoveryControls && checks.focus) {
-    completed.push('recovery-controls-and-focus-recovery-exercised');
-  }
-  return completed;
 }
 
 function exportBlockerMessage(messages: UiMessages, reason: string | undefined): string {
@@ -682,25 +659,18 @@ function LocaleHarness({
     };
   });
   const [mode, setMode] = useState<EvidenceOperatorMode>('success');
-  const [m03Checks, setM03Checks] = useState<ManualM03State>({
-    noOverflow: false,
-    identity: false,
-    actions: false,
-    replacement: false,
-    recoveryControls: false,
-    focus: false,
-  });
-  const [guidedChecks, setGuidedChecks] = useState<Record<string, boolean>>({});
   const [showValidation, setShowValidation] = useState(false);
   const [exportBlocker, setExportBlocker] = useState<string | null>(null);
   const instrumentRef = useRef<ReactFileUploadEvidenceHandle>(null);
   const draft = requiredDraft(drafts, scenario);
   const validation = validateObservation(observationValue(draft));
-  const completedM03Checks = m03CheckIds(m03Checks);
+  const completedM03Checks = SCENARIO_CHECK_IDS['DF-FU-M03'].filter(
+    (id) => draft.checkAttestations[id] === true,
+  );
   const m03ManualRecordComplete =
     draft.inputMethods.includes('touch') &&
     draft.inputMethods.includes('keyboard') &&
-    completedM03Checks.length === 4;
+    completedM03Checks.length === SCENARIO_CHECK_IDS['DF-FU-M03'].length;
   const exportEnabled =
     validation.ok &&
     (scenario !== 'DF-FU-M03' || draft.result !== 'PASS' || m03ManualRecordComplete);
@@ -712,12 +682,6 @@ function LocaleHarness({
       ...current,
       [scenario]: update(requiredDraft(current, scenario)),
     }));
-  }
-
-  function updateM03<K extends keyof ManualM03State>(key: K, checked: boolean): void {
-    setShowValidation(true);
-    setExportBlocker(null);
-    setM03Checks((current) => ({ ...current, [key]: checked }));
   }
 
   function validatedExport(): FileUploadManualObservation | null {
@@ -732,7 +696,7 @@ function LocaleHarness({
       const eligibility = m03Eligibility(
         currentEnvironment,
         currentValidation.value.inputMethods,
-        m03CheckIds(m03Checks),
+        completedM03Checks,
       );
       if (!eligibility.eligible) {
         const reason = eligibility.reasons[0];
@@ -760,8 +724,6 @@ function LocaleHarness({
       `${observation.scenario}-${locale}-${revision}.json`,
     );
   }
-
-  const checks = scenario === 'DF-FU-M03' ? null : messages.scenarioSteps[scenario];
 
   return (
     <div className="lyra-evidence">
@@ -974,56 +936,21 @@ function LocaleHarness({
       <section className="lyra-evidence__section" aria-labelledby="evidence-checklist-heading">
         <h3 id="evidence-checklist-heading">{messages.checklist}</h3>
         <p>{MESSAGES[locale].instructions[scenario === 'DF-FU-M03' ? 'm03' : 'export']}</p>
-        {scenario === 'DF-FU-M03' ? (
-          <div className="lyra-evidence__checklist">
+        <div className="lyra-evidence__checklist">
+          {SCENARIO_CHECK_IDS[scenario].map((id) => (
             <CheckRow
-              label={messages.m03Checks.noOverflow}
-              checked={m03Checks.noOverflow}
-              onChange={(checked) => updateM03('noOverflow', checked)}
+              key={id}
+              label={messages.scenarioChecks[id]}
+              checked={draft.checkAttestations[id] === true}
+              onChange={(checked) =>
+                updateDraft((current) => ({
+                  ...current,
+                  checkAttestations: { ...current.checkAttestations, [id]: checked },
+                }))
+              }
             />
-            <CheckRow
-              label={messages.m03Checks.identity}
-              checked={m03Checks.identity}
-              onChange={(checked) => updateM03('identity', checked)}
-            />
-            <CheckRow
-              label={messages.m03Checks.actions}
-              checked={m03Checks.actions}
-              onChange={(checked) => updateM03('actions', checked)}
-            />
-            <CheckRow
-              label={messages.m03Checks.replacement}
-              checked={m03Checks.replacement}
-              onChange={(checked) => updateM03('replacement', checked)}
-            />
-            <CheckRow
-              label={messages.m03Checks.recoveryControls}
-              checked={m03Checks.recoveryControls}
-              onChange={(checked) => updateM03('recoveryControls', checked)}
-            />
-            <CheckRow
-              label={messages.m03Checks.focus}
-              checked={m03Checks.focus}
-              onChange={(checked) => updateM03('focus', checked)}
-            />
-          </div>
-        ) : (
-          <div className="lyra-evidence__checklist">
-            {checks?.map((step, index) => {
-              const key = `${scenario}-${index}`;
-              return (
-                <CheckRow
-                  key={key}
-                  label={step}
-                  checked={guidedChecks[key] === true}
-                  onChange={(checked) =>
-                    setGuidedChecks((current) => ({ ...current, [key]: checked }))
-                  }
-                />
-              );
-            })}
-          </div>
-        )}
+          ))}
+        </div>
         <div className="lyra-evidence__fixture">
           <div>
             <h4>{messages.longFixture}</h4>

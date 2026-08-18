@@ -4,6 +4,34 @@ export type Locale = 'pt-BR' | 'en';
 
 export type ManualScenario = 'DF-FU-M01' | 'DF-FU-M02' | 'DF-FU-M03' | 'DF-FU-M04';
 
+export const SCENARIO_CHECK_IDS = {
+  'DF-FU-M01': [
+    'DF-FU-M01-selection-and-indeterminate-announcements',
+    'DF-FU-M01-determinate-progress-milestones',
+    'DF-FU-M01-lifecycle-recovery-and-stale-result',
+  ],
+  'DF-FU-M02': [
+    'DF-FU-M02-selection-and-indeterminate-announcements',
+    'DF-FU-M02-determinate-progress-milestones',
+    'DF-FU-M02-lifecycle-recovery-and-stale-result',
+  ],
+  'DF-FU-M03': [
+    'DF-FU-M03-no-horizontal-overflow',
+    'DF-FU-M03-long-file-identity-retained',
+    'DF-FU-M03-actions-reachable',
+    'DF-FU-M03-active-replacement-rejected-and-announced',
+    'DF-FU-M03-cancel-retry-remove-completed',
+    'DF-FU-M03-focus-recovered',
+  ],
+  'DF-FU-M04': [
+    'DF-FU-M04-native-js-disabled-form-submitted',
+    'DF-FU-M04-delayed-alpine-node-filelist-preserved',
+    'DF-FU-M04-single-enhancement-path-removal-focus',
+  ],
+} as const satisfies Record<ManualScenario, readonly string[]>;
+
+export type ScenarioCheckId = (typeof SCENARIO_CHECK_IDS)[ManualScenario][number];
+
 export type UploadMode = 'success' | 'error' | 'delay';
 
 export interface EnvironmentTelemetry {
@@ -29,6 +57,7 @@ export interface FileUploadManualObservation {
   mediaQueries: Record<string, boolean>;
   expected: string;
   actual: string;
+  checkAttestations: Record<string, boolean>;
   result: 'PASS' | 'FAIL';
   reviewer: { name: string; approval: 'approved' | 'changes-requested' };
   artifactUrls: string[];
@@ -104,6 +133,34 @@ function normalizedBooleanRecord(value: unknown): Record<string, boolean> | unde
 
   const normalized: Record<string, boolean> = {};
   for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry !== 'boolean') {
+      return undefined;
+    }
+    normalized[key] = entry;
+  }
+  return normalized;
+}
+
+function normalizedCheckAttestations(
+  value: unknown,
+  scenario: ManualScenario | undefined,
+): Record<string, boolean> | undefined {
+  if (!isRecord(value) || scenario === undefined) {
+    return undefined;
+  }
+
+  const requiredKeys = [...SCENARIO_CHECK_IDS[scenario]].sort();
+  const actualKeys = Object.keys(value).sort();
+  if (
+    requiredKeys.length !== actualKeys.length ||
+    requiredKeys.some((key, index) => key !== actualKeys[index])
+  ) {
+    return undefined;
+  }
+
+  const normalized: Record<string, boolean> = {};
+  for (const key of requiredKeys) {
+    const entry = value[key];
     if (typeof entry !== 'boolean') {
       return undefined;
     }
@@ -234,6 +291,13 @@ export function validateObservation(value: unknown): ObservationValidation {
   const actual = text('actual');
   const result = isObservationResult(source.result) ? source.result : undefined;
   if (result === undefined) fail('result');
+  const checkAttestations = normalizedCheckAttestations(source.checkAttestations, scenario);
+  if (
+    checkAttestations === undefined ||
+    (result === 'PASS' && Object.values(checkAttestations).some((attested) => !attested))
+  ) {
+    fail('checkAttestations');
+  }
 
   const reviewer = isRecord(source.reviewer) ? source.reviewer : {};
   const reviewerName = normalizedText(reviewer.name);
@@ -280,6 +344,7 @@ export function validateObservation(value: unknown): ObservationValidation {
     mediaQueries === undefined ||
     expected === undefined ||
     actual === undefined ||
+    checkAttestations === undefined ||
     result === undefined ||
     reviewerName === undefined ||
     approval === undefined ||
@@ -307,6 +372,7 @@ export function validateObservation(value: unknown): ObservationValidation {
       mediaQueries,
       expected,
       actual,
+      checkAttestations,
       result,
       reviewer: { name: reviewerName, approval },
       artifactUrls,

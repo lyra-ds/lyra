@@ -39,7 +39,10 @@ describe('MESSAGES', () => {
     expect(MESSAGES.en).toMatchObject({
       scenarios: { 'DF-FU-M01': expect.stringContaining('Windows') },
       endpoint: { invalidMode: expect.stringContaining('upload mode') },
-      validation: { revision: expect.stringContaining('Git revision') },
+      validation: {
+        revision: expect.stringContaining('Git revision'),
+        checkAttestations: 'Complete the exact guided checklist for this scenario.',
+      },
       instructions: { m03: expect.stringContaining('320 CSS pixels') },
       status: { pass: 'PASS' },
       announcements: { replacementRejected: expect.stringContaining('rejected') },
@@ -47,7 +50,10 @@ describe('MESSAGES', () => {
     expect(MESSAGES['pt-BR']).toMatchObject({
       scenarios: { 'DF-FU-M01': expect.stringContaining('Windows') },
       endpoint: { invalidMode: expect.stringContaining('modo de envio') },
-      validation: { revision: expect.stringContaining('revisão Git') },
+      validation: {
+        revision: expect.stringContaining('revisão Git'),
+        checkAttestations: 'Conclua o checklist guiado exato deste cenário.',
+      },
       instructions: { m03: expect.stringContaining('320 pixels CSS') },
       status: { pass: 'APROVADO' },
       announcements: { replacementRejected: expect.stringContaining('rejeitada') },

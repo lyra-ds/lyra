@@ -1,4 +1,4 @@
-import type { EnvironmentTelemetry } from './contracts';
+import { SCENARIO_CHECK_IDS, type EnvironmentTelemetry } from './contracts';
 
 export interface WindowLike {
   readonly innerWidth: number;
@@ -10,13 +10,6 @@ export interface WindowLike {
 export interface NavigatorLike {
   readonly userAgent: string;
 }
-
-export const MANUAL_M03_CHECKS = [
-  'no-horizontal-overflow',
-  'long-name-content-preserves-identity-and-actions',
-  'active-replacement-rejected-and-announced',
-  'recovery-controls-and-focus-recovery-exercised',
-] as const;
 
 const mediaQueries = [
   '(pointer: coarse)',
@@ -63,7 +56,9 @@ export function m03Eligibility(
   if (!hasCoarsePointerMatch) reasons.push('coarse-pointer');
   if (!inputMethods.includes('touch')) reasons.push('touch-input');
   if (!inputMethods.includes('keyboard')) reasons.push('keyboard-input');
-  if (!MANUAL_M03_CHECKS.every((check) => checks.includes(check))) reasons.push('manual-checks');
+  if (!SCENARIO_CHECK_IDS['DF-FU-M03'].every((check) => checks.includes(check))) {
+    reasons.push('manual-checks');
+  }
 
   return { eligible: reasons.length === 0, reasons };
 }

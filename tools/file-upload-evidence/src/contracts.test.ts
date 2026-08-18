@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateObservation } from './contracts';
+import { SCENARIO_CHECK_IDS, type ManualScenario, validateObservation } from './contracts';
+
+const checkAttestations = Object.fromEntries(
+  SCENARIO_CHECK_IDS['DF-FU-M03'].map((id) => [id, true]),
+);
 
 const valid = {
   scenario: 'DF-FU-M03',
@@ -18,11 +22,29 @@ const valid = {
   mediaQueries: { '(pointer: coarse)': true, '(any-pointer: coarse)': true },
   expected: 'A substituição ativa é rejeitada e anunciada.',
   actual: 'A substituição foi rejeitada e anunciada.',
+  checkAttestations,
   result: 'PASS',
   reviewer: { name: 'Ana Reviewer', approval: 'approved' },
   artifactUrls: ['https://evidence.example.test/m03-recording.mp4'],
   findingUrls: ['https://tracker.example.test/FU-103'],
 };
+
+function observationFor(
+  scenario: ManualScenario,
+  scenarioAttestations: Record<string, boolean>,
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    ...valid,
+    scenario,
+    checkAttestations: scenarioAttestations,
+    assistiveTechnology:
+      scenario === 'DF-FU-M01' || scenario === 'DF-FU-M02'
+        ? { name: 'NVDA', version: '2026.2' }
+        : null,
+    ...overrides,
+  };
+}
 
 describe('validateObservation', () => {
   it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
@@ -31,6 +53,7 @@ describe('validateObservation', () => {
       const observation = {
         ...valid,
         scenario,
+        checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
         assistiveTechnology:
           scenario === 'DF-FU-M01' || scenario === 'DF-FU-M02'
             ? { name: 'NVDA', version: '2026.2' }
@@ -43,6 +66,56 @@ describe('validateObservation', () => {
 
   it.each(['en', 'pt-BR'] as const)('accepts the %s route locale', (locale) => {
     expect(validateObservation({ ...valid, locale }).ok).toBe(true);
+  });
+
+  it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
+    'requires the exact %s attestation keys for PASS',
+    (scenario) => {
+      const requiredIds = SCENARIO_CHECK_IDS[scenario];
+      const complete = Object.fromEntries(requiredIds.map((id) => [id, true]));
+      const missing = Object.fromEntries(requiredIds.slice(1).map((id) => [id, true]));
+      const falseValue = { ...complete, [requiredIds[0]]: false };
+      const extra = { ...complete, 'DF-FU-M99-foreign-check': true };
+
+      expect(validateObservation(observationFor(scenario, complete))).toMatchObject({ ok: true });
+      expect(validateObservation(observationFor(scenario, missing))).toMatchObject({
+        ok: false,
+        errors: [{ field: 'checkAttestations' }],
+      });
+      expect(validateObservation(observationFor(scenario, falseValue))).toMatchObject({
+        ok: false,
+        errors: [{ field: 'checkAttestations' }],
+      });
+      expect(validateObservation(observationFor(scenario, extra))).toMatchObject({
+        ok: false,
+        errors: [{ field: 'checkAttestations' }],
+      });
+    },
+  );
+
+  it('preserves false attestations in a FAIL record without sharing caller state', () => {
+    const scenarioAttestations = Object.fromEntries(
+      SCENARIO_CHECK_IDS['DF-FU-M04'].map((id, index) => [id, index !== 1]),
+    );
+    const result = validateObservation(
+      observationFor('DF-FU-M04', scenarioAttestations, {
+        result: 'FAIL',
+        reviewer: { name: 'Evidence Reviewer', approval: 'changes-requested' },
+      }),
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: { checkAttestations: scenarioAttestations },
+    });
+    if (!result.ok) throw new Error('expected the failed observation to pass validation');
+
+    scenarioAttestations['DF-FU-M04-delayed-alpine-node-filelist-preserved'] = true;
+    expect(result.value.checkAttestations).toEqual({
+      'DF-FU-M04-native-js-disabled-form-submitted': true,
+      'DF-FU-M04-delayed-alpine-node-filelist-preserved': false,
+      'DF-FU-M04-single-enhancement-path-removal-focus': true,
+    });
   });
 
   it('normalizes a valid observation without mutating user-entered data', () => {
@@ -134,11 +207,13 @@ describe('validateObservation', () => {
       const unconfirmed = validateObservation({
         ...unconfirmedDraft,
         scenario,
+        checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
         assistiveTechnology: null,
       });
       const confirmed = validateObservation({
         ...valid,
         scenario,
+        checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
         assistiveTechnology: null,
         noAssistiveTechnologyConfirmed: true,
       });

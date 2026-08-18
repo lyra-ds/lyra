@@ -19,10 +19,12 @@ const windowLike = {
 const navigatorLike = { userAgent: 'Mozilla/5.0 EvidenceHarness/1.0' };
 
 const completeM03Checks = [
-  'no-horizontal-overflow',
-  'long-name-content-preserves-identity-and-actions',
-  'active-replacement-rejected-and-announced',
-  'recovery-controls-and-focus-recovery-exercised',
+  'DF-FU-M03-no-horizontal-overflow',
+  'DF-FU-M03-long-file-identity-retained',
+  'DF-FU-M03-actions-reachable',
+  'DF-FU-M03-active-replacement-rejected-and-announced',
+  'DF-FU-M03-cancel-retry-remove-completed',
+  'DF-FU-M03-focus-recovered',
 ];
 
 describe('captureTelemetry', () => {

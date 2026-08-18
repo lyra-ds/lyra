@@ -31,6 +31,7 @@ export interface EvidenceMessages {
     mediaQueries: string;
     expected: string;
     actual: string;
+    checkAttestations: string;
     result: string;
     'reviewer.name': string;
     'reviewer.approval': string;
@@ -86,6 +87,7 @@ const en: EvidenceMessages = {
     mediaQueries: 'Record the evaluated media queries.',
     expected: 'Enter the expected announcement or behavior.',
     actual: 'Enter the actual announcement or behavior.',
+    checkAttestations: 'Complete the exact guided checklist for this scenario.',
     result: 'Choose PASS or FAIL.',
     'reviewer.name': 'Enter the reviewer name.',
     'reviewer.approval': 'Reviewer approval must agree with the result.',
@@ -141,6 +143,7 @@ const ptBR: EvidenceMessages = {
     mediaQueries: 'Registre as media queries avaliadas.',
     expected: 'Informe o anúncio ou comportamento esperado.',
     actual: 'Informe o anúncio ou comportamento real.',
+    checkAttestations: 'Conclua o checklist guiado exato deste cenário.',
     result: 'Escolha APROVADO ou REPROVADO.',
     'reviewer.name': 'Informe o nome da pessoa revisora.',
     'reviewer.approval': 'A aprovação da revisão deve corresponder ao resultado.',
