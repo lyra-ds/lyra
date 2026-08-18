@@ -141,6 +141,31 @@ afterEach(() => {
 });
 
 describe('authored pre-JavaScript file upload entries', () => {
+  it.each(entries)(
+    'uses the Lyra evidence shell and controls in the $locale static fixture',
+    (entry) => {
+      const source = readEntry(entry);
+      const nativeForm = elementById(source, 'form', 'native-upload-form');
+
+      expect(source).toContain('<div class="lyra-evidence">');
+      expect(source).toContain('<header class="lyra-evidence__intro">');
+      expect(source).toContain(
+        '<section class="lyra-evidence__section" aria-labelledby="native-upload-heading">',
+      );
+      expect(source).toContain(
+        '<section class="lyra-evidence__section" aria-labelledby="alpine-upload-heading">',
+      );
+      expect(nativeForm?.attributes.class).toBe('lyra-field');
+      expect(labelFor(nativeForm?.innerHtml ?? '', 'native-file')?.attributes.class).toBe(
+        'lyra-label',
+      );
+      expect(inputById(nativeForm?.innerHtml ?? '', 'native-file')?.attributes.class).toBe(
+        'lyra-input',
+      );
+      expect(nativeForm?.innerHtml).toContain('class="lyra-btn lyra-btn--primary lyra-btn--md"');
+    },
+  );
+
   it.each(entries)('authors the $locale document metadata before scripts execute', (entry) => {
     const source = readEntry(entry);
     const html = openingTags(source, 'html')[0];
