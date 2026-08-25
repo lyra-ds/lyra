@@ -47,7 +47,7 @@
   "devDependencies": {
     "@lyra-ds/styles": "workspace:*",
     "@types/alpinejs": "3.13.11",
-    "alpinejs": "3.15.12"
+    "alpinejs": "3.16.2"
   },
   "publishConfig": {
     "access": "public",
