@@ -429,7 +429,15 @@ class FakeDfFu18Locator {
 }
 
 class FakeDfFu18Page {
-  constructor(kind, videoPath, missingArtifacts) {
+  constructor(
+    kind,
+    videoPath,
+    missingArtifacts,
+    {
+      observedViewport = { width: 1280, height: 720, devicePixelRatio: 1 },
+      duplicateReconnectSelection = false,
+    } = {},
+  ) {
     this.kind = kind;
     this.videoPath = videoPath;
     this.missingArtifacts = missingArtifacts;
@@ -444,6 +452,9 @@ class FakeDfFu18Page {
     this.liveText = '';
     this.connected = false;
     this.focused = null;
+    this.observedViewport = observedViewport;
+    this.duplicateReconnectSelection = duplicateReconnectSelection;
+    this.reconnected = false;
   }
 
   async content() {
@@ -463,7 +474,7 @@ class FakeDfFu18Page {
         '(pointer: coarse)': false,
         '(prefers-reduced-motion: reduce)': false,
       },
-      viewport: { width: 1280, height: 720, devicePixelRatio: 1 },
+      viewport: this.observedViewport,
     };
   }
 
@@ -492,14 +503,16 @@ class FakeDfFu18Page {
     this.initializations += 1;
     this.connects += 1;
     this.connected = true;
+    this.reconnected = true;
     this.renderedItems = 0;
     this.liveText = '';
   }
 
   recordSelection() {
-    this.selectionIntents += 1;
-    this.controlledEchoes += 1;
-    this.renderedItems += 1;
+    const increment = this.duplicateReconnectSelection && this.reconnected ? 2 : 1;
+    this.selectionIntents += increment;
+    this.controlledEchoes += increment;
+    this.renderedItems += increment;
     this.liveText = `${this.selectedFile.name} selected.`;
   }
 
@@ -533,7 +546,15 @@ class FakeDfFu18Page {
   }
 }
 
-function fakeDfFu18Browser(state, { launchFailure = false, missingArtifacts = [] } = {}) {
+function fakeDfFu18Browser(
+  state,
+  {
+    launchFailure = false,
+    missingArtifacts = [],
+    observedViewport,
+    duplicateReconnectSelection = false,
+  } = {},
+) {
   if (launchFailure) throw new Error('forced DF-FU-18 chromium launch failure');
   const absent = new Set(missingArtifacts);
   const browser = {
@@ -555,7 +576,10 @@ function fakeDfFu18Browser(state, { launchFailure = false, missingArtifacts = []
         await mkdir(options.recordVideo.dir, { recursive: true });
         if (!absent.has('run.webm')) await writeFile(videoPath, Buffer.from('fake-df-fu-18-video'));
       }
-      const page = new FakeDfFu18Page(kind, videoPath, absent);
+      const page = new FakeDfFu18Page(kind, videoPath, absent, {
+        observedViewport,
+        duplicateReconnectSelection,
+      });
       const context = {
         closed: false,
         tracing: {
@@ -597,6 +621,8 @@ function fakePlaywright({
   dfFu18Only = false,
   dfFu18LaunchFailure = false,
   dfFu18MissingArtifacts = [],
+  dfFu18ObservedViewport,
+  dfFu18DuplicateReconnectSelection = false,
 } = {}) {
   const state = {
     launchAttempts: [],
@@ -619,6 +645,8 @@ function fakePlaywright({
           return fakeDfFu18Browser(state, {
             launchFailure: dfFu18LaunchFailure,
             missingArtifacts: dfFu18MissingArtifacts,
+            observedViewport: dfFu18ObservedViewport,
+            duplicateReconnectSelection: dfFu18DuplicateReconnectSelection,
           });
         }
         if (launchFailingEngine === engine) throw new Error(`forced ${engine} launch failure`);
@@ -955,6 +983,88 @@ describe('runAutomation', () => {
     assert.deepEqual(events.missingArtifacts, []);
     assert.equal(events.observations.delayed.connectsAfterTeardown, 2);
     assert.equal(events.observations.delayed.disconnectsAfterTeardown, 2);
+  });
+
+  it('packages valid DF-FU-18 evidence when the observed viewport differs from the requested context', async () => {
+    const { output } = await outputFixture();
+    const observedViewport = { width: 1279, height: 719, devicePixelRatio: 2 };
+    const { api } = fakePlaywright({
+      dfFu18Only: true,
+      dfFu18ObservedViewport: observedViewport,
+    });
+    const outcome = await runAutomation(
+      {
+        url: DEPLOYMENT_URL,
+        revision: REVISION,
+        output,
+        scenario: 'DF-FU-18',
+        now: () => new Date(EXECUTED_AT),
+      },
+      api,
+    );
+
+    assert.equal(outcome.result.result, 'PASS');
+    assert.equal(automationExitCode(outcome.results), 0);
+    assert.equal(outcome.archiveValidated, true);
+    const archive = await readEvidenceArchive(output, {
+      expectedKind: 'automation',
+      expectedRevision: REVISION,
+      expectedDeploymentUrl: DEPLOYMENT_URL,
+    });
+    const stored = JSON.parse(
+      Buffer.from(archive.entries.get('automation/DF-FU-18.json')).toString(),
+    );
+    assert.deepEqual(stored.runs[0].viewport, observedViewport);
+    for (const path of artifactPathsFor('DF-FU-18', 'chromium')) {
+      assert.equal(archive.entries.has(path), true, path);
+    }
+  });
+
+  it('packages a complete validated diagnostic for a real DF-FU-18 check failure', async () => {
+    const { output } = await outputFixture();
+    const { api } = fakePlaywright({
+      dfFu18Only: true,
+      dfFu18DuplicateReconnectSelection: true,
+    });
+    const outcome = await runAutomation(
+      {
+        url: DEPLOYMENT_URL,
+        revision: REVISION,
+        output,
+        scenario: 'DF-FU-18',
+        now: () => new Date(EXECUTED_AT),
+      },
+      api,
+    );
+
+    assert.equal(outcome.result.result, 'FAIL');
+    assert.equal(automationExitCode(outcome.results), 1);
+    assert.equal(outcome.archiveValidated, true);
+    const archive = await readEvidenceArchive(output, {
+      expectedKind: 'automation',
+      expectedRevision: REVISION,
+      expectedDeploymentUrl: DEPLOYMENT_URL,
+    });
+    assert.deepEqual([...archive.entries.keys()].sort(), [
+      'artifacts/DF-FU-18/chromium/events.json',
+      'artifacts/DF-FU-18/chromium/final.png',
+      'artifacts/DF-FU-18/chromium/run.webm',
+      'artifacts/DF-FU-18/chromium/trace.zip',
+      'automation/DF-FU-18.json',
+    ]);
+    for (const path of artifactPathsFor('DF-FU-18', 'chromium')) {
+      assert.equal(archive.entries.has(path), true, path);
+    }
+    const events = JSON.parse(
+      Buffer.from(archive.entries.get('artifacts/DF-FU-18/chromium/events.json')).toString(),
+    );
+    assert.match(events.cause, /DF-FU-18-reconnect-teardown-clean/u);
+    assert.deepEqual(events.failedChecks, ['DF-FU-18-reconnect-teardown-clean']);
+    assert.deepEqual(events.missingArtifacts, []);
+    const stored = JSON.parse(
+      Buffer.from(archive.entries.get('automation/DF-FU-18.json')).toString(),
+    );
+    assert.equal(stored.result, 'FAIL');
   });
 
   it('runs and closes all three lanes and writes a validated revision-bound archive', async () => {

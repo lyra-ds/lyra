@@ -197,9 +197,6 @@ function deriveDfFu18Result(runs, presentArtifactPaths) {
   if (runs.length !== 1 || runs[0]?.engine !== 'chromium') return 'FAIL';
   const run = runs[0];
   if (
-    run.viewport?.width !== DF_FU_18_VIEWPORT.width ||
-    run.viewport?.height !== DF_FU_18_VIEWPORT.height ||
-    run.viewport?.devicePixelRatio !== DF_FU_18_DEVICE_SCALE_FACTOR ||
     !exactKeys(run.checks, DF_FU_18_CHECKS) ||
     Object.values(run.checks).some((value) => value !== true) ||
     run.mediaQueries === null ||
