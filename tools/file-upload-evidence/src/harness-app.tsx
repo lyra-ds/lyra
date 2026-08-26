@@ -757,7 +757,12 @@ function LocaleHarness({
     for (const candidateScenario of SCENARIOS) {
       const candidateDraft = synchronizedDrafts[candidateScenario];
       const candidateFiles = attachments[candidateScenario] ?? [];
-      if (candidateDraft === undefined || attachmentError(candidateFiles, messages) !== undefined) {
+      if (
+        candidateDraft === undefined ||
+        candidateDraft.revision !== synchronizedDraft.revision ||
+        candidateDraft.deploymentUrl !== synchronizedDraft.deploymentUrl ||
+        attachmentError(candidateFiles, messages) !== undefined
+      ) {
         continue;
       }
       const candidateValidation = validateObservation(
@@ -1295,5 +1300,6 @@ function LocaleHarness({
 }
 
 export function HarnessApp(props: HarnessAppProps) {
-  return <LocaleHarness key={props.locale} {...props} />;
+  const evidenceIdentity = JSON.stringify([props.locale, props.revision, props.deploymentUrl]);
+  return <LocaleHarness key={evidenceIdentity} {...props} />;
 }

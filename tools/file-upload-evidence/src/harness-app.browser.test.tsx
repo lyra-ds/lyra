@@ -18,6 +18,9 @@ import { HarnessApp, type HarnessAppProps } from './harness-app';
 
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
 const DEPLOYMENT_URL = 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
+const NEXT_REVISION = 'abcdef1234567890abcdef1234567890abcdef12';
+const NEXT_DEPLOYMENT_URL =
+  'https://e5f6a7b8.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
 const EXECUTED_AT = '2026-08-17T15:30:00.000Z';
 const BUNDLE: ManualEvidenceBundle = {
   bytes: new Uint8Array([80, 75]),
@@ -310,6 +313,50 @@ describe('two-scenario local evidence recorder', () => {
     expect((attachments as ManualEvidenceAttachments).get('DF-FU-M01')).toEqual([m01File]);
     expect((attachments as ManualEvidenceAttachments).get('DF-FU-M02')).toEqual([m02File]);
     expect(page.getByText('ZIP includes: DF-FU-M01 and DF-FU-M02.')).toBeVisible();
+  });
+
+  it('resets drafts for a new evidence identity without mixing an older valid sibling', async () => {
+    const createBundle = vi.fn(createManualEvidenceBundle);
+    const downloadBundle = vi.fn<(bundle: ManualEvidenceBundle) => void>();
+    const firstFile = evidenceFile('first-revision.png');
+    const firstProps = appProps('en', { createBundle, downloadBundle });
+    const view = await render(<HarnessApp {...firstProps} />);
+    await completeObservation('en', firstFile);
+
+    await view.rerender(
+      <HarnessApp {...firstProps} buildTime="2026-08-17T14:30:00.000Z" />,
+    );
+    expect(page.getByText('first-revision.png', { exact: true })).toBeVisible();
+    expect(inputByName('os.name')).toHaveValue('Windows');
+
+    await view.rerender(
+      <HarnessApp
+        {...appProps('en', {
+          revision: NEXT_REVISION,
+          deploymentUrl: NEXT_DEPLOYMENT_URL,
+          createBundle,
+          downloadBundle,
+        })}
+      />,
+    );
+    await selectScenario('en', 'DF-FU-M02');
+    const secondFile = evidenceFile('next-revision.webp', 'image/webp');
+    await completeObservation('en', secondFile);
+    await page.getByRole('button', { name: 'Download evidence ZIP' }).click();
+
+    await vi.waitFor(() => expect(createBundle).toHaveBeenCalledTimes(1));
+    const [records, attachments] = createBundle.mock.calls[0] ?? [];
+    expect(records).toMatchObject([
+      {
+        scenario: 'DF-FU-M02',
+        revision: NEXT_REVISION,
+        deploymentUrl: NEXT_DEPLOYMENT_URL,
+      },
+    ]);
+    expect((attachments as ManualEvidenceAttachments).has('DF-FU-M01')).toBe(false);
+    expect((attachments as ManualEvidenceAttachments).get('DF-FU-M02')).toEqual([secondFile]);
+    await vi.waitFor(() => expect(downloadBundle).toHaveBeenCalledTimes(1));
+    expect(page.getByText('ZIP includes: DF-FU-M02.')).toBeVisible();
   });
 
   it('excludes an incomplete other draft without blocking the valid selected scenario', async () => {
