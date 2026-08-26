@@ -1,17 +1,17 @@
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
 import { open } from 'node:fs/promises';
 
 import { Unzip, UnzipInflate, UnzipPassThrough } from 'fflate';
 
 import {
+  canonicalArchivePathKey,
+  MAX_ARCHIVE_COMPRESSED_BYTES,
   MAX_ARCHIVE_EXPANDED_BYTES,
   validateAutomatedResult,
   validateManifest,
   validateObservation,
 } from '../src/contracts.ts';
 
-const DEFAULT_COMPRESSED_LIMIT = 120 * 1024 * 1024;
 const EOCD_MIN_BYTES = 22;
 const EOCD_MAX_BYTES = 65_557;
 const CENTRAL_HEADER_BYTES = 46;
@@ -26,6 +26,11 @@ const UNIX_FILE_TYPE_MASK = 0o170000;
 const UNIX_DIRECTORY = 0o040000;
 const UNIX_SYMLINK = 0o120000;
 const decoder = new TextDecoder('utf-8', { fatal: true });
+const CRC32_TABLE = Uint32Array.from({ length: 256 }, (_, value) => {
+  let crc = value;
+  for (let bit = 0; bit < 8; bit += 1) crc = crc & 1 ? 0xedb88320 ^ (crc >>> 1) : crc >>> 1;
+  return crc >>> 0;
+});
 
 function archiveError(message) {
   return new Error(`Invalid evidence archive: ${message}`);
@@ -75,6 +80,26 @@ function validateArchivePath(path) {
   ) {
     throw archiveError(`unsafe archive path: ${JSON.stringify(path)}`);
   }
+}
+
+function inspectExtraFields(bytes, location) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let offset = 0;
+  while (offset < bytes.length) {
+    if (bytes.length - offset < 4) throw archiveError(`malformed ${location} extra fields`);
+    const tag = uint16(view, offset);
+    const length = uint16(view, offset + 2);
+    const end = offset + 4 + length;
+    if (end > bytes.length) throw archiveError(`malformed ${location} extra fields`);
+    if (tag === 0x0001) throw archiveError(`ZIP64 ${location} extra field is not supported`);
+    offset = end;
+  }
+}
+
+function updateCrc32(crc, bytes) {
+  let updated = crc;
+  for (const byte of bytes) updated = CRC32_TABLE[(updated ^ byte) & 0xff] ^ (updated >>> 8);
+  return updated >>> 0;
 }
 
 async function readExactly(handle, length, position, label) {
@@ -134,6 +159,12 @@ function inspectCentralEntry(view, offset) {
     view.byteOffset + offset + CENTRAL_HEADER_BYTES,
     nameLength,
   );
+  const extraBytes = new Uint8Array(
+    view.buffer,
+    view.byteOffset + offset + CENTRAL_HEADER_BYTES + nameLength,
+    extraLength,
+  );
+  inspectExtraFields(extraBytes, `central entry ${JSON.stringify(decodeName(nameBytes, flags))}`);
   const name = decodeName(nameBytes, flags);
   if (name.endsWith('/')) throw archiveError(`directory entry is not allowed: ${name}`);
   validateArchivePath(name);
@@ -203,6 +234,7 @@ async function inspectLocalEntry(handle, archiveBytes, centralOffset, entry) {
   ) {
     throw archiveError(`local and central names differ: ${entry.name}`);
   }
+  inspectExtraFields(variable.subarray(nameLength), `local entry ${JSON.stringify(entry.name)}`);
   const dataOffset = entry.localOffset + LOCAL_HEADER_BYTES + variableLength;
   const dataEnd = dataOffset + entry.compressedBytes;
   if (!Number.isSafeInteger(dataEnd) || dataEnd > centralOffset || dataEnd > archiveBytes) {
@@ -211,83 +243,101 @@ async function inspectLocalEntry(handle, archiveBytes, centralOffset, entry) {
   return { dataEnd, dataOffset, localOffset: entry.localOffset, name: entry.name };
 }
 
-async function preflightArchive(filePath, maxCompressedBytes, maxExpandedBytes) {
-  const handle = await open(filePath, 'r');
-  try {
-    const stats = await handle.stat();
-    if (!stats.isFile()) throw archiveError('input must be a regular file');
-    if (stats.size > maxCompressedBytes) throw archiveError('compressed byte limit exceeded');
-    const eocd = await locateEocd(handle, stats.size);
-    const disk = uint16(eocd.bytes, eocd.offset + 4);
-    const centralDisk = uint16(eocd.bytes, eocd.offset + 6);
-    const diskEntries = uint16(eocd.bytes, eocd.offset + 8);
-    const entryCount = uint16(eocd.bytes, eocd.offset + 10);
-    const centralBytes = uint32(eocd.bytes, eocd.offset + 12);
-    const centralOffset = uint32(eocd.bytes, eocd.offset + 16);
-    if (
-      disk !== 0 ||
-      centralDisk !== 0 ||
-      diskEntries !== entryCount ||
-      entryCount === 0xffff ||
-      centralBytes === 0xffffffff ||
-      centralOffset === 0xffffffff
-    ) {
-      throw archiveError('multi-disk and ZIP64 archives are not supported');
-    }
-    if (centralOffset + centralBytes !== eocd.absoluteOffset || centralBytes > stats.size) {
-      throw archiveError('central directory bounds are invalid');
-    }
+async function captureArchiveIdentity(handle, maxCompressedBytes) {
+  const stats = await handle.stat({ bigint: true });
+  if (!stats.isFile()) throw archiveError('input must be a regular file');
+  if (stats.size > BigInt(maxCompressedBytes)) throw archiveError('compressed byte limit exceeded');
+  return {
+    ctimeNs: stats.ctimeNs,
+    device: stats.dev,
+    inode: stats.ino,
+    mtimeNs: stats.mtimeNs,
+    size: stats.size,
+  };
+}
 
-    const central = await readExactly(handle, centralBytes, centralOffset, 'central directory');
-    const view = new DataView(central.buffer, central.byteOffset, central.byteLength);
-    const entries = [];
-    const canonicalNames = new Set();
-    let offset = 0;
-    let declaredCompressed = 0;
-    let declaredExpanded = 0;
-    for (let index = 0; index < entryCount; index += 1) {
-      const entry = inspectCentralEntry(view, offset);
-      const canonicalName = entry.name.normalize('NFC').toLocaleLowerCase('en-US');
-      if (canonicalNames.has(canonicalName)) {
-        throw archiveError(`duplicate archive path: ${entry.name}`);
-      }
-      canonicalNames.add(canonicalName);
-      declaredCompressed += entry.compressedBytes;
-      declaredExpanded += entry.expandedBytes;
-      if (
-        !Number.isSafeInteger(declaredCompressed) ||
-        entry.compressedBytes > maxCompressedBytes ||
-        declaredCompressed > maxCompressedBytes
-      ) {
-        throw archiveError('compressed byte limit exceeded');
-      }
-      if (!Number.isSafeInteger(declaredExpanded) || declaredExpanded > maxExpandedBytes) {
-        throw archiveError('declared expanded byte limit exceeded');
-      }
-      entries.push(entry);
-      offset = entry.end;
-    }
-    if (offset !== central.byteLength)
-      throw archiveError('central directory entry count is invalid');
-
-    const localRanges = [];
-    for (const entry of entries) {
-      localRanges.push(await inspectLocalEntry(handle, stats.size, centralOffset, entry));
-    }
-    localRanges.sort((left, right) => left.localOffset - right.localOffset);
-    for (let index = 1; index < localRanges.length; index += 1) {
-      if (localRanges[index].localOffset < localRanges[index - 1].dataEnd) {
-        throw archiveError('local file regions overlap');
-      }
-    }
-    return { archiveBytes: stats.size, entries };
-  } finally {
-    await handle.close();
+async function assertStableArchive(handle, expected) {
+  const actual = await handle.stat({ bigint: true });
+  if (
+    actual.dev !== expected.device ||
+    actual.ino !== expected.inode ||
+    actual.size !== expected.size ||
+    actual.mtimeNs !== expected.mtimeNs ||
+    actual.ctimeNs !== expected.ctimeNs
+  ) {
+    throw archiveError('archive identity or size changed during validation');
   }
 }
 
+async function preflightArchive(handle, archiveBytes, maxCompressedBytes, maxExpandedBytes) {
+  const eocd = await locateEocd(handle, archiveBytes);
+  const disk = uint16(eocd.bytes, eocd.offset + 4);
+  const centralDisk = uint16(eocd.bytes, eocd.offset + 6);
+  const diskEntries = uint16(eocd.bytes, eocd.offset + 8);
+  const entryCount = uint16(eocd.bytes, eocd.offset + 10);
+  const centralBytes = uint32(eocd.bytes, eocd.offset + 12);
+  const centralOffset = uint32(eocd.bytes, eocd.offset + 16);
+  if (
+    disk !== 0 ||
+    centralDisk !== 0 ||
+    diskEntries !== entryCount ||
+    entryCount === 0xffff ||
+    centralBytes === 0xffffffff ||
+    centralOffset === 0xffffffff
+  ) {
+    throw archiveError('multi-disk and ZIP64 archives are not supported');
+  }
+  if (centralOffset + centralBytes !== eocd.absoluteOffset || centralBytes > archiveBytes) {
+    throw archiveError('central directory bounds are invalid');
+  }
+
+  const central = await readExactly(handle, centralBytes, centralOffset, 'central directory');
+  const view = new DataView(central.buffer, central.byteOffset, central.byteLength);
+  const entries = [];
+  const canonicalNames = new Set();
+  let offset = 0;
+  let declaredCompressed = 0;
+  let declaredExpanded = 0;
+  for (let index = 0; index < entryCount; index += 1) {
+    const entry = inspectCentralEntry(view, offset);
+    const canonicalName = canonicalArchivePathKey(entry.name);
+    if (canonicalNames.has(canonicalName)) {
+      throw archiveError(`duplicate archive path: ${entry.name}`);
+    }
+    canonicalNames.add(canonicalName);
+    declaredCompressed += entry.compressedBytes;
+    declaredExpanded += entry.expandedBytes;
+    if (
+      !Number.isSafeInteger(declaredCompressed) ||
+      entry.compressedBytes > maxCompressedBytes ||
+      declaredCompressed > maxCompressedBytes
+    ) {
+      throw archiveError('compressed byte limit exceeded');
+    }
+    if (!Number.isSafeInteger(declaredExpanded) || declaredExpanded > maxExpandedBytes) {
+      throw archiveError('declared expanded byte limit exceeded');
+    }
+    entries.push(entry);
+    offset = entry.end;
+  }
+  if (offset !== central.byteLength) throw archiveError('central directory entry count is invalid');
+
+  const localRanges = [];
+  for (const entry of entries) {
+    localRanges.push(await inspectLocalEntry(handle, archiveBytes, centralOffset, entry));
+  }
+  localRanges.sort((left, right) => left.localOffset - right.localOffset);
+  for (let index = 1; index < localRanges.length; index += 1) {
+    if (localRanges[index].localOffset < localRanges[index - 1].dataEnd) {
+      throw archiveError('local file regions overlap');
+    }
+  }
+  return { archiveBytes, entries };
+}
+
 function extractSelectedEntries(
-  filePath,
+  handle,
+  archiveBytes,
   centralEntries,
   wantedNames,
   maxExpandedBytes,
@@ -296,6 +346,7 @@ function extractSelectedEntries(
   return new Promise((resolve, reject) => {
     const metadata = new Map(centralEntries.map((entry) => [entry.name, entry]));
     const completed = new Set();
+    const streamedNames = new Set();
     const output = new Map();
     let actualExpanded = initialExpandedBytes;
     let inputEnded = false;
@@ -316,6 +367,10 @@ function extractSelectedEntries(
     };
     const unzip = new Unzip((file) => {
       try {
+        if (streamedNames.has(file.name)) {
+          throw archiveError(`duplicate local entry: ${file.name}`);
+        }
+        streamedNames.add(file.name);
         const entry = metadata.get(file.name);
         if (entry === undefined)
           throw archiveError(`stream exposed an unknown entry: ${file.name}`);
@@ -329,6 +384,7 @@ function extractSelectedEntries(
         }
         const bytes = new Uint8Array(entry.expandedBytes);
         let entryBytes = 0;
+        let crc32 = 0xffffffff;
         file.ondata = (error, chunk, final) => {
           if (error) return fail(error);
           if (chunk !== null && chunk.length > 0) {
@@ -342,10 +398,14 @@ function extractSelectedEntries(
             }
             bytes.set(chunk, entryBytes);
             entryBytes = nextEntryBytes;
+            crc32 = updateCrc32(crc32, chunk);
           }
           if (final) {
             if (entryBytes !== entry.expandedBytes) {
               return fail(archiveError(`actual entry size mismatch: ${file.name}`));
+            }
+            if ((crc32 ^ 0xffffffff) >>> 0 !== entry.crc32) {
+              return fail(archiveError(`CRC-32 mismatch: ${file.name}`));
             }
             output.set(file.name, bytes);
             completed.add(file.name);
@@ -360,7 +420,12 @@ function extractSelectedEntries(
     unzip.register(UnzipPassThrough);
     unzip.register(UnzipInflate);
 
-    stream = createReadStream(filePath, { highWaterMark: 64 * 1024 });
+    stream = handle.createReadStream({
+      autoClose: false,
+      end: archiveBytes - 1,
+      highWaterMark: 64 * 1024,
+      start: 0,
+    });
     stream.on('data', (chunk) => {
       if (settled) return;
       try {
@@ -378,6 +443,12 @@ function extractSelectedEntries(
         if (completed.size !== wantedNames.size) {
           const missing = [...wantedNames].filter((name) => !completed.has(name));
           throw archiveError(`stream is missing entries: ${missing.join(', ')}`);
+        }
+        const missingLocalHeaders = [...metadata.keys()].filter((name) => !streamedNames.has(name));
+        if (missingLocalHeaders.length > 0 || streamedNames.size !== metadata.size) {
+          throw archiveError(
+            `local and central entry sets differ: ${missingLocalHeaders.join(', ')}`,
+          );
         }
         finish();
       } catch (error) {
@@ -452,7 +523,7 @@ export async function readEvidenceArchive(
     expectedKind,
     expectedRevision,
     expectedDeploymentUrl,
-    maxCompressedBytes = DEFAULT_COMPRESSED_LIMIT,
+    maxCompressedBytes = MAX_ARCHIVE_COMPRESSED_BYTES,
     maxExpandedBytes = MAX_ARCHIVE_EXPANDED_BYTES,
   } = {},
 ) {
@@ -462,58 +533,75 @@ export async function readEvidenceArchive(
     throw new TypeError('expectedKind must be manual or automation');
   }
 
-  const preflight = await preflightArchive(filePath, maxCompressedBytes, maxExpandedBytes);
-  const centralByName = new Map(preflight.entries.map((entry) => [entry.name, entry]));
-  if (!centralByName.has('manifest.json')) throw archiveError('missing member: manifest.json');
+  const handle = await open(filePath, 'r');
+  try {
+    const identity = await captureArchiveIdentity(handle, maxCompressedBytes);
+    const archiveBytes = Number(identity.size);
+    const preflight = await preflightArchive(
+      handle,
+      archiveBytes,
+      maxCompressedBytes,
+      maxExpandedBytes,
+    );
+    await assertStableArchive(handle, identity);
+    const centralByName = new Map(preflight.entries.map((entry) => [entry.name, entry]));
+    if (!centralByName.has('manifest.json')) throw archiveError('missing member: manifest.json');
 
-  const manifestOnly = await extractSelectedEntries(
-    filePath,
-    preflight.entries,
-    new Set(['manifest.json']),
-    maxExpandedBytes,
-  );
-  const manifestSource = parseJson(manifestOnly.get('manifest.json'), 'manifest.json');
-  const manifestValidation = validateManifest(manifestSource, {
-    ...(expectedRevision === undefined ? {} : { revision: expectedRevision }),
-    ...(expectedDeploymentUrl === undefined ? {} : { deploymentUrl: expectedDeploymentUrl }),
-  });
-  if (!manifestValidation.ok) throw archiveError('manifest validation failed');
-  const manifest = manifestValidation.value;
-  if (expectedKind !== undefined && manifest.kind !== expectedKind) {
-    throw archiveError(`manifest kind mismatch: expected ${expectedKind}`);
-  }
-
-  for (const entry of manifest.entries) {
-    const central = centralByName.get(entry.path);
-    if (central !== undefined && central.expandedBytes !== entry.bytes) {
-      throw archiveError(`manifest entry size mismatch: ${entry.path}`);
+    const manifestOnly = await extractSelectedEntries(
+      handle,
+      archiveBytes,
+      preflight.entries,
+      new Set(['manifest.json']),
+      maxExpandedBytes,
+    );
+    await assertStableArchive(handle, identity);
+    const manifestSource = parseJson(manifestOnly.get('manifest.json'), 'manifest.json');
+    const manifestValidation = validateManifest(manifestSource, {
+      ...(expectedRevision === undefined ? {} : { revision: expectedRevision }),
+      ...(expectedDeploymentUrl === undefined ? {} : { deploymentUrl: expectedDeploymentUrl }),
+    });
+    if (!manifestValidation.ok) throw archiveError('manifest validation failed');
+    const manifest = manifestValidation.value;
+    if (expectedKind !== undefined && manifest.kind !== expectedKind) {
+      throw archiveError(`manifest kind mismatch: expected ${expectedKind}`);
     }
-  }
-  assertSameMembers(preflight.entries, manifest);
 
-  const wanted = new Set(manifest.entries.map(({ path }) => path));
-  const entries = await extractSelectedEntries(
-    filePath,
-    preflight.entries,
-    wanted,
-    maxExpandedBytes,
-    centralByName.get('manifest.json').expandedBytes,
-  );
-  for (const entry of manifest.entries) {
-    const bytes = entries.get(entry.path);
-    if (bytes === undefined) throw archiveError(`missing member: ${entry.path}`);
-    if (bytes.length !== entry.bytes)
-      throw archiveError(`manifest entry size mismatch: ${entry.path}`);
-    if (createHash('sha256').update(bytes).digest('hex') !== entry.sha256) {
-      throw archiveError(`manifest digest mismatch: ${entry.path}`);
+    for (const entry of manifest.entries) {
+      const central = centralByName.get(entry.path);
+      if (central !== undefined && central.expandedBytes !== entry.bytes) {
+        throw archiveError(`manifest entry size mismatch: ${entry.path}`);
+      }
     }
-  }
-  validateEmbeddedRecords(manifest, entries);
+    assertSameMembers(preflight.entries, manifest);
 
-  return {
-    manifest,
-    entries: new Map(
-      [...entries.entries()].sort(([left], [right]) => left.localeCompare(right, 'en')),
-    ),
-  };
+    const wanted = new Set(manifest.entries.map(({ path }) => path));
+    const entries = await extractSelectedEntries(
+      handle,
+      archiveBytes,
+      preflight.entries,
+      wanted,
+      maxExpandedBytes,
+      centralByName.get('manifest.json').expandedBytes,
+    );
+    await assertStableArchive(handle, identity);
+    for (const entry of manifest.entries) {
+      const bytes = entries.get(entry.path);
+      if (bytes === undefined) throw archiveError(`missing member: ${entry.path}`);
+      if (bytes.length !== entry.bytes)
+        throw archiveError(`manifest entry size mismatch: ${entry.path}`);
+      if (createHash('sha256').update(bytes).digest('hex') !== entry.sha256) {
+        throw archiveError(`manifest digest mismatch: ${entry.path}`);
+      }
+    }
+    validateEmbeddedRecords(manifest, entries);
+
+    return {
+      manifest,
+      entries: new Map(
+        [...entries.entries()].sort(([left], [right]) => left.localeCompare(right, 'en')),
+      ),
+    };
+  } finally {
+    await handle.close();
+  }
 }

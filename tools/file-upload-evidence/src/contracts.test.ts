@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AUTOMATED_SCENARIO_CHECK_IDS,
+  canonicalArchivePathKey,
   deploymentUrlFromLocation,
   EVIDENCE_ENTRY_MEDIA_TYPES,
   MANUAL_MEDIA_TYPES,
@@ -427,6 +428,28 @@ describe('validateManifest', () => {
         deploymentUrl: 'https://b1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
       }),
     ).toMatchObject({ ok: false });
+  });
+
+  it('uses Unicode case folding for duplicate archive paths', () => {
+    expect(canonicalArchivePathKey('straße.txt')).toBe(canonicalArchivePathKey('STRASSE.TXT'));
+    expect(canonicalArchivePathKey('σ.txt')).toBe(canonicalArchivePathKey('ς.TXT'));
+
+    for (const names of [
+      ['straße.png', 'STRASSE.PNG'],
+      ['σ.png', 'ς.PNG'],
+    ]) {
+      expect(
+        validateManifest({
+          ...validManualManifest,
+          entries: names.map((name, index) => ({
+            path: `artifacts/DF-FU-M01/${name}`,
+            bytes: 10 + index,
+            mediaType: 'image/png',
+            sha256: `${index + 1}`.repeat(64),
+          })),
+        }),
+      ).toMatchObject({ ok: false, errors: ['entries'] });
+    }
   });
 
   it('enforces automation media types by archive path', () => {

@@ -1,6 +1,7 @@
 import { strToU8, zipSync, type Zippable } from 'fflate';
 
 import {
+  canonicalArchivePathKey,
   EVIDENCE_SCHEMA_VERSION,
   MANUAL_MEDIA_TYPES,
   MAX_MANUAL_FILES,
@@ -113,7 +114,7 @@ async function prepareAttachments(
 
   const sourcesBySanitizedName = new Map<string, Set<string>>();
   for (const attachment of prepared) {
-    const foldedName = attachment.sanitizedName.toLocaleLowerCase('en-US');
+    const foldedName = canonicalArchivePathKey(attachment.sanitizedName);
     const sources = sourcesBySanitizedName.get(foldedName) ?? new Set<string>();
     sources.add(attachment.originalName.normalize('NFC'));
     sourcesBySanitizedName.set(foldedName, sources);
@@ -170,7 +171,7 @@ export async function createManualEvidenceBundle(
     const ordinals = new Map<string, number>();
     const generatedPaths: string[] = [];
     for (const attachment of prepared) {
-      const key = attachment.sanitizedName.toLocaleLowerCase('en-US');
+      const key = canonicalArchivePathKey(attachment.sanitizedName);
       const ordinal = (ordinals.get(key) ?? 0) + 1;
       ordinals.set(key, ordinal);
       const path = `artifacts/${record.scenario}/${suffixedFileName(attachment.sanitizedName, ordinal)}`;

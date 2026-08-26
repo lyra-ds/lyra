@@ -48,6 +48,7 @@ export const EVIDENCE_SCHEMA_VERSION = 1 as const;
 export const MAX_MANUAL_FILES = 4;
 export const MAX_MANUAL_FILE_BYTES = 50 * 1024 * 1024;
 export const MAX_MANUAL_SCENARIO_BYTES = 100 * 1024 * 1024;
+export const MAX_ARCHIVE_COMPRESSED_BYTES = 120 * 1024 * 1024;
 export const MAX_ARCHIVE_EXPANDED_BYTES = 220 * 1024 * 1024;
 const manualMediaTypeValues = [
   'image/png',
@@ -319,8 +320,12 @@ function isCanonicalArchivePath(value: string): boolean {
   return segments.every((segment) => segment.length > 0 && segment !== '.' && segment !== '..');
 }
 
+export function canonicalArchivePathKey(path: string): string {
+  return path.normalize('NFC').toUpperCase().toLowerCase().normalize('NFC');
+}
+
 function uniqueCanonicalPaths(paths: readonly string[]): boolean {
-  const normalized = paths.map((path) => path.normalize('NFC').toLocaleLowerCase('en-US'));
+  const normalized = paths.map(canonicalArchivePathKey);
   return paths.every(isCanonicalArchivePath) && new Set(normalized).size === normalized.length;
 }
 

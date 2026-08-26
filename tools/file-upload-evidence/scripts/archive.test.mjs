@@ -63,6 +63,7 @@ function validArchive({
   artifactBytes = strToU8('image'),
   omitArtifact = false,
   extraMembers = {},
+  memberOptions = {},
   level = 6,
 } = {}) {
   const recordBytes = strToU8(JSON.stringify(manualRecord(recordOverrides)));
@@ -97,7 +98,10 @@ function validArchive({
   };
   return zipSync(
     Object.fromEntries(
-      Object.entries(members).map(([name, bytes]) => [name, [bytes, { mtime: ZIP_MTIME }]]),
+      Object.entries(members).map(([name, bytes]) => [
+        name,
+        [bytes, { mtime: ZIP_MTIME, ...memberOptions[name] }],
+      ]),
     ),
     { level, mtime: ZIP_MTIME },
   );
@@ -130,14 +134,57 @@ function centralEntries(bytes) {
     const nameLength = view.getUint16(offset + 28, true);
     const extraLength = view.getUint16(offset + 30, true);
     const commentLength = view.getUint16(offset + 32, true);
+    const localOffset = view.getUint32(offset + 42, true);
+    const localNameLength = view.getUint16(localOffset + 26, true);
+    const localExtraLength = view.getUint16(localOffset + 28, true);
     entries.push({
       centralOffset: offset,
-      localOffset: view.getUint32(offset + 42, true),
+      centralExtraOffset: offset + 46 + nameLength,
+      extraLength,
+      localOffset,
+      localExtraOffset: localOffset + 30 + localNameLength,
+      localExtraLength,
+      localDataOffset: localOffset + 30 + localNameLength + localExtraLength,
+      name: Buffer.from(bytes.buffer, bytes.byteOffset + offset + 46, nameLength).toString(),
       nameLength,
     });
     offset += 46 + nameLength + extraLength + commentLength;
   }
   return entries;
+}
+
+function entryNamed(bytes, name) {
+  const entry = centralEntries(bytes).find((candidate) => candidate.name === name);
+  assert.ok(entry, `fixture entry ${name} exists`);
+  return entry;
+}
+
+function appendOrphanLocalDuplicate(bytes, name, contents) {
+  const orphanArchive = zipSync({ [name]: contents }, { level: 0, mtime: ZIP_MTIME });
+  const orphanEntry = entryNamed(orphanArchive, name);
+  const orphanView = new DataView(
+    orphanArchive.buffer,
+    orphanArchive.byteOffset,
+    orphanArchive.byteLength,
+  );
+  const orphanEnd =
+    orphanEntry.localDataOffset + orphanView.getUint32(orphanEntry.localOffset + 18, true);
+  const orphanLocal = orphanArchive.subarray(orphanEntry.localOffset, orphanEnd);
+  const originalCentralOffset = new DataView(
+    bytes.buffer,
+    bytes.byteOffset,
+    bytes.byteLength,
+  ).getUint32(eocdOffset(bytes) + 16, true);
+  const output = new Uint8Array(bytes.length + orphanLocal.length);
+  output.set(bytes.subarray(0, originalCentralOffset));
+  output.set(orphanLocal, originalCentralOffset);
+  output.set(bytes.subarray(originalCentralOffset), originalCentralOffset + orphanLocal.length);
+  new DataView(output.buffer).setUint32(
+    eocdOffset(output) + 16,
+    originalCentralOffset + orphanLocal.length,
+    true,
+  );
+  return output;
 }
 
 function copyAndMutate(bytes, mutate) {
@@ -171,6 +218,17 @@ describe('readEvidenceArchive', () => {
     }
   });
 
+  it('keeps one stable descriptor when the caller path buffer changes after open starts', async () => {
+    const filePath = await writeArchive(validArchive());
+    const mutablePath = Buffer.from(filePath);
+
+    const reading = readEvidenceArchive(mutablePath);
+    mutablePath.fill('x');
+
+    const result = await reading;
+    assert.equal(Buffer.from(result.entries.get(ARTIFACT_PATH)).toString(), 'image');
+  });
+
   it('rejects traversal, absolute, backslash, NUL, empty-segment, and non-NFC paths', async () => {
     for (const path of [
       '../escape',
@@ -189,6 +247,8 @@ describe('readEvidenceArchive', () => {
     for (const members of [
       { 'A.txt': strToU8('one'), 'a.txt': strToU8('two') },
       { 'caf\u00e9.txt': strToU8('one'), 'CAF\u00c9.txt': strToU8('two') },
+      { 'stra\u00dfe.txt': strToU8('one'), 'STRASSE.TXT': strToU8('two') },
+      { '\u03c3.txt': strToU8('one'), '\u03c2.TXT': strToU8('two') },
     ]) {
       await assert.rejects(
         readEvidenceArchive(await writeArchive(zipSync(members, { level: 0 }))),
@@ -238,6 +298,75 @@ describe('readEvidenceArchive', () => {
       bytes[entry.localOffset + 30] = 'X'.charCodeAt(0);
     });
     await assert.rejects(readEvidenceArchive(await writeArchive(divergent)), /local.*central/i);
+  });
+
+  it('rejects a local-only duplicate instead of letting it replace a central member', async () => {
+    const bytes = validArchive({ level: 0 });
+    const smuggled = appendOrphanLocalDuplicate(bytes, ARTIFACT_PATH, strToU8('evils'));
+
+    await assert.rejects(
+      readEvidenceArchive(await writeArchive(smuggled)),
+      /duplicate local.*artifact/i,
+    );
+  });
+
+  it('verifies the actual CRC-32 of the manifest and artifacts', async () => {
+    for (const name of ['manifest.json', ARTIFACT_PATH]) {
+      const corrupted = copyAndMutate(validArchive(), (view, entries) => {
+        const entry = entries.find((candidate) => candidate.name === name);
+        assert.ok(entry);
+        const wrongCrc = (view.getUint32(entry.centralOffset + 16, true) ^ 0xffffffff) >>> 0;
+        view.setUint32(entry.centralOffset + 16, wrongCrc, true);
+        view.setUint32(entry.localOffset + 14, wrongCrc, true);
+      });
+      await assert.rejects(readEvidenceArchive(await writeArchive(corrupted)), /CRC-32.*mismatch/i);
+    }
+  });
+
+  it('rejects ZIP64 and malformed central or local extra fields', async () => {
+    const withExtra = validArchive({
+      memberOptions: { [ARTIFACT_PATH]: { extra: { 0xcafe: new Uint8Array([1]) } } },
+    });
+    const cases = [
+      copyAndMutate(withExtra, (view, entries) => {
+        const entry = entries.find((candidate) => candidate.name === ARTIFACT_PATH);
+        view.setUint16(entry.centralExtraOffset, 0x0001, true);
+      }),
+      copyAndMutate(withExtra, (view, entries) => {
+        const entry = entries.find((candidate) => candidate.name === ARTIFACT_PATH);
+        view.setUint16(entry.localExtraOffset, 0x0001, true);
+      }),
+      copyAndMutate(withExtra, (view, entries) => {
+        const entry = entries.find((candidate) => candidate.name === ARTIFACT_PATH);
+        view.setUint16(entry.centralExtraOffset + 2, 2, true);
+      }),
+      copyAndMutate(withExtra, (view, entries) => {
+        const entry = entries.find((candidate) => candidate.name === ARTIFACT_PATH);
+        view.setUint16(entry.localExtraOffset + 2, 2, true);
+      }),
+    ];
+
+    await assert.rejects(readEvidenceArchive(await writeArchive(cases[0])), /ZIP64.*central/i);
+    await assert.rejects(readEvidenceArchive(await writeArchive(cases[1])), /ZIP64.*local/i);
+    await assert.rejects(readEvidenceArchive(await writeArchive(cases[2])), /malformed.*central/i);
+    await assert.rejects(readEvidenceArchive(await writeArchive(cases[3])), /malformed.*local/i);
+  });
+
+  it('rejects multidisk metadata and overlapping local file regions', async () => {
+    const multidisk = copyAndMutate(validArchive(), (view, _entries, bytes) => {
+      view.setUint16(eocdOffset(bytes) + 4, 1, true);
+    });
+    await assert.rejects(readEvidenceArchive(await writeArchive(multidisk)), /multi-disk/i);
+
+    const overlapping = copyAndMutate(validArchive({ level: 0 }), (view, entries) => {
+      const ordered = [...entries].sort((left, right) => left.localOffset - right.localOffset);
+      const first = ordered[0];
+      const second = ordered[1];
+      const spanningCompressedBytes = second.localOffset + 1 - first.localDataOffset;
+      view.setUint32(first.centralOffset + 20, spanningCompressedBytes, true);
+      view.setUint32(first.localOffset + 18, spanningCompressedBytes, true);
+    });
+    await assert.rejects(readEvidenceArchive(await writeArchive(overlapping)), /overlap/i);
   });
 
   it('enforces compressed and declared expanded limits before materializing entries', async () => {
