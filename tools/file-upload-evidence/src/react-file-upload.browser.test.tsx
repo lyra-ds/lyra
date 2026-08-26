@@ -227,9 +227,14 @@ const messages = {
 interface OperatorHarnessProps {
   initialMode: EvidenceOperatorMode;
   transport: ControllableTransport;
+  withDiagnostics?: boolean;
 }
 
-function OperatorHarness({ initialMode, transport }: OperatorHarnessProps) {
+function OperatorHarness({
+  initialMode,
+  transport,
+  withDiagnostics = false,
+}: OperatorHarnessProps) {
   const [mode, setMode] = useState(initialMode);
   const instrumentRef = useRef<ReactFileUploadEvidenceHandle>(null);
 
@@ -253,6 +258,13 @@ function OperatorHarness({ initialMode, transport }: OperatorHarnessProps) {
         hint="Choose evidence files"
         messages={messages}
         multiple
+        {...(withDiagnostics
+          ? {
+              renderDiagnostics: () => (
+                <aside aria-label="Lifecycle diagnostics">Idle diagnostics</aside>
+              ),
+            }
+          : {})}
       />
     </form>
   );
@@ -300,6 +312,31 @@ async function selectNativeFile(file: File): Promise<void> {
 afterEach(() => cleanup());
 
 describe('ReactFileUploadEvidence', () => {
+  it('keeps private evidence hooks on the real accessible FileUpload output', async () => {
+    const transport = new ControllableTransport(['delay']);
+    await render(<OperatorHarness initialMode="delay" transport={transport} withDiagnostics />);
+    const input = page.getByLabelText('Evidence file');
+    await expect.element(input).toHaveAttribute('data-evidence-id', 'react-file-input');
+    await expect
+      .element(page.getByRole('complementary', { name: 'Lifecycle diagnostics' }))
+      .toHaveAttribute('data-evidence-id', 'react-diagnostics');
+
+    await userEvent.upload(
+      await input.element(),
+      new File(['hook'], 'hook.pdf', { type: 'application/pdf' }),
+    );
+
+    await expect
+      .element(page.getByRole('list'))
+      .toHaveAttribute('data-evidence-id', 'react-file-list');
+    const cancel = page.getByRole('button', { name: 'Cancel hook.pdf' });
+    await expect.element(cancel).toBeVisible();
+    expect(document.querySelector('[data-evidence-id="react-live-region"]')).toBe(liveRegion());
+    await userEvent.click(cancel);
+    await expect.element(page.getByRole('button', { name: 'Retry hook.pdf' })).toBeVisible();
+    expect(liveRegion().textContent).toBe('hook.pdf canceled.');
+  });
+
   it('preserves the exact native File and advances only recorded progress', async () => {
     const transport = new ControllableTransport(['delay']);
     await render(<OperatorHarness initialMode="indeterminate" transport={transport} />);

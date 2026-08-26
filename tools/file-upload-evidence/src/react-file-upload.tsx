@@ -5,8 +5,11 @@ import {
   type FileUploadSelection,
 } from '@lyra-ds/react/file-upload';
 import {
+  cloneElement,
+  isValidElement,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useReducer,
   useRef,
   useState,
@@ -137,6 +140,7 @@ export function ReactFileUploadEvidence({
   const attempts = useRef(new Map<string, string>());
   const recordedProgress = useRef(new Map<string, UploadMachineAction>());
   const retainedResult = useRef<RetainedResult | null>(null);
+  const fileUploadRoot = useRef<HTMLDivElement | null>(null);
   const currentItem = items.at(-1);
   const currentAttemptId =
     currentItem !== undefined && 'attemptId' in currentItem ? currentItem.attemptId : null;
@@ -172,6 +176,15 @@ export function ReactFileUploadEvidence({
       retainedResult.current = null;
     };
   }, []);
+
+  useLayoutEffect(() => {
+    const root = fileUploadRoot.current;
+    root?.querySelector('input[type="file"]')?.setAttribute('data-evidence-id', 'react-file-input');
+    root?.querySelector('.lyra-upload__list')?.setAttribute('data-evidence-id', 'react-file-list');
+    root
+      ?.querySelector('[aria-live="polite"]')
+      ?.setAttribute('data-evidence-id', 'react-live-region');
+  }, [items]);
 
   function startRequest(
     file: File,
@@ -312,6 +325,7 @@ export function ReactFileUploadEvidence({
   return (
     <>
       <FileUpload
+        ref={fileUploadRoot}
         name={name}
         maxSizeMB={maxSizeMB}
         {...(accept === undefined ? {} : { accept })}
@@ -377,7 +391,12 @@ export function ReactFileUploadEvidence({
           }
         }}
       />
-      {renderDiagnostics?.(diagnostics)}
+      {(() => {
+        const rendered = renderDiagnostics?.(diagnostics);
+        return isValidElement<Record<string, unknown>>(rendered)
+          ? cloneElement(rendered, { 'data-evidence-id': 'react-diagnostics' })
+          : rendered;
+      })()}
     </>
   );
 }

@@ -6,7 +6,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:browser": "vitest run --config vitest.browser.config.ts",
-    "build:preview": "vite build"
+    "build:preview": "vite build",
+    "test:automation": "node --test scripts/automation.test.mjs"
   },
   "dependencies": {
     "@lyra-ds/alpine": "workspace:*",
