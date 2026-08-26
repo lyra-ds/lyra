@@ -1,4 +1,4 @@
-import { SCENARIO_CHECK_IDS, type EnvironmentTelemetry } from './contracts';
+import type { EnvironmentTelemetry } from './contracts';
 
 export interface WindowLike {
   readonly innerWidth: number;
@@ -39,26 +39,4 @@ export function captureTelemetry(
       evaluatedMediaQueries['(pointer: coarse)'] === true ||
       evaluatedMediaQueries['(any-pointer: coarse)'] === true,
   };
-}
-
-export function m03Eligibility(
-  telemetry: EnvironmentTelemetry,
-  inputMethods: readonly string[],
-  checks: readonly string[],
-): { eligible: boolean; reasons: readonly string[] } {
-  const reasons: string[] = [];
-  const hasCoarsePointerMatch =
-    telemetry.coarsePointer &&
-    (telemetry.mediaQueries['(pointer: coarse)'] === true ||
-      telemetry.mediaQueries['(any-pointer: coarse)'] === true);
-
-  if (telemetry.viewport.width !== 320) reasons.push('viewport-width');
-  if (!hasCoarsePointerMatch) reasons.push('coarse-pointer');
-  if (!inputMethods.includes('touch')) reasons.push('touch-input');
-  if (!inputMethods.includes('keyboard')) reasons.push('keyboard-input');
-  if (!SCENARIO_CHECK_IDS['DF-FU-M03'].every((check) => checks.includes(check))) {
-    reasons.push('manual-checks');
-  }
-
-  return { eligible: reasons.length === 0, reasons };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { captureTelemetry, m03Eligibility } from './telemetry';
+import { captureTelemetry } from './telemetry';
 
 const windowLike = {
   innerWidth: 320,
@@ -18,15 +18,6 @@ const windowLike = {
 
 const navigatorLike = { userAgent: 'Mozilla/5.0 EvidenceHarness/1.0' };
 
-const completeM03Checks = [
-  'DF-FU-M03-no-horizontal-overflow',
-  'DF-FU-M03-long-file-identity-retained',
-  'DF-FU-M03-actions-reachable',
-  'DF-FU-M03-active-replacement-rejected-and-announced',
-  'DF-FU-M03-cancel-retry-remove-completed',
-  'DF-FU-M03-focus-recovered',
-];
-
 describe('captureTelemetry', () => {
   it('captures real viewport, DPR, media-query, timezone, and supporting user-agent values', () => {
     expect(captureTelemetry(windowLike, navigatorLike)).toMatchObject({
@@ -40,40 +31,6 @@ describe('captureTelemetry', () => {
         '(any-hover: none)': true,
       },
       coarsePointer: true,
-    });
-  });
-});
-
-describe('m03Eligibility', () => {
-  const telemetry = captureTelemetry(windowLike, navigatorLike);
-
-  it('accepts only a truthfully complete M03 environment record', () => {
-    expect(m03Eligibility(telemetry, ['touch', 'keyboard'], completeM03Checks)).toEqual({
-      eligible: true,
-      reasons: [],
-    });
-  });
-
-  it('rejects a near-miss viewport without accepting a harness override', () => {
-    expect(
-      m03Eligibility(
-        { ...telemetry, viewport: { ...telemetry.viewport, width: 321 }, coarsePointer: true },
-        ['touch', 'keyboard'],
-        completeM03Checks,
-      ),
-    ).toEqual({ eligible: false, reasons: ['viewport-width'] });
-  });
-
-  it('requires coarse pointer, both physical input methods, and every manual check', () => {
-    expect(
-      m03Eligibility(
-        { ...telemetry, coarsePointer: false },
-        ['keyboard'],
-        completeM03Checks.slice(0, -1),
-      ),
-    ).toEqual({
-      eligible: false,
-      reasons: ['coarse-pointer', 'touch-input', 'manual-checks'],
     });
   });
 });

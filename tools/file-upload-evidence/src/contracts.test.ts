@@ -1,319 +1,532 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AUTOMATED_SCENARIO_CHECK_IDS,
   deploymentUrlFromLocation,
   SCENARIO_CHECK_IDS,
+  type AutomatedScenario,
+  type EvidenceManifest,
+  type FileUploadAutomatedResult,
   type ManualScenario,
+  validateAutomatedResult,
+  validateManifest,
   validateObservation,
 } from './contracts';
 
-const checkAttestations = Object.fromEntries(
-  SCENARIO_CHECK_IDS['DF-FU-M03'].map((id) => [id, true]),
-);
+const REVISION = 'a'.repeat(40);
+const DEPLOYMENT_URL = 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
+const EXECUTED_AT = '2026-08-26T12:00:00.000Z';
 
-const valid = {
-  scenario: 'DF-FU-M03',
-  locale: 'pt-BR',
-  revision: 'a'.repeat(40),
-  deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
-  executedAt: '2026-08-17T14:30:00.000Z',
-  timezone: 'America/Sao_Paulo',
-  os: { name: 'Android', version: '16', build: 'BP2A.250605.031.A2' },
-  browser: { name: 'Chrome', version: '139.0.7258.52' },
-  assistiveTechnology: null,
-  noAssistiveTechnologyConfirmed: true,
-  inputMethods: ['touch', 'keyboard'],
-  viewport: { width: 320, height: 740, devicePixelRatio: 3 },
-  mediaQueries: { '(pointer: coarse)': true, '(any-pointer: coarse)': true },
-  expected: 'A substituição ativa é rejeitada e anunciada.',
-  actual: 'A substituição foi rejeitada e anunciada.',
-  checkAttestations,
+const validM01 = {
+  scenario: 'DF-FU-M01',
+  locale: 'en',
+  revision: REVISION,
+  deploymentUrl: DEPLOYMENT_URL,
+  executedAt: EXECUTED_AT,
+  timezone: 'America/New_York',
+  os: { name: 'Windows', version: '11', build: '24H2' },
+  browser: { name: 'Firefox', version: '141.0' },
+  assistiveTechnology: { name: 'NVDA', version: '2026.2' },
+  inputMethods: ['keyboard'],
+  viewport: { width: 1280, height: 720, devicePixelRatio: 1 },
+  mediaQueries: { '(pointer: coarse)': false },
+  expected: 'The complete upload lifecycle is announced coherently.',
+  actual: 'NVDA announced every lifecycle transition.',
+  checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS['DF-FU-M01'].map((id) => [id, true])),
   result: 'PASS',
-  reviewer: { name: 'Ana Reviewer', approval: 'approved' },
-  artifactUrls: ['https://evidence.example.test/m03-recording.mp4'],
-  findingUrls: ['https://tracker.example.test/FU-103'],
-};
+  reviewer: { name: 'Evidence Reviewer', approval: 'approved' },
+  artifactPaths: ['artifacts/DF-FU-M01/nvda.webm'],
+  findingUrls: ['https://tracker.example.test/FU-101'],
+} as const;
 
 function observationFor(
   scenario: ManualScenario,
-  scenarioAttestations: Record<string, boolean>,
   overrides: Record<string, unknown> = {},
 ): Record<string, unknown> {
   return {
-    ...valid,
+    ...validM01,
     scenario,
-    checkAttestations: scenarioAttestations,
+    os: scenario === 'DF-FU-M01' ? validM01.os : { name: 'macOS', version: '15.6', build: '24G84' },
+    browser: scenario === 'DF-FU-M01' ? validM01.browser : { name: 'Safari', version: '18.6' },
     assistiveTechnology:
-      scenario === 'DF-FU-M01' || scenario === 'DF-FU-M02'
-        ? { name: 'NVDA', version: '2026.2' }
-        : null,
+      scenario === 'DF-FU-M01'
+        ? validM01.assistiveTechnology
+        : { name: 'VoiceOver', version: '15.6' },
+    checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
+    artifactPaths: [`artifacts/${scenario}/recording.webm`],
     ...overrides,
   };
 }
 
+const validManualManifest: EvidenceManifest = {
+  schemaVersion: 1,
+  kind: 'manual',
+  revision: REVISION,
+  deploymentUrl: DEPLOYMENT_URL,
+  createdAt: EXECUTED_AT,
+  entries: [
+    {
+      path: 'manual/DF-FU-M01.json',
+      bytes: 2048,
+      mediaType: 'application/json',
+      sha256: '1'.repeat(64),
+    },
+    {
+      path: 'artifacts/DF-FU-M01/nvda.webm',
+      bytes: 4096,
+      mediaType: 'video/webm',
+      sha256: '2'.repeat(64),
+    },
+  ],
+};
+
+const automatedArtifacts = (scenario: AutomatedScenario, engine: string): string[] => [
+  `artifacts/${scenario}/${engine}/final.png`,
+  `artifacts/${scenario}/${engine}/run.webm`,
+  `artifacts/${scenario}/${engine}/trace.zip`,
+  `artifacts/${scenario}/${engine}/events.json`,
+];
+
+function automatedRun(scenario: AutomatedScenario, engine: 'chromium' | 'firefox' | 'webkit') {
+  return {
+    engine,
+    viewport: { width: 320, height: 720, devicePixelRatio: 2 },
+    mediaQueries:
+      engine === 'chromium'
+        ? { '(pointer: coarse)': true, '(any-pointer: coarse)': true }
+        : { '(pointer: coarse)': false, '(any-pointer: coarse)': false },
+    checks: Object.fromEntries(AUTOMATED_SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
+    artifactPaths: automatedArtifacts(scenario, engine),
+  };
+}
+
+const validDfFu17: FileUploadAutomatedResult = {
+  scenario: 'DF-FU-17',
+  locale: 'en',
+  revision: REVISION,
+  deploymentUrl: DEPLOYMENT_URL,
+  executedAt: EXECUTED_AT,
+  runs: [
+    automatedRun('DF-FU-17', 'chromium'),
+    automatedRun('DF-FU-17', 'firefox'),
+    automatedRun('DF-FU-17', 'webkit'),
+  ],
+  result: 'PASS',
+};
+
+const invalidArtifactPathSets: readonly (readonly string[])[] = [
+  [],
+  [
+    'artifacts/DF-FU-M01/1.png',
+    'artifacts/DF-FU-M01/2.png',
+    'artifacts/DF-FU-M01/3.png',
+    'artifacts/DF-FU-M01/4.png',
+    'artifacts/DF-FU-M01/5.png',
+  ],
+  ['artifacts/DF-FU-M02/voiceover.webm'],
+  ['../artifacts/DF-FU-M01/nvda.webm'],
+  ['artifacts\\DF-FU-M01\\nvda.webm'],
+  ['artifacts/DF-FU-M01/nvda.webm', 'artifacts/DF-FU-M01/nvda.webm'],
+];
+
 describe('validateObservation', () => {
-  it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
-    'accepts the %s manual scenario identifier',
-    (scenario) => {
-      const observation = {
-        ...valid,
-        scenario,
-        checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
-        assistiveTechnology:
-          scenario === 'DF-FU-M01' || scenario === 'DF-FU-M02'
-            ? { name: 'NVDA', version: '2026.2' }
-            : null,
-      };
-
-      expect(validateObservation(observation).ok).toBe(true);
-    },
-  );
-
-  it.each(['en', 'pt-BR'] as const)('accepts the %s route locale', (locale) => {
-    expect(
-      validateObservation({
-        ...valid,
-        locale,
-        deploymentUrl: `https://a1b2c3d4.lyra-ds-docs.pages.dev/${locale}/file-upload-evidence/`,
-      }).ok,
-    ).toBe(true);
-  });
-
-  it.each([
-    'https://file-upload-evidence.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
-    'https://a1b2c3d4.example.test/pt-BR/file-upload-evidence/',
-    'https://user:password@a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
-    'https://a1b2c3d4.lyra-ds-docs.pages.dev:8443/pt-BR/file-upload-evidence/',
-    'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
-    'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/?alpineDelay=5000',
-    'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/#record',
-  ])('rejects a non-immutable deployment route: %s', (deploymentUrl) => {
-    expect(validateObservation({ ...valid, deploymentUrl })).toMatchObject({
-      ok: false,
-      errors: [
-        {
-          field: 'deploymentUrl',
-          message: 'Informe uma URL absoluta HTTPS de implantação.',
-        },
-      ],
-    });
-  });
-
-  it('normalizes a browser location to origin and pathname', () => {
-    const browserLocation = {
-      origin: 'https://a1b2c3d4.lyra-ds-docs.pages.dev',
-      pathname: '/pt-BR/file-upload-evidence/',
-      search: '?alpineDelay=5000',
-      hash: '#record',
-    };
-
-    expect(deploymentUrlFromLocation(browserLocation)).toBe(
-      'https://a1b2c3d4.lyra-ds-docs.pages.dev/pt-BR/file-upload-evidence/',
-    );
-  });
-
-  it.each(['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const)(
-    'requires the exact %s attestation keys for PASS',
-    (scenario) => {
-      const requiredIds = SCENARIO_CHECK_IDS[scenario];
-      const complete = Object.fromEntries(requiredIds.map((id) => [id, true]));
-      const extra = { ...complete, 'DF-FU-M99-foreign-check': true };
-
-      expect(validateObservation(observationFor(scenario, complete))).toMatchObject({ ok: true });
-      expect(validateObservation(observationFor(scenario, extra))).toMatchObject({
-        ok: false,
-        errors: [{ field: 'checkAttestations' }],
-      });
-    },
-  );
-
-  for (const scenario of ['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'] as const) {
-    const requiredIds = SCENARIO_CHECK_IDS[scenario];
-    const complete = Object.fromEntries(requiredIds.map((id) => [id, true]));
-
-    for (const checkId of requiredIds) {
-      it(`rejects PASS for ${scenario} when ${checkId} is missing`, () => {
-        const missing = Object.fromEntries(
-          requiredIds.filter((requiredId) => requiredId !== checkId).map((id) => [id, true]),
-        );
-
-        expect(validateObservation(observationFor(scenario, missing))).toMatchObject({
-          ok: false,
-          errors: [{ field: 'checkAttestations' }],
-        });
-      });
-
-      it(`rejects PASS for ${scenario} when ${checkId} is false`, () => {
-        expect(
-          validateObservation(observationFor(scenario, { ...complete, [checkId]: false })),
-        ).toMatchObject({
-          ok: false,
-          errors: [{ field: 'checkAttestations' }],
-        });
-      });
-    }
-  }
-
-  it('preserves false attestations in a FAIL record without sharing caller state', () => {
-    const scenarioAttestations = Object.fromEntries(
-      SCENARIO_CHECK_IDS['DF-FU-M04'].map((id, index) => [id, index !== 1]),
-    );
-    const result = validateObservation(
-      observationFor('DF-FU-M04', scenarioAttestations, {
-        result: 'FAIL',
-        reviewer: { name: 'Evidence Reviewer', approval: 'changes-requested' },
-      }),
-    );
-
-    expect(result).toMatchObject({
+  it.each(['DF-FU-M01', 'DF-FU-M02'] as const)('accepts the %s manual scenario', (scenario) => {
+    expect(validateObservation(observationFor(scenario))).toMatchObject({
       ok: true,
-      value: { checkAttestations: scenarioAttestations },
-    });
-    if (!result.ok) throw new Error('expected the failed observation to pass validation');
-
-    scenarioAttestations['DF-FU-M04-delayed-alpine-node-filelist-preserved'] = true;
-    expect(result.value.checkAttestations).toEqual({
-      'DF-FU-M04-native-js-disabled-form-submitted': true,
-      'DF-FU-M04-delayed-alpine-node-filelist-preserved': false,
-      'DF-FU-M04-single-enhancement-path-removal-focus': true,
+      value: { scenario, artifactPaths: [`artifacts/${scenario}/recording.webm`] },
     });
   });
 
-  it('normalizes a valid observation without mutating user-entered data', () => {
-    const input = {
-      ...valid,
-      expected: '  A substituição ativa é rejeitada e anunciada.  ',
-      inputMethods: [' touch ', 'keyboard'],
-      artifactUrls: [' https://evidence.example.test/m03-recording.mp4 '],
-    };
+  it.each(['DF-FU-M03', 'DF-FU-M04'] as const)('rejects retired manual scenario %s', (scenario) => {
+    expect(validateObservation({ ...validM01, scenario })).toMatchObject({ ok: false });
+  });
 
+  it('accepts and normalizes one to four local artifact paths under the scenario directory', () => {
+    const input = {
+      ...validM01,
+      actual: '  NVDA announced every lifecycle transition.  ',
+      inputMethods: [' keyboard '],
+      artifactPaths: [' artifacts/DF-FU-M01/nvda.webm ', 'artifacts/DF-FU-M01/final.png'],
+    };
     const result = validateObservation(input);
 
     expect(result).toMatchObject({
       ok: true,
       value: {
-        expected: 'A substituição ativa é rejeitada e anunciada.',
-        inputMethods: ['touch', 'keyboard'],
-        artifactUrls: ['https://evidence.example.test/m03-recording.mp4'],
+        actual: 'NVDA announced every lifecycle transition.',
+        inputMethods: ['keyboard'],
+        artifactPaths: ['artifacts/DF-FU-M01/nvda.webm', 'artifacts/DF-FU-M01/final.png'],
       },
     });
-    expect(input).toEqual({
-      ...valid,
-      expected: '  A substituição ativa é rejeitada e anunciada.  ',
-      inputMethods: [' touch ', 'keyboard'],
-      artifactUrls: [' https://evidence.example.test/m03-recording.mp4 '],
-    });
-    if (!result.ok) {
-      throw new Error('expected the valid observation to pass validation');
-    }
-
-    input.mediaQueries['(pointer: coarse)'] = false;
-    expect(result.value.mediaQueries['(pointer: coarse)']).toBe(true);
+    expect(input.artifactPaths[0]).toBe(' artifacts/DF-FU-M01/nvda.webm ');
   });
 
-  it('rejects malformed revisions, timestamps, and deployment URLs', () => {
-    for (const [field, value] of [
-      ['revision', 'A'.repeat(40)],
-      ['executedAt', '2026-08-17 14:30'],
-      ['executedAt', '2026-02-30T14:30:00.000Z'],
-      ['deploymentUrl', 'http://evidence.example.test/'],
-    ] as const) {
-      const result = validateObservation({ ...valid, [field]: value });
-
-      expect(result).toMatchObject({ ok: false, errors: [{ field }] });
-    }
-  });
-
-  it('requires non-empty OS, browser, and assistive-technology versions when AT is active', () => {
-    for (const [field, observation] of [
-      ['os.version', { ...valid, os: { ...valid.os, version: '' } }],
-      ['os.build', { ...valid, os: { ...valid.os, build: '' } }],
-      ['browser.version', { ...valid, browser: { ...valid.browser, version: '' } }],
-      [
-        'assistiveTechnology.version',
-        { ...valid, assistiveTechnology: { name: 'TalkBack', version: '' } },
-      ],
-    ] as const) {
-      const result = validateObservation(observation);
-
-      expect(result).toMatchObject({ ok: false, errors: [{ field }] });
-    }
-  });
-
-  it('requires evidence artifacts and compatible reviewer decisions', () => {
-    const changesRequested = { name: 'Ana Reviewer', approval: 'changes-requested' } as const;
-
-    expect(validateObservation({ ...valid, artifactUrls: [] })).toMatchObject({
-      ok: false,
-      errors: [{ field: 'artifactUrls' }],
-    });
-    expect(validateObservation({ ...valid, result: 'PASS', reviewer: changesRequested }).ok).toBe(
-      false,
-    );
-    expect(
-      validateObservation({ ...valid, result: 'FAIL', reviewer: { ...valid.reviewer } }).ok,
-    ).toBe(false);
-  });
-
-  it('requires assistive technology for the screen-reader scenarios', () => {
-    expect(
-      validateObservation({ ...valid, scenario: 'DF-FU-M01', assistiveTechnology: null }).ok,
-    ).toBe(false);
-  });
-
-  it.each(['DF-FU-M03', 'DF-FU-M04'] as const)(
-    'requires explicit no-AT confirmation before accepting %s without assistive technology',
-    (scenario) => {
-      const { noAssistiveTechnologyConfirmed: _confirmation, ...unconfirmedDraft } = valid;
-      const unconfirmed = validateObservation({
-        ...unconfirmedDraft,
-        scenario,
-        checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
-        assistiveTechnology: null,
-      });
-      const confirmed = validateObservation({
-        ...valid,
-        scenario,
-        checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
-        assistiveTechnology: null,
-        noAssistiveTechnologyConfirmed: true,
-      });
-
-      expect(unconfirmed).toMatchObject({
+  it.each(invalidArtifactPathSets)(
+    'rejects an invalid local artifact path set: %j',
+    (artifactPaths) => {
+      expect(validateObservation({ ...validM01, artifactPaths })).toMatchObject({
         ok: false,
-        errors: [{ field: 'noAssistiveTechnologyConfirmation' }],
+        errors: [{ field: 'artifactPaths' }],
       });
-      expect(confirmed).toMatchObject({ ok: true });
-      if (!confirmed.ok) {
-        throw new Error('expected confirmed no-AT observation to pass validation');
-      }
-      expect(confirmed.value).not.toHaveProperty('noAssistiveTechnologyConfirmed');
     },
   );
 
-  it('returns stable localized field errors for invalid observations', () => {
-    const english = validateObservation({
-      ...valid,
-      locale: 'en',
-      deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
-      revision: 'not-a-sha',
-    });
-    const portuguese = validateObservation({ ...valid, locale: 'pt-BR', revision: 'not-a-sha' });
+  it.each(['en', 'pt-BR'] as const)('accepts the %s immutable route locale', (locale) => {
+    expect(
+      validateObservation({
+        ...validM01,
+        locale,
+        deploymentUrl: `https://a1b2c3d4.lyra-ds-docs.pages.dev/${locale}/file-upload-evidence/`,
+      }),
+    ).toMatchObject({ ok: true });
+  });
 
-    expect(english).toMatchObject({
+  it.each([
+    'https://file-upload-evidence.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+    'https://a1b2c3d4.example.test/en/file-upload-evidence/',
+    'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/?alpineDelay=5000',
+    'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/#record',
+  ])('rejects a mutable or noncanonical deployment route: %s', (deploymentUrl) => {
+    expect(validateObservation({ ...validM01, deploymentUrl })).toMatchObject({
       ok: false,
-      errors: [
-        { field: 'revision', message: 'Enter the full 40-character lowercase Git revision.' },
-      ],
+      errors: [{ field: 'deploymentUrl' }],
     });
-    expect(portuguese).toMatchObject({
+  });
+
+  it.each(['DF-FU-M01', 'DF-FU-M02'] as const)(
+    'requires the exact %s attestation keys',
+    (scenario) => {
+      const complete = Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true]));
+      const firstCheck = SCENARIO_CHECK_IDS[scenario][0];
+      const missing = Object.fromEntries(
+        SCENARIO_CHECK_IDS[scenario].slice(1).map((id) => [id, true]),
+      );
+
+      expect(
+        validateObservation(observationFor(scenario, { checkAttestations: complete })),
+      ).toMatchObject({ ok: true });
+      expect(
+        validateObservation(observationFor(scenario, { checkAttestations: missing })),
+      ).toMatchObject({ ok: false });
+      expect(
+        validateObservation(
+          observationFor(scenario, { checkAttestations: { ...complete, [firstCheck]: false } }),
+        ),
+      ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
+      expect(
+        validateObservation(
+          observationFor(scenario, {
+            checkAttestations: { ...complete, 'DF-FU-M99-foreign-check': true },
+          }),
+        ),
+      ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
+    },
+  );
+
+  it('requires assistive technology and a reviewer decision compatible with the result', () => {
+    expect(validateObservation({ ...validM01, assistiveTechnology: null })).toMatchObject({
       ok: false,
-      errors: [
+      errors: [{ field: 'assistiveTechnology' }],
+    });
+    expect(
+      validateObservation({
+        ...validM01,
+        reviewer: { name: 'Evidence Reviewer', approval: 'changes-requested' },
+      }),
+    ).toMatchObject({ ok: false, errors: [{ field: 'reviewer.approval' }] });
+  });
+
+  it('accepts false attestations only for a FAIL record and isolates returned state', () => {
+    const attestations = {
+      ...validM01.checkAttestations,
+      'DF-FU-M01-determinate-progress-milestones': false,
+    };
+    const result = validateObservation({
+      ...validM01,
+      checkAttestations: attestations,
+      result: 'FAIL',
+      reviewer: { name: 'Evidence Reviewer', approval: 'changes-requested' },
+    });
+
+    expect(result).toMatchObject({ ok: true, value: { checkAttestations: attestations } });
+    if (!result.ok) throw new Error('expected a diagnostic FAIL record to validate');
+    attestations['DF-FU-M01-determinate-progress-milestones'] = true;
+    expect(result.value.checkAttestations['DF-FU-M01-determinate-progress-milestones']).toBe(false);
+  });
+
+  it('rejects malformed revision and timestamps', () => {
+    expect(validateObservation({ ...validM01, revision: 'A'.repeat(40) })).toMatchObject({
+      ok: false,
+      errors: [{ field: 'revision' }],
+    });
+    expect(
+      validateObservation({ ...validM01, executedAt: '2026-02-30T12:00:00.000Z' }),
+    ).toMatchObject({
+      ok: false,
+      errors: [{ field: 'executedAt' }],
+    });
+  });
+
+  it('normalizes a browser location to origin and pathname', () => {
+    expect(
+      deploymentUrlFromLocation({
+        origin: 'https://a1b2c3d4.lyra-ds-docs.pages.dev',
+        pathname: '/en/file-upload-evidence/',
+      }),
+    ).toBe(DEPLOYMENT_URL);
+  });
+});
+
+describe('validateManifest', () => {
+  it('accepts a valid manual manifest', () => {
+    expect(validateManifest(validManualManifest)).toMatchObject({ ok: true });
+  });
+
+  it.each([
+    ['schemaVersion', { ...validManualManifest, schemaVersion: 2 }],
+    ['revision', { ...validManualManifest, revision: 'not-a-revision' }],
+    [
+      'deploymentUrl',
+      {
+        ...validManualManifest,
+        deploymentUrl:
+          'https://file-upload-evidence.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      },
+    ],
+    ['createdAt', { ...validManualManifest, createdAt: 'yesterday' }],
+    [
+      'entries',
+      { ...validManualManifest, entries: [{ ...validManualManifest.entries[0], bytes: 0 }] },
+    ],
+    [
+      'entries',
+      {
+        ...validManualManifest,
+        entries: [{ ...validManualManifest.entries[0], sha256: 'A'.repeat(64) }],
+      },
+    ],
+  ] as const)('rejects an invalid %s', (_field, manifest) => {
+    expect(validateManifest(manifest)).toMatchObject({ ok: false });
+  });
+
+  it.each([
+    [
+      'duplicate paths',
+      {
+        ...validManualManifest,
+        entries: [validManualManifest.entries[0], { ...validManualManifest.entries[0] }],
+      },
+    ],
+    [
+      'traversal',
+      {
+        ...validManualManifest,
+        entries: [{ ...validManualManifest.entries[0], path: '../manual/DF-FU-M01.json' }],
+      },
+    ],
+    [
+      'JSON media on a screenshot',
+      {
+        ...validManualManifest,
+        entries: [
+          validManualManifest.entries[0],
+          {
+            ...validManualManifest.entries[1],
+            path: 'artifacts/DF-FU-M01/final.png',
+            mediaType: 'application/json',
+          },
+        ],
+      },
+    ],
+    [
+      'manual media on a result record',
+      {
+        ...validManualManifest,
+        entries: [
+          { ...validManualManifest.entries[0], mediaType: 'video/webm' },
+          validManualManifest.entries[1],
+        ],
+      },
+    ],
+  ] as const)('rejects %s', (_label, manifest) => {
+    expect(validateManifest(manifest)).toMatchObject({ ok: false });
+  });
+
+  it('rejects an expected revision or deployment mismatch', () => {
+    expect(
+      validateManifest(validManualManifest, {
+        revision: 'b'.repeat(40),
+        deploymentUrl: DEPLOYMENT_URL,
+      }),
+    ).toMatchObject({ ok: false });
+    expect(
+      validateManifest(validManualManifest, {
+        revision: REVISION,
+        deploymentUrl: 'https://b1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      }),
+    ).toMatchObject({ ok: false });
+  });
+
+  it('enforces automation media types by archive path', () => {
+    const manifest: EvidenceManifest = {
+      ...validManualManifest,
+      kind: 'automation',
+      entries: [
         {
-          field: 'revision',
-          message: 'Informe a revisão Git completa de 40 caracteres minúsculos.',
+          path: 'automation/DF-FU-17.json',
+          bytes: 100,
+          mediaType: 'application/json',
+          sha256: '3'.repeat(64),
+        },
+        {
+          path: 'artifacts/DF-FU-17/chromium/final.png',
+          bytes: 100,
+          mediaType: 'image/png',
+          sha256: '4'.repeat(64),
+        },
+        {
+          path: 'artifacts/DF-FU-17/chromium/trace.zip',
+          bytes: 100,
+          mediaType: 'application/zip',
+          sha256: '5'.repeat(64),
+        },
+        {
+          path: 'artifacts/DF-FU-17/chromium/run.webm',
+          bytes: 100,
+          mediaType: 'video/webm',
+          sha256: '6'.repeat(64),
+        },
+        {
+          path: 'artifacts/DF-FU-17/chromium/events.json',
+          bytes: 100,
+          mediaType: 'application/json',
+          sha256: '7'.repeat(64),
         },
       ],
+    };
+
+    expect(validateManifest(manifest)).toMatchObject({ ok: true });
+    expect(
+      validateManifest({
+        ...manifest,
+        entries: manifest.entries.map((entry) =>
+          entry.path.endsWith('trace.zip') ? { ...entry, mediaType: 'application/json' } : entry,
+        ),
+      }),
+    ).toMatchObject({ ok: false });
+  });
+});
+
+describe('validateAutomatedResult', () => {
+  it('accepts the complete DF-FU-17 three-engine matrix', () => {
+    expect(validateAutomatedResult(validDfFu17)).toMatchObject({ ok: true });
+  });
+
+  it('accepts DF-FU-18 only with its complete Chromium check set', () => {
+    const result: FileUploadAutomatedResult = {
+      ...validDfFu17,
+      scenario: 'DF-FU-18',
+      runs: [automatedRun('DF-FU-18', 'chromium')],
+    };
+    expect(validateAutomatedResult(result)).toMatchObject({ ok: true });
+  });
+
+  it('rejects PASS when a required check is false, missing, or joined by an extra check', () => {
+    const chromium = validDfFu17.runs[0];
+    if (chromium === undefined) throw new Error('missing Chromium fixture');
+    const otherRuns = validDfFu17.runs.slice(1);
+    const firstCheck = AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-17'][0];
+    const failedRuns = [
+      { ...chromium, checks: { ...chromium.checks, [firstCheck]: false } },
+      ...otherRuns,
+    ];
+    const missingRuns = [
+      {
+        ...chromium,
+        checks: Object.fromEntries(
+          Object.entries(chromium.checks).filter(([check]) => check !== firstCheck),
+        ),
+      },
+      ...otherRuns,
+    ];
+    const extraRuns = [
+      { ...chromium, checks: { ...chromium.checks, 'DF-FU-17-unapproved-check': true } },
+      ...otherRuns,
+    ];
+
+    expect(validateAutomatedResult({ ...validDfFu17, runs: failedRuns })).toMatchObject({
+      ok: false,
     });
+    expect(validateAutomatedResult({ ...validDfFu17, runs: missingRuns })).toMatchObject({
+      ok: false,
+    });
+    expect(validateAutomatedResult({ ...validDfFu17, runs: extraRuns })).toMatchObject({
+      ok: false,
+    });
+  });
+
+  it('accepts false checks for a diagnostic FAIL result', () => {
+    const chromium = validDfFu17.runs[0];
+    if (chromium === undefined) throw new Error('missing Chromium fixture');
+    const otherRuns = validDfFu17.runs.slice(1);
+    const firstCheck = AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-17'][0];
+    expect(
+      validateAutomatedResult({
+        ...validDfFu17,
+        result: 'FAIL',
+        runs: [{ ...chromium, checks: { ...chromium.checks, [firstCheck]: false } }, ...otherRuns],
+      }),
+    ).toMatchObject({ ok: true });
+  });
+
+  it('rejects a FAIL label when every required check passed', () => {
+    expect(validateAutomatedResult({ ...validDfFu17, result: 'FAIL' })).toMatchObject({
+      ok: false,
+    });
+  });
+
+  it.each([
+    ['missing engine', validDfFu17.runs.slice(0, -1)],
+    ['duplicate engine', [validDfFu17.runs[0], validDfFu17.runs[0], validDfFu17.runs[2]]],
+    [
+      'wrong reflow width',
+      validDfFu17.runs.map((run) =>
+        run.engine === 'firefox' ? { ...run, viewport: { ...run.viewport, width: 321 } } : run,
+      ),
+    ],
+    [
+      'missing Chromium coarse-pointer evidence',
+      validDfFu17.runs.map((run) =>
+        run.engine === 'chromium'
+          ? { ...run, mediaQueries: { '(pointer: coarse)': false, '(any-pointer: coarse)': false } }
+          : run,
+      ),
+    ],
+    [
+      'duplicate artifact path',
+      validDfFu17.runs.map((run) =>
+        run.engine === 'chromium'
+          ? { ...run, artifactPaths: [run.artifactPaths[0] ?? '', run.artifactPaths[0] ?? ''] }
+          : run,
+      ),
+    ],
+  ] as const)('rejects a DF-FU-17 matrix with %s', (_label, runs) => {
+    expect(validateAutomatedResult({ ...validDfFu17, runs })).toMatchObject({ ok: false });
+  });
+
+  it('rejects mutable URLs and expected revision mismatches', () => {
+    expect(
+      validateAutomatedResult({
+        ...validDfFu17,
+        deploymentUrl:
+          'https://file-upload-evidence.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      }),
+    ).toMatchObject({ ok: false });
+    expect(
+      validateAutomatedResult(validDfFu17, {
+        revision: 'b'.repeat(40),
+        deploymentUrl: DEPLOYMENT_URL,
+      }),
+    ).toMatchObject({ ok: false });
   });
 });

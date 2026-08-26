@@ -2,8 +2,6 @@ export interface EvidenceMessages {
   scenarios: {
     'DF-FU-M01': string;
     'DF-FU-M02': string;
-    'DF-FU-M03': string;
-    'DF-FU-M04': string;
   };
   endpoint: {
     invalidMode: string;
@@ -25,7 +23,6 @@ export interface EvidenceMessages {
     assistiveTechnology: string;
     'assistiveTechnology.name': string;
     'assistiveTechnology.version': string;
-    noAssistiveTechnologyConfirmation: string;
     inputMethods: string;
     viewport: string;
     mediaQueries: string;
@@ -35,18 +32,11 @@ export interface EvidenceMessages {
     result: string;
     'reviewer.name': string;
     'reviewer.approval': string;
-    artifactUrls: string;
+    artifactPaths: string;
     findingUrls: string;
   };
-  instructions: {
-    m03: string;
-    export: string;
-  };
-  status: {
-    pass: string;
-    fail: string;
-    blocked: string;
-  };
+  instructions: { export: string };
+  status: { pass: string; fail: string; blocked: string };
   announcements: {
     replacementRejected: string;
     uploadCanceled: string;
@@ -56,10 +46,8 @@ export interface EvidenceMessages {
 
 const en: EvidenceMessages = {
   scenarios: {
-    'DF-FU-M01': 'DF-FU-M01 — Windows, NVDA, and a current browser',
+    'DF-FU-M01': 'DF-FU-M01 — Windows, NVDA, and a current Firefox or Chromium browser',
     'DF-FU-M02': 'DF-FU-M02 — macOS, VoiceOver, and Safari',
-    'DF-FU-M03': 'DF-FU-M03 — keyboard, touch, and a 320 CSS pixel viewport',
-    'DF-FU-M04': 'DF-FU-M04 — native form and delayed Alpine initialization',
   },
   endpoint: {
     invalidMode: 'Choose a valid upload mode.',
@@ -81,7 +69,6 @@ const en: EvidenceMessages = {
     assistiveTechnology: 'Assistive technology is required for this scenario.',
     'assistiveTechnology.name': 'Enter the assistive technology name.',
     'assistiveTechnology.version': 'Enter the assistive technology version.',
-    noAssistiveTechnologyConfirmation: 'Confirm that no assistive technology was active.',
     inputMethods: 'Record at least one physical input method.',
     viewport: 'Record a valid viewport and device pixel ratio.',
     mediaQueries: 'Record the evaluated media queries.',
@@ -91,18 +78,14 @@ const en: EvidenceMessages = {
     result: 'Choose PASS or FAIL.',
     'reviewer.name': 'Enter the reviewer name.',
     'reviewer.approval': 'Reviewer approval must agree with the result.',
-    artifactUrls: 'Add at least one HTTPS evidence artifact URL.',
+    artifactPaths: 'Add one to four local evidence attachments for this scenario.',
     findingUrls: 'Finding URLs must be absolute HTTPS URLs.',
   },
   instructions: {
-    m03: 'M03 can pass only at 320 CSS pixels with real coarse pointer and physical touch and keyboard input.',
-    export: 'Copy or download JSON only after every required observation field is complete.',
+    export:
+      'Download the local evidence ZIP only after every required observation field is complete.',
   },
-  status: {
-    pass: 'PASS',
-    fail: 'FAIL',
-    blocked: 'Blocked',
-  },
+  status: { pass: 'PASS', fail: 'FAIL', blocked: 'Blocked' },
   announcements: {
     replacementRejected: 'Active replacement was rejected.',
     uploadCanceled: 'Upload canceled.',
@@ -112,10 +95,8 @@ const en: EvidenceMessages = {
 
 const ptBR: EvidenceMessages = {
   scenarios: {
-    'DF-FU-M01': 'DF-FU-M01 — Windows, NVDA e navegador atual',
+    'DF-FU-M01': 'DF-FU-M01 — Windows, NVDA e Firefox ou Chromium atual',
     'DF-FU-M02': 'DF-FU-M02 — macOS, VoiceOver e Safari',
-    'DF-FU-M03': 'DF-FU-M03 — teclado, toque e viewport de 320 pixels CSS',
-    'DF-FU-M04': 'DF-FU-M04 — formulário nativo e inicialização Alpine atrasada',
   },
   endpoint: {
     invalidMode: 'Escolha um modo de envio válido.',
@@ -137,7 +118,6 @@ const ptBR: EvidenceMessages = {
     assistiveTechnology: 'A tecnologia assistiva é obrigatória para este cenário.',
     'assistiveTechnology.name': 'Informe o nome da tecnologia assistiva.',
     'assistiveTechnology.version': 'Informe a versão da tecnologia assistiva.',
-    noAssistiveTechnologyConfirmation: 'Confirme que nenhuma tecnologia assistiva estava ativa.',
     inputMethods: 'Registre pelo menos um método de entrada físico.',
     viewport: 'Registre um viewport e uma proporção de pixels válidos.',
     mediaQueries: 'Registre as media queries avaliadas.',
@@ -147,19 +127,14 @@ const ptBR: EvidenceMessages = {
     result: 'Escolha APROVADO ou REPROVADO.',
     'reviewer.name': 'Informe o nome da pessoa revisora.',
     'reviewer.approval': 'A aprovação da revisão deve corresponder ao resultado.',
-    artifactUrls: 'Adicione pelo menos uma URL HTTPS de artefato de evidência.',
+    artifactPaths: 'Adicione de um a quatro arquivos como anexo local de evidência deste cenário.',
     findingUrls: 'As URLs de achados devem ser URLs HTTPS absolutas.',
   },
   instructions: {
-    m03: 'M03 só pode ser aprovado em 320 pixels CSS com ponteiro grosseiro real e entrada física por toque e teclado.',
     export:
-      'Copie ou baixe o JSON somente depois de preencher todos os campos obrigatórios da observação.',
+      'Baixe o ZIP de evidências local somente depois de preencher todos os campos obrigatórios.',
   },
-  status: {
-    pass: 'APROVADO',
-    fail: 'REPROVADO',
-    blocked: 'Bloqueado',
-  },
+  status: { pass: 'APROVADO', fail: 'REPROVADO', blocked: 'Bloqueado' },
   announcements: {
     replacementRejected: 'A substituição ativa foi rejeitada.',
     uploadCanceled: 'Envio cancelado.',
