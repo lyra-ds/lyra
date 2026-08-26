@@ -147,7 +147,7 @@ jobs:
       - name: Define FileUpload automation evidence
         id: evidence
         run: |
-          revision_prefix="${GITHUB_SHA:0:12}"
+          revision_prefix="$(printf '%.12s' "$GITHUB_SHA")"
           archive="$RUNNER_TEMP/file-upload-automation-$revision_prefix.zip"
           {
             echo "revision-prefix=$revision_prefix"
@@ -163,9 +163,19 @@ jobs:
         continue-on-error: true
         run: >-
           pnpm run evidence:file-upload:automation
-          --url="${{ steps.deployment.outputs.url }}"
+          --url="${{ steps.deployment.outputs.url }}/en/file-upload-evidence/"
           --revision="$GITHUB_SHA"
           --output="${{ steps.evidence.outputs.archive }}"
+      - name: Extract FileUpload automation results
+        id: automation_results
+        if: always()
+        continue-on-error: true
+        run: >-
+          node tools/file-upload-evidence/scripts/deploy-policy.mjs extract-automation-results
+          --archive="${{ steps.evidence.outputs.archive }}"
+          --revision="$GITHUB_SHA"
+          --deployment-url="${{ steps.deployment.outputs.url }}/en/file-upload-evidence/"
+          --github-output="$GITHUB_OUTPUT"
       - name: Upload FileUpload automation evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -176,16 +186,30 @@ jobs:
           retention-days: 14
       - name: Summarize evidence preview
         if: always()
+        env:
+          AUTOMATION_RESULTS_OUTCOME: ${{ steps.automation_results.outcome }}
+          DF_FU_17_RESULT: ${{ steps.automation_results.outputs.df_fu_17 }}
+          DF_FU_18_RESULT: ${{ steps.automation_results.outputs.df_fu_18 }}
         run: |
+          df_fu_17="$DF_FU_17_RESULT"
+          df_fu_18="$DF_FU_18_RESULT"
+          if [ "$AUTOMATION_RESULTS_OUTCOME" != "success" ]; then
+            df_fu_17="unavailable (result extraction failed)"
+            df_fu_18="unavailable (result extraction failed)"
+          fi
           {
             echo "## FileUpload evidence preview"
             echo "- Immutable URL: ${{ steps.deployment.outputs.url }}"
             echo "- Branch alias: https://file-upload-evidence.lyra-ds-docs.pages.dev"
             echo "- Revision: $GITHUB_SHA"
-            echo "- DF-FU-17: ${{ steps.automation.outcome }}"
-            echo "- DF-FU-18: ${{ steps.automation.outcome }}"
+            echo "- DF-FU-17: $df_fu_17"
+            echo "- DF-FU-18: $df_fu_18"
             echo "- Artifact: file-upload-automation-${{ steps.evidence.outputs.revision-prefix }}.zip"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Enforce FileUpload automation result
-        if: steps.automation.outcome != 'success'
+        if: >-
+          steps.automation.outcome != 'success' ||
+          steps.automation_results.outcome != 'success' ||
+          steps.automation_results.outputs.df_fu_17 != 'PASS' ||
+          steps.automation_results.outputs.df_fu_18 != 'PASS'
         run: exit 1

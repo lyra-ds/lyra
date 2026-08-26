@@ -3,6 +3,8 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 
+import { readEvidenceArchive } from './archive.mjs';
+
 const productionSteps = [
   { uses: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' },
   { uses: 'pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86' },
@@ -64,6 +66,7 @@ const previewStepNames = [
   'Define FileUpload automation evidence',
   'Smoke immutable evidence deployment',
   'Run revision-bound FileUpload automation',
+  'Extract FileUpload automation results',
   'Upload FileUpload automation evidence',
   'Summarize evidence preview',
   'Enforce FileUpload automation result',
@@ -98,7 +101,7 @@ node tools/file-upload-evidence/scripts/deploy-policy.mjs resolve-preview \\
   --github-output="$GITHUB_OUTPUT"
 `;
 
-const evidenceMetadataCommand = `revision_prefix="\${GITHUB_SHA:0:12}"
+const evidenceMetadataCommand = `revision_prefix="$(printf '%.12s' "$GITHUB_SHA")"
 archive="$RUNNER_TEMP/file-upload-automation-$revision_prefix.zip"
 {
   echo "revision-prefix=$revision_prefix"
@@ -107,21 +110,84 @@ archive="$RUNNER_TEMP/file-upload-automation-$revision_prefix.zip"
 `;
 
 const automationCommand =
-  'pnpm run evidence:file-upload:automation --url="${{ steps.deployment.outputs.url }}" --revision="$GITHUB_SHA" --output="${{ steps.evidence.outputs.archive }}"';
+  'pnpm run evidence:file-upload:automation --url="${{ steps.deployment.outputs.url }}/en/file-upload-evidence/" --revision="$GITHUB_SHA" --output="${{ steps.evidence.outputs.archive }}"';
 
-const summaryCommand = `{
+const automationResultCommand =
+  'node tools/file-upload-evidence/scripts/deploy-policy.mjs extract-automation-results --archive="${{ steps.evidence.outputs.archive }}" --revision="$GITHUB_SHA" --deployment-url="${{ steps.deployment.outputs.url }}/en/file-upload-evidence/" --github-output="$GITHUB_OUTPUT"';
+
+const summaryCommand = `df_fu_17="$DF_FU_17_RESULT"
+df_fu_18="$DF_FU_18_RESULT"
+if [ "$AUTOMATION_RESULTS_OUTCOME" != "success" ]; then
+  df_fu_17="unavailable (result extraction failed)"
+  df_fu_18="unavailable (result extraction failed)"
+fi
+{
   echo "## FileUpload evidence preview"
   echo "- Immutable URL: \${{ steps.deployment.outputs.url }}"
   echo "- Branch alias: https://file-upload-evidence.lyra-ds-docs.pages.dev"
   echo "- Revision: $GITHUB_SHA"
-  echo "- DF-FU-17: \${{ steps.automation.outcome }}"
-  echo "- DF-FU-18: \${{ steps.automation.outcome }}"
+  echo "- DF-FU-17: $df_fu_17"
+  echo "- DF-FU-18: $df_fu_18"
   echo "- Artifact: file-upload-automation-\${{ steps.evidence.outputs.revision-prefix }}.zip"
 } >> "$GITHUB_STEP_SUMMARY"
 `;
 
+const summaryEnvironment = {
+  AUTOMATION_RESULTS_OUTCOME: '${{ steps.automation_results.outcome }}',
+  DF_FU_17_RESULT: '${{ steps.automation_results.outputs.df_fu_17 }}',
+  DF_FU_18_RESULT: '${{ steps.automation_results.outputs.df_fu_18 }}',
+};
+
+const enforcementCondition =
+  "steps.automation.outcome != 'success' || steps.automation_results.outcome != 'success' || steps.automation_results.outputs.df_fu_17 != 'PASS' || steps.automation_results.outputs.df_fu_18 != 'PASS'";
+
 function fail(message) {
   throw new Error(message);
+}
+
+export async function writeAutomationResultOutputs({
+  archivePath,
+  deploymentUrl,
+  githubOutputPath,
+  revision,
+}) {
+  const archive = await readEvidenceArchive(resolve(archivePath), {
+    expectedKind: 'automation',
+    expectedRevision: revision,
+    expectedDeploymentUrl: deploymentUrl,
+  });
+  const expectedRecords = ['automation/DF-FU-17.json', 'automation/DF-FU-18.json'];
+  const actualRecords = [...archive.entries.keys()]
+    .filter((path) => path.startsWith('automation/'))
+    .sort();
+  if (!sameValue(actualRecords, expectedRecords)) {
+    fail('automation archive must contain exactly DF-FU-17 and DF-FU-18 results.');
+  }
+
+  const results = {};
+  for (const path of expectedRecords) {
+    const scenario = path.slice('automation/'.length, -'.json'.length);
+    const record = JSON.parse(Buffer.from(archive.entries.get(path)).toString('utf8'));
+    if (
+      record === null ||
+      typeof record !== 'object' ||
+      record.scenario !== scenario ||
+      (record.result !== 'PASS' && record.result !== 'FAIL')
+    ) {
+      fail(`validated automation result is unavailable: ${scenario}.`);
+    }
+    results[scenario] = record.result;
+  }
+
+  const output = {
+    dfFu17: results['DF-FU-17'],
+    dfFu18: results['DF-FU-18'],
+  };
+  await appendFile(
+    resolve(githubOutputPath),
+    `df_fu_17=${output.dfFu17}\ndf_fu_18=${output.dfFu18}\n`,
+  );
+  return output;
 }
 
 function immutableDeploymentUrl(value) {
@@ -393,6 +459,18 @@ pnpm run evidence:file-upload:manual:build
   }
 
   if (
+    !sameValue(previewStep(job, 'Extract FileUpload automation results'), {
+      name: 'Extract FileUpload automation results',
+      id: 'automation_results',
+      if: 'always()',
+      'continue-on-error': true,
+      run: automationResultCommand,
+    })
+  ) {
+    fail('automation result extraction must validate the exact revision-bound ZIP.');
+  }
+
+  if (
     !sameValue(previewStep(job, 'Upload FileUpload automation evidence'), {
       name: 'Upload FileUpload automation evidence',
       if: 'always()',
@@ -412,6 +490,7 @@ pnpm run evidence:file-upload:manual:build
     !sameValue(previewStep(job, 'Summarize evidence preview'), {
       name: 'Summarize evidence preview',
       if: 'always()',
+      env: summaryEnvironment,
       run: summaryCommand,
     })
   ) {
@@ -421,7 +500,7 @@ pnpm run evidence:file-upload:manual:build
   if (
     !sameValue(previewStep(job, 'Enforce FileUpload automation result'), {
       name: 'Enforce FileUpload automation result',
-      if: "steps.automation.outcome != 'success'",
+      if: enforcementCondition,
       run: 'exit 1',
     })
   ) {
@@ -490,6 +569,35 @@ if (isCli) {
       resolve(githubOutputPath),
       `deployment_id=${result.deploymentId}\nurl=${result.url}\n`,
     );
+  } else if (process.argv[2] === 'extract-automation-results') {
+    const values = new Map();
+    for (const argument of process.argv.slice(3)) {
+      const match = /^--(archive|revision|deployment-url|github-output)=(.+)$/u.exec(argument);
+      if (match === null || values.has(match[1])) {
+        fail(`invalid extract-automation-results argument: ${argument}`);
+      }
+      values.set(match[1], match[2]);
+    }
+    const archivePath = values.get('archive');
+    const revision = values.get('revision');
+    const deploymentUrl = values.get('deployment-url');
+    const githubOutputPath = values.get('github-output');
+    if (
+      archivePath === undefined ||
+      revision === undefined ||
+      deploymentUrl === undefined ||
+      githubOutputPath === undefined
+    ) {
+      fail(
+        'extract-automation-results requires archive, revision, deployment-url, and github-output.',
+      );
+    }
+    await writeAutomationResultOutputs({
+      archivePath,
+      deploymentUrl,
+      githubOutputPath,
+      revision,
+    });
   } else {
     const workflowPath = process.argv[2];
     if (workflowPath === undefined) fail('usage: deploy-policy.mjs <workflow.yml>');
