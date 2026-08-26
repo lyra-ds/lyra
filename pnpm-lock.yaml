@@ -226,6 +226,9 @@ importers:
       alpinejs:
         specifier: 3.15.12
         version: 3.15.12
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
       react:
         specifier: 19.2.8
         version: 19.2.8
