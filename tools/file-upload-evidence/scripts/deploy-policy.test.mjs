@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { parse, stringify } from 'yaml';
 
 import { resolvePreviewDeployment, validateDeployPolicy } from './deploy-policy.mjs';
 
@@ -55,6 +56,26 @@ async function workflowSource() {
   return readFile(workflowPath, 'utf8');
 }
 
+function mutateWorkflow(source, mutate) {
+  const workflow = parse(source);
+  mutate(workflow);
+  return stringify(workflow);
+}
+
+function mutatePreviewJob(source, mutate) {
+  return mutateWorkflow(source, (workflow) => {
+    const job = workflow.jobs?.['evidence-preview'];
+    expect(job, 'missing evidence-preview job').toBeDefined();
+    mutate(job);
+  });
+}
+
+function previewStep(job, name) {
+  const step = job.steps?.find((candidate) => candidate.name === name);
+  expect(step, `missing ${name} step`).toBeDefined();
+  return step;
+}
+
 describe('validateDeployPolicy', () => {
   it('accepts the guarded production and evidence preview jobs', async () => {
     await expect(validateDeployPolicy(await workflowSource())).resolves.toMatchObject({
@@ -85,6 +106,269 @@ describe('validateDeployPolicy', () => {
 
   it.each([
     {
+      name: 'the Playwright image loses its immutable digest',
+      mutate: (job) => {
+        expect(job.container).toBeDefined();
+        job.container.image = 'mcr.microsoft.com/playwright:v1.62.1-noble';
+      },
+      error: 'preview job must use the pinned Playwright browser container',
+    },
+    {
+      name: 'the Playwright container loses host IPC',
+      mutate: (job) => {
+        expect(job.container).toBeDefined();
+        job.container.options = '--init';
+      },
+      error: 'preview job must use the pinned Playwright browser container',
+    },
+    {
+      name: 'Firefox loses its container home',
+      mutate: (job) => {
+        expect(job.env?.HOME).toBe('/root');
+        delete job.env.HOME;
+      },
+      error: 'preview job environment differs from the approved boundary',
+    },
+  ])('rejects when $name', async ({ error, mutate }) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, mutate);
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(error);
+  });
+
+  it.each([
+    {
+      name: 'manual dispatch is removed',
+      mutate: (workflow) => delete workflow.on.workflow_dispatch,
+      error: 'deploy workflow triggers must preserve main pushes and manual dispatch',
+    },
+    {
+      name: 'preview contents permission becomes writable',
+      mutate: (workflow) => {
+        workflow.jobs['evidence-preview'].permissions.contents = 'write';
+      },
+      error: 'preview job must have read-only contents permission',
+    },
+  ])('rejects when $name', async ({ error, mutate }) => {
+    const changed = mutateWorkflow(await workflowSource(), mutate);
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(error);
+  });
+
+  it.each([
+    {
+      name: 'the evidence prefix is truncated to seven characters',
+      mutate: (step) => {
+        step.run = step.run.replace('${GITHUB_SHA:0:12}', '${GITHUB_SHA:0:7}');
+      },
+      error: 'automation evidence metadata must derive the exact archive path',
+    },
+    {
+      name: 'the evidence archive is written outside runner temp',
+      mutate: (step) => {
+        step.run = step.run.replace('$RUNNER_TEMP/', '$GITHUB_WORKSPACE/');
+      },
+      error: 'automation evidence metadata must derive the exact archive path',
+    },
+  ])('rejects when $name', async ({ error, mutate }) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const step = previewStep(job, 'Define FileUpload automation evidence');
+      const original = step.run;
+      mutate(step);
+      expect(step.run).not.toBe(original);
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(error);
+  });
+
+  it.each([
+    {
+      name: 'automation no longer continues to diagnostics',
+      mutate: (step) => {
+        step['continue-on-error'] = false;
+      },
+    },
+    {
+      name: 'automation uses the mutable branch alias',
+      mutate: (step) => {
+        step.run = step.run.replace(
+          '${{ steps.deployment.outputs.url }}',
+          'https://file-upload-evidence.lyra-ds-docs.pages.dev',
+        );
+      },
+    },
+    {
+      name: 'automation uses a shortened revision',
+      mutate: (step) => {
+        step.run = step.run.replace('$GITHUB_SHA', '${GITHUB_SHA:0:12}');
+      },
+    },
+    {
+      name: 'automation writes a directory instead of the declared ZIP',
+      mutate: (step) => {
+        step.run = step.run.replace('${{ steps.evidence.outputs.archive }}', '$RUNNER_TEMP');
+      },
+    },
+  ])('rejects when $name', async ({ mutate }) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const step = previewStep(job, 'Run revision-bound FileUpload automation');
+      mutate(step);
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'automation command must use the immutable URL, full revision, and declared ZIP',
+    );
+  });
+
+  it.each([
+    {
+      name: 'the artifact action loses its immutable SHA',
+      mutate: (step) => {
+        step.uses = 'actions/upload-artifact@v4';
+      },
+    },
+    {
+      name: 'artifact diagnostics stop running after automation failure',
+      mutate: (step) => {
+        step.if = 'success()';
+      },
+    },
+    {
+      name: 'artifact upload includes an evidence directory',
+      mutate: (step) => {
+        step.with.path = '${{ runner.temp }}/';
+      },
+    },
+    {
+      name: 'artifact upload includes more than the generated ZIP',
+      mutate: (step) => {
+        step.with.path = '${{ steps.evidence.outputs.archive }}\n${{ runner.temp }}/*.zip';
+      },
+    },
+    {
+      name: 'the artifact name loses the revision prefix',
+      mutate: (step) => {
+        step.with.name = 'file-upload-automation.zip';
+      },
+    },
+    {
+      name: 'a missing evidence ZIP is ignored',
+      mutate: (step) => {
+        step.with['if-no-files-found'] = 'ignore';
+      },
+    },
+    {
+      name: 'artifact retention changes from fourteen days',
+      mutate: (step) => {
+        step.with['retention-days'] = 7;
+      },
+    },
+  ])('rejects when $name', async ({ mutate }) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const step = previewStep(job, 'Upload FileUpload automation evidence');
+      mutate(step);
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'automation artifact upload must publish only the declared ZIP',
+    );
+  });
+
+  it.each([
+    {
+      name: 'automation failure is not re-enforced',
+      mutate: (step) => {
+        step.if = "steps.automation.outcome == 'success'";
+      },
+    },
+    {
+      name: 'the enforcement step exits successfully',
+      mutate: (step) => {
+        step.run = 'exit 0';
+      },
+    },
+  ])('rejects when $name', async ({ mutate }) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const step = previewStep(job, 'Enforce FileUpload automation result');
+      mutate(step);
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'automation failure must fail the job after diagnostics upload',
+    );
+  });
+
+  it.each([
+    ['the immutable URL', '- Immutable URL: ${{ steps.deployment.outputs.url }}'],
+    ['the full revision', '- Revision: $GITHUB_SHA'],
+    ['DF-FU-17 outcome', '- DF-FU-17: ${{ steps.automation.outcome }}'],
+    ['DF-FU-18 outcome', '- DF-FU-18: ${{ steps.automation.outcome }}'],
+    [
+      'the exact artifact name',
+      '- Artifact: file-upload-automation-${{ steps.evidence.outputs.revision-prefix }}.zip',
+    ],
+  ])('rejects when the summary omits %s', async (_name, line) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const step = previewStep(job, 'Summarize evidence preview');
+      expect(step.run).toContain(line);
+      step.run = step.run.replace(`  echo "${line}"\n`, '');
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'preview summary must report revision-bound automation diagnostics',
+    );
+  });
+
+  it('rejects a summary that could print a secret', async () => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const step = previewStep(job, 'Summarize evidence preview');
+      step.run += 'echo "${{ secrets.CLOUDFLARE_API_TOKEN }}"\n';
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'preview summary must report revision-bound automation diagnostics',
+    );
+  });
+
+  it.each([
+    ['publishing before immutable URL resolution', 'Stage Function and publish evidence preview'],
+    ['resolving after the remote smoke', 'Resolve immutable evidence deployment'],
+    ['automating before the remote smoke', 'Run revision-bound FileUpload automation'],
+  ])('rejects reordered evidence execution: %s', async (_name, movedStepName) => {
+    const source = await workflowSource();
+    const changed = mutatePreviewJob(source, (job) => {
+      const movedIndex = job.steps.findIndex((step) => step.name === movedStepName);
+      const smokeIndex = job.steps.findIndex(
+        (step) => step.name === 'Smoke immutable evidence deployment',
+      );
+      expect(movedIndex).toBeGreaterThanOrEqual(0);
+      expect(smokeIndex).toBeGreaterThanOrEqual(0);
+      const [moved] = job.steps.splice(movedIndex, 1);
+      const currentSmokeIndex = job.steps.findIndex(
+        (step) => step.name === 'Smoke immutable evidence deployment',
+      );
+      job.steps.splice(
+        movedStepName === 'Run revision-bound FileUpload automation'
+          ? currentSmokeIndex
+          : currentSmokeIndex + 1,
+        0,
+        moved,
+      );
+    });
+
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'preview validation and evidence steps are out of order',
+    );
+  });
+
+  it.each([
+    {
       name: 'the preview branch is changed to main',
       mutate: (source) =>
         source.replace('--branch=file-upload-evidence \\\n', '--branch=main \\\n'),
@@ -106,7 +390,7 @@ describe('validateDeployPolicy', () => {
           '      - name: Validate Styles\n        run: pnpm --filter @lyra-ds/styles run lint:css\n      - name: Build React\n        run: pnpm --filter @lyra-ds/react run build',
           '      - name: Build React\n        run: pnpm --filter @lyra-ds/react run build\n      - name: Validate Styles\n        run: pnpm --filter @lyra-ds/styles run lint:css',
         ),
-      error: 'preview validation and build steps are out of order',
+      error: 'preview validation and evidence steps are out of order',
     },
     {
       name: 'a landing deploy is inserted',
@@ -156,6 +440,19 @@ describe('validateDeployPolicy', () => {
       'pnpm --filter @lyra-ds/site run test',
     );
 
+    await expect(validateDeployPolicy(changed)).rejects.toThrow(
+      'production deploy semantics differ from the approved snapshot',
+    );
+  });
+
+  it('rejects reordering the production --branch=main option', async () => {
+    const source = await workflowSource();
+    const changed = source.replace(
+      '--branch=main --commit-dirty=true',
+      '--commit-dirty=true --branch=main',
+    );
+
+    expect(changed).not.toBe(source);
     await expect(validateDeployPolicy(changed)).rejects.toThrow(
       'production deploy semantics differ from the approved snapshot',
     );

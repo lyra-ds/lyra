@@ -42,6 +42,11 @@ const revisionPattern = /^[a-f0-9]{40}$/u;
 const deploymentIdPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/u;
 const immutableDeploymentHostPattern = /^[a-z0-9-]{8,}\.lyra-ds-docs\.pages\.dev$/u;
 const branchAliasHost = 'file-upload-evidence.lyra-ds-docs.pages.dev';
+const playwrightContainer = {
+  image:
+    'mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e',
+  options: '--init --ipc=host',
+};
 
 const previewStepNames = [
   'Checkout selected evidence ref',
@@ -56,8 +61,12 @@ const previewStepNames = [
   'Build isolated evidence harness',
   'Stage Function and publish evidence preview',
   'Resolve immutable evidence deployment',
+  'Define FileUpload automation evidence',
   'Smoke immutable evidence deployment',
+  'Run revision-bound FileUpload automation',
+  'Upload FileUpload automation evidence',
   'Summarize evidence preview',
+  'Enforce FileUpload automation result',
 ];
 
 const cloudflareStepEnvironment = {
@@ -87,6 +96,28 @@ node tools/file-upload-evidence/scripts/deploy-policy.mjs resolve-preview \\
   --deployment-list="$RUNNER_TEMP/file-upload-evidence-deployments.json" \\
   --revision="$GITHUB_SHA" \\
   --github-output="$GITHUB_OUTPUT"
+`;
+
+const evidenceMetadataCommand = `revision_prefix="\${GITHUB_SHA:0:12}"
+archive="$RUNNER_TEMP/file-upload-automation-$revision_prefix.zip"
+{
+  echo "revision-prefix=$revision_prefix"
+  echo "archive=$archive"
+} >> "$GITHUB_OUTPUT"
+`;
+
+const automationCommand =
+  'pnpm run evidence:file-upload:automation --url="${{ steps.deployment.outputs.url }}" --revision="$GITHUB_SHA" --output="${{ steps.evidence.outputs.archive }}"';
+
+const summaryCommand = `{
+  echo "## FileUpload evidence preview"
+  echo "- Immutable URL: \${{ steps.deployment.outputs.url }}"
+  echo "- Branch alias: https://file-upload-evidence.lyra-ds-docs.pages.dev"
+  echo "- Revision: $GITHUB_SHA"
+  echo "- DF-FU-17: \${{ steps.automation.outcome }}"
+  echo "- DF-FU-18: \${{ steps.automation.outcome }}"
+  echo "- Artifact: file-upload-automation-\${{ steps.evidence.outputs.revision-prefix }}.zip"
+} >> "$GITHUB_STEP_SUMMARY"
 `;
 
 function fail(message) {
@@ -226,8 +257,11 @@ function checkProductionJob(job) {
 }
 
 function checkPreviewGuard(job) {
+  if (!sameValue(job.container, playwrightContainer)) {
+    fail('preview job must use the pinned Playwright browser container.');
+  }
   if (
-    !hasOnlyKeys(job, ['if', 'runs-on', 'permissions', 'env', 'steps']) ||
+    !hasOnlyKeys(job, ['if', 'runs-on', 'permissions', 'env', 'container', 'steps']) ||
     job['runs-on'] !== 'ubuntu-latest' ||
     expression(job.if) !==
       "github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'evidence/')"
@@ -252,7 +286,7 @@ function checkPreviewSteps(job) {
       previewStepNames,
     )
   ) {
-    fail('preview validation and build steps are out of order.');
+    fail('preview validation and evidence steps are out of order.');
   }
 
   if (
@@ -329,6 +363,16 @@ pnpm run evidence:file-upload:manual:build
   }
 
   if (
+    !sameValue(previewStep(job, 'Define FileUpload automation evidence'), {
+      name: 'Define FileUpload automation evidence',
+      id: 'evidence',
+      run: evidenceMetadataCommand,
+    })
+  ) {
+    fail('automation evidence metadata must derive the exact archive path.');
+  }
+
+  if (
     !sameValue(previewStep(job, 'Smoke immutable evidence deployment'), {
       name: 'Smoke immutable evidence deployment',
       run: 'pnpm run evidence:file-upload:manual:smoke --url="${{ steps.deployment.outputs.url }}" --revision="$GITHUB_SHA"',
@@ -338,18 +382,50 @@ pnpm run evidence:file-upload:manual:build
   }
 
   if (
-    !sameValue(previewStep(job, 'Summarize evidence preview'), {
-      name: 'Summarize evidence preview',
-      run: `{
-  echo "## FileUpload manual evidence preview"
-  echo "- Immutable URL: \${{ steps.deployment.outputs.url }}"
-  echo "- Branch alias: https://file-upload-evidence.lyra-ds-docs.pages.dev"
-  echo "- Revision: $GITHUB_SHA"
-} >> "$GITHUB_STEP_SUMMARY"
-`,
+    !sameValue(previewStep(job, 'Run revision-bound FileUpload automation'), {
+      name: 'Run revision-bound FileUpload automation',
+      id: 'automation',
+      'continue-on-error': true,
+      run: automationCommand,
     })
   ) {
-    fail('preview summary must report the immutable URL, alias, and exact revision.');
+    fail('automation command must use the immutable URL, full revision, and declared ZIP.');
+  }
+
+  if (
+    !sameValue(previewStep(job, 'Upload FileUpload automation evidence'), {
+      name: 'Upload FileUpload automation evidence',
+      if: 'always()',
+      uses: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02',
+      with: {
+        name: 'file-upload-automation-${{ steps.evidence.outputs.revision-prefix }}.zip',
+        path: '${{ steps.evidence.outputs.archive }}',
+        'if-no-files-found': 'error',
+        'retention-days': 14,
+      },
+    })
+  ) {
+    fail('automation artifact upload must publish only the declared ZIP.');
+  }
+
+  if (
+    !sameValue(previewStep(job, 'Summarize evidence preview'), {
+      name: 'Summarize evidence preview',
+      if: 'always()',
+      run: summaryCommand,
+    })
+  ) {
+    fail('preview summary must report revision-bound automation diagnostics.');
+  }
+
+  if (
+    !sameValue(previewStep(job, 'Enforce FileUpload automation result'), {
+      name: 'Enforce FileUpload automation result',
+      if: "steps.automation.outcome != 'success'",
+      run: 'exit 1',
+    })
+  ) {
+    fail('automation failure must fail the job after diagnostics upload.');
   }
 }
 
@@ -366,7 +442,12 @@ export async function validateDeployPolicy(source) {
     fail('deploy workflow must define a separate evidence-preview job.');
   }
   checkPreviewGuard(previewJob);
-  if (!sameValue(previewJob.env, { NODE_OPTIONS: '--max-old-space-size=8192' })) {
+  if (
+    !sameValue(previewJob.env, {
+      NODE_OPTIONS: '--max-old-space-size=8192',
+      HOME: '/root',
+    })
+  ) {
     fail('preview job environment differs from the approved boundary.');
   }
   checkPreviewSteps(previewJob);
