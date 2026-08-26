@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   AUTOMATED_SCENARIO_CHECK_IDS,
   deploymentUrlFromLocation,
+  EVIDENCE_ENTRY_MEDIA_TYPES,
+  MANUAL_MEDIA_TYPES,
   SCENARIO_CHECK_IDS,
   type AutomatedScenario,
   type EvidenceManifest,
@@ -16,6 +18,39 @@ import {
 const REVISION = 'a'.repeat(40);
 const DEPLOYMENT_URL = 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
 const EXECUTED_AT = '2026-08-26T12:00:00.000Z';
+
+const APPROVED_MANUAL_CHECK_IDS = {
+  'DF-FU-M01': [
+    'DF-FU-M01-selection-and-indeterminate-announcements',
+    'DF-FU-M01-determinate-progress-milestones',
+    'DF-FU-M01-lifecycle-recovery-and-stale-result',
+  ],
+  'DF-FU-M02': [
+    'DF-FU-M02-selection-and-indeterminate-announcements',
+    'DF-FU-M02-determinate-progress-milestones',
+    'DF-FU-M02-lifecycle-recovery-and-stale-result',
+  ],
+} as const;
+
+const APPROVED_AUTOMATED_CHECK_IDS = {
+  'DF-FU-17': [
+    'DF-FU-17-no-horizontal-overflow',
+    'DF-FU-17-long-file-identity-retained',
+    'DF-FU-17-actions-reachable-at-reflow',
+    'DF-FU-17-active-replacement-rejected-and-announced',
+    'DF-FU-17-cancel-retry-complete-remove',
+    'DF-FU-17-focus-recovered',
+    'DF-FU-17-keyboard-activation-equivalent',
+  ],
+  'DF-FU-18': [
+    'DF-FU-18-native-js-disabled-form-submitted',
+    'DF-FU-18-response-locale-metadata-revision',
+    'DF-FU-18-delayed-alpine-filelist-preserved',
+    'DF-FU-18-single-enhancement-no-replay',
+    'DF-FU-18-removal-focus-recovered',
+    'DF-FU-18-reconnect-teardown-clean',
+  ],
+} as const;
 
 const validM01 = {
   scenario: 'DF-FU-M01',
@@ -32,7 +67,9 @@ const validM01 = {
   mediaQueries: { '(pointer: coarse)': false },
   expected: 'The complete upload lifecycle is announced coherently.',
   actual: 'NVDA announced every lifecycle transition.',
-  checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS['DF-FU-M01'].map((id) => [id, true])),
+  checkAttestations: Object.fromEntries(
+    APPROVED_MANUAL_CHECK_IDS['DF-FU-M01'].map((id) => [id, true]),
+  ),
   result: 'PASS',
   reviewer: { name: 'Evidence Reviewer', approval: 'approved' },
   artifactPaths: ['artifacts/DF-FU-M01/nvda.webm'],
@@ -52,7 +89,9 @@ function observationFor(
       scenario === 'DF-FU-M01'
         ? validM01.assistiveTechnology
         : { name: 'VoiceOver', version: '15.6' },
-    checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
+    checkAttestations: Object.fromEntries(
+      APPROVED_MANUAL_CHECK_IDS[scenario].map((id) => [id, true]),
+    ),
     artifactPaths: [`artifacts/${scenario}/recording.webm`],
     ...overrides,
   };
@@ -95,7 +134,7 @@ function automatedRun(scenario: AutomatedScenario, engine: 'chromium' | 'firefox
       engine === 'chromium'
         ? { '(pointer: coarse)': true, '(any-pointer: coarse)': true }
         : { '(pointer: coarse)': false, '(any-pointer: coarse)': false },
-    checks: Object.fromEntries(AUTOMATED_SCENARIO_CHECK_IDS[scenario].map((id) => [id, true])),
+    checks: Object.fromEntries(APPROVED_AUTOMATED_CHECK_IDS[scenario].map((id) => [id, true])),
     artifactPaths: automatedArtifacts(scenario, engine),
   };
 }
@@ -130,6 +169,10 @@ const invalidArtifactPathSets: readonly (readonly string[])[] = [
 ];
 
 describe('validateObservation', () => {
+  it('exposes the exact approved M01 and M02 check IDs', () => {
+    expect(SCENARIO_CHECK_IDS).toEqual(APPROVED_MANUAL_CHECK_IDS);
+  });
+
   it.each(['DF-FU-M01', 'DF-FU-M02'] as const)('accepts the %s manual scenario', (scenario) => {
     expect(validateObservation(observationFor(scenario))).toMatchObject({
       ok: true,
@@ -181,6 +224,27 @@ describe('validateObservation', () => {
     ).toMatchObject({ ok: true });
   });
 
+  it('accepts only an exact eight-lowercase-hex deployment label', () => {
+    expect(
+      validateObservation({
+        ...validM01,
+        deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      }),
+    ).toMatchObject({ ok: true });
+
+    for (const deploymentUrl of [
+      'https://featurefoo.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      'https://feature-foo.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      'https://abcdefg1.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+      'https://a1b2c3d45.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
+    ]) {
+      expect(validateObservation({ ...validM01, deploymentUrl })).toMatchObject({
+        ok: false,
+        errors: [{ field: 'deploymentUrl' }],
+      });
+    }
+  });
+
   it.each([
     'https://file-upload-evidence.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
     'https://a1b2c3d4.example.test/en/file-upload-evidence/',
@@ -193,35 +257,33 @@ describe('validateObservation', () => {
     });
   });
 
-  it.each(['DF-FU-M01', 'DF-FU-M02'] as const)(
-    'requires the exact %s attestation keys',
-    (scenario) => {
-      const complete = Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, true]));
-      const firstCheck = SCENARIO_CHECK_IDS[scenario][0];
-      const missing = Object.fromEntries(
-        SCENARIO_CHECK_IDS[scenario].slice(1).map((id) => [id, true]),
-      );
+  it.each([
+    ['DF-FU-M01', APPROVED_MANUAL_CHECK_IDS['DF-FU-M01']],
+    ['DF-FU-M02', APPROVED_MANUAL_CHECK_IDS['DF-FU-M02']],
+  ] as const)('requires the exact %s attestation keys', (scenario, approvedCheckIds) => {
+    const complete = Object.fromEntries(approvedCheckIds.map((id) => [id, true]));
+    const firstCheck = approvedCheckIds[0];
+    const missing = Object.fromEntries(approvedCheckIds.slice(1).map((id) => [id, true]));
 
-      expect(
-        validateObservation(observationFor(scenario, { checkAttestations: complete })),
-      ).toMatchObject({ ok: true });
-      expect(
-        validateObservation(observationFor(scenario, { checkAttestations: missing })),
-      ).toMatchObject({ ok: false });
-      expect(
-        validateObservation(
-          observationFor(scenario, { checkAttestations: { ...complete, [firstCheck]: false } }),
-        ),
-      ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
-      expect(
-        validateObservation(
-          observationFor(scenario, {
-            checkAttestations: { ...complete, 'DF-FU-M99-foreign-check': true },
-          }),
-        ),
-      ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
-    },
-  );
+    expect(
+      validateObservation(observationFor(scenario, { checkAttestations: complete })),
+    ).toMatchObject({ ok: true });
+    expect(
+      validateObservation(observationFor(scenario, { checkAttestations: missing })),
+    ).toMatchObject({ ok: false });
+    expect(
+      validateObservation(
+        observationFor(scenario, { checkAttestations: { ...complete, [firstCheck]: false } }),
+      ),
+    ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
+    expect(
+      validateObservation(
+        observationFor(scenario, {
+          checkAttestations: { ...complete, 'DF-FU-M99-foreign-check': true },
+        }),
+      ),
+    ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
+  });
 
   it('requires assistive technology and a reviewer decision compatible with the result', () => {
     expect(validateObservation({ ...validM01, assistiveTechnology: null })).toMatchObject({
@@ -418,6 +480,10 @@ describe('validateManifest', () => {
 });
 
 describe('validateAutomatedResult', () => {
+  it('exposes the exact approved DF-FU-17 and DF-FU-18 check IDs', () => {
+    expect(AUTOMATED_SCENARIO_CHECK_IDS).toEqual(APPROVED_AUTOMATED_CHECK_IDS);
+  });
+
   it('accepts the complete DF-FU-17 three-engine matrix', () => {
     expect(validateAutomatedResult(validDfFu17)).toMatchObject({ ok: true });
   });
@@ -435,7 +501,7 @@ describe('validateAutomatedResult', () => {
     const chromium = validDfFu17.runs[0];
     if (chromium === undefined) throw new Error('missing Chromium fixture');
     const otherRuns = validDfFu17.runs.slice(1);
-    const firstCheck = AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-17'][0];
+    const firstCheck = APPROVED_AUTOMATED_CHECK_IDS['DF-FU-17'][0];
     const failedRuns = [
       { ...chromium, checks: { ...chromium.checks, [firstCheck]: false } },
       ...otherRuns,
@@ -469,7 +535,7 @@ describe('validateAutomatedResult', () => {
     const chromium = validDfFu17.runs[0];
     if (chromium === undefined) throw new Error('missing Chromium fixture');
     const otherRuns = validDfFu17.runs.slice(1);
-    const firstCheck = AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-17'][0];
+    const firstCheck = APPROVED_AUTOMATED_CHECK_IDS['DF-FU-17'][0];
     expect(
       validateAutomatedResult({
         ...validDfFu17,
@@ -528,5 +594,63 @@ describe('validateAutomatedResult', () => {
         deploymentUrl: DEPLOYMENT_URL,
       }),
     ).toMatchObject({ ok: false });
+  });
+});
+
+describe('export mutation immunity', () => {
+  it('keeps manual validation independent from a cast mutation of exported check IDs', () => {
+    const injectedCheck = 'DF-FU-M01-injected-check';
+    try {
+      (SCENARIO_CHECK_IDS['DF-FU-M01'] as unknown as string[]).push(injectedCheck);
+    } catch {
+      // A frozen public view rejects the hostile cast.
+    }
+
+    expect(
+      validateObservation({
+        ...validM01,
+        checkAttestations: { ...validM01.checkAttestations, [injectedCheck]: true },
+      }),
+    ).toMatchObject({ ok: false, errors: [{ field: 'checkAttestations' }] });
+  });
+
+  it('keeps automated validation independent from a cast mutation of exported check IDs', () => {
+    const injectedCheck = 'DF-FU-17-injected-check';
+    try {
+      (AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-17'] as unknown as string[]).push(injectedCheck);
+    } catch {
+      // A frozen public view rejects the hostile cast.
+    }
+    const runs = validDfFu17.runs.map((run) => ({
+      ...run,
+      checks: { ...run.checks, [injectedCheck]: true },
+    }));
+
+    expect(validateAutomatedResult({ ...validDfFu17, runs })).toMatchObject({ ok: false });
+  });
+
+  it('does not let cast additions to exported media sets weaken manifest validation', () => {
+    try {
+      (MANUAL_MEDIA_TYPES as Set<string>).add('text/html');
+      (EVIDENCE_ENTRY_MEDIA_TYPES as Set<string>).add('text/html');
+    } catch {
+      // A readonly public view has no mutator to call.
+    }
+    const entries = validManualManifest.entries.map((entry) =>
+      entry.path.endsWith('.webm') ? { ...entry, mediaType: 'text/html' } : entry,
+    );
+
+    expect(validateManifest({ ...validManualManifest, entries })).toMatchObject({ ok: false });
+  });
+
+  it('does not let cast deletions from exported media sets break valid manifest validation', () => {
+    try {
+      (MANUAL_MEDIA_TYPES as Set<string>).delete('video/webm');
+      (EVIDENCE_ENTRY_MEDIA_TYPES as Set<string>).delete('video/webm');
+    } catch {
+      // A readonly public view has no mutator to call.
+    }
+
+    expect(validateManifest(validManualManifest)).toMatchObject({ ok: true });
   });
 });

@@ -4,26 +4,70 @@ export type Locale = 'pt-BR' | 'en';
 export type ManualScenario = 'DF-FU-M01' | 'DF-FU-M02';
 export type AutomatedScenario = 'DF-FU-17' | 'DF-FU-18';
 
+function createReadonlySet<T>(values: readonly T[]): ReadonlySet<T> {
+  const backing = new Set(values);
+  let view: ReadonlySet<T>;
+  view = Object.freeze({
+    get size() {
+      return backing.size;
+    },
+    has(value: T) {
+      return backing.has(value);
+    },
+    entries() {
+      return backing.entries();
+    },
+    keys() {
+      return backing.keys();
+    },
+    values() {
+      return backing.values();
+    },
+    forEach(callback: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: unknown) {
+      for (const value of backing) callback.call(thisArg, value, value, view);
+    },
+    [Symbol.iterator]() {
+      return backing[Symbol.iterator]();
+    },
+  });
+  return view;
+}
+
+function frozenCheckIds<const T extends Record<string, readonly string[]>>(source: T): T {
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(source).map(([scenario, checkIds]) => [
+        scenario,
+        Object.freeze([...checkIds]),
+      ]),
+    ),
+  ) as T;
+}
+
 export const EVIDENCE_SCHEMA_VERSION = 1 as const;
 export const MAX_MANUAL_FILES = 4;
 export const MAX_MANUAL_FILE_BYTES = 50 * 1024 * 1024;
 export const MAX_MANUAL_SCENARIO_BYTES = 100 * 1024 * 1024;
 export const MAX_ARCHIVE_EXPANDED_BYTES = 220 * 1024 * 1024;
-export const MANUAL_MEDIA_TYPES = new Set([
+const manualMediaTypeValues = [
   'image/png',
   'image/jpeg',
   'image/webp',
   'video/webm',
   'video/mp4',
   'video/quicktime',
-]);
-export const EVIDENCE_ENTRY_MEDIA_TYPES = new Set([
+] as const;
+const evidenceEntryMediaTypeValues = [
   'application/json',
   'application/zip',
-  ...MANUAL_MEDIA_TYPES,
-]);
+  ...manualMediaTypeValues,
+] as const;
+const manualMediaTypes = createReadonlySet<string>(manualMediaTypeValues);
+const evidenceEntryMediaTypes = createReadonlySet<string>(evidenceEntryMediaTypeValues);
+export const MANUAL_MEDIA_TYPES = createReadonlySet<string>(manualMediaTypeValues);
+export const EVIDENCE_ENTRY_MEDIA_TYPES = createReadonlySet<string>(evidenceEntryMediaTypeValues);
 
-export const SCENARIO_CHECK_IDS = {
+const manualScenarioCheckIds = frozenCheckIds({
   'DF-FU-M01': [
     'DF-FU-M01-selection-and-indeterminate-announcements',
     'DF-FU-M01-determinate-progress-milestones',
@@ -34,9 +78,10 @@ export const SCENARIO_CHECK_IDS = {
     'DF-FU-M02-determinate-progress-milestones',
     'DF-FU-M02-lifecycle-recovery-and-stale-result',
   ],
-} as const satisfies Record<ManualScenario, readonly string[]>;
+} as const satisfies Record<ManualScenario, readonly string[]>);
+export const SCENARIO_CHECK_IDS = frozenCheckIds(manualScenarioCheckIds);
 
-export const AUTOMATED_SCENARIO_CHECK_IDS = {
+const automatedScenarioCheckIds = frozenCheckIds({
   'DF-FU-17': [
     'DF-FU-17-no-horizontal-overflow',
     'DF-FU-17-long-file-identity-retained',
@@ -54,7 +99,8 @@ export const AUTOMATED_SCENARIO_CHECK_IDS = {
     'DF-FU-18-removal-focus-recovered',
     'DF-FU-18-reconnect-teardown-clean',
   ],
-} as const satisfies Record<AutomatedScenario, readonly string[]>;
+} as const satisfies Record<AutomatedScenario, readonly string[]>);
+export const AUTOMATED_SCENARIO_CHECK_IDS = frozenCheckIds(automatedScenarioCheckIds);
 
 export type ScenarioCheckId = (typeof SCENARIO_CHECK_IDS)[ManualScenario][number];
 export type AutomatedScenarioCheckId =
@@ -145,8 +191,7 @@ export type EvidenceValidation<T> =
 const gitShaPattern = /^[a-f0-9]{40}$/;
 const sha256Pattern = /^[a-f0-9]{64}$/;
 const isoTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-const immutableDeploymentHostPattern = /^[a-z0-9-]{8,}\.lyra-ds-docs\.pages\.dev$/u;
-const movingBranchAlias = 'file-upload-evidence.lyra-ds-docs.pages.dev';
+const immutableDeploymentHostPattern = /^[a-f0-9]{8}\.lyra-ds-docs\.pages\.dev$/u;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -197,7 +242,6 @@ export function isImmutableDeploymentRoute(value: string, locale: Locale): boole
       url.port === '' &&
       url.search === '' &&
       url.hash === '' &&
-      url.hostname !== movingBranchAlias &&
       immutableDeploymentHostPattern.test(url.hostname) &&
       url.pathname === expectedPathname &&
       value === `https://${url.hostname}${expectedPathname}`
@@ -372,7 +416,7 @@ export function validateObservation(value: unknown): ObservationValidation {
   const checkAttestations =
     scenario === undefined
       ? undefined
-      : normalizedExactBooleanRecord(source.checkAttestations, SCENARIO_CHECK_IDS[scenario]);
+      : normalizedExactBooleanRecord(source.checkAttestations, manualScenarioCheckIds[scenario]);
   if (
     checkAttestations === undefined ||
     (result === 'PASS' && Object.values(checkAttestations).some((entry) => !entry))
@@ -466,13 +510,13 @@ export function validateObservation(value: unknown): ObservationValidation {
 }
 
 function manifestMediaTypeIsValid(kind: EvidenceManifest['kind'], entry: EvidenceEntry): boolean {
-  if (!EVIDENCE_ENTRY_MEDIA_TYPES.has(entry.mediaType)) return false;
+  if (!evidenceEntryMediaTypes.has(entry.mediaType)) return false;
   if (kind === 'manual') {
     if (/^manual\/DF-FU-M0[12]\.json$/u.test(entry.path)) {
       return entry.mediaType === 'application/json';
     }
     if (/^artifacts\/DF-FU-M0[12]\/[^/]+$/u.test(entry.path)) {
-      return MANUAL_MEDIA_TYPES.has(entry.mediaType);
+      return manualMediaTypes.has(entry.mediaType);
     }
     return false;
   }
@@ -652,7 +696,7 @@ export function validateAutomatedResult(
       const mediaQueries = normalizedBooleanRecord(candidate.mediaQueries);
       const checks = normalizedExactBooleanRecord(
         candidate.checks,
-        AUTOMATED_SCENARIO_CHECK_IDS[scenario],
+        automatedScenarioCheckIds[scenario],
       );
       const artifactPaths =
         Array.isArray(candidate.artifactPaths) &&
