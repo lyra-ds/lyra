@@ -22,17 +22,14 @@ function observedScenarioSurfaces() {
       locale: 'en',
       recorderMounted: true,
       options: [
-        { id: 'DF-FU-M01', label: 'DF-FU-M01 — Windows, NVDA, and a current browser' },
+        {
+          id: 'DF-FU-M01',
+          label: 'DF-FU-M01 — Windows, NVDA, and a current Firefox or Chromium browser',
+        },
         { id: 'DF-FU-M02', label: 'DF-FU-M02 — macOS, VoiceOver, and Safari' },
-        {
-          id: 'DF-FU-M03',
-          label: 'DF-FU-M03 — keyboard, touch, and a 320 CSS pixel viewport',
-        },
-        {
-          id: 'DF-FU-M04',
-          label: 'DF-FU-M04 — native form and delayed Alpine initialization',
-        },
       ],
+      localAttachmentVisible: true,
+      zipActionVisible: true,
       visited: [
         {
           id: 'DF-FU-M01',
@@ -45,34 +42,20 @@ function observedScenarioSurfaces() {
             'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
           observationEditorVisible: true,
         },
-        {
-          id: 'DF-FU-M03',
-          checklistMarker: 'No horizontal overflow observed',
-          observationEditorVisible: true,
-        },
-        {
-          id: 'DF-FU-M04',
-          checklistMarker:
-            'Submit the authored native form with JavaScript disabled and retain the response evidence.',
-          observationEditorVisible: true,
-        },
       ],
     },
     {
       locale: 'pt-BR',
       recorderMounted: true,
       options: [
-        { id: 'DF-FU-M01', label: 'DF-FU-M01 — Windows, NVDA e navegador atual' },
+        {
+          id: 'DF-FU-M01',
+          label: 'DF-FU-M01 — Windows, NVDA e Firefox ou Chromium atual',
+        },
         { id: 'DF-FU-M02', label: 'DF-FU-M02 — macOS, VoiceOver e Safari' },
-        {
-          id: 'DF-FU-M03',
-          label: 'DF-FU-M03 — teclado, toque e viewport de 320 pixels CSS',
-        },
-        {
-          id: 'DF-FU-M04',
-          label: 'DF-FU-M04 — formulário nativo e inicialização Alpine atrasada',
-        },
       ],
+      localAttachmentVisible: true,
+      zipActionVisible: true,
       visited: [
         {
           id: 'DF-FU-M01',
@@ -83,17 +66,6 @@ function observedScenarioSurfaces() {
           id: 'DF-FU-M02',
           checklistMarker:
             'Verifique os anúncios de seleção e envio indeterminado com VoiceOver e Safari.',
-          observationEditorVisible: true,
-        },
-        {
-          id: 'DF-FU-M03',
-          checklistMarker: 'Nenhum overflow horizontal observado',
-          observationEditorVisible: true,
-        },
-        {
-          id: 'DF-FU-M04',
-          checklistMarker:
-            'Envie o formulário nativo autorado com JavaScript desativado e guarde a evidência da resposta.',
           observationEditorVisible: true,
         },
       ],
@@ -369,7 +341,7 @@ describe('runSmoke', () => {
 
   it.each([
     [
-      'a missing M04 option',
+      'a missing M02 option',
       (surfaces) => {
         surfaces[0].options.pop();
       },
@@ -378,7 +350,7 @@ describe('runSmoke', () => {
     [
       'the wrong PT-BR option label',
       (surfaces) => {
-        surfaces[1].options[2].label = 'DF-FU-M03 — wrong locale';
+        surfaces[1].options[1].label = 'DF-FU-M02 — wrong locale';
       },
       'pt-BR scenario surface has incorrect localized scenario options',
     ],
@@ -413,9 +385,9 @@ describe('runSmoke', () => {
     [
       'a missing selected-scenario marker',
       (surfaces) => {
-        surfaces[1].visited[3].checklistMarker = '';
+        surfaces[1].visited[1].checklistMarker = '';
       },
-      'pt-BR scenario surface did not expose localized guidance and the observation editor for DF-FU-M04',
+      'pt-BR scenario surface did not expose localized guidance and the observation editor for DF-FU-M02',
     ],
     [
       'the wrong visited scenario ID',
@@ -441,6 +413,20 @@ describe('runSmoke', () => {
         surfaces[0].visited[1].observationEditorVisible = false;
       },
       'en scenario surface did not expose localized guidance and the observation editor for DF-FU-M02',
+    ],
+    [
+      'a missing local attachment control',
+      (surfaces) => {
+        surfaces[0].localAttachmentVisible = false;
+      },
+      'en scenario surface has no local evidence attachment control',
+    ],
+    [
+      'a missing ZIP action',
+      (surfaces) => {
+        surfaces[1].zipActionVisible = false;
+      },
+      'pt-BR scenario surface has no evidence ZIP action',
     ],
   ])('rejects %s before reporting smoke success', async (_name, mutate, expectedError) => {
     const scenarioSurfaces = observedScenarioSurfaces();

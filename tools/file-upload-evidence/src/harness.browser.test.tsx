@@ -8,6 +8,7 @@ import '@lyra-ds/styles/styles.css';
 import englishEntry from '../en/file-upload-evidence/index.html?raw';
 import { bootstrapAlpine } from './alpine-bootstrap';
 import type { EnvironmentTelemetry, Locale } from './contracts';
+import type { ManualEvidenceBundle } from './evidence-bundle';
 import { HarnessApp } from './harness-app';
 
 declare module 'vitest/browser' {
@@ -85,7 +86,7 @@ function namedSelect(name: string): HTMLSelectElement {
   return input;
 }
 
-async function completeEnglishObservation(): Promise<void> {
+async function completeEnglishObservation(file: File): Promise<void> {
   for (const [name, value] of [
     ['os.name', 'Windows'],
     ['os.version', '11'],
@@ -99,11 +100,10 @@ async function completeEnglishObservation(): Promise<void> {
     await userEvent.fill(namedInput(name), value);
   }
   await page.getByLabelText('Physical keyboard used').click();
-  await userEvent.fill(namedTextarea('expected'), 'Expected lifecycle announcement.');
   await userEvent.fill(namedTextarea('actual'), 'Observed lifecycle announcement.');
+  selectFile(namedInput('evidenceAttachments'), file);
   await userEvent.selectOptions(namedSelect('result'), 'PASS');
   await userEvent.selectOptions(namedSelect('reviewer.approval'), 'approved');
-  await userEvent.fill(namedTextarea('artifactUrls'), 'https://evidence.example/review');
   for (const label of [
     'Verify selection and indeterminate upload announcements with NVDA.',
     'Record determinate progress at 25, 50, 75, and 100 percent.',
@@ -136,15 +136,15 @@ describe('three-engine file upload evidence instrument acceptance', () => {
     {
       locale: 'en' as const,
       heading: 'File upload evidence recorder',
-      scenario: 'DF-FU-M04 — native form and delayed Alpine initialization',
-      guidance: 'Submit the authored native form with JavaScript disabled',
+      scenario: 'DF-FU-M02 — macOS, VoiceOver, and Safari',
+      guidance: 'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
       foreignHeading: 'Registro de evidências de envio de arquivo',
     },
     {
       locale: 'pt-BR' as const,
       heading: 'Registro de evidências de envio de arquivo',
-      scenario: 'DF-FU-M04 — formulário nativo e inicialização Alpine atrasada',
-      guidance: 'Envie o formulário nativo autorado com JavaScript desativado',
+      scenario: 'DF-FU-M02 — macOS, VoiceOver e Safari',
+      guidance: 'Verifique os anúncios de seleção e envio indeterminado com VoiceOver e Safari.',
       foreignHeading: 'File upload evidence recorder',
     },
   ])(
@@ -156,11 +156,8 @@ describe('three-engine file upload evidence instrument acceptance', () => {
       expect(document.documentElement.lang).toBe(locale);
       expect(page.getByRole('heading', { name: heading })).toBeVisible();
       expect(page.getByText(foreignHeading)).not.toBeInTheDocument();
-      await userEvent.selectOptions(
-        page.getByLabelText(locale === 'en' ? 'Manual scenario' : 'Cenário manual'),
-        'DF-FU-M04',
-      );
-      expect(namedSelect('scenario')).toHaveValue('DF-FU-M04');
+      await userEvent.selectOptions(namedSelect('scenario'), 'DF-FU-M02');
+      expect(namedSelect('scenario')).toHaveValue('DF-FU-M02');
       expect(page.getByRole('option', { name: scenario })).toBeInTheDocument();
       expect(page.getByText(new RegExp(guidance, 'u'))).toBeVisible();
 
@@ -239,33 +236,37 @@ describe('three-engine file upload evidence instrument acceptance', () => {
     expect(root.querySelector('#alpine-selection-intents')).toHaveTextContent('0');
   });
 
-  it('keeps invalid evidence local and exports only a complete normalized observation', async () => {
-    const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
-    await render(<HarnessApp {...appProps('en')} clipboard={{ writeText }} />);
-    expect(page.getByRole('button', { name: 'Copy JSON' })).toBeDisabled();
-    expect(writeText).not.toHaveBeenCalled();
+  it('keeps selected evidence local and downloads a ZIP through the injected boundary', async () => {
+    const bundle: ManualEvidenceBundle = {
+      bytes: new Uint8Array([80, 75]),
+      fileName: 'evidence.zip',
+      mediaType: 'application/zip',
+    };
+    const createBundle = vi.fn().mockResolvedValue(bundle);
+    const downloadBundle = vi.fn();
+    const file = new File(['local evidence'], 'review.png', { type: 'image/png' });
+    await render(
+      <HarnessApp
+        {...appProps('en')}
+        createBundle={createBundle}
+        downloadBundle={downloadBundle}
+      />,
+    );
+    expect(page.getByRole('button', { name: 'Download evidence ZIP' })).toBeDisabled();
 
-    await completeEnglishObservation();
-    expect(page.getByRole('button', { name: 'Copy JSON' })).toBeEnabled();
-    await page.getByRole('button', { name: 'Copy JSON' }).click();
+    await completeEnglishObservation(file);
+    expect(page.getByRole('button', { name: 'Download evidence ZIP' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Download evidence ZIP' }).click();
 
-    expect(writeText).toHaveBeenCalledTimes(1);
-    const serialized = writeText.mock.calls[0]?.[0];
-    if (serialized === undefined) throw new Error('Expected one local evidence export.');
-    expect(JSON.parse(serialized)).toMatchObject({
+    const [records, attachments] = createBundle.mock.calls[0] ?? [];
+    expect(records).toHaveLength(1);
+    expect(records?.[0]).toMatchObject({
       scenario: 'DF-FU-M01',
-      locale: 'en',
       revision: REVISION,
-      deploymentUrl: 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/',
-      checkAttestations: {
-        'DF-FU-M01-selection-and-indeterminate-announcements': true,
-        'DF-FU-M01-determinate-progress-milestones': true,
-        'DF-FU-M01-lifecycle-recovery-and-stale-result': true,
-      },
-      result: 'PASS',
-      reviewer: { name: 'Accessibility Reviewer', approval: 'approved' },
-      artifactUrls: ['https://evidence.example/review'],
+      artifactPaths: ['artifacts/DF-FU-M01/review.png'],
     });
+    expect(attachments.get('DF-FU-M01')).toEqual([file]);
+    expect(downloadBundle).toHaveBeenCalledExactlyOnceWith(bundle);
   });
 
   it('uses automated 320px, RTL, and long-content emulation only for UI fitness, never M03 evidence', async () => {
@@ -273,7 +274,7 @@ describe('three-engine file upload evidence instrument acceptance', () => {
     document.documentElement.lang = 'pt-BR';
     document.documentElement.dir = 'rtl';
     const { container } = await render(<HarnessApp {...appProps('pt-BR')} />);
-    await userEvent.selectOptions(page.getByLabelText('Cenário manual'), 'DF-FU-M03');
+    await userEvent.selectOptions(namedSelect('scenario'), 'DF-FU-M02');
 
     const root = container.querySelector<HTMLElement>('.lyra-evidence');
     const fixtureName = container.querySelector<HTMLElement>('.lyra-evidence__fixture code');
@@ -283,7 +284,7 @@ describe('three-engine file upload evidence instrument acceptance', () => {
     expect(getComputedStyle(root).direction).toBe('rtl');
     expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth);
     expect(fixtureName.scrollWidth).toBeLessThanOrEqual(fixtureName.clientWidth);
-    expect(page.getByRole('button', { name: 'Copiar JSON' })).toBeDisabled();
+    expect(page.getByRole('button', { name: 'Baixar ZIP de evidências' })).toBeDisabled();
     expect(
       page.getByText(
         'Este instrumento registra observações humanas. Ele não aprova cenários automaticamente.',

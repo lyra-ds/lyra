@@ -1,14 +1,27 @@
 import type { FileUploadMessages } from '@lyra-ds/react/file-upload';
 import { useRef, useState } from 'react';
 import '@lyra-ds/styles/styles.css';
-import type {
-  EnvironmentTelemetry,
-  FileUploadManualObservation,
-  Locale,
-  ManualScenario,
-  ScenarioCheckId,
+
+import {
+  canonicalArchivePathKey,
+  MANUAL_MEDIA_TYPES,
+  MAX_MANUAL_FILES,
+  MAX_MANUAL_FILE_BYTES,
+  MAX_MANUAL_SCENARIO_BYTES,
+  SCENARIO_CHECK_IDS,
+  type EnvironmentTelemetry,
+  type FileUploadManualObservation,
+  type Locale,
+  type ManualScenario,
+  type ScenarioCheckId,
+  validateObservation,
 } from './contracts';
-import { SCENARIO_CHECK_IDS, validateObservation } from './contracts';
+import {
+  createManualEvidenceBundle,
+  sanitizeEvidenceFileName,
+  type ManualEvidenceAttachments,
+  type ManualEvidenceBundle,
+} from './evidence-bundle';
 import { MESSAGES } from './messages';
 import {
   ReactFileUploadEvidence,
@@ -16,10 +29,10 @@ import {
   type ReactFileUploadEvidenceDiagnostics,
   type ReactFileUploadEvidenceHandle,
 } from './react-file-upload';
-import { captureTelemetry, m03Eligibility } from './telemetry';
+import { captureTelemetry } from './telemetry';
 import './harness.css';
 
-const SCENARIOS: readonly ManualScenario[] = ['DF-FU-M01', 'DF-FU-M02', 'DF-FU-M03', 'DF-FU-M04'];
+const SCENARIOS: readonly ManualScenario[] = ['DF-FU-M01', 'DF-FU-M02'];
 const MODES: readonly EvidenceOperatorMode[] = [
   'success',
   'error',
@@ -45,6 +58,7 @@ interface UiMessages {
   viewportWidth: string;
   viewportHeight: string;
   devicePixelRatio: string;
+  scenarioChoice: string;
   scenario: string;
   controlledLifecycle: string;
   operatorMode: string;
@@ -70,31 +84,38 @@ interface UiMessages {
   browserVersion: string;
   atName: string;
   atVersion: string;
-  noAtConfirmation: string;
   inputMethods: string;
   touchUsed: string;
   keyboardUsed: string;
   mouseUsed: string;
-  expected: string;
+  expectedOutcome: string;
+  expectedByScenario: Record<ManualScenario, string>;
   actual: string;
+  attachments: string;
+  attachmentLabel: string;
+  attachmentGuidance: string;
+  attachmentAccepted: string;
+  attachmentErrors: {
+    tooMany: string;
+    empty: (name: string) => string;
+    tooLarge: (name: string) => string;
+    unsupported: (name: string) => string;
+    totalTooLarge: string;
+  };
+  removeAttachment: (name: string) => string;
+  review: string;
   result: string;
   choose: string;
   reviewerName: string;
   reviewerApproval: string;
   approved: string;
   changesRequested: string;
-  artifactUrls: string;
   findingUrls: string;
-  copyJson: string;
-  downloadJson: string;
   validationHeading: string;
-  exportBlocked: {
-    readonly 'viewport-width': string;
-    readonly 'coarse-pointer': string;
-    readonly 'touch-input': string;
-    readonly 'keyboard-input': string;
-    readonly 'manual-checks': string;
-  };
+  downloadZip: string;
+  creatingZip: string;
+  zipError: string;
+  zipIncludes: (scenarios: readonly ManualScenario[]) => string;
   longFixture: string;
   downloadFixture: string;
   longFixtureName: string;
@@ -115,12 +136,13 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     javascriptState: 'JavaScript state',
     enabled: 'Enabled',
     alpineDelay: 'Requested Alpine delay',
-    environment: 'Observed environment',
+    environment: 'Revision and observed environment',
     userAgent: 'Supporting user agent',
     timezone: 'Timezone',
     viewportWidth: 'Viewport width',
     viewportHeight: 'Viewport height',
     devicePixelRatio: 'Device pixel ratio',
+    scenarioChoice: 'Manual scenario choice',
     scenario: 'Manual scenario',
     controlledLifecycle: 'Controlled React lifecycle',
     operatorMode: 'Operator mode',
@@ -151,8 +173,8 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     },
     focusTarget: 'Focus target',
     blankDiagnostic: '—',
-    checklist: 'Guided manual checklist',
-    observation: 'Observation record',
+    checklist: 'Assistive technology attestations',
+    observation: 'Environment and observation',
     osName: 'Operating system name',
     osVersion: 'Operating system version',
     osBuild: 'Operating system build',
@@ -160,31 +182,45 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     browserVersion: 'Browser version',
     atName: 'Assistive technology name',
     atVersion: 'Assistive technology version',
-    noAtConfirmation: 'I confirm that no assistive technology was active',
     inputMethods: 'Physical input methods',
     touchUsed: 'Touch used',
     keyboardUsed: 'Physical keyboard used',
     mouseUsed: 'Mouse used',
-    expected: 'Expected announcement or behavior',
-    actual: 'Actual announcement or behavior',
+    expectedOutcome: 'Expected outcome',
+    expectedByScenario: {
+      'DF-FU-M01':
+        'The FileUpload lifecycle, announcements, progress, recovery, and focus match the guided M01 checks.',
+      'DF-FU-M02':
+        'The FileUpload lifecycle, announcements, progress, recovery, and focus match the guided M02 checks.',
+    },
+    actual: 'Actual observation',
+    attachments: 'Local evidence files',
+    attachmentLabel: 'Local evidence files',
+    attachmentGuidance:
+      'Select 1–4 files. Each file may be up to 50 MiB; combined size may be up to 100 MiB.',
+    attachmentAccepted: 'Accepted: PNG, JPEG, WebP, WebM, MP4, and QuickTime.',
+    attachmentErrors: {
+      tooMany: 'Select no more than 4 evidence files.',
+      empty: (name) => `${name} is empty.`,
+      tooLarge: (name) => `${name} is larger than 50 MiB.`,
+      unsupported: (name) => `${name} has an unsupported media type.`,
+      totalTooLarge: 'The selected evidence files exceed 100 MiB.',
+    },
+    removeAttachment: (name) => `Remove ${name}`,
+    review: 'Result, reviewer, and findings',
     result: 'Result',
     choose: 'Choose',
     reviewerName: 'Reviewer name',
     reviewerApproval: 'Reviewer approval',
     approved: 'Approved',
     changesRequested: 'Changes requested',
-    artifactUrls: 'Evidence artifact URLs (one per line)',
     findingUrls: 'Finding URLs (one per line)',
-    copyJson: 'Copy JSON',
-    downloadJson: 'Download JSON',
     validationHeading: 'Complete these fields before export',
-    exportBlocked: {
-      'viewport-width': 'M03 is blocked: exact viewport width is not 320 CSS pixels.',
-      'coarse-pointer': 'M03 is blocked: no real coarse pointer is reported.',
-      'touch-input': 'M03 is blocked: record physical touch input.',
-      'keyboard-input': 'M03 is blocked: record physical keyboard input.',
-      'manual-checks': 'M03 is blocked: complete every required manual check.',
-    },
+    downloadZip: 'Download evidence ZIP',
+    creatingZip: 'Creating evidence ZIP…',
+    zipError: 'The local evidence ZIP could not be created. Review the selected files and retry.',
+    zipIncludes: (scenarios) =>
+      `ZIP includes: ${scenarios.length === 2 ? `${scenarios[0]} and ${scenarios[1]}` : scenarios[0]}.`,
     longFixture: 'Long localized file-name fixture',
     downloadFixture: 'Download long-name fixture',
     longFixtureName:
@@ -203,19 +239,6 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
         'Record determinate progress at 25, 50, 75, and 100 percent.',
       'DF-FU-M02-lifecycle-recovery-and-stale-result':
         'Exercise cancellation, retry, a stale result, error, success, removal, and focus recovery.',
-      'DF-FU-M03-no-horizontal-overflow': 'No horizontal overflow observed',
-      'DF-FU-M03-long-file-identity-retained': 'Long file identity retained',
-      'DF-FU-M03-actions-reachable': 'All actions remained reachable',
-      'DF-FU-M03-active-replacement-rejected-and-announced':
-        'Active replacement was rejected and announced',
-      'DF-FU-M03-cancel-retry-remove-completed': 'Cancel, retry, and remove completed',
-      'DF-FU-M03-focus-recovered': 'Focus recovered',
-      'DF-FU-M04-native-js-disabled-form-submitted':
-        'Submit the authored native form with JavaScript disabled and retain the response evidence.',
-      'DF-FU-M04-delayed-alpine-node-filelist-preserved':
-        'Select a file before delayed Alpine initialization and verify the exact node and FileList remain.',
-      'DF-FU-M04-single-enhancement-path-removal-focus':
-        'Verify one enhanced tree, no replay, one listener path, removal, and focus recovery.',
     },
     fileUpload: {
       label: 'Controlled evidence file',
@@ -249,12 +272,13 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     javascriptState: 'Estado do JavaScript',
     enabled: 'Ativado',
     alpineDelay: 'Atraso Alpine solicitado',
-    environment: 'Ambiente observado',
+    environment: 'Revisão e ambiente observado',
     userAgent: 'User agent de apoio',
     timezone: 'Fuso horário',
     viewportWidth: 'Largura do viewport',
     viewportHeight: 'Altura do viewport',
     devicePixelRatio: 'Proporção de pixels do dispositivo',
+    scenarioChoice: 'Escolha do cenário manual',
     scenario: 'Cenário manual',
     controlledLifecycle: 'Ciclo de vida React controlado',
     operatorMode: 'Modo do operador',
@@ -285,8 +309,8 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     },
     focusTarget: 'Destino do foco',
     blankDiagnostic: '—',
-    checklist: 'Checklist manual guiado',
-    observation: 'Registro da observação',
+    checklist: 'Atestações de tecnologia assistiva',
+    observation: 'Ambiente e observação',
     osName: 'Nome do sistema operacional',
     osVersion: 'Versão do sistema operacional',
     osBuild: 'Compilação do sistema operacional',
@@ -294,31 +318,46 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
     browserVersion: 'Versão do navegador',
     atName: 'Nome da tecnologia assistiva',
     atVersion: 'Versão da tecnologia assistiva',
-    noAtConfirmation: 'Confirmo que nenhuma tecnologia assistiva estava ativa',
     inputMethods: 'Métodos físicos de entrada',
     touchUsed: 'Toque usado',
     keyboardUsed: 'Teclado físico usado',
     mouseUsed: 'Mouse usado',
-    expected: 'Anúncio ou comportamento esperado',
-    actual: 'Anúncio ou comportamento real',
+    expectedOutcome: 'Resultado esperado',
+    expectedByScenario: {
+      'DF-FU-M01':
+        'O ciclo de vida, os anúncios, o progresso, a recuperação e o foco do FileUpload correspondem às verificações guiadas M01.',
+      'DF-FU-M02':
+        'O ciclo de vida, os anúncios, o progresso, a recuperação e o foco do FileUpload correspondem às verificações guiadas M02.',
+    },
+    actual: 'Observação real',
+    attachments: 'Arquivos locais de evidência',
+    attachmentLabel: 'Arquivos locais de evidência',
+    attachmentGuidance:
+      'Selecione de 1 a 4 arquivos. Cada arquivo pode ter até 50 MiB; o total pode ter até 100 MiB.',
+    attachmentAccepted: 'Aceitos: PNG, JPEG, WebP, WebM, MP4 e QuickTime.',
+    attachmentErrors: {
+      tooMany: 'Selecione no máximo 4 arquivos de evidência.',
+      empty: (name) => `${name} está vazio.`,
+      tooLarge: (name) => `${name} é maior que 50 MiB.`,
+      unsupported: (name) => `${name} tem um tipo de mídia não aceito.`,
+      totalTooLarge: 'Os arquivos de evidência selecionados excedem 100 MiB.',
+    },
+    removeAttachment: (name) => `Remover ${name}`,
+    review: 'Resultado, revisão e achados',
     result: 'Resultado',
     choose: 'Escolha',
     reviewerName: 'Nome da pessoa revisora',
     reviewerApproval: 'Aprovação da revisão',
     approved: 'Aprovado',
     changesRequested: 'Alterações solicitadas',
-    artifactUrls: 'URLs dos artefatos de evidência (uma por linha)',
     findingUrls: 'URLs dos achados (uma por linha)',
-    copyJson: 'Copiar JSON',
-    downloadJson: 'Baixar JSON',
     validationHeading: 'Preencha estes campos antes da exportação',
-    exportBlocked: {
-      'viewport-width': 'M03 está bloqueado: a largura exata do viewport não é 320 pixels CSS.',
-      'coarse-pointer': 'M03 está bloqueado: nenhum ponteiro grosseiro real foi informado.',
-      'touch-input': 'M03 está bloqueado: registre a entrada física por toque.',
-      'keyboard-input': 'M03 está bloqueado: registre a entrada por teclado físico.',
-      'manual-checks': 'M03 está bloqueado: conclua todas as verificações manuais obrigatórias.',
-    },
+    downloadZip: 'Baixar ZIP de evidências',
+    creatingZip: 'Criando ZIP de evidências…',
+    zipError:
+      'Não foi possível criar o ZIP de evidências local. Revise os arquivos selecionados e tente novamente.',
+    zipIncludes: (scenarios) =>
+      `ZIP inclui: ${scenarios.length === 2 ? `${scenarios[0]} e ${scenarios[1]}` : scenarios[0]}.`,
     longFixture: 'Fixture com nome de arquivo localizado longo',
     downloadFixture: 'Baixar fixture de nome longo',
     longFixtureName:
@@ -337,19 +376,6 @@ const UI_MESSAGES: Record<Locale, UiMessages> = {
         'Registre o progresso determinado em 25, 50, 75 e 100 por cento.',
       'DF-FU-M02-lifecycle-recovery-and-stale-result':
         'Exercite cancelamento, repetição, resultado obsoleto, erro, sucesso, remoção e recuperação de foco.',
-      'DF-FU-M03-no-horizontal-overflow': 'Nenhum overflow horizontal observado',
-      'DF-FU-M03-long-file-identity-retained': 'Identidade do arquivo longo mantida',
-      'DF-FU-M03-actions-reachable': 'Todas as ações permaneceram acessíveis',
-      'DF-FU-M03-active-replacement-rejected-and-announced':
-        'Substituição ativa rejeitada e anunciada',
-      'DF-FU-M03-cancel-retry-remove-completed': 'Cancelar, repetir e remover concluídos',
-      'DF-FU-M03-focus-recovered': 'Foco recuperado',
-      'DF-FU-M04-native-js-disabled-form-submitted':
-        'Envie o formulário nativo autorado com JavaScript desativado e guarde a evidência da resposta.',
-      'DF-FU-M04-delayed-alpine-node-filelist-preserved':
-        'Selecione um arquivo antes do Alpine atrasado e verifique que o nó exato e a FileList permanecem.',
-      'DF-FU-M04-single-enhancement-path-removal-focus':
-        'Verifique uma árvore aprimorada, nenhum replay, um caminho de listener, remoção e recuperação de foco.',
     },
     fileUpload: {
       label: 'Arquivo de evidência controlado',
@@ -383,7 +409,6 @@ interface ObservationDraft {
   readonly os: { readonly name: string; readonly version: string; readonly build: string };
   readonly browser: { readonly name: string; readonly version: string };
   readonly assistiveTechnology: { readonly name: string; readonly version: string };
-  readonly noAssistiveTechnologyConfirmed: boolean;
   readonly inputMethods: readonly string[];
   readonly viewport: {
     readonly width: number;
@@ -391,7 +416,6 @@ interface ObservationDraft {
     readonly devicePixelRatio: number;
   };
   readonly mediaQueries: Record<string, boolean>;
-  readonly expected: string;
   readonly actual: string;
   readonly checkAttestations: Record<string, boolean>;
   readonly result: '' | 'PASS' | 'FAIL';
@@ -399,7 +423,6 @@ interface ObservationDraft {
     readonly name: string;
     readonly approval: '' | 'approved' | 'changes-requested';
   };
-  readonly artifactUrls: string;
   readonly findingUrls: string;
 }
 
@@ -411,16 +434,13 @@ export interface HarnessAppProps {
   readonly alpineDelayMilliseconds: number;
   readonly captureEnvironment?: () => EnvironmentTelemetry;
   readonly now?: () => Date;
-  readonly clipboard?: Pick<Clipboard, 'writeText'>;
   readonly xhrFactory?: () => XMLHttpRequest;
+  readonly createBundle?: typeof createManualEvidenceBundle;
+  readonly downloadBundle?: (bundle: ManualEvidenceBundle) => void;
 }
 
 function captureBrowserEnvironment(): EnvironmentTelemetry {
   return captureTelemetry(window, navigator);
-}
-
-function currentTime(): Date {
-  return new Date();
 }
 
 function createDraft(
@@ -441,16 +461,13 @@ function createDraft(
     os: { name: '', version: '', build: '' },
     browser: { name: '', version: '' },
     assistiveTechnology: { name: '', version: '' },
-    noAssistiveTechnologyConfirmed: false,
     inputMethods: [],
     viewport: environment.viewport,
     mediaQueries: environment.mediaQueries,
-    expected: '',
     actual: '',
     checkAttestations: Object.fromEntries(SCENARIO_CHECK_IDS[scenario].map((id) => [id, false])),
     result: '',
     reviewer: { name: '', approval: '' },
-    artifactUrls: '',
     findingUrls: '',
   };
 }
@@ -463,14 +480,7 @@ function parseUrlLines(value: string): string[] {
 }
 
 function manualScenario(value: string): ManualScenario {
-  if (
-    value === 'DF-FU-M01' ||
-    value === 'DF-FU-M02' ||
-    value === 'DF-FU-M03' ||
-    value === 'DF-FU-M04'
-  ) {
-    return value;
-  }
+  if (value === 'DF-FU-M01' || value === 'DF-FU-M02') return value;
   throw new Error(`Unsupported manual scenario: ${value}`);
 }
 
@@ -482,43 +492,6 @@ function observationResult(value: string): ObservationDraft['result'] {
 function reviewerApproval(value: string): ObservationDraft['reviewer']['approval'] {
   if (value === '' || value === 'approved' || value === 'changes-requested') return value;
   throw new Error(`Unsupported reviewer approval: ${value}`);
-}
-
-function observationValue(draft: ObservationDraft): unknown {
-  return {
-    ...draft,
-    assistiveTechnology: draft.noAssistiveTechnologyConfirmed ? null : draft.assistiveTechnology,
-    inputMethods: [...draft.inputMethods],
-    artifactUrls: parseUrlLines(draft.artifactUrls),
-    findingUrls: parseUrlLines(draft.findingUrls),
-  };
-}
-
-function exportBlockerMessage(messages: UiMessages, reason: string | undefined): string {
-  switch (reason) {
-    case 'viewport-width':
-      return messages.exportBlocked['viewport-width'];
-    case 'coarse-pointer':
-      return messages.exportBlocked['coarse-pointer'];
-    case 'touch-input':
-      return messages.exportBlocked['touch-input'];
-    case 'keyboard-input':
-      return messages.exportBlocked['keyboard-input'];
-    default:
-      return messages.exportBlocked['manual-checks'];
-  }
-}
-
-function downloadBlob(blob: Blob, filename: string): void {
-  const objectUrl = URL.createObjectURL(blob);
-  try {
-    const anchor = document.createElement('a');
-    anchor.href = objectUrl;
-    anchor.download = filename;
-    anchor.click();
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
 }
 
 function checkboxValue(
@@ -549,6 +522,85 @@ function requiredDraft(
   const draft = drafts[scenario];
   if (draft === undefined) throw new Error(`Missing observation draft for ${scenario}.`);
   return draft;
+}
+
+function attachmentPaths(scenario: ManualScenario, files: readonly File[]): string[] {
+  const ordinals = new Map<string, number>();
+  return files
+    .map(({ name }) => sanitizeEvidenceFileName(name))
+    .sort((left, right) => left.localeCompare(right, 'en'))
+    .map((name) => {
+      const key = canonicalArchivePathKey(name);
+      const ordinal = (ordinals.get(key) ?? 0) + 1;
+      ordinals.set(key, ordinal);
+      if (ordinal === 1) return `artifacts/${scenario}/${name}`;
+      const extensionAt = name.lastIndexOf('.');
+      const suffixed =
+        extensionAt > 0
+          ? `${name.slice(0, extensionAt)}-${ordinal}${name.slice(extensionAt)}`
+          : `${name}-${ordinal}`;
+      return `artifacts/${scenario}/${suffixed}`;
+    });
+}
+
+function observationValue(
+  draft: ObservationDraft,
+  files: readonly File[],
+  expected: string,
+): unknown {
+  return {
+    ...draft,
+    inputMethods: [...draft.inputMethods],
+    expected,
+    artifactPaths: attachmentPaths(draft.scenario, files),
+    findingUrls: parseUrlLines(draft.findingUrls),
+  };
+}
+
+function attachmentError(
+  files: readonly File[],
+  messages: UiMessages,
+): string | undefined {
+  if (files.length > MAX_MANUAL_FILES) return messages.attachmentErrors.tooMany;
+  for (const file of files) {
+    if (file.size < 1) return messages.attachmentErrors.empty(file.name);
+    if (file.size > MAX_MANUAL_FILE_BYTES) return messages.attachmentErrors.tooLarge(file.name);
+    if (!MANUAL_MEDIA_TYPES.has(file.type)) {
+      return messages.attachmentErrors.unsupported(file.name);
+    }
+  }
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_MANUAL_SCENARIO_BYTES) {
+    return messages.attachmentErrors.totalTooLarge;
+  }
+  return undefined;
+}
+
+function downloadBundleInBrowser(bundle: ManualEvidenceBundle): void {
+  const bytes = bundle.bytes.slice().buffer as ArrayBuffer;
+  const objectUrl = URL.createObjectURL(new Blob([bytes], { type: bundle.mediaType }));
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = bundle.fileName;
+  anchor.hidden = true;
+  document.body.append(anchor);
+  try {
+    anchor.click();
+  } finally {
+    anchor.remove();
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function downloadFixture(file: File): void {
+  const objectUrl = URL.createObjectURL(file);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = file.name;
+  try {
+    anchor.click();
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
 }
 
 function TextField({
@@ -632,97 +684,105 @@ function LocaleHarness({
   alpineDelayMilliseconds,
   captureEnvironment,
   now,
-  clipboard,
   xhrFactory,
-}: Required<
-  Pick<
-    HarnessAppProps,
-    'locale' | 'revision' | 'buildTime' | 'deploymentUrl' | 'alpineDelayMilliseconds'
-  >
-> &
-  Pick<HarnessAppProps, 'captureEnvironment' | 'now' | 'clipboard' | 'xhrFactory'>) {
+  createBundle = createManualEvidenceBundle,
+  downloadBundle = downloadBundleInBrowser,
+}: HarnessAppProps) {
   const messages = UI_MESSAGES[locale];
   const readEnvironment = captureEnvironment ?? captureBrowserEnvironment;
-  const readTime = now ?? currentTime;
+  const readTime = now ?? (() => new Date());
   const [initialEnvironment] = useState(readEnvironment);
   const [scenario, setScenario] = useState<ManualScenario>('DF-FU-M01');
-  const [drafts, setDrafts] = useState<Partial<Record<ManualScenario, ObservationDraft>>>(() => {
-    return {
-      'DF-FU-M01': createDraft(
-        'DF-FU-M01',
-        locale,
-        revision,
-        deploymentUrl,
-        initialEnvironment,
-        readTime().toISOString(),
-      ),
-    };
-  });
+  const [drafts, setDrafts] = useState<Partial<Record<ManualScenario, ObservationDraft>>>(() => ({
+    'DF-FU-M01': createDraft(
+      'DF-FU-M01',
+      locale,
+      revision,
+      deploymentUrl,
+      initialEnvironment,
+      readTime().toISOString(),
+    ),
+  }));
+  const [attachments, setAttachments] = useState<
+    Partial<Record<ManualScenario, readonly File[]>>
+  >({});
   const [mode, setMode] = useState<EvidenceOperatorMode>('success');
   const [showValidation, setShowValidation] = useState(false);
-  const [exportBlocker, setExportBlocker] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string>();
+  const [includedScenarios, setIncludedScenarios] = useState<readonly ManualScenario[]>([]);
   const instrumentRef = useRef<ReactFileUploadEvidenceHandle>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const draft = requiredDraft(drafts, scenario);
-  const validation = validateObservation(observationValue(draft));
-  const completedM03Checks = SCENARIO_CHECK_IDS['DF-FU-M03'].filter(
-    (id) => draft.checkAttestations[id] === true,
+  const files = attachments[scenario] ?? [];
+  const selectedAttachmentError = attachmentError(files, messages);
+  const validation = validateObservation(
+    observationValue(draft, files, messages.expectedByScenario[scenario]),
   );
-  const m03ManualRecordComplete =
-    draft.inputMethods.includes('touch') &&
-    draft.inputMethods.includes('keyboard') &&
-    completedM03Checks.length === SCENARIO_CHECK_IDS['DF-FU-M03'].length;
-  const exportEnabled =
-    validation.ok &&
-    (scenario !== 'DF-FU-M03' || draft.result !== 'PASS' || m03ManualRecordComplete);
+  const exportEnabled = validation.ok && selectedAttachmentError === undefined && !exporting;
+  const attachmentHelpId = `evidence-attachments-help-${locale}`;
+  const attachmentErrorId = `evidence-attachments-error-${locale}`;
 
   function updateDraft(update: (current: ObservationDraft) => ObservationDraft): void {
     setShowValidation(true);
-    setExportBlocker(null);
+    setExportError(undefined);
+    setIncludedScenarios([]);
     setDrafts((current) => ({
       ...current,
       [scenario]: update(requiredDraft(current, scenario)),
     }));
   }
 
-  function validatedExport(): FileUploadManualObservation | null {
-    const currentEnvironment = readEnvironment();
-    const synchronizedDraft = draftWithEnvironment(draft, currentEnvironment);
-    setDrafts((current) => ({ ...current, [scenario]: synchronizedDraft }));
-    const currentValidation = validateObservation(observationValue(synchronizedDraft));
+  function updateFiles(nextFiles: readonly File[]): void {
     setShowValidation(true);
-    if (!currentValidation.ok) return null;
+    setExportError(undefined);
+    setIncludedScenarios([]);
+    setAttachments((current) => ({ ...current, [scenario]: nextFiles }));
+  }
 
-    if (scenario === 'DF-FU-M03' && currentValidation.value.result === 'PASS') {
-      const eligibility = m03Eligibility(
-        currentEnvironment,
-        currentValidation.value.inputMethods,
-        completedM03Checks,
-      );
-      if (!eligibility.eligible) {
-        const reason = eligibility.reasons[0];
-        setExportBlocker(exportBlockerMessage(messages, reason));
-        return null;
+  async function downloadEvidence(): Promise<void> {
+    const synchronizedDraft = draftWithEnvironment(draft, readEnvironment());
+    const synchronizedDrafts = { ...drafts, [scenario]: synchronizedDraft };
+    setDrafts(synchronizedDrafts);
+    setShowValidation(true);
+    setExportError(undefined);
+
+    const selectedValidation = validateObservation(
+      observationValue(synchronizedDraft, files, messages.expectedByScenario[scenario]),
+    );
+    if (!selectedValidation.ok || selectedAttachmentError !== undefined) return;
+
+    const records: FileUploadManualObservation[] = [];
+    const selectedAttachments = new Map<ManualScenario, readonly File[]>();
+    for (const candidateScenario of SCENARIOS) {
+      const candidateDraft = synchronizedDrafts[candidateScenario];
+      const candidateFiles = attachments[candidateScenario] ?? [];
+      if (candidateDraft === undefined || attachmentError(candidateFiles, messages) !== undefined) {
+        continue;
       }
+      const candidateValidation = validateObservation(
+        observationValue(
+          candidateDraft,
+          candidateFiles,
+          messages.expectedByScenario[candidateScenario],
+        ),
+      );
+      if (!candidateValidation.ok) continue;
+      records.push(candidateValidation.value);
+      selectedAttachments.set(candidateScenario, candidateFiles);
     }
 
-    setExportBlocker(null);
-    return currentValidation.value;
-  }
-
-  async function copyJson(): Promise<void> {
-    const observation = validatedExport();
-    if (observation === null) return;
-    const targetClipboard = clipboard ?? navigator.clipboard;
-    await targetClipboard.writeText(`${JSON.stringify(observation, null, 2)}\n`);
-  }
-
-  function downloadJson(): void {
-    const observation = validatedExport();
-    if (observation === null) return;
-    downloadBlob(
-      new Blob([`${JSON.stringify(observation, null, 2)}\n`], { type: 'application/json' }),
-      `${observation.scenario}-${locale}-${revision}.json`,
-    );
+    setExporting(true);
+    try {
+      const bundle = await createBundle(records, selectedAttachments as ManualEvidenceAttachments);
+      downloadBundle(bundle);
+      setIncludedScenarios(records.map(({ scenario: included }) => included));
+    } catch {
+      setExportError(messages.zipError);
+      setIncludedScenarios([]);
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -734,7 +794,7 @@ function LocaleHarness({
 
       <section className="lyra-evidence__section" aria-labelledby="evidence-build-heading">
         <h3 id="evidence-build-heading">{messages.buildMetadata}</h3>
-        <dl className="lyra-evidence__metadata">
+        <dl className="lyra-evidence__metadata lyra-evidence__metadata--compact">
           <div>
             <dt>{messages.revision}</dt>
             <dd>
@@ -808,8 +868,8 @@ function LocaleHarness({
         </ul>
       </section>
 
-      <section className="lyra-evidence__section" aria-labelledby="react-lifecycle-heading">
-        <h3 id="react-lifecycle-heading">{messages.controlledLifecycle}</h3>
+      <section className="lyra-evidence__section" aria-labelledby="evidence-scenario-heading">
+        <h3 id="evidence-scenario-heading">{messages.scenarioChoice}</h3>
         <label className="lyra-field lyra-evidence__scenario">
           <span className="lyra-label">{messages.scenario}</span>
           <select
@@ -835,7 +895,8 @@ function LocaleHarness({
               }
               setScenario(nextScenario);
               setShowValidation(false);
-              setExportBlocker(null);
+              setExportError(undefined);
+              setIncludedScenarios([]);
             }}
           >
             {SCENARIOS.map((entry) => (
@@ -845,6 +906,10 @@ function LocaleHarness({
             ))}
           </select>
         </label>
+      </section>
+
+      <section className="lyra-evidence__section" aria-labelledby="react-lifecycle-heading">
+        <h3 id="react-lifecycle-heading">{messages.controlledLifecycle}</h3>
         <fieldset className="lyra-fieldset">
           <legend className="lyra-fieldset__legend">{messages.operatorMode}</legend>
           <div className="lyra-evidence__mode-grid">
@@ -931,26 +996,6 @@ function LocaleHarness({
             {...(xhrFactory === undefined ? {} : { xhrFactory })}
           />
         </div>
-      </section>
-
-      <section className="lyra-evidence__section" aria-labelledby="evidence-checklist-heading">
-        <h3 id="evidence-checklist-heading">{messages.checklist}</h3>
-        <p>{MESSAGES[locale].instructions[scenario === 'DF-FU-M03' ? 'm03' : 'export']}</p>
-        <div className="lyra-evidence__checklist">
-          {SCENARIO_CHECK_IDS[scenario].map((id) => (
-            <CheckRow
-              key={id}
-              label={messages.scenarioChecks[id]}
-              checked={draft.checkAttestations[id] === true}
-              onChange={(checked) =>
-                updateDraft((current) => ({
-                  ...current,
-                  checkAttestations: { ...current.checkAttestations, [id]: checked },
-                }))
-              }
-            />
-          ))}
-        </div>
         <div className="lyra-evidence__fixture">
           <div>
             <h4>{messages.longFixture}</h4>
@@ -960,11 +1005,10 @@ function LocaleHarness({
             className="lyra-btn lyra-btn--secondary lyra-btn--md"
             type="button"
             onClick={() =>
-              downloadBlob(
+              downloadFixture(
                 new File([messages.longFixtureBody], messages.longFixtureName, {
                   type: 'text/plain',
                 }),
-                messages.longFixtureName,
               )
             }
           >
@@ -1026,7 +1070,6 @@ function LocaleHarness({
             label={messages.atName}
             name="assistiveTechnology.name"
             value={draft.assistiveTechnology.name}
-            readOnly={draft.noAssistiveTechnologyConfirmed}
             onChange={(value) =>
               updateDraft((current) => ({
                 ...current,
@@ -1038,7 +1081,6 @@ function LocaleHarness({
             label={messages.atVersion}
             name="assistiveTechnology.version"
             value={draft.assistiveTechnology.version}
-            readOnly={draft.noAssistiveTechnologyConfirmed}
             onChange={(value) =>
               updateDraft((current) => ({
                 ...current,
@@ -1047,15 +1089,6 @@ function LocaleHarness({
             }
           />
         </div>
-        {scenario === 'DF-FU-M03' || scenario === 'DF-FU-M04' ? (
-          <CheckRow
-            label={messages.noAtConfirmation}
-            checked={draft.noAssistiveTechnologyConfirmed}
-            onChange={(checked) =>
-              updateDraft((current) => ({ ...current, noAssistiveTechnologyConfirmed: checked }))
-            }
-          />
-        ) : null}
         <fieldset className="lyra-fieldset">
           <legend className="lyra-fieldset__legend">{messages.inputMethods}</legend>
           <div className="lyra-evidence__mode-grid">
@@ -1080,20 +1113,97 @@ function LocaleHarness({
             ))}
           </div>
         </fieldset>
-        <div className="lyra-evidence__text-grid">
-          <TextAreaField
-            label={messages.expected}
-            name="expected"
-            value={draft.expected}
-            onChange={(value) => updateDraft((current) => ({ ...current, expected: value }))}
-          />
-          <TextAreaField
-            label={messages.actual}
-            name="actual"
-            value={draft.actual}
-            onChange={(value) => updateDraft((current) => ({ ...current, actual: value }))}
-          />
+        <h4>{messages.checklist}</h4>
+        <p>{MESSAGES[locale].instructions.export}</p>
+        <div className="lyra-evidence__checklist">
+          {SCENARIO_CHECK_IDS[scenario].map((id) => (
+            <CheckRow
+              key={id}
+              label={messages.scenarioChecks[id]}
+              checked={draft.checkAttestations[id] === true}
+              onChange={(checked) =>
+                updateDraft((current) => ({
+                  ...current,
+                  checkAttestations: { ...current.checkAttestations, [id]: checked },
+                }))
+              }
+            />
+          ))}
         </div>
+        <div className="lyra-evidence__expected">
+          <h4>{messages.expectedOutcome}</h4>
+          <p>{messages.expectedByScenario[scenario]}</p>
+        </div>
+        <TextAreaField
+          label={messages.actual}
+          name="actual"
+          value={draft.actual}
+          onChange={(value) => updateDraft((current) => ({ ...current, actual: value }))}
+        />
+      </section>
+
+      <section className="lyra-evidence__section" aria-labelledby="evidence-attachments-heading">
+        <h3 id="evidence-attachments-heading">{messages.attachments}</h3>
+        <div className="lyra-field lyra-evidence__attachments">
+          <label className="lyra-label" htmlFor={`evidence-attachments-${locale}`}>
+            {messages.attachmentLabel}
+          </label>
+          <p id={attachmentHelpId} className="lyra-evidence__attachment-help">
+            {messages.attachmentGuidance} {messages.attachmentAccepted}
+          </p>
+          <input
+            key={scenario}
+            ref={attachmentInputRef}
+            className="lyra-input lyra-evidence__attachment-input"
+            id={`evidence-attachments-${locale}`}
+            name="evidenceAttachments"
+            type="file"
+            multiple
+            accept={[...MANUAL_MEDIA_TYPES].join(',')}
+            aria-invalid={selectedAttachmentError === undefined ? undefined : true}
+            aria-describedby={
+              selectedAttachmentError === undefined
+                ? attachmentHelpId
+                : `${attachmentHelpId} ${attachmentErrorId}`
+            }
+            onChange={(event) => {
+              updateFiles(Array.from(event.currentTarget.files ?? []));
+              event.currentTarget.value = '';
+            }}
+          />
+          {selectedAttachmentError === undefined ? null : (
+            <p
+              className="lyra-evidence__validation lyra-evidence__attachment-error"
+              id={attachmentErrorId}
+              role="alert"
+            >
+              {selectedAttachmentError}
+            </p>
+          )}
+          {files.length === 0 ? null : (
+            <ul className="lyra-evidence__attachment-list">
+              {files.map((file, index) => (
+                <li key={`${file.name}-${file.size}-${file.lastModified}-${index}`}>
+                  <span>{file.name}</span>
+                  <button
+                    className="lyra-btn lyra-btn--ghost lyra-btn--md lyra-evidence__remove-attachment"
+                    type="button"
+                    onClick={() => {
+                      updateFiles(files.filter((_, fileIndex) => fileIndex !== index));
+                      attachmentInputRef.current?.focus();
+                    }}
+                  >
+                    {messages.removeAttachment(file.name)}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      <section className="lyra-evidence__section" aria-labelledby="evidence-review-heading">
+        <h3 id="evidence-review-heading">{messages.review}</h3>
         <div className="lyra-evidence__field-grid">
           <label className="lyra-field">
             <span className="lyra-label">{messages.result}</span>
@@ -1143,20 +1253,12 @@ function LocaleHarness({
             </select>
           </label>
         </div>
-        <div className="lyra-evidence__text-grid">
-          <TextAreaField
-            label={messages.artifactUrls}
-            name="artifactUrls"
-            value={draft.artifactUrls}
-            onChange={(value) => updateDraft((current) => ({ ...current, artifactUrls: value }))}
-          />
-          <TextAreaField
-            label={messages.findingUrls}
-            name="findingUrls"
-            value={draft.findingUrls}
-            onChange={(value) => updateDraft((current) => ({ ...current, findingUrls: value }))}
-          />
-        </div>
+        <TextAreaField
+          label={messages.findingUrls}
+          name="findingUrls"
+          value={draft.findingUrls}
+          onChange={(value) => updateDraft((current) => ({ ...current, findingUrls: value }))}
+        />
         {showValidation && !validation.ok ? (
           <div className="lyra-evidence__validation">
             <h4>{messages.validationHeading}</h4>
@@ -1167,25 +1269,24 @@ function LocaleHarness({
             </ul>
           </div>
         ) : null}
-        {exportBlocker === null ? null : (
-          <p className="lyra-evidence__validation">{exportBlocker}</p>
+        {exportError === undefined ? null : (
+          <p className="lyra-evidence__validation" role="alert">
+            {exportError}
+          </p>
+        )}
+        {includedScenarios.length === 0 ? null : (
+          <p className="lyra-evidence__export-summary" aria-live="polite">
+            {messages.zipIncludes(includedScenarios)}
+          </p>
         )}
         <div className="lyra-evidence__export-actions">
           <button
             className="lyra-btn lyra-btn--primary lyra-btn--lg"
             type="button"
             disabled={!exportEnabled}
-            onClick={() => void copyJson()}
+            onClick={() => void downloadEvidence()}
           >
-            {messages.copyJson}
-          </button>
-          <button
-            className="lyra-btn lyra-btn--secondary lyra-btn--lg"
-            type="button"
-            disabled={!exportEnabled}
-            onClick={downloadJson}
-          >
-            {messages.downloadJson}
+            {exporting ? messages.creatingZip : messages.downloadZip}
           </button>
         </div>
       </section>

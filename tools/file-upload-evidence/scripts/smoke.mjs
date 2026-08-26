@@ -13,10 +13,11 @@ const locales = [
   {
     locale: 'en',
     title: 'File upload manual evidence',
+    zipLabel: 'Download evidence ZIP',
     scenarios: [
       {
         id: 'DF-FU-M01',
-        label: 'DF-FU-M01 — Windows, NVDA, and a current browser',
+        label: 'DF-FU-M01 — Windows, NVDA, and a current Firefox or Chromium browser',
         checklistMarker: 'Verify selection and indeterminate upload announcements with NVDA.',
       },
       {
@@ -25,26 +26,16 @@ const locales = [
         checklistMarker:
           'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
       },
-      {
-        id: 'DF-FU-M03',
-        label: 'DF-FU-M03 — keyboard, touch, and a 320 CSS pixel viewport',
-        checklistMarker: 'No horizontal overflow observed',
-      },
-      {
-        id: 'DF-FU-M04',
-        label: 'DF-FU-M04 — native form and delayed Alpine initialization',
-        checklistMarker:
-          'Submit the authored native form with JavaScript disabled and retain the response evidence.',
-      },
     ],
   },
   {
     locale: 'pt-BR',
     title: 'Evidência manual de envio de arquivo',
+    zipLabel: 'Baixar ZIP de evidências',
     scenarios: [
       {
         id: 'DF-FU-M01',
-        label: 'DF-FU-M01 — Windows, NVDA e navegador atual',
+        label: 'DF-FU-M01 — Windows, NVDA e Firefox ou Chromium atual',
         checklistMarker: 'Verifique os anúncios de seleção e envio indeterminado com NVDA.',
       },
       {
@@ -52,17 +43,6 @@ const locales = [
         label: 'DF-FU-M02 — macOS, VoiceOver e Safari',
         checklistMarker:
           'Verifique os anúncios de seleção e envio indeterminado com VoiceOver e Safari.',
-      },
-      {
-        id: 'DF-FU-M03',
-        label: 'DF-FU-M03 — teclado, toque e viewport de 320 pixels CSS',
-        checklistMarker: 'Nenhum overflow horizontal observado',
-      },
-      {
-        id: 'DF-FU-M04',
-        label: 'DF-FU-M04 — formulário nativo e inicialização Alpine atrasada',
-        checklistMarker:
-          'Envie o formulário nativo autorado com JavaScript desativado e guarde a evidência da resposta.',
       },
     ],
   },
@@ -94,6 +74,12 @@ export function validateScenarioSurfaces(value) {
     }
     if (surface.recorderMounted !== true) {
       throw new Error(`${expectation.locale} scenario surface has no mounted React recorder.`);
+    }
+    if (surface.localAttachmentVisible !== true) {
+      throw new Error(`${expectation.locale} scenario surface has no local evidence attachment control.`);
+    }
+    if (surface.zipActionVisible !== true) {
+      throw new Error(`${expectation.locale} scenario surface has no evidence ZIP action.`);
     }
     if (!scenarioOptionsMatch(surface.options, expectation.scenarios)) {
       throw new Error(
@@ -308,6 +294,12 @@ export async function uploadWithBrowser({ payloadMarker, url }) {
       );
       const locale = (await page.locator('html').getAttribute('lang')) ?? '';
       const recorderMounted = await scenarioSelect.isVisible();
+      const localAttachmentVisible = await page
+        .locator('input[name="evidenceAttachments"][type="file"][multiple]')
+        .isVisible();
+      const zipActionVisible = await page
+        .getByRole('button', { name: expectation.zipLabel, exact: true })
+        .isVisible();
       if (locale !== expectation.locale) {
         throw new Error(`${expectation.locale} scenario surface has the wrong route locale.`);
       }
@@ -333,7 +325,14 @@ export async function uploadWithBrowser({ payloadMarker, url }) {
           observationEditorVisible: await observationEditor.isVisible(),
         });
       }
-      scenarioSurfaces.push({ locale, recorderMounted, options, visited });
+      scenarioSurfaces.push({
+        locale,
+        recorderMounted,
+        localAttachmentVisible,
+        zipActionVisible,
+        options,
+        visited,
+      });
     }
 
     await page.goto(`${url}/en/file-upload-evidence/`, { waitUntil: 'domcontentloaded' });
