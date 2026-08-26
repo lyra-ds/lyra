@@ -430,11 +430,15 @@ describe('validateManifest', () => {
     ).toMatchObject({ ok: false });
   });
 
-  it('uses Unicode case folding for duplicate archive paths', () => {
+  it('uses Unicode Default Case Folding for duplicate archive paths', () => {
+    const sharpSKeys = ['ẞ.txt', 'ß.txt', 'SS.TXT'].map(canonicalArchivePathKey);
+    expect(new Set(sharpSKeys).size).toBe(1);
+    expect(canonicalArchivePathKey('ı.txt')).not.toBe(canonicalArchivePathKey('i.TXT'));
     expect(canonicalArchivePathKey('straße.txt')).toBe(canonicalArchivePathKey('STRASSE.TXT'));
     expect(canonicalArchivePathKey('σ.txt')).toBe(canonicalArchivePathKey('ς.TXT'));
 
     for (const names of [
+      ['ẞ.png', 'ß.png', 'SS.PNG'],
       ['straße.png', 'STRASSE.PNG'],
       ['σ.png', 'ς.PNG'],
     ]) {
@@ -450,6 +454,18 @@ describe('validateManifest', () => {
         }),
       ).toMatchObject({ ok: false, errors: ['entries'] });
     }
+
+    expect(
+      validateManifest({
+        ...validManualManifest,
+        entries: ['ı.png', 'i.PNG'].map((name, index) => ({
+          path: `artifacts/DF-FU-M01/${name}`,
+          bytes: 10 + index,
+          mediaType: 'image/png',
+          sha256: `${index + 1}`.repeat(64),
+        })),
+      }),
+    ).toMatchObject({ ok: true });
   });
 
   it('enforces automation media types by archive path', () => {

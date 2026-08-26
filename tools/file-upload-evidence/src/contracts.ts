@@ -1,3 +1,5 @@
+import { caseFold } from 'unicode-case-folding';
+
 import { MESSAGES } from './messages.ts';
 
 export type Locale = 'pt-BR' | 'en';
@@ -321,7 +323,7 @@ function isCanonicalArchivePath(value: string): boolean {
 }
 
 export function canonicalArchivePathKey(path: string): string {
-  return path.normalize('NFC').toUpperCase().toLowerCase().normalize('NFC');
+  return caseFold(path.normalize('NFC')).normalize('NFC');
 }
 
 function uniqueCanonicalPaths(paths: readonly string[]): boolean {

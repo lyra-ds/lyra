@@ -107,6 +107,48 @@ function validArchive({
   );
 }
 
+function archiveWithArtifactNames(artifactNames) {
+  const artifacts = artifactNames.map((name, index) => ({
+    path: `artifacts/DF-FU-M01/${name}`,
+    bytes: strToU8(`image-${index}`),
+  }));
+  const artifactPaths = artifacts.map(({ path }) => path);
+  const recordBytes = strToU8(JSON.stringify(manualRecord({ artifactPaths })));
+  const manifest = {
+    schemaVersion: 1,
+    kind: 'manual',
+    revision: REVISION,
+    deploymentUrl: DEPLOYMENT_URL,
+    createdAt: CREATED_AT,
+    entries: [
+      ...artifacts.map(({ path, bytes }) => ({
+        path,
+        bytes: bytes.length,
+        mediaType: 'image/png',
+        sha256: sha256(bytes),
+      })),
+      {
+        path: RECORD_PATH,
+        bytes: recordBytes.length,
+        mediaType: 'application/json',
+        sha256: sha256(recordBytes),
+      },
+    ],
+  };
+  const members = Object.fromEntries([
+    ['manifest.json', strToU8(JSON.stringify(manifest))],
+    [RECORD_PATH, recordBytes],
+    ...artifacts.map(({ path, bytes }) => [path, bytes]),
+  ]);
+
+  return zipSync(
+    Object.fromEntries(
+      Object.entries(members).map(([name, bytes]) => [name, [bytes, { mtime: ZIP_MTIME }]]),
+    ),
+    { level: 6, mtime: ZIP_MTIME },
+  );
+}
+
 async function writeArchive(bytes) {
   const root = await mkdtemp(join(tmpdir(), 'lyra-hostile-zip-'));
   temporaryRoots.push(root);
@@ -247,6 +289,7 @@ describe('readEvidenceArchive', () => {
     for (const members of [
       { 'A.txt': strToU8('one'), 'a.txt': strToU8('two') },
       { 'caf\u00e9.txt': strToU8('one'), 'CAF\u00c9.txt': strToU8('two') },
+      { 'ẞ.txt': strToU8('one'), 'SS.TXT': strToU8('two') },
       { 'stra\u00dfe.txt': strToU8('one'), 'STRASSE.TXT': strToU8('two') },
       { '\u03c3.txt': strToU8('one'), '\u03c2.TXT': strToU8('two') },
     ]) {
@@ -255,6 +298,17 @@ describe('readEvidenceArchive', () => {
         /duplicate/i,
       );
     }
+  });
+
+  it('does not apply Turkic folding to distinct dotless and dotted i paths', async () => {
+    const result = await readEvidenceArchive(
+      await writeArchive(archiveWithArtifactNames(['ı.png', 'i.PNG'])),
+    );
+
+    assert.deepEqual(
+      [...result.entries.keys()].filter((path) => path.startsWith('artifacts/')).sort(),
+      ['artifacts/DF-FU-M01/i.PNG', 'artifacts/DF-FU-M01/ı.png'].sort(),
+    );
   });
 
   it('rejects directory and Unix symlink entries during central-directory preflight', async () => {
