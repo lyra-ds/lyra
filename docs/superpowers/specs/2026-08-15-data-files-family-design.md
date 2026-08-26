@@ -8,6 +8,24 @@
 
 **First implementation wave:** FileUpload only
 
+## 2026-08-26 amendment: FileUpload evidence simplification
+
+This amendment adopts the approved
+[`2026-08-26 FileUpload Evidence Simplification Design`](2026-08-26-file-upload-evidence-simplification-design.md)
+for the Task 10 evidence gate. It supersedes the former manual `DF-FU-M03` and
+`DF-FU-M04` release conditions; any remaining references to those manual IDs in
+this 2026-08-15 document are superseded historical context, not active work or
+release conditions.
+
+```text
+Manual: DF-FU-M01 and DF-FU-M02, actual AT environments, local media, reviewer approval.
+Automated: DF-FU-17 and DF-FU-18, exact immutable deployment revision, workflow ZIP.
+Completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
+```
+
+Manual evidence is collected as a local evidence ZIP. Repository ingestion uses
+`pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]`.
+
 ## 1. Problem, users, and use cases
 
 The current React and Alpine FileUpload implementations start timers after file
@@ -823,6 +841,8 @@ claim the behavior:
 | `DF-FU-14` | public types, exports, packaging, and consumer installs      | type/build/pack/consumer gates       |
 | `DF-FU-15` | standalone, CSS, scenario bundle, and runtime budgets        | versioned comparison report          |
 | `DF-FU-16` | React/Alpine classes, data states, operations, and outcomes  | parity/conformance fixture           |
+| `DF-FU-17` | responsive, coarse-pointer, keyboard, focus, and overflow    | revision-bound workflow ZIP          |
+| `DF-FU-18` | native no-JavaScript submission and delayed Alpine lifecycle | revision-bound workflow ZIP          |
 
 Test-first work begins in:
 
@@ -844,11 +864,14 @@ accessible relationships, focus, form values, announcements, and event counts.
 | ----------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `DF-FU-M01` | Windows, current NVDA, current Firefox or Chromium | browse, hear validation, follow real progress, cancel, retry, complete, remove, and verify focus |
 | `DF-FU-M02` | macOS, current VoiceOver, current Safari           | repeat the complete workflow with determinate and indeterminate progress                         |
-| `DF-FU-M03` | keyboard, touch/coarse pointer, 320 px viewport    | select, reject active replacement, operate recovery controls, and verify reflow                  |
-| `DF-FU-M04` | no JavaScript and delayed Alpine initialization    | select and submit natively; confirm no dead controls or replayed messages                        |
 
 Each record names the revision, operating system, browser, assistive technology
-and versions, input method, expected and actual result, and artifact link.
+and versions, input method, expected and actual result, reviewer approval, and
+local evidence ZIP. `DF-FU-17` and `DF-FU-18` each require a `PASS` in the
+workflow ZIP for that same immutable deployment revision. Completion requires
+one `PASS` for each of `DF-FU-M01`, `DF-FU-M02`, `DF-FU-17`, and `DF-FU-18`, one
+revision, one immutable deployment, and successful
+`evidence:file-upload:ingest` ingestion.
 
 ### 15.3 Required commands
 
@@ -961,7 +984,10 @@ The specification is approved when:
 - [x] Table, DataTable, and FileManager remain boundary-only and the first
       implementation plan is limited to FileUpload;
 - [x] the Lyra maintainer approves this document; runtime merge remains gated on
-      accessibility-reviewer approval of `DF-FU-M01` through `DF-FU-M04`.
+      accessibility-reviewer approval of `DF-FU-M01` and `DF-FU-M02`, passing
+      `DF-FU-17` and `DF-FU-18` workflow ZIP results, and successful
+      `evidence:file-upload:ingest` ingestion for one immutable deployment
+      revision.
 
 Once this document reaches `Approved`, the next artifact is a test-first,
 FileUpload-only implementation plan. Production code must not begin before that

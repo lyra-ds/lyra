@@ -4,6 +4,30 @@
 **Status:** approved design, pending implementation plan  
 **Related work:** `docs/superpowers/plans/2026-08-16-file-upload-controlled-lifecycle.md`, Task 10; `docs/superpowers/specs/2026-08-15-data-files-family-design.md`, §15.2
 
+## 2026-08-26 amendment: FileUpload evidence simplification
+
+The approved
+[`2026-08-26 FileUpload Evidence Simplification Design`](2026-08-26-file-upload-evidence-simplification-design.md)
+supersedes this harness's active evidence protocol.
+
+```text
+Manual: DF-FU-M01 and DF-FU-M02, actual AT environments, local media, reviewer approval.
+Automated: DF-FU-17 and DF-FU-18, exact immutable deployment revision, workflow ZIP.
+Completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
+```
+
+The recorder offers only `DF-FU-M01` and `DF-FU-M02`, accepts local media, and
+exports a local evidence ZIP. The passing workflow publishes `DF-FU-17` and
+`DF-FU-18` in `file-upload-automation-<revision-prefix>.zip`; repository
+ingestion is `pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]`.
+The two manual ZIPs and automation ZIP must name the same exact immutable
+deployment revision before ingestion can succeed.
+
+> **Superseded historical context:** The remaining 2026-08-17 design below is
+> retained for traceability only. Its `DF-FU-M03`/`DF-FU-M04`, Galaxy, four-
+> scenario, JSON-export, and artifact-link instructions are not active work,
+> release conditions, or evidence of any M03/M04 execution.
+
 ## Purpose
 
 Provide one temporary, public, revision-pinned harness that lets a tester execute the FileUpload manual accessibility workflows on real Windows, macOS, keyboard, and touch environments without publishing unfinished evidence to the production documentation.

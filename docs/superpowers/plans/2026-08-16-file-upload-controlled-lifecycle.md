@@ -10,6 +10,25 @@
 
 ## Global Constraints
 
+### 2026-08-26 amendment: FileUpload evidence simplification
+
+The approved
+[`2026-08-26 FileUpload Evidence Simplification Design`](../specs/2026-08-26-file-upload-evidence-simplification-design.md)
+supersedes Task 10's manual M03/M04 evidence protocol.
+
+```text
+Manual: DF-FU-M01 and DF-FU-M02, actual AT environments, local media, reviewer approval.
+Automated: DF-FU-17 and DF-FU-18, exact immutable deployment revision, workflow ZIP.
+Completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
+```
+
+Task 10 uses local evidence ZIPs for the two manual records and the passing
+`file-upload-automation-<revision-prefix>.zip` for `DF-FU-17` and `DF-FU-18`.
+It invokes `pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]`.
+Any remaining Task 10 references to manual `DF-FU-M03`/`DF-FU-M04` are
+superseded historical plan context, not active instructions or release
+conditions; they do not assert that either scenario ran.
+
 - Follow [the approved family specification](../specs/2026-08-15-data-files-family-design.md) exactly; Table, DataTable, and FileManager runtime APIs are out of scope.
 - Every shell command starts with `rtk`; use `rtk proxy` only when unfiltered output is required.
 - Use test-driven development: add one failing `DF-FU-*` acceptance case, run it and observe the expected failure, implement the smallest contract slice, then rerun it.
@@ -994,27 +1013,50 @@ The acceptance command must fail unless exactly one canonical bundle/runtime set
 
 **Interfaces:**
 
-- Produces completed `DF-FU-M01` through `DF-FU-M04` records with actual environments and artifacts.
-- Produces final automated evidence for `DF-FU-01` through `DF-FU-16` at one exact revision.
+- Produces approved `DF-FU-M01` and `DF-FU-M02` records from actual assistive-
+  technology environments with local media in local evidence ZIPs.
+- Produces `PASS` results for `DF-FU-17` and `DF-FU-18` in a workflow ZIP for
+  the exact immutable deployment revision.
+- Produces successful `evidence:file-upload:ingest` output from those ZIPs for
+  one revision and one immutable deployment.
 
-- [ ] **Step 1: Run the four manual critical workflows before creating a pass record**
+- [ ] **Step 1: Collect the two manual critical workflows before creating a pass record**
 
 Exercise:
 
 ```text
 DF-FU-M01 — Windows, current NVDA, current Firefox or Chromium
 DF-FU-M02 — macOS, current VoiceOver, current Safari
-DF-FU-M03 — keyboard plus coarse pointer at 320 CSS pixels
-DF-FU-M04 — no JavaScript and delayed Alpine initialization
 ```
 
-For each, perform selection, validation, determinate/indeterminate progress, cancel/canceling, retry with new attempt, stale-result rejection, success, confirmed removal, and focus recovery where applicable. Missing access to a required environment is a blocked merge gate, not a pass.
+For each, perform selection, validation, determinate/indeterminate progress,
+cancel/canceling, retry with new attempt, stale-result rejection, success,
+confirmed removal, and focus recovery. Attach local media, obtain reviewer
+approval, and export the local evidence ZIP. Missing access to a required
+environment is a blocked merge gate, not a pass.
 
-- [ ] **Step 2: Write the evidence record with actual results**
+- [ ] **Step 2: Download the revision-bound automated evidence ZIP**
 
-Use one table row per scenario containing exact revision, date, OS/version, browser/version, assistive technology/version, input method, expected result, actual result, pass/fail, reviewer, and artifact link. Do not commit empty cells, “not tested”, or aspirational passes. Any failure returns to the owning TDD task and requires a fresh full scenario run.
+Dispatch the evidence preview workflow for the reviewed evidence ref. Download
+`file-upload-automation-<revision-prefix>.zip` from its passing run. It must
+contain `PASS` results for `DF-FU-17` and `DF-FU-18` for the same exact
+immutable deployment revision as both local evidence ZIPs.
 
-- [ ] **Step 3: Run focused package and conformance gates**
+- [ ] **Step 3: Ingest and review complete evidence**
+
+Run:
+
+```text
+rtk pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]
+```
+
+The command must succeed only with one approved `DF-FU-M01`, one approved
+`DF-FU-M02`, `PASS` results for `DF-FU-17` and `DF-FU-18`, one revision, and one
+immutable deployment. Review the generated diff; do not commit empty cells,
+“not tested”, or aspirational passes. Any failure returns to the owning TDD
+task and requires a fresh full scenario run.
+
+- [ ] **Step 4: Run focused package and conformance gates**
 
 ```text
 rtk pnpm --filter @lyra-ds/styles run lint:css
@@ -1033,7 +1075,7 @@ rtk pnpm performance:file-upload --check
 
 Expected: every command exits 0 with three-engine behavior, React 18/19 coverage, parity, accepted bundle evidence, and runtime thresholds passing.
 
-- [ ] **Step 4: Run packaging, documentation, and repository gates**
+- [ ] **Step 5: Run packaging, documentation, and repository gates**
 
 ```text
 rtk pnpm run lint
@@ -1054,7 +1096,7 @@ rtk git diff --check
 
 Expected: all commands exit 0; generated docs and packed declarations are current; no absolute or delta budget is widened; no legacy upload prop/event/timer remains in public source or docs.
 
-- [ ] **Step 5: Commit manual evidence and prepare review**
+- [ ] **Step 6: Commit ingested evidence and prepare review**
 
 ```text
 rtk git add docs/superpowers/evidence/2026-08-16-file-upload-manual.md
