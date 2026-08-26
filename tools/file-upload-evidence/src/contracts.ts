@@ -165,7 +165,7 @@ export interface FileUploadAutomatedResult {
   runs: Array<{
     engine: 'chromium' | 'firefox' | 'webkit';
     viewport: { width: number; height: number; devicePixelRatio: number };
-    mediaQueries: Record<string, boolean>;
+    mediaQueries: Record<string, boolean | null>;
     checks: Record<string, boolean>;
     artifactPaths: string[];
   }>;
@@ -277,6 +277,18 @@ function normalizedBooleanRecord(value: unknown): Record<string, boolean> | unde
   const normalized: Record<string, boolean> = {};
   for (const [key, entry] of Object.entries(value)) {
     if (typeof entry !== 'boolean') return undefined;
+    normalized[key] = entry;
+  }
+  return normalized;
+}
+
+function normalizedObservedBooleanRecord(
+  value: unknown,
+): Record<string, boolean | null> | undefined {
+  if (!isRecord(value)) return undefined;
+  const normalized: Record<string, boolean | null> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry !== 'boolean' && entry !== null) return undefined;
     normalized[key] = entry;
   }
   return normalized;
@@ -700,7 +712,7 @@ export function validateAutomatedResult(
         continue;
       }
       const viewport = normalizedViewport(candidate.viewport);
-      const mediaQueries = normalizedBooleanRecord(candidate.mediaQueries);
+      const mediaQueries = normalizedObservedBooleanRecord(candidate.mediaQueries);
       const checks = normalizedExactBooleanRecord(
         candidate.checks,
         automatedScenarioCheckIds[scenario],
@@ -712,6 +724,13 @@ export function validateAutomatedResult(
           : undefined;
       const expectedPaths = requiredArtifactPaths(scenario, candidate.engine).sort();
       const actualPaths = artifactPaths === undefined ? [] : [...artifactPaths].sort();
+      const hasEvents = actualPaths.includes(
+        `artifacts/${scenario}/${candidate.engine}/events.json`,
+      );
+      const hasOnlyExpectedArtifacts = actualPaths.every((path) => expectedPaths.includes(path));
+      const hasPassArtifacts =
+        actualPaths.length === expectedPaths.length &&
+        expectedPaths.every((path, index) => path === actualPaths[index]);
       if (
         viewport === undefined ||
         mediaQueries === undefined ||
@@ -719,8 +738,9 @@ export function validateAutomatedResult(
         checks === undefined ||
         artifactPaths === undefined ||
         !uniqueCanonicalPaths(artifactPaths) ||
-        actualPaths.length !== expectedPaths.length ||
-        !expectedPaths.every((path, index) => path === actualPaths[index])
+        !hasEvents ||
+        !hasOnlyExpectedArtifacts ||
+        (result === 'PASS' && !hasPassArtifacts)
       ) {
         errors.push('runs');
         continue;
@@ -750,7 +770,8 @@ export function validateAutomatedResult(
       const chromium = runs.find((run) => run.engine === 'chromium');
       if (
         chromium === undefined ||
-        (chromium.mediaQueries['(pointer: coarse)'] !== true &&
+        (result === 'PASS' &&
+          chromium.mediaQueries['(pointer: coarse)'] !== true &&
           chromium.mediaQueries['(any-pointer: coarse)'] !== true)
       ) {
         errors.push('runs');
@@ -760,7 +781,32 @@ export function validateAutomatedResult(
   if (!uniqueCanonicalPaths(runs.flatMap((run) => run.artifactPaths))) errors.push('runs');
   const allChecksPassed =
     runs.length > 0 && runs.every((run) => Object.values(run.checks).every(Boolean));
-  if (result !== undefined && result !== (allChecksPassed ? 'PASS' : 'FAIL')) errors.push('result');
+  const allArtifactsPresent =
+    scenario !== undefined &&
+    runs.every((run) => {
+      const expectedPaths = requiredArtifactPaths(scenario, run.engine).sort();
+      const actualPaths = [...run.artifactPaths].sort();
+      return (
+        actualPaths.length === expectedPaths.length &&
+        expectedPaths.every((path, index) => path === actualPaths[index])
+      );
+    });
+  const allMediaObserved = runs.every(
+    (run) =>
+      Object.keys(run.mediaQueries).length > 0 &&
+      Object.values(run.mediaQueries).every((value) => typeof value === 'boolean'),
+  );
+  const chromium = runs.find((run) => run.engine === 'chromium');
+  const requiredMediaObserved =
+    scenario !== 'DF-FU-17' ||
+    (chromium !== undefined &&
+      (chromium.mediaQueries['(pointer: coarse)'] === true ||
+        chromium.mediaQueries['(any-pointer: coarse)'] === true));
+  const derivedResult =
+    allChecksPassed && allArtifactsPresent && allMediaObserved && requiredMediaObserved
+      ? 'PASS'
+      : 'FAIL';
+  if (result !== undefined && result !== derivedResult) errors.push('result');
 
   if (
     errors.length > 0 ||

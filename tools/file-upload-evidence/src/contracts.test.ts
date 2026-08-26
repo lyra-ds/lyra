@@ -584,6 +584,68 @@ describe('validateAutomatedResult', () => {
     ).toMatchObject({ ok: true });
   });
 
+  it('accepts a T2/T3-valid FAIL with unobserved media and only real events artifacts', () => {
+    const runs = validDfFu17.runs.map((run) => ({
+      ...run,
+      mediaQueries:
+        run.engine === 'chromium'
+          ? { '(pointer: coarse)': null, '(any-pointer: coarse)': null }
+          : run.mediaQueries,
+      checks: Object.fromEntries(
+        APPROVED_AUTOMATED_CHECK_IDS['DF-FU-17'].map((check) => [check, false]),
+      ),
+      artifactPaths: [`artifacts/DF-FU-17/${run.engine}/events.json`],
+    }));
+
+    expect(validateAutomatedResult({ ...validDfFu17, result: 'FAIL', runs })).toMatchObject({
+      ok: true,
+      value: { runs },
+    });
+  });
+
+  it('rejects partial artifacts or unobserved media for PASS', () => {
+    const runs = validDfFu17.runs.map((run) =>
+      run.engine === 'chromium'
+        ? {
+            ...run,
+            mediaQueries: { '(pointer: coarse)': null, '(any-pointer: coarse)': null },
+            artifactPaths: ['artifacts/DF-FU-17/chromium/events.json'],
+          }
+        : run,
+    );
+
+    expect(validateAutomatedResult({ ...validDfFu17, runs })).toMatchObject({ ok: false });
+
+    const unobservedFirefox = validDfFu17.runs.map((run) =>
+      run.engine === 'firefox'
+        ? { ...run, mediaQueries: { ...run.mediaQueries, '(pointer: coarse)': null } }
+        : run,
+    );
+    expect(validateAutomatedResult({ ...validDfFu17, runs: unobservedFirefox })).toMatchObject({
+      ok: false,
+    });
+  });
+
+  it('requires events.json and rejects unknown artifact paths even for FAIL', () => {
+    const chromium = validDfFu17.runs[0];
+    if (chromium === undefined) throw new Error('missing Chromium fixture');
+    const failedChecks = Object.fromEntries(
+      APPROVED_AUTOMATED_CHECK_IDS['DF-FU-17'].map((check) => [check, false]),
+    );
+    for (const artifactPaths of [
+      ['artifacts/DF-FU-17/chromium/final.png'],
+      ['artifacts/DF-FU-17/chromium/events.json', 'artifacts/DF-FU-17/chromium/not-approved.txt'],
+    ]) {
+      const runs = [
+        { ...chromium, checks: failedChecks, artifactPaths },
+        ...validDfFu17.runs.slice(1),
+      ];
+      expect(validateAutomatedResult({ ...validDfFu17, result: 'FAIL', runs })).toMatchObject({
+        ok: false,
+      });
+    }
+  });
+
   it('rejects a FAIL label when every required check passed', () => {
     expect(validateAutomatedResult({ ...validDfFu17, result: 'FAIL' })).toMatchObject({
       ok: false,
