@@ -112,6 +112,8 @@ describe('delayed Alpine evidence bootstrap', () => {
     expect(counter(host, 'alpine-initializations')).toBe(1);
     expect(counter(host, 'alpine-selection-intents')).toBe(0);
     expect(counter(host, 'alpine-controlled-echoes')).toBe(0);
+    expect(counter(host, 'alpine-connects')).toBe(1);
+    expect(counter(host, 'alpine-disconnects')).toBe(0);
     expect(liveRegion).toBeEmptyDOMElement();
     expect(root.querySelectorAll('#alpine-file-upload')).toHaveLength(1);
     const identities = host.querySelector('#alpine-selection-identities');
@@ -235,10 +237,11 @@ describe('delayed Alpine evidence bootstrap', () => {
     },
   );
 
-  it('keeps repeated bootstrap and same-node reconnect on the original initialization', async () => {
+  it('keeps repeated bootstrap idempotent and makes explicit reconnect teardown observable', async () => {
     const { host, input, root } = mountEntry();
     selectFiles(input, [new File(['native'], 'before.txt', { type: 'text/plain' })]);
-    const { bootstrapAlpine } = await import('./alpine-bootstrap');
+    const { bootstrapAlpine, reconnectAlpineFixture, teardownAlpineFixture } =
+      await import('./alpine-bootstrap');
     const scheduler = controlledScheduler();
     const options = { schedule: scheduler.schedule, search: '?alpineDelay=0' };
 
@@ -250,24 +253,50 @@ describe('delayed Alpine evidence bootstrap', () => {
     await first;
     await flushAlpine();
 
-    root.remove();
-    host.appendChild(root);
-    const reconnected = bootstrapAlpine(root, options);
-    expect(reconnected).toBe(first);
+    const repeatedAfterInitialization = bootstrapAlpine(root, options);
+    expect(repeatedAfterInitialization).toBe(first);
     expect(scheduler.tasks).toHaveLength(0);
     expect(counter(host, 'alpine-initializations')).toBe(1);
+    expect(counter(host, 'alpine-connects')).toBe(1);
+    expect(counter(host, 'alpine-disconnects')).toBe(0);
+
+    await reconnectAlpineFixture(root);
+    await flushAlpine();
+    expect(counter(host, 'alpine-initializations')).toBe(2);
+    expect(counter(host, 'alpine-connects')).toBe(2);
+    expect(counter(host, 'alpine-disconnects')).toBe(1);
+    const reconnectedInput = root.querySelector<HTMLInputElement>('#alpine-file');
+    if (reconnectedInput === null) throw new Error('Expected the reconnected native input.');
+    const reconnectedLiveRegion = root.querySelector<HTMLElement>('.lyra-upload__live');
+    if (reconnectedLiveRegion === null) {
+      throw new Error('Expected the reconnected live region.');
+    }
+    expect(reconnectedInput).not.toBe(input);
 
     let selectionEvents = 0;
     root.addEventListener('lyra:file-upload:select', () => {
       selectionEvents += 1;
     });
-    selectFiles(input, [new File(['after'], 'after.txt', { type: 'text/plain' })]);
+    selectFiles(reconnectedInput, [new File(['after'], 'after.txt', { type: 'text/plain' })]);
     await flushAlpine();
 
     expect(selectionEvents).toBe(1);
     expect(counter(host, 'alpine-selection-intents')).toBe(1);
     expect(counter(host, 'alpine-controlled-echoes')).toBe(1);
-    expect(counter(host, 'alpine-initializations')).toBe(1);
+    expect(counter(host, 'alpine-initializations')).toBe(2);
+    expect(root.querySelectorAll('.lyra-upload__item')).toHaveLength(1);
+
+    await teardownAlpineFixture(root);
+    await flushAlpine();
+    expect(counter(host, 'alpine-connects')).toBe(2);
+    expect(counter(host, 'alpine-disconnects')).toBe(2);
+    expect(reconnectedLiveRegion).toBeEmptyDOMElement();
+    selectFiles(reconnectedInput, [new File(['detached'], 'detached.txt', { type: 'text/plain' })]);
+    await flushAlpine();
+    expect(counter(host, 'alpine-selection-intents')).toBe(1);
+    expect(counter(host, 'alpine-controlled-echoes')).toBe(1);
+    expect(root.querySelectorAll('.lyra-upload__item')).toHaveLength(0);
+    expect(reconnectedLiveRegion).toBeEmptyDOMElement();
   });
 
   it('accepts only unpadded base-10 Alpine delays inside the public bound', async () => {

@@ -137,7 +137,8 @@ describe('three-engine file upload evidence instrument acceptance', () => {
       locale: 'en' as const,
       heading: 'File upload evidence recorder',
       scenario: 'DF-FU-M02 — macOS, VoiceOver, and Safari',
-      guidance: 'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
+      guidance:
+        'Verify selection and indeterminate upload announcements with VoiceOver and Safari.',
       foreignHeading: 'Registro de evidências de envio de arquivo',
     },
     {
@@ -234,6 +235,8 @@ describe('three-engine file upload evidence instrument acceptance', () => {
     expect(new FormData(form).get('file')).toBe(file);
     expect(root.querySelector('#alpine-initializations')).toHaveTextContent('1');
     expect(root.querySelector('#alpine-selection-intents')).toHaveTextContent('0');
+    expect(root.querySelector('#alpine-connects')).toHaveTextContent('1');
+    expect(root.querySelector('#alpine-disconnects')).toHaveTextContent('0');
   });
 
   it('keeps selected evidence local and downloads a ZIP through the injected boundary', async () => {

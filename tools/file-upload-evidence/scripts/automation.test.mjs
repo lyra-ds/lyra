@@ -4,7 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { readEvidenceArchive } from './archive.mjs';
-import {
+import * as automation from './automation.mjs';
+
+const {
   ARTIFACT_FILE_NAMES,
   DF_FU_17_CHECKS,
   REQUIRED_ENGINES,
@@ -15,7 +17,7 @@ import {
   parseAutomationArgs,
   resolveRequestedScenarios,
   runAutomation,
-} from './automation.mjs';
+} = automation;
 
 const { afterEach, describe, it } = process.env.VITEST
   ? await import('vitest')
@@ -25,6 +27,14 @@ const REVISION = '1234567890abcdef1234567890abcdef12345678';
 const DEPLOYMENT_URL = 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
 const EXECUTED_AT = '2026-08-26T12:00:00.000Z';
 const temporaryRoots = [];
+const EXPECTED_DF_FU_18_CHECKS = [
+  'DF-FU-18-native-js-disabled-form-submitted',
+  'DF-FU-18-response-locale-metadata-revision',
+  'DF-FU-18-delayed-alpine-filelist-preserved',
+  'DF-FU-18-single-enhancement-no-replay',
+  'DF-FU-18-removal-focus-recovered',
+  'DF-FU-18-reconnect-teardown-clean',
+];
 
 function passingChecks() {
   return Object.fromEntries(DF_FU_17_CHECKS.map((check) => [check, true]));
@@ -99,6 +109,62 @@ function passingObservations(engine = 'chromium') {
             successRetry: 'not-required',
             remove: 'not-required',
           },
+  };
+}
+
+function passingDfFu18Observations() {
+  return {
+    native: {
+      submitted: true,
+      responseOk: true,
+      responseLocale: 'en',
+      responseFileName: 'native-no-javascript.bin',
+      responseMediaType: 'application/octet-stream',
+      responseByteLength: '65536',
+      responseRevision: REVISION,
+      headerRevision: REVISION,
+      payloadMarkerExposed: false,
+    },
+    delayed: {
+      beforeInitialization: {
+        name: 'selected-before-alpine.pdf',
+        size: 23,
+        type: 'application/pdf',
+      },
+      afterInitialization: {
+        name: 'selected-before-alpine.pdf',
+        size: 23,
+        type: 'application/pdf',
+      },
+      initializationsAfterInitialization: 1,
+      selectionIntentsBeforeEnhancedSelection: 0,
+      controlledEchoesBeforeEnhancedSelection: 0,
+      connectsAfterInitialization: 1,
+      disconnectsAfterInitialization: 0,
+      controlTreesAfterInitialization: 1,
+      liveMessageAfterInitialization: '',
+      selectionIntentsAfterEnhancedSelection: 1,
+      controlledEchoesAfterEnhancedSelection: 1,
+      renderedItemsAfterEnhancedSelection: 1,
+      removalFocusedInput: true,
+      renderedItemsAfterRemoval: 0,
+      initializationsAfterReconnect: 2,
+      connectsAfterReconnect: 2,
+      disconnectsAfterReconnect: 1,
+      liveMessageAfterReconnect: '',
+      selectionIntentsBeforeReconnectSelection: 1,
+      selectionIntentsAfterReconnectSelection: 2,
+      controlledEchoesBeforeReconnectSelection: 1,
+      controlledEchoesAfterReconnectSelection: 2,
+      renderedItemsAfterReconnectSelection: 1,
+      liveMessageAfterReconnectSelection: 'selected-after-reconnect.pdf selected.',
+      connectsAfterTeardown: 2,
+      disconnectsAfterTeardown: 2,
+      selectionIntentsAfterTeardownEvent: 2,
+      controlledEchoesAfterTeardownEvent: 2,
+      renderedItemsAfterTeardownEvent: 0,
+      liveMessageAfterTeardownEvent: '',
+    },
   };
 }
 
@@ -277,19 +343,284 @@ class FakePage {
   }
 }
 
+class FakeDfFu18Locator {
+  constructor(page, selector, name) {
+    this.page = page;
+    this.selector = selector;
+    this.name = name;
+  }
+
+  async click() {
+    if (this.page.kind === 'no-js') {
+      assert.equal(this.selector, '#native-upload-form button[type="submit"]');
+      this.page.nativeSubmitted = true;
+      return;
+    }
+    assert.equal(this.name, 'Remove enhanced-after-alpine.pdf');
+    this.page.renderedItems = 0;
+    this.page.focused = '#alpine-file';
+    this.page.liveText = 'enhanced-after-alpine.pdf removed.';
+  }
+
+  async count() {
+    if (this.selector === '#alpine-file-upload') return 1;
+    if (this.selector === '.lyra-upload__item') return this.page.renderedItems;
+    return 1;
+  }
+
+  async dispatchEvent(eventName) {
+    assert.equal(eventName, 'change');
+    if (this.page.connected) this.page.recordSelection();
+  }
+
+  async evaluate(callback) {
+    if (this.selector === '#alpine-file') {
+      if (callback.toString().includes('activeElement'))
+        return this.page.focused === '#alpine-file';
+      return this.page.selectedFile === null
+        ? null
+        : {
+            name: this.page.selectedFile.name,
+            size: this.page.selectedFile.buffer.byteLength,
+            type: this.page.selectedFile.mimeType,
+          };
+    }
+    if (this.selector === '#alpine-evidence-root') {
+      const source = callback.toString();
+      if (source.includes('reconnectAlpineFixture')) this.page.reconnect();
+      else if (source.includes('teardownAlpineFixture')) this.page.teardown();
+      else throw new Error('Expected the private reconnect or teardown boundary.');
+      return;
+    }
+    return true;
+  }
+
+  async getAttribute(attribute) {
+    assert.equal(this.selector, 'html');
+    assert.equal(attribute, 'lang');
+    return 'en';
+  }
+
+  async setInputFiles(file) {
+    this.page.selectedFile = file;
+    if (this.page.kind === 'no-js') {
+      assert.equal(file.name, 'native-no-javascript.bin');
+      assert.equal(file.mimeType, 'application/octet-stream');
+      assert.equal(file.buffer.byteLength, 65_536);
+      return;
+    }
+    if (this.page.initializations > 0 && this.page.connected) this.page.recordSelection();
+  }
+
+  async textContent() {
+    const counters = {
+      '#alpine-initializations': this.page.initializations,
+      '#alpine-selection-intents': this.page.selectionIntents,
+      '#alpine-controlled-echoes': this.page.controlledEchoes,
+      '#alpine-connects': this.page.connects,
+      '#alpine-disconnects': this.page.disconnects,
+    };
+    if (this.selector in counters) return String(counters[this.selector]);
+    if (this.selector === '.lyra-upload__live') return this.page.liveText;
+    return '';
+  }
+
+  async waitFor() {}
+}
+
+class FakeDfFu18Page {
+  constructor(kind, videoPath, missingArtifacts) {
+    this.kind = kind;
+    this.videoPath = videoPath;
+    this.missingArtifacts = missingArtifacts;
+    this.nativeSubmitted = false;
+    this.selectedFile = null;
+    this.initializations = 0;
+    this.selectionIntents = 0;
+    this.controlledEchoes = 0;
+    this.connects = 0;
+    this.disconnects = 0;
+    this.renderedItems = 0;
+    this.liveText = '';
+    this.connected = false;
+    this.focused = null;
+  }
+
+  async content() {
+    assert.equal(this.kind, 'no-js');
+    assert.equal(this.nativeSubmitted, true);
+    return `<!doctype html><html lang="en"><body><dl>
+      <dt>File name</dt><dd>native-no-javascript.bin</dd>
+      <dt>Media type</dt><dd>application/octet-stream</dd>
+      <dt>Byte length</dt><dd>65536</dd>
+      <dt>Revision</dt><dd>${REVISION}</dd>
+    </dl></body></html>`;
+  }
+
+  async evaluate() {
+    return {
+      mediaQueries: {
+        '(pointer: coarse)': false,
+        '(prefers-reduced-motion: reduce)': false,
+      },
+      viewport: { width: 1280, height: 720, devicePixelRatio: 1 },
+    };
+  }
+
+  getByRole(role, { name }) {
+    assert.equal(role, 'button');
+    return new FakeDfFu18Locator(this, 'button', name);
+  }
+
+  async goto(url) {
+    if (this.kind === 'no-js') assert.equal(url, DEPLOYMENT_URL);
+    else assert.equal(url, `${DEPLOYMENT_URL}?alpineDelay=15000`);
+  }
+
+  initialize() {
+    this.initializations = 1;
+    this.connects = 1;
+    this.connected = true;
+  }
+
+  locator(selector) {
+    return new FakeDfFu18Locator(this, selector);
+  }
+
+  reconnect() {
+    this.disconnects += 1;
+    this.initializations += 1;
+    this.connects += 1;
+    this.connected = true;
+    this.renderedItems = 0;
+    this.liveText = '';
+  }
+
+  recordSelection() {
+    this.selectionIntents += 1;
+    this.controlledEchoes += 1;
+    this.renderedItems += 1;
+    this.liveText = `${this.selectedFile.name} selected.`;
+  }
+
+  async screenshot({ path }) {
+    if (this.missingArtifacts.has('final.png')) return;
+    await writeFile(path, Buffer.from('fake-df-fu-18-png'));
+  }
+
+  teardown() {
+    this.disconnects += 1;
+    this.connected = false;
+    this.renderedItems = 0;
+    this.liveText = '';
+  }
+
+  video() {
+    return { path: async () => this.videoPath };
+  }
+
+  async waitForFunction() {
+    assert.equal(this.kind, 'delayed');
+    if (this.initializations === 0) this.initialize();
+  }
+
+  async waitForNavigation() {
+    assert.equal(this.kind, 'no-js');
+    return {
+      ok: () => true,
+      headers: () => ({ 'x-lyra-evidence-revision': REVISION }),
+    };
+  }
+}
+
+function fakeDfFu18Browser(state, { launchFailure = false, missingArtifacts = [] } = {}) {
+  if (launchFailure) throw new Error('forced DF-FU-18 chromium launch failure');
+  const absent = new Set(missingArtifacts);
+  const browser = {
+    closed: false,
+    async close() {
+      this.closed = true;
+    },
+    async newContext(options) {
+      const kind = options.javaScriptEnabled === false ? 'no-js' : 'delayed';
+      if (kind === 'no-js') {
+        assert.equal(options.recordVideo, undefined);
+      } else {
+        assert.deepEqual(options.viewport, { width: 1280, height: 720 });
+        assert.equal(options.deviceScaleFactor, 1);
+      }
+      const videoPath =
+        kind === 'delayed' ? join(options.recordVideo.dir, 'df-fu-18-chromium.webm') : undefined;
+      if (kind === 'delayed') {
+        await mkdir(options.recordVideo.dir, { recursive: true });
+        if (!absent.has('run.webm')) await writeFile(videoPath, Buffer.from('fake-df-fu-18-video'));
+      }
+      const page = new FakeDfFu18Page(kind, videoPath, absent);
+      const context = {
+        closed: false,
+        tracing: {
+          async start(settings) {
+            assert.equal(kind, 'delayed');
+            assert.deepEqual(settings, { screenshots: true, snapshots: true, sources: true });
+          },
+          async stop({ path }) {
+            assert.equal(kind, 'delayed');
+            if (!absent.has('trace.zip')) {
+              await writeFile(path, Buffer.from('fake-df-fu-18-trace'));
+            }
+          },
+        },
+        async close() {
+          this.closed = true;
+        },
+        async newPage() {
+          state.dfFu18Pages.push(page);
+          return page;
+        },
+      };
+      state.contexts.push(context);
+      state.dfFu18Contexts.push({ kind, options, context });
+      return context;
+    },
+  };
+  state.browsers.push(browser);
+  return browser;
+}
+
 function fakePlaywright({
   failingEngine,
   launchFailingEngine,
   missingArtifactsByEngine = {},
   chromiumCoarsePointer = true,
   overflowEngine,
+  includeDfFu18 = false,
+  dfFu18Only = false,
+  dfFu18LaunchFailure = false,
+  dfFu18MissingArtifacts = [],
 } = {}) {
-  const state = { launchAttempts: [], browsers: [], contexts: [], cdpSessions: [], pages: [] };
+  const state = {
+    launchAttempts: [],
+    browsers: [],
+    contexts: [],
+    cdpSessions: [],
+    pages: [],
+    dfFu18Contexts: [],
+    dfFu18Pages: [],
+  };
   const api = {};
   for (const engine of REQUIRED_ENGINES) {
     api[engine] = {
       async launch() {
         state.launchAttempts.push(engine);
+        const chromiumAttempts = state.launchAttempts.filter(
+          (attemptedEngine) => attemptedEngine === 'chromium',
+        ).length;
+        if (engine === 'chromium' && (dfFu18Only || (includeDfFu18 && chromiumAttempts === 2))) {
+          return fakeDfFu18Browser(state, {
+            launchFailure: dfFu18LaunchFailure,
+            missingArtifacts: dfFu18MissingArtifacts,
+          });
+        }
         if (launchFailingEngine === engine) throw new Error(`forced ${engine} launch failure`);
         const missingArtifacts = new Set(missingArtifactsByEngine[engine] ?? []);
         const browser = {
@@ -385,6 +716,15 @@ describe('automation runner policy', () => {
       ]),
       { url: DEPLOYMENT_URL, revision: REVISION, output, scenario: 'DF-FU-17' },
     );
+    assert.deepEqual(
+      parseAutomationArgs([
+        `--url=${DEPLOYMENT_URL}`,
+        `--revision=${REVISION}`,
+        `--output=${output}`,
+        '--scenario=DF-FU-18',
+      ]),
+      { url: DEPLOYMENT_URL, revision: REVISION, output, scenario: 'DF-FU-18' },
+    );
 
     for (const args of [
       [
@@ -400,9 +740,11 @@ describe('automation runner policy', () => {
     }
   });
 
-  it('keeps the normal CLI closed until DF-FU-18 joins the archive', () => {
+  it('requests both automated scenarios normally and permits either focused scenario', () => {
+    assert.deepEqual(automation.DF_FU_18_CHECKS, EXPECTED_DF_FU_18_CHECKS);
     assert.deepEqual(resolveRequestedScenarios('DF-FU-17'), ['DF-FU-17']);
-    assert.throws(() => resolveRequestedScenarios(undefined), /DF-FU-18/u);
+    assert.deepEqual(resolveRequestedScenarios('DF-FU-18'), ['DF-FU-18']);
+    assert.deepEqual(resolveRequestedScenarios(undefined), ['DF-FU-17', 'DF-FU-18']);
   });
 
   it('normalizes the exact four artifact paths for every required engine', () => {
@@ -414,6 +756,13 @@ describe('automation runner policy', () => {
       'artifacts/DF-FU-17/webkit/trace.zip',
       'artifacts/DF-FU-17/webkit/events.json',
     ]);
+    assert.deepEqual(artifactPathsFor('DF-FU-18', 'chromium'), [
+      'artifacts/DF-FU-18/chromium/final.png',
+      'artifacts/DF-FU-18/chromium/run.webm',
+      'artifacts/DF-FU-18/chromium/trace.zip',
+      'artifacts/DF-FU-18/chromium/events.json',
+    ]);
+    assert.throws(() => artifactPathsFor('DF-FU-18', 'firefox'), /engine/u);
     assert.throws(() => artifactPathsFor('DF-FU-17', '../webkit'), /engine/u);
   });
 
@@ -484,6 +833,55 @@ describe('automation runner policy', () => {
     }
   });
 
+  it('derives every exact DF-FU-18 check from independent native and lifecycle observations', () => {
+    const expectedChecks = Object.fromEntries(
+      EXPECTED_DF_FU_18_CHECKS.map((check) => [check, true]),
+    );
+    assert.deepEqual(
+      automation.deriveDfFu18Checks(passingDfFu18Observations(), REVISION),
+      expectedChecks,
+    );
+
+    const mutations = [
+      ['DF-FU-18-native-js-disabled-form-submitted', (value) => (value.native.submitted = false)],
+      [
+        'DF-FU-18-response-locale-metadata-revision',
+        (value) => (value.native.responseRevision = 'f'.repeat(40)),
+      ],
+      [
+        'DF-FU-18-delayed-alpine-filelist-preserved',
+        (value) => (value.delayed.afterInitialization.size = 0),
+      ],
+      [
+        'DF-FU-18-single-enhancement-no-replay',
+        (value) => (value.delayed.selectionIntentsBeforeEnhancedSelection = 1),
+      ],
+      [
+        'DF-FU-18-single-enhancement-no-replay',
+        (value) => (value.delayed.renderedItemsAfterEnhancedSelection = 2),
+      ],
+      ['DF-FU-18-removal-focus-recovered', (value) => (value.delayed.removalFocusedInput = false)],
+      [
+        'DF-FU-18-reconnect-teardown-clean',
+        (value) => (value.delayed.selectionIntentsAfterReconnectSelection = 3),
+      ],
+      [
+        'DF-FU-18-reconnect-teardown-clean',
+        (value) => (value.delayed.selectionIntentsAfterTeardownEvent = 3),
+      ],
+      [
+        'DF-FU-18-reconnect-teardown-clean',
+        (value) => (value.delayed.liveMessageAfterReconnect = 'replayed'),
+      ],
+    ];
+
+    for (const [check, mutate] of mutations) {
+      const observations = structuredClone(passingDfFu18Observations());
+      mutate(observations);
+      assert.equal(automation.deriveDfFu18Checks(observations, REVISION)[check], false, check);
+    }
+  });
+
   it('maps every failed automation result to a nonzero process exit', () => {
     assert.equal(automationExitCode({ result: 'PASS' }), 0);
     assert.equal(automationExitCode({ result: 'FAIL' }), 1);
@@ -491,6 +889,74 @@ describe('automation runner policy', () => {
 });
 
 describe('runAutomation', () => {
+  it('runs both scenarios normally and packages the complete validated DF-FU-18 Chromium evidence', async () => {
+    const { output } = await outputFixture();
+    const { api, state } = fakePlaywright({ includeDfFu18: true });
+    const outcome = await runAutomation(
+      {
+        url: DEPLOYMENT_URL,
+        revision: REVISION,
+        output,
+        now: () => new Date(EXECUTED_AT),
+      },
+      api,
+    );
+
+    assert.deepEqual(
+      outcome.results.map(({ scenario, result }) => [scenario, result]),
+      [
+        ['DF-FU-17', 'PASS'],
+        ['DF-FU-18', 'PASS'],
+      ],
+    );
+    assert.deepEqual(state.launchAttempts, ['chromium', 'firefox', 'webkit', 'chromium']);
+    assert.deepEqual(
+      state.dfFu18Contexts.map(({ kind, options }) => [kind, options.javaScriptEnabled]),
+      [
+        ['no-js', false],
+        ['delayed', undefined],
+      ],
+    );
+    assert.deepEqual(
+      state.contexts.map(({ closed }) => closed),
+      [true, true, true, true, true],
+    );
+    assert.deepEqual(
+      state.browsers.map(({ closed }) => closed),
+      [true, true, true, true],
+    );
+
+    const archive = await readEvidenceArchive(output, {
+      expectedKind: 'automation',
+      expectedRevision: REVISION,
+      expectedDeploymentUrl: DEPLOYMENT_URL,
+    });
+    assert.equal(archive.entries.has('automation/DF-FU-17.json'), true);
+    assert.equal(archive.entries.has('automation/DF-FU-18.json'), true);
+    for (const path of artifactPathsFor('DF-FU-18', 'chromium')) {
+      assert.equal(archive.entries.has(path), true, path);
+    }
+    const stored = JSON.parse(
+      Buffer.from(archive.entries.get('automation/DF-FU-18.json')).toString(),
+    );
+    assert.equal(stored.result, 'PASS');
+    assert.deepEqual(stored.runs[0].checks, {
+      'DF-FU-18-native-js-disabled-form-submitted': true,
+      'DF-FU-18-response-locale-metadata-revision': true,
+      'DF-FU-18-delayed-alpine-filelist-preserved': true,
+      'DF-FU-18-single-enhancement-no-replay': true,
+      'DF-FU-18-removal-focus-recovered': true,
+      'DF-FU-18-reconnect-teardown-clean': true,
+    });
+    const events = JSON.parse(
+      Buffer.from(archive.entries.get('artifacts/DF-FU-18/chromium/events.json')).toString(),
+    );
+    assert.deepEqual(events.failedChecks, []);
+    assert.deepEqual(events.missingArtifacts, []);
+    assert.equal(events.observations.delayed.connectsAfterTeardown, 2);
+    assert.equal(events.observations.delayed.disconnectsAfterTeardown, 2);
+  });
+
   it('runs and closes all three lanes and writes a validated revision-bound archive', async () => {
     const { output } = await outputFixture();
     const { api, state } = fakePlaywright();
@@ -756,6 +1222,48 @@ describe('runAutomation', () => {
         assert.equal(archive.entries.has(`artifacts/DF-FU-17/${engine}/${fileName}`), false);
       }
     }
+    assert.equal(outcome.archiveValidated, true);
+  });
+
+  it('writes a validated nonzero DF-FU-18 diagnostic ZIP without fabricated media', async () => {
+    const { output } = await outputFixture();
+    const { api, state } = fakePlaywright({
+      dfFu18Only: true,
+      dfFu18LaunchFailure: true,
+    });
+    const outcome = await runAutomation(
+      {
+        url: DEPLOYMENT_URL,
+        revision: REVISION,
+        output,
+        scenario: 'DF-FU-18',
+        now: () => new Date(EXECUTED_AT),
+      },
+      api,
+    );
+
+    assert.equal(outcome.results[0].result, 'FAIL');
+    assert.equal(automationExitCode(outcome.results), 1);
+    assert.deepEqual(state.launchAttempts, ['chromium']);
+    const archive = await readEvidenceArchive(output, {
+      expectedKind: 'automation',
+      expectedRevision: REVISION,
+      expectedDeploymentUrl: DEPLOYMENT_URL,
+    });
+    assert.deepEqual(
+      [...archive.entries.keys()],
+      ['artifacts/DF-FU-18/chromium/events.json', 'automation/DF-FU-18.json'],
+    );
+    const events = JSON.parse(
+      Buffer.from(archive.entries.get('artifacts/DF-FU-18/chromium/events.json')).toString(),
+    );
+    assert.match(events.cause, /forced DF-FU-18 chromium launch failure/u);
+    assert.deepEqual(events.failedChecks, EXPECTED_DF_FU_18_CHECKS);
+    assert.deepEqual(events.missingArtifacts.sort(), [
+      'artifacts/DF-FU-18/chromium/final.png',
+      'artifacts/DF-FU-18/chromium/run.webm',
+      'artifacts/DF-FU-18/chromium/trace.zip',
+    ]);
     assert.equal(outcome.archiveValidated, true);
   });
 });

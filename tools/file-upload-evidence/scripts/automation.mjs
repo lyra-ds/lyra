@@ -23,13 +23,35 @@ export const ARTIFACT_FILE_NAMES = Object.freeze([
   'events.json',
 ]);
 export const DF_FU_17_CHECKS = Object.freeze([...AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-17']]);
+export const DF_FU_18_CHECKS = Object.freeze([...AUTOMATED_SCENARIO_CHECK_IDS['DF-FU-18']]);
 
 const VIEWPORT = Object.freeze({ width: 320, height: 720 });
 const DEVICE_SCALE_FACTOR = 2;
+const DF_FU_18_VIEWPORT = Object.freeze({ width: 1280, height: 720 });
+const DF_FU_18_DEVICE_SCALE_FACTOR = 1;
 const LONG_FILE_NAME =
   'résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf';
 const REPLACEMENT_FILE_NAME = 'replacement-must-be-rejected.pdf';
 const TOUCH_FILE_NAME = 'touch-equivalence.pdf';
+const NATIVE_FILE_NAME = 'native-no-javascript.bin';
+const NATIVE_FILE_BYTES = 64 * 1024;
+const NATIVE_FILE_TYPE = 'application/octet-stream';
+const NATIVE_PAYLOAD_MARKER = 'lyra-df-fu-18-private-payload-marker';
+const PREINIT_FILE = Object.freeze({
+  name: 'selected-before-alpine.pdf',
+  mimeType: 'application/pdf',
+  buffer: Buffer.alloc(23, 1),
+});
+const ENHANCED_FILE = Object.freeze({
+  name: 'enhanced-after-alpine.pdf',
+  mimeType: 'application/pdf',
+  buffer: Buffer.from('enhanced after Alpine'),
+});
+const RECONNECT_FILE = Object.freeze({
+  name: 'selected-after-reconnect.pdf',
+  mimeType: 'application/pdf',
+  buffer: Buffer.from('selected after reconnect'),
+});
 const ZIP_EPOCH = new Date('1980-01-01T00:00:00.000Z');
 const ZIP_MTIME = new Date(ZIP_EPOCH.getTime() + ZIP_EPOCH.getTimezoneOffset() * 60_000);
 const gitShaPattern = /^[a-f0-9]{40}$/u;
@@ -75,8 +97,17 @@ function isRequiredEngine(value) {
 }
 
 export function artifactPathsFor(scenario, engine) {
-  if (scenario !== 'DF-FU-17') throw new TypeError('scenario must be DF-FU-17');
-  if (!isRequiredEngine(engine)) throw new TypeError('engine must be chromium, firefox, or webkit');
+  if (scenario !== 'DF-FU-17' && scenario !== 'DF-FU-18') {
+    throw new TypeError('scenario must be DF-FU-17 or DF-FU-18');
+  }
+  const engineIsValid = scenario === 'DF-FU-17' ? isRequiredEngine(engine) : engine === 'chromium';
+  if (!engineIsValid) {
+    throw new TypeError(
+      scenario === 'DF-FU-17'
+        ? 'engine must be chromium, firefox, or webkit'
+        : 'engine must be chromium for DF-FU-18',
+    );
+  }
   return ARTIFACT_FILE_NAMES.map((fileName) => `artifacts/${scenario}/${engine}/${fileName}`);
 }
 
@@ -101,8 +132,8 @@ export function parseAutomationArgs(args) {
   if (output === undefined || !isAbsolute(output) || !output.endsWith('.zip')) {
     throw automationError('output must be an absolute ZIP path');
   }
-  if (scenario !== undefined && scenario !== 'DF-FU-17') {
-    throw automationError('scenario must be DF-FU-17');
+  if (scenario !== undefined && scenario !== 'DF-FU-17' && scenario !== 'DF-FU-18') {
+    throw automationError('scenario must be DF-FU-17 or DF-FU-18');
   }
   return {
     url,
@@ -113,10 +144,8 @@ export function parseAutomationArgs(args) {
 }
 
 export function resolveRequestedScenarios(scenario) {
-  if (scenario === 'DF-FU-17') return ['DF-FU-17'];
-  throw new Error(
-    'Normal automation requires DF-FU-17 and DF-FU-18; DF-FU-18 is not implemented yet. Use --scenario=DF-FU-17 only for local development and tests.',
-  );
+  if (scenario === 'DF-FU-17' || scenario === 'DF-FU-18') return [scenario];
+  return ['DF-FU-17', 'DF-FU-18'];
 }
 
 export function deriveAutomationResult(runs, presentArtifactPaths) {
@@ -164,12 +193,38 @@ export function deriveAutomationResult(runs, presentArtifactPaths) {
   return 'PASS';
 }
 
-export function automationExitCode(result) {
-  return result.result === 'PASS' ? 0 : 1;
+function deriveDfFu18Result(runs, presentArtifactPaths) {
+  if (runs.length !== 1 || runs[0]?.engine !== 'chromium') return 'FAIL';
+  const run = runs[0];
+  if (
+    run.viewport?.width !== DF_FU_18_VIEWPORT.width ||
+    run.viewport?.height !== DF_FU_18_VIEWPORT.height ||
+    run.viewport?.devicePixelRatio !== DF_FU_18_DEVICE_SCALE_FACTOR ||
+    !exactKeys(run.checks, DF_FU_18_CHECKS) ||
+    Object.values(run.checks).some((value) => value !== true) ||
+    run.mediaQueries === null ||
+    typeof run.mediaQueries !== 'object' ||
+    Object.keys(run.mediaQueries).length === 0 ||
+    Object.values(run.mediaQueries).some((value) => typeof value !== 'boolean')
+  ) {
+    return 'FAIL';
+  }
+  const expectedPaths = artifactPathsFor('DF-FU-18', 'chromium');
+  return Array.isArray(run.artifactPaths) &&
+    sameStrings(run.artifactPaths, expectedPaths) &&
+    expectedPaths.every((path) => presentArtifactPaths.has(path))
+    ? 'PASS'
+    : 'FAIL';
 }
 
-function emptyChecks() {
-  return Object.fromEntries(DF_FU_17_CHECKS.map((check) => [check, false]));
+export function automationExitCode(result) {
+  const results = Array.isArray(result) ? result : [result];
+  return results.length > 0 && results.every((candidate) => candidate.result === 'PASS') ? 0 : 1;
+}
+
+function emptyChecks(scenario = 'DF-FU-17') {
+  const checks = scenario === 'DF-FU-17' ? DF_FU_17_CHECKS : DF_FU_18_CHECKS;
+  return Object.fromEntries(checks.map((check) => [check, false]));
 }
 
 export function deriveDfFu17Checks(observations) {
@@ -218,6 +273,70 @@ export function deriveDfFu17Checks(observations) {
     'DF-FU-17-cancel-retry-complete-remove': lifecycleObserved,
     'DF-FU-17-focus-recovered': observations.focusRecovered === true,
     'DF-FU-17-keyboard-activation-equivalent': keyboardObserved && touchEquivalent,
+  };
+}
+
+function exactFileMetadata(actual, expected) {
+  return (
+    actual?.name === expected.name &&
+    actual?.size === expected.buffer.byteLength &&
+    actual?.type === expected.mimeType
+  );
+}
+
+export function deriveDfFu18Checks(observations, revision) {
+  const { native, delayed } = observations;
+  const reconnectIntentAdvancedOnce =
+    delayed.selectionIntentsAfterReconnectSelection ===
+    delayed.selectionIntentsBeforeReconnectSelection + 1;
+  const reconnectEchoAdvancedOnce =
+    delayed.controlledEchoesAfterReconnectSelection ===
+    delayed.controlledEchoesBeforeReconnectSelection + 1;
+
+  return {
+    'DF-FU-18-native-js-disabled-form-submitted':
+      native.submitted === true && native.responseOk === true,
+    'DF-FU-18-response-locale-metadata-revision':
+      native.responseLocale === 'en' &&
+      native.responseFileName === NATIVE_FILE_NAME &&
+      native.responseMediaType === NATIVE_FILE_TYPE &&
+      native.responseByteLength === String(NATIVE_FILE_BYTES) &&
+      native.responseRevision === revision &&
+      native.headerRevision === revision &&
+      native.payloadMarkerExposed === false,
+    'DF-FU-18-delayed-alpine-filelist-preserved':
+      exactFileMetadata(delayed.beforeInitialization, PREINIT_FILE) &&
+      exactFileMetadata(delayed.afterInitialization, PREINIT_FILE),
+    'DF-FU-18-single-enhancement-no-replay':
+      delayed.initializationsAfterInitialization === 1 &&
+      delayed.selectionIntentsBeforeEnhancedSelection === 0 &&
+      delayed.controlledEchoesBeforeEnhancedSelection === 0 &&
+      delayed.connectsAfterInitialization === 1 &&
+      delayed.disconnectsAfterInitialization === 0 &&
+      delayed.controlTreesAfterInitialization === 1 &&
+      delayed.liveMessageAfterInitialization === '' &&
+      delayed.selectionIntentsAfterEnhancedSelection === 1 &&
+      delayed.controlledEchoesAfterEnhancedSelection === 1 &&
+      delayed.renderedItemsAfterEnhancedSelection === 1,
+    'DF-FU-18-removal-focus-recovered':
+      delayed.removalFocusedInput === true && delayed.renderedItemsAfterRemoval === 0,
+    'DF-FU-18-reconnect-teardown-clean':
+      delayed.initializationsAfterReconnect === 2 &&
+      delayed.connectsAfterReconnect === 2 &&
+      delayed.disconnectsAfterReconnect === 1 &&
+      delayed.liveMessageAfterReconnect === '' &&
+      reconnectIntentAdvancedOnce &&
+      reconnectEchoAdvancedOnce &&
+      delayed.renderedItemsAfterReconnectSelection === 1 &&
+      delayed.liveMessageAfterReconnectSelection === `${RECONNECT_FILE.name} selected.` &&
+      delayed.connectsAfterTeardown === 2 &&
+      delayed.disconnectsAfterTeardown === 2 &&
+      delayed.selectionIntentsAfterTeardownEvent ===
+        delayed.selectionIntentsAfterReconnectSelection &&
+      delayed.controlledEchoesAfterTeardownEvent ===
+        delayed.controlledEchoesAfterReconnectSelection &&
+      delayed.renderedItemsAfterTeardownEvent === 0 &&
+      delayed.liveMessageAfterTeardownEvent === '',
   };
 }
 
@@ -461,6 +580,233 @@ async function exerciseDfFu17(page, engine, url, events) {
   return { checks, mediaQueries: observed.mediaQueries, viewport: observed.viewport };
 }
 
+function decodeHtml(value) {
+  return value
+    .replace(/<[^>]*>/gu, '')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&amp;', '&')
+    .trim();
+}
+
+function responseMetadata(html) {
+  const values = new Map();
+  for (const match of html.matchAll(
+    /<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/giu,
+  )) {
+    const label = decodeHtml(match[1]);
+    if (values.has(label)) return undefined;
+    values.set(label, decodeHtml(match[2]));
+  }
+  return values;
+}
+
+async function selectedFileMetadata(input) {
+  return input.evaluate((element) => {
+    if (!(element instanceof HTMLInputElement)) {
+      throw new Error('The delayed Alpine evidence input is not a native file input.');
+    }
+    const file = element.files?.[0];
+    return file === undefined ? null : { name: file.name, size: file.size, type: file.type };
+  });
+}
+
+async function diagnosticCounter(page, id) {
+  const raw = await page.locator(`#${id}`).textContent();
+  if (raw === null || !/^\d+$/u.test(raw.trim())) {
+    throw new Error(`Missing numeric Alpine diagnostic: ${id}.`);
+  }
+  return Number(raw.trim());
+}
+
+async function exerciseNativeNoJavaScript(page, url, revision, events) {
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  const bytes = Buffer.alloc(NATIVE_FILE_BYTES);
+  bytes.set(Buffer.from(NATIVE_PAYLOAD_MARKER));
+  await page.locator('#native-file').setInputFiles({
+    name: NATIVE_FILE_NAME,
+    mimeType: NATIVE_FILE_TYPE,
+    buffer: bytes,
+  });
+  const [response] = await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    page.locator('#native-upload-form button[type="submit"]').click(),
+  ]);
+  const html = await page.content();
+  const metadata = responseMetadata(html);
+  const responseLocale = await page.locator('html').getAttribute('lang');
+  const headerRevision =
+    response === null ? null : (response.headers()['x-lyra-evidence-revision'] ?? null);
+  const observations = {
+    submitted: response !== null,
+    responseOk: response?.ok() === true,
+    responseLocale,
+    responseFileName: metadata?.get('File name') ?? null,
+    responseMediaType: metadata?.get('Media type') ?? null,
+    responseByteLength: metadata?.get('Byte length') ?? null,
+    responseRevision: metadata?.get('Revision') ?? null,
+    headerRevision,
+    payloadMarkerExposed: html.includes(NATIVE_PAYLOAD_MARKER),
+  };
+  recordEvent(events, 'native-js-disabled-submission', { observations, revision });
+  return observations;
+}
+
+async function exerciseDelayedAlpine(page, url, events) {
+  await page.goto(`${url}?alpineDelay=15000`, { waitUntil: 'domcontentloaded' });
+  const input = page.locator('#alpine-file');
+  await input.waitFor({ state: 'attached' });
+  await input.setInputFiles(PREINIT_FILE);
+  const beforeInitialization = await selectedFileMetadata(input);
+  await page.waitForFunction(
+    () => document.querySelector('#alpine-initializations')?.textContent?.trim() === '1',
+    undefined,
+    { timeout: 20_000 },
+  );
+  const afterInitialization = await selectedFileMetadata(input);
+  const initializationsAfterInitialization = await diagnosticCounter(
+    page,
+    'alpine-initializations',
+  );
+  const selectionIntentsBeforeEnhancedSelection = await diagnosticCounter(
+    page,
+    'alpine-selection-intents',
+  );
+  const controlledEchoesBeforeEnhancedSelection = await diagnosticCounter(
+    page,
+    'alpine-controlled-echoes',
+  );
+  const connectsAfterInitialization = await diagnosticCounter(page, 'alpine-connects');
+  const disconnectsAfterInitialization = await diagnosticCounter(page, 'alpine-disconnects');
+  const controlTreesAfterInitialization = await page.locator('#alpine-file-upload').count();
+  const liveMessageAfterInitialization =
+    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+
+  await input.setInputFiles(ENHANCED_FILE);
+  await page.waitForFunction(
+    () =>
+      document.querySelector('#alpine-selection-intents')?.textContent?.trim() === '1' &&
+      document.querySelectorAll('.lyra-upload__item').length === 1,
+  );
+  const selectionIntentsAfterEnhancedSelection = await diagnosticCounter(
+    page,
+    'alpine-selection-intents',
+  );
+  const controlledEchoesAfterEnhancedSelection = await diagnosticCounter(
+    page,
+    'alpine-controlled-echoes',
+  );
+  const renderedItemsAfterEnhancedSelection = await page.locator('.lyra-upload__item').count();
+  const remove = page.getByRole('button', { name: `Remove ${ENHANCED_FILE.name}` });
+  await remove.click();
+  await page.waitForFunction(() => document.querySelectorAll('.lyra-upload__item').length === 0);
+  const removalFocusedInput = await input.evaluate((element) => document.activeElement === element);
+  const renderedItemsAfterRemoval = await page.locator('.lyra-upload__item').count();
+
+  await page.locator('#alpine-evidence-root').evaluate(async (root) => {
+    if (!(root instanceof HTMLElement)) throw new Error('Missing authored Alpine root.');
+    const boundary = window.__LYRA_FILE_UPLOAD_EVIDENCE__;
+    if (boundary === undefined) throw new Error('Missing private Alpine evidence boundary.');
+    await boundary.reconnectAlpineFixture(root);
+  });
+  const initializationsAfterReconnect = await diagnosticCounter(page, 'alpine-initializations');
+  const connectsAfterReconnect = await diagnosticCounter(page, 'alpine-connects');
+  const disconnectsAfterReconnect = await diagnosticCounter(page, 'alpine-disconnects');
+  const liveMessageAfterReconnect =
+    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+  const selectionIntentsBeforeReconnectSelection = await diagnosticCounter(
+    page,
+    'alpine-selection-intents',
+  );
+  const controlledEchoesBeforeReconnectSelection = await diagnosticCounter(
+    page,
+    'alpine-controlled-echoes',
+  );
+
+  await input.setInputFiles(RECONNECT_FILE);
+  await page.waitForFunction(() => document.querySelectorAll('.lyra-upload__item').length === 1);
+  const selectionIntentsAfterReconnectSelection = await diagnosticCounter(
+    page,
+    'alpine-selection-intents',
+  );
+  const controlledEchoesAfterReconnectSelection = await diagnosticCounter(
+    page,
+    'alpine-controlled-echoes',
+  );
+  const renderedItemsAfterReconnectSelection = await page.locator('.lyra-upload__item').count();
+  const liveMessageAfterReconnectSelection =
+    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+
+  await page.locator('#alpine-evidence-root').evaluate(async (root) => {
+    if (!(root instanceof HTMLElement)) throw new Error('Missing authored Alpine root.');
+    const boundary = window.__LYRA_FILE_UPLOAD_EVIDENCE__;
+    if (boundary === undefined) throw new Error('Missing private Alpine evidence boundary.');
+    await boundary.teardownAlpineFixture(root);
+  });
+  const connectsAfterTeardown = await diagnosticCounter(page, 'alpine-connects');
+  const disconnectsAfterTeardown = await diagnosticCounter(page, 'alpine-disconnects');
+  await input.dispatchEvent('change');
+  const selectionIntentsAfterTeardownEvent = await diagnosticCounter(
+    page,
+    'alpine-selection-intents',
+  );
+  const controlledEchoesAfterTeardownEvent = await diagnosticCounter(
+    page,
+    'alpine-controlled-echoes',
+  );
+  const renderedItemsAfterTeardownEvent = await page.locator('.lyra-upload__item').count();
+  const liveMessageAfterTeardownEvent =
+    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+
+  const observed = await page.evaluate(() => ({
+    mediaQueries: {
+      '(pointer: coarse)': matchMedia('(pointer: coarse)').matches,
+      '(prefers-reduced-motion: reduce)': matchMedia('(prefers-reduced-motion: reduce)').matches,
+    },
+    viewport: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio,
+    },
+  }));
+  const observations = {
+    beforeInitialization,
+    afterInitialization,
+    initializationsAfterInitialization,
+    selectionIntentsBeforeEnhancedSelection,
+    controlledEchoesBeforeEnhancedSelection,
+    connectsAfterInitialization,
+    disconnectsAfterInitialization,
+    controlTreesAfterInitialization,
+    liveMessageAfterInitialization,
+    selectionIntentsAfterEnhancedSelection,
+    controlledEchoesAfterEnhancedSelection,
+    renderedItemsAfterEnhancedSelection,
+    removalFocusedInput,
+    renderedItemsAfterRemoval,
+    initializationsAfterReconnect,
+    connectsAfterReconnect,
+    disconnectsAfterReconnect,
+    liveMessageAfterReconnect,
+    selectionIntentsBeforeReconnectSelection,
+    selectionIntentsAfterReconnectSelection,
+    controlledEchoesBeforeReconnectSelection,
+    controlledEchoesAfterReconnectSelection,
+    renderedItemsAfterReconnectSelection,
+    liveMessageAfterReconnectSelection,
+    connectsAfterTeardown,
+    disconnectsAfterTeardown,
+    selectionIntentsAfterTeardownEvent,
+    controlledEchoesAfterTeardownEvent,
+    renderedItemsAfterTeardownEvent,
+    liveMessageAfterTeardownEvent,
+  };
+  recordEvent(events, 'delayed-alpine-observations', { observations });
+  return { observations, mediaQueries: observed.mediaQueries, viewport: observed.viewport };
+}
+
 async function isNonEmptyFile(path) {
   try {
     const metadata = await stat(path);
@@ -470,7 +816,7 @@ async function isNonEmptyFile(path) {
   }
 }
 
-async function runLane({ engine, executedAt, laneRoot, revision, url }, browserType) {
+async function runDfFu17Lane({ engine, executedAt, laneRoot, revision, url }, browserType) {
   const events = [];
   const localArtifacts = Object.fromEntries(
     ARTIFACT_FILE_NAMES.map((fileName) => [fileName, join(laneRoot, fileName)]),
@@ -609,37 +955,252 @@ async function runLane({ engine, executedAt, laneRoot, revision, url }, browserT
   };
 }
 
-async function packageAutomation({ output, result, laneOutputs, createdAt }) {
-  const members = new Map();
-  const entries = [];
-  for (const { run, localArtifacts } of laneOutputs) {
-    for (const path of run.artifactPaths) {
-      const fileName = path.slice(path.lastIndexOf('/') + 1);
-      const bytes = new Uint8Array(await readFile(localArtifacts[fileName]));
-      members.set(path, bytes);
-      entries.push({
-        path,
-        bytes: bytes.length,
-        mediaType: mediaTypes[fileName],
-        sha256: sha256(bytes),
+function emptyDfFu18Observations() {
+  return {
+    native: {
+      submitted: false,
+      responseOk: false,
+      responseLocale: null,
+      responseFileName: null,
+      responseMediaType: null,
+      responseByteLength: null,
+      responseRevision: null,
+      headerRevision: null,
+      payloadMarkerExposed: false,
+    },
+    delayed: {
+      beforeInitialization: null,
+      afterInitialization: null,
+      initializationsAfterInitialization: 0,
+      selectionIntentsBeforeEnhancedSelection: 0,
+      controlledEchoesBeforeEnhancedSelection: 0,
+      connectsAfterInitialization: 0,
+      disconnectsAfterInitialization: 0,
+      controlTreesAfterInitialization: 0,
+      liveMessageAfterInitialization: '',
+      selectionIntentsAfterEnhancedSelection: 0,
+      controlledEchoesAfterEnhancedSelection: 0,
+      renderedItemsAfterEnhancedSelection: 0,
+      removalFocusedInput: false,
+      renderedItemsAfterRemoval: 0,
+      initializationsAfterReconnect: 0,
+      connectsAfterReconnect: 0,
+      disconnectsAfterReconnect: 0,
+      liveMessageAfterReconnect: '',
+      selectionIntentsBeforeReconnectSelection: 0,
+      selectionIntentsAfterReconnectSelection: 0,
+      controlledEchoesBeforeReconnectSelection: 0,
+      controlledEchoesAfterReconnectSelection: 0,
+      renderedItemsAfterReconnectSelection: 0,
+      liveMessageAfterReconnectSelection: '',
+      connectsAfterTeardown: 0,
+      disconnectsAfterTeardown: 0,
+      selectionIntentsAfterTeardownEvent: 0,
+      controlledEchoesAfterTeardownEvent: 0,
+      renderedItemsAfterTeardownEvent: 0,
+      liveMessageAfterTeardownEvent: '',
+    },
+  };
+}
+
+async function runDfFu18Lane({ executedAt, laneRoot, revision, url }, browserType) {
+  const engine = 'chromium';
+  const events = [];
+  const localArtifacts = Object.fromEntries(
+    ARTIFACT_FILE_NAMES.map((fileName) => [fileName, join(laneRoot, fileName)]),
+  );
+  const rawVideoRoot = join(laneRoot, 'raw-video');
+  const laneErrors = [];
+  const observations = emptyDfFu18Observations();
+  let browser;
+  let noJavaScriptContext;
+  let delayedContext;
+  let delayedPage;
+  let video;
+  let tracingStarted = false;
+  let mediaQueries = {
+    '(pointer: coarse)': null,
+    '(prefers-reduced-motion: reduce)': null,
+  };
+  let viewport = {
+    ...DF_FU_18_VIEWPORT,
+    devicePixelRatio: DF_FU_18_DEVICE_SCALE_FACTOR,
+  };
+
+  try {
+    await mkdir(rawVideoRoot, { recursive: true });
+    browser = await browserType.launch();
+  } catch (error) {
+    const message = errorMessage(error);
+    laneErrors.push(message);
+    recordEvent(events, 'lane-failure', { phase: 'launch', error: message });
+  }
+
+  if (browser !== undefined) {
+    try {
+      noJavaScriptContext = await browser.newContext({
+        viewport: { ...DF_FU_18_VIEWPORT },
+        deviceScaleFactor: DF_FU_18_DEVICE_SCALE_FACTOR,
+        javaScriptEnabled: false,
       });
+      const noJavaScriptPage = await noJavaScriptContext.newPage();
+      observations.native = await exerciseNativeNoJavaScript(
+        noJavaScriptPage,
+        url,
+        revision,
+        events,
+      );
+    } catch (error) {
+      const message = errorMessage(error);
+      laneErrors.push(`No-JavaScript context failed: ${message}`);
+      recordEvent(events, 'lane-failure', { phase: 'no-javascript', error: message });
+    } finally {
+      if (noJavaScriptContext !== undefined) {
+        try {
+          await noJavaScriptContext.close();
+        } catch (error) {
+          laneErrors.push(`No-JavaScript context cleanup failed: ${errorMessage(error)}`);
+        }
+      }
+    }
+
+    try {
+      delayedContext = await browser.newContext({
+        viewport: { ...DF_FU_18_VIEWPORT },
+        deviceScaleFactor: DF_FU_18_DEVICE_SCALE_FACTOR,
+        recordVideo: { dir: rawVideoRoot },
+      });
+      await delayedContext.tracing.start({ screenshots: true, snapshots: true, sources: true });
+      tracingStarted = true;
+      delayedPage = await delayedContext.newPage();
+      video = delayedPage.video();
+      const delayed = await exerciseDelayedAlpine(delayedPage, url, events);
+      observations.delayed = delayed.observations;
+      mediaQueries = delayed.mediaQueries;
+      viewport = delayed.viewport;
+    } catch (error) {
+      const message = errorMessage(error);
+      laneErrors.push(`Delayed Alpine context failed: ${message}`);
+      recordEvent(events, 'lane-failure', { phase: 'delayed-alpine', error: message });
+    } finally {
+      if (delayedPage !== undefined) {
+        try {
+          await delayedPage.screenshot({ path: localArtifacts['final.png'], fullPage: true });
+        } catch (error) {
+          laneErrors.push(`Screenshot failed: ${errorMessage(error)}`);
+        }
+      }
+      if (tracingStarted) {
+        try {
+          await delayedContext.tracing.stop({ path: localArtifacts['trace.zip'] });
+        } catch (error) {
+          laneErrors.push(`Tracing failed: ${errorMessage(error)}`);
+        }
+      }
+      if (delayedContext !== undefined) {
+        try {
+          await delayedContext.close();
+        } catch (error) {
+          laneErrors.push(`Delayed Alpine context cleanup failed: ${errorMessage(error)}`);
+        }
+      }
+      if (video !== undefined) {
+        try {
+          await copyFile(await video.path(), localArtifacts['run.webm']);
+        } catch (error) {
+          laneErrors.push(`Video finalization failed: ${errorMessage(error)}`);
+        }
+      }
+    }
+
+    try {
+      await browser.close();
+    } catch (error) {
+      laneErrors.push(`Browser cleanup failed: ${errorMessage(error)}`);
     }
   }
-  const resultPath = 'automation/DF-FU-17.json';
-  const resultBytes = jsonBytes(result);
-  members.set(resultPath, resultBytes);
-  entries.push({
-    path: resultPath,
-    bytes: resultBytes.length,
-    mediaType: 'application/json',
-    sha256: sha256(resultBytes),
-  });
+
+  const capturedArtifactNames = [];
+  for (const fileName of ['final.png', 'run.webm', 'trace.zip']) {
+    if (await isNonEmptyFile(localArtifacts[fileName])) capturedArtifactNames.push(fileName);
+  }
+  const missingArtifacts = ['final.png', 'run.webm', 'trace.zip']
+    .filter((fileName) => !capturedArtifactNames.includes(fileName))
+    .map((fileName) => `artifacts/DF-FU-18/${engine}/${fileName}`);
+  let checks = deriveDfFu18Checks(observations, revision);
+  if (laneErrors.length > 0 || missingArtifacts.length > 0) checks = emptyChecks('DF-FU-18');
+  const failedChecks = DF_FU_18_CHECKS.filter((check) => checks[check] !== true);
+  const causes = [...laneErrors];
+  if (missingArtifacts.length > 0) {
+    causes.push(`Missing artifacts: ${missingArtifacts.join(', ')}`);
+  }
+  if (failedChecks.length > 0) causes.push(`Failed checks: ${failedChecks.join(', ')}`);
+  const cause = causes.join(' ');
+  recordEvent(events, 'checks-derived', { checks });
+  await writeFile(
+    localArtifacts['events.json'],
+    jsonBytes({
+      scenario: 'DF-FU-18',
+      engine,
+      revision,
+      deploymentUrl: url,
+      executedAt,
+      viewport,
+      mediaQueries,
+      observations,
+      events,
+      checks,
+      failedChecks,
+      missingArtifacts,
+      ...(cause.length === 0 ? {} : { cause }),
+    }),
+  );
+  const artifactPaths = [...capturedArtifactNames, 'events.json'].map(
+    (fileName) => `artifacts/DF-FU-18/${engine}/${fileName}`,
+  );
+  return {
+    run: { engine, viewport, mediaQueries, checks, artifactPaths },
+    localArtifacts,
+  };
+}
+
+async function packageAutomation({ output, scenarioOutputs, createdAt }) {
+  const members = new Map();
+  const entries = [];
+  for (const { laneOutputs } of scenarioOutputs) {
+    for (const { run, localArtifacts } of laneOutputs) {
+      for (const path of run.artifactPaths) {
+        const fileName = path.slice(path.lastIndexOf('/') + 1);
+        const bytes = new Uint8Array(await readFile(localArtifacts[fileName]));
+        members.set(path, bytes);
+        entries.push({
+          path,
+          bytes: bytes.length,
+          mediaType: mediaTypes[fileName],
+          sha256: sha256(bytes),
+        });
+      }
+    }
+  }
+  for (const { result } of scenarioOutputs) {
+    const resultPath = `automation/${result.scenario}.json`;
+    const resultBytes = jsonBytes(result);
+    members.set(resultPath, resultBytes);
+    entries.push({
+      path: resultPath,
+      bytes: resultBytes.length,
+      mediaType: 'application/json',
+      sha256: sha256(resultBytes),
+    });
+  }
   entries.sort((left, right) => left.path.localeCompare(right.path, 'en'));
+  const [firstOutput] = scenarioOutputs;
+  if (firstOutput === undefined) throw new Error('No automation scenarios were run.');
   const manifest = {
     schemaVersion: EVIDENCE_SCHEMA_VERSION,
     kind: 'automation',
-    revision: result.revision,
-    deploymentUrl: result.deploymentUrl,
+    revision: firstOutput.result.revision,
+    deploymentUrl: firstOutput.result.deploymentUrl,
     createdAt,
     entries,
   };
@@ -658,14 +1219,14 @@ async function packageAutomation({ output, result, laneOutputs, createdAt }) {
 
 export async function runAutomation(options, playwrightApi) {
   const requestedScenarios = resolveRequestedScenarios(options.scenario);
-  if (!requestedScenarios.includes('DF-FU-17')) throw new Error('DF-FU-17 was not requested.');
   if (!isImmutableDeploymentRoute(options.url, 'en') || !gitShaPattern.test(options.revision)) {
     throw automationError('run options must bind an immutable English route and exact revision');
   }
   if (!isAbsolute(options.output) || !options.output.endsWith('.zip')) {
     throw automationError('run output must be an absolute ZIP path');
   }
-  for (const engine of REQUIRED_ENGINES) {
+  const requiredEngines = requestedScenarios.includes('DF-FU-17') ? REQUIRED_ENGINES : ['chromium'];
+  for (const engine of requiredEngines) {
     if (playwrightApi?.[engine]?.launch === undefined) {
       throw new Error(`Pinned Playwright API is missing the ${engine} engine.`);
     }
@@ -674,52 +1235,97 @@ export async function runAutomation(options, playwrightApi) {
   const temporaryRoot = await mkdtemp(join(tmpdir(), 'lyra-file-upload-automation-'));
   try {
     const executedAt = (options.now?.() ?? new Date()).toISOString();
-    const laneOutputs = [];
-    for (const engine of REQUIRED_ENGINES) {
-      const laneRoot = join(temporaryRoot, 'artifacts', 'DF-FU-17', engine);
+    const scenarioOutputs = [];
+    if (requestedScenarios.includes('DF-FU-17')) {
+      const laneOutputs = [];
+      for (const engine of REQUIRED_ENGINES) {
+        const laneRoot = join(temporaryRoot, 'artifacts', 'DF-FU-17', engine);
+        await mkdir(laneRoot, { recursive: true });
+        laneOutputs.push(
+          await runDfFu17Lane(
+            {
+              engine,
+              executedAt,
+              laneRoot,
+              revision: options.revision,
+              url: options.url,
+            },
+            playwrightApi[engine],
+          ),
+        );
+      }
+      const runs = laneOutputs.map(({ run }) => run);
+      const presentArtifacts = new Set(laneOutputs.flatMap(({ run }) => run.artifactPaths));
+      scenarioOutputs.push({
+        laneOutputs,
+        result: {
+          scenario: 'DF-FU-17',
+          locale: 'en',
+          revision: options.revision,
+          deploymentUrl: options.url,
+          executedAt,
+          runs,
+          result: deriveAutomationResult(runs, presentArtifacts),
+        },
+      });
+    }
+    if (requestedScenarios.includes('DF-FU-18')) {
+      const laneRoot = join(temporaryRoot, 'artifacts', 'DF-FU-18', 'chromium');
       await mkdir(laneRoot, { recursive: true });
-      laneOutputs.push(
-        await runLane(
+      const laneOutputs = [
+        await runDfFu18Lane(
           {
-            engine,
             executedAt,
             laneRoot,
             revision: options.revision,
             url: options.url,
           },
-          playwrightApi[engine],
+          playwrightApi.chromium,
         ),
-      );
+      ];
+      const runs = laneOutputs.map(({ run }) => run);
+      const presentArtifacts = new Set(laneOutputs.flatMap(({ run }) => run.artifactPaths));
+      scenarioOutputs.push({
+        laneOutputs,
+        result: {
+          scenario: 'DF-FU-18',
+          locale: 'en',
+          revision: options.revision,
+          deploymentUrl: options.url,
+          executedAt,
+          runs,
+          result: deriveDfFu18Result(runs, presentArtifacts),
+        },
+      });
     }
-    const runs = laneOutputs.map(({ run }) => run);
-    const presentArtifacts = new Set();
-    for (const { run } of laneOutputs) {
-      for (const artifactPath of run.artifactPaths) presentArtifacts.add(artifactPath);
+    for (const { result } of scenarioOutputs) {
+      const validation = validateAutomatedResult(result, {
+        revision: options.revision,
+        deploymentUrl: options.url,
+      });
+      if (!validation.ok) {
+        throw new Error(
+          `Generated ${result.scenario} result is invalid: ${validation.errors.join(', ')}`,
+        );
+      }
     }
-    const result = {
-      scenario: 'DF-FU-17',
-      locale: 'en',
-      revision: options.revision,
-      deploymentUrl: options.url,
-      executedAt,
-      runs,
-      result: deriveAutomationResult(runs, presentArtifacts),
-    };
-    const validation = validateAutomatedResult(result, {
-      revision: options.revision,
-      deploymentUrl: options.url,
+    await packageAutomation({
+      output: options.output,
+      scenarioOutputs,
+      createdAt: executedAt,
     });
-    if (!validation.ok) {
-      throw new Error(`Generated DF-FU-17 result is invalid: ${validation.errors.join(', ')}`);
-    }
-    await packageAutomation({ output: options.output, result, laneOutputs, createdAt: executedAt });
     await readEvidenceArchive(options.output, {
       expectedKind: 'automation',
       expectedRevision: options.revision,
       expectedDeploymentUrl: options.url,
     });
+    const results = scenarioOutputs.map(({ result }) => result);
     return {
-      result,
+      result:
+        results.length === 1
+          ? results[0]
+          : { result: automationExitCode(results) === 0 ? 'PASS' : 'FAIL' },
+      results,
       output: options.output,
       temporaryRoot,
       archiveValidated: true,
@@ -734,11 +1340,11 @@ async function main() {
   resolveRequestedScenarios(options.scenario);
   const playwrightApi = await import('playwright');
   const outcome = await runAutomation(options, playwrightApi);
-  process.exitCode = automationExitCode(outcome.result);
+  process.exitCode = automationExitCode(outcome.results);
   if (process.exitCode !== 0) {
-    console.error(`DF-FU-17 failed; diagnostic archive written to ${outcome.output}`);
+    console.error(`FileUpload automation failed; diagnostic archive written to ${outcome.output}`);
   } else {
-    console.log(`DF-FU-17 passed; evidence archive written to ${outcome.output}`);
+    console.log(`FileUpload automation passed; evidence archive written to ${outcome.output}`);
   }
 }
 

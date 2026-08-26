@@ -1,7 +1,21 @@
 import { createRoot } from 'react-dom/client';
-import { bootstrapAlpine, parseAlpineDelay } from './alpine-bootstrap';
+import {
+  bootstrapAlpine,
+  parseAlpineDelay,
+  reconnectAlpineFixture,
+  teardownAlpineFixture,
+} from './alpine-bootstrap';
 import { deploymentUrlFromLocation, type Locale } from './contracts';
 import { HarnessApp } from './harness-app';
+
+declare global {
+  interface Window {
+    __LYRA_FILE_UPLOAD_EVIDENCE__?: {
+      reconnectAlpineFixture(root: HTMLElement): Promise<void>;
+      teardownAlpineFixture(root: HTMLElement): Promise<void>;
+    };
+  }
+}
 
 function routeLocale(): Locale {
   const language = document.documentElement.lang;
@@ -23,6 +37,12 @@ if (root === null) throw new Error('Missing the React evidence root.');
 
 const alpineRoot = document.querySelector<HTMLElement>('#alpine-evidence-root');
 if (alpineRoot !== null) void bootstrapAlpine(alpineRoot);
+
+// vite.config.ts refuses to create this private bundle unless FILE_UPLOAD_EVIDENCE=1.
+window.__LYRA_FILE_UPLOAD_EVIDENCE__ = {
+  reconnectAlpineFixture,
+  teardownAlpineFixture,
+};
 
 createRoot(root).render(
   <HarnessApp

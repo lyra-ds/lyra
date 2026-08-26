@@ -37,13 +37,40 @@ export interface UploadItemsController {
   initializations: number;
   selectionIntents: number;
   controlledEchoes: number;
+  connects: number;
+  disconnects: number;
   init(): void;
+  destroy(): void;
   controlledIdentities(): string;
   statusLabel(item: LyraFileUploadItem): string;
   selectFiles(detail: LyraFileUploadSelectDetail): void;
   retryFile(detail: LyraFileUploadRetryDetail): void;
   cancelFile(detail: LyraFileUploadCancelDetail): void;
   removeFile(detail: LyraFileUploadRemoveDetail): void;
+}
+
+interface FixtureDiagnostics {
+  initializations: number;
+  selectionIntents: number;
+  controlledEchoes: number;
+  connects: number;
+  disconnects: number;
+}
+
+const fixtureDiagnostics = new WeakMap<HTMLElement, FixtureDiagnostics>();
+
+function diagnosticsFor(root: HTMLElement): FixtureDiagnostics {
+  const existing = fixtureDiagnostics.get(root);
+  if (existing !== undefined) return existing;
+  const diagnostics = {
+    initializations: 0,
+    selectionIntents: 0,
+    controlledEchoes: 0,
+    connects: 0,
+    disconnects: 0,
+  };
+  fixtureDiagnostics.set(root, diagnostics);
+  return diagnostics;
 }
 
 function uploadingItem(item: LyraFileUploadItem, attemptId: string): LyraFileUploadItem {
@@ -68,9 +95,28 @@ export function uploadItemsController({
     initializations: 0,
     selectionIntents: 0,
     controlledEchoes: 0,
+    connects: 0,
+    disconnects: 0,
 
     init(this: UploadItemsController): void {
-      this.initializations += 1;
+      const root = (this as UploadItemsController & { readonly $root: HTMLElement }).$root;
+      const diagnostics = diagnosticsFor(root);
+      diagnostics.initializations += 1;
+      diagnostics.connects += 1;
+      this.initializations = diagnostics.initializations;
+      this.selectionIntents = diagnostics.selectionIntents;
+      this.controlledEchoes = diagnostics.controlledEchoes;
+      this.connects = diagnostics.connects;
+      this.disconnects = diagnostics.disconnects;
+    },
+
+    destroy(this: UploadItemsController): void {
+      const root = (this as UploadItemsController & { readonly $root: HTMLElement }).$root;
+      const diagnostics = diagnosticsFor(root);
+      diagnostics.disconnects += 1;
+      this.disconnects = diagnostics.disconnects;
+      const output = root.querySelector<HTMLElement>('#alpine-disconnects');
+      if (output !== null) output.textContent = String(diagnostics.disconnects);
     },
 
     controlledIdentities(this: UploadItemsController): string {
@@ -84,12 +130,16 @@ export function uploadItemsController({
     },
 
     selectFiles(this: UploadItemsController, detail: LyraFileUploadSelectDetail): void {
-      this.selectionIntents += 1;
+      const root = (this as UploadItemsController & { readonly $root: HTMLElement }).$root;
+      const diagnostics = diagnosticsFor(root);
+      diagnostics.selectionIntents += 1;
+      this.selectionIntents = diagnostics.selectionIntents;
       this.uploadItems = [
         ...this.uploadItems,
         ...detail.selections.map(({ proposedItem }) => proposedItem),
       ];
-      this.controlledEchoes += 1;
+      diagnostics.controlledEchoes += 1;
+      this.controlledEchoes = diagnostics.controlledEchoes;
     },
 
     retryFile(this: UploadItemsController, detail: LyraFileUploadRetryDetail): void {
