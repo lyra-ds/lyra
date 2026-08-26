@@ -1,4 +1,16 @@
-import { lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import {
+  link,
+  lstat,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  rmdir,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -23,13 +35,15 @@ const COMPARISON_PATH = Object.freeze([
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const defaultRepositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const defaultFileSystem = Object.freeze({
+  link,
   lstat,
   mkdir,
-  mkdtemp,
   readFile,
   readdir,
   rename,
   rm,
+  rmdir,
+  unlink,
   writeFile,
 });
 
@@ -257,7 +271,7 @@ function markdownText(value) {
     .replaceAll('(', '&#40;')
     .replaceAll(')', '&#41;')
     .replaceAll('|', '&#124;')
-    .replace(/\r?\n/gu, '<br>');
+    .replace(/\r\n?|\n/gu, '<br>');
 }
 
 function titleCase(value) {
@@ -265,7 +279,15 @@ function titleCase(value) {
 }
 
 function artifactLink(destinationName, path) {
-  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const encodedPath = path
+    .split('/')
+    .map((segment) =>
+      encodeURIComponent(segment).replace(
+        /[!'()*]/gu,
+        (character) => `%${character.codePointAt(0).toString(16).toUpperCase()}`,
+      ),
+    )
+    .join('/');
   return `${destinationName}/${encodedPath}`;
 }
 
@@ -344,7 +366,7 @@ function renderMarkdown({ automatedRecords, destinationName, manualRecords, orig
     }
     lines.push('', '#### Artifacts', '');
     for (const path of [...record.artifactPaths].sort(compareStrings)) {
-      lines.push(`- [\`${path}\`](${artifactLink(destinationName, path)})`);
+      lines.push(`- [${markdownText(path)}](${artifactLink(destinationName, path)})`);
     }
     const recordPath = `manual/${scenario}.json`;
     lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);
@@ -382,7 +404,7 @@ function renderMarkdown({ automatedRecords, destinationName, manualRecords, orig
     }
     lines.push('', '#### Artifacts', '');
     for (const path of runs.flatMap((run) => run.artifactPaths).sort(compareStrings)) {
-      lines.push(`- [\`${path}\`](${artifactLink(destinationName, path)})`);
+      lines.push(`- [${markdownText(path)}](${artifactLink(destinationName, path)})`);
     }
     const recordPath = `automation/${scenario}.json`;
     lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);
@@ -492,10 +514,126 @@ async function inspectDestinations(
   return 'idempotent';
 }
 
-async function removeOwnedPath(path, fileSystem) {
+async function inspectInterruptedDestinations(
+  { destinationDirectory, markdownPath },
+  outputFiles,
+  markdownBytes,
+  journalPath,
+  fileSystem,
+) {
+  const [directoryState, markdownState] = await Promise.all([
+    pathState(destinationDirectory, fileSystem),
+    pathState(markdownPath, fileSystem),
+  ]);
+  if (directoryState === undefined && markdownState === undefined) {
+    return { state: 'absent', tree: undefined };
+  }
+  if (directoryState !== undefined && markdownState !== undefined) {
+    try {
+      await inspectDestinations(
+        { destinationDirectory, markdownPath },
+        outputFiles,
+        markdownBytes,
+        fileSystem,
+      );
+      return { state: 'idempotent', tree: undefined };
+    } catch {
+      throw interruptedTransactionError('has divergent outputs', journalPath);
+    }
+  }
+  if (
+    directoryState === undefined ||
+    markdownState !== undefined ||
+    directoryState.isSymbolicLink() ||
+    !directoryState.isDirectory()
+  ) {
+    throw interruptedTransactionError('has divergent outputs', journalPath);
+  }
+  let tree;
+  try {
+    tree = await readDirectoryTree(destinationDirectory, fileSystem);
+  } catch {
+    throw interruptedTransactionError('has divergent outputs', journalPath);
+  }
+  const expectedDirectorySet = expectedDirectories(outputFiles);
+  const directoriesAreSubset = [...tree.directories].every((path) =>
+    expectedDirectorySet.has(path),
+  );
+  const filesAreSubset = [...tree.files].every(([path, bytes]) => {
+    const expected = outputFiles.get(path);
+    return expected !== undefined && Buffer.from(bytes).equals(expected);
+  });
+  if (!directoriesAreSubset || !filesAreSubset) {
+    throw interruptedTransactionError('has divergent outputs', journalPath);
+  }
+  return { state: 'partial', tree };
+}
+
+function sameIdentity(left, right) {
+  return left.dev === right.dev && left.ino === right.ino;
+}
+
+function combinedFailure(error, cleanupErrors) {
+  if (cleanupErrors.length === 0) return error;
+  return new AggregateError([error, ...cleanupErrors], errorMessage(error), { cause: error });
+}
+
+function transactionDigest(outputFiles, markdownBytes) {
+  const hash = createHash('sha256');
+  hash.update('lyra-file-upload-ingest-v1\0');
+  for (const [path, bytes] of outputFiles) {
+    hash.update(`${Buffer.byteLength(path)}:${path}:${bytes.length}:`);
+    hash.update(bytes);
+  }
+  hash.update(`markdown:${markdownBytes.length}:`);
+  hash.update(markdownBytes);
+  return hash.digest('hex');
+}
+
+async function removeOwnedFile(path, expectedIdentity, expectedBytes, fileSystem) {
+  const beforeRead = await pathState(path, fileSystem);
+  if (beforeRead === undefined) return;
+  if (
+    beforeRead.isSymbolicLink() ||
+    !beforeRead.isFile() ||
+    !sameIdentity(beforeRead, expectedIdentity)
+  ) {
+    throw ingestError(`owned file identity changed; preserving ${path}`);
+  }
+  const actualBytes = await fileSystem.readFile(path);
+  const afterRead = await pathState(path, fileSystem);
+  if (
+    afterRead === undefined ||
+    !sameIdentity(afterRead, expectedIdentity) ||
+    !Buffer.from(actualBytes).equals(expectedBytes)
+  ) {
+    throw ingestError(`owned file contents changed; preserving ${path}`);
+  }
+  await fileSystem.unlink(path);
+}
+
+async function removeOwnedEmptyDirectory(path, expectedIdentity, fileSystem) {
+  const actual = await pathState(path, fileSystem);
+  if (actual === undefined) return;
+  if (actual.isSymbolicLink() || !actual.isDirectory() || !sameIdentity(actual, expectedIdentity)) {
+    throw ingestError(`owned directory identity changed; preserving ${path}`);
+  }
+  await fileSystem.rmdir(path);
+}
+
+async function removeOwnedStaging(path, expectedIdentity, fileSystem) {
   let firstError;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
+      const actual = await pathState(path, fileSystem);
+      if (actual === undefined) return;
+      if (
+        actual.isSymbolicLink() ||
+        !actual.isDirectory() ||
+        !sameIdentity(actual, expectedIdentity)
+      ) {
+        throw ingestError('staging identity changed; refusing unsafe cleanup');
+      }
       await fileSystem.rm(path, { force: true, recursive: true });
       return;
     } catch (error) {
@@ -505,85 +643,331 @@ async function removeOwnedPath(path, fileSystem) {
   throw firstError;
 }
 
-function sameIdentity(left, right) {
-  return left.dev === right.dev && left.ino === right.ino;
-}
-
-async function rollbackPublishedDirectory(path, expectedIdentity, fileSystem) {
-  const actual = await pathState(path, fileSystem);
-  if (actual === undefined) return;
-  if (!sameIdentity(actual, expectedIdentity)) {
-    throw ingestError('published directory identity changed; refusing unsafe cleanup');
+async function rollbackPublishedEntries(publishedFiles, publishedDirectories, fileSystem) {
+  const errors = [];
+  for (const { bytes, identity, path } of [...publishedFiles].reverse()) {
+    try {
+      await removeOwnedFile(path, identity, bytes, fileSystem);
+    } catch (error) {
+      errors.push(error);
+    }
   }
-  await removeOwnedPath(path, fileSystem);
+  for (const { identity, path } of [...publishedDirectories].reverse()) {
+    try {
+      await removeOwnedEmptyDirectory(path, identity, fileSystem);
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  return errors;
 }
 
-function combinedFailure(error, cleanupErrors) {
-  if (cleanupErrors.length === 0) return error;
-  return new AggregateError([error, ...cleanupErrors], errorMessage(error), { cause: error });
+async function acquireTransactionLock(
+  { destinationName, expectedDigest, lockPath, parent, stagingName },
+  fileSystem,
+) {
+  try {
+    await fileSystem.mkdir(lockPath);
+  } catch (error) {
+    if (error?.code !== 'EEXIST') throw error;
+    const interrupted = await readInterruptedTransaction(
+      { destinationName, expectedDigest, lockPath, parent },
+      fileSystem,
+    );
+    const quarantinePath = join(parent, `.${destinationName}.stale-${process.pid}-${randomUUID()}`);
+    await fileSystem.rename(lockPath, quarantinePath);
+    const quarantineIdentity = await fileSystem.lstat(quarantinePath);
+    if (!sameIdentity(quarantineIdentity, interrupted.identity)) {
+      throw ingestError(
+        `interrupted transaction lock identity changed; manual remediation is required at ${quarantinePath}`,
+      );
+    }
+    const current = await createTransactionLock(
+      { destinationName, expectedDigest, lockPath, stagingName },
+      fileSystem,
+    );
+    return {
+      interrupted: {
+        ...interrupted,
+        identity: quarantineIdentity,
+        markerPath: join(quarantinePath, 'transaction.json'),
+        path: quarantinePath,
+        stagingPath: join(parent, interrupted.marker.stagingName),
+      },
+      transaction: current,
+    };
+  }
+  return {
+    interrupted: undefined,
+    transaction: await finishTransactionLock(
+      { destinationName, expectedDigest, lockPath, stagingName },
+      fileSystem,
+    ),
+  };
+}
+
+async function createTransactionLock(
+  { destinationName, expectedDigest, lockPath, stagingName },
+  fileSystem,
+) {
+  await fileSystem.mkdir(lockPath);
+  return finishTransactionLock(
+    { destinationName, expectedDigest, lockPath, stagingName },
+    fileSystem,
+  );
+}
+
+async function finishTransactionLock(
+  { destinationName, expectedDigest, lockPath, stagingName },
+  fileSystem,
+) {
+  const identity = await fileSystem.lstat(lockPath);
+  const markerPath = join(lockPath, 'transaction.json');
+  const markerBytes = jsonBytes({
+    schemaVersion: 1,
+    destinationName,
+    expectedDigest,
+    pid: process.pid,
+    stagingName,
+    transactionToken: stagingName.slice(`.${destinationName}.stage-`.length),
+  });
+  try {
+    await fileSystem.writeFile(markerPath, markerBytes, { flag: 'wx' });
+  } catch (error) {
+    const cleanupErrors = [];
+    try {
+      await removeOwnedEmptyDirectory(lockPath, identity, fileSystem);
+    } catch (cleanupError) {
+      cleanupErrors.push(cleanupError);
+    }
+    throw combinedFailure(error, cleanupErrors);
+  }
+  const markerIdentity = await fileSystem.lstat(markerPath);
+  return { identity, markerBytes, markerIdentity, markerPath, path: lockPath };
+}
+
+function processIsAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code !== 'ESRCH';
+  }
+}
+
+function interruptedTransactionError(detail, path) {
+  return ingestError(
+    `interrupted transaction ${detail}; outputs and journal were preserved for explicit manual remediation at ${path}`,
+  );
+}
+
+function validateTransactionMarker(value, destinationName) {
+  if (
+    value === null ||
+    typeof value !== 'object' ||
+    value.schemaVersion !== 1 ||
+    value.destinationName !== destinationName ||
+    typeof value.expectedDigest !== 'string' ||
+    !/^[0-9a-f]{64}$/u.test(value.expectedDigest) ||
+    !Number.isInteger(value.pid) ||
+    value.pid < 1 ||
+    typeof value.transactionToken !== 'string' ||
+    !/^\d+-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(
+      value.transactionToken,
+    ) ||
+    value.stagingName !== `.${destinationName}.stage-${value.transactionToken}`
+  ) {
+    return undefined;
+  }
+  return value;
+}
+
+async function readInterruptedTransaction(
+  { destinationName, expectedDigest, lockPath, parent },
+  fileSystem,
+) {
+  const identity = await fileSystem.lstat(lockPath);
+  if (identity.isSymbolicLink() || !identity.isDirectory()) {
+    throw interruptedTransactionError('has an unsafe lock', lockPath);
+  }
+  const entries = await fileSystem.readdir(lockPath, { withFileTypes: true });
+  if (
+    entries.length !== 1 ||
+    entries[0].name !== 'transaction.json' ||
+    !entries[0].isFile() ||
+    entries[0].isSymbolicLink()
+  ) {
+    throw interruptedTransactionError('has an invalid journal', lockPath);
+  }
+  const markerPath = join(lockPath, 'transaction.json');
+  const markerIdentity = await fileSystem.lstat(markerPath);
+  if (markerIdentity.isSymbolicLink() || !markerIdentity.isFile()) {
+    throw interruptedTransactionError('has an unsafe journal', lockPath);
+  }
+  const markerBytes = await fileSystem.readFile(markerPath);
+  const afterRead = await fileSystem.lstat(markerPath);
+  const lockAfterRead = await fileSystem.lstat(lockPath);
+  if (!sameIdentity(markerIdentity, afterRead) || !sameIdentity(identity, lockAfterRead)) {
+    throw interruptedTransactionError('journal identity changed', lockPath);
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(decoder.decode(markerBytes));
+  } catch {
+    throw interruptedTransactionError('has an invalid journal', lockPath);
+  }
+  const marker = validateTransactionMarker(parsed, destinationName);
+  if (marker === undefined) {
+    throw interruptedTransactionError('has an invalid journal', lockPath);
+  }
+  if (processIsAlive(marker.pid)) {
+    throw ingestError(
+      `transaction lock is held by live PID ${marker.pid}; another writer is in progress`,
+    );
+  }
+  if (marker.expectedDigest !== expectedDigest) {
+    throw interruptedTransactionError('targets different rendered bytes', lockPath);
+  }
+  if (
+    dirname(join(parent, marker.stagingName)) !== parent ||
+    basename(marker.stagingName) !== marker.stagingName
+  ) {
+    throw interruptedTransactionError('has an unsafe staging path', lockPath);
+  }
+  return { identity, marker, markerBytes, markerIdentity, markerPath, path: lockPath };
+}
+
+async function releaseTransactionLock(transaction, fileSystem) {
+  await removeOwnedFile(
+    transaction.markerPath,
+    transaction.markerIdentity,
+    transaction.markerBytes,
+    fileSystem,
+  );
+  await removeOwnedEmptyDirectory(transaction.path, transaction.identity, fileSystem);
+}
+
+async function cleanupInterruptedTransaction(interrupted, fileSystem) {
+  const stagingIdentity = await pathState(interrupted.stagingPath, fileSystem);
+  if (stagingIdentity !== undefined) {
+    if (stagingIdentity.isSymbolicLink() || !stagingIdentity.isDirectory()) {
+      throw ingestError(
+        `interrupted staging is unsafe; preserving it at ${interrupted.stagingPath}`,
+      );
+    }
+    await removeOwnedStaging(interrupted.stagingPath, stagingIdentity, fileSystem);
+  }
+  await releaseTransactionLock(interrupted, fileSystem);
+}
+
+function orderedDirectories(outputFiles) {
+  return [...expectedDirectories(outputFiles)].sort((left, right) => {
+    const depth = left.split('/').length - right.split('/').length;
+    return depth === 0 ? compareStrings(left, right) : depth;
+  });
 }
 
 async function stageAndPublish(
   { destinationDirectory, markdownPath, parent },
   outputFiles,
   markdownBytes,
+  stagingName,
+  interrupted,
   fileSystem,
 ) {
   const destinationName = basename(destinationDirectory);
-  const stagingPrefix = `.${destinationName}.stage-${process.pid}-`;
-  let stagingRoot;
-  let publishedIdentity;
+  const stagingRoot = join(parent, stagingName);
+  const publishedDirectories = [];
+  const publishedFiles = [];
+  let stagingIdentity;
+  let committed = false;
   try {
-    stagingRoot = await fileSystem.mkdtemp(join(parent, stagingPrefix));
-    if (dirname(stagingRoot) !== parent || !basename(stagingRoot).startsWith(stagingPrefix)) {
+    await fileSystem.mkdir(stagingRoot);
+    stagingIdentity = await fileSystem.lstat(stagingRoot);
+    if (dirname(stagingRoot) !== parent || basename(stagingRoot) !== stagingName) {
       throw ingestError('staging directory was not created as a destination sibling');
     }
     const stagedDirectory = join(stagingRoot, destinationName);
     const stagedMarkdown = join(stagingRoot, basename(markdownPath));
     await fileSystem.mkdir(stagedDirectory);
+    const stagedFiles = new Map();
     for (const [path, bytes] of outputFiles) {
       const destination = join(stagedDirectory, ...path.split('/'));
       await fileSystem.mkdir(dirname(destination), { recursive: true });
       await fileSystem.writeFile(destination, bytes, { flag: 'wx' });
+      stagedFiles.set(path, { identity: await fileSystem.lstat(destination), path: destination });
     }
     await fileSystem.writeFile(stagedMarkdown, markdownBytes, { flag: 'wx' });
+    const stagedMarkdownIdentity = await fileSystem.lstat(stagedMarkdown);
 
-    const concurrentState = await inspectDestinations(
-      { destinationDirectory, markdownPath },
-      outputFiles,
-      markdownBytes,
-      fileSystem,
-    );
-    if (concurrentState === 'idempotent') {
-      await removeOwnedPath(stagingRoot, fileSystem);
+    const concurrent =
+      interrupted === undefined
+        ? {
+            state: await inspectDestinations(
+              { destinationDirectory, markdownPath },
+              outputFiles,
+              markdownBytes,
+              fileSystem,
+            ),
+            tree: undefined,
+          }
+        : await inspectInterruptedDestinations(
+            { destinationDirectory, markdownPath },
+            outputFiles,
+            markdownBytes,
+            interrupted.path,
+            fileSystem,
+          );
+    if (concurrent.state === 'idempotent') {
+      await removeOwnedStaging(stagingRoot, stagingIdentity, fileSystem);
       return 'idempotent';
     }
 
-    publishedIdentity = await fileSystem.lstat(stagedDirectory);
-    await fileSystem.rename(stagedDirectory, destinationDirectory);
-    if ((await pathState(markdownPath, fileSystem)) !== undefined) {
-      throw ingestError('Markdown destination appeared during publication; refusing to overwrite');
+    if (concurrent.state === 'absent') {
+      await fileSystem.mkdir(destinationDirectory);
+      publishedDirectories.push({
+        identity: await fileSystem.lstat(destinationDirectory),
+        path: destinationDirectory,
+      });
     }
-    await fileSystem.rename(stagedMarkdown, markdownPath);
+    for (const relativeDirectory of orderedDirectories(outputFiles)) {
+      if (concurrent.tree?.directories.has(relativeDirectory)) continue;
+      const path = join(destinationDirectory, ...relativeDirectory.split('/'));
+      await fileSystem.mkdir(path);
+      publishedDirectories.push({ identity: await fileSystem.lstat(path), path });
+    }
+    for (const [path, bytes] of outputFiles) {
+      if (concurrent.tree?.files.has(path)) continue;
+      const source = stagedFiles.get(path);
+      const destination = join(destinationDirectory, ...path.split('/'));
+      await fileSystem.link(source.path, destination);
+      publishedFiles.push({ bytes, identity: source.identity, path: destination });
+    }
+    await fileSystem.link(stagedMarkdown, markdownPath);
+    publishedFiles.push({
+      bytes: markdownBytes,
+      identity: stagedMarkdownIdentity,
+      path: markdownPath,
+    });
+    committed = true;
   } catch (error) {
-    const cleanupErrors = [];
-    if (publishedIdentity !== undefined) {
+    const cleanupErrors = committed
+      ? []
+      : await rollbackPublishedEntries(publishedFiles, publishedDirectories, fileSystem);
+    if (stagingIdentity !== undefined) {
       try {
-        await rollbackPublishedDirectory(destinationDirectory, publishedIdentity, fileSystem);
-      } catch (cleanupError) {
-        cleanupErrors.push(cleanupError);
-      }
-    }
-    if (stagingRoot !== undefined) {
-      try {
-        await removeOwnedPath(stagingRoot, fileSystem);
+        await removeOwnedStaging(stagingRoot, stagingIdentity, fileSystem);
       } catch (cleanupError) {
         cleanupErrors.push(cleanupError);
       }
     }
     throw combinedFailure(error, cleanupErrors);
   }
-  await removeOwnedPath(stagingRoot, fileSystem);
+  try {
+    await removeOwnedStaging(stagingRoot, stagingIdentity, fileSystem);
+  } catch {
+    // Both required outputs are committed; cleanup cannot turn success into a false rollback claim.
+  }
   return 'created';
 }
 
@@ -669,16 +1053,65 @@ export async function ingestEvidence(options, fileSystemOverrides = {}) {
     revision: identity.revision,
   });
   const destinations = { destinationDirectory, markdownPath, parent };
-  const preflight = await inspectDestinations(destinations, outputFiles, markdownBytes, fileSystem);
-  if (preflight === 'idempotent') {
-    return {
-      destinationDirectory,
-      markdownPath,
-      revision: identity.revision,
-      status: 'idempotent',
-    };
+  const expectedDigest = transactionDigest(outputFiles, markdownBytes);
+  const transactionToken = `${process.pid}-${randomUUID()}`;
+  const stagingName = `.${destinationName}.stage-${transactionToken}`;
+  const { interrupted, transaction } = await acquireTransactionLock(
+    {
+      destinationName,
+      expectedDigest,
+      lockPath: join(parent, `.${destinationName}.ingest.lock`),
+      parent,
+      stagingName,
+    },
+    fileSystem,
+  );
+  let status;
+  try {
+    const preflight =
+      interrupted === undefined
+        ? {
+            state: await inspectDestinations(destinations, outputFiles, markdownBytes, fileSystem),
+          }
+        : await inspectInterruptedDestinations(
+            destinations,
+            outputFiles,
+            markdownBytes,
+            interrupted.path,
+            fileSystem,
+          );
+    status =
+      preflight.state === 'idempotent'
+        ? 'idempotent'
+        : await stageAndPublish(
+            destinations,
+            outputFiles,
+            markdownBytes,
+            stagingName,
+            interrupted,
+            fileSystem,
+          );
+  } catch (error) {
+    const cleanupErrors = [];
+    try {
+      await releaseTransactionLock(transaction, fileSystem);
+    } catch (cleanupError) {
+      cleanupErrors.push(cleanupError);
+    }
+    throw combinedFailure(error, cleanupErrors);
   }
-  const status = await stageAndPublish(destinations, outputFiles, markdownBytes, fileSystem);
+  if (interrupted !== undefined) {
+    try {
+      await cleanupInterruptedTransaction(interrupted, fileSystem);
+    } catch {
+      // Complete outputs make stale journal/staging cleanup a non-fatal maintenance concern.
+    }
+  }
+  try {
+    await releaseTransactionLock(transaction, fileSystem);
+  } catch {
+    // The output pair is complete (new or exact); lock cleanup is a recoverable concern, not failure.
+  }
   return { destinationDirectory, markdownPath, revision: identity.revision, status };
 }
 

@@ -1,6 +1,20 @@
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { once } from 'node:events';
+import {
+  link,
+  lstat,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  symlink,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -22,6 +36,7 @@ const ZIP_EPOCH = new Date('1980-01-01T00:00:00.000Z');
 const ZIP_MTIME = new Date(ZIP_EPOCH.getTime() + ZIP_EPOCH.getTimezoneOffset() * 60_000);
 const DESTINATION_NAME = `${REVISION}-accessibility`;
 const temporaryRoots = [];
+const childProcesses = new Set();
 
 const MANUAL_CHECKS = {
   'DF-FU-M01': [
@@ -290,6 +305,67 @@ async function exists(path) {
   }
 }
 
+async function interruptIngest(options, repository, phase) {
+  const moduleUrl = new URL('./ingest.mjs', import.meta.url).href;
+  const signalPath = join(repository.repositoryRoot, `.interrupt-${phase}`);
+  const script = `
+    import { link, writeFile } from 'node:fs/promises';
+    import { ingestEvidence } from ${JSON.stringify(moduleUrl)};
+    const options = ${JSON.stringify(options)};
+    const markdownPath = ${JSON.stringify(repository.markdown)};
+    const phase = ${JSON.stringify(phase)};
+    const signalPath = ${JSON.stringify(signalPath)};
+    await ingestEvidence(options, {
+      async link(from, to) {
+        if (to === markdownPath && phase === 'before-markdown') {
+          await writeFile(signalPath, 'ready', { flag: 'wx' });
+          await new Promise((resolve) => setTimeout(resolve, 10_000));
+        }
+        const result = await link(from, to);
+        if (to === markdownPath && phase === 'after-markdown') {
+          await writeFile(signalPath, 'ready', { flag: 'wx' });
+          await new Promise((resolve) => setTimeout(resolve, 10_000));
+        }
+        return result;
+      },
+    });
+  `;
+  const child = spawn(process.execPath, ['--input-type=module', '--eval', script], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  childProcesses.add(child);
+  let standardError = '';
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (chunk) => {
+    standardError += chunk;
+  });
+  const wantedMarkdown = phase === 'after-markdown';
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(`interrupted ingest exited before pause: ${standardError}`);
+    }
+    if (
+      (await exists(signalPath)) &&
+      (await exists(repository.directory)) &&
+      (await exists(repository.markdown)) === wantedMarkdown
+    ) {
+      const exited = once(child, 'exit');
+      child.kill('SIGKILL');
+      await exited;
+      childProcesses.delete(child);
+      await rm(signalPath);
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  const exited = once(child, 'exit');
+  child.kill('SIGKILL');
+  await exited;
+  childProcesses.delete(child);
+  throw new Error(`timed out waiting for interrupted ingest: ${standardError}`);
+}
+
 async function readTree(root, prefix = '') {
   const output = new Map();
   for (const entry of await readdir(join(root, prefix), { withFileTypes: true })) {
@@ -328,6 +404,7 @@ function centralEntries(bytes) {
     const extraLength = view.getUint16(offset + 30, true);
     const commentLength = view.getUint16(offset + 32, true);
     entries.push({
+      localOffset: view.getUint32(offset + 42, true),
       offset,
       name: Buffer.from(bytes.buffer, bytes.byteOffset + offset + 46, nameLength).toString(),
     });
@@ -352,10 +429,18 @@ function asOversizeArchive(bytes) {
   const entry = centralEntries(copy).find(({ name }) => name.endsWith('nvda-capture.png'));
   assert.ok(entry);
   view.setUint32(entry.offset + 24, 220 * 1024 * 1024 + 1, true);
+  view.setUint32(entry.localOffset + 22, 220 * 1024 * 1024 + 1, true);
   return copy;
 }
 
 afterEach(async () => {
+  const runningChildren = [...childProcesses].filter(
+    (child) => child.exitCode === null && child.signalCode === null,
+  );
+  const exits = runningChildren.map((child) => once(child, 'exit'));
+  for (const child of runningChildren) child.kill('SIGKILL');
+  await Promise.all(exits);
+  childProcesses.clear();
   await Promise.all(temporaryRoots.splice(0).map((root) => rm(root, { recursive: true })));
 });
 
@@ -521,6 +606,40 @@ describe('ingestEvidence', () => {
     assert.match(markdown, /&lt;script&gt;alert&#40;1&#41;&lt;\/script&gt;/u);
     assert.match(markdown, /&#91;click&#93;&#40;javascript:alert&#40;1&#41;&#41;/u);
     assert.match(markdown, /&#124; table/u);
+  });
+
+  it('renders hostile artifact paths as inert labels with RFC3986-safe destinations', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const hostilePath = 'artifacts/DF-FU-M01/x`](javascript:alert(1)) [`y.png';
+    const inputs = await writeInputs(root, {
+      m01: manualRecord('DF-FU-M01', {
+        artifactPaths: [hostilePath],
+        expected: 'first line\rsecond [line] (value) `code`',
+      }),
+    });
+
+    await ingestEvidence({
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    });
+
+    const markdown = await readFile(repository.markdown, 'utf8');
+    assert.doesNotMatch(markdown, /\]\(javascript:/u);
+    assert.doesNotMatch(markdown, /\r/u);
+    assert.match(markdown, /first line<br>second &#91;line&#93; &#40;value&#41; &#96;code&#96;/u);
+    assert.match(
+      markdown,
+      new RegExp(
+        `${DESTINATION_NAME}/artifacts/DF-FU-M01/x%60%5D%28javascript%3Aalert%281%29%29%20%5B%60y\\.png`,
+        'u',
+      ),
+    );
+    assert.match(
+      markdown,
+      /\[artifacts\/DF-FU-M01\/x&#96;&#93;&#40;javascript:alert&#40;1&#41;&#41; &#91;&#96;y\.png\]/u,
+    );
   });
 
   it('rejects missing and duplicate manual scenarios', async () => {
@@ -710,7 +829,28 @@ describe('ingestEvidence', () => {
     assert.deepEqual(await readdir(repository.parent), []);
   });
 
-  it('treats exact existing destinations as an idempotent rerun without any mutating call', async () => {
+  it('composes the declared expanded-byte cap from matching local and central ZIP sizes', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const oversizedPath = join(root, 'oversized.zip');
+    await writeFile(
+      oversizedPath,
+      asOversizeArchive(archiveBytes('manual', [manualRecord('DF-FU-M01')])),
+    );
+
+    await assert.rejects(
+      ingestEvidence({
+        automationPath: inputs.automationPath,
+        bundlePaths: [oversizedPath, inputs.m02Path],
+        repositoryRoot: repository.repositoryRoot,
+      }),
+      /declared expanded byte limit exceeded/iu,
+    );
+    assert.deepEqual(await readdir(repository.parent), []);
+  });
+
+  it('treats exact existing destinations as an idempotent rerun without destination mutations', async () => {
     const root = await temporaryRoot();
     const repository = await createRepository(root);
     const inputs = await writeInputs(root);
@@ -721,17 +861,19 @@ describe('ingestEvidence', () => {
     };
     await ingestEvidence(options);
 
-    const rejectMutation = () => {
-      throw new Error('idempotent rerun attempted a mutation');
+    const rejectDestinationMutation = () => {
+      throw new Error('idempotent rerun attempted a destination mutation');
     };
     const outcome = await ingestEvidence(options, {
-      mkdir: rejectMutation,
-      mkdtemp: rejectMutation,
-      rename: rejectMutation,
-      rm: rejectMutation,
-      writeFile: rejectMutation,
+      link: rejectDestinationMutation,
+      rename: rejectDestinationMutation,
+      rm: rejectDestinationMutation,
     });
     assert.equal(outcome.status, 'idempotent');
+    assert.deepEqual(await readdir(repository.parent), [
+      DESTINATION_NAME,
+      `${DESTINATION_NAME}.md`,
+    ]);
   });
 
   it('rejects partial or byte-mismatched destinations without overwriting them', async () => {
@@ -795,28 +937,58 @@ describe('ingestEvidence', () => {
     );
   });
 
-  it('leaves destinations absent after injected staging write and rename failures', async () => {
+  it('rejects direct extra files, directories, and symlinks in an existing destination', async () => {
     const root = await temporaryRoot();
     const inputs = await writeInputs(root);
-    for (const failure of ['write', 'first-rename', 'second-rename']) {
+    for (const kind of ['file', 'directory', 'symlink']) {
+      const repository = await createRepository(root, `extra-${kind}`);
+      const options = {
+        automationPath: inputs.automationPath,
+        bundlePaths: [inputs.m01Path, inputs.m02Path],
+        repositoryRoot: repository.repositoryRoot,
+      };
+      await ingestEvidence(options);
+      const extraPath = join(repository.directory, `unexpected-${kind}`);
+      if (kind === 'file') await writeFile(extraPath, 'keep-file');
+      else if (kind === 'directory') await mkdir(extraPath);
+      else {
+        const target = join(root, 'symlink-target');
+        await writeFile(target, 'keep-target');
+        await symlink(target, extraPath);
+      }
+
+      await assert.rejects(ingestEvidence(options), /different bytes|symlink/iu, kind);
+      assert.equal(await exists(extraPath), true, kind);
+    }
+  });
+
+  it('leaves destinations absent after injected staging write and exclusive publication failures', async () => {
+    const root = await temporaryRoot();
+    const inputs = await writeInputs(root);
+    for (const failure of ['write', 'directory-publication', 'markdown-publication']) {
       const repository = await createRepository(root, failure);
       let writes = 0;
-      let renames = 0;
       const fileSystem = {
-        async writeFile(...arguments_) {
-          writes += 1;
-          if (failure === 'write' && writes === 2) throw new Error('injected write failure');
-          return writeFile(...arguments_);
+        async link(from, to) {
+          if (failure === 'markdown-publication' && to === repository.markdown) {
+            throw new Error('injected Markdown publication failure');
+          }
+          return link(from, to);
         },
-        async rename(...arguments_) {
-          renames += 1;
-          if (failure === 'first-rename' && renames === 1) {
-            throw new Error('injected first rename failure');
+        async mkdir(path, options) {
+          if (failure === 'directory-publication' && path === repository.directory) {
+            throw new Error('injected directory publication failure');
           }
-          if (failure === 'second-rename' && renames === 2) {
-            throw new Error('injected second rename failure');
+          return mkdir(path, options);
+        },
+        async writeFile(path, ...arguments_) {
+          if (path.includes('.stage-')) {
+            writes += 1;
+            if (failure === 'write' && writes === 2) {
+              throw new Error('injected staging write failure');
+            }
           }
-          return rename(...arguments_);
+          return writeFile(path, ...arguments_);
         },
       };
       await assert.rejects(
@@ -852,8 +1024,9 @@ describe('ingestEvidence', () => {
           repositoryRoot: repository.repositoryRoot,
         },
         {
-          async writeFile() {
-            throw new Error('injected staging failure');
+          async writeFile(path, ...arguments_) {
+            if (path.includes('.stage-')) throw new Error('injected staging failure');
+            return writeFile(path, ...arguments_);
           },
           async rm(...arguments_) {
             cleanupAttempts += 1;
@@ -882,13 +1055,13 @@ describe('ingestEvidence', () => {
           repositoryRoot: repository.repositoryRoot,
         },
         {
-          async rename(from, to) {
-            if (!raced) {
+          async mkdir(path, options) {
+            if (path === repository.directory && !raced) {
               raced = true;
-              await mkdir(to);
-              await writeFile(join(to, 'sentinel.txt'), 'racing writer');
+              await mkdir(path);
+              await writeFile(join(path, 'sentinel.txt'), 'racing writer');
             }
-            return rename(from, to);
+            return mkdir(path, options);
           },
         },
       ),
@@ -900,6 +1073,373 @@ describe('ingestEvidence', () => {
     );
     assert.equal(await exists(repository.markdown), false);
     assert.deepEqual(await readdir(repository.parent), [DESTINATION_NAME]);
+  });
+
+  it('does not replace an empty directory inserted at the directory publication boundary', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    let inserted = false;
+    const insertBeforeDirectoryPublication = async (to) => {
+      if (to !== repository.directory || inserted) return;
+      inserted = true;
+      await mkdir(repository.directory);
+    };
+
+    await assert.rejects(
+      ingestEvidence(
+        {
+          automationPath: inputs.automationPath,
+          bundlePaths: [inputs.m01Path, inputs.m02Path],
+          repositoryRoot: repository.repositoryRoot,
+        },
+        {
+          async mkdir(path, options) {
+            await insertBeforeDirectoryPublication(path);
+            return mkdir(path, options);
+          },
+          async rename(from, to) {
+            await insertBeforeDirectoryPublication(to);
+            return rename(from, to);
+          },
+        },
+      ),
+      /exist|destination|publication/iu,
+    );
+    assert.equal(inserted, true);
+    assert.deepEqual(await readdir(repository.directory), []);
+    assert.equal(await exists(repository.markdown), false);
+  });
+
+  it('does not replace Markdown inserted at the Markdown publication boundary', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    let inserted = false;
+    const insertBeforeMarkdownPublication = async (to) => {
+      if (to !== repository.markdown || inserted) return;
+      inserted = true;
+      await writeFile(repository.markdown, 'racing Markdown');
+    };
+
+    await assert.rejects(
+      ingestEvidence(
+        {
+          automationPath: inputs.automationPath,
+          bundlePaths: [inputs.m01Path, inputs.m02Path],
+          repositoryRoot: repository.repositoryRoot,
+        },
+        {
+          async link(from, to) {
+            await insertBeforeMarkdownPublication(to);
+            return link(from, to);
+          },
+          async rename(from, to) {
+            await insertBeforeMarkdownPublication(to);
+            return rename(from, to);
+          },
+        },
+      ),
+      /exist|destination|publication/iu,
+    );
+    assert.equal(inserted, true);
+    assert.equal(await readFile(repository.markdown, 'utf8'), 'racing Markdown');
+    assert.equal(await exists(repository.directory), false);
+  });
+
+  it('fails a second cooperative writer closed while the transaction lock is live', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    let releaseLock;
+    let sawLock;
+    const locked = new Promise((resolve) => {
+      sawLock = resolve;
+    });
+    const release = new Promise((resolve) => {
+      releaseLock = resolve;
+    });
+    const first = ingestEvidence(options, {
+      async writeFile(path, ...arguments_) {
+        const result = await writeFile(path, ...arguments_);
+        if (path.endsWith('.ingest.lock/transaction.json')) {
+          sawLock();
+          await release;
+        }
+        return result;
+      },
+    });
+    const lockObserved = await Promise.race([
+      locked.then(() => true),
+      new Promise((resolve) => setTimeout(() => resolve(false), 100)),
+    ]);
+    try {
+      assert.equal(lockObserved, true, 'first writer did not acquire a transaction lock');
+      await assert.rejects(ingestEvidence(options), /lock|transaction.*progress/iu);
+      assert.equal(await exists(repository.directory), false);
+      assert.equal(await exists(repository.markdown), false);
+      assert.deepEqual(await readdir(repository.parent), [`.${DESTINATION_NAME}.ingest.lock`]);
+    } finally {
+      releaseLock();
+      await first;
+    }
+  });
+
+  it('resumes a byte-exact subset left by a dead transaction and removes its journal state', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const missingArtifact = join(repository.directory, 'artifacts/DF-FU-M01/nvda-capture.png');
+    await rm(missingArtifact);
+
+    const outcome = await ingestEvidence(options);
+
+    assert.equal(outcome.status, 'created');
+    assert.equal(
+      await readFile(missingArtifact, 'utf8'),
+      'verified:artifacts/DF-FU-M01/nvda-capture.png',
+    );
+    assert.equal(await exists(repository.markdown), true);
+    assert.deepEqual(
+      (await readdir(repository.parent)).sort(),
+      [DESTINATION_NAME, `${DESTINATION_NAME}.md`].sort(),
+    );
+  });
+
+  it('finalizes an exact output pair left by a dead transaction as idempotent', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'after-markdown');
+
+    const outcome = await ingestEvidence(options);
+
+    assert.equal(outcome.status, 'idempotent');
+    assert.deepEqual(
+      (await readdir(repository.parent)).sort(),
+      [DESTINATION_NAME, `${DESTINATION_NAME}.md`].sort(),
+    );
+  });
+
+  it('preserves divergent interrupted output and requests explicit manual remediation', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const divergentPath = join(repository.directory, 'unexpected.txt');
+    await writeFile(divergentPath, 'preserve divergent bytes');
+
+    await assert.rejects(
+      ingestEvidence(options),
+      /interrupted transaction.*divergent.*manual remediation/iu,
+    );
+    assert.equal(await readFile(divergentPath, 'utf8'), 'preserve divergent bytes');
+    assert.equal(await exists(repository.markdown), false);
+  });
+
+  it('preserves interrupted output when the verified transaction digest changes', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const originalOptions = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(originalOptions, repository, 'before-markdown');
+    const changedM01Path = join(root, 'changed-m01.zip');
+    await writeFile(
+      changedM01Path,
+      archiveBytes('manual', [
+        manualRecord('DF-FU-M01', { actual: 'Different but independently verified bytes.' }),
+      ]),
+    );
+
+    await assert.rejects(
+      ingestEvidence({ ...originalOptions, bundlePaths: [changedM01Path, inputs.m02Path] }),
+      /interrupted transaction.*different rendered bytes.*manual remediation/iu,
+    );
+    assert.equal(await exists(repository.directory), true);
+    assert.equal(await exists(repository.markdown), false);
+  });
+
+  it('preserves interrupted output and its fixed journal when stale-lock takeover fails', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const lockPath = join(repository.parent, `.${DESTINATION_NAME}.ingest.lock`);
+
+    await assert.rejects(
+      ingestEvidence(options, {
+        async rename() {
+          throw new Error('injected stale-lock takeover failure');
+        },
+      }),
+      /injected stale-lock takeover failure/iu,
+    );
+    assert.equal(await exists(repository.directory), true);
+    assert.equal(await exists(repository.markdown), false);
+    assert.equal(await exists(join(lockPath, 'transaction.json')), true);
+  });
+
+  it('never removes a replacement installed between rollback identity check and removal', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const displaced = join(repository.parent, '.displaced-publication');
+    let publicationFailed = false;
+    let replaced = false;
+    const failMarkdownPublication = async (to) => {
+      if (to !== repository.markdown) return false;
+      publicationFailed = true;
+      throw new Error('injected Markdown publication failure');
+    };
+
+    await assert.rejects(
+      ingestEvidence(
+        {
+          automationPath: inputs.automationPath,
+          bundlePaths: [inputs.m01Path, inputs.m02Path],
+          repositoryRoot: repository.repositoryRoot,
+        },
+        {
+          async link(from, to) {
+            if (!(await failMarkdownPublication(to))) return link(from, to);
+          },
+          async lstat(path) {
+            const state = await lstat(path);
+            if (path === repository.directory && publicationFailed && !replaced) {
+              replaced = true;
+              await rename(repository.directory, displaced);
+              await mkdir(repository.directory);
+              await writeFile(join(repository.directory, 'replacement.txt'), 'keep replacement');
+            }
+            return state;
+          },
+          async rename(from, to) {
+            if (!(await failMarkdownPublication(to))) return rename(from, to);
+          },
+        },
+      ),
+      /injected Markdown publication failure/iu,
+    );
+    assert.equal(replaced, true);
+    assert.equal(
+      await readFile(join(repository.directory, 'replacement.txt'), 'utf8'),
+      'keep replacement',
+    );
+  });
+
+  it('never removes a concurrent file added between rollback identity check and removal', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    let publicationFailed = false;
+    let inserted = false;
+    const failMarkdownPublication = async (to) => {
+      if (to !== repository.markdown) return false;
+      publicationFailed = true;
+      throw new Error('injected Markdown publication failure');
+    };
+
+    await assert.rejects(
+      ingestEvidence(
+        {
+          automationPath: inputs.automationPath,
+          bundlePaths: [inputs.m01Path, inputs.m02Path],
+          repositoryRoot: repository.repositoryRoot,
+        },
+        {
+          async link(from, to) {
+            if (!(await failMarkdownPublication(to))) return link(from, to);
+          },
+          async lstat(path) {
+            const state = await lstat(path);
+            if (path === repository.directory && publicationFailed && !inserted) {
+              inserted = true;
+              await writeFile(join(repository.directory, 'concurrent.txt'), 'keep concurrent');
+            }
+            return state;
+          },
+          async rename(from, to) {
+            if (!(await failMarkdownPublication(to))) return rename(from, to);
+          },
+        },
+      ),
+      /injected Markdown publication failure/iu,
+    );
+    assert.equal(inserted, true);
+    assert.equal(
+      await readFile(join(repository.directory, 'concurrent.txt'), 'utf8'),
+      'keep concurrent',
+    );
+  });
+
+  it('reports committed success when post-commit staging or lock cleanup fails', async () => {
+    const root = await temporaryRoot();
+    const inputs = await writeInputs(root);
+    for (const failure of ['staging', 'lock']) {
+      const repository = await createRepository(root, `post-commit-${failure}`);
+      let committed = false;
+      const outcome = await ingestEvidence(
+        {
+          automationPath: inputs.automationPath,
+          bundlePaths: [inputs.m01Path, inputs.m02Path],
+          repositoryRoot: repository.repositoryRoot,
+        },
+        {
+          async link(from, to) {
+            const result = await link(from, to);
+            if (to === repository.markdown) committed = true;
+            return result;
+          },
+          async rm(...arguments_) {
+            if (failure === 'staging' && committed) {
+              throw new Error('injected post-commit staging cleanup failure');
+            }
+            return rm(...arguments_);
+          },
+          async unlink(path) {
+            if (failure === 'lock' && committed && path.endsWith('/transaction.json')) {
+              throw new Error('injected post-commit lock cleanup failure');
+            }
+            return unlink(path);
+          },
+        },
+      );
+
+      assert.equal(outcome.status, 'created', failure);
+      assert.equal(committed, true, failure);
+      assert.equal(await exists(repository.directory), true, failure);
+      assert.equal(await exists(repository.markdown), true, failure);
+    }
   });
 
   it('validates every CLI archive before the first repository write', async () => {
