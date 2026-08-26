@@ -32,6 +32,7 @@
     "evidence:file-upload:manual:stage": "node tools/file-upload-evidence/scripts/stage-preview.mjs",
     "evidence:file-upload:manual:smoke": "node tools/file-upload-evidence/scripts/smoke.mjs",
     "evidence:file-upload:automation": "node tools/file-upload-evidence/scripts/automation.mjs",
+    "evidence:file-upload:ingest": "node tools/file-upload-evidence/scripts/ingest.mjs",
     "changeset": "changeset",
     "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
   },

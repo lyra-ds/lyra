@@ -7,7 +7,8 @@
     "test": "vitest run --config vitest.config.ts",
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "build:preview": "vite build",
-    "test:automation": "node --test scripts/automation.test.mjs"
+    "test:automation": "node --test scripts/automation.test.mjs",
+    "test:ingest": "node --test scripts/archive.test.mjs scripts/ingest.test.mjs"
   },
   "dependencies": {
     "@lyra-ds/alpine": "workspace:*",
