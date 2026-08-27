@@ -285,6 +285,37 @@ describe('runSmoke', () => {
     expect(dependencies.uploadWithBrowser).not.toHaveBeenCalled();
   });
 
+  it('uses the production readiness attempt and delay defaults on exhaustion', async () => {
+    const base = collaborators();
+    let readinessRounds = 0;
+    const dependencies = collaborators({
+      fetch: async (input, init) => {
+        const requestUrl = String(input);
+        if (requestUrl.endsWith('/en/file-upload-evidence/')) {
+          readinessRounds += 1;
+          if (readinessRounds < 13) return new Response(page('pt-BR'), { status: 200 });
+        }
+        if (requestUrl.endsWith('/api/file-upload-evidence')) {
+          return Response.json(
+            { revision },
+            { status: 200, headers: { 'X-Lyra-Evidence-Revision': revision } },
+          );
+        }
+        return base.fetch(input, init);
+      },
+      readinessMaxAttempts: undefined,
+      sleep: vi.fn(async () => {}),
+      uploadWithBrowser: vi.fn(async () => browserResult()),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'native multipart response is not localized HTML with revision parity',
+    );
+    expect(readinessRounds).toBe(13);
+    expect(dependencies.sleep.mock.calls).toEqual(Array.from({ length: 12 }, () => [5_000]));
+    expect(dependencies.uploadWithBrowser).not.toHaveBeenCalled();
+  });
+
   it('does not retry browser or XHR semantic failures after readiness', async () => {
     const base = collaborators();
     let nativeAttempts = 0;
