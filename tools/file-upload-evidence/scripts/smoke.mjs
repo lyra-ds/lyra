@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
 const revisionPattern = /^[a-f0-9]{40}$/u;
@@ -8,6 +9,8 @@ const fileName = 'smoke.bin';
 const mediaType = 'application/octet-stream';
 const nativePayloadBytes = 64 * 1024;
 const browserPayloadBytes = 8 * 1024 * 1024;
+const readinessMaxAttempts = 13;
+const readinessRetryDelayMs = 5_000;
 
 const locales = [
   {
@@ -276,6 +279,27 @@ async function checkNativeMultipart(url, revision, payloadMarker, fetchImplement
   }
 }
 
+async function waitForReadiness({
+  fetchImplementation,
+  maxAttempts,
+  payloadMarker,
+  revision,
+  retryDelayMs,
+  sleepImplementation,
+  url,
+}) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await checkLocalizedPages(url, revision, fetchImplementation);
+      await checkNativeMultipart(url, revision, payloadMarker, fetchImplementation);
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+      await sleepImplementation(retryDelayMs);
+    }
+  }
+}
+
 export async function uploadWithBrowser({ payloadMarker, url }) {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -405,14 +429,23 @@ export async function uploadWithBrowser({ payloadMarker, url }) {
 export async function runSmoke(options, dependencies = {}) {
   const fetchImplementation = dependencies.fetch ?? globalThis.fetch;
   const browserUpload = dependencies.uploadWithBrowser ?? uploadWithBrowser;
+  const maxReadinessAttempts = dependencies.readinessMaxAttempts ?? readinessMaxAttempts;
+  const readinessSleep = dependencies.sleep ?? sleep;
   const createPayloadMarker =
     dependencies.createPayloadMarker ?? (() => `lyra-evidence-payload-${crypto.randomUUID()}`);
   const payloadMarker = createPayloadMarker();
   if (typeof payloadMarker !== 'string' || payloadMarker.length === 0) {
     throw new Error('payload marker must be a non-empty string.');
   }
-  await checkLocalizedPages(options.url, options.revision, fetchImplementation);
-  await checkNativeMultipart(options.url, options.revision, payloadMarker, fetchImplementation);
+  await waitForReadiness({
+    fetchImplementation,
+    maxAttempts: maxReadinessAttempts,
+    payloadMarker,
+    revision: options.revision,
+    retryDelayMs: readinessRetryDelayMs,
+    sleepImplementation: readinessSleep,
+    url: options.url,
+  });
   const upload = await browserUpload({ ...options, payloadMarker });
   const scenarioSurfaces = validateScenarioSurfaces(upload.scenarioSurfaces);
   if (

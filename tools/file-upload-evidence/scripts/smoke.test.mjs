@@ -149,6 +149,7 @@ function collaborators(overrides = {}) {
 
   return {
     fetch,
+    readinessMaxAttempts: 1,
     uploadWithBrowser: vi.fn(async () => browserResult()),
     createPayloadMarker: () => payloadMarker,
     ...overrides,
@@ -188,6 +189,131 @@ describe('runSmoke', () => {
       revision,
       url,
     });
+  });
+
+  it('waits for native multipart readiness before launching the browser once', async () => {
+    const events = [];
+    const base = collaborators();
+    let nativeAttempts = 0;
+    const dependencies = collaborators({
+      fetch: async (input, init) => {
+        if (String(input).endsWith('/api/file-upload-evidence')) {
+          nativeAttempts += 1;
+          events.push(nativeAttempts === 1 ? 'native-not-ready' : 'native-ready');
+          if (nativeAttempts === 1) {
+            return Response.json(
+              { revision },
+              { status: 200, headers: { 'X-Lyra-Evidence-Revision': revision } },
+            );
+          }
+        }
+        return base.fetch(input, init);
+      },
+      readinessMaxAttempts: 3,
+      sleep: vi.fn(async () => {
+        events.push('sleep');
+      }),
+      uploadWithBrowser: vi.fn(async () => {
+        events.push('browser');
+        return browserResult();
+      }),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).resolves.toEqual({
+      locales: ['en', 'pt-BR'],
+      revision,
+      url,
+    });
+    expect(events).toEqual(['native-not-ready', 'sleep', 'native-ready', 'browser']);
+    expect(dependencies.uploadWithBrowser).toHaveBeenCalledTimes(1);
+  });
+
+  it('recovers when a localized evidence route becomes ready on a later attempt', async () => {
+    const base = collaborators();
+    let englishAttempts = 0;
+    let nativeAttempts = 0;
+    const dependencies = collaborators({
+      fetch: async (input, init) => {
+        const requestUrl = String(input);
+        if (requestUrl.endsWith('/en/file-upload-evidence/')) {
+          englishAttempts += 1;
+          if (englishAttempts === 1) return new Response(page('pt-BR'), { status: 200 });
+        }
+        if (requestUrl.endsWith('/api/file-upload-evidence')) nativeAttempts += 1;
+        return base.fetch(input, init);
+      },
+      readinessMaxAttempts: 3,
+      sleep: vi.fn(async () => {}),
+      uploadWithBrowser: vi.fn(async () => browserResult()),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).resolves.toMatchObject({ revision });
+    expect(englishAttempts).toBe(2);
+    expect(nativeAttempts).toBe(1);
+    expect(dependencies.sleep).toHaveBeenCalledTimes(1);
+    expect(dependencies.uploadWithBrowser).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops after the bounded readiness attempts and throws the last probe error', async () => {
+    const base = collaborators();
+    let englishAttempts = 0;
+    const dependencies = collaborators({
+      fetch: async (input, init) => {
+        const requestUrl = String(input);
+        if (requestUrl.endsWith('/en/file-upload-evidence/')) {
+          englishAttempts += 1;
+          if (englishAttempts < 3) return new Response(page('pt-BR'), { status: 200 });
+        }
+        if (requestUrl.endsWith('/api/file-upload-evidence')) {
+          return Response.json(
+            { revision },
+            { status: 200, headers: { 'X-Lyra-Evidence-Revision': revision } },
+          );
+        }
+        return base.fetch(input, init);
+      },
+      readinessMaxAttempts: 3,
+      sleep: vi.fn(async () => {}),
+      uploadWithBrowser: vi.fn(async () => browserResult()),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'native multipart response is not localized HTML with revision parity',
+    );
+    expect(englishAttempts).toBe(3);
+    expect(dependencies.sleep).toHaveBeenCalledTimes(2);
+    expect(dependencies.uploadWithBrowser).not.toHaveBeenCalled();
+  });
+
+  it('does not retry browser or XHR semantic failures after readiness', async () => {
+    const base = collaborators();
+    let nativeAttempts = 0;
+    const dependencies = collaborators({
+      fetch: async (input, init) => {
+        if (String(input).endsWith('/api/file-upload-evidence')) {
+          nativeAttempts += 1;
+          if (nativeAttempts === 1) {
+            return Response.json(
+              { revision },
+              { status: 200, headers: { 'X-Lyra-Evidence-Revision': revision } },
+            );
+          }
+        }
+        return base.fetch(input, init);
+      },
+      readinessMaxAttempts: 3,
+      sleep: vi.fn(async () => {}),
+      uploadWithBrowser: vi.fn(async () =>
+        browserResult({ body: { ...expectedMetadata, byteLength: browserByteLength - 1 } }),
+      ),
+    });
+
+    await expect(runSmoke({ revision, url }, dependencies)).rejects.toThrow(
+      'XHR response metadata does not match smoke.bin',
+    );
+    expect(nativeAttempts).toBe(2);
+    expect(dependencies.sleep).toHaveBeenCalledTimes(1);
+    expect(dependencies.uploadWithBrowser).toHaveBeenCalledTimes(1);
   });
 
   it('rejects a page and Function revision mismatch', async () => {
