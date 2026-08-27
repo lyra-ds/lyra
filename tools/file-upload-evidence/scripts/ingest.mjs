@@ -578,6 +578,41 @@ function combinedFailure(error, cleanupErrors) {
   return new AggregateError([error, ...cleanupErrors], errorMessage(error), { cause: error });
 }
 
+function incompleteCleanupFailure(error, cleanupErrors) {
+  const failure = new AggregateError(
+    [error, ...cleanupErrors],
+    `${errorMessage(error)}; rollback or staging cleanup is incomplete, transaction journal preserved for recovery`,
+    { cause: error },
+  );
+  Object.defineProperty(failure, 'preserveTransaction', { value: true });
+  return failure;
+}
+
+function mustPreserveTransaction(error) {
+  return (
+    error !== null &&
+    (typeof error === 'object' || typeof error === 'function') &&
+    error.preserveTransaction === true
+  );
+}
+
+function incompleteTakeoverFailure(error, quarantinePath) {
+  const failure = ingestError(
+    `takeover incomplete; explicit manual remediation is required at ${quarantinePath}: ${errorMessage(error)}`,
+  );
+  Object.defineProperty(failure, 'cause', { value: error });
+  Object.defineProperty(failure, 'preserveTakeoverMutex', { value: true });
+  return failure;
+}
+
+function mustPreserveTakeoverMutex(error) {
+  return (
+    error !== null &&
+    (typeof error === 'object' || typeof error === 'function') &&
+    error.preserveTakeoverMutex === true
+  );
+}
+
 function transactionDigest(outputFiles, markdownBytes) {
   const hash = createHash('sha256');
   hash.update('lyra-file-upload-ingest-v1\0');
@@ -666,6 +701,59 @@ async function acquireTransactionLock(
   { destinationName, expectedDigest, lockPath, parent, stagingName },
   fileSystem,
 ) {
+  const takeoverPath = join(parent, `.${destinationName}.takeover.lock`);
+  const takeover = await acquireTakeoverMutex(takeoverPath, fileSystem);
+  let failure;
+  let outcome;
+  try {
+    outcome = await acquireTransactionLockUnderMutex(
+      { destinationName, expectedDigest, lockPath, parent, stagingName },
+      fileSystem,
+    );
+  } catch (error) {
+    failure = error;
+  }
+  if (!mustPreserveTakeoverMutex(failure)) {
+    try {
+      await removeOwnedEmptyDirectory(takeover.path, takeover.identity, fileSystem);
+    } catch (cleanupError) {
+      const mutexError = ingestError(
+        `takeover mutex cleanup failed; state is preserved for explicit manual remediation at ${takeover.path}`,
+      );
+      throw combinedFailure(failure ?? mutexError, [
+        cleanupError,
+        ...(failure ? [mutexError] : []),
+      ]);
+    }
+  }
+  if (failure !== undefined) throw failure;
+  return outcome;
+}
+
+async function acquireTakeoverMutex(path, fileSystem) {
+  try {
+    await fileSystem.mkdir(path);
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw ingestError(
+        `recovery already in progress; takeover mutex is preserved for explicit manual remediation at ${path}`,
+      );
+    }
+    throw error;
+  }
+  const identity = await fileSystem.lstat(path);
+  if (identity.isSymbolicLink() || !identity.isDirectory()) {
+    throw ingestError(
+      `takeover mutex is unsafe; explicit manual remediation is required at ${path}`,
+    );
+  }
+  return { identity, path };
+}
+
+async function acquireTransactionLockUnderMutex(
+  { destinationName, expectedDigest, lockPath, parent, stagingName },
+  fileSystem,
+) {
   try {
     await fileSystem.mkdir(lockPath);
   } catch (error) {
@@ -676,26 +764,29 @@ async function acquireTransactionLock(
     );
     const quarantinePath = join(parent, `.${destinationName}.stale-${process.pid}-${randomUUID()}`);
     await fileSystem.rename(lockPath, quarantinePath);
-    const quarantineIdentity = await fileSystem.lstat(quarantinePath);
-    if (!sameIdentity(quarantineIdentity, interrupted.identity)) {
-      throw ingestError(
-        `interrupted transaction lock identity changed; manual remediation is required at ${quarantinePath}`,
+    try {
+      const quarantineIdentity = await fileSystem.lstat(quarantinePath);
+      if (!sameIdentity(quarantineIdentity, interrupted.identity)) {
+        throw ingestError(
+          `interrupted transaction lock identity changed; manual remediation is required at ${quarantinePath}`,
+        );
+      }
+      const current = await createTransactionLock(
+        { destinationName, expectedDigest, lockPath, stagingName },
+        fileSystem,
       );
+      return {
+        interrupted: {
+          ...interrupted,
+          identity: quarantineIdentity,
+          markerPath: join(quarantinePath, 'transaction.json'),
+          path: quarantinePath,
+        },
+        transaction: current,
+      };
+    } catch (takeoverError) {
+      throw incompleteTakeoverFailure(takeoverError, quarantinePath);
     }
-    const current = await createTransactionLock(
-      { destinationName, expectedDigest, lockPath, stagingName },
-      fileSystem,
-    );
-    return {
-      interrupted: {
-        ...interrupted,
-        identity: quarantineIdentity,
-        markerPath: join(quarantinePath, 'transaction.json'),
-        path: quarantinePath,
-        stagingPath: join(parent, interrupted.marker.stagingName),
-      },
-      transaction: current,
-    };
   }
   return {
     interrupted: undefined,
@@ -847,19 +938,6 @@ async function releaseTransactionLock(transaction, fileSystem) {
   await removeOwnedEmptyDirectory(transaction.path, transaction.identity, fileSystem);
 }
 
-async function cleanupInterruptedTransaction(interrupted, fileSystem) {
-  const stagingIdentity = await pathState(interrupted.stagingPath, fileSystem);
-  if (stagingIdentity !== undefined) {
-    if (stagingIdentity.isSymbolicLink() || !stagingIdentity.isDirectory()) {
-      throw ingestError(
-        `interrupted staging is unsafe; preserving it at ${interrupted.stagingPath}`,
-      );
-    }
-    await removeOwnedStaging(interrupted.stagingPath, stagingIdentity, fileSystem);
-  }
-  await releaseTransactionLock(interrupted, fileSystem);
-}
-
 function orderedDirectories(outputFiles) {
   return [...expectedDirectories(outputFiles)].sort((left, right) => {
     const depth = left.split('/').length - right.split('/').length;
@@ -961,7 +1039,7 @@ async function stageAndPublish(
         cleanupErrors.push(cleanupError);
       }
     }
-    throw combinedFailure(error, cleanupErrors);
+    throw cleanupErrors.length === 0 ? error : incompleteCleanupFailure(error, cleanupErrors);
   }
   try {
     await removeOwnedStaging(stagingRoot, stagingIdentity, fileSystem);
@@ -1092,21 +1170,19 @@ export async function ingestEvidence(options, fileSystemOverrides = {}) {
             fileSystem,
           );
   } catch (error) {
-    const cleanupErrors = [];
-    try {
-      await releaseTransactionLock(transaction, fileSystem);
-    } catch (cleanupError) {
-      cleanupErrors.push(cleanupError);
+    if (!mustPreserveTransaction(error)) {
+      const cleanupErrors = [];
+      try {
+        await releaseTransactionLock(transaction, fileSystem);
+      } catch (cleanupError) {
+        cleanupErrors.push(cleanupError);
+      }
+      throw combinedFailure(error, cleanupErrors);
     }
-    throw combinedFailure(error, cleanupErrors);
+    throw error;
   }
-  if (interrupted !== undefined) {
-    try {
-      await cleanupInterruptedTransaction(interrupted, fileSystem);
-    } catch {
-      // Complete outputs make stale journal/staging cleanup a non-fatal maintenance concern.
-    }
-  }
+  // Interrupted staging and its quarantined journal are immutable audit/manual-remediation state.
+  // Their creation-time identity is unavailable here, so recovery never deletes either pathname.
   try {
     await releaseTransactionLock(transaction, fileSystem);
   } catch {

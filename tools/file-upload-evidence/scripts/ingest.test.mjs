@@ -366,6 +366,138 @@ async function interruptIngest(options, repository, phase) {
   throw new Error(`timed out waiting for interrupted ingest: ${standardError}`);
 }
 
+async function leaveIncompleteRollback(options, repository) {
+  const moduleUrl = new URL('./ingest.mjs', import.meta.url).href;
+  const script = `
+    import { link, unlink } from 'node:fs/promises';
+    import { ingestEvidence } from ${JSON.stringify(moduleUrl)};
+    const options = ${JSON.stringify(options)};
+    const destinationDirectory = ${JSON.stringify(repository.directory)};
+    const markdownPath = ${JSON.stringify(repository.markdown)};
+    let refusedRollback = false;
+    try {
+      await ingestEvidence(options, {
+        async link(from, to) {
+          if (to === markdownPath) throw new Error('injected Markdown publication failure');
+          return link(from, to);
+        },
+        async unlink(path) {
+          if (path.startsWith(destinationDirectory) && !refusedRollback) {
+            refusedRollback = true;
+            console.error('injected rollback cleanup failure');
+            throw new Error('injected rollback cleanup failure');
+          }
+          return unlink(path);
+        },
+      });
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 23;
+    }
+  `;
+  const child = spawn(process.execPath, ['--input-type=module', '--eval', script], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  childProcesses.add(child);
+  let standardError = '';
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (chunk) => {
+    standardError += chunk;
+  });
+  const exited = once(child, 'exit');
+  const [exitCode, signal] = await exited;
+  childProcesses.delete(child);
+  assert.equal(signal, null, standardError);
+  assert.equal(exitCode, 23, standardError);
+  assert.match(standardError, /injected Markdown publication failure/iu);
+  assert.match(standardError, /injected rollback cleanup failure/iu);
+  assert.match(standardError, /transaction journal preserved for recovery/iu);
+}
+
+async function startRecoveryAtTakeoverBarrier(options, repository) {
+  const moduleUrl = new URL('./ingest.mjs', import.meta.url).href;
+  const mutexPath = join(repository.parent, `.${DESTINATION_NAME}.takeover.lock`);
+  const signalPath = join(repository.repositoryRoot, '.takeover-ready');
+  const releasePath = join(repository.repositoryRoot, '.takeover-release');
+  const script = `
+    import { access, mkdir, writeFile } from 'node:fs/promises';
+    import { ingestEvidence } from ${JSON.stringify(moduleUrl)};
+    const options = ${JSON.stringify(options)};
+    const mutexPath = ${JSON.stringify(mutexPath)};
+    const signalPath = ${JSON.stringify(signalPath)};
+    const releasePath = ${JSON.stringify(releasePath)};
+    try {
+      await ingestEvidence(options, {
+        async mkdir(path, mkdirOptions) {
+          const result = await mkdir(path, mkdirOptions);
+          if (path === mutexPath) {
+            await writeFile(signalPath, 'ready', { flag: 'wx' });
+            const deadline = Date.now() + 10_000;
+            while (Date.now() < deadline) {
+              try {
+                await access(releasePath);
+                return result;
+              } catch (error) {
+                if (error?.code !== 'ENOENT') throw error;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+            throw new Error('timed out inside takeover barrier');
+          }
+          return result;
+        },
+      });
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 29;
+    }
+  `;
+  const child = spawn(process.execPath, ['--input-type=module', '--eval', script], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  childProcesses.add(child);
+  let standardError = '';
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (chunk) => {
+    standardError += chunk;
+  });
+  const exited = once(child, 'exit');
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      await exited;
+      childProcesses.delete(child);
+      throw new Error(`recovery exited before takeover barrier: ${standardError}`);
+    }
+    if (await exists(signalPath)) {
+      return {
+        async crash() {
+          const exit = child.exitCode === null && child.signalCode === null ? exited : undefined;
+          if (exit !== undefined) child.kill('SIGKILL');
+          if (exit !== undefined) await exit;
+          childProcesses.delete(child);
+          await rm(signalPath, { force: true });
+        },
+        async release() {
+          await writeFile(releasePath, 'release', { flag: 'wx' });
+          const [exitCode, signal] = await exited;
+          childProcesses.delete(child);
+          await rm(signalPath, { force: true });
+          await rm(releasePath, { force: true });
+          assert.equal(signal, null, standardError);
+          assert.equal(exitCode, 0, standardError);
+        },
+      };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  const exit = child.exitCode === null && child.signalCode === null ? exited : undefined;
+  if (exit !== undefined) child.kill('SIGKILL');
+  if (exit !== undefined) await exit;
+  childProcesses.delete(child);
+  throw new Error(`timed out waiting for takeover barrier: ${standardError}`);
+}
+
 async function readTree(root, prefix = '') {
   const output = new Map();
   for (const entry of await readdir(join(root, prefix), { withFileTypes: true })) {
@@ -1183,14 +1315,17 @@ describe('ingestEvidence', () => {
       await assert.rejects(ingestEvidence(options), /lock|transaction.*progress/iu);
       assert.equal(await exists(repository.directory), false);
       assert.equal(await exists(repository.markdown), false);
-      assert.deepEqual(await readdir(repository.parent), [`.${DESTINATION_NAME}.ingest.lock`]);
+      assert.deepEqual((await readdir(repository.parent)).sort(), [
+        `.${DESTINATION_NAME}.ingest.lock`,
+        `.${DESTINATION_NAME}.takeover.lock`,
+      ]);
     } finally {
       releaseLock();
       await first;
     }
   });
 
-  it('resumes a byte-exact subset left by a dead transaction and removes its journal state', async () => {
+  it('resumes a byte-exact subset while preserving stale journal and staging audit state', async () => {
     const root = await temporaryRoot();
     const repository = await createRepository(root);
     const inputs = await writeInputs(root);
@@ -1211,10 +1346,16 @@ describe('ingestEvidence', () => {
       'verified:artifacts/DF-FU-M01/nvda-capture.png',
     );
     assert.equal(await exists(repository.markdown), true);
-    assert.deepEqual(
-      (await readdir(repository.parent)).sort(),
-      [DESTINATION_NAME, `${DESTINATION_NAME}.md`].sort(),
+    const entries = await readdir(repository.parent);
+    assert.equal(entries.includes(DESTINATION_NAME), true);
+    assert.equal(entries.includes(`${DESTINATION_NAME}.md`), true);
+    assert.equal(
+      entries.filter((name) => name.startsWith(`.${DESTINATION_NAME}.stage-`)).length,
+      1,
     );
+    const quarantineName = entries.find((name) => name.startsWith(`.${DESTINATION_NAME}.stale-`));
+    assert.ok(quarantineName);
+    assert.equal(await exists(join(repository.parent, quarantineName, 'transaction.json')), true);
   });
 
   it('finalizes an exact output pair left by a dead transaction as idempotent', async () => {
@@ -1231,10 +1372,84 @@ describe('ingestEvidence', () => {
     const outcome = await ingestEvidence(options);
 
     assert.equal(outcome.status, 'idempotent');
-    assert.deepEqual(
-      (await readdir(repository.parent)).sort(),
-      [DESTINATION_NAME, `${DESTINATION_NAME}.md`].sort(),
+    const entries = await readdir(repository.parent);
+    assert.equal(entries.includes(DESTINATION_NAME), true);
+    assert.equal(entries.includes(`${DESTINATION_NAME}.md`), true);
+    assert.equal(
+      entries.filter((name) => name.startsWith(`.${DESTINATION_NAME}.stage-`)).length,
+      1,
     );
+    assert.equal(
+      entries.filter((name) => name.startsWith(`.${DESTINATION_NAME}.stale-`)).length,
+      1,
+    );
+  });
+
+  it('preserves replaced stale staging and its quarantined journal as nonblocking audit state', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const staleStagingName = (await readdir(repository.parent)).find((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.stage-`),
+    );
+    assert.ok(staleStagingName);
+    const staleStagingPath = join(repository.parent, staleStagingName);
+    await rename(staleStagingPath, join(repository.parent, '.displaced-stale-staging'));
+    await mkdir(staleStagingPath);
+    const foreignPath = join(staleStagingPath, 'foreign.txt');
+    await writeFile(foreignPath, 'foreign replacement must survive');
+
+    const outcome = await ingestEvidence(options);
+
+    assert.equal(outcome.status, 'created');
+    assert.equal(await readFile(foreignPath, 'utf8'), 'foreign replacement must survive');
+    const quarantineNames = (await readdir(repository.parent)).filter((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.stale-`),
+    );
+    assert.equal(quarantineNames.length, 1);
+    assert.equal(
+      await exists(join(repository.parent, quarantineNames[0], 'transaction.json')),
+      true,
+    );
+
+    const rerun = await ingestEvidence(options);
+    assert.equal(rerun.status, 'idempotent');
+    assert.equal(await readFile(foreignPath, 'utf8'), 'foreign replacement must survive');
+    assert.deepEqual(
+      (await readdir(repository.parent)).filter((name) =>
+        name.startsWith(`.${DESTINATION_NAME}.stale-`),
+      ),
+      quarantineNames,
+    );
+  });
+
+  it('preserves the current journal after incomplete rollback so a dead transaction can resume', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await leaveIncompleteRollback(options, repository);
+    const lockPath = join(repository.parent, `.${DESTINATION_NAME}.ingest.lock`);
+
+    assert.equal(await exists(join(lockPath, 'transaction.json')), true);
+    assert.equal(await exists(repository.directory), true);
+    assert.equal(await exists(repository.markdown), false);
+
+    const outcome = await ingestEvidence(options);
+    assert.equal(outcome.status, 'created');
+    assert.equal(await exists(repository.markdown), true);
+    const rerun = await ingestEvidence(options);
+    assert.equal(rerun.status, 'idempotent');
   });
 
   it('preserves divergent interrupted output and requests explicit manual remediation', async () => {
@@ -1307,6 +1522,103 @@ describe('ingestEvidence', () => {
     assert.equal(await exists(repository.directory), true);
     assert.equal(await exists(repository.markdown), false);
     assert.equal(await exists(join(lockPath, 'transaction.json')), true);
+  });
+
+  it('leaves the takeover mutex fail-closed when canonical journal creation fails after the move', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const lockPath = join(repository.parent, `.${DESTINATION_NAME}.ingest.lock`);
+    const mutexPath = join(repository.parent, `.${DESTINATION_NAME}.takeover.lock`);
+    let canonicalMkdirCalls = 0;
+
+    await assert.rejects(
+      ingestEvidence(options, {
+        async mkdir(path, mkdirOptions) {
+          if (path === lockPath) {
+            canonicalMkdirCalls += 1;
+            if (canonicalMkdirCalls === 2) {
+              throw new Error('injected canonical journal creation failure');
+            }
+          }
+          return mkdir(path, mkdirOptions);
+        },
+      }),
+      /takeover incomplete.*manual remediation.*injected canonical journal creation failure/iu,
+    );
+    assert.equal(await exists(mutexPath), true);
+    assert.equal(await exists(repository.markdown), false);
+    assert.equal(
+      (await readdir(repository.parent)).some((name) =>
+        name.startsWith(`.${DESTINATION_NAME}.stale-`),
+      ),
+      true,
+    );
+    await assert.rejects(
+      ingestEvidence(options),
+      /recovery already in progress.*manual remediation/iu,
+    );
+  });
+
+  it('serializes concurrent stale recovery before either reader can move the canonical lock', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const canonicalJournal = join(
+      repository.parent,
+      `.${DESTINATION_NAME}.ingest.lock`,
+      'transaction.json',
+    );
+    const winner = await startRecoveryAtTakeoverBarrier(options, repository);
+    let released = false;
+    try {
+      await assert.rejects(ingestEvidence(options), /recovery already in progress/iu);
+      assert.equal(await exists(canonicalJournal), true);
+      await winner.release();
+      released = true;
+    } finally {
+      if (!released) await winner.crash();
+    }
+
+    assert.equal(await exists(repository.markdown), true);
+    const rerun = await ingestEvidence(options);
+    assert.equal(rerun.status, 'idempotent');
+  });
+
+  it('fails closed without moving the canonical lock after a takeover-mutex crash', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    await interruptIngest(options, repository, 'before-markdown');
+    const lockPath = join(repository.parent, `.${DESTINATION_NAME}.ingest.lock`);
+    const mutexPath = join(repository.parent, `.${DESTINATION_NAME}.takeover.lock`);
+    const recovery = await startRecoveryAtTakeoverBarrier(options, repository);
+    await recovery.crash();
+
+    await assert.rejects(
+      ingestEvidence(options),
+      /recovery already in progress.*manual remediation/iu,
+    );
+    assert.equal(await exists(join(lockPath, 'transaction.json')), true);
+    assert.equal(await exists(mutexPath), true);
+    assert.equal(await exists(repository.markdown), false);
   });
 
   it('never removes a replacement installed between rollback identity check and removal', async () => {
