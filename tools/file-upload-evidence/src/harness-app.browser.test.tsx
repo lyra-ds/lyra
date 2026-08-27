@@ -19,8 +19,7 @@ import { HarnessApp, type HarnessAppProps } from './harness-app';
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
 const DEPLOYMENT_URL = 'https://a1b2c3d4.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
 const NEXT_REVISION = 'abcdef1234567890abcdef1234567890abcdef12';
-const NEXT_DEPLOYMENT_URL =
-  'https://e5f6a7b8.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
+const NEXT_DEPLOYMENT_URL = 'https://e5f6a7b8.lyra-ds-docs.pages.dev/en/file-upload-evidence/';
 const EXECUTED_AT = '2026-08-17T15:30:00.000Z';
 const BUNDLE: ManualEvidenceBundle = {
   bytes: new Uint8Array([80, 75]),
@@ -147,9 +146,7 @@ async function completeObservation(
 }
 
 function bundleBoundary() {
-  const createBundle = vi
-    .fn<typeof createManualEvidenceBundle>()
-    .mockResolvedValue(BUNDLE);
+  const createBundle = vi.fn<typeof createManualEvidenceBundle>().mockResolvedValue(BUNDLE);
   const downloadBundle = vi.fn<(bundle: ManualEvidenceBundle) => void>();
   return { createBundle, downloadBundle };
 }
@@ -323,9 +320,7 @@ describe('two-scenario local evidence recorder', () => {
     const view = await render(<HarnessApp {...firstProps} />);
     await completeObservation('en', firstFile);
 
-    await view.rerender(
-      <HarnessApp {...firstProps} buildTime="2026-08-17T14:30:00.000Z" />,
-    );
+    await view.rerender(<HarnessApp {...firstProps} buildTime="2026-08-17T14:30:00.000Z" />);
     expect(page.getByText('first-revision.png', { exact: true })).toBeVisible();
     expect(inputByName('os.name')).toHaveValue('Windows');
 

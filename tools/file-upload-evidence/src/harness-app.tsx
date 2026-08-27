@@ -557,10 +557,7 @@ function observationValue(
   };
 }
 
-function attachmentError(
-  files: readonly File[],
-  messages: UiMessages,
-): string | undefined {
+function attachmentError(files: readonly File[], messages: UiMessages): string | undefined {
   if (files.length > MAX_MANUAL_FILES) return messages.attachmentErrors.tooMany;
   for (const file of files) {
     if (file.size < 1) return messages.attachmentErrors.empty(file.name);
@@ -703,9 +700,9 @@ function LocaleHarness({
       readTime().toISOString(),
     ),
   }));
-  const [attachments, setAttachments] = useState<
-    Partial<Record<ManualScenario, readonly File[]>>
-  >({});
+  const [attachments, setAttachments] = useState<Partial<Record<ManualScenario, readonly File[]>>>(
+    {},
+  );
   const [mode, setMode] = useState<EvidenceOperatorMode>('success');
   const [showValidation, setShowValidation] = useState(false);
   const [exporting, setExporting] = useState(false);

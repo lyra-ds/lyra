@@ -76,7 +76,9 @@ export function validateScenarioSurfaces(value) {
       throw new Error(`${expectation.locale} scenario surface has no mounted React recorder.`);
     }
     if (surface.localAttachmentVisible !== true) {
-      throw new Error(`${expectation.locale} scenario surface has no local evidence attachment control.`);
+      throw new Error(
+        `${expectation.locale} scenario surface has no local evidence attachment control.`,
+      );
     }
     if (surface.zipActionVisible !== true) {
       throw new Error(`${expectation.locale} scenario surface has no evidence ZIP action.`);

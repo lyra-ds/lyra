@@ -1,8 +1,8 @@
 # FileUpload Evidence Simplification Design
 
-**Status:** Approved  
-**Date:** 2026-08-26  
-**Decision owner:** Lyra maintainer  
+**Status:** Approved
+**Date:** 2026-08-26
+**Decision owner:** Lyra maintainer
 **Affected work:** FileUpload Task 10 and the temporary manual-evidence preview
 
 ## 1. Problem
