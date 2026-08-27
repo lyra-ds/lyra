@@ -11,6 +11,7 @@ import {
   readdir,
   rename,
   rm,
+  rmdir,
   symlink,
   unlink,
   writeFile,
@@ -998,7 +999,17 @@ describe('ingestEvidence', () => {
     };
     const outcome = await ingestEvidence(options, {
       link: rejectDestinationMutation,
-      rename: rejectDestinationMutation,
+      async rename(from, to) {
+        if (
+          from === repository.directory ||
+          to === repository.directory ||
+          from === repository.markdown ||
+          to === repository.markdown
+        ) {
+          rejectDestinationMutation();
+        }
+        return rename(from, to);
+      },
       rm: rejectDestinationMutation,
     });
     assert.equal(outcome.status, 'idempotent');
@@ -1137,7 +1148,24 @@ describe('ingestEvidence', () => {
       );
       assert.equal(await exists(repository.directory), false, failure);
       assert.equal(await exists(repository.markdown), false, failure);
-      assert.deepEqual(await readdir(repository.parent), [], failure);
+      const parentEntries = await readdir(repository.parent);
+      const auditNames = parentEntries.filter((name) =>
+        name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+      );
+      assert.equal(auditNames.length, 1, failure);
+      assert.deepEqual(parentEntries, auditNames, failure);
+      assert.equal(
+        await exists(
+          join(
+            repository.parent,
+            auditNames[0],
+            `.${DESTINATION_NAME}.ingest.lock`,
+            'transaction.json',
+          ),
+        ),
+        true,
+        failure,
+      );
     }
   });
 
@@ -1171,7 +1199,21 @@ describe('ingestEvidence', () => {
     );
     assert.equal(cleanupAttempts, 2);
     assert.equal(await readFile(sibling, 'utf8'), 'keep');
-    assert.deepEqual(await readdir(repository.parent), ['.unrelated-keep']);
+    const parentEntries = await readdir(repository.parent);
+    const auditName = parentEntries.find((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+    );
+    assert.ok(auditName);
+    assert.deepEqual(
+      parentEntries.filter((name) => name !== auditName),
+      ['.unrelated-keep'],
+    );
+    assert.equal(
+      await exists(
+        join(repository.parent, auditName, `.${DESTINATION_NAME}.ingest.lock`, 'transaction.json'),
+      ),
+      true,
+    );
   });
 
   it('does not clobber a destination created by a racing writer', async () => {
@@ -1204,7 +1246,21 @@ describe('ingestEvidence', () => {
       'racing writer',
     );
     assert.equal(await exists(repository.markdown), false);
-    assert.deepEqual(await readdir(repository.parent), [DESTINATION_NAME]);
+    const parentEntries = await readdir(repository.parent);
+    const auditName = parentEntries.find((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+    );
+    assert.ok(auditName);
+    assert.deepEqual(
+      parentEntries.filter((name) => name !== auditName),
+      [DESTINATION_NAME],
+    );
+    assert.equal(
+      await exists(
+        join(repository.parent, auditName, `.${DESTINATION_NAME}.ingest.lock`, 'transaction.json'),
+      ),
+      true,
+    );
   });
 
   it('does not replace an empty directory inserted at the directory publication boundary', async () => {
@@ -1711,6 +1767,180 @@ describe('ingestEvidence', () => {
     assert.equal(
       await readFile(join(repository.directory, 'concurrent.txt'), 'utf8'),
       'keep concurrent',
+    );
+  });
+
+  it('moves the journal off the canonical lock before fallible release cleanup', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    const lockName = `.${DESTINATION_NAME}.ingest.lock`;
+    const lockPath = join(repository.parent, lockName);
+    let refusedCleanup = false;
+
+    const outcome = await ingestEvidence(options, {
+      async rmdir(path) {
+        if (!refusedCleanup && path.endsWith(`/${lockName}`)) {
+          refusedCleanup = true;
+          throw new Error('injected release directory cleanup failure');
+        }
+        return rmdir(path);
+      },
+    });
+
+    assert.equal(outcome.status, 'created');
+    assert.equal(refusedCleanup, true);
+    assert.equal(await exists(lockPath), false);
+    const auditNames = (await readdir(repository.parent)).filter((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+    );
+    assert.equal(auditNames.length, 1);
+    assert.equal(await exists(join(repository.parent, auditNames[0], 'transaction.json')), true);
+
+    const rerun = await ingestEvidence(options);
+    assert.equal(rerun.status, 'idempotent');
+  });
+
+  it('keeps an audit journal without writing into a replacement release lock', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    const lockName = `.${DESTINATION_NAME}.ingest.lock`;
+    let replaced = false;
+
+    const outcome = await ingestEvidence(options, {
+      async rmdir(path) {
+        if (!replaced && path.endsWith(`/${lockName}`) && path.includes('.release-audit-')) {
+          replaced = true;
+          await rename(path, `${path}.displaced`);
+          await mkdir(path);
+          await writeFile(join(path, 'foreign.txt'), 'foreign replacement must survive');
+          throw new Error('injected release lock replacement');
+        }
+        return rmdir(path);
+      },
+    });
+
+    assert.equal(outcome.status, 'created');
+    assert.equal(replaced, true);
+    const auditName = (await readdir(repository.parent)).find((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+    );
+    assert.ok(auditName);
+    const auditPath = join(repository.parent, auditName);
+    assert.deepEqual(await readdir(join(auditPath, lockName)), ['foreign.txt']);
+    assert.equal(
+      await readFile(join(auditPath, lockName, 'foreign.txt'), 'utf8'),
+      'foreign replacement must survive',
+    );
+    assert.equal(await exists(join(auditPath, 'transaction.json')), true);
+  });
+
+  it('preserves an off-path journal when publication fails after rollback', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    const lockName = `.${DESTINATION_NAME}.ingest.lock`;
+
+    await assert.rejects(
+      ingestEvidence(options, {
+        async link(from, to) {
+          if (to === repository.markdown) {
+            throw new Error('injected original publication failure');
+          }
+          return link(from, to);
+        },
+      }),
+      /injected original publication failure/iu,
+    );
+
+    assert.equal(await exists(join(repository.parent, lockName)), false);
+    const auditNames = (await readdir(repository.parent)).filter((name) =>
+      name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+    );
+    assert.equal(auditNames.length, 1);
+    assert.equal(
+      await exists(join(repository.parent, auditNames[0], lockName, 'transaction.json')),
+      true,
+    );
+
+    const rerun = await ingestEvidence(options);
+    assert.equal(rerun.status, 'created');
+  });
+
+  it('keeps the complete canonical journal when release rename fails before the move', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    const lockName = `.${DESTINATION_NAME}.ingest.lock`;
+    const lockPath = join(repository.parent, lockName);
+    let refusedMove = false;
+
+    const outcome = await ingestEvidence(options, {
+      async rename(from, to) {
+        if (from === lockPath) {
+          refusedMove = true;
+          throw new Error('injected release rename failure');
+        }
+        return rename(from, to);
+      },
+    });
+
+    assert.equal(outcome.status, 'created');
+    assert.equal(refusedMove, true);
+    assert.deepEqual(await readdir(lockPath), ['transaction.json']);
+    const marker = JSON.parse(await readFile(join(lockPath, 'transaction.json'), 'utf8'));
+    assert.equal(marker.destinationName, DESTINATION_NAME);
+    assert.equal(typeof marker.expectedDigest, 'string');
+    assert.equal(marker.expectedDigest.length, 64);
+    assert.deepEqual(
+      (await readdir(repository.parent)).filter((name) =>
+        name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+      ),
+      [],
+    );
+  });
+
+  it('removes the canonical lock and release audit after normal completion', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [inputs.m01Path, inputs.m02Path],
+      repositoryRoot: repository.repositoryRoot,
+    };
+    const lockPath = join(repository.parent, `.${DESTINATION_NAME}.ingest.lock`);
+
+    const outcome = await ingestEvidence(options);
+
+    assert.equal(outcome.status, 'created');
+    assert.equal(await exists(lockPath), false);
+    assert.deepEqual(
+      (await readdir(repository.parent)).filter((name) =>
+        name.startsWith(`.${DESTINATION_NAME}.release-audit-`),
+      ),
+      [],
     );
   });
 

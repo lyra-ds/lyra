@@ -3,6 +3,7 @@ import {
   link,
   lstat,
   mkdir,
+  mkdtemp,
   readFile,
   readdir,
   rename,
@@ -38,6 +39,7 @@ const defaultFileSystem = Object.freeze({
   link,
   lstat,
   mkdir,
+  mkdtemp,
   readFile,
   readdir,
   rename,
@@ -928,14 +930,109 @@ async function readInterruptedTransaction(
   return { identity, marker, markerBytes, markerIdentity, markerPath, path: lockPath };
 }
 
-async function releaseTransactionLock(transaction, fileSystem) {
-  await removeOwnedFile(
-    transaction.markerPath,
-    transaction.markerIdentity,
-    transaction.markerBytes,
-    fileSystem,
-  );
-  await removeOwnedEmptyDirectory(transaction.path, transaction.identity, fileSystem);
+async function releaseTransactionLock(transaction, fileSystem, preserveAudit = false) {
+  const parent = dirname(transaction.path);
+  const lockName = basename(transaction.path);
+  const auditStem = lockName.endsWith('.ingest.lock')
+    ? lockName.slice(0, -'.ingest.lock'.length)
+    : '.evidence-ingest';
+  const auditPath = await fileSystem.mkdtemp(join(parent, `${auditStem}.release-audit-`));
+  const auditIdentity = await fileSystem.lstat(auditPath);
+  if (auditIdentity.isSymbolicLink() || !auditIdentity.isDirectory()) {
+    throw ingestError(`release audit root is unsafe; preserving ${transaction.path}`);
+  }
+  const movedLockPath = join(auditPath, lockName);
+  try {
+    await fileSystem.rename(transaction.path, movedLockPath);
+  } catch (error) {
+    const cleanupErrors = [];
+    try {
+      await removeOwnedEmptyDirectory(auditPath, auditIdentity, fileSystem);
+    } catch (cleanupError) {
+      cleanupErrors.push(cleanupError);
+    }
+    throw combinedFailure(error, cleanupErrors);
+  }
+
+  const movedTransaction = {
+    ...transaction,
+    markerPath: join(movedLockPath, 'transaction.json'),
+    path: movedLockPath,
+  };
+  if (preserveAudit) return;
+  const auditMarkerPath = join(auditPath, 'transaction.json');
+  let auditMarkerIdentity;
+  try {
+    await fileSystem.writeFile(auditMarkerPath, transaction.markerBytes, { flag: 'wx' });
+    auditMarkerIdentity = await fileSystem.lstat(auditMarkerPath);
+    if (auditMarkerIdentity.isSymbolicLink() || !auditMarkerIdentity.isFile()) {
+      throw ingestError(`release audit journal is unsafe; preserving ${auditPath}`);
+    }
+    await removeOwnedFile(
+      movedTransaction.markerPath,
+      movedTransaction.markerIdentity,
+      movedTransaction.markerBytes,
+      fileSystem,
+    );
+    await removeOwnedEmptyDirectory(movedTransaction.path, movedTransaction.identity, fileSystem);
+    await removeOwnedFile(
+      auditMarkerPath,
+      auditMarkerIdentity,
+      transaction.markerBytes,
+      fileSystem,
+    );
+    await removeOwnedEmptyDirectory(auditPath, auditIdentity, fileSystem);
+  } catch (error) {
+    const preservationErrors = [];
+    try {
+      await preserveReleaseJournal(
+        auditMarkerPath,
+        transaction.markerBytes,
+        auditPath,
+        auditIdentity,
+        fileSystem,
+      );
+    } catch (preservationError) {
+      preservationErrors.push(preservationError);
+    }
+    throw combinedFailure(error, preservationErrors);
+  }
+}
+
+async function preserveReleaseJournal(
+  markerPath,
+  markerBytes,
+  auditPath,
+  auditIdentity,
+  fileSystem,
+) {
+  const actualAudit = await pathState(auditPath, fileSystem);
+  if (
+    actualAudit === undefined ||
+    actualAudit.isSymbolicLink() ||
+    !actualAudit.isDirectory() ||
+    !sameIdentity(actualAudit, auditIdentity)
+  ) {
+    throw ingestError(`release audit root identity changed; preserving ${auditPath}`);
+  }
+
+  const markerState = await pathState(markerPath, fileSystem);
+  if (markerState === undefined) {
+    await fileSystem.writeFile(markerPath, markerBytes, { flag: 'wx' });
+  } else {
+    if (markerState.isSymbolicLink() || !markerState.isFile()) {
+      throw ingestError(`release audit journal is unsafe; preserving ${auditPath}`);
+    }
+    const actualBytes = await fileSystem.readFile(markerPath);
+    const afterRead = await fileSystem.lstat(markerPath);
+    if (!sameIdentity(markerState, afterRead) || !Buffer.from(actualBytes).equals(markerBytes)) {
+      throw ingestError(`release audit journal changed; preserving ${auditPath}`);
+    }
+  }
+  const afterRestore = await fileSystem.lstat(auditPath);
+  if (!sameIdentity(afterRestore, auditIdentity)) {
+    throw ingestError(`release audit root identity changed; preserving ${auditPath}`);
+  }
 }
 
 function orderedDirectories(outputFiles) {
@@ -1173,7 +1270,7 @@ export async function ingestEvidence(options, fileSystemOverrides = {}) {
     if (!mustPreserveTransaction(error)) {
       const cleanupErrors = [];
       try {
-        await releaseTransactionLock(transaction, fileSystem);
+        await releaseTransactionLock(transaction, fileSystem, true);
       } catch (cleanupError) {
         cleanupErrors.push(cleanupError);
       }
