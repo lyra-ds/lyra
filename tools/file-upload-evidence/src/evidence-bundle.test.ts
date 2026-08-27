@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { SCENARIO_CHECK_IDS, type FileUploadManualObservation } from './contracts.ts';
 import {
   createManualEvidenceBundle,
+  manualArtifactMetadata,
   sanitizeEvidenceFileName,
   type ManualEvidenceAttachments,
 } from './evidence-bundle.ts';
@@ -84,6 +85,32 @@ describe('sanitizeEvidenceFileName', () => {
 });
 
 describe('createManualEvidenceBundle', () => {
+  it.each([
+    ['forward slash', 'folder/capture.png'],
+    ['backslash', 'folder\\capture.png'],
+    ['NUL', 'capture\0.png'],
+    ['non-NFC', 'cafe\u0301.png'],
+    ['empty', ''],
+    ['dot', '.'],
+    ['dot-dot', '..'],
+  ])(
+    'preserves an invalid synthetic File.name exactly, then rejects its %s metadata',
+    async (_label, name) => {
+      const selected = file(name, 'image/png');
+      const metadata = manualArtifactMetadata('DF-FU-M01', [selected]);
+      expect(metadata).toMatchObject([{ originalName: name }]);
+      const candidate = record(
+        'DF-FU-M01',
+        metadata.map(({ path }) => path),
+      );
+      candidate.artifactMetadata = metadata;
+
+      await expect(
+        createManualEvidenceBundle([candidate], attachments([['DF-FU-M01', [selected]]])),
+      ).rejects.toThrow(/artifactMetadata|artifact metadata/i);
+    },
+  );
+
   it('creates a deterministic one-record archive with lexical members and verified metadata', async () => {
     const selected = file('NVDA sessão 01.webm', 'video/webm');
     const validRecord = record('DF-FU-M01', ['artifacts/DF-FU-M01/NVDA-sessao-01.webm']);

@@ -538,5 +538,19 @@ describe('readEvidenceArchive', () => {
       ),
       /manual.*record/i,
     );
+    await assert.rejects(
+      readEvidenceArchive(
+        await writeArchive(
+          validArchive({
+            recordOverrides: {
+              artifactMetadata: [
+                { path: 'artifacts/DF-FU-M01/CAPTURE.png', originalName: 'capture.png' },
+              ],
+            },
+          }),
+        ),
+      ),
+      /manual.*record/i,
+    );
   });
 });

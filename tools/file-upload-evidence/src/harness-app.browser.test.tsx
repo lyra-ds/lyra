@@ -259,6 +259,18 @@ describe('two-scenario local evidence recorder', () => {
     expect(page.getByRole('button', { name: fixture.download })).toBeDisabled();
   });
 
+  it.each(['folder/capture.png', 'folder\\capture.png', 'capture\0.png', 'cafe\u0301.png'])(
+    'blocks export when synthetic File.name metadata is invalid: %s',
+    async (name) => {
+      const boundary = bundleBoundary();
+      await render(<HarnessApp {...appProps('en', boundary)} />);
+      await completeObservation('en', evidenceFile(name));
+
+      expect(page.getByRole('button', { name: 'Download evidence ZIP' })).toBeDisabled();
+      expect(boundary.createBundle).not.toHaveBeenCalled();
+    },
+  );
+
   it('downloads one valid record with its real local File and no endpoint request', async () => {
     const boundary = bundleBoundary();
     const opened = vi.spyOn(XMLHttpRequest.prototype, 'open');

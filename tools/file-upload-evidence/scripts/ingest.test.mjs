@@ -866,6 +866,30 @@ describe('ingestEvidence', () => {
     assert.equal(await exists(repository.directory), false);
   });
 
+  it('rejects case-only attachment metadata substitution before repository writes', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const candidate = manualRecord('DF-FU-M01');
+    candidate.artifactMetadata = [
+      {
+        path: 'artifacts/DF-FU-M01/NVDA-CAPTURE.png',
+        originalName: 'NVDA capture [final].png',
+      },
+    ];
+    const inputs = await writeInputs(root, { m01: candidate });
+
+    await assert.rejects(
+      ingestEvidence({
+        automationPath: inputs.automationPath,
+        bundlePaths: [inputs.m01Path, inputs.m02Path],
+        repositoryRoot: repository.repositoryRoot,
+      }),
+      /invalid manual result|archive/iu,
+    );
+    assert.equal(await exists(repository.directory), false);
+    assert.equal(await exists(repository.markdown), false);
+  });
+
   it('rejects missing, failed, and partial DF-FU-17 or DF-FU-18 results', async () => {
     const root = await temporaryRoot();
     const repository = await createRepository(root);

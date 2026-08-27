@@ -225,6 +225,14 @@ describe('validateObservation', () => {
         ],
       },
     ],
+    [
+      'artifactMetadata',
+      {
+        artifactMetadata: [
+          { path: 'artifacts/DF-FU-M01/NVDA.webm', originalName: 'NVDA session.webm' },
+        ],
+      },
+    ],
   ])('rejects missing or malformed %s evidence', (field, overrides) => {
     expect(validateObservation({ ...validM01, ...overrides })).toMatchObject({
       ok: false,

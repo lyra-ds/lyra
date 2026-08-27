@@ -54,7 +54,7 @@ export function manualArtifactMetadata(
   const ordinals = new Map<string, number>();
   return files
     .map((file) => ({
-      originalName: archiveLeafName(file.name),
+      originalName: file.name,
       sanitizedName: sanitizeEvidenceFileName(file.name),
     }))
     .sort(
@@ -132,7 +132,7 @@ async function prepareAttachments(
       return {
         bytes,
         file,
-        originalName: archiveLeafName(file.name),
+        originalName: file.name,
         sanitizedName: sanitizeEvidenceFileName(file.name),
         sha256: await hashBytes(bytes),
       };

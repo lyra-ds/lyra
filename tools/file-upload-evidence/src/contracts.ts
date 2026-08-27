@@ -516,12 +516,7 @@ export function validateObservation(value: unknown): ObservationValidation {
     artifactPaths === undefined ||
     artifactMetadata.length !== artifactPaths.length ||
     !uniqueCanonicalPaths(artifactMetadata.map(({ path }) => path)) ||
-    artifactMetadata.some(
-      ({ path }) =>
-        !artifactPaths.some(
-          (candidate) => canonicalArchivePathKey(candidate) === canonicalArchivePathKey(path),
-        ),
-    )
+    artifactMetadata.some(({ path }) => !artifactPaths.some((candidate) => candidate === path))
   ) {
     fail('artifactMetadata');
   }
