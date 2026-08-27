@@ -679,7 +679,7 @@ async function exerciseDelayedAlpine(page, url, events) {
   const disconnectsAfterInitialization = await diagnosticCounter(page, 'alpine-disconnects');
   const controlTreesAfterInitialization = await page.locator('#alpine-file-upload').count();
   const liveMessageAfterInitialization =
-    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+    (await page.locator('#alpine-evidence-root .lyra-upload__live').textContent())?.trim() ?? '';
 
   await input.setInputFiles(ENHANCED_FILE);
   await page.waitForFunction(
@@ -712,7 +712,7 @@ async function exerciseDelayedAlpine(page, url, events) {
   const connectsAfterReconnect = await diagnosticCounter(page, 'alpine-connects');
   const disconnectsAfterReconnect = await diagnosticCounter(page, 'alpine-disconnects');
   const liveMessageAfterReconnect =
-    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+    (await page.locator('#alpine-evidence-root .lyra-upload__live').textContent())?.trim() ?? '';
   const selectionIntentsBeforeReconnectSelection = await diagnosticCounter(
     page,
     'alpine-selection-intents',
@@ -734,7 +734,7 @@ async function exerciseDelayedAlpine(page, url, events) {
   );
   const renderedItemsAfterReconnectSelection = await page.locator('.lyra-upload__item').count();
   const liveMessageAfterReconnectSelection =
-    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+    (await page.locator('#alpine-evidence-root .lyra-upload__live').textContent())?.trim() ?? '';
 
   await page.locator('#alpine-evidence-root').evaluate(async (root) => {
     if (!(root instanceof HTMLElement)) throw new Error('Missing authored Alpine root.');
@@ -755,7 +755,7 @@ async function exerciseDelayedAlpine(page, url, events) {
   );
   const renderedItemsAfterTeardownEvent = await page.locator('.lyra-upload__item').count();
   const liveMessageAfterTeardownEvent =
-    (await page.locator('.lyra-upload__live').textContent())?.trim() ?? '';
+    (await page.locator('#alpine-evidence-root .lyra-upload__live').textContent())?.trim() ?? '';
 
   const observed = await page.evaluate(() => ({
     mediaQueries: {

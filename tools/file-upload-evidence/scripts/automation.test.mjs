@@ -421,7 +421,14 @@ class FakeDfFu18Locator {
       '#alpine-disconnects': this.page.disconnects,
     };
     if (this.selector in counters) return String(counters[this.selector]);
-    if (this.selector === '.lyra-upload__live') return this.page.liveText;
+    if (this.selector === '.lyra-upload__live') {
+      throw new Error(
+        "locator.textContent: strict mode violation: locator('.lyra-upload__live') resolved to 2 elements",
+      );
+    }
+    if (this.selector === '#alpine-evidence-root .lyra-upload__live') {
+      return this.page.liveText;
+    }
     return '';
   }
 
