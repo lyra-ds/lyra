@@ -219,16 +219,26 @@ export interface FileUploadAutomatedResult {
 }
 ```
 
-Change `FileUploadManualObservation.artifactUrls` to `artifactPaths`. A valid manual record must
-contain one to four archive-relative artifact paths under its own scenario directory. Add these
-assertions:
+Change `FileUploadManualObservation.artifactUrls` to `artifactPaths`, require the captured
+`userAgent`, and add `artifactMetadata: Array<{ path: string; originalName: string }>` with an
+exact one-to-one path match. A valid manual record must contain one to four archive-relative
+artifact paths under its own scenario directory. `originalName` preserves the selected file's
+NFC leaf name as untrusted reviewer metadata; consumers must escape it rather than use it as an
+archive path. Add these assertions:
 
 ```ts
 expect(validateObservation({ ...validM01, scenario: 'DF-FU-M03' })).toMatchObject({ ok: false });
 expect(validateObservation({ ...validM01, scenario: 'DF-FU-M04' })).toMatchObject({ ok: false });
 expect(validateObservation(validM01)).toMatchObject({
   ok: true,
-  value: { scenario: 'DF-FU-M01', artifactPaths: ['artifacts/DF-FU-M01/nvda.webm'] },
+  value: {
+    scenario: 'DF-FU-M01',
+    userAgent: 'Mozilla/5.0 Evidence Browser/1.0',
+    artifactPaths: ['artifacts/DF-FU-M01/nvda.webm'],
+    artifactMetadata: [
+      { path: 'artifacts/DF-FU-M01/nvda.webm', originalName: 'NVDA session.webm' },
+    ],
+  },
 });
 expect(validateManifest(validManualManifest)).toMatchObject({ ok: true });
 expect(validateAutomatedResult(validDfFu17)).toMatchObject({ ok: true });

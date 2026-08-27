@@ -15,6 +15,7 @@ export interface EvidenceMessages {
     deploymentUrl: string;
     executedAt: string;
     timezone: string;
+    userAgent: string;
     'os.name': string;
     'os.version': string;
     'os.build': string;
@@ -33,6 +34,7 @@ export interface EvidenceMessages {
     'reviewer.name': string;
     'reviewer.approval': string;
     artifactPaths: string;
+    artifactMetadata: string;
     findingUrls: string;
   };
   instructions: { export: string };
@@ -61,6 +63,7 @@ const en: EvidenceMessages = {
     deploymentUrl: 'Enter an absolute HTTPS deployment URL.',
     executedAt: 'Enter an ISO 8601 timestamp in UTC.',
     timezone: 'Enter the observed time zone.',
+    userAgent: 'Record the supporting browser user agent.',
     'os.name': 'Enter the operating system name.',
     'os.version': 'Enter the operating system version.',
     'os.build': 'Enter the operating system build.',
@@ -79,6 +82,7 @@ const en: EvidenceMessages = {
     'reviewer.name': 'Enter the reviewer name.',
     'reviewer.approval': 'Reviewer approval must agree with the result.',
     artifactPaths: 'Add one to four local evidence attachments for this scenario.',
+    artifactMetadata: 'Attachment metadata must match every local evidence file.',
     findingUrls: 'Finding URLs must be absolute HTTPS URLs.',
   },
   instructions: {
@@ -110,6 +114,7 @@ const ptBR: EvidenceMessages = {
     deploymentUrl: 'Informe uma URL absoluta HTTPS de implantação.',
     executedAt: 'Informe um registro de data e hora ISO 8601 em UTC.',
     timezone: 'Informe o fuso horário observado.',
+    userAgent: 'Registre o user agent do navegador de apoio.',
     'os.name': 'Informe o nome do sistema operacional.',
     'os.version': 'Informe a versão do sistema operacional.',
     'os.build': 'Informe a compilação do sistema operacional.',
@@ -128,6 +133,7 @@ const ptBR: EvidenceMessages = {
     'reviewer.name': 'Informe o nome da pessoa revisora.',
     'reviewer.approval': 'A aprovação da revisão deve corresponder ao resultado.',
     artifactPaths: 'Adicione de um a quatro arquivos como anexo local de evidência deste cenário.',
+    artifactMetadata: 'Os metadados dos anexos devem corresponder a cada arquivo de evidência.',
     findingUrls: 'As URLs de achados devem ser URLs HTTPS absolutas.',
   },
   instructions: {

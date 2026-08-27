@@ -278,7 +278,11 @@ describe('two-scenario local evidence recorder', () => {
       expected:
         'The FileUpload lifecycle, announcements, progress, recovery, and focus match the guided M01 checks.',
       actual: 'The observed announcement and focus behavior.',
+      userAgent: 'Evidence Browser/1.0',
       artifactPaths: ['artifacts/DF-FU-M01/m01-screen.png'],
+      artifactMetadata: [
+        { path: 'artifacts/DF-FU-M01/m01-screen.png', originalName: 'm01-screen.png' },
+      ],
       result: 'PASS',
       reviewer: { name: 'Alex Reviewer', approval: 'approved' },
     });
@@ -351,7 +355,7 @@ describe('two-scenario local evidence recorder', () => {
     expect((attachments as ManualEvidenceAttachments).has('DF-FU-M01')).toBe(false);
     expect((attachments as ManualEvidenceAttachments).get('DF-FU-M02')).toEqual([secondFile]);
     await vi.waitFor(() => expect(downloadBundle).toHaveBeenCalledTimes(1));
-    expect(page.getByText('ZIP includes: DF-FU-M02.')).toBeVisible();
+    await expect.element(page.getByText('ZIP includes: DF-FU-M02.')).toBeVisible();
   });
 
   it('excludes an incomplete other draft without blocking the valid selected scenario', async () => {

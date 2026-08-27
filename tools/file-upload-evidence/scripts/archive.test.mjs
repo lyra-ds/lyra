@@ -35,6 +35,7 @@ function manualRecord(overrides = {}) {
     deploymentUrl: DEPLOYMENT_URL,
     executedAt: CREATED_AT,
     timezone: 'America/New_York',
+    userAgent: 'Mozilla/5.0 Evidence Browser/1.0',
     os: { name: 'Windows', version: '11', build: '24H2' },
     browser: { name: 'Firefox', version: '141' },
     assistiveTechnology: { name: 'NVDA', version: '2026.2' },
@@ -51,6 +52,7 @@ function manualRecord(overrides = {}) {
     result: 'PASS',
     reviewer: { name: 'Evidence Reviewer', approval: 'approved' },
     artifactPaths: [ARTIFACT_PATH],
+    artifactMetadata: [{ path: ARTIFACT_PATH, originalName: 'capture [NVDA].png' }],
     findingUrls: [],
     ...overrides,
   };
@@ -113,7 +115,17 @@ function archiveWithArtifactNames(artifactNames) {
     bytes: strToU8(`image-${index}`),
   }));
   const artifactPaths = artifacts.map(({ path }) => path);
-  const recordBytes = strToU8(JSON.stringify(manualRecord({ artifactPaths })));
+  const recordBytes = strToU8(
+    JSON.stringify(
+      manualRecord({
+        artifactPaths,
+        artifactMetadata: artifactPaths.map((path) => ({
+          path,
+          originalName: path.slice(path.lastIndexOf('/') + 1),
+        })),
+      }),
+    ),
+  );
   const manifest = {
     schemaVersion: 1,
     kind: 'manual',
@@ -502,6 +514,29 @@ describe('readEvidenceArchive', () => {
         ),
       ),
       /record.*deployment/i,
+    );
+  });
+
+  it('rejects a manual record whose attachment metadata is missing or does not match its path', async () => {
+    await assert.rejects(
+      readEvidenceArchive(
+        await writeArchive(validArchive({ recordOverrides: { artifactMetadata: undefined } })),
+      ),
+      /manual.*record/i,
+    );
+    await assert.rejects(
+      readEvidenceArchive(
+        await writeArchive(
+          validArchive({
+            recordOverrides: {
+              artifactMetadata: [
+                { path: 'artifacts/DF-FU-M01/substituted.png', originalName: 'capture.png' },
+              ],
+            },
+          }),
+        ),
+      ),
+      /manual.*record/i,
     );
   });
 });

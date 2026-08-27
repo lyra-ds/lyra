@@ -125,6 +125,7 @@ export interface FileUploadManualObservation {
   deploymentUrl: string;
   executedAt: string;
   timezone: string;
+  userAgent: string;
   os: { name: string; version: string; build: string };
   browser: { name: string; version: string };
   assistiveTechnology: { name: string; version: string };
@@ -137,7 +138,13 @@ export interface FileUploadManualObservation {
   result: 'PASS' | 'FAIL';
   reviewer: { name: string; approval: 'approved' | 'changes-requested' };
   artifactPaths: string[];
+  artifactMetadata: ManualArtifactMetadata[];
   findingUrls: string[];
+}
+
+export interface ManualArtifactMetadata {
+  path: string;
+  originalName: string;
 }
 
 export interface EvidenceEntry {
@@ -354,6 +361,39 @@ function isManualArtifactPath(path: string, scenario: ManualScenario): boolean {
   );
 }
 
+function isOriginalFileName(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.normalize('NFC') === value &&
+    value !== '.' &&
+    value !== '..' &&
+    !/[\\/\0]/u.test(value)
+  );
+}
+
+function normalizedArtifactMetadata(
+  value: unknown,
+  scenario: ManualScenario,
+): ManualArtifactMetadata[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const metadata: ManualArtifactMetadata[] = [];
+  for (const candidate of value) {
+    if (!isRecord(candidate)) return undefined;
+    const path = normalizedText(candidate.path);
+    if (
+      path === undefined ||
+      !isManualArtifactPath(path, scenario) ||
+      !isCanonicalArchivePath(path) ||
+      !isOriginalFileName(candidate.originalName)
+    ) {
+      return undefined;
+    }
+    metadata.push({ path, originalName: candidate.originalName });
+  }
+  return metadata;
+}
+
 function isObservationResult(value: unknown): value is FileUploadManualObservation['result'] {
   return value === 'PASS' || value === 'FAIL';
 }
@@ -393,6 +433,7 @@ export function validateObservation(value: unknown): ObservationValidation {
   const executedAt = text('executedAt');
   if (executedAt !== undefined && !isValidIsoTimestamp(executedAt)) fail('executedAt');
   const timezone = text('timezone');
+  const userAgent = text('userAgent');
 
   const os = isRecord(source.os) ? source.os : {};
   const osName = normalizedText(os.name);
@@ -466,6 +507,24 @@ export function validateObservation(value: unknown): ObservationValidation {
   ) {
     fail('artifactPaths');
   }
+  const artifactMetadata =
+    scenario === undefined
+      ? undefined
+      : normalizedArtifactMetadata(source.artifactMetadata, scenario);
+  if (
+    artifactMetadata === undefined ||
+    artifactPaths === undefined ||
+    artifactMetadata.length !== artifactPaths.length ||
+    !uniqueCanonicalPaths(artifactMetadata.map(({ path }) => path)) ||
+    artifactMetadata.some(
+      ({ path }) =>
+        !artifactPaths.some(
+          (candidate) => canonicalArchivePathKey(candidate) === canonicalArchivePathKey(path),
+        ),
+    )
+  ) {
+    fail('artifactMetadata');
+  }
   const findingUrls = normalizedTextArray(source.findingUrls);
   if (findingUrls === undefined || findingUrls.some((url) => !isHttpsUrl(url))) fail('findingUrls');
 
@@ -477,6 +536,7 @@ export function validateObservation(value: unknown): ObservationValidation {
     deploymentUrl === undefined ||
     executedAt === undefined ||
     timezone === undefined ||
+    userAgent === undefined ||
     osName === undefined ||
     osVersion === undefined ||
     osBuild === undefined ||
@@ -494,6 +554,7 @@ export function validateObservation(value: unknown): ObservationValidation {
     reviewerName === undefined ||
     approval === undefined ||
     artifactPaths === undefined ||
+    artifactMetadata === undefined ||
     findingUrls === undefined
   ) {
     return { ok: false, errors };
@@ -508,6 +569,7 @@ export function validateObservation(value: unknown): ObservationValidation {
       deploymentUrl,
       executedAt,
       timezone,
+      userAgent,
       os: { name: osName, version: osVersion, build: osBuild },
       browser: { name: browserName, version: browserVersion },
       assistiveTechnology: {
@@ -523,6 +585,7 @@ export function validateObservation(value: unknown): ObservationValidation {
       result,
       reviewer: { name: reviewerName, approval },
       artifactPaths,
+      artifactMetadata,
       findingUrls,
     },
   };

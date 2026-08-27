@@ -122,6 +122,7 @@ function manualRecord(scenario, overrides = {}) {
     deploymentUrl: EN_URL,
     executedAt: isWindows ? CREATED_AT : '2026-08-26T13:00:00.000Z',
     timezone: isWindows ? 'America/New_York' : 'America/Los_Angeles',
+    userAgent: isWindows ? 'Mozilla/5.0 Firefox Evidence' : 'Mozilla/5.0 Safari Evidence',
     os: isWindows
       ? { name: 'Windows', version: '11', build: '24H2' }
       : { name: 'macOS', version: '15.6', build: '24G84' },
@@ -140,6 +141,12 @@ function manualRecord(scenario, overrides = {}) {
     result: 'PASS',
     reviewer: { name: 'Accessibility Reviewer', approval: 'approved' },
     artifactPaths: [artifactPath],
+    artifactMetadata: [
+      {
+        path: artifactPath,
+        originalName: isWindows ? 'NVDA capture [final].png' : 'VoiceOver gravação final.mp4',
+      },
+    ],
     findingUrls: isWindows
       ? ['https://example.com/findings/z-last', 'https://example.com/findings/a-first']
       : ['https://example.com/findings/voiceover'],
@@ -665,6 +672,8 @@ describe('ingestEvidence', () => {
     );
     assert.match(markdown, /Windows 11 \(24H2\).*Firefox 141.*NVDA 2026\.2/u);
     assert.match(markdown, /macOS 15\.6 \(24G84\).*Safari 18\.6.*VoiceOver 15\.6/u);
+    assert.match(markdown, /User agent: Mozilla\/5\.0 Firefox Evidence/u);
+    assert.match(markdown, /NVDA capture &#91;final&#93;\.png/u);
     assert.match(markdown, /Accessibility Reviewer.*approved/u);
     assert.match(markdown, /DF-FU-M01-selection-and-indeterminate-announcements/u);
     assert.match(markdown, /\| Chromium \| 320 x 720 \| 2 \|/u);
@@ -748,6 +757,12 @@ describe('ingestEvidence', () => {
     const inputs = await writeInputs(root, {
       m01: manualRecord('DF-FU-M01', {
         artifactPaths: [hostilePath],
+        artifactMetadata: [
+          {
+            path: hostilePath,
+            originalName: '<script>](javascript:alert(1)) [`capture`].png',
+          },
+        ],
         expected: 'first line\rsecond [line] (value) `code`',
       }),
     });
@@ -772,6 +787,10 @@ describe('ingestEvidence', () => {
     assert.match(
       markdown,
       /\[artifacts\/DF-FU-M01\/x&#96;&#93;&#40;javascript:alert&#40;1&#41;&#41; &#91;&#96;y\.png\]/u,
+    );
+    assert.match(
+      markdown,
+      /&lt;script&gt;&#93;&#40;javascript:alert&#40;1&#41;&#41; &#91;&#96;capture&#96;&#93;\.png/u,
     );
   });
 

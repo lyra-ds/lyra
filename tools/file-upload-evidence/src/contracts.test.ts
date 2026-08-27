@@ -60,6 +60,7 @@ const validM01 = {
   deploymentUrl: DEPLOYMENT_URL,
   executedAt: EXECUTED_AT,
   timezone: 'America/New_York',
+  userAgent: 'Mozilla/5.0 Evidence Browser/1.0',
   os: { name: 'Windows', version: '11', build: '24H2' },
   browser: { name: 'Firefox', version: '141.0' },
   assistiveTechnology: { name: 'NVDA', version: '2026.2' },
@@ -74,6 +75,9 @@ const validM01 = {
   result: 'PASS',
   reviewer: { name: 'Evidence Reviewer', approval: 'approved' },
   artifactPaths: ['artifacts/DF-FU-M01/nvda.webm'],
+  artifactMetadata: [
+    { path: 'artifacts/DF-FU-M01/nvda.webm', originalName: 'NVDA session [final].webm' },
+  ],
   findingUrls: ['https://tracker.example.test/FU-101'],
 } as const;
 
@@ -94,6 +98,9 @@ function observationFor(
       APPROVED_MANUAL_CHECK_IDS[scenario].map((id) => [id, true]),
     ),
     artifactPaths: [`artifacts/${scenario}/recording.webm`],
+    artifactMetadata: [
+      { path: `artifacts/${scenario}/recording.webm`, originalName: 'AT recording.webm' },
+    ],
     ...overrides,
   };
 }
@@ -177,7 +184,51 @@ describe('validateObservation', () => {
   it.each(['DF-FU-M01', 'DF-FU-M02'] as const)('accepts the %s manual scenario', (scenario) => {
     expect(validateObservation(observationFor(scenario))).toMatchObject({
       ok: true,
-      value: { scenario, artifactPaths: [`artifacts/${scenario}/recording.webm`] },
+      value: {
+        scenario,
+        userAgent: 'Mozilla/5.0 Evidence Browser/1.0',
+        artifactPaths: [`artifacts/${scenario}/recording.webm`],
+        artifactMetadata: [
+          { path: `artifacts/${scenario}/recording.webm`, originalName: 'AT recording.webm' },
+        ],
+      },
+    });
+  });
+
+  it.each([
+    ['userAgent', { userAgent: undefined }],
+    ['userAgent', { userAgent: '   ' }],
+    ['artifactMetadata', { artifactMetadata: undefined }],
+    ['artifactMetadata', { artifactMetadata: [] }],
+    [
+      'artifactMetadata',
+      {
+        artifactMetadata: [
+          { path: 'artifacts/DF-FU-M01/other.webm', originalName: 'NVDA session.webm' },
+        ],
+      },
+    ],
+    [
+      'artifactMetadata',
+      {
+        artifactMetadata: [
+          { path: 'artifacts/DF-FU-M01/nvda.webm', originalName: '../NVDA session.webm' },
+        ],
+      },
+    ],
+    [
+      'artifactMetadata',
+      {
+        artifactMetadata: [
+          { path: 'artifacts/DF-FU-M01/nvda.webm', originalName: 'first.webm' },
+          { path: 'artifacts/DF-FU-M01/nvda.webm', originalName: 'second.webm' },
+        ],
+      },
+    ],
+  ])('rejects missing or malformed %s evidence', (field, overrides) => {
+    expect(validateObservation({ ...validM01, ...overrides })).toMatchObject({
+      ok: false,
+      errors: [{ field }],
     });
   });
 
@@ -191,6 +242,10 @@ describe('validateObservation', () => {
       actual: '  NVDA announced every lifecycle transition.  ',
       inputMethods: [' keyboard '],
       artifactPaths: [' artifacts/DF-FU-M01/nvda.webm ', 'artifacts/DF-FU-M01/final.png'],
+      artifactMetadata: [
+        { path: ' artifacts/DF-FU-M01/nvda.webm ', originalName: 'NVDA session [final].webm' },
+        { path: 'artifacts/DF-FU-M01/final.png', originalName: ' final capture .png ' },
+      ],
     };
     const result = validateObservation(input);
 
@@ -200,6 +255,10 @@ describe('validateObservation', () => {
         actual: 'NVDA announced every lifecycle transition.',
         inputMethods: ['keyboard'],
         artifactPaths: ['artifacts/DF-FU-M01/nvda.webm', 'artifacts/DF-FU-M01/final.png'],
+        artifactMetadata: [
+          { path: 'artifacts/DF-FU-M01/nvda.webm', originalName: 'NVDA session [final].webm' },
+          { path: 'artifacts/DF-FU-M01/final.png', originalName: ' final capture .png ' },
+        ],
       },
     });
     expect(input.artifactPaths[0]).toBe(' artifacts/DF-FU-M01/nvda.webm ');
@@ -208,10 +267,10 @@ describe('validateObservation', () => {
   it.each(invalidArtifactPathSets)(
     'rejects an invalid local artifact path set: %j',
     (artifactPaths) => {
-      expect(validateObservation({ ...validM01, artifactPaths })).toMatchObject({
-        ok: false,
-        errors: [{ field: 'artifactPaths' }],
-      });
+      const result = validateObservation({ ...validM01, artifactPaths });
+      expect(result).toMatchObject({ ok: false });
+      if (!result.ok)
+        expect(result.errors).toContainEqual(expect.objectContaining({ field: 'artifactPaths' }));
     },
   );
 

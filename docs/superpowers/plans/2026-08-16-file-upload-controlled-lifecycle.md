@@ -82,7 +82,9 @@ conditions; they do not assert that either scenario ran.
 - Create `tools/file-upload-performance/measure.mjs`, its deterministic Vite fixture, and Node tests — 100-item, 30-iteration production measurement.
 - Create bundle and runtime comparison artifacts below `docs/superpowers/baselines/lyra-v1/comparisons/file-upload/` only after implementation commits are clean.
 - Replace the two FileUpload React examples and both localized component pages; update compatibility guides, component support metadata, translation messages, generated doc artifacts, and stack-section tests.
-- Create `.changeset/controlled-file-upload.md` and `docs/superpowers/evidence/2026-08-16-file-upload-manual.md`.
+- Create `.changeset/controlled-file-upload.md`; after successful ingestion, create
+  `docs/superpowers/baselines/lyra-v1/comparisons/file-upload/<revision>-accessibility.md`
+  and its sibling `<revision>-accessibility/` directory.
 
 ---
 
@@ -1008,7 +1010,8 @@ The acceptance command must fail unless exactly one canonical bundle/runtime set
 
 **Files:**
 
-- Create: `docs/superpowers/evidence/2026-08-16-file-upload-manual.md`
+- Create: `docs/superpowers/baselines/lyra-v1/comparisons/file-upload/<revision>-accessibility.md`
+- Create: `docs/superpowers/baselines/lyra-v1/comparisons/file-upload/<revision>-accessibility/`
 - Modify only if verification finds a defect: the smallest owning source/test/docs file from Tasks 1–9
 
 **Interfaces:**
@@ -1099,7 +1102,8 @@ Expected: all commands exit 0; generated docs and packed declarations are curren
 - [ ] **Step 6: Commit ingested evidence and prepare review**
 
 ```text
-rtk git add docs/superpowers/evidence/2026-08-16-file-upload-manual.md
+rtk git add docs/superpowers/baselines/lyra-v1/comparisons/file-upload/<revision>-accessibility.md \
+  docs/superpowers/baselines/lyra-v1/comparisons/file-upload/<revision>-accessibility/
 rtk git commit -m "docs: record file upload accessibility evidence"
 rtk git status --short --branch
 ```

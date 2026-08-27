@@ -10,6 +10,7 @@ import {
   type EvidenceEntry,
   type EvidenceManifest,
   type FileUploadManualObservation,
+  type ManualArtifactMetadata,
   type ManualScenario,
   validateManifest,
   validateObservation,
@@ -44,6 +45,32 @@ function archiveLeafName(value: string): string {
     }
   }
   return '';
+}
+
+export function manualArtifactMetadata(
+  scenario: ManualScenario,
+  files: readonly File[],
+): ManualArtifactMetadata[] {
+  const ordinals = new Map<string, number>();
+  return files
+    .map((file) => ({
+      originalName: archiveLeafName(file.name),
+      sanitizedName: sanitizeEvidenceFileName(file.name),
+    }))
+    .sort(
+      (left, right) =>
+        left.sanitizedName.localeCompare(right.sanitizedName, 'en') ||
+        left.originalName.localeCompare(right.originalName, 'en'),
+    )
+    .map(({ originalName, sanitizedName }) => {
+      const key = canonicalArchivePathKey(sanitizedName);
+      const ordinal = (ordinals.get(key) ?? 0) + 1;
+      ordinals.set(key, ordinal);
+      return {
+        path: `artifacts/${scenario}/${suffixedFileName(sanitizedName, ordinal)}`,
+        originalName,
+      };
+    });
 }
 
 export function sanitizeEvidenceFileName(value: string): string {
@@ -170,12 +197,14 @@ export async function createManualEvidenceBundle(
     const prepared = await prepareAttachments(record.scenario, files);
     const ordinals = new Map<string, number>();
     const generatedPaths: string[] = [];
+    const generatedMetadata: ManualArtifactMetadata[] = [];
     for (const attachment of prepared) {
       const key = canonicalArchivePathKey(attachment.sanitizedName);
       const ordinal = (ordinals.get(key) ?? 0) + 1;
       ordinals.set(key, ordinal);
       const path = `artifacts/${record.scenario}/${suffixedFileName(attachment.sanitizedName, ordinal)}`;
       generatedPaths.push(path);
+      generatedMetadata.push({ path, originalName: attachment.originalName });
       members.set(path, attachment.bytes);
       entries.push({
         path,
@@ -186,6 +215,18 @@ export async function createManualEvidenceBundle(
     }
     if ([...generatedPaths].sort().join('\0') !== [...record.artifactPaths].sort().join('\0')) {
       fail(`${record.scenario} artifact paths do not match selected files`);
+    }
+    if (
+      generatedMetadata.length !== record.artifactMetadata.length ||
+      generatedMetadata.some(
+        (generated) =>
+          !record.artifactMetadata.some(
+            (recorded) =>
+              generated.path === recorded.path && generated.originalName === recorded.originalName,
+          ),
+      )
+    ) {
+      fail(`${record.scenario} artifact metadata does not match selected files`);
     }
 
     const path = `manual/${record.scenario}.json`;

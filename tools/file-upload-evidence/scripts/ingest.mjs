@@ -189,6 +189,9 @@ function normalizedManualRecord(record) {
   return sortedObject({
     ...record,
     artifactPaths: [...record.artifactPaths].sort(compareStrings),
+    artifactMetadata: [...record.artifactMetadata].sort((left, right) =>
+      compareStrings(left.path, right.path),
+    ),
     findingUrls: [...record.findingUrls].sort(compareStrings),
     inputMethods: [...record.inputMethods].sort(compareStrings),
     checkAttestations: sortedObject(record.checkAttestations),
@@ -342,6 +345,7 @@ function renderMarkdown({ automatedRecords, destinationName, manualRecords, orig
       '',
       `- Executed: \`${record.executedAt}\` (${markdownText(record.timezone)})`,
       `- Environment: ${markdownText(record.os.name)} ${markdownText(record.os.version)} (${markdownText(record.os.build)}); ${markdownText(record.browser.name)} ${markdownText(record.browser.version)}; ${markdownText(record.assistiveTechnology.name)} ${markdownText(record.assistiveTechnology.version)}`,
+      `- User agent: ${markdownText(record.userAgent)}`,
       `- Input methods: ${record.inputMethods.map(markdownText).sort(compareStrings).join(', ')}`,
       `- Viewport: ${record.viewport.width} x ${record.viewport.height} at ${record.viewport.devicePixelRatio} DPR`,
       `- Media queries: ${formattedMediaQueries(record.mediaQueries)}`,
@@ -367,8 +371,12 @@ function renderMarkdown({ automatedRecords, destinationName, manualRecords, orig
       }
     }
     lines.push('', '#### Artifacts', '');
-    for (const path of [...record.artifactPaths].sort(compareStrings)) {
-      lines.push(`- [${markdownText(path)}](${artifactLink(destinationName, path)})`);
+    for (const { path, originalName } of [...record.artifactMetadata].sort((left, right) =>
+      compareStrings(left.path, right.path),
+    )) {
+      lines.push(
+        `- ${markdownText(originalName)} → [${markdownText(path)}](${artifactLink(destinationName, path)})`,
+      );
     }
     const recordPath = `manual/${scenario}.json`;
     lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);

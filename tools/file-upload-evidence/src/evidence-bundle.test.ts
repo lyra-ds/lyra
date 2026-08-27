@@ -35,6 +35,7 @@ function record(
     deploymentUrl: DEPLOYMENT_URL,
     executedAt: CREATED_AT,
     timezone: 'America/New_York',
+    userAgent: 'Mozilla/5.0 Evidence Browser/1.0',
     os: { name: scenario === 'DF-FU-M01' ? 'Windows' : 'macOS', version: '1', build: '1' },
     browser: { name: scenario === 'DF-FU-M01' ? 'Firefox' : 'Safari', version: '1' },
     assistiveTechnology: {
@@ -50,6 +51,13 @@ function record(
     result: 'PASS',
     reviewer: { name: 'Evidence Reviewer', approval: 'approved' },
     artifactPaths,
+    artifactMetadata: artifactPaths.map((path) => ({
+      path,
+      originalName:
+        path === 'artifacts/DF-FU-M01/NVDA-sessao-01.webm'
+          ? 'NVDA sessão 01.webm'
+          : path.slice(path.lastIndexOf('/') + 1).replace(/-2(?=\.)/u, ''),
+    })),
     findingUrls: [],
   };
 }
@@ -119,6 +127,15 @@ describe('createManualEvidenceBundle', () => {
       },
     ]);
     expect(JSON.parse(strFromU8(members['manual/DF-FU-M01.json']!))).toEqual(validRecord);
+    expect(JSON.parse(strFromU8(members['manual/DF-FU-M01.json']!))).toMatchObject({
+      userAgent: 'Mozilla/5.0 Evidence Browser/1.0',
+      artifactMetadata: [
+        {
+          path: 'artifacts/DF-FU-M01/NVDA-sessao-01.webm',
+          originalName: 'NVDA sessão 01.webm',
+        },
+      ],
+    });
   });
 
   it('includes two records and assigns deterministic suffixes to repeated source names', async () => {
@@ -201,5 +218,16 @@ describe('createManualEvidenceBundle', () => {
         attachments([['DF-FU-M01', [file('capture.png', 'image/png')]]]),
       ),
     ).rejects.toThrow(/artifact paths/i);
+  });
+
+  it('rejects a record whose original attachment metadata does not match the selected File', async () => {
+    const candidate = record('DF-FU-M01', ['artifacts/DF-FU-M01/capture.png']);
+    candidate.artifactMetadata[0]!.originalName = 'substituted.png';
+    await expect(
+      createManualEvidenceBundle(
+        [candidate as FileUploadManualObservation],
+        attachments([['DF-FU-M01', [file('capture.png', 'image/png')]]]),
+      ),
+    ).rejects.toThrow(/artifact metadata/i);
   });
 });

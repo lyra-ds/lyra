@@ -3,7 +3,6 @@ import { useRef, useState } from 'react';
 import '@lyra-ds/styles/styles.css';
 
 import {
-  canonicalArchivePathKey,
   MANUAL_MEDIA_TYPES,
   MAX_MANUAL_FILES,
   MAX_MANUAL_FILE_BYTES,
@@ -18,7 +17,7 @@ import {
 } from './contracts';
 import {
   createManualEvidenceBundle,
-  sanitizeEvidenceFileName,
+  manualArtifactMetadata,
   type ManualEvidenceAttachments,
   type ManualEvidenceBundle,
 } from './evidence-bundle';
@@ -406,6 +405,7 @@ interface ObservationDraft {
   readonly deploymentUrl: string;
   readonly executedAt: string;
   readonly timezone: string;
+  readonly userAgent: string;
   readonly os: { readonly name: string; readonly version: string; readonly build: string };
   readonly browser: { readonly name: string; readonly version: string };
   readonly assistiveTechnology: { readonly name: string; readonly version: string };
@@ -458,6 +458,7 @@ function createDraft(
     deploymentUrl,
     executedAt,
     timezone: environment.timezone,
+    userAgent: environment.userAgent,
     os: { name: '', version: '', build: '' },
     browser: { name: '', version: '' },
     assistiveTechnology: { name: '', version: '' },
@@ -510,6 +511,7 @@ function draftWithEnvironment(
   return {
     ...draft,
     timezone: environment.timezone,
+    userAgent: environment.userAgent,
     viewport: environment.viewport,
     mediaQueries: environment.mediaQueries,
   };
@@ -524,35 +526,18 @@ function requiredDraft(
   return draft;
 }
 
-function attachmentPaths(scenario: ManualScenario, files: readonly File[]): string[] {
-  const ordinals = new Map<string, number>();
-  return files
-    .map(({ name }) => sanitizeEvidenceFileName(name))
-    .sort((left, right) => left.localeCompare(right, 'en'))
-    .map((name) => {
-      const key = canonicalArchivePathKey(name);
-      const ordinal = (ordinals.get(key) ?? 0) + 1;
-      ordinals.set(key, ordinal);
-      if (ordinal === 1) return `artifacts/${scenario}/${name}`;
-      const extensionAt = name.lastIndexOf('.');
-      const suffixed =
-        extensionAt > 0
-          ? `${name.slice(0, extensionAt)}-${ordinal}${name.slice(extensionAt)}`
-          : `${name}-${ordinal}`;
-      return `artifacts/${scenario}/${suffixed}`;
-    });
-}
-
 function observationValue(
   draft: ObservationDraft,
   files: readonly File[],
   expected: string,
 ): unknown {
+  const artifactMetadata = manualArtifactMetadata(draft.scenario, files);
   return {
     ...draft,
     inputMethods: [...draft.inputMethods],
     expected,
-    artifactPaths: attachmentPaths(draft.scenario, files),
+    artifactPaths: artifactMetadata.map(({ path }) => path),
+    artifactMetadata,
     findingUrls: parseUrlLines(draft.findingUrls),
   };
 }
