@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { parseSmokeArguments, runSmoke, validateUploadProgress } from './smoke.mjs';
+import {
+  launchSmokeBrowser,
+  parseSmokeArguments,
+  runSmoke,
+  validateUploadProgress,
+} from './smoke.mjs';
 
 const revision = '1234567890abcdef1234567890abcdef12345678';
 const url = 'https://a1b2c3d4.lyra-ds-docs.pages.dev';
@@ -155,6 +160,16 @@ function collaborators(overrides = {}) {
     ...overrides,
   };
 }
+
+describe('launchSmokeBrowser', () => {
+  it('launches the pinned default Chromium headless without selecting a Chrome channel', async () => {
+    const browser = {};
+    const browserType = { launch: vi.fn(async () => browser) };
+
+    await expect(launchSmokeBrowser(browserType)).resolves.toBe(browser);
+    expect(browserType.launch).toHaveBeenCalledExactlyOnceWith({ headless: true });
+  });
+});
 
 describe('parseSmokeArguments', () => {
   it('accepts one immutable Pages URL and full revision', () => {

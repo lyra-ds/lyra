@@ -300,9 +300,13 @@ async function waitForReadiness({
   }
 }
 
+export async function launchSmokeBrowser(browserType) {
+  return browserType.launch({ headless: true });
+}
+
 export async function uploadWithBrowser({ payloadMarker, url }) {
   const { chromium } = await import('playwright');
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await launchSmokeBrowser(chromium);
   try {
     const page = await browser.newPage();
     const scenarioSurfaces = [];
