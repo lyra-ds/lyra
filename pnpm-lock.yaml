@@ -214,6 +214,9 @@ importers:
 
   tools/file-upload-evidence:
     dependencies:
+      '@alpinejs/csp':
+        specifier: 3.15.12
+        version: 3.15.12
       '@lyra-ds/alpine':
         specifier: workspace:*
         version: link:../../packages/alpine
@@ -262,6 +265,9 @@ importers:
         version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
 packages:
+
+  '@alpinejs/csp@3.15.12':
+    resolution: {integrity: sha512-9jielHzVPqMlO9zQ6K1WtdhSHVX5OZfq5ZDUSVZfY10VnXRoRBx8nOadWjsG1xev/kz4EPaNN9eDFWtZSvJHxA==}
 
   '@andrewbranch/untar.js@1.0.3':
     resolution: {integrity: sha512-Jh15/qVmrLGhkKJBdXlK1+9tY4lZruYjsgkDFj08ZmDiWVBLJcqkok7Z0/R0In+i1rScBpJlSvrTS2Lm41Pbnw==}
@@ -4670,6 +4676,10 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@alpinejs/csp@3.15.12':
+    dependencies:
+      '@vue/reactivity': 3.1.5
 
   '@andrewbranch/untar.js@1.0.3': {}
 

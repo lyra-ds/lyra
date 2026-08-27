@@ -33,7 +33,7 @@ export function parseAlpineDelay(search: string): number {
 
 async function importAlpineRuntime() {
   const [{ default: Alpine }, { default: lyra }] = await Promise.all([
-    import('alpinejs'),
+    import('@alpinejs/csp'),
     import('@lyra-ds/alpine'),
   ]);
   if (!registeredAlpineInstances.has(Alpine)) {
