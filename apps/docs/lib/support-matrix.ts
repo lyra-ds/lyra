@@ -4,6 +4,7 @@ import {
   DEFAULT_SUPPORT_GAPS,
   DOCUMENTED_SUPPORT_LEVEL,
   supportLevels,
+  type ComponentStability,
   type SupportGapMetadata,
   type SupportLevel,
 } from './components';
@@ -26,6 +27,7 @@ export type SupportCell =
 export type SupportMatrixRow = {
   slug: string;
   name: string;
+  stability: ComponentStability;
   stacks: Record<DocStack, SupportCell>;
 };
 
@@ -93,6 +95,7 @@ export function getSupportMatrixRows({
   return components.map((entry) => ({
     slug: entry.slug,
     name: entry.name,
+    stability: entry.stability,
     stacks: {
       react: supportCell('react', entry.stacks, entry.absence),
       html: supportCell('html', entry.stacks, entry.absence),

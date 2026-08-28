@@ -4,7 +4,15 @@ import { Table } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import type { Locale } from '@/lib/i18n';
+import type { ComponentStability } from '@/lib/components';
 import { getSupportMatrixRows, type SupportCell } from '@/lib/support-matrix';
+
+const stabilityMessageKeys: Record<ComponentStability, string> = {
+  experimental: 'componentStabilityExperimental',
+  beta: 'componentStabilityBeta',
+  stable: 'componentStabilityStable',
+  deprecated: 'componentStabilityDeprecated',
+};
 
 function EvidenceStatus({
   evidence,
@@ -69,6 +77,7 @@ export function SupportMatrix({ locale }: { locale: Locale }) {
     <Table
       columns={[
         { key: 'component', label: t('components') },
+        { key: 'stability', label: t('componentStability') },
         { key: 'react', label: t('stackReact') },
         { key: 'htmlAlpine', label: t('stackAlpine') },
         { key: 'blade', label: t('stackBlade') },
@@ -76,6 +85,7 @@ export function SupportMatrix({ locale }: { locale: Locale }) {
       rows={getSupportMatrixRows().map((row) => ({
         component: <Link href={`/${locale}/components/${row.slug}`}>{row.name}</Link>,
         id: row.slug,
+        stability: t(stabilityMessageKeys[row.stability]),
         react: <SupportStatus cell={row.stacks.react} locale={locale} />,
         htmlAlpine: (
           <SupportStatus
