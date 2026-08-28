@@ -24,6 +24,7 @@
     "phase0:check": "node tools/phase0/check-artifacts.mjs",
     "pack-smoke": "node tools/pack-smoke/pack-smoke.mjs",
     "smoke": "node tools/smoke/smoke.mjs",
+    "security:check": "node tools/security/check-lock.mjs",
     "release-policy:check": "node tools/release-policy/check.mjs",
     "v1-core:check": "node tools/v1-core/check.mjs",
     "evidence:file-upload:manual:test": "pnpm --filter @lyra-ds/file-upload-evidence run test && pnpm --filter @lyra-ds/file-upload-evidence run test:csp",
