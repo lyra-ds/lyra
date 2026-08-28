@@ -1,16 +1,14 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
-import {
-  findPackedArtifacts,
-  REACT_COMPATIBILITY_MATRIX,
-  runCommand,
-  runFileUploadCompatibility,
-} from './file-upload.mjs';
+import * as compatibility from './file-upload.mjs';
+
+const { findPackedArtifacts, REACT_COMPATIBILITY_MATRIX, runCommand, runFileUploadCompatibility } =
+  compatibility;
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -22,6 +20,33 @@ async function withArtifactDirectory(entries, callback) {
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+}
+
+async function withTemporaryDirectory(prefix, callback) {
+  const directory = await mkdtemp(join(tmpdir(), prefix));
+  try {
+    await callback(directory);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+async function createPackageTarball(directory, filename, packageName) {
+  const source = join(directory, `${filename}-source`, 'package');
+  await mkdir(source, { recursive: true });
+  await writeFile(join(source, 'package.json'), `${JSON.stringify({ name: packageName })}\n`);
+  const tarball = join(directory, filename);
+  runCommand('tar', ['-czf', tarball, '-C', join(source, '..'), 'package'], { cwd: directory });
+  return tarball;
+}
+
+function installPackedArtifacts(...args) {
+  assert.equal(
+    typeof compatibility.installPackedArtifacts,
+    'function',
+    'the harness must expose direct packed-artifact installation',
+  );
+  return compatibility.installPackedArtifacts(...args);
 }
 
 function optionValue(args, option) {
@@ -67,7 +92,7 @@ test('compatibility matrix names React 18 and 19 and every required layer', () =
   );
 });
 
-test('packs once, installs each frozen external graph before exact tarballs, and uses unique stores', async () => {
+test('packs once, resolves each frozen external graph once, then directly installs exact tarballs', async () => {
   const events = [];
   let tempSequence = 0;
   const runtime = {
@@ -86,7 +111,11 @@ test('packs once, installs each frozen external graph before exact tarballs, and
     findTarballs() {
       return { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' };
     },
+    installPackedArtifacts(destination, tarballs) {
+      events.push(['install-packed', destination, tarballs]);
+    },
     run(command, args, options) {
+      if (args[0] === 'add') throw new Error('ERR_PNPM_NO_OFFLINE_META');
       events.push(['run', command, args, options]);
       return { stdout: '', stderr: '' };
     },
@@ -119,43 +148,86 @@ test('packs once, installs each frozen external graph before exact tarballs, and
 
   for (const [candidateIndex, [, directory, destination]] of candidateCopies.entries()) {
     const candidateCommands = commands.filter(([, , , options]) => options.cwd === destination);
-    const frozenIndex = candidateCommands.findIndex(([, , args]) =>
+    const frozenCommands = candidateCommands.filter(([, , args]) =>
       args.includes('--frozen-lockfile'),
     );
-    const tarballIndex = candidateCommands.findIndex(([, , args]) =>
-      args.some((argument) => argument.endsWith('.tgz')),
-    );
-    assert.notEqual(frozenIndex, -1, `${directory} must install its frozen external graph`);
-    assert.ok(
-      tarballIndex > frozenIndex,
-      `${directory} must install packed Lyra artifacts only after external dependencies`,
-    );
-    const frozenArgs = candidateCommands[frozenIndex][2];
-    const tarballArgs = candidateCommands[tarballIndex][2];
+    assert.equal(frozenCommands.length, 1, `${directory} must resolve its external graph once`);
+    const frozenArgs = frozenCommands[0][2];
     assert.equal(frozenArgs[0], 'install');
     assert.ok(frozenArgs.includes('--ignore-workspace'));
-    assert.equal(tarballArgs[0], 'add');
-    assert.ok(tarballArgs.includes('--offline'));
-    assert.ok(tarballArgs.includes('--ignore-workspace'));
-    assert.ok(tarballArgs.includes('--save-exact'));
     const candidateStore = optionValue(frozenArgs, '--store-dir');
     assert.equal(candidateStore, stores[candidateIndex]);
-    assert.equal(candidateStore, optionValue(tarballArgs, '--store-dir'));
-    assert.deepEqual(tarballArgs, [
-      'add',
-      '--offline',
-      '--ignore-workspace',
-      '--save-exact',
-      '--store-dir',
-      candidateStore,
-      '/tmp/react.tgz',
-      '/tmp/styles.tgz',
+    assert.equal(
+      candidateCommands.some(([, , args]) => args[0] === 'add'),
+      false,
+    );
+    assert.equal(
+      candidateCommands.some(([, , args]) => args.some((argument) => argument.endsWith('.tgz'))),
+      false,
+    );
+
+    const frozenEventIndex = events.findIndex(
+      ([event, , args, options]) =>
+        event === 'run' && options.cwd === destination && args.includes('--frozen-lockfile'),
+    );
+    const directInstallIndex = events.findIndex(
+      ([event, candidateRoot]) => event === 'install-packed' && candidateRoot === destination,
+    );
+    assert.ok(
+      directInstallIndex > frozenEventIndex,
+      `${directory} must directly install packed Lyra artifacts after external dependencies`,
+    );
+    assert.deepEqual(events[directInstallIndex], [
+      'install-packed',
+      destination,
+      { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' },
     ]);
     assert.deepEqual(
       candidateCommands.filter(([, , args]) => args[0] === 'exec').map(([, , args]) => args[1]),
       ['tsc', 'vite', 'vitest', 'vitest', 'vitest'],
     );
   }
+});
+
+test('direct installation extracts exact scoped packages without mutating the frozen lockfile', async () => {
+  await withTemporaryDirectory('lyra-react-compat-install-test-', async (directory) => {
+    const fixture = join(directory, 'fixture');
+    await mkdir(fixture, { recursive: true });
+    const lockfile = join(fixture, 'pnpm-lock.yaml');
+    await writeFile(lockfile, 'frozen-lockfile\n');
+    const tarballs = {
+      react: await createPackageTarball(directory, 'lyra-ds-react-0.4.2.tgz', '@lyra-ds/react'),
+      styles: await createPackageTarball(directory, 'lyra-ds-styles-0.4.2.tgz', '@lyra-ds/styles'),
+    };
+
+    installPackedArtifacts(fixture, tarballs);
+
+    assert.equal(
+      JSON.parse(await readFile(join(fixture, 'node_modules/@lyra-ds/react/package.json'))).name,
+      '@lyra-ds/react',
+    );
+    assert.equal(
+      JSON.parse(await readFile(join(fixture, 'node_modules/@lyra-ds/styles/package.json'))).name,
+      '@lyra-ds/styles',
+    );
+    assert.equal(await readFile(lockfile, 'utf8'), 'frozen-lockfile\n');
+  });
+});
+
+test('direct installation rejects a tarball whose contained package name is wrong', async () => {
+  await withTemporaryDirectory('lyra-react-compat-name-test-', async (directory) => {
+    const fixture = join(directory, 'fixture');
+    await mkdir(fixture, { recursive: true });
+    const tarballs = {
+      react: await createPackageTarball(directory, 'lyra-ds-react-0.4.2.tgz', '@lyra-ds/not-react'),
+      styles: await createPackageTarball(directory, 'lyra-ds-styles-0.4.2.tgz', '@lyra-ds/styles'),
+    };
+
+    assert.throws(
+      () => installPackedArtifacts(fixture, tarballs),
+      /react tarball contains @lyra-ds\/not-react, expected @lyra-ds\/react/,
+    );
+  });
 });
 
 test('failed child commands report command, cwd, stdout, and stderr', () => {
@@ -329,6 +401,7 @@ test('removes candidate roots, stores, and packed artifacts when a check fails',
     findTarballs() {
       return { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' };
     },
+    installPackedArtifacts() {},
     run(_command, args) {
       if (args.includes('tsc')) throw new Error('typecheck failed');
       return { stdout: '', stderr: '' };
@@ -339,6 +412,41 @@ test('removes candidate roots, stores, and packed artifacts when a check fails',
   };
 
   await assert.rejects(() => runFileUploadCompatibility({ runtime }), /typecheck failed/);
+  assert.deepEqual(removed, [
+    '/tmp/lyra-react-compat-store-3',
+    '/tmp/lyra-react-compat-react18-2',
+    '/tmp/lyra-react-compat-artifacts-1',
+  ]);
+});
+
+test('removes candidate roots, stores, and packed artifacts when direct extraction fails', async () => {
+  const removed = [];
+  let tempSequence = 0;
+  const runtime = {
+    repoRoot,
+    makeTemp(prefix) {
+      return `/tmp/${prefix}${++tempSequence}`;
+    },
+    copyFixture() {},
+    writeScaffolding() {},
+    findTarballs() {
+      return { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' };
+    },
+    installPackedArtifacts() {
+      throw new Error('react tarball contains @lyra-ds/not-react, expected @lyra-ds/react');
+    },
+    run() {
+      return { stdout: '', stderr: '' };
+    },
+    remove(path) {
+      removed.push(path);
+    },
+  };
+
+  await assert.rejects(
+    () => runFileUploadCompatibility({ runtime }),
+    /react tarball contains @lyra-ds\/not-react, expected @lyra-ds\/react/,
+  );
   assert.deepEqual(removed, [
     '/tmp/lyra-react-compat-store-3',
     '/tmp/lyra-react-compat-react18-2',
@@ -361,6 +469,7 @@ test('removes the candidate root when allocating its isolated store fails', asyn
     findTarballs() {
       return { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' };
     },
+    installPackedArtifacts() {},
     run() {
       return { stdout: '', stderr: '' };
     },

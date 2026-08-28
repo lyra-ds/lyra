@@ -144,6 +144,26 @@ export function findPackedArtifacts(packDirectory, repoRoot = defaultRepoRoot) {
   };
 }
 
+export function installPackedArtifacts(fixture, tarballs) {
+  const packages = {
+    react: '@lyra-ds/react',
+    styles: '@lyra-ds/styles',
+  };
+  for (const [key, tarball] of Object.entries(tarballs)) {
+    const packageName = packages[key];
+    if (!packageName) throw new Error(`Unknown packed artifact: ${key}`);
+    const destination = join(fixture, 'node_modules', ...packageName.split('/'));
+    mkdirSync(destination, { recursive: true });
+    runCommand('tar', ['-xzf', tarball, '--strip-components=1', '-C', destination], {
+      cwd: fixture,
+    });
+    const installedName = JSON.parse(readFileSync(join(destination, 'package.json'), 'utf8')).name;
+    if (installedName !== packageName) {
+      throw new Error(`${key} tarball contains ${installedName}, expected ${packageName}`);
+    }
+  }
+}
+
 function createRuntime(repoRoot = defaultRepoRoot) {
   const fixtureRoot = join(repoRoot, 'tools', 'react-compat', 'fixtures');
   return {
@@ -156,6 +176,7 @@ function createRuntime(repoRoot = defaultRepoRoot) {
       copyDirectoryContents(join(fixtureRoot, 'shared'), join(destination, 'src'));
     },
     writeScaffolding,
+    installPackedArtifacts,
     findTarballs(packDirectory) {
       return findPackedArtifacts(packDirectory, repoRoot);
     },
@@ -201,20 +222,7 @@ function runCandidate(candidate, tarballs, runtime) {
       ['install', '--frozen-lockfile', '--ignore-workspace', '--store-dir', storeRoot],
       commandOptions,
     );
-    runtime.run(
-      'pnpm',
-      [
-        'add',
-        '--offline',
-        '--ignore-workspace',
-        '--save-exact',
-        '--store-dir',
-        storeRoot,
-        tarballs.react,
-        tarballs.styles,
-      ],
-      commandOptions,
-    );
+    runtime.installPackedArtifacts(candidateRoot, tarballs);
 
     for (const check of candidate.checks) {
       const args = CHECK_COMMANDS[check];
