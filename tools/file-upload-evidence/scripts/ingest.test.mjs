@@ -585,10 +585,22 @@ afterEach(async () => {
 });
 
 describe('parseIngestArgs', () => {
-  it('accepts exactly one automation archive and one or two ordered bundle values', () => {
+  it('defaults to the Full profile and accepts Automated Core without manual bundles', () => {
     assert.deepEqual(
       parseIngestArgs(['--automation', 'automation.zip', '--bundle', 'combined.zip']),
-      { automationPath: 'automation.zip', bundlePaths: ['combined.zip'] },
+      {
+        automationPath: 'automation.zip',
+        bundlePaths: ['combined.zip'],
+        profile: 'full',
+      },
+    );
+    assert.deepEqual(
+      parseIngestArgs(['--profile', 'automated-core', '--automation', 'automation.zip']),
+      {
+        automationPath: 'automation.zip',
+        bundlePaths: [],
+        profile: 'automated-core',
+      },
     );
     assert.deepEqual(
       parseIngestArgs([
@@ -599,11 +611,15 @@ describe('parseIngestArgs', () => {
         '--bundle',
         'm01.zip',
       ]),
-      { automationPath: 'automation.zip', bundlePaths: ['m02.zip', 'm01.zip'] },
+      {
+        automationPath: 'automation.zip',
+        bundlePaths: ['m02.zip', 'm01.zip'],
+        profile: 'full',
+      },
     );
   });
 
-  it('rejects missing values, duplicate values/options, unknown options, positionals, and excess bundles', () => {
+  it('rejects invalid profile and profile-dependent option topologies', () => {
     for (const arguments_ of [
       [],
       ['--automation', 'automation.zip'],
@@ -624,6 +640,10 @@ describe('parseIngestArgs', () => {
       ['--automation', 'automation.zip', '--unknown', 'value', '--bundle', 'manual.zip'],
       ['positional.zip', '--automation', 'automation.zip', '--bundle', 'manual.zip'],
       ['--automation', '--bundle', 'manual.zip'],
+      ['--profile', 'automated-core', '--profile', 'full', '--automation', 'automation.zip'],
+      ['--profile', 'unsupported', '--automation', 'automation.zip'],
+      ['--profile', '--automation', 'automation.zip'],
+      ['--profile', 'automated-core', '--automation', 'automation.zip', '--bundle', 'manual.zip'],
     ]) {
       assert.throws(() => parseIngestArgs(arguments_), /ingest arguments/u, arguments_.join(' '));
     }
@@ -694,6 +714,110 @@ describe('ingestEvidence', () => {
       );
     }
     assert.doesNotMatch(markdown, new RegExp(root.replaceAll('/', '\\/'), 'u'));
+  });
+
+  it('publishes deterministic Automated Core evidence without manual claims', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    const options = {
+      automationPath: inputs.automationPath,
+      bundlePaths: [],
+      profile: 'automated-core',
+      repositoryRoot: repository.repositoryRoot,
+    };
+
+    const outcome = await ingestEvidence(options);
+    assert.equal(outcome.status, 'created');
+    const outputFiles = await readTree(repository.directory);
+    const markdown = await readFile(repository.markdown, 'utf8');
+    assert.deepEqual([...outputFiles.keys()].sort(), [
+      ...AUTOMATED_ARTIFACTS,
+      'automation/DF-FU-17.json',
+      'automation/DF-FU-18.json',
+    ]);
+    assert.match(markdown, /Release profile: \*\*Automated Core\*\*/u);
+    assert.match(markdown, /Overall automated result: \*\*PASS\*\*/u);
+    assert.match(markdown, /Manual assistive-technology evidence: `deferred-by-release-profile`/u);
+    assert.doesNotMatch(markdown, /DF-FU-M01|DF-FU-M02|Reviewer:|NVDA|VoiceOver/u);
+
+    const firstMarkdown = Buffer.from(markdown);
+    const firstFiles = new Map(outputFiles);
+    const rerun = await ingestEvidence(options);
+    assert.equal(rerun.status, 'idempotent');
+    assertTreesEqual(await readTree(repository.directory), firstFiles);
+    assert.deepEqual(await readFile(repository.markdown), firstMarkdown);
+  });
+
+  it('rejects invalid Automated Core automation evidence before creating a destination', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const failed = automatedResult('DF-FU-17');
+    failed.runs[0].checks['DF-FU-17-no-horizontal-overflow'] = false;
+    failed.result = 'FAIL';
+    const partial = automatedResult('DF-FU-18');
+    partial.runs[0].checks = Object.fromEntries(
+      AUTOMATED_CHECKS['DF-FU-18'].map((check) => [check, false]),
+    );
+    partial.result = 'FAIL';
+    const cases = [
+      ['failed', archiveBytes('automation', [failed, automatedResult('DF-FU-18')])],
+      ['partial', archiveBytes('automation', [automatedResult('DF-FU-17'), partial])],
+      [
+        'duplicate',
+        archiveBytes('automation', [
+          automatedResult('DF-FU-17'),
+          automatedResult('DF-FU-18', { scenario: 'DF-FU-17' }),
+        ]),
+      ],
+      ['malformed', zipSync({ 'not-an-evidence-archive.txt': strToU8('invalid') })],
+      [
+        'identity-mismatched',
+        archiveBytes('automation', [
+          automatedResult('DF-FU-17'),
+          automatedResult('DF-FU-18', { revision: OTHER_REVISION }),
+        ]),
+      ],
+    ];
+
+    for (const [label, automationBytes] of cases) {
+      const automationPath = join(root, `${label}-automation.zip`);
+      await writeFile(automationPath, automationBytes);
+      await assert.rejects(
+        ingestEvidence({
+          automationPath,
+          bundlePaths: [],
+          profile: 'automated-core',
+          repositoryRoot: repository.repositoryRoot,
+        }),
+        /automation|DF-FU-(17|18)|revision|archive/iu,
+        label,
+      );
+      assert.equal(await exists(repository.directory), false, label);
+      assert.equal(await exists(repository.markdown), false, label);
+    }
+  });
+
+  it('preserves a conflicting Automated Core destination without overwrite', async () => {
+    const root = await temporaryRoot();
+    const repository = await createRepository(root);
+    const inputs = await writeInputs(root);
+    await mkdir(repository.directory);
+    await writeFile(join(repository.directory, 'sentinel.txt'), 'keep-directory');
+
+    await assert.rejects(
+      ingestEvidence({
+        automationPath: inputs.automationPath,
+        bundlePaths: [],
+        profile: 'automated-core',
+        repositoryRoot: repository.repositoryRoot,
+      }),
+      /partial destination/iu,
+    );
+    assert.equal(
+      await readFile(join(repository.directory, 'sentinel.txt'), 'utf8'),
+      'keep-directory',
+    );
   });
 
   it('merges separate EN/PT-BR bundles by scenario and produces identical bytes in either order', async () => {

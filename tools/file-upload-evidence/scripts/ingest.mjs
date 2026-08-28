@@ -25,6 +25,10 @@ import {
 
 const REQUIRED_MANUAL = Object.freeze(['DF-FU-M01', 'DF-FU-M02']);
 const REQUIRED_AUTOMATED = Object.freeze(['DF-FU-17', 'DF-FU-18']);
+const INGEST_PROFILE = Object.freeze({
+  AUTOMATED_CORE: 'automated-core',
+  FULL: 'full',
+});
 const COMPARISON_PATH = Object.freeze([
   'docs',
   'superpowers',
@@ -55,6 +59,24 @@ function ingestError(message) {
 
 function argumentError(message) {
   return new Error(`Invalid ingest arguments: ${message}`);
+}
+
+function normalizedIngestOptions(options) {
+  const profile = options?.profile ?? INGEST_PROFILE.FULL;
+  if (
+    typeof options?.automationPath !== 'string' ||
+    !Array.isArray(options.bundlePaths) ||
+    options.bundlePaths.some((path) => typeof path !== 'string') ||
+    (profile !== INGEST_PROFILE.AUTOMATED_CORE && profile !== INGEST_PROFILE.FULL) ||
+    (profile === INGEST_PROFILE.AUTOMATED_CORE && options.bundlePaths.length !== 0) ||
+    (profile === INGEST_PROFILE.FULL &&
+      (options.bundlePaths.length < 1 || options.bundlePaths.length > 2))
+  ) {
+    throw new TypeError(
+      'ingestEvidence requires one automation path and profile-compatible bundle paths',
+    );
+  }
+  return { ...options, bundlePaths: options.bundlePaths, profile };
 }
 
 function errorMessage(error) {
@@ -227,22 +249,24 @@ function addOutput(output, canonicalPaths, path, bytes) {
   output.set(path, Buffer.from(bytes));
 }
 
-function buildOutputFiles(manualRecords, automatedRecords) {
+function buildOutputFiles(manualRecords, automatedRecords, profile) {
   const output = new Map();
   const canonicalPaths = new Map();
-  for (const scenario of REQUIRED_MANUAL) {
-    const { archive, record } = manualRecords.get(scenario);
-    addOutput(
-      output,
-      canonicalPaths,
-      `manual/${scenario}.json`,
-      jsonBytes(normalizedManualRecord(record)),
-    );
-    for (const path of [...record.artifactPaths].sort(compareStrings)) {
-      const bytes = archive.entries.get(path);
-      if (bytes === undefined)
-        throw ingestError(`${scenario} is missing verified artifact ${path}`);
-      addOutput(output, canonicalPaths, path, bytes);
+  if (profile === INGEST_PROFILE.FULL) {
+    for (const scenario of REQUIRED_MANUAL) {
+      const { archive, record } = manualRecords.get(scenario);
+      addOutput(
+        output,
+        canonicalPaths,
+        `manual/${scenario}.json`,
+        jsonBytes(normalizedManualRecord(record)),
+      );
+      for (const path of [...record.artifactPaths].sort(compareStrings)) {
+        const bytes = archive.entries.get(path);
+        if (bytes === undefined)
+          throw ingestError(`${scenario} is missing verified artifact ${path}`);
+        addOutput(output, canonicalPaths, path, bytes);
+      }
     }
   }
   for (const scenario of REQUIRED_AUTOMATED) {
@@ -307,12 +331,21 @@ function formattedMediaQueries(mediaQueries) {
     .join('<br>');
 }
 
-function renderMarkdown({ automatedRecords, destinationName, manualRecords, origin, revision }) {
+function renderMarkdown({
+  automatedRecords,
+  destinationName,
+  manualRecords,
+  origin,
+  profile,
+  revision,
+}) {
   const records = [
-    ...REQUIRED_MANUAL.map((scenario) => ({
-      kind: 'Manual',
-      record: manualRecords.get(scenario).record,
-    })),
+    ...(profile === INGEST_PROFILE.FULL
+      ? REQUIRED_MANUAL.map((scenario) => ({
+          kind: 'Manual',
+          record: manualRecords.get(scenario).record,
+        }))
+      : []),
     ...REQUIRED_AUTOMATED.map((scenario) => ({
       kind: 'Automated',
       record: automatedRecords.get(scenario).record,
@@ -324,6 +357,13 @@ function renderMarkdown({ automatedRecords, destinationName, manualRecords, orig
     `- Revision: \`${revision}\``,
     `- Immutable deployment origin: [${origin}](${origin})`,
     '- Overall result: **PASS**',
+    ...(profile === INGEST_PROFILE.AUTOMATED_CORE
+      ? [
+          '- Release profile: **Automated Core**',
+          '- Overall automated result: **PASS**',
+          '- Manual assistive-technology evidence: `deferred-by-release-profile`',
+        ]
+      : []),
     '',
     '## Scenario summary',
     '',
@@ -336,50 +376,52 @@ function renderMarkdown({ automatedRecords, destinationName, manualRecords, orig
     );
   }
 
-  lines.push('', '## Manual assistive-technology evidence');
-  for (const scenario of REQUIRED_MANUAL) {
-    const record = manualRecords.get(scenario).record;
-    lines.push(
-      '',
-      `### \`${scenario}\``,
-      '',
-      `- Executed: \`${record.executedAt}\` (${markdownText(record.timezone)})`,
-      `- Environment: ${markdownText(record.os.name)} ${markdownText(record.os.version)} (${markdownText(record.os.build)}); ${markdownText(record.browser.name)} ${markdownText(record.browser.version)}; ${markdownText(record.assistiveTechnology.name)} ${markdownText(record.assistiveTechnology.version)}`,
-      `- User agent: ${markdownText(record.userAgent)}`,
-      `- Input methods: ${record.inputMethods.map(markdownText).sort(compareStrings).join(', ')}`,
-      `- Viewport: ${record.viewport.width} x ${record.viewport.height} at ${record.viewport.devicePixelRatio} DPR`,
-      `- Media queries: ${formattedMediaQueries(record.mediaQueries)}`,
-      `- Reviewer: ${markdownText(record.reviewer.name)} — **${record.reviewer.approval}**`,
-      `- Expected: ${markdownText(record.expected)}`,
-      `- Actual: ${markdownText(record.actual)}`,
-      '',
-      '#### Attestations',
-      '',
-      '| Check | Result |',
-      '| --- | --- |',
-    );
-    for (const [check, passed] of Object.entries(record.checkAttestations).sort(([left], [right]) =>
-      compareStrings(left, right),
-    )) {
-      lines.push(`| \`${check}\` | ${passed ? 'PASS' : 'FAIL'} |`);
-    }
-    lines.push('', '#### Findings', '');
-    if (record.findingUrls.length === 0) lines.push('- None.');
-    else {
-      for (const [index, finding] of [...record.findingUrls].sort(compareStrings).entries()) {
-        lines.push(`- [Finding ${index + 1}](${safeExternalUrl(finding)})`);
-      }
-    }
-    lines.push('', '#### Artifacts', '');
-    for (const { path, originalName } of [...record.artifactMetadata].sort((left, right) =>
-      compareStrings(left.path, right.path),
-    )) {
+  if (profile === INGEST_PROFILE.FULL) {
+    lines.push('', '## Manual assistive-technology evidence');
+    for (const scenario of REQUIRED_MANUAL) {
+      const record = manualRecords.get(scenario).record;
       lines.push(
-        `- ${markdownText(originalName)} → [${markdownText(path)}](${artifactLink(destinationName, path)})`,
+        '',
+        `### \`${scenario}\``,
+        '',
+        `- Executed: \`${record.executedAt}\` (${markdownText(record.timezone)})`,
+        `- Environment: ${markdownText(record.os.name)} ${markdownText(record.os.version)} (${markdownText(record.os.build)}); ${markdownText(record.browser.name)} ${markdownText(record.browser.version)}; ${markdownText(record.assistiveTechnology.name)} ${markdownText(record.assistiveTechnology.version)}`,
+        `- User agent: ${markdownText(record.userAgent)}`,
+        `- Input methods: ${record.inputMethods.map(markdownText).sort(compareStrings).join(', ')}`,
+        `- Viewport: ${record.viewport.width} x ${record.viewport.height} at ${record.viewport.devicePixelRatio} DPR`,
+        `- Media queries: ${formattedMediaQueries(record.mediaQueries)}`,
+        `- Reviewer: ${markdownText(record.reviewer.name)} — **${record.reviewer.approval}**`,
+        `- Expected: ${markdownText(record.expected)}`,
+        `- Actual: ${markdownText(record.actual)}`,
+        '',
+        '#### Attestations',
+        '',
+        '| Check | Result |',
+        '| --- | --- |',
       );
+      for (const [check, passed] of Object.entries(record.checkAttestations).sort(
+        ([left], [right]) => compareStrings(left, right),
+      )) {
+        lines.push(`| \`${check}\` | ${passed ? 'PASS' : 'FAIL'} |`);
+      }
+      lines.push('', '#### Findings', '');
+      if (record.findingUrls.length === 0) lines.push('- None.');
+      else {
+        for (const [index, finding] of [...record.findingUrls].sort(compareStrings).entries()) {
+          lines.push(`- [Finding ${index + 1}](${safeExternalUrl(finding)})`);
+        }
+      }
+      lines.push('', '#### Artifacts', '');
+      for (const { path, originalName } of [...record.artifactMetadata].sort((left, right) =>
+        compareStrings(left.path, right.path),
+      )) {
+        lines.push(
+          `- ${markdownText(originalName)} → [${markdownText(path)}](${artifactLink(destinationName, path)})`,
+        );
+      }
+      const recordPath = `manual/${scenario}.json`;
+      lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);
     }
-    const recordPath = `manual/${scenario}.json`;
-    lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);
   }
 
   lines.push('', '## Automated evidence');
@@ -1157,11 +1199,13 @@ async function stageAndPublish(
 export function parseIngestArgs(arguments_) {
   let automationPath;
   const bundlePaths = [];
+  let profile = INGEST_PROFILE.FULL;
+  let hasProfile = false;
   for (let index = 0; index < arguments_.length; index += 2) {
     const option = arguments_[index];
     const value = arguments_[index + 1];
     if (
-      (option !== '--automation' && option !== '--bundle') ||
+      (option !== '--automation' && option !== '--bundle' && option !== '--profile') ||
       value === undefined ||
       value.length === 0 ||
       value.startsWith('--')
@@ -1171,44 +1215,53 @@ export function parseIngestArgs(arguments_) {
     if (option === '--automation') {
       if (automationPath !== undefined) throw argumentError('duplicate --automation option');
       automationPath = value;
-    } else {
+    } else if (option === '--bundle') {
       if (bundlePaths.includes(value)) throw argumentError('duplicate --bundle value');
       bundlePaths.push(value);
       if (bundlePaths.length > 2) throw argumentError('at most two --bundle options are allowed');
+    } else {
+      if (hasProfile) throw argumentError('duplicate --profile option');
+      if (value !== INGEST_PROFILE.AUTOMATED_CORE && value !== INGEST_PROFILE.FULL) {
+        throw argumentError(`unknown profile ${value}`);
+      }
+      profile = value;
+      hasProfile = true;
     }
   }
-  if (automationPath === undefined || bundlePaths.length < 1) {
-    throw argumentError('--automation and one or two --bundle options are required');
+  if (automationPath === undefined) {
+    throw argumentError('--automation is required');
   }
-  return { automationPath, bundlePaths };
+  if (profile === INGEST_PROFILE.AUTOMATED_CORE && bundlePaths.length !== 0) {
+    throw argumentError('--profile automated-core does not accept --bundle');
+  }
+  if (profile === INGEST_PROFILE.FULL && bundlePaths.length < 1) {
+    throw argumentError('the full profile requires one or two --bundle options');
+  }
+  return normalizedIngestOptions({ automationPath, bundlePaths, profile });
 }
 
 export async function ingestEvidence(options, fileSystemOverrides = {}) {
-  if (
-    typeof options?.automationPath !== 'string' ||
-    !Array.isArray(options.bundlePaths) ||
-    options.bundlePaths.length < 1 ||
-    options.bundlePaths.length > 2 ||
-    options.bundlePaths.some((path) => typeof path !== 'string')
-  ) {
-    throw new TypeError('ingestEvidence requires one automation path and one or two bundle paths');
-  }
+  const normalizedOptions = normalizedIngestOptions(options);
+  const { automationPath, bundlePaths, profile } = normalizedOptions;
   const fileSystem = { ...defaultFileSystem, ...fileSystemOverrides };
-  const automationArchive = await readEvidenceArchive(resolve(options.automationPath), {
+  const automationArchive = await readEvidenceArchive(resolve(automationPath), {
     expectedKind: 'automation',
   });
   const manualArchives = [];
-  for (const path of options.bundlePaths) {
-    manualArchives.push(
-      await readEvidenceArchive(resolve(path), {
-        expectedKind: 'manual',
-      }),
-    );
+  if (profile === INGEST_PROFILE.FULL) {
+    for (const path of bundlePaths) {
+      manualArchives.push(
+        await readEvidenceArchive(resolve(path), {
+          expectedKind: 'manual',
+        }),
+      );
+    }
   }
 
   const automationManifest = validatedManifest(automationArchive, 'automation');
   const manualManifests = manualArchives.map((archive) => validatedManifest(archive, 'manual'));
-  const manualRecords = collectManualRecords(manualArchives);
+  const manualRecords =
+    profile === INGEST_PROFILE.FULL ? collectManualRecords(manualArchives) : new Map();
   const automatedRecords = collectAutomatedRecords(automationArchive);
   const allRecords = [
     ...[...manualRecords.values()].map(({ record }) => record),
@@ -1218,9 +1271,9 @@ export async function ingestEvidence(options, fileSystemOverrides = {}) {
     [automationManifest, ...manualManifests],
     allRecords,
   );
-  const outputFiles = buildOutputFiles(manualRecords, automatedRecords);
+  const outputFiles = buildOutputFiles(manualRecords, automatedRecords, profile);
   const destinationName = `${identity.revision}-accessibility`;
-  const repositoryRoot = resolve(options.repositoryRoot ?? defaultRepositoryRoot);
+  const repositoryRoot = resolve(normalizedOptions.repositoryRoot ?? defaultRepositoryRoot);
   const parent = join(repositoryRoot, ...COMPARISON_PATH);
   const parentState = await pathState(parent, fileSystem);
   if (parentState === undefined || !parentState.isDirectory() || parentState.isSymbolicLink()) {
@@ -1233,6 +1286,7 @@ export async function ingestEvidence(options, fileSystemOverrides = {}) {
     destinationName,
     manualRecords,
     origin: identity.origin,
+    profile,
     revision: identity.revision,
   });
   const destinations = { destinationDirectory, markdownPath, parent };
