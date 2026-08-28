@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { loadConfigFromFile } from 'vite';
+import { parse } from 'yaml';
 
 const browserConfigs = [
   'packages/styles/vitest.config.ts',
@@ -84,6 +85,36 @@ test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild
   assert.equal(packageScripts['packages/styles/package.json'].test, undefined);
   assert.equal(packageScripts['packages/react/package.json'].test, 'pnpm run test:ssr');
   assert.equal(packageScripts['packages/alpine/package.json'].test, undefined);
+});
+
+test('prebuilds React and Alpine dist before clean root tests', () => {
+  const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
+  const rootTestCommands = rootScripts.test.split(' && ');
+  const requiredOrder = [
+    'pnpm --filter @lyra-ds/react run build',
+    'pnpm --filter @lyra-ds/alpine run build',
+    rootTestCommands.find((command) => command.startsWith('node --test ')),
+  ];
+
+  assert.deepEqual(
+    requiredOrder.map((command) => rootTestCommands.indexOf(command)),
+    [0, 1, 2],
+  );
+});
+
+test('prebuilds React and Alpine dist before clean CI typecheck', () => {
+  const workflow = parse(readFileSync(resolve('.github/workflows/ci.yml'), 'utf8'));
+  const typecheckCommands = workflow.jobs.typecheck.steps.flatMap(({ run }) => (run ? [run] : []));
+  const requiredOrder = [
+    'pnpm --filter @lyra-ds/react run build',
+    'pnpm --filter @lyra-ds/alpine run build',
+    'pnpm run typecheck',
+  ];
+
+  assert.deepEqual(
+    requiredOrder.map((command) => typecheckCommands.indexOf(command)),
+    requiredOrder.map((_, index) => typecheckCommands.length - 3 + index),
+  );
 });
 
 test('does not leave future styles or Alpine test files outside Browser Mode', async () => {
