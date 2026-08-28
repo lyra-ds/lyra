@@ -15,6 +15,8 @@ import {
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { format } from 'prettier';
+
 import { readEvidenceArchive } from './archive.mjs';
 import {
   canonicalArchivePathKey,
@@ -331,7 +333,7 @@ function formattedMediaQueries(mediaQueries) {
     .join('<br>');
 }
 
-function renderMarkdown({
+async function renderMarkdown({
   automatedRecords,
   destinationName,
   manualRecords,
@@ -461,7 +463,7 @@ function renderMarkdown({
     const recordPath = `automation/${scenario}.json`;
     lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);
   }
-  return Buffer.from(`${lines.join('\n')}\n`);
+  return Buffer.from(await format(`${lines.join('\n')}\n`, { parser: 'markdown' }));
 }
 
 async function pathState(path, fileSystem) {
@@ -1281,7 +1283,7 @@ export async function ingestEvidence(options, fileSystemOverrides = {}) {
   }
   const destinationDirectory = join(parent, destinationName);
   const markdownPath = join(parent, `${destinationName}.md`);
-  const markdownBytes = renderMarkdown({
+  const markdownBytes = await renderMarkdown({
     automatedRecords,
     destinationName,
     manualRecords,

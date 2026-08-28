@@ -150,16 +150,27 @@ test('requires every normative amendment to link the approved design', () => {
   ]);
 });
 
-test('keeps the Data and Files family status Approved before evidence ingestion', () => {
+test('accepts the promoted family status only with exact Automated Core evidence', () => {
   const inputs = repositoryPolicyInputs();
   inputs.documents.family = inputs.documents.family.replace(
     '**Status:** Approved',
-    '**Status:** Implemented under Automated Core',
+    '**Status:** Implemented under Automated Core — FileUpload wave',
   );
 
-  assert.deepEqual(validateV1CorePolicy(inputs), [
-    'The Data and Files family status must remain `Approved` until exact evidence ingestion.',
-  ]);
+  inputs.documents.familyEvidence = {
+    revision: '52151c200972f3741eecb0761565f3569e81f267',
+    report: `
+# FileUpload accessibility evidence
+- Revision: \`52151c200972f3741eecb0761565f3569e81f267\`
+- Release profile: **Automated Core**
+- Overall automated result: **PASS**
+- Manual assistive-technology evidence: \`deferred-by-release-profile\`
+| \`DF-FU-17\` | Automated | en | route | **PASS** |
+| \`DF-FU-18\` | Automated | en | route | **PASS** |
+`,
+  };
+
+  assert.deepEqual(validateV1CorePolicy(inputs), []);
 });
 
 test('guards the active Task 10 Automated Core path', () => {

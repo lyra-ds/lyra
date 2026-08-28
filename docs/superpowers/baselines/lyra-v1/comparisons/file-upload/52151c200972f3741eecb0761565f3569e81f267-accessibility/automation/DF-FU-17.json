@@ -1,0 +1,91 @@
+{
+  "deploymentUrl": "https://235deb26.lyra-ds-docs.pages.dev/en/file-upload-evidence/",
+  "executedAt": "2026-08-28T18:31:32.087Z",
+  "locale": "en",
+  "result": "PASS",
+  "revision": "52151c200972f3741eecb0761565f3569e81f267",
+  "runs": [
+    {
+      "artifactPaths": [
+        "artifacts/DF-FU-17/chromium/events.json",
+        "artifacts/DF-FU-17/chromium/final.png",
+        "artifacts/DF-FU-17/chromium/run.webm",
+        "artifacts/DF-FU-17/chromium/trace.zip"
+      ],
+      "checks": {
+        "DF-FU-17-actions-reachable-at-reflow": true,
+        "DF-FU-17-active-replacement-rejected-and-announced": true,
+        "DF-FU-17-cancel-retry-complete-remove": true,
+        "DF-FU-17-focus-recovered": true,
+        "DF-FU-17-keyboard-activation-equivalent": true,
+        "DF-FU-17-long-file-identity-retained": true,
+        "DF-FU-17-no-horizontal-overflow": true
+      },
+      "engine": "chromium",
+      "mediaQueries": {
+        "(any-pointer: coarse)": true,
+        "(pointer: coarse)": true
+      },
+      "viewport": {
+        "devicePixelRatio": 2,
+        "height": 720,
+        "width": 320
+      }
+    },
+    {
+      "artifactPaths": [
+        "artifacts/DF-FU-17/firefox/events.json",
+        "artifacts/DF-FU-17/firefox/final.png",
+        "artifacts/DF-FU-17/firefox/run.webm",
+        "artifacts/DF-FU-17/firefox/trace.zip"
+      ],
+      "checks": {
+        "DF-FU-17-actions-reachable-at-reflow": true,
+        "DF-FU-17-active-replacement-rejected-and-announced": true,
+        "DF-FU-17-cancel-retry-complete-remove": true,
+        "DF-FU-17-focus-recovered": true,
+        "DF-FU-17-keyboard-activation-equivalent": true,
+        "DF-FU-17-long-file-identity-retained": true,
+        "DF-FU-17-no-horizontal-overflow": true
+      },
+      "engine": "firefox",
+      "mediaQueries": {
+        "(any-pointer: coarse)": false,
+        "(pointer: coarse)": false
+      },
+      "viewport": {
+        "devicePixelRatio": 2,
+        "height": 720,
+        "width": 320
+      }
+    },
+    {
+      "artifactPaths": [
+        "artifacts/DF-FU-17/webkit/events.json",
+        "artifacts/DF-FU-17/webkit/final.png",
+        "artifacts/DF-FU-17/webkit/run.webm",
+        "artifacts/DF-FU-17/webkit/trace.zip"
+      ],
+      "checks": {
+        "DF-FU-17-actions-reachable-at-reflow": true,
+        "DF-FU-17-active-replacement-rejected-and-announced": true,
+        "DF-FU-17-cancel-retry-complete-remove": true,
+        "DF-FU-17-focus-recovered": true,
+        "DF-FU-17-keyboard-activation-equivalent": true,
+        "DF-FU-17-long-file-identity-retained": true,
+        "DF-FU-17-no-horizontal-overflow": true
+      },
+      "engine": "webkit",
+      "mediaQueries": {
+        "(any-pointer: coarse)": false,
+        "(pointer: coarse)": false
+      },
+      "viewport": {
+        "devicePixelRatio": 2,
+        "height": 720,
+        "width": 320
+      }
+    }
+  ],
+  "scenario": "DF-FU-17"
+}

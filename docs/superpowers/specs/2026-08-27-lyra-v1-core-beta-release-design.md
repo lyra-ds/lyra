@@ -292,24 +292,24 @@ their exact candidate SHA and green gates.
 
 ## 12. Acceptance criteria
 
-- [ ] The repository defines Full and Automated Core evidence profiles without
+- [x] The repository defines Full and Automated Core evidence profiles without
       changing the Full profile's existing behavior.
-- [ ] Automated Core ingestion succeeds only for one exact valid automation
+- [x] Automated Core ingestion succeeds only for one exact valid automation
       archive containing passing `DF-FU-17` and `DF-FU-18` evidence.
-- [ ] Automated Core output records manual evidence as
+- [x] Automated Core output records manual evidence as
       `deferred-by-release-profile` and contains no fabricated manual result.
-- [ ] Both ingestion profiles preserve deterministic, atomic, idempotent, and
+- [x] Both ingestion profiles preserve deterministic, atomic, idempotent, and
       no-clobber publication behavior.
-- [ ] Every documented component has an explicit lifecycle stability value.
-- [ ] FileUpload is Stable and every other component is Beta for the
+- [x] Every documented component has an explicit lifecycle stability value.
+- [x] FileUpload is Stable and every other component is Beta for the
       consolidated beta release.
-- [ ] English and Brazilian Portuguese support documentation expose stability,
+- [x] English and Brazilian Portuguese support documentation expose stability,
       Automated Core limitations, and the current three-engine CI truthfully.
-- [ ] The FileUpload implementation wave is recorded as Implemented under
+- [x] The FileUpload implementation wave is recorded as Implemented under
       Automated Core without promoting Table, DataTable, or FileManager.
 - [ ] The existing four CI status contexts run all applicable automated release
       gates and pass for the exact candidate revision.
-- [ ] The release candidate has the expected minor version plan and no
+- [x] The release candidate has the expected minor version plan and no
       `1.0.0` package version.
 - [ ] Merge and npm publication occur only after their separate explicit
       checkpoints.

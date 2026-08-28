@@ -1,0 +1,120 @@
+{
+  "scenario": "DF-FU-17",
+  "engine": "firefox",
+  "revision": "52151c200972f3741eecb0761565f3569e81f267",
+  "deploymentUrl": "https://235deb26.lyra-ds-docs.pages.dev/en/file-upload-evidence/",
+  "executedAt": "2026-08-28T18:31:32.087Z",
+  "viewport": {
+    "width": 320,
+    "height": 720,
+    "devicePixelRatio": 2
+  },
+  "mediaQueries": {
+    "(pointer: coarse)": false,
+    "(any-pointer: coarse)": false
+  },
+  "events": [
+    {
+      "operation": "navigation",
+      "url": "https://235deb26.lyra-ds-docs.pages.dev/en/file-upload-evidence/"
+    },
+    {
+      "operation": "active-replacement",
+      "announcement": "File replacement is unavailable while an upload is active.",
+      "retainedFileName": "résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf",
+      "retainedActionName": "Cancel résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf",
+      "replacementNameVisible": false,
+      "replacementActionVisible": false
+    },
+    {
+      "operation": "keyboard-activation",
+      "label": "Cancel résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf"
+    },
+    {
+      "operation": "keyboard-activation",
+      "label": "Retry résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf"
+    },
+    {
+      "operation": "keyboard-activation",
+      "label": "Success"
+    },
+    {
+      "operation": "keyboard-activation",
+      "label": "Retry résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf"
+    },
+    {
+      "operation": "keyboard-activation",
+      "label": "Remove résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf"
+    },
+    {
+      "operation": "observations",
+      "observations": {
+        "overflow": {
+          "documentClientWidth": 320,
+          "documentScrollWidth": 320,
+          "componentClientWidth": 256,
+          "componentScrollWidth": 256
+        },
+        "identity": {
+          "initialNameVisible": true,
+          "retainedNameVisible": true,
+          "retainedActionName": "Cancel résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf",
+          "replacementNameVisible": false,
+          "replacementActionVisible": false
+        },
+        "reachability": {
+          "cancel": true,
+          "retry": true,
+          "remove": true
+        },
+        "replacementAnnouncement": "File replacement is unavailable while an upload is active.",
+        "lifecycle": {
+          "cancelAction": "Retry",
+          "cancelAnnouncement": "résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf canceled.",
+          "errorAction": "Retry",
+          "errorAnnouncement": "résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf: The upload request is invalid.",
+          "completionAction": "Remove",
+          "completionAnnouncement": "résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf uploaded.",
+          "removedNameVisible": false,
+          "removedActionVisible": false,
+          "removalAnnouncement": "résumé-非常に長い-arquivo-de-evidência-com-identidade-preservada-em-refluxo-320px.pdf removed."
+        },
+        "focusRecovered": true,
+        "keyboardTransitions": {
+          "cancel": "canceled",
+          "errorRetry": "error",
+          "successRetry": "success",
+          "remove": "removed"
+        },
+        "touchTransitions": {
+          "cancel": "not-required",
+          "successRetry": "not-required",
+          "remove": "not-required"
+        }
+      }
+    },
+    {
+      "operation": "checks-derived",
+      "checks": {
+        "DF-FU-17-no-horizontal-overflow": true,
+        "DF-FU-17-long-file-identity-retained": true,
+        "DF-FU-17-actions-reachable-at-reflow": true,
+        "DF-FU-17-active-replacement-rejected-and-announced": true,
+        "DF-FU-17-cancel-retry-complete-remove": true,
+        "DF-FU-17-focus-recovered": true,
+        "DF-FU-17-keyboard-activation-equivalent": true
+      }
+    }
+  ],
+  "checks": {
+    "DF-FU-17-no-horizontal-overflow": true,
+    "DF-FU-17-long-file-identity-retained": true,
+    "DF-FU-17-actions-reachable-at-reflow": true,
+    "DF-FU-17-active-replacement-rejected-and-announced": true,
+    "DF-FU-17-cancel-retry-complete-remove": true,
+    "DF-FU-17-focus-recovered": true,
+    "DF-FU-17-keyboard-activation-equivalent": true
+  },
+  "failedChecks": [],
+  "missingArtifacts": []
+}

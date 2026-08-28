@@ -20,6 +20,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { strToU8, zipSync } from 'fflate';
+import { format } from 'prettier';
 
 import { ingestEvidence, parseIngestArgs, runIngestCli } from './ingest.mjs';
 
@@ -687,7 +688,8 @@ describe('ingestEvidence', () => {
     assert.match(markdown, new RegExp(REVISION, 'u'));
     assert.match(markdown, /https:\/\/a1b2c3d4\.lyra-ds-docs\.pages\.dev/u);
     assert.equal(
-      markdown.split('\n').filter((line) => /^\| `DF-FU-(?:M01|M02|17|18)` \|/u.test(line)).length,
+      markdown.split('\n').filter((line) => /^\|\s*`DF-FU-(?:M01|M02|17|18)`\s*\|/u.test(line))
+        .length,
       4,
     );
     assert.match(markdown, /Windows 11 \(24H2\).*Firefox 141.*NVDA 2026\.2/u);
@@ -696,7 +698,7 @@ describe('ingestEvidence', () => {
     assert.match(markdown, /NVDA capture &#91;final&#93;\.png/u);
     assert.match(markdown, /Accessibility Reviewer.*approved/u);
     assert.match(markdown, /DF-FU-M01-selection-and-indeterminate-announcements/u);
-    assert.match(markdown, /\| Chromium \| 320 x 720 \| 2 \|/u);
+    assert.match(markdown, /\|\s*Chromium\s*\|\s*320 x 720\s*\|\s*2\s*\|/u);
     assert.match(markdown, /DF-FU-18-reconnect-teardown-clean/u);
     assert.ok(
       markdown.indexOf('https://example.com/findings/a-first') <
@@ -740,6 +742,11 @@ describe('ingestEvidence', () => {
     assert.match(markdown, /Overall automated result: \*\*PASS\*\*/u);
     assert.match(markdown, /Manual assistive-technology evidence: `deferred-by-release-profile`/u);
     assert.doesNotMatch(markdown, /DF-FU-M01|DF-FU-M02|Reviewer:|NVDA|VoiceOver/u);
+    assert.equal(
+      markdown,
+      await format(markdown, { parser: 'markdown', filepath: repository.markdown }),
+      'generated Automated Core evidence must be Prettier-canonical',
+    );
 
     const firstMarkdown = Buffer.from(markdown);
     const firstFiles = new Map(outputFiles);

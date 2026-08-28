@@ -1,6 +1,6 @@
 # Data and Files Family Design
 
-**Status:** Approved
+**Status:** Implemented under Automated Core — FileUpload wave
 
 **Date:** 2026-08-15
 

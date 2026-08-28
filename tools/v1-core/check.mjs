@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -52,6 +52,21 @@ function hasActiveAutomatedCorePath(value) {
     ) &&
     content.includes('Optional Full profile') &&
     !automatedCoreCommandHasManualBundle(content)
+  );
+}
+
+function hasExactAutomatedCoreEvidence(value) {
+  const evidence = value ?? {};
+  const revision = text(evidence.revision);
+  const report = text(evidence.report);
+  return (
+    /^[0-9a-f]{40}$/u.test(revision) &&
+    report.includes(`- Revision: \`${revision}\``) &&
+    report.includes('- Release profile: **Automated Core**') &&
+    report.includes('- Overall automated result: **PASS**') &&
+    report.includes('- Manual assistive-technology evidence: `deferred-by-release-profile`') &&
+    report.includes('| `DF-FU-17` | Automated |') &&
+    report.includes('| `DF-FU-18` | Automated |')
   );
 }
 
@@ -129,9 +144,16 @@ export function validateV1CorePolicy(inputs) {
     }
 
     const family = text(documents.family);
-    if (!/^\*\*Status:\*\* Approved$/mu.test(family)) {
+    const approved = /^\*\*Status:\*\* Approved$/mu.test(family);
+    const implemented =
+      /^\*\*Status:\*\* Implemented under Automated Core — FileUpload wave$/mu.test(family);
+    if (!approved && !implemented) {
       errors.push(
         'The Data and Files family status must remain `Approved` until exact evidence ingestion.',
+      );
+    } else if (implemented && !hasExactAutomatedCoreEvidence(documents.familyEvidence)) {
+      errors.push(
+        'The promoted Data and Files family status requires exact passing Automated Core evidence.',
       );
     }
     if (!hasApprovedDesignLink(family) || !family.includes('deferred-by-release-profile')) {
@@ -171,6 +193,22 @@ async function readRepositoryFile(path) {
   return readFile(resolve(repositoryRoot, path), 'utf8');
 }
 
+async function readAutomatedCoreEvidence() {
+  const directory = resolve(
+    repositoryRoot,
+    'docs/superpowers/baselines/lyra-v1/comparisons/file-upload',
+  );
+  const names = await readdir(directory);
+  for (const name of names.sort()) {
+    const match = /^([0-9a-f]{40})-accessibility\.md$/u.exec(name);
+    if (!match) continue;
+    const report = await readFile(resolve(directory, name), 'utf8');
+    const evidence = { revision: match[1], report };
+    if (hasExactAutomatedCoreEvidence(evidence)) return evidence;
+  }
+  return { revision: '', report: '' };
+}
+
 async function main() {
   const [
     ci,
@@ -201,12 +239,14 @@ async function main() {
     ),
     readRepositoryFile('docs/superpowers/plans/2026-08-16-file-upload-controlled-lifecycle.md'),
   ]);
+  const familyEvidence = await readAutomatedCoreEvidence();
   const errors = validateV1CorePolicy({
     ci,
     design,
     documents: {
       architecture,
       family,
+      familyEvidence,
       interaction,
       lifecycle,
       phase0,

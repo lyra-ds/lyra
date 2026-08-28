@@ -1,0 +1,150 @@
+{
+  "scenario": "DF-FU-18",
+  "engine": "chromium",
+  "revision": "52151c200972f3741eecb0761565f3569e81f267",
+  "deploymentUrl": "https://235deb26.lyra-ds-docs.pages.dev/en/file-upload-evidence/",
+  "executedAt": "2026-08-28T18:31:32.087Z",
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "devicePixelRatio": 1
+  },
+  "mediaQueries": {
+    "(pointer: coarse)": false,
+    "(prefers-reduced-motion: reduce)": false
+  },
+  "observations": {
+    "native": {
+      "submitted": true,
+      "responseOk": true,
+      "responseLocale": "en",
+      "responseFileName": "native-no-javascript.bin",
+      "responseMediaType": "application/octet-stream",
+      "responseByteLength": "65536",
+      "responseRevision": "52151c200972f3741eecb0761565f3569e81f267",
+      "headerRevision": "52151c200972f3741eecb0761565f3569e81f267",
+      "payloadMarkerExposed": false
+    },
+    "delayed": {
+      "beforeInitialization": {
+        "name": "selected-before-alpine.pdf",
+        "size": 23,
+        "type": "application/pdf"
+      },
+      "afterInitialization": {
+        "name": "selected-before-alpine.pdf",
+        "size": 23,
+        "type": "application/pdf"
+      },
+      "initializationsAfterInitialization": 1,
+      "selectionIntentsBeforeEnhancedSelection": 0,
+      "controlledEchoesBeforeEnhancedSelection": 0,
+      "connectsAfterInitialization": 1,
+      "disconnectsAfterInitialization": 0,
+      "controlTreesAfterInitialization": 1,
+      "liveMessageAfterInitialization": "",
+      "selectionIntentsAfterEnhancedSelection": 1,
+      "controlledEchoesAfterEnhancedSelection": 1,
+      "renderedItemsAfterEnhancedSelection": 1,
+      "removalFocusedInput": true,
+      "renderedItemsAfterRemoval": 0,
+      "initializationsAfterReconnect": 2,
+      "connectsAfterReconnect": 2,
+      "disconnectsAfterReconnect": 1,
+      "liveMessageAfterReconnect": "",
+      "selectionIntentsBeforeReconnectSelection": 1,
+      "selectionIntentsAfterReconnectSelection": 2,
+      "controlledEchoesBeforeReconnectSelection": 1,
+      "controlledEchoesAfterReconnectSelection": 2,
+      "renderedItemsAfterReconnectSelection": 1,
+      "liveMessageAfterReconnectSelection": "selected-after-reconnect.pdf selected.",
+      "connectsAfterTeardown": 2,
+      "disconnectsAfterTeardown": 2,
+      "selectionIntentsAfterTeardownEvent": 2,
+      "controlledEchoesAfterTeardownEvent": 2,
+      "renderedItemsAfterTeardownEvent": 0,
+      "liveMessageAfterTeardownEvent": ""
+    }
+  },
+  "events": [
+    {
+      "operation": "native-js-disabled-submission",
+      "observations": {
+        "submitted": true,
+        "responseOk": true,
+        "responseLocale": "en",
+        "responseFileName": "native-no-javascript.bin",
+        "responseMediaType": "application/octet-stream",
+        "responseByteLength": "65536",
+        "responseRevision": "52151c200972f3741eecb0761565f3569e81f267",
+        "headerRevision": "52151c200972f3741eecb0761565f3569e81f267",
+        "payloadMarkerExposed": false
+      },
+      "revision": "52151c200972f3741eecb0761565f3569e81f267"
+    },
+    {
+      "operation": "delayed-alpine-observations",
+      "observations": {
+        "beforeInitialization": {
+          "name": "selected-before-alpine.pdf",
+          "size": 23,
+          "type": "application/pdf"
+        },
+        "afterInitialization": {
+          "name": "selected-before-alpine.pdf",
+          "size": 23,
+          "type": "application/pdf"
+        },
+        "initializationsAfterInitialization": 1,
+        "selectionIntentsBeforeEnhancedSelection": 0,
+        "controlledEchoesBeforeEnhancedSelection": 0,
+        "connectsAfterInitialization": 1,
+        "disconnectsAfterInitialization": 0,
+        "controlTreesAfterInitialization": 1,
+        "liveMessageAfterInitialization": "",
+        "selectionIntentsAfterEnhancedSelection": 1,
+        "controlledEchoesAfterEnhancedSelection": 1,
+        "renderedItemsAfterEnhancedSelection": 1,
+        "removalFocusedInput": true,
+        "renderedItemsAfterRemoval": 0,
+        "initializationsAfterReconnect": 2,
+        "connectsAfterReconnect": 2,
+        "disconnectsAfterReconnect": 1,
+        "liveMessageAfterReconnect": "",
+        "selectionIntentsBeforeReconnectSelection": 1,
+        "selectionIntentsAfterReconnectSelection": 2,
+        "controlledEchoesBeforeReconnectSelection": 1,
+        "controlledEchoesAfterReconnectSelection": 2,
+        "renderedItemsAfterReconnectSelection": 1,
+        "liveMessageAfterReconnectSelection": "selected-after-reconnect.pdf selected.",
+        "connectsAfterTeardown": 2,
+        "disconnectsAfterTeardown": 2,
+        "selectionIntentsAfterTeardownEvent": 2,
+        "controlledEchoesAfterTeardownEvent": 2,
+        "renderedItemsAfterTeardownEvent": 0,
+        "liveMessageAfterTeardownEvent": ""
+      }
+    },
+    {
+      "operation": "checks-derived",
+      "checks": {
+        "DF-FU-18-native-js-disabled-form-submitted": true,
+        "DF-FU-18-response-locale-metadata-revision": true,
+        "DF-FU-18-delayed-alpine-filelist-preserved": true,
+        "DF-FU-18-single-enhancement-no-replay": true,
+        "DF-FU-18-removal-focus-recovered": true,
+        "DF-FU-18-reconnect-teardown-clean": true
+      }
+    }
+  ],
+  "checks": {
+    "DF-FU-18-native-js-disabled-form-submitted": true,
+    "DF-FU-18-response-locale-metadata-revision": true,
+    "DF-FU-18-delayed-alpine-filelist-preserved": true,
+    "DF-FU-18-single-enhancement-no-replay": true,
+    "DF-FU-18-removal-focus-recovered": true,
+    "DF-FU-18-reconnect-teardown-clean": true
+  },
+  "failedChecks": [],
+  "missingArtifacts": []
+}
