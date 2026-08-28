@@ -155,6 +155,14 @@ test('packs once, resolves each frozen external graph once, then directly instal
     const frozenArgs = frozenCommands[0][2];
     assert.equal(frozenArgs[0], 'install');
     assert.ok(frozenArgs.includes('--ignore-workspace'));
+    const resolutionCommands = candidateCommands.filter(([, , args]) =>
+      ['install', 'add'].includes(args[0]),
+    );
+    assert.deepEqual(
+      resolutionCommands.map(([, , args]) => args),
+      [frozenArgs],
+      `${directory} must not run a second package-manager resolution`,
+    );
     const candidateStore = optionValue(frozenArgs, '--store-dir');
     assert.equal(candidateStore, stores[candidateIndex]);
     assert.equal(
