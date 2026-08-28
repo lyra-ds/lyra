@@ -463,7 +463,12 @@ async function renderMarkdown({
     const recordPath = `automation/${scenario}.json`;
     lines.push(`- [Normalized result JSON](${artifactLink(destinationName, recordPath)})`);
   }
-  return Buffer.from(await format(`${lines.join('\n')}\n`, { parser: 'markdown' }));
+  const markdown = `${lines.join('\n')}\n`;
+  return Buffer.from(
+    profile === INGEST_PROFILE.AUTOMATED_CORE
+      ? await format(markdown, { parser: 'markdown' })
+      : markdown,
+  );
 }
 
 async function pathState(path, fileSystem) {

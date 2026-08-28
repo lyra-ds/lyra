@@ -688,8 +688,7 @@ describe('ingestEvidence', () => {
     assert.match(markdown, new RegExp(REVISION, 'u'));
     assert.match(markdown, /https:\/\/a1b2c3d4\.lyra-ds-docs\.pages\.dev/u);
     assert.equal(
-      markdown.split('\n').filter((line) => /^\|\s*`DF-FU-(?:M01|M02|17|18)`\s*\|/u.test(line))
-        .length,
+      markdown.split('\n').filter((line) => /^\| `DF-FU-(?:M01|M02|17|18)` \|/u.test(line)).length,
       4,
     );
     assert.match(markdown, /Windows 11 \(24H2\).*Firefox 141.*NVDA 2026\.2/u);
@@ -698,7 +697,7 @@ describe('ingestEvidence', () => {
     assert.match(markdown, /NVDA capture &#91;final&#93;\.png/u);
     assert.match(markdown, /Accessibility Reviewer.*approved/u);
     assert.match(markdown, /DF-FU-M01-selection-and-indeterminate-announcements/u);
-    assert.match(markdown, /\|\s*Chromium\s*\|\s*320 x 720\s*\|\s*2\s*\|/u);
+    assert.match(markdown, /\| Chromium \| 320 x 720 \| 2 \|/u);
     assert.match(markdown, /DF-FU-18-reconnect-teardown-clean/u);
     assert.ok(
       markdown.indexOf('https://example.com/findings/a-first') <

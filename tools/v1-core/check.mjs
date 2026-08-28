@@ -55,6 +55,13 @@ function hasActiveAutomatedCorePath(value) {
   );
 }
 
+function hasPassingAutomatedScenario(report, scenario) {
+  return new RegExp(
+    `^\\|\\s*\`${scenario}\`\\s*\\|\\s*Automated\\s*\\|[^\\n|]*\\|[^\\n|]*\\|\\s*\\*\\*PASS\\*\\*\\s*\\|\\s*$`,
+    'mu',
+  ).test(report);
+}
+
 function hasExactAutomatedCoreEvidence(value) {
   const evidence = value ?? {};
   const revision = text(evidence.revision);
@@ -65,8 +72,8 @@ function hasExactAutomatedCoreEvidence(value) {
     report.includes('- Release profile: **Automated Core**') &&
     report.includes('- Overall automated result: **PASS**') &&
     report.includes('- Manual assistive-technology evidence: `deferred-by-release-profile`') &&
-    report.includes('| `DF-FU-17` | Automated |') &&
-    report.includes('| `DF-FU-18` | Automated |')
+    hasPassingAutomatedScenario(report, 'DF-FU-17') &&
+    hasPassingAutomatedScenario(report, 'DF-FU-18')
   );
 }
 

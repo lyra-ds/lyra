@@ -173,6 +173,52 @@ test('accepts the promoted family status only with exact Automated Core evidence
   assert.deepEqual(validateV1CorePolicy(inputs), []);
 });
 
+test('rejects FAIL, malformed, or missing Automated Core scenario evidence', () => {
+  const report = `
+# FileUpload accessibility evidence
+- Revision: \`52151c200972f3741eecb0761565f3569e81f267\`
+- Release profile: **Automated Core**
+- Overall automated result: **PASS**
+- Manual assistive-technology evidence: \`deferred-by-release-profile\`
+| \`DF-FU-17\` | Automated | en | route | **PASS** |
+| \`DF-FU-18\` | Automated | en | route | **PASS** |
+`;
+
+  for (const [label, invalidReport] of [
+    [
+      'FAIL',
+      report.replace(
+        '| \`DF-FU-17\` | Automated | en | route | **PASS** |',
+        '| \`DF-FU-17\` | Automated | en | route | **FAIL** |',
+      ),
+    ],
+    [
+      'malformed',
+      report.replace(
+        '| \`DF-FU-18\` | Automated | en | route | **PASS** |',
+        '| \`DF-FU-18\` | Automated | en | route | unavailable |',
+      ),
+    ],
+    ['missing', report.replace('| \`DF-FU-18\` | Automated | en | route | **PASS** |\n', '')],
+  ]) {
+    const inputs = repositoryPolicyInputs();
+    inputs.documents.family = inputs.documents.family.replace(
+      '**Status:** Approved',
+      '**Status:** Implemented under Automated Core — FileUpload wave',
+    );
+    inputs.documents.familyEvidence = {
+      revision: '52151c200972f3741eecb0761565f3569e81f267',
+      report: invalidReport,
+    };
+
+    assert.deepEqual(
+      validateV1CorePolicy(inputs),
+      ['The promoted Data and Files family status requires exact passing Automated Core evidence.'],
+      label,
+    );
+  }
+});
+
 test('guards the active Task 10 Automated Core path', () => {
   const inputs = repositoryPolicyInputs();
   inputs.documents.lifecycle = inputs.documents.lifecycle.replace(
