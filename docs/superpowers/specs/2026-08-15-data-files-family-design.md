@@ -8,22 +8,40 @@
 
 **First implementation wave:** FileUpload only
 
-## 2026-08-26 amendment: FileUpload evidence simplification
+## 2026-08-27 amendment: Automated Core beta gate
+
+The approved
+[`Lyra V1 Core Beta Release Design`](2026-08-27-lyra-v1-core-beta-release-design.md)
+makes Automated Core the active FileUpload beta gate. The family specification
+status remains `Approved` until exact candidate evidence is ingested. Automated
+Core requires a passing revision-bound automation archive and records absent
+manual assistive-technology evidence as `deferred-by-release-profile`; that
+deferral is non-blocking and MUST NOT be represented as a pass. Full remains an
+optional stricter profile with the original manual requirements.
+
+The active Automated Core path is:
+
+1. Produce a passing revision-bound automation archive.
+2. Run `pnpm evidence:file-upload:ingest --profile automated-core --automation "$automation_archive"`, where `automation_archive` is the exact validated workflow download.
+3. Review the explicit manual deferral, run every automated release gate, and commit the generated evidence.
+
+## 2026-08-26 amendment: FileUpload evidence simplification for the Full profile
 
 This amendment adopts the approved
 [`2026-08-26 FileUpload Evidence Simplification Design`](2026-08-26-file-upload-evidence-simplification-design.md)
-for the Task 10 evidence gate. It supersedes the former manual `DF-FU-M03` and
-`DF-FU-M04` release conditions; any remaining references to those manual IDs in
-this 2026-08-15 document are superseded historical context, not active work or
-release conditions.
+for the optional Full-profile evidence flow. It supersedes the former manual
+`DF-FU-M03` and `DF-FU-M04` release conditions; any remaining references to
+those manual IDs in this 2026-08-15 document are superseded historical context,
+not active work or release conditions.
 
 ```text
 Manual: DF-FU-M01 and DF-FU-M02, actual AT environments, local media, reviewer approval.
 Automated: DF-FU-17 and DF-FU-18, exact immutable deployment revision, workflow ZIP.
-Completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
+Full-profile completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
 ```
 
-Manual evidence is collected as a local evidence ZIP. Repository ingestion uses
+For the optional Full profile, manual evidence is collected as a local evidence
+ZIP. Repository ingestion uses
 `pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]`.
 
 ## 1. Problem, users, and use cases
@@ -858,20 +876,21 @@ React 18 and React 19. Hydration evidence must actually invoke hydration and
 capture server markup, first client output, console/recoverable errors, DOM and
 accessible relationships, focus, form values, announcements, and event counts.
 
-### 15.2 Manual critical workflows
+### 15.2 Optional Full profile manual critical workflows
 
 | ID          | Environment                                        | Workflow                                                                                         |
 | ----------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `DF-FU-M01` | Windows, current NVDA, current Firefox or Chromium | browse, hear validation, follow real progress, cancel, retry, complete, remove, and verify focus |
 | `DF-FU-M02` | macOS, current VoiceOver, current Safari           | repeat the complete workflow with determinate and indeterminate progress                         |
 
-Each record names the revision, operating system, browser, assistive technology
-and versions, input method, expected and actual result, reviewer approval, and
-local evidence ZIP. `DF-FU-17` and `DF-FU-18` each require a `PASS` in the
-workflow ZIP for that same immutable deployment revision. Completion requires
-one `PASS` for each of `DF-FU-M01`, `DF-FU-M02`, `DF-FU-17`, and `DF-FU-18`, one
-revision, one immutable deployment, and successful
-`evidence:file-upload:ingest` ingestion.
+For the optional Full profile, each record names the revision, operating system,
+browser, assistive technology and versions, input method, expected and actual
+result, reviewer approval, and local evidence ZIP. `DF-FU-17` and `DF-FU-18`
+each require a `PASS` in the workflow ZIP for that same immutable deployment
+revision. Full-profile completion requires one `PASS` for each of `DF-FU-M01`,
+`DF-FU-M02`, `DF-FU-17`, and `DF-FU-18`, one revision, one immutable deployment,
+and successful `evidence:file-upload:ingest` ingestion. These manual records are
+not part of Automated Core completion criteria.
 
 ### 15.3 Required commands
 

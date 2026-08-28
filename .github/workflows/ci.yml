@@ -40,6 +40,7 @@ jobs:
       - run: pnpm run lint
       - run: pnpm phase0:check
       - run: pnpm release-policy:check
+      - run: pnpm v1-core:check
       # actionlint — checksum-verified binary (never a remote script piped into a
       # shell). The download is tamper-evident: the release tarball is verified
       # against the sha256 checksum literal committed below before it executes.

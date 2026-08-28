@@ -2,23 +2,34 @@
 
 ## Active runbook
 
-The approved [2026-08-26 FileUpload Evidence Simplification Design](../specs/2026-08-26-file-upload-evidence-simplification-design.md)
-defines the active gate: `DF-FU-M01` and `DF-FU-M02` use actual assistive-
-technology environments, local media, reviewer approval, and local evidence
-ZIPs; `DF-FU-17` and `DF-FU-18` use the exact immutable deployment revision and
-workflow ZIP. Completion requires one `PASS` for each ID, one revision, one
-immutable deployment, and successful `evidence:file-upload:ingest` ingestion.
+The approved
+[Lyra V1 Core Beta Release Design](../specs/2026-08-27-lyra-v1-core-beta-release-design.md)
+defines Automated Core as the active beta gate. It requires the exact validated
+automation archive for `DF-FU-17` and `DF-FU-18`. Missing manual evidence is
+non-blocking, is labeled `deferred-by-release-profile`, and is never represented
+as passed.
 
-1. Dispatch the evidence preview workflow for the reviewed evidence ref.
-2. Download file-upload-automation-<revision-prefix>.zip from that passing run.
-3. Open the immutable URL on Windows/NVDA and macOS/VoiceOver Safari.
-4. Download one local evidence ZIP from each machine.
-5. Run the ingestion command with the automation ZIP and both manual bundles.
-6. Review the generated diff, run Task 10 gates, obtain M01/M02 approval, and commit.
+1. Produce a passing revision-bound automation archive.
+2. Run `pnpm evidence:file-upload:ingest --profile automated-core --automation "$automation_archive"`, where `automation_archive` is the exact validated workflow download.
+3. Review the explicit manual deferral, run every automated release gate, and commit the generated evidence.
+
+## Optional Full profile
+
+The approved
+[2026-08-26 FileUpload Evidence Simplification Design](../specs/2026-08-26-file-upload-evidence-simplification-design.md)
+remains the optional stricter workflow. Collect `DF-FU-M01` on Windows with
+NVDA and current Firefox or Chromium, collect `DF-FU-M02` on macOS with
+VoiceOver and current Safari, obtain reviewer approval, and ingest those local
+bundles with the exact automation archive:
 
 ```text
-rtk pnpm evidence:file-upload:ingest --automation <path> --bundle <path> --bundle <path>
+rtk pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]
 ```
+
+Full-profile completion requires one approved `PASS` for each manual scenario
+and one derived `PASS` for each automated scenario. These manual procedures are
+optional post-release evidence under Automated Core and do not appear in its
+completion criteria.
 
 ## Superseded historical context
 

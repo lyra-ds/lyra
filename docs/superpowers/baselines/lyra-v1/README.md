@@ -22,14 +22,14 @@ and
 
 The automated v1.0 policy pins Playwright 1.62.1 with Chromium revision 1234
 (`151.0.7922.34`), Firefox revision 1538 (`153.0`), and WebKit revision 2336
-(`26.5`). Every critical desktop workflow also requires Windows/NVDA and
-macOS/VoiceOver records. Automated results do not replace those manual reviews;
-iOS VoiceOver and Android TalkBack review is required when an approved workflow
-has mobile-specific behavior.
+(`26.5`). Current CI runs this Chromium, Firefox, and WebKit matrix inside the
+existing `test` job.
 
-The current CI executes Chromium only. Firefox and WebKit CI execution and the
-manual NVDA/VoiceOver workflow execution are Phase 1 deliverables, not completed
-Phase 0 evidence.
+Under the active Automated Core beta profile, manual Windows/NVDA and
+macOS/VoiceOver evidence is non-blocking post-release evidence labeled
+`deferred-by-release-profile`; it has not been completed and is not a pass. The
+optional Full profile retains the original desktop and conditional mobile
+manual-review requirements.
 
 ## Bundle baseline
 
@@ -80,9 +80,10 @@ frozen required-check contexts remain `lint`, `typecheck`, `test`, and `build`.
 - [x] Independent package versioning is documented and machine-checked.
 - [x] Bundle, ADR-template, and release-policy drift gates are integrated into
       the existing required CI jobs.
-- [ ] Firefox and WebKit CI execution is deferred to Phase 1.
+- [x] The pinned Chromium, Firefox, and WebKit matrix runs in the existing
+      `test` job.
 - [ ] Manual Windows/NVDA and macOS/VoiceOver workflow execution is deferred to
-      Phase 1.
+      optional post-release evidence under Automated Core and is not passed.
 
 The next artifact is the overlay-foundation family specification. Its evaluation
 or implementation plan must not be created until that specification reaches

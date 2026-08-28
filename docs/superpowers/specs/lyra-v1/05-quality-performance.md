@@ -49,6 +49,17 @@ that behavior. It also owns bundle-budget thresholds and the complete evidence
 gate for external-dependency adoption; Architecture supplies candidate-specific
 contract and ADR inputs without becoming a second evidence owner.
 
+### 2026-08-27 amendment: Automated Core release profile
+
+The [canonical Automated Core release profile](./README.md#automated-core-release-profile)
+and the approved
+[Lyra V1 Core Beta Release Design](../2026-08-27-lyra-v1-core-beta-release-design.md)
+scope the release-blocking effect of this document's manual-test requirements
+to Full-profile releases. Automated Core requires every applicable automated
+layer; the manual procedures remain optional post-release evidence. Missing
+manual evidence is non-blocking only under Automated Core, MUST be labeled
+`deferred-by-release-profile`, and MUST NOT be represented as a pass.
+
 ## Quality levels, severity, and service-level objectives
 
 The shared [`P1`](./README.md#p1), [`P2`](./README.md#p2),
@@ -545,14 +556,15 @@ The repository currently provides useful foundations:
   artifacts through real consumer builds; and
 - size-limit entries provide current absolute tripwires for React and Alpine.
 
-Those checks MUST remain truthfully labeled. The current Chromium-only browser
-configuration is not the required Chromium/Firefox/WebKit matrix; render-to-string
-alone is not hydration evidence; current absolute size-limit values are not the
-before/after `+1.5 kB` and `+3 kB` migration protocol; and current consumer
-smokes do not by themselves provide the complete accessibility, visual,
-assistive-technology, scenario-bundle, or release manifest. This specification
-does not authorize a runtime or CI change; approved implementation plans MUST
-close each gap before the affected contract claims v1.0 evidence.
+Those checks MUST remain truthfully labeled. The current CI runs the exact
+Playwright 1.62.1 Chromium, Firefox, and WebKit matrix in the existing `test`
+job; render-to-string alone is not hydration evidence; current absolute
+size-limit values are not the before/after `+1.5 kB` and `+3 kB` migration
+protocol; and current consumer smokes do not by themselves provide the complete
+accessibility, visual, assistive-technology, scenario-bundle, or release
+manifest. This specification does not authorize a runtime or CI change;
+approved implementation plans MUST close each remaining gap before the affected
+contract claims v1.0 evidence.
 
 ## Acceptance criteria
 

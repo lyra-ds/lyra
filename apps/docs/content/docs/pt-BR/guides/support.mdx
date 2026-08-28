@@ -19,15 +19,16 @@ versão 1.0.0.
 <h2 id="automated-browser-gate">Gate automatizado de navegadores</h2>
 
 O Lyra v1.0 exige um gate automatizado com Playwright 1.62.1, Chromium revisão 1234
-(`151.0.7922.34`), Firefox revisão 1538 (`153.0`) e WebKit revisão 2336 (`26.5`). O CI atual usa
-apenas Chromium; executar Firefox e WebKit é uma lacuna da Fase 1, e nenhuma entrada atual da matriz
-afirma paridade entre os três engines.
+(`151.0.7922.34`), Firefox revisão 1538 (`153.0`) e WebKit revisão 2336 (`26.5`). O CI atual executa
+essa matriz fixada de Chromium, Firefox e WebKit dentro do job `test` existente.
 
 ## Tecnologia assistiva manual
 
-Todo fluxo crítico de desktop exige um registro de Windows/NVDA e outro de macOS/VoiceOver. Os
-resultados automatizados não substituem essas revisões. Revise iOS VoiceOver e Android TalkBack
-quando um fluxo tiver um cenário específico de mobile que difira do desktop.
+Sob o perfil beta Automated Core ativo, a evidência manual de Windows/NVDA e macOS/VoiceOver fica
+`deferred-by-release-profile`: é uma evidência pós-lançamento não bloqueante, e não um resultado
+aprovado. Nenhuma revisão de tecnologia assistiva é apresentada como concluída. O perfil Full
+opcional preserva esses registros manuais e os procedimentos condicionais de mobile como requisitos
+mais rigorosos.
 
 <h2 id="what-support-means">O que suporte significa</h2>
 

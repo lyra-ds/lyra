@@ -10,21 +10,31 @@
 
 ## Global Constraints
 
-### 2026-08-26 amendment: FileUpload evidence simplification
+### 2026-08-27 amendment: Automated Core beta gate
+
+The approved
+[`Lyra V1 Core Beta Release Design`](../specs/2026-08-27-lyra-v1-core-beta-release-design.md)
+makes Automated Core the active beta gate. Missing manual evidence is
+non-blocking only under Automated Core, is labeled
+`deferred-by-release-profile`, and is never represented as passed. Full remains
+an optional stricter profile with the original manual evidence workflow.
+
+### 2026-08-26 amendment: FileUpload evidence simplification for the Full profile
 
 The approved
 [`2026-08-26 FileUpload Evidence Simplification Design`](../specs/2026-08-26-file-upload-evidence-simplification-design.md)
-supersedes Task 10's manual M03/M04 evidence protocol.
+supersedes the optional Full profile's manual M03/M04 evidence protocol.
 
 ```text
 Manual: DF-FU-M01 and DF-FU-M02, actual AT environments, local media, reviewer approval.
 Automated: DF-FU-17 and DF-FU-18, exact immutable deployment revision, workflow ZIP.
-Completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
+Full-profile completion: one PASS for each ID, one revision, one immutable deployment, successful ingestion.
 ```
 
-Task 10 uses local evidence ZIPs for the two manual records and the passing
-`file-upload-automation-<revision-prefix>.zip` for `DF-FU-17` and `DF-FU-18`.
-It invokes `pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]`.
+The optional Full profile uses local evidence ZIPs for the two manual records
+and the passing `file-upload-automation-<revision-prefix>.zip` for `DF-FU-17`
+and `DF-FU-18`. It invokes
+`pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]`.
 Any remaining Task 10 references to manual `DF-FU-M03`/`DF-FU-M04` are
 superseded historical plan context, not active instructions or release
 conditions; they do not assert that either scenario ran.
@@ -1006,7 +1016,7 @@ The acceptance command must fail unless exactly one canonical bundle/runtime set
 
 ---
 
-### Task 10: Record manual accessibility evidence and run the full release gate
+### Task 10: Ingest Automated Core evidence and run the automated release gate
 
 **Files:**
 
@@ -1016,16 +1026,33 @@ The acceptance command must fail unless exactly one canonical bundle/runtime set
 
 **Interfaces:**
 
-- Produces approved `DF-FU-M01` and `DF-FU-M02` records from actual assistive-
-  technology environments with local media in local evidence ZIPs.
 - Produces `PASS` results for `DF-FU-17` and `DF-FU-18` in a workflow ZIP for
   the exact immutable deployment revision.
-- Produces successful `evidence:file-upload:ingest` output from those ZIPs for
-  one revision and one immutable deployment.
+- Produces successful Automated Core `evidence:file-upload:ingest` output from
+  that archive for one revision and one immutable deployment.
+- Records missing manual evidence as `deferred-by-release-profile`, never as a
+  pass.
 
-- [ ] **Step 1: Collect the two manual critical workflows before creating a pass record**
+- [ ] **Step 1: Complete the active Automated Core path**
 
-Exercise:
+1. Produce a passing revision-bound automation archive.
+2. Run `pnpm evidence:file-upload:ingest --profile automated-core --automation "$automation_archive"`, where `automation_archive` is the exact validated workflow download.
+3. Review the explicit manual deferral, run every automated release gate, and commit the generated evidence.
+
+- [ ] **Step 2: Validate the Automated Core result**
+
+The ingestion command must succeed only with `PASS` results for `DF-FU-17` and
+`DF-FU-18`, one exact revision, one immutable deployment, complete real
+artifacts, and locale-correct immutable routes. Review the generated diff and
+confirm that manual assistive-technology evidence is exactly
+`deferred-by-release-profile`, is non-blocking, and is not represented by a
+manual result row, artifact, reviewer, or implied pass.
+
+#### Optional Full profile
+
+The original stricter workflow remains available after the Automated Core
+release. Exercise both manual critical workflows in actual assistive-technology
+environments:
 
 ```text
 DF-FU-M01 — Windows, current NVDA, current Firefox or Chromium
@@ -1035,31 +1062,18 @@ DF-FU-M02 — macOS, current VoiceOver, current Safari
 For each, perform selection, validation, determinate/indeterminate progress,
 cancel/canceling, retry with new attempt, stale-result rejection, success,
 confirmed removal, and focus recovery. Attach local media, obtain reviewer
-approval, and export the local evidence ZIP. Missing access to a required
-environment is a blocked merge gate, not a pass.
-
-- [ ] **Step 2: Download the revision-bound automated evidence ZIP**
-
-Dispatch the evidence preview workflow for the reviewed evidence ref. Download
-`file-upload-automation-<revision-prefix>.zip` from its passing run. It must
-contain `PASS` results for `DF-FU-17` and `DF-FU-18` for the same exact
-immutable deployment revision as both local evidence ZIPs.
-
-- [ ] **Step 3: Ingest and review complete evidence**
-
-Run:
+approval, export the local evidence ZIP, and ingest the exact automation and
+manual archives with:
 
 ```text
 rtk pnpm evidence:file-upload:ingest --automation <path> --bundle <path> [--bundle <path>]
 ```
 
-The command must succeed only with one approved `DF-FU-M01`, one approved
-`DF-FU-M02`, `PASS` results for `DF-FU-17` and `DF-FU-18`, one revision, and one
-immutable deployment. Review the generated diff; do not commit empty cells,
-“not tested”, or aspirational passes. Any failure returns to the owning TDD
-task and requires a fresh full scenario run.
+Full-profile completion requires approved `PASS` records for `DF-FU-M01` and
+`DF-FU-M02` in addition to the two automated passes. These records are optional
+post-release procedures and are not Automated Core completion criteria.
 
-- [ ] **Step 4: Run focused package and conformance gates**
+- [ ] **Step 3: Run focused package and conformance gates**
 
 ```text
 rtk pnpm --filter @lyra-ds/styles run lint:css
@@ -1078,7 +1092,7 @@ rtk pnpm performance:file-upload --check
 
 Expected: every command exits 0 with three-engine behavior, React 18/19 coverage, parity, accepted bundle evidence, and runtime thresholds passing.
 
-- [ ] **Step 5: Run packaging, documentation, and repository gates**
+- [ ] **Step 4: Run packaging, documentation, and repository gates**
 
 ```text
 rtk pnpm run lint
@@ -1099,7 +1113,7 @@ rtk git diff --check
 
 Expected: all commands exit 0; generated docs and packed declarations are current; no absolute or delta budget is widened; no legacy upload prop/event/timer remains in public source or docs.
 
-- [ ] **Step 6: Commit ingested evidence and prepare review**
+- [ ] **Step 5: Commit ingested evidence and prepare review**
 
 ```text
 rtk git add docs/superpowers/baselines/lyra-v1/comparisons/file-upload/<revision>-accessibility.md \
@@ -1108,7 +1122,10 @@ rtk git commit -m "docs: record file upload accessibility evidence"
 rtk git status --short --branch
 ```
 
-Expected: the final status is clean. Request code review against the approved specification, attach comparison/manual artifacts, and do not merge until required CI, review findings, and the accessibility-reviewer gate are resolved.
+Expected: the final status is clean. Request code review against the approved
+specification, attach the Automated Core evidence, and do not merge until
+required CI and review findings are resolved. Missing manual evidence remains
+the explicit non-blocking `deferred-by-release-profile` result.
 
 ---
 
@@ -1118,4 +1135,4 @@ Expected: the final status is clean. Request code review against the approved sp
 2. After Task 6, review React/Alpine/CSS conformance and the intentional parity baseline diff.
 3. After Task 8, review the breaking migration, localized docs, Blade absence, and three changesets.
 4. After Task 9, review measured bundle/runtime results before accepting `current.json`; any failed absolute or delta gate stops the implementation.
-5. After Task 10, review manual evidence and complete CI before opening or merging the PR.
+5. After Task 10, review the explicit manual deferral and complete every automated CI gate before opening or merging the PR.

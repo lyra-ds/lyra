@@ -34,6 +34,16 @@ Every component-family specification MUST depend on all five foundational
 specifications. A family specification MAY narrow a permitted choice for its
 components, but it MUST NOT weaken a foundational requirement.
 
+## Automated Core release profile
+
+The approved
+[Lyra V1 Core Beta Release Design](../2026-08-27-lyra-v1-core-beta-release-design.md)
+defines Automated Core as the active beta release profile. Full remains an
+optional stricter profile for releases that include the original manual
+assistive-technology evidence.
+
+A release explicitly using Automated Core requires every applicable automated layer and treats manual assistive-technology evidence as non-blocking post-release evidence. Missing manual evidence MUST be labeled `deferred-by-release-profile` and MUST NOT be represented as a pass. The Full profile retains the original manual requirements.
+
 ## PRD traceability
 
 Each requirement below has exactly one primary owning specification. Secondary
