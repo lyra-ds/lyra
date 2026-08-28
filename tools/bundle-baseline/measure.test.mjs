@@ -13,16 +13,24 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { format } from 'prettier';
+import { writeRuntimeArtifacts } from '../file-upload-performance/measure.mjs';
 import {
+  acceptComparison,
   brotliBytes,
   checkBaselineArtifacts,
   compareBaseline,
+  createComparison,
   installPackedArtifacts,
   measureScenario,
   normalizeModulePath,
+  renderComparisonMarkdown,
+  resolveBaselineReference,
   runBundleBaselineCli,
   summarizeAssets,
+  validateComparisonArtifacts,
   writeBaselineArtifacts,
+  writeComparisonArtifacts,
 } from './measure.mjs';
 
 const toolDirectory = dirname(fileURLToPath(import.meta.url));
@@ -95,6 +103,11 @@ function baselineFixture() {
           tarball: 'lyra-ds-react-0.4.2.tgz',
           sha256: 'react-tarball',
         },
+        '@lyra-ds/styles': {
+          version: '0.4.2',
+          tarball: 'lyra-ds-styles-0.4.2.tgz',
+          sha256: 'styles-tarball',
+        },
       },
     },
     externals: ['react'],
@@ -103,6 +116,411 @@ function baselineFixture() {
     css: {},
   };
 }
+
+function fileUploadBaselineFixture({
+  revision = 'before-revision',
+  react = 7_900,
+  alpine = 18_000,
+  css = 12_000,
+  filesData = 11_000,
+} = {}) {
+  const baseline = baselineFixture();
+  baseline.revision = revision;
+  baseline.standalone = {
+    react: [
+      {
+        name: "import { FileUpload } from '@lyra-ds/react/file-upload'",
+        publicEntry: '@lyra-ds/react/file-upload',
+        configuredLimit: '8 kB',
+        sizeLimit: { passed: react <= 8_000, size: react, sizeLimit: 8_000 },
+        assets: {
+          javascript: { rawBytes: react * 6, minifiedBytes: react * 4, brotliBytes: react },
+        },
+      },
+    ],
+    alpine: [
+      {
+        name: "import lyra from '@lyra-ds/alpine'",
+        publicEntry: '@lyra-ds/alpine',
+        configuredLimit: '21.2 kB',
+        sizeLimit: { passed: true, size: alpine, sizeLimit: 21_200 },
+        assets: {
+          javascript: { rawBytes: alpine * 6, minifiedBytes: alpine * 4, brotliBytes: alpine },
+        },
+      },
+    ],
+  };
+  baseline.css = {
+    'styles.css': {
+      publicEntry: '@lyra-ds/styles/styles.css',
+      rawBytes: css * 8,
+      minifiedBytes: css * 5,
+      brotliBytes: css,
+      modules: [{ module: '<fixture>/styles.css', renderedBytes: css * 5 }],
+    },
+  };
+  baseline.scenarios = {
+    'files-data': {
+      assets: {
+        javascript: {
+          rawBytes: filesData * 7,
+          minifiedBytes: filesData * 4,
+          brotliBytes: filesData,
+        },
+      },
+      modules: [{ module: '<fixture>/file-upload.js', renderedBytes: filesData * 2 }],
+    },
+  };
+  return baseline;
+}
+
+function runtimeEvidenceFixture({
+  revision = 'after-revision',
+  reactSha = 'react-tarball',
+  stylesSha = 'styles-tarball',
+} = {}) {
+  const result = {
+    iterations: 30,
+    medianMs: 10,
+    p95Ms: 10,
+    worstMs: 10,
+    longestTaskMs: 0,
+  };
+  return {
+    schemaVersion: 1,
+    scenario: 'DF-FU-15',
+    revision,
+    measuredAt: '2026-08-16T00:00:00.000Z',
+    environment: {
+      chromium: { version: 'Chromium 140.0.0', executablePath: '/pinned/chromium' },
+      viewport: { width: 1280, height: 720, deviceScaleFactor: 1 },
+      locale: 'en-US',
+      colorScheme: 'light',
+      warmupIterations: 3,
+      recordedIterations: 30,
+      itemCount: 100,
+      activeAttemptCount: 20,
+      exactCommand: 'pnpm evidence:file-upload',
+      reactArtifact: {
+        version: '0.4.2',
+        tarball: 'lyra-ds-react-0.4.2.tgz',
+        sha256: reactSha,
+      },
+      stylesArtifact: {
+        version: '0.4.2',
+        tarball: 'lyra-ds-styles-0.4.2.tgz',
+        sha256: stylesSha,
+      },
+    },
+    thresholds: { p95Ms: 100, worstMsExclusive: 250, longTaskMsExclusive: 50 },
+    operations: Object.fromEntries(
+      [
+        'selectionIntentDispatch',
+        'controlledProgressReconciliation',
+        'cancelIntent',
+        'retryIntent',
+        'confirmedRemovalFocusRecovery',
+        'teardown',
+      ].map((name) => [name, { ...result }]),
+    ),
+  };
+}
+
+test('FileUpload comparison reports separate deltas and enforces both budgets', () => {
+  const before = fileUploadBaselineFixture();
+  const after = fileUploadBaselineFixture({
+    revision: 'after-revision',
+    react: 8_050,
+    alpine: 21_001,
+    css: 12_500,
+    filesData: 14_001,
+  });
+
+  const comparison = createComparison('file-upload', before, after);
+
+  assert.equal(comparison.entries.reactFileUpload.deltas.brotliBytes.absolute, 150);
+  assert.equal(comparison.entries.alpineAdapter.deltas.brotliBytes.absolute, 3_001);
+  assert.equal(comparison.entries.css.deltas.brotliBytes.absolute, 500);
+  assert.equal(comparison.entries.filesData.deltas.brotliBytes.absolute, 3_001);
+  assert.equal(comparison.budgets.reactFileUploadAbsolute.passed, false);
+  assert.equal(comparison.budgets.complexDelta.passed, false);
+  assert.equal(comparison.result, 'fail');
+});
+
+test('React absolute budget uses the packed Size Limit result', () => {
+  const before = fileUploadBaselineFixture();
+  const after = fileUploadBaselineFixture({ revision: 'after-revision', react: 7_900 });
+  after.standalone.react[0].sizeLimit = {
+    passed: false,
+    size: 8_001,
+    sizeLimit: 8_000,
+  };
+
+  const comparison = createComparison('file-upload', before, after);
+
+  assert.deepEqual(comparison.budgets.reactFileUploadAbsolute, {
+    limitBytes: 8_000,
+    actualBytes: 8_001,
+    passed: false,
+  });
+});
+
+test('FileUpload comparison preserves module contributions and removed code', () => {
+  const before = fileUploadBaselineFixture();
+  const after = fileUploadBaselineFixture({ revision: 'after-revision' });
+  after.scenarios['files-data'].modules = [
+    { module: '<fixture>/file-upload-next.js', renderedBytes: 22_000 },
+  ];
+
+  const comparison = createComparison('file-upload', before, after);
+
+  assert.deepEqual(comparison.entries.filesData.removedModules, [
+    { module: '<fixture>/file-upload.js', renderedBytes: 22_000 },
+  ]);
+  assert.deepEqual(comparison.entries.filesData.addedModules, [
+    { module: '<fixture>/file-upload-next.js', renderedBytes: 22_000 },
+  ]);
+  assert.deepEqual(comparison.entries.filesData.metafiles.after.modules, [
+    { module: '<fixture>/file-upload-next.js', renderedBytes: 22_000 },
+  ]);
+});
+
+test('module deltas stay unavailable when either side lacks module telemetry', async () => {
+  const before = fileUploadBaselineFixture();
+  const after = fileUploadBaselineFixture({ revision: 'after-revision' });
+  after.standalone.react[0].modules = [
+    { module: '<fixture>/file-upload.js', renderedBytes: 16_000 },
+  ];
+
+  const comparison = createComparison('file-upload', before, after);
+  const entry = comparison.entries.reactFileUpload;
+
+  assert.deepEqual(entry.moduleTelemetry, {
+    before: 'unavailable',
+    after: 'available',
+    delta: 'unavailable',
+  });
+  assert.equal(entry.moduleContributions.before, null);
+  assert.deepEqual(entry.moduleContributions.after, [
+    { module: '<fixture>/file-upload.js', renderedBytes: 16_000 },
+  ]);
+  assert.equal(entry.removedModules, null);
+  assert.equal(entry.addedModules, null);
+  assert.equal(entry.metafiles.before.modules, null);
+
+  const report = await renderComparisonMarkdown(comparison);
+  assert.match(report, /React FileUpload\s+\| unavailable\s+\| available\s+\| unavailable/);
+});
+
+test('comparison artifacts are immutable canonical JSON and Markdown peers', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-comparison-test-'));
+  try {
+    const comparison = createComparison(
+      'file-upload',
+      fileUploadBaselineFixture(),
+      fileUploadBaselineFixture({ revision: 'after-revision' }),
+    );
+    const paths = {
+      comparisonJson: join(fixture, 'after-revision.json'),
+      comparisonMarkdown: join(fixture, 'after-revision.md'),
+    };
+
+    await writeComparisonArtifacts(comparison, paths);
+    assert.equal(
+      readFileSync(paths.comparisonJson, 'utf8'),
+      await format(`${JSON.stringify(comparison, null, 2)}\n`, { parser: 'json' }),
+    );
+    assert.equal(
+      readFileSync(paths.comparisonMarkdown, 'utf8'),
+      await renderComparisonMarkdown(comparison),
+    );
+    await assert.doesNotReject(() => validateComparisonArtifacts(paths));
+    await assert.rejects(
+      () => writeComparisonArtifacts(comparison, paths),
+      /refusing to overwrite immutable FileUpload comparison evidence/,
+    );
+
+    rmSync(paths.comparisonMarkdown);
+    await assert.rejects(
+      () => validateComparisonArtifacts(paths),
+      /comparison Markdown does not exist/,
+    );
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('current reference selects the exact accepted comparison and otherwise falls back', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-current-test-'));
+  try {
+    const baseline = fileUploadBaselineFixture();
+    const baselinePaths = {
+      baselineJson: join(fixture, 'bundles.json'),
+      baselineMarkdown: join(fixture, 'bundles.md'),
+    };
+    await writeBaselineArtifacts(baseline, baselinePaths);
+
+    const fallback = await resolveBaselineReference({
+      ...baselinePaths,
+      currentJson: join(fixture, 'current.json'),
+      comparisonDirectory: join(fixture, 'comparisons'),
+    });
+    assert.equal(fallback.revision, 'before-revision');
+
+    const comparison = createComparison(
+      'file-upload',
+      baseline,
+      fileUploadBaselineFixture({ revision: 'after-revision' }),
+    );
+    const comparisonDirectory = join(fixture, 'comparisons', 'file-upload');
+    const comparisonPaths = {
+      comparisonJson: join(comparisonDirectory, 'after-revision.json'),
+      comparisonMarkdown: join(comparisonDirectory, 'after-revision.md'),
+    };
+    await writeComparisonArtifacts(comparison, comparisonPaths);
+    writeFileSync(
+      join(fixture, 'current.json'),
+      `${JSON.stringify({ schemaVersion: 1, fileUpload: { revision: 'after-revision' } }, null, 2)}\n`,
+    );
+
+    const accepted = await resolveBaselineReference({
+      ...baselinePaths,
+      currentJson: join(fixture, 'current.json'),
+      comparisonDirectory: join(fixture, 'comparisons'),
+    });
+    assert.equal(accepted.revision, 'after-revision');
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('acceptance rejects unrelated dirt, missing peers, revision mismatch, and ambiguity', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-accept-test-'));
+  try {
+    const revision = 'after-revision';
+    const comparisonDirectory = join(fixture, 'comparisons', 'file-upload');
+    mkdirSync(comparisonDirectory, { recursive: true });
+    const paths = {
+      comparisonDirectory: join(fixture, 'comparisons'),
+      currentJson: join(fixture, 'current.json'),
+    };
+
+    for (const [dirty, message] of [
+      [[`?? comparisons/file-upload/${revision}.json`, ' M package.json'], /unrelated dirty path/],
+      [[`?? comparisons/file-upload/${revision}.json`], /exactly four canonical peers/],
+    ]) {
+      await assert.rejects(
+        () =>
+          acceptComparison('file-upload', {
+            ...paths,
+            headRevision: revision,
+            dirtyPaths: dirty,
+            repositoryRelativeComparisonDirectory: 'comparisons/file-upload',
+          }),
+        message,
+      );
+    }
+
+    const comparison = createComparison(
+      'file-upload',
+      fileUploadBaselineFixture(),
+      fileUploadBaselineFixture({ revision: 'different-revision' }),
+    );
+    await writeComparisonArtifacts(comparison, {
+      comparisonJson: join(comparisonDirectory, `${revision}.json`),
+      comparisonMarkdown: join(comparisonDirectory, `${revision}.md`),
+    });
+    writeFileSync(join(comparisonDirectory, `${revision}-runtime.json`), '{}\n');
+    writeFileSync(join(comparisonDirectory, `${revision}-runtime.md`), 'runtime\n');
+    const canonicalDirty = [
+      `?? comparisons/file-upload/${revision}.json`,
+      `?? comparisons/file-upload/${revision}.md`,
+      `?? comparisons/file-upload/${revision}-runtime.json`,
+      `?? comparisons/file-upload/${revision}-runtime.md`,
+    ];
+    await assert.rejects(
+      () =>
+        acceptComparison('file-upload', {
+          ...paths,
+          headRevision: revision,
+          dirtyPaths: canonicalDirty,
+          repositoryRelativeComparisonDirectory: 'comparisons/file-upload',
+        }),
+      /revision does not match HEAD/,
+    );
+
+    writeFileSync(join(comparisonDirectory, 'another.json'), '{}\n');
+    await assert.rejects(
+      () =>
+        acceptComparison('file-upload', {
+          ...paths,
+          headRevision: revision,
+          dirtyPaths: [...canonicalDirty, '?? comparisons/file-upload/another.json'],
+          repositoryRelativeComparisonDirectory: 'comparisons/file-upload',
+        }),
+      /ambiguous|unrelated dirty path/,
+    );
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('acceptance rejects runtime peers packed from different React or Styles artifacts', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-accept-artifact-test-'));
+  try {
+    const revision = 'after-revision';
+    const dirtyPaths = [
+      `?? comparisons/file-upload/${revision}.json`,
+      `?? comparisons/file-upload/${revision}.md`,
+      `?? comparisons/file-upload/${revision}-runtime.json`,
+      `?? comparisons/file-upload/${revision}-runtime.md`,
+    ];
+    for (const [name, runtime, message] of [
+      [
+        'styles',
+        runtimeEvidenceFixture({ stylesSha: 'different-styles-tarball' }),
+        /packed Styles artifact mismatch/,
+      ],
+      [
+        'react',
+        runtimeEvidenceFixture({ reactSha: 'different-react-tarball' }),
+        /packed React artifact mismatch/,
+      ],
+    ]) {
+      const caseRoot = join(fixture, name);
+      const comparisonDirectory = join(caseRoot, 'comparisons', 'file-upload');
+      const currentJson = join(caseRoot, 'current.json');
+      const comparison = createComparison(
+        'file-upload',
+        fileUploadBaselineFixture(),
+        fileUploadBaselineFixture({ revision }),
+      );
+      await writeComparisonArtifacts(comparison, {
+        comparisonJson: join(comparisonDirectory, `${revision}.json`),
+        comparisonMarkdown: join(comparisonDirectory, `${revision}.md`),
+      });
+      await writeRuntimeArtifacts(runtime, {
+        runtimeJson: join(comparisonDirectory, `${revision}-runtime.json`),
+        runtimeMarkdown: join(comparisonDirectory, `${revision}-runtime.md`),
+      });
+
+      await assert.rejects(
+        () =>
+          acceptComparison('file-upload', {
+            comparisonDirectory: join(caseRoot, 'comparisons'),
+            currentJson,
+            dirtyPaths,
+            headRevision: revision,
+            repositoryRelativeComparisonDirectory: 'comparisons/file-upload',
+          }),
+        message,
+      );
+      assert.equal(existsSync(currentJson), false);
+    }
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
 
 test('compareBaseline ignores operating-system release evidence alone', () => {
   const expected = baselineFixture();

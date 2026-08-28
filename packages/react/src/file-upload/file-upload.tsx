@@ -1,269 +1,644 @@
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, DragEvent } from 'react';
-import { Icon } from '../icon';
+import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, FocusEvent } from 'react';
 import { cx } from '../internal/cx';
+import type {
+  FileUploadItem,
+  FileUploadMessages,
+  FileUploadProps,
+  FileUploadSelection,
+} from './file-upload.types';
+import {
+  canRemove,
+  canRetry,
+  identityKey,
+  intentKey,
+  isActive,
+  itemAttemptId,
+  pruneAnnouncementHistory,
+  progressMilestone,
+  reconcileAttemptHistory,
+  validateFile,
+} from './file-upload.utils';
+import type { FileUploadAttemptHistory, FileUploadIntentKey } from './file-upload.utils';
 
-/** An item displayed by {@link FileUpload}. */
-export interface FileUploadItem {
-  /** Stable item identifier. */
-  id: string;
-  /** File name shown to the user. */
-  name: string;
-  /** File size in bytes, when known. */
-  size?: number;
-  /** Upload progress from 0 through 100. */
-  progress: number;
-  /** Current simulated upload state. */
-  status: 'uploading' | 'done' | 'error';
-  /** Validation error shown when `status` is `"error"`. */
-  error?: string;
+const DEFAULT_MESSAGES: Required<FileUploadMessages> = {
+  label: 'Drag files here or click to select',
+  hint: '',
+  browse: 'Browse files',
+  retry: (name) => `Retry ${name}`,
+  cancel: (name) => `Cancel ${name}`,
+  remove: (name) => `Remove ${name}`,
+  selectionUnavailable: 'File replacement is unavailable while an upload is active.',
+  validationAccept: (name, accept) => `${name} must match ${accept}.`,
+  validationMaxSize: (name, maxSizeMB) => `${name} must not exceed ${maxSizeMB} MB.`,
+  selected: (name) => `${name} selected.`,
+  progress: (name, percent) => `${name} is ${percent}% uploaded.`,
+  progressIndeterminate: (name) => `${name} is uploading.`,
+  canceling: (name) => `Canceling ${name}.`,
+  success: (name) => `${name} uploaded.`,
+  error: (name, message) => `${name}: ${message}`,
+  canceled: (name) => `${name} canceled.`,
+  removed: (name) => `${name} removed.`,
+};
+
+function toIdSegment(value: string): string {
+  return Array.from(value, (character) => character.codePointAt(0)!.toString(36)).join('-');
 }
 
-/** Props for {@link FileUpload}. */
-export interface FileUploadProps {
-  /** Primary dropzone text. */
-  label?: string;
-  /** Helper text, overriding the generated accept/size description. */
-  hint?: string;
-  /** Accepted file types, forwarded to the hidden file input and shown in the helper text. */
-  accept?: string;
-  /** Files larger than this many megabytes are added as error items. */
-  maxSizeMB?: number;
-  /** Whether more than one file can be added. Default `true`. */
-  multiple?: boolean;
-  /** Simulated upload duration in milliseconds. Default `1800`. */
-  uploadDuration?: number;
-  /** Items used to seed the uncontrolled list. */
-  defaultItems?: FileUploadItem[];
-  /** Called with the real browser `File` objects whenever files are added. */
-  onFiles?: (files: File[]) => void;
-  /** Called whenever the internal item list changes. */
-  onChange?: (items: FileUploadItem[]) => void;
-  /** Accessible name for the completed-upload icon. Default: `"Upload complete"`. */
-  doneLabel?: string;
-  /** Accessible name for each remove button. Receives the file name. Default: `` (name) => `Remove ${name}` ``. */
-  removeLabel?: (name: string) => string;
-  /** Class appended after the public `.lyra-upload` class. */
-  className?: string;
+function announce(node: HTMLSpanElement | null, message: string): void {
+  if (node === null) return;
+  node.replaceChildren(document.createTextNode(message));
 }
 
-function formatBytes(bytes: number | undefined): string {
-  if (bytes === undefined) return '';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function replaceInputFiles(input: HTMLInputElement, files: readonly File[]): void {
+  const transfer = new DataTransfer();
+  for (const file of files) transfer.items.add(file);
+  input.files = transfer.files;
 }
 
-function iconFor(
-  name: string,
-): 'image' | 'file-text' | 'file-spreadsheet' | 'file-archive' | 'film' | 'file' {
-  const extension = name.split('.').pop()?.toLowerCase();
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension ?? '')) return 'image';
-  if (extension === 'pdf') return 'file-text';
-  if (['xls', 'xlsx', 'csv'].includes(extension ?? '')) return 'file-spreadsheet';
-  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension ?? '')) return 'file-archive';
-  if (['mp4', 'mov', 'webm'].includes(extension ?? '')) return 'film';
-  return 'file';
+function isValidationItem(item: FileUploadItem): boolean {
+  return item.status === 'error' && item.error.kind === 'validation';
 }
 
-/**
- * An uncontrolled dropzone with drag-and-drop, keyboard-operable file browsing, size validation,
- * simulated upload progress, and removable items. It never accesses browser globals at module
- * scope, so it is safe to render on the server.
- */
+function firstAvailableAction(
+  root: HTMLDivElement | null,
+  itemId: string,
+): HTMLButtonElement | null {
+  if (root === null) return null;
+
+  for (const row of root.querySelectorAll<HTMLElement>('.lyra-upload__item')) {
+    if (row.dataset.uploadId !== itemId) continue;
+    return row.querySelector<HTMLButtonElement>('button:not(:disabled)');
+  }
+
+  return null;
+}
+
 export const FileUpload = /*#__PURE__*/ forwardRef<HTMLDivElement, FileUploadProps>(
   function FileUpload(
     {
-      label = 'Drag files here or click to select',
-      hint,
+      items = [],
+      onSelect,
+      onRetry,
+      onCancel,
+      onRemove,
+      name,
       accept,
       maxSizeMB,
       multiple = true,
-      uploadDuration = 1800,
-      defaultItems = [],
-      onFiles,
-      onChange,
-      doneLabel = 'Upload complete',
-      removeLabel = (name) => `Remove ${name}`,
+      disabled = false,
+      required = false,
+      label,
+      hint,
+      messages,
       className,
+      onChange: onRootChange,
+      ...rootProps
     },
     ref,
   ) {
-    const [items, setItems] = useState<FileUploadItem[]>(defaultItems);
-    const [dragging, setDragging] = useState(false);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const timersRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
-    const idRef = useRef(0);
-    const onChangeRef = useRef(onChange);
+    const instanceId = useId();
+    const counter = useRef(0);
+    const rootRef = useRef<HTMLDivElement | null>(null);
+    const zoneRef = useRef<HTMLLabelElement | null>(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const liveRegionRef = useRef<HTMLSpanElement | null>(null);
+    const pendingIntentKeysRef = useRef<Set<FileUploadIntentKey>>(new Set());
+    const announcedKeysRef = useRef<Map<string, Set<string>>>(new Map());
+    const previousProgressRef = useRef<Map<string, number>>(new Map());
+    const previousItemsRef = useRef<
+      readonly { id: string; name: string; attemptId: string | null }[]
+    >([]);
+    const proposedFilesRef = useRef<Map<string, File>>(new Map());
+    const committedFilesRef = useRef<Map<string, File>>(new Map());
+    const previousNameRef = useRef(name);
+    const nativeResetRequestedRef = useRef(false);
+    const preservedPreHydrationFilesRef = useRef(false);
+    const lastFocusedActionRef = useRef<string | null>(null);
+    const [attemptHistory, setAttemptHistory] = useState<FileUploadAttemptHistory>(
+      () => reconcileAttemptHistory(items, new Map()).history,
+    );
+    const [pendingIntentKeys, setPendingIntentKeys] = useState<ReadonlySet<FileUploadIntentKey>>(
+      () => new Set(),
+    );
+    const [nativeSyncRevision, setNativeSyncRevision] = useState(0);
+    const inputId = `lyra-file-upload-${instanceId}-input`;
+    const resolvedMessages = useMemo(() => ({ ...DEFAULT_MESSAGES, ...messages }), [messages]);
+    const resolvedLabel = label ?? resolvedMessages.label;
+    const resolvedHint = hint ?? resolvedMessages.hint;
+    const reconciledAttempts = useMemo(
+      () => reconcileAttemptHistory(items, attemptHistory),
+      [attemptHistory, items],
+    );
+    if (reconciledAttempts.history !== attemptHistory) {
+      setAttemptHistory(reconciledAttempts.history);
+    }
+    const visibleItems = reconciledAttempts.visibleItems;
+    const visibleIntentKeys = useMemo(() => new Set(visibleItems.map(intentKey)), [visibleItems]);
+    const visiblePendingIntentKeys = useMemo(
+      () => new Set([...pendingIntentKeys].filter((key) => visibleIntentKeys.has(key))),
+      [pendingIntentKeys, visibleIntentKeys],
+    );
+    const selectionBlocked = !multiple && visibleItems.some(isActive);
+    const hasConfirmedLocalFile = items.some(
+      (item) =>
+        !isValidationItem(item) &&
+        (committedFilesRef.current.has(item.id) || proposedFilesRef.current.has(item.id)),
+    );
+    const nativeInputName = nativeSyncRevision === 0 || hasConfirmedLocalFile ? name : undefined;
 
-    useEffect(() => {
-      onChangeRef.current = onChange;
-    }, [onChange]);
-
-    useEffect(() => {
-      const timers = timersRef.current;
-      return () => Object.values(timers).forEach(clearInterval);
-    }, []);
-
-    const updateItems = useCallback((updater: (previous: FileUploadItem[]) => FileUploadItem[]) => {
-      setItems((previous) => {
-        const next = updater(previous);
-        onChangeRef.current?.(next);
-        return next;
-      });
-    }, []);
-
-    const remove = useCallback(
-      (id: string): void => {
-        const timer = timersRef.current[id];
-        if (timer) {
-          clearInterval(timer);
-          delete timersRef.current[id];
-        }
-        updateItems((previous) => previous.filter((item) => item.id !== id));
+    const setRootRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        rootRef.current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref !== null) ref.current = node;
       },
-      [updateItems],
+      [ref],
     );
 
-    const addFiles = useCallback(
-      (fileList: FileList | null): void => {
-        const files = Array.from(fileList ?? []);
-        if (files.length === 0) return;
-        onFiles?.(files);
-        const stamped = files.map((file) => {
-          const tooLarge = maxSizeMB !== undefined && file.size > maxSizeMB * 1024 * 1024;
-          idRef.current += 1;
+    const setInputRef = useCallback((node: HTMLInputElement | null) => {
+      if (inputRef.current === null && node !== null) {
+        preservedPreHydrationFilesRef.current = (node.files?.length ?? 0) > 0;
+      }
+      inputRef.current = node;
+    }, []);
+
+    useEffect(() => {
+      const input = inputRef.current;
+      if (input === null) return;
+
+      let shouldSynchronize = nativeResetRequestedRef.current;
+      nativeResetRequestedRef.current = false;
+      const nameChanged = previousNameRef.current !== name;
+      previousNameRef.current = name;
+
+      if (name === undefined) {
+        if (proposedFilesRef.current.size > 0 || committedFilesRef.current.size > 0) {
+          shouldSynchronize = true;
+        }
+        proposedFilesRef.current.clear();
+        committedFilesRef.current.clear();
+        if (shouldSynchronize || nameChanged) input.value = '';
+        return;
+      }
+
+      const controlledItems = new Map(items.map((item) => [item.id, item]));
+      for (const [itemId, file] of proposedFilesRef.current) {
+        const item = controlledItems.get(itemId);
+        if (item !== undefined && !isValidationItem(item)) {
+          committedFilesRef.current.set(itemId, file);
+          shouldSynchronize = true;
+        }
+        if (item !== undefined) proposedFilesRef.current.delete(itemId);
+      }
+
+      for (const itemId of committedFilesRef.current.keys()) {
+        const item = controlledItems.get(itemId);
+        if (item === undefined || isValidationItem(item)) {
+          committedFilesRef.current.delete(itemId);
+          shouldSynchronize = true;
+        }
+      }
+
+      if (nameChanged && committedFilesRef.current.size > 0) shouldSynchronize = true;
+      if (!shouldSynchronize) return;
+
+      const committedFiles = items.flatMap((item) => {
+        const file = committedFilesRef.current.get(item.id);
+        return file === undefined || isValidationItem(item) ? [] : [file];
+      });
+      replaceInputFiles(input, committedFiles);
+      if (committedFiles.length === 0) input.removeAttribute('name');
+      else input.name = name;
+    }, [items, name, nativeSyncRevision]);
+
+    useEffect(
+      () => () => {
+        proposedFilesRef.current.clear();
+        committedFilesRef.current.clear();
+      },
+      [],
+    );
+
+    useEffect(() => {
+      const handleDocumentFocusIn = (event: globalThis.FocusEvent): void => {
+        const focusedNode = event.target;
+        const root = rootRef.current;
+        if (!(focusedNode instanceof Node) || root === null) return;
+
+        if (!root.contains(focusedNode)) {
+          lastFocusedActionRef.current = null;
+          return;
+        }
+
+        if (
+          !(focusedNode instanceof HTMLButtonElement) ||
+          focusedNode.closest('.lyra-upload__item') === null
+        ) {
+          lastFocusedActionRef.current = null;
+        }
+      };
+
+      document.addEventListener('focusin', handleDocumentFocusIn);
+      return () => document.removeEventListener('focusin', handleDocumentFocusIn);
+    }, []);
+
+    useEffect(() => {
+      if (!selectionBlocked) return;
+
+      const isSelectionEvent = (event: Event): boolean => {
+        const target = event.target;
+        return (
+          target === inputRef.current ||
+          (target instanceof Node && zoneRef.current?.contains(target) === true)
+        );
+      };
+      const preventSelection = (event: Event): void => {
+        if (event.defaultPrevented || !isSelectionEvent(event)) return;
+        event.preventDefault();
+      };
+      const rejectSelection = (event: Event): void => {
+        if (event.defaultPrevented || !isSelectionEvent(event)) return;
+        event.preventDefault();
+        announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
+      };
+
+      document.addEventListener('click', rejectSelection);
+      document.addEventListener('dragover', preventSelection);
+      document.addEventListener('drop', rejectSelection);
+      return () => {
+        document.removeEventListener('click', rejectSelection);
+        document.removeEventListener('dragover', preventSelection);
+        document.removeEventListener('drop', rejectSelection);
+      };
+    }, [resolvedMessages.selectionUnavailable, selectionBlocked]);
+
+    useEffect(() => {
+      for (const key of pendingIntentKeysRef.current) {
+        if (!visibleIntentKeys.has(key)) pendingIntentKeysRef.current.delete(key);
+      }
+
+      const previousItems = previousItemsRef.current;
+      const suppressInitialAnnouncements =
+        previousItems.length === 0 && preservedPreHydrationFilesRef.current;
+      const currentIds = new Set(visibleItems.map((item) => item.id));
+      const controlledIds = new Set(items.map((item) => item.id));
+      const retainedProgressKeys = new Set<string>();
+      const announcementCandidates: { itemId: string; key: string; message: string }[] = [];
+      const wasAnnounced = (itemId: string, key: string): boolean =>
+        announcedKeysRef.current.get(itemId)?.has(key) === true;
+
+      for (const item of visibleItems) {
+        const attemptId = itemAttemptId(item);
+        const stateKey = identityKey(item.id, attemptId, item.status);
+        if (attemptId !== null) retainedProgressKeys.add(identityKey(item.id, attemptId));
+
+        if (item.status === 'uploading' && item.progress.kind === 'determinate') {
+          const progressKey = identityKey(item.id, attemptId);
+          const previousProgress = previousProgressRef.current.get(progressKey) ?? 0;
+          const milestone = progressMilestone(previousProgress, item.progress.value);
+          previousProgressRef.current.set(
+            progressKey,
+            Math.max(previousProgress, item.progress.value),
+          );
+          if (milestone !== null) {
+            const milestoneKey = identityKey(item.id, attemptId, item.status, milestone);
+            if (!wasAnnounced(item.id, milestoneKey)) {
+              announcementCandidates.push({
+                itemId: item.id,
+                key: milestoneKey,
+                message: resolvedMessages.progress(item.name, milestone),
+              });
+            }
+          }
+          continue;
+        }
+
+        if (wasAnnounced(item.id, stateKey)) continue;
+
+        const stateAnnouncement =
+          item.status === 'selected'
+            ? resolvedMessages.selected(item.name)
+            : item.status === 'canceling'
+              ? resolvedMessages.canceling(item.name)
+              : item.status === 'success'
+                ? resolvedMessages.success(item.name)
+                : item.status === 'error'
+                  ? resolvedMessages.error(item.name, item.error.message)
+                  : item.status === 'canceled'
+                    ? resolvedMessages.canceled(item.name)
+                    : null;
+
+        if (stateAnnouncement !== null) {
+          announcementCandidates.push({
+            itemId: item.id,
+            key: stateKey,
+            message: stateAnnouncement,
+          });
+        }
+      }
+
+      for (const key of previousProgressRef.current.keys()) {
+        if (!retainedProgressKeys.has(key)) previousProgressRef.current.delete(key);
+      }
+
+      for (const previousItem of previousItems) {
+        if (controlledIds.has(previousItem.id)) continue;
+        const removalKey = identityKey(previousItem.id, previousItem.attemptId, 'removed');
+        if (!wasAnnounced(previousItem.id, removalKey)) {
+          announcementCandidates.push({
+            itemId: previousItem.id,
+            key: removalKey,
+            message: resolvedMessages.removed(previousItem.name),
+          });
+        }
+      }
+
+      if (announcementCandidates.length > 0) {
+        for (const candidate of announcementCandidates) {
+          const itemKeys = announcedKeysRef.current.get(candidate.itemId) ?? new Set<string>();
+          itemKeys.add(candidate.key);
+          announcedKeysRef.current.set(candidate.itemId, itemKeys);
+        }
+        if (!suppressInitialAnnouncements) {
+          announce(
+            liveRegionRef.current,
+            announcementCandidates.map((candidate) => candidate.message).join(' '),
+          );
+        }
+      }
+      announcedKeysRef.current = pruneAnnouncementHistory(announcedKeysRef.current, visibleItems);
+
+      const focusedItemId = lastFocusedActionRef.current;
+      const removedFocusedIndex =
+        focusedItemId === null
+          ? -1
+          : previousItems.findIndex(
+              (previousItem) =>
+                previousItem.id === focusedItemId && !controlledIds.has(focusedItemId),
+            );
+      if (removedFocusedIndex >= 0) {
+        const followingIds = previousItems.slice(removedFocusedIndex + 1).map((item) => item.id);
+        const precedingIds = previousItems
+          .slice(0, removedFocusedIndex)
+          .map((item) => item.id)
+          .reverse();
+        let focusTarget: HTMLButtonElement | null = null;
+
+        for (const itemId of [...followingIds, ...precedingIds]) {
+          if (!currentIds.has(itemId)) continue;
+          focusTarget = firstAvailableAction(rootRef.current, itemId);
+          if (focusTarget !== null) break;
+        }
+
+        lastFocusedActionRef.current = null;
+        (focusTarget ?? inputRef.current)?.focus();
+      }
+
+      previousItemsRef.current = visibleItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        attemptId: itemAttemptId(item),
+      }));
+    }, [items, resolvedMessages, visibleIntentKeys, visibleItems]);
+
+    const lockIntent = (item: FileUploadItem): boolean => {
+      const key = intentKey(item);
+      if (pendingIntentKeysRef.current.has(key)) return false;
+
+      pendingIntentKeysRef.current.add(key);
+      setPendingIntentKeys((currentKeys) => {
+        const nextKeys = new Set(
+          [...currentKeys].filter((currentKey) => visibleIntentKeys.has(currentKey)),
+        );
+        nextKeys.add(key);
+        return nextKeys;
+      });
+      return true;
+    };
+
+    const announceSelectionUnavailable = (): void => {
+      announce(liveRegionRef.current, resolvedMessages.selectionUnavailable);
+    };
+
+    const handleRootChange = (event: ChangeEvent<HTMLDivElement>): void => {
+      onRootChange?.(event);
+      if (event.defaultPrevented) return;
+
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
+
+      if (selectionBlocked) {
+        announceSelectionUnavailable();
+        input.value = '';
+        return;
+      }
+
+      const files = Array.from(input.files ?? []);
+      const proposedFiles = multiple ? files : files.slice(0, 1);
+      const selections = proposedFiles.map((file) => {
+        counter.current += 1;
+        const id = `lyra-file-upload-${instanceId}-${counter.current}`;
+        const error = validateFile(file, { accept, maxSizeMB }, resolvedMessages);
+
+        if (error) {
           return {
-            id: `lyra-upload-${idRef.current}-${file.name}`,
+            id,
+            file,
             name: file.name,
             size: file.size,
-            progress: tooLarge ? 0 : 5,
-            status: tooLarge ? 'error' : 'uploading',
-            error: tooLarge ? `Over ${maxSizeMB} MB` : undefined,
-          } satisfies FileUploadItem;
-        });
-        const accepted = multiple ? stamped : stamped.slice(0, 1);
-        updateItems((previous) => (multiple ? [...previous, ...accepted] : accepted));
+            type: file.type,
+            proposedItem: {
+              id,
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              status: 'error',
+              error,
+            },
+          } satisfies FileUploadSelection;
+        }
 
-        accepted
-          .filter((item) => item.status === 'uploading')
-          .forEach((item) => {
-            const step = 100 / Math.max(uploadDuration / 120, 1);
-            timersRef.current[item.id] = setInterval(() => {
-              updateItems((previous) =>
-                previous.map((current) => {
-                  if (current.id !== item.id) return current;
-                  const progress = Math.min(current.progress + step, 100);
-                  if (progress === 100) {
-                    clearInterval(timersRef.current[item.id]);
-                    delete timersRef.current[item.id];
-                    return { ...current, progress, status: 'done' };
-                  }
-                  return { ...current, progress };
-                }),
-              );
-            }, 120);
-          });
-      },
-      [maxSizeMB, multiple, onFiles, updateItems, uploadDuration],
-    );
+        const proposedAttemptId = `lyra-file-upload-${instanceId}-attempt-${counter.current}`;
 
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
-      addFiles(event.target.files);
-      event.target.value = '';
+        return {
+          id,
+          file,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          proposedItem: {
+            id,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            status: 'selected',
+          },
+          proposedAttemptId,
+        } satisfies FileUploadSelection;
+      });
+
+      if (name !== undefined) {
+        for (const selection of selections) {
+          if (!isValidationItem(selection.proposedItem)) {
+            proposedFilesRef.current.set(selection.id, selection.file);
+          }
+        }
+      }
+
+      if (selections.length > 0) onSelect({ selections });
+      if (name === undefined) input.value = '';
+      else {
+        nativeResetRequestedRef.current = true;
+        replaceInputFiles(input, []);
+        input.removeAttribute('name');
+        setNativeSyncRevision((current) => current + 1);
+      }
     };
-    const handleDrop = (event: DragEvent<HTMLButtonElement>): void => {
-      event.preventDefault();
-      setDragging(false);
-      addFiles(event.dataTransfer.files);
+
+    const handleActionFocus = (itemId: string, event: FocusEvent<HTMLButtonElement>): void => {
+      if (event.currentTarget === event.target) lastFocusedActionRef.current = itemId;
     };
-    const generatedHint = [accept, maxSizeMB !== undefined && `Up to ${maxSizeMB} MB per file`]
-      .filter(Boolean)
-      .join(' · ');
+
+    const renderItem = (item: FileUploadItem) => {
+      const statusId = `lyra-file-upload-${instanceId}-status-${toIdSegment(item.id)}`;
+      const status =
+        item.status === 'selected'
+          ? resolvedMessages.selected(item.name)
+          : item.status === 'uploading'
+            ? item.progress.kind === 'determinate'
+              ? resolvedMessages.progress(item.name, item.progress.value)
+              : resolvedMessages.progressIndeterminate(item.name)
+            : item.status === 'canceling'
+              ? resolvedMessages.canceling(item.name)
+              : item.status === 'success'
+                ? resolvedMessages.success(item.name)
+                : item.status === 'error'
+                  ? resolvedMessages.error(item.name, item.error.message)
+                  : resolvedMessages.canceled(item.name);
+
+      return (
+        <li
+          key={item.id}
+          className={cx('lyra-upload__item', item.status === 'error' && 'lyra-upload__item--error')}
+          data-state={item.status}
+          data-upload-id={item.id}
+        >
+          <span className="lyra-upload__item-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor">
+              <path d="M6 2h9l4 4v16H6zM15 2v5h4" />
+            </svg>
+          </span>
+          <div className="lyra-upload__item-body">
+            <div className="lyra-upload__item-row">
+              <span className="lyra-upload__item-name">{item.name}</span>
+              <span id={statusId} className="lyra-upload__item-meta">
+                {status}
+              </span>
+            </div>
+            {item.status === 'uploading' || item.status === 'canceling' ? (
+              <progress
+                className="lyra-upload__bar"
+                aria-labelledby={statusId}
+                max={100}
+                value={item.progress.kind === 'determinate' ? item.progress.value : undefined}
+              />
+            ) : null}
+          </div>
+          {item.status === 'uploading' ? (
+            <button
+              type="button"
+              className="lyra-upload__cancel"
+              disabled={disabled || visiblePendingIntentKeys.has(intentKey(item))}
+              onFocus={(event) => handleActionFocus(item.id, event)}
+              onClick={() => {
+                if (lockIntent(item)) onCancel({ id: item.id, attemptId: item.attemptId });
+              }}
+            >
+              {resolvedMessages.cancel(item.name)}
+            </button>
+          ) : null}
+          {canRetry(item) ? (
+            <button
+              type="button"
+              className="lyra-upload__retry"
+              disabled={disabled || visiblePendingIntentKeys.has(intentKey(item))}
+              onFocus={(event) => handleActionFocus(item.id, event)}
+              onClick={() => {
+                if (!lockIntent(item)) return;
+                const previousAttemptId = itemAttemptId(item);
+                if (previousAttemptId === null) return;
+                counter.current += 1;
+                onRetry({
+                  id: item.id,
+                  previousAttemptId,
+                  proposedAttemptId: `lyra-file-upload-${instanceId}-attempt-${counter.current}`,
+                });
+              }}
+            >
+              {resolvedMessages.retry(item.name)}
+            </button>
+          ) : null}
+          {canRemove(item) ? (
+            <button
+              type="button"
+              className="lyra-upload__remove"
+              disabled={disabled || visiblePendingIntentKeys.has(intentKey(item))}
+              onFocus={(event) => handleActionFocus(item.id, event)}
+              onClick={() => {
+                if (lockIntent(item)) onRemove({ id: item.id });
+              }}
+            >
+              {resolvedMessages.remove(item.name)}
+            </button>
+          ) : null}
+        </li>
+      );
+    };
 
     return (
-      <div ref={ref} className={cx('lyra-upload', className)}>
-        <button
-          type="button"
-          className={cx('lyra-upload__zone', dragging && 'lyra-upload__zone--drag')}
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
+      <div
+        ref={setRootRef}
+        {...rootProps}
+        className={cx('lyra-upload', className)}
+        data-disabled={disabled ? 'true' : undefined}
+        data-state={visibleItems.length === 0 ? 'idle' : 'active'}
+        onChange={handleRootChange}
+      >
+        <label
+          ref={zoneRef}
+          className="lyra-upload__zone"
+          htmlFor={inputId}
+          aria-disabled={disabled || selectionBlocked || undefined}
         >
           <span className="lyra-upload__zone-icon" aria-hidden="true">
-            <Icon name="cloud-upload" size={22} />
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor">
+              <path d="M12 21v-9m0 0-4 4m4-4 4 4M5 16a4 4 0 0 1 .4-8A7 7 0 0 1 19 9a3.5 3.5 0 0 1 0 7" />
+            </svg>
           </span>
-          <span className="lyra-upload__zone-label">{label}</span>
-          {(hint || generatedHint) && (
-            <span className="lyra-upload__zone-hint">{hint || generatedHint}</span>
-          )}
-          <input
-            ref={inputRef}
-            type="file"
-            accept={accept}
-            multiple={multiple}
-            hidden
-            tabIndex={-1}
-            onChange={handleInputChange}
-          />
-        </button>
-        {items.length > 0 && (
-          <ul className="lyra-upload__list">
-            {items.map((item) => (
-              <li
-                key={item.id}
-                className={cx(
-                  'lyra-upload__item',
-                  item.status === 'error' && 'lyra-upload__item--error',
-                )}
-              >
-                <span className="lyra-upload__item-icon" aria-hidden="true">
-                  <Icon
-                    name={item.status === 'error' ? 'circle-alert' : iconFor(item.name)}
-                    size={17}
-                  />
-                </span>
-                <span className="lyra-upload__item-body">
-                  <span className="lyra-upload__item-row">
-                    <span className="lyra-upload__item-name">{item.name}</span>
-                    <span className="lyra-upload__item-meta">
-                      {item.status === 'error'
-                        ? item.error
-                        : item.status === 'done'
-                          ? formatBytes(item.size)
-                          : `${Math.round(item.progress)}%`}
-                    </span>
-                  </span>
-                  {item.status === 'uploading' && (
-                    <span className="lyra-upload__bar">
-                      <span
-                        className="lyra-upload__bar-fill"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </span>
-                  )}
-                </span>
-                {item.status === 'done' && (
-                  <span className="lyra-upload__check" role="img" aria-label={doneLabel}>
-                    <Icon name="circle-check" size={17} />
-                  </span>
-                )}
-                <button
-                  type="button"
-                  className="lyra-upload__remove"
-                  aria-label={removeLabel(item.name)}
-                  onClick={() => remove(item.id)}
-                >
-                  <Icon name="x" size={15} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+          <span className="lyra-upload__zone-label">{resolvedLabel}</span>
+          {resolvedHint ? <span className="lyra-upload__zone-hint">{resolvedHint}</span> : null}
+        </label>
+        <input
+          id={inputId}
+          ref={setInputRef}
+          className="lyra-upload__input"
+          type="file"
+          name={nativeInputName}
+          accept={accept}
+          multiple={multiple}
+          disabled={disabled}
+          required={required}
+        />
+        {visibleItems.length > 0 ? (
+          <ul className="lyra-upload__list">{visibleItems.map(renderItem)}</ul>
+        ) : null}
+        <span
+          ref={liveRegionRef}
+          className="lyra-upload__live lyra-visually-hidden"
+          aria-live="polite"
+          aria-atomic="true"
+        />
       </div>
     );
   },

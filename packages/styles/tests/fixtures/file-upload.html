@@ -1,0 +1,187 @@
+<main id="file-upload-fixture" data-theme="light">
+  <section class="file-upload-fixture__viewport" data-testid="file-upload-viewport">
+    <div class="lyra-upload" data-testid="file-upload" data-state="active">
+      <label class="lyra-upload__zone" for="file-upload-input" data-testid="file-upload-zone">
+        <span class="lyra-upload__zone-label">Selecionar arquivos</span>
+        <span class="lyra-upload__zone-hint">PDFs de até 10 MB</span>
+      </label>
+      <input
+        id="file-upload-input"
+        class="lyra-upload__input"
+        data-testid="file-upload-input"
+        type="file"
+        aria-label="Selecionar arquivos"
+      />
+
+      <ul class="lyra-upload__list" aria-label="Arquivos selecionados">
+        <li class="lyra-upload__item" data-state="uploading" data-testid="file-upload-determinate">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name" data-testid="file-upload-long-name"
+                >relatorio-financeiro-para-auditoria-internacional-com-um-nome-intencionalmente-sem-quebras-para-validar-o-reflow-em-larguras-estreitas.pdf</span
+              >
+              <span class="lyra-upload__item-meta" data-testid="file-upload-long-meta"
+                >2,4 MB ·
+                envio-controlado-com-uma-descricao-de-estado-propositalmente-muito-longa-para-nao-sair-do-container</span
+              >
+            </span>
+            <progress
+              class="lyra-upload__bar"
+              data-testid="file-upload-progress"
+              max="100"
+              value="50"
+            >
+              50%
+            </progress>
+          </span>
+          <button class="lyra-upload__cancel" type="button" data-testid="file-upload-cancel">
+            Cancelar
+          </button>
+        </li>
+
+        <li
+          class="lyra-upload__item"
+          data-state="canceling"
+          data-testid="file-upload-indeterminate"
+        >
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name">evidencia-em-processamento.pdf</span>
+              <span class="lyra-upload__item-meta">Cancelando</span>
+            </span>
+            <progress
+              class="lyra-upload__bar"
+              data-testid="file-upload-indeterminate-progress"
+              max="100"
+            >
+              Cancelando
+            </progress>
+          </span>
+          <button class="lyra-upload__cancel" type="button" disabled>Cancelando</button>
+        </li>
+
+        <li class="lyra-upload__item" data-state="error" data-testid="file-upload-validation-error">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name">formato-invalido.txt</span>
+              <span class="lyra-upload__item-meta">Apenas PDFs são aceitos.</span>
+            </span>
+          </span>
+          <button class="lyra-upload__remove" type="button">Remover</button>
+        </li>
+
+        <li class="lyra-upload__item" data-state="error" data-testid="file-upload-transport-error">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name" data-testid="file-upload-action-name"
+                >evidencia-financeira-para-revisao-internacional-com-identificador-longo-que-o-consumidor-precisa-ouvir-por-inteiro.pdf</span
+              >
+              <span class="lyra-upload__item-meta" data-testid="file-upload-action-status"
+                >Não foi possível concluir o envio deste arquivo devido a uma indisponibilidade
+                temporária do serviço. Verifique a conexão e tente novamente.</span
+              >
+            </span>
+          </span>
+          <button class="lyra-upload__retry" type="button" disabled data-testid="file-upload-retry">
+            Tentar novamente
+            evidencia-financeira-para-revisao-internacional-com-identificador-longo-que-o-consumidor-precisa-ouvir-por-inteiro.pdf
+          </button>
+          <button class="lyra-upload__remove" type="button" data-testid="file-upload-remove">
+            Remover
+            evidencia-financeira-para-revisao-internacional-com-identificador-longo-que-o-consumidor-precisa-ouvir-por-inteiro.pdf
+          </button>
+        </li>
+      </ul>
+
+      <span
+        class="lyra-upload__live lyra-visually-hidden"
+        data-testid="file-upload-live"
+        aria-live="polite"
+        aria-atomic="true"
+      ></span>
+    </div>
+  </section>
+
+  <section class="file-upload-fixture__theme" data-theme="dark" data-testid="file-upload-dark">
+    <div class="lyra-upload" dir="rtl" data-state="active" data-testid="file-upload-rtl">
+      <label class="lyra-upload__zone" for="file-upload-rtl-input">اختيار الملفات</label>
+      <input
+        id="file-upload-rtl-input"
+        class="lyra-upload__input"
+        type="file"
+        aria-label="اختيار الملفات"
+      />
+      <ul class="lyra-upload__list">
+        <li class="lyra-upload__item" data-state="error" data-testid="file-upload-rtl-error">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name"
+                >ملف-إثبات-المعاملة-الدولية-الطويل-الذي-يجب-أن-يبقى-متاحًا-للقارئ.pdf</span
+              >
+              <span class="lyra-upload__item-meta" data-testid="file-upload-rtl-status"
+                >تعذر إكمال الرفع بسبب انقطاع مؤقت في الخدمة. تحقق من الاتصال ثم أعد المحاولة لإرسال
+                هذا الملف.</span
+              >
+            </span>
+          </span>
+          <button class="lyra-upload__retry" type="button" data-testid="file-upload-rtl-retry">
+            أعد محاولة رفع ملف إثبات المعاملة الدولية الطويل
+          </button>
+          <button class="lyra-upload__remove" type="button" data-testid="file-upload-rtl-remove">
+            أزل ملف إثبات المعاملة الدولية الطويل
+          </button>
+        </li>
+        <li class="lyra-upload__item" data-state="success">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name">ملف-موثق.pdf</span>
+              <span class="lyra-upload__item-meta">تم الإرسال</span>
+            </span>
+          </span>
+          <button class="lyra-upload__remove" type="button">إزالة</button>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-testid="file-upload-disabled-root">
+    <div class="lyra-upload" data-disabled="true" data-state="active">
+      <label
+        class="lyra-upload__zone lyra-upload__zone--drag"
+        for="file-upload-disabled-input"
+        aria-disabled="true"
+        data-testid="file-upload-disabled-zone"
+      >
+        <span class="lyra-upload__zone-label">Selecionar arquivos</span>
+        <span class="lyra-upload__zone-hint"
+          >Envio indisponível enquanto este formulário está bloqueado.</span
+        >
+      </label>
+      <input
+        id="file-upload-disabled-input"
+        class="lyra-upload__input"
+        data-testid="file-upload-disabled-input"
+        type="file"
+        disabled
+      />
+      <ul class="lyra-upload__list">
+        <li class="lyra-upload__item" data-state="uploading">
+          <span class="lyra-upload__item-body">
+            <span class="lyra-upload__item-row">
+              <span class="lyra-upload__item-name">arquivo-bloqueado.pdf</span>
+              <span class="lyra-upload__item-meta">Envio bloqueado</span>
+            </span>
+          </span>
+          <button
+            class="lyra-upload__cancel"
+            type="button"
+            data-testid="file-upload-disabled-action"
+            disabled
+          >
+            Cancelar arquivo-bloqueado.pdf
+          </button>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>

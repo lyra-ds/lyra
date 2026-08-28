@@ -474,31 +474,55 @@
     "kind": "data",
     "slug": "file-upload",
     "optionsType": "LyraFileUploadOptions",
-    "description": "Initial configuration accepted by `x-data=\"lyraFileUpload(...)\"`.",
+    "description": "",
     "props": [
+      {
+        "name": "items",
+        "type": "LyraFileUploadItem[]",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "accept",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      },
       {
         "name": "maxSizeMB",
         "type": "number",
         "optional": true,
-        "description": "Files larger than this many megabytes are added as error items."
+        "description": ""
       },
       {
         "name": "multiple",
         "type": "boolean",
         "optional": true,
-        "description": "Whether more than one file can be added. Defaults to `true`."
+        "description": ""
       },
       {
-        "name": "uploadDuration",
-        "type": "number",
+        "name": "disabled",
+        "type": "boolean",
         "optional": true,
-        "description": "Simulated upload duration in milliseconds. Defaults to `1800`."
+        "description": ""
       },
       {
-        "name": "defaultItems",
-        "type": "LyraFileUploadItem[]",
+        "name": "required",
+        "type": "boolean",
         "optional": true,
-        "description": "Items used to seed the upload list."
+        "description": ""
+      },
+      {
+        "name": "messages",
+        "type": "LyraFileUploadMessages",
+        "optional": true,
+        "description": ""
       }
     ]
   },

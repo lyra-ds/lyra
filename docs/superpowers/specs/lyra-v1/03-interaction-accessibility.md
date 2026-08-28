@@ -27,6 +27,17 @@ or automated result MUST NOT be treated as conformance evidence by itself.
 Every component-family specification MUST complete the applicable contracts in
 this document, and current runtime behavior MUST NOT silently weaken them.
 
+### 2026-08-27 amendment: Automated Core release profile
+
+The [canonical Automated Core release profile](./README.md#automated-core-release-profile)
+and the approved
+[Lyra V1 Core Beta Release Design](../2026-08-27-lyra-v1-core-beta-release-design.md)
+scope this document's manual-review release-blocking requirements to Full-profile
+releases. Under Automated Core, all applicable automated requirements remain
+release-blocking; the manual procedures below remain available as optional
+post-release evidence. Missing manual evidence is non-blocking, MUST be labeled
+`deferred-by-release-profile`, and MUST NOT be represented as a pass.
+
 ## Standards baseline
 
 WCAG 2.2 Level AA MUST be the release baseline for Lyra v1.0. A component and
@@ -395,9 +406,11 @@ MUST NOT be recorded as a pass.
 
 Automated browser, axe, DOM, and keyboard coverage MUST NOT replace manual
 assistive-technology review for critical workflows. A Lyra v1.0 release
-candidate MUST NOT ship while a required critical review is missing, a known
-WCAG 2.2 Level AA violation is suppressed, or a `P1` interaction or
-accessibility issue remains open.
+candidate using the Full profile MUST NOT ship while a required critical review
+is missing. Under Automated Core, an absent review is optional post-release
+evidence labeled `deferred-by-release-profile`, never a pass. Under either
+profile, a known WCAG 2.2 Level AA violation MUST NOT be suppressed and a `P1`
+interaction or accessibility issue MUST NOT remain open.
 
 ## Component-pattern obligations
 

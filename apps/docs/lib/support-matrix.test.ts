@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import bladeApi from '../../../tools/blade-api/api.json';
-import { components } from './components';
+import { componentStabilities, components } from './components';
 import { getSupportMatrixRows, supportLevels } from './support-matrix';
+
+const releasedBladeExceptions = new Set(['file-upload']);
 
 describe('public support matrix', () => {
   it('contains every documented component exactly once', () => {
@@ -17,6 +19,48 @@ describe('public support matrix', () => {
         expect(supportLevels).toContain(cell.level);
       }
     }
+  });
+
+  it('publishes an explicit lifecycle for every component', () => {
+    expect(components.every((entry) => componentStabilities.includes(entry.stability))).toBe(true);
+    expect(getSupportMatrixRows().map(({ slug, stability }) => [slug, stability])).toEqual(
+      components.map(({ slug, stability }) => [slug, stability]),
+    );
+  });
+
+  it('stabilizes only FileUpload in the consolidated beta', () => {
+    expect(
+      components.filter((entry) => entry.stability === 'stable').map((entry) => entry.slug),
+    ).toEqual(['file-upload']);
+    expect(components.filter((entry) => entry.stability === 'beta')).toHaveLength(
+      components.length - 1,
+    );
+  });
+
+  it('localizes every component lifecycle and the Stability column', () => {
+    const messages = Object.fromEntries(
+      ['en', 'pt-BR'].map((locale) => [
+        locale,
+        JSON.parse(
+          readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), 'utf8'),
+        ) as Record<string, string>,
+      ]),
+    );
+
+    expect(messages.en).toMatchObject({
+      componentStability: 'Stability',
+      componentStabilityBeta: 'Beta',
+      componentStabilityDeprecated: 'Deprecated',
+      componentStabilityExperimental: 'Experimental',
+      componentStabilityStable: 'Stable',
+    });
+    expect(messages['pt-BR']).toMatchObject({
+      componentStability: 'Estabilidade',
+      componentStabilityBeta: 'Beta',
+      componentStabilityDeprecated: 'Descontinuado',
+      componentStabilityExperimental: 'Experimental',
+      componentStabilityStable: 'Estável',
+    });
   });
 
   it('documents every unsupported adapter with its contract gap and evidence status', () => {
@@ -51,11 +95,17 @@ describe('public support matrix', () => {
     }
   });
 
-  it('publishes all 71 released Blade entries at their snapshot binding level', () => {
+  it('publishes every claimed Blade entry at its snapshot binding level', () => {
     const rows = new Map(getSupportMatrixRows().map((row) => [row.slug, row]));
     const bladeEntries = components.filter((entry) => entry.stacks.includes('blade'));
+    const documentedSlugs = new Set(components.map((entry) => entry.slug));
+    const releasedDocumentedEntries = bladeApi.components.filter((component) =>
+      documentedSlugs.has(component.slug),
+    );
 
-    expect(bladeEntries).toHaveLength(71);
+    expect(bladeEntries).toHaveLength(
+      releasedDocumentedEntries.length - releasedBladeExceptions.size,
+    );
     for (const entry of bladeEntries) {
       const releasedComponents = bladeApi.components.filter(
         (component) => component.slug === entry.slug,
@@ -65,6 +115,16 @@ describe('public support matrix', () => {
         releasedComponents[0].binding === null ? 'css' : 'alpine-enhanced',
       );
     }
+  });
+
+  it('allows only the explicitly reviewed released Blade exceptions', () => {
+    const releasedSlugs = new Set(bladeApi.components.map((component) => component.slug));
+    const unsupportedReleasedSlugs = components
+      .filter((entry) => releasedSlugs.has(entry.slug) && !entry.stacks.includes('blade'))
+      .map((entry) => entry.slug)
+      .sort();
+
+    expect(unsupportedReleasedSlugs).toEqual([...releasedBladeExceptions].sort());
   });
 
   it('uses the released Blade binding when page-level behavior differs', () => {
@@ -117,6 +177,15 @@ describe('public support matrix', () => {
         reevaluationOwnerKey: 'supportOwnerBladeMaintainers',
         reasonKey: 'absenceBladeThemeProvider',
       },
+    });
+  });
+
+  it('defers Blade for the controlled FileUpload lifecycle', () => {
+    const fileUpload = getSupportMatrixRows().find((row) => row.slug === 'file-upload');
+
+    expect(fileUpload?.stacks.blade).toMatchObject({
+      level: 'unsupported',
+      gap: { reasonKey: 'absenceBladeFileUploadLifecycle' },
     });
   });
 

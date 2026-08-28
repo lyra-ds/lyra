@@ -1,2 +1,21 @@
 export { FileUpload } from './file-upload';
-export type { FileUploadItem, FileUploadProps } from './file-upload';
+export type {
+  FileUploadCancelIntent,
+  FileUploadCanceledItem,
+  FileUploadError,
+  FileUploadErrorItem,
+  FileUploadItem,
+  FileUploadItemBase,
+  FileUploadMessages,
+  FileUploadProps,
+  FileUploadProgress,
+  FileUploadRemoveIntent,
+  FileUploadRetryIntent,
+  FileUploadSelectedItem,
+  FileUploadSelection,
+  FileUploadSelectionBase,
+  FileUploadSelectIntent,
+  FileUploadSuccessItem,
+  FileUploadUploadingItem,
+  FileUploadCancelingItem,
+} from './file-upload.types';

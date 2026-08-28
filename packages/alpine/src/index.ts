@@ -107,7 +107,22 @@ export type { LyraDialogOptions } from './dialog';
 export type { LyraDrawerOptions } from './drawer';
 export type { LyraDropdownOptions } from './dropdown';
 export type { LyraFileManagerOptions } from './file-manager';
-export type { LyraFileUploadItem, LyraFileUploadOptions } from './file-upload';
+export { lyraFileUpload } from './file-upload';
+export type {
+  LyraFileUploadAction,
+  LyraFileUploadBinding,
+  LyraFileUploadCancelDetail,
+  LyraFileUploadData,
+  LyraFileUploadError,
+  LyraFileUploadItem,
+  LyraFileUploadMessages,
+  LyraFileUploadOptions,
+  LyraFileUploadProgress,
+  LyraFileUploadRemoveDetail,
+  LyraFileUploadRetryDetail,
+  LyraFileUploadSelectDetail,
+  LyraFileUploadSelection,
+} from './file-upload';
 export type { LyraPopoverOptions } from './popover';
 export type { LyraSegmentedControlOptions } from './segmented-control';
 export type { LyraSidebarGroupOptions } from './sidebar-group';

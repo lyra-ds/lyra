@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>File upload manual evidence</title>
+  </head>
+  <body>
+    <div class="lyra-evidence">
+      <header class="lyra-evidence__intro">
+        <h1 class="lyra-evidence__title">File upload manual evidence</h1>
+        <p>
+          This private instrument supports human review. Automated checks do not pass a scenario.
+        </p>
+        <dl class="lyra-evidence__metadata" aria-label="Harness build">
+          <div>
+            <dt>Revision</dt>
+            <dd><code>__LYRA_EVIDENCE_REVISION__</code></dd>
+          </div>
+          <div>
+            <dt>Built in UTC</dt>
+            <dd><time>__LYRA_EVIDENCE_BUILD_TIME__</time></dd>
+          </div>
+        </dl>
+      </header>
+
+      <main>
+        <section class="lyra-evidence__section" aria-labelledby="native-upload-heading">
+          <h2 id="native-upload-heading">Native upload without JavaScript</h2>
+          <p>Select a file and submit this form to verify native multipart participation.</p>
+          <form
+            class="lyra-field"
+            id="native-upload-form"
+            action="/api/file-upload-evidence"
+            method="post"
+            enctype="multipart/form-data"
+          >
+            <input type="hidden" name="locale" value="en" />
+            <input type="hidden" name="mode" value="success" />
+            <label class="lyra-label" for="native-file">Evidence file</label>
+            <input class="lyra-input" id="native-file" type="file" name="file" />
+            <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="submit">
+              Submit native upload
+            </button>
+          </form>
+        </section>
+
+        <section class="lyra-evidence__section" aria-labelledby="alpine-upload-heading">
+          <h2 id="alpine-upload-heading">Delayed Alpine enhancement</h2>
+          <p>Select a file before the delay ends, then verify that enhancement preserves it.</p>
+          <div
+            id="alpine-evidence-root"
+            x-data="uploadItems({ locale: 'en' })"
+            @lyra:file-upload:select="selectFiles($event.detail)"
+            @lyra:file-upload:retry="retryFile($event.detail)"
+            @lyra:file-upload:cancel="cancelFile($event.detail)"
+            @lyra:file-upload:remove="removeFile($event.detail)"
+          >
+            <div
+              id="alpine-file-upload"
+              class="lyra-upload"
+              data-state="idle"
+              x-data="lyraFileUpload({ name: 'file', multiple: true })"
+              x-modelable="items"
+              x-model="uploadItems"
+            >
+              <form
+                id="alpine-upload-form"
+                action="/api/file-upload-evidence"
+                method="post"
+                enctype="multipart/form-data"
+              >
+                <input type="hidden" name="locale" value="en" />
+                <input type="hidden" name="mode" value="success" />
+                <label class="lyra-upload__zone" for="alpine-file" x-bind="zone">
+                  Delayed Alpine evidence file
+                </label>
+                <input
+                  id="alpine-file"
+                  class="lyra-upload__input"
+                  type="file"
+                  name="file"
+                  x-bind="input"
+                />
+                <button class="lyra-btn lyra-btn--secondary lyra-btn--md" type="submit">
+                  Submit delayed fixture natively
+                </button>
+              </form>
+
+              <ul class="lyra-upload__list">
+                <template x-for="item in items" :key="item.id">
+                  <li class="lyra-upload__item" x-bind="itemBindings(item)">
+                    <span class="lyra-upload__item-name" x-text="item.name"></span>
+                    <span class="lyra-upload__item-meta" x-text="statusLabel(item)"></span>
+                    <template
+                      x-if="item.status === 'canceled' || (item.status === 'error' && item.error.retryable)"
+                    >
+                      <button
+                        class="lyra-upload__retry"
+                        type="button"
+                        aria-label="Retry file"
+                        x-bind="actionBindings('retry', item)"
+                      >
+                        Retry
+                      </button>
+                    </template>
+                    <template x-if="item.status === 'uploading'">
+                      <button
+                        class="lyra-upload__cancel"
+                        type="button"
+                        aria-label="Cancel file"
+                        x-bind="actionBindings('cancel', item)"
+                      >
+                        Cancel
+                      </button>
+                    </template>
+                    <template
+                      x-if="item.status === 'selected' || item.status === 'success' || item.status === 'canceled' || item.status === 'error'"
+                    >
+                      <button
+                        class="lyra-upload__remove"
+                        type="button"
+                        aria-label="Remove file"
+                        x-bind="actionBindings('remove', item)"
+                      >
+                        Remove
+                      </button>
+                    </template>
+                  </li>
+                </template>
+              </ul>
+              <span
+                class="lyra-upload__live"
+                aria-live="polite"
+                aria-atomic="true"
+                x-bind="liveRegion"
+              ></span>
+            </div>
+
+            <dl class="lyra-evidence__metadata" aria-label="Alpine diagnostics">
+              <div>
+                <dt>Initializations</dt>
+                <dd id="alpine-initializations" x-text="initializations">0</dd>
+              </div>
+              <div>
+                <dt>Selection intents</dt>
+                <dd id="alpine-selection-intents" x-text="selectionIntents">0</dd>
+              </div>
+              <div>
+                <dt>Controlled echoes</dt>
+                <dd id="alpine-controlled-echoes" x-text="controlledEchoes">0</dd>
+              </div>
+              <div>
+                <dt>Connects</dt>
+                <dd id="alpine-connects" x-text="connects">0</dd>
+              </div>
+              <div>
+                <dt>Disconnects</dt>
+                <dd id="alpine-disconnects" x-text="disconnects">0</dd>
+              </div>
+              <div>
+                <dt>Controlled identities</dt>
+                <dd id="alpine-selection-identities" x-text="controlledIdentities()"></dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <div id="react-evidence-root"></div>
+      </main>
+    </div>
+
+    <noscript>JavaScript is disabled. The native upload forms remain available.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

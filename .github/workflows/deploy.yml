@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     env:
       # The declaration build of @lyra-ds/react needs more than 2.5 GB of
@@ -67,3 +68,148 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: pnpm exec wrangler pages deploy apps/docs/out --project-name=lyra-ds-docs --branch=main --commit-dirty=true
+
+  evidence-preview:
+    if: github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'evidence/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+      HOME: /root
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+      options: --init --ipc=host
+    steps:
+      - name: Checkout selected evidence ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Validate Styles
+        run: pnpm --filter @lyra-ds/styles run lint:css
+      - name: Build React
+        run: pnpm --filter @lyra-ds/react run build
+      - name: Build Alpine
+        run: pnpm --filter @lyra-ds/alpine run build
+      - name: Build ordinary Docs
+        run: pnpm --filter @lyra-ds/docs run build
+      - name: Test evidence harness
+        run: pnpm run evidence:file-upload:manual:test
+      - name: Build isolated evidence harness
+        env:
+          FILE_UPLOAD_EVIDENCE: '1'
+          LYRA_EVIDENCE_REVISION: ${{ github.sha }}
+        run: |
+          LYRA_EVIDENCE_BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
+          export LYRA_EVIDENCE_BUILD_TIME
+          pnpm run evidence:file-upload:manual:build
+      - name: Stage Function and publish evidence preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/file-upload-evidence-wrangler-output.jsonl
+        run: |
+          node tools/file-upload-evidence/scripts/stage-preview.mjs \
+            --workspace-root="$GITHUB_WORKSPACE" \
+            --docs-output="$GITHUB_WORKSPACE/apps/docs/out" \
+            --harness-dist="$GITHUB_WORKSPACE/tools/file-upload-evidence/dist" \
+            --revision="$GITHUB_SHA" \
+            -- pnpm exec wrangler pages deploy "$GITHUB_WORKSPACE/apps/docs/out" \
+              --project-name=lyra-ds-docs \
+              --branch=file-upload-evidence \
+              --commit-hash="$GITHUB_SHA" \
+              --commit-dirty=true
+      - name: Resolve immutable evidence deployment
+        id: deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/file-upload-evidence-wrangler-output.jsonl
+        run: |
+          pnpm exec wrangler pages deployment list \
+            --project-name=lyra-ds-docs \
+            --environment=preview \
+            --json > "$RUNNER_TEMP/file-upload-evidence-deployments.json"
+          node tools/file-upload-evidence/scripts/deploy-policy.mjs resolve-preview \
+            --wrangler-output="$WRANGLER_OUTPUT_FILE_PATH" \
+            --deployment-list="$RUNNER_TEMP/file-upload-evidence-deployments.json" \
+            --revision="$GITHUB_SHA" \
+            --github-output="$GITHUB_OUTPUT"
+      - name: Define FileUpload automation evidence
+        id: evidence
+        run: |
+          revision_prefix="$(printf '%.12s' "$GITHUB_SHA")"
+          archive="$RUNNER_TEMP/file-upload-automation-$revision_prefix.zip"
+          {
+            echo "revision-prefix=$revision_prefix"
+            echo "archive=$archive"
+          } >> "$GITHUB_OUTPUT"
+      - name: Smoke immutable evidence deployment
+        run: >-
+          pnpm run evidence:file-upload:manual:smoke
+          --url="${{ steps.deployment.outputs.url }}"
+          --revision="$GITHUB_SHA"
+      - name: Run revision-bound FileUpload automation
+        id: automation
+        continue-on-error: true
+        run: >-
+          pnpm run evidence:file-upload:automation
+          --url="${{ steps.deployment.outputs.url }}/en/file-upload-evidence/"
+          --revision="$GITHUB_SHA"
+          --output="${{ steps.evidence.outputs.archive }}"
+      - name: Extract FileUpload automation results
+        id: automation_results
+        if: always()
+        continue-on-error: true
+        run: >-
+          node tools/file-upload-evidence/scripts/deploy-policy.mjs extract-automation-results
+          --archive="${{ steps.evidence.outputs.archive }}"
+          --revision="$GITHUB_SHA"
+          --deployment-url="${{ steps.deployment.outputs.url }}/en/file-upload-evidence/"
+          --github-output="$GITHUB_OUTPUT"
+      - name: Upload FileUpload automation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: file-upload-automation-${{ steps.evidence.outputs.revision-prefix }}.zip
+          path: ${{ steps.evidence.outputs.archive }}
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize evidence preview
+        if: always()
+        env:
+          AUTOMATION_RESULTS_OUTCOME: ${{ steps.automation_results.outcome }}
+          DF_FU_17_RESULT: ${{ steps.automation_results.outputs.df_fu_17 }}
+          DF_FU_18_RESULT: ${{ steps.automation_results.outputs.df_fu_18 }}
+        run: |
+          df_fu_17="$DF_FU_17_RESULT"
+          df_fu_18="$DF_FU_18_RESULT"
+          if [ "$AUTOMATION_RESULTS_OUTCOME" != "success" ]; then
+            df_fu_17="unavailable (result extraction failed)"
+            df_fu_18="unavailable (result extraction failed)"
+          fi
+          {
+            echo "## FileUpload evidence preview"
+            echo "- Immutable URL: ${{ steps.deployment.outputs.url }}"
+            echo "- Branch alias: https://file-upload-evidence.lyra-ds-docs.pages.dev"
+            echo "- Revision: $GITHUB_SHA"
+            echo "- DF-FU-17: $df_fu_17"
+            echo "- DF-FU-18: $df_fu_18"
+            echo "- Artifact: file-upload-automation-${{ steps.evidence.outputs.revision-prefix }}.zip"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce FileUpload automation result
+        if: >-
+          steps.automation.outcome != 'success' ||
+          steps.automation_results.outcome != 'success' ||
+          steps.automation_results.outputs.df_fu_17 != 'PASS' ||
+          steps.automation_results.outputs.df_fu_18 != 'PASS'
+        run: exit 1

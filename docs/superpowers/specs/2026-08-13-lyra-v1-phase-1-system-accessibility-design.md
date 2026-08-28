@@ -29,21 +29,37 @@ audits target size against WCAG 2.2 AA and Lyra's touch ergonomics target.
 
 Automated changes may merge one wave at a time after the required technical
 checks and automated code reviews complete without actionable findings. Manual
-Windows/NVDA and macOS/VoiceOver records are a later, explicit evidence gate:
-they remain `pending` until executed and never count as a pass by omission.
-Therefore Phase 1 can report `automation complete; assistive-technology review
-pending`, but cannot report `complete` until its manual evidence is recorded.
+Windows/NVDA and macOS/VoiceOver records remain a later, explicit evidence gate
+for Full-profile completion: they remain `pending` until executed and never
+count as a pass by omission. Under Automated Core, Phase 1 can report the
+implemented automation complete while labeling the non-blocking manual evidence
+`deferred-by-release-profile`; only the Full profile withholds completion until
+those manual records are recorded.
 
 This phase does not select or migrate an overlay primitive. That work remains
 Phase 2 and requires its own approved overlay-family specification.
 
+### 2026-08-27 amendment: Automated Core release profile
+
+The [canonical Automated Core release profile](./lyra-v1/README.md#automated-core-release-profile)
+and the approved
+[Lyra V1 Core Beta Release Design](./2026-08-27-lyra-v1-core-beta-release-design.md)
+make the implemented automated Phase 1 matrix release-blocking for the active
+beta. The manual procedures remain required for Full-profile releases and
+optional post-release evidence under Automated Core. Missing manual evidence is
+non-blocking only under Automated Core, MUST be labeled
+`deferred-by-release-profile`, and MUST NOT be represented as a pass.
+
 ## 2. Current gaps and desired outcome
 
-The Phase 0 baseline records Chromium-only automated execution and defers the
-full browser and assistive-technology matrix. The current React and Alpine axe
-helpers each suppress the same seven failing color pairs through an allowlist.
-The styles package has reduced-motion rules but no forced-colors rules, and
-direction-sensitive CSS still uses physical properties in catalog components.
+The Phase 0 evidence index now records that CI runs the pinned Playwright 1.62.1
+Chromium, Firefox, and WebKit matrix inside the existing `test` job. Manual
+NVDA and VoiceOver evidence remains deferred and non-blocking under Automated
+Core; no assistive-technology review is represented as completed. The current
+React and Alpine axe helpers each suppress the same seven failing color pairs
+through an allowlist. The styles package has reduced-motion rules but no
+forced-colors rules, and direction-sensitive CSS still uses physical properties
+in catalog components.
 
 At the end of Phase 1:
 
@@ -219,9 +235,11 @@ A wave PR may merge only when all applicable conditions hold:
 5. The PR template's applicable changeset and documentation requirements are
    satisfied.
 
-Manual review may remain `pending` during these merges. The release and Phase 1
-completion gate do not relax: missing NVDA or VoiceOver evidence is not a pass;
-a manual failure receives P1, P2, or P3 severity and links the affected
+Manual review may remain `pending` during these merges. For a Full-profile
+release and Full-profile Phase 1 completion it remains required. Under
+Automated Core, missing NVDA or VoiceOver evidence is non-blocking optional
+post-release evidence labeled `deferred-by-release-profile`, not a pass; a
+manual failure still receives P1, P2, or P3 severity and links the affected
 acceptance criterion.
 
 ## 7. Acceptance criteria
@@ -247,12 +265,13 @@ acceptance criterion.
 - [ ] Every wave PR has green required checks, a complete automated evidence
       matrix, completed CodeRabbit and Greptile reviews, and no actionable
       automated-review finding pending.
-- [ ] Every critical desktop workflow has Windows/NVDA and macOS/VoiceOver
-      records. Until then, the Phase 1 status explicitly states that automation
-      is complete and assistive-technology review is pending.
+- [ ] Under the Full profile, every critical desktop workflow has Windows/NVDA
+      and macOS/VoiceOver records. Under Automated Core, absent records are
+      optional post-release evidence labeled `deferred-by-release-profile` and
+      are never represented as passed.
 - [ ] The roadmap and Phase 0 evidence index are updated to report Phase 1
-      complete only after all applicable manual records pass and no P1 finding
-      remains open.
+      complete under the selected profile only after all applicable gates pass
+      and no P1 finding remains open.
 
 ## 8. Out of scope
 

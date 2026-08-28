@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "scenario": "DF-FU-15",
+  "revision": "fa43e0a5b96922e35770a5714f1bd720325dcbe0",
+  "measuredAt": "2026-08-17T21:05:23.784Z",
+  "environment": {
+    "operatingSystem": "linux 6.18.42-1-MANJARO",
+    "architecture": "x64",
+    "node": "v24.18.0",
+    "playwright": "1.62.1",
+    "vite": "8.2.1",
+    "chromium": {
+      "version": "151.0.7922.34",
+      "executablePath": "/home/franciscpd/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome"
+    },
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1
+    },
+    "locale": "en-US",
+    "colorScheme": "light",
+    "warmupIterations": 3,
+    "recordedIterations": 30,
+    "itemCount": 100,
+    "activeAttemptCount": 20,
+    "exactCommand": "pnpm evidence:file-upload",
+    "reactArtifact": {
+      "version": "0.4.2",
+      "tarball": "lyra-ds-react-0.4.2.tgz",
+      "sha256": "1f8ba52827876f3b7719bd4ba13eb6ff0c6257196132c4ff4944952060825c0d"
+    },
+    "stylesArtifact": {
+      "version": "0.4.2",
+      "tarball": "lyra-ds-styles-0.4.2.tgz",
+      "sha256": "1af722c1f8198382e5ed7f831bb025e4e9eee4f3e12b7ec92e5f61cba9b0582f"
+    }
+  },
+  "thresholds": {
+    "p95Ms": 100,
+    "worstMsExclusive": 250,
+    "longTaskMsExclusive": 50
+  },
+  "operations": {
+    "selectionIntentDispatch": {
+      "iterations": 30,
+      "medianMs": 0.3999999761581421,
+      "p95Ms": 0.5,
+      "worstMs": 0.5,
+      "longestTaskMs": 0
+    },
+    "controlledProgressReconciliation": {
+      "iterations": 30,
+      "medianMs": 1.5,
+      "p95Ms": 2.899999976158142,
+      "worstMs": 3.800000011920929,
+      "longestTaskMs": 0
+    },
+    "cancelIntent": {
+      "iterations": 30,
+      "medianMs": 1.199999988079071,
+      "p95Ms": 1.899999976158142,
+      "worstMs": 2,
+      "longestTaskMs": 0
+    },
+    "retryIntent": {
+      "iterations": 30,
+      "medianMs": 1,
+      "p95Ms": 2.100000023841858,
+      "worstMs": 2.100000023841858,
+      "longestTaskMs": 0
+    },
+    "confirmedRemovalFocusRecovery": {
+      "iterations": 30,
+      "medianMs": 1.800000011920929,
+      "p95Ms": 3.199999988079071,
+      "worstMs": 3.899999976158142,
+      "longestTaskMs": 0
+    },
+    "teardown": {
+      "iterations": 30,
+      "medianMs": 0.5,
+      "p95Ms": 0.800000011920929,
+      "worstMs": 0.800000011920929,
+      "longestTaskMs": 0
+    }
+  }
+}

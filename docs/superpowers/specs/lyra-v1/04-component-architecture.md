@@ -35,6 +35,17 @@ unaffected package MUST NOT receive an empty version bump. The Lyra v1.0 suite
 MUST NOT be declared released until each package has independently published
 `1.0.0` and the public support matrix identifies compatible package ranges.
 
+### 2026-08-27 amendment: Automated Core release profile
+
+The [canonical Automated Core release profile](./README.md#automated-core-release-profile)
+and the approved
+[Lyra V1 Core Beta Release Design](../2026-08-27-lyra-v1-core-beta-release-design.md)
+scope manual-test release-blocking requirements in this document to Full-profile
+releases. Automated Core retains every applicable automated architecture gate;
+the original manual procedures remain optional post-release evidence. Missing
+manual evidence is non-blocking, MUST be labeled
+`deferred-by-release-profile`, and MUST NOT be represented as a pass.
+
 ## Package and responsibility boundaries
 
 The ownership levels and entry and exit rules in the

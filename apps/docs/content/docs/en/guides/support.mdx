@@ -9,18 +9,24 @@ description: Component support and the environments Lyra v1.0 requires.
 
 <SupportMatrix />
 
+## Component stability
+
+Lifecycle stability is separate from adapter availability. FileUpload is Stable under the Automated
+Core profile. Every other catalog entry remains Beta in this release; Tabs, DataTable, and the
+overlay family are the named P1 migration boundary for the later 1.0.0 release.
+
 <h2 id="automated-browser-gate">Automated browser gate</h2>
 
 Lyra v1.0 requires an automated gate using Playwright 1.62.1 with Chromium revision 1234
-(`151.0.7922.34`), Firefox revision 1538 (`153.0`), and WebKit revision 2336 (`26.5`). The current
-CI is Chromium-only; Firefox and WebKit execution are a Phase 1 gap and no current matrix entry
-claims three-engine parity.
+(`151.0.7922.34`), Firefox revision 1538 (`153.0`), and WebKit revision 2336 (`26.5`). Current CI
+runs this pinned Chromium, Firefox, and WebKit matrix inside the existing `test` job.
 
 ## Manual assistive technology
 
-Every critical desktop workflow requires a Windows/NVDA record and a macOS/VoiceOver record.
-Automated results do not replace those reviews. Review iOS VoiceOver and Android TalkBack when a
-workflow has a mobile-specific scenario that differs from desktop.
+Under the active Automated Core beta profile, manual Windows/NVDA and macOS/VoiceOver evidence is
+`deferred-by-release-profile`: it is non-blocking post-release evidence and is not a pass. No
+assistive-technology review is claimed as completed. The optional Full profile retains those
+manual records and the conditional mobile procedures as stricter requirements.
 
 <h2 id="what-support-means">What support means</h2>
 

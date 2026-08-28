@@ -5,6 +5,36 @@ import { FileUpload } from './index';
 
 describe('FileUpload SSR', () => {
   it('renders its server-safe dropzone without throwing', () => {
-    expect(renderToString(createElement(FileUpload))).toContain('lyra-upload');
+    const html = renderToString(
+      createElement(FileUpload, {
+        items: [
+          {
+            id: 'uploading',
+            name: 'uploading.pdf',
+            size: 1,
+            type: 'application/pdf',
+            status: 'uploading',
+            attemptId: 'uploading-1',
+            progress: { kind: 'determinate', value: 48 },
+          },
+        ],
+        name: 'attachments',
+        required: true,
+        onSelect: () => {},
+        onRetry: () => {},
+        onCancel: () => {},
+        onRemove: () => {},
+      }),
+    );
+
+    expect(html).toContain('<label');
+    expect(html).toContain('type="file"');
+    expect(html).toContain('name="attachments"');
+    expect(html).toContain('required=""');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-atomic="true"');
+    expect(html).toMatch(/aria-live="polite" aria-atomic="true"><\/span>/);
+    expect(html).toContain('data-state="active"');
+    expect(html).toContain('<progress');
   });
 });

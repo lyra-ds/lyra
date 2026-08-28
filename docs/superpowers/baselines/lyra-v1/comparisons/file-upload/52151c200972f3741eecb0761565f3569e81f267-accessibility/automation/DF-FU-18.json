@@ -1,0 +1,36 @@
+{
+  "deploymentUrl": "https://235deb26.lyra-ds-docs.pages.dev/en/file-upload-evidence/",
+  "executedAt": "2026-08-28T18:31:32.087Z",
+  "locale": "en",
+  "result": "PASS",
+  "revision": "52151c200972f3741eecb0761565f3569e81f267",
+  "runs": [
+    {
+      "artifactPaths": [
+        "artifacts/DF-FU-18/chromium/events.json",
+        "artifacts/DF-FU-18/chromium/final.png",
+        "artifacts/DF-FU-18/chromium/run.webm",
+        "artifacts/DF-FU-18/chromium/trace.zip"
+      ],
+      "checks": {
+        "DF-FU-18-delayed-alpine-filelist-preserved": true,
+        "DF-FU-18-native-js-disabled-form-submitted": true,
+        "DF-FU-18-reconnect-teardown-clean": true,
+        "DF-FU-18-removal-focus-recovered": true,
+        "DF-FU-18-response-locale-metadata-revision": true,
+        "DF-FU-18-single-enhancement-no-replay": true
+      },
+      "engine": "chromium",
+      "mediaQueries": {
+        "(pointer: coarse)": false,
+        "(prefers-reduced-motion: reduce)": false
+      },
+      "viewport": {
+        "devicePixelRatio": 1,
+        "height": 720,
+        "width": 1280
+      }
+    }
+  ],
+  "scenario": "DF-FU-18"
+}

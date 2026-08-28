@@ -1331,81 +1331,93 @@
   {
     "name": "FileUpload",
     "category": "Files",
-    "extends": "",
-    "description": "Props for {@link FileUpload}.",
+    "extends": "Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'defaultValue' | 'onCancel' | 'onSelect'>",
+    "description": "",
     "signature": "export declare function FileUpload(props: FileUploadProps): JSX.Element;",
     "props": [
       {
-        "name": "label",
-        "type": "string",
-        "optional": true,
-        "description": "Primary dropzone text."
+        "name": "items",
+        "type": "readonly FileUploadItem[]",
+        "optional": false,
+        "description": ""
       },
       {
-        "name": "hint",
+        "name": "onSelect",
+        "type": "(intent: FileUploadSelectIntent) => void",
+        "optional": false,
+        "description": ""
+      },
+      {
+        "name": "onRetry",
+        "type": "(intent: FileUploadRetryIntent) => void",
+        "optional": false,
+        "description": ""
+      },
+      {
+        "name": "onCancel",
+        "type": "(intent: FileUploadCancelIntent) => void",
+        "optional": false,
+        "description": ""
+      },
+      {
+        "name": "onRemove",
+        "type": "(intent: FileUploadRemoveIntent) => void",
+        "optional": false,
+        "description": ""
+      },
+      {
+        "name": "name",
         "type": "string",
         "optional": true,
-        "description": "Helper text, overriding the generated accept/size description."
+        "description": ""
       },
       {
         "name": "accept",
         "type": "string",
         "optional": true,
-        "description": "Accepted file types, forwarded to the hidden file input and shown in the helper text."
+        "description": ""
       },
       {
         "name": "maxSizeMB",
         "type": "number",
         "optional": true,
-        "description": "Files larger than this many megabytes are added as error items."
+        "description": ""
       },
       {
         "name": "multiple",
         "type": "boolean",
         "optional": true,
-        "description": "Whether more than one file can be added. Default `true`."
+        "description": ""
       },
       {
-        "name": "uploadDuration",
-        "type": "number",
+        "name": "disabled",
+        "type": "boolean",
         "optional": true,
-        "description": "Simulated upload duration in milliseconds. Default `1800`."
+        "description": ""
       },
       {
-        "name": "defaultItems",
-        "type": "FileUploadItem[]",
+        "name": "required",
+        "type": "boolean",
         "optional": true,
-        "description": "Items used to seed the uncontrolled list."
+        "description": ""
       },
       {
-        "name": "onFiles",
-        "type": "(files: File[]) => void",
-        "optional": true,
-        "description": "Called with the real browser `File` objects whenever files are added."
-      },
-      {
-        "name": "onChange",
-        "type": "(items: FileUploadItem[]) => void",
-        "optional": true,
-        "description": "Called whenever the internal item list changes."
-      },
-      {
-        "name": "doneLabel",
+        "name": "label",
         "type": "string",
         "optional": true,
-        "description": "Accessible name for the completed-upload icon. Default: `\"Upload complete\"`."
+        "description": ""
       },
       {
-        "name": "removeLabel",
-        "type": "(name: string) => string",
-        "optional": true,
-        "description": "Accessible name for each remove button. Receives the file name. Default: `` (name) => `Remove ${name}` ``."
-      },
-      {
-        "name": "className",
+        "name": "hint",
         "type": "string",
         "optional": true,
-        "description": "Class appended after the public `.lyra-upload` class."
+        "description": ""
+      },
+      {
+        "name": "messages",
+        "type": "FileUploadMessages",
+        "optional": true,
+        "description": ""
       }
     ]
   },
