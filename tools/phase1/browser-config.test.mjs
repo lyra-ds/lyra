@@ -80,6 +80,7 @@ test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild
 
   assert.match(rootScripts.test, /tools\/phase1\/browser-matrix\.test\.mjs/);
   assert.match(rootScripts.test, /tools\/phase1\/browser-config\.test\.mjs/);
+  assert.match(rootScripts.test, /tools\/security\/check-lock\.test\.mjs/);
   assert.match(rootScripts.test, /pnpm -r --workspace-concurrency=1 --if-present run test/);
   assert.doesNotMatch(rootScripts.test, /pnpm test:browsers/);
   assert.equal(packageScripts['packages/styles/package.json'].test, undefined);
@@ -87,10 +88,11 @@ test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild
   assert.equal(packageScripts['packages/alpine/package.json'].test, undefined);
 });
 
-test('prebuilds React and Alpine dist before clean root tests', () => {
+test('checks the lock before prebuilding React and Alpine for clean root tests', () => {
   const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
   const rootTestCommands = rootScripts.test.split(' && ');
   const requiredOrder = [
+    'pnpm security:check',
     'pnpm --filter @lyra-ds/react run build',
     'pnpm --filter @lyra-ds/alpine run build',
     rootTestCommands.find((command) => command.startsWith('node --test ')),
@@ -98,7 +100,7 @@ test('prebuilds React and Alpine dist before clean root tests', () => {
 
   assert.deepEqual(
     requiredOrder.map((command) => rootTestCommands.indexOf(command)),
-    [0, 1, 2],
+    [0, 1, 2, 3],
   );
 });
 
@@ -115,6 +117,16 @@ test('prebuilds React and Alpine dist before clean CI typecheck', () => {
     requiredOrder.map((command) => typecheckCommands.indexOf(command)),
     requiredOrder.map((_, index) => typecheckCommands.length - 3 + index),
   );
+});
+
+test('runs the security lock gate explicitly in required CI', () => {
+  const workflow = parse(readFileSync(resolve('.github/workflows/ci.yml'), 'utf8'));
+  const lintCommands = workflow.jobs.lint.steps.flatMap(({ run }) => (run ? [run] : []));
+  const install = lintCommands.indexOf('pnpm install --frozen-lockfile');
+  const security = lintCommands.indexOf('pnpm security:check');
+
+  assert.notEqual(install, -1);
+  assert.equal(security, install + 1);
 });
 
 test('does not leave future styles or Alpine test files outside Browser Mode', async () => {

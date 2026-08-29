@@ -13,15 +13,18 @@ name: Release
 jobs:
   release:
     steps:
+      - run: pnpm security:check
       - run: |
           for pkg in packages/styles packages/react packages/alpine; do
             echo "$pkg"
           done
+      - run: pnpm run release
   snapshot:
     permissions:
       contents: read
       id-token: write
     steps:
+      - run: pnpm security:check
       - run: pnpm changeset version --snapshot snapshot
       - run: pnpm run build
       - name: Publish versioned snapshots to npm (OIDC)
@@ -57,6 +60,75 @@ test('release policy accepts one Changesets snapshot publish with build and prov
 
   assert.equal(result.status, 0, result.stderr);
 });
+
+test('release policy rejects publishing jobs without the security lock gate', () => {
+  for (const [job, workflow] of [
+    [
+      'release',
+      validSnapshot.replace('      - run: pnpm security:check\n      - run: |', '      - run: |'),
+    ],
+    [
+      'snapshot',
+      validSnapshot.replace(
+        '    steps:\n      - run: pnpm security:check\n      - run: pnpm changeset version',
+        '    steps:\n      - run: pnpm changeset version',
+      ),
+    ],
+  ]) {
+    const result = runChecker(workflow);
+
+    assert.notEqual(result.status, 0, job);
+    assert.match(result.stderr, /security/i, job);
+  }
+});
+
+test('release policy rejects a security gate that runs after publication', () => {
+  const lateGate = validSnapshot
+    .replace(
+      '      - run: pnpm security:check\n      - run: pnpm changeset version',
+      '      - run: pnpm changeset version',
+    )
+    .replace(
+      "          NPM_CONFIG_PROVENANCE: 'true'\n",
+      "          NPM_CONFIG_PROVENANCE: 'true'\n      - run: pnpm security:check\n",
+    );
+
+  const result = runChecker(lateGate);
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /security/i);
+});
+
+for (const [mutation, replacement] of [
+  ['a comment', '      # pnpm security:check'],
+  ['an echo', '      - run: echo pnpm security:check'],
+  ['a false condition', '      - run: pnpm security:check\n        if: false'],
+  ['continue-on-error', '      - run: pnpm security:check\n        continue-on-error: true'],
+]) {
+  test(`release policy rejects ${mutation} in place of an executable security gate`, () => {
+    for (const [job, workflow] of [
+      [
+        'release',
+        validSnapshot.replace(
+          '      - run: pnpm security:check\n      - run: |',
+          `${replacement}\n      - run: |`,
+        ),
+      ],
+      [
+        'snapshot',
+        validSnapshot.replace(
+          '      - run: pnpm security:check\n      - run: pnpm changeset version',
+          `${replacement}\n      - run: pnpm changeset version`,
+        ),
+      ],
+    ]) {
+      const result = runChecker(workflow);
+
+      assert.notEqual(result.status, 0, job);
+      assert.match(result.stderr, /security/i, job);
+    }
+  });
+}
 
 test('release policy rejects per-package snapshot publishing', () => {
   const directPublishes = validSnapshot.replace(
