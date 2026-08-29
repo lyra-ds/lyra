@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
+import { parse } from 'yaml';
+
 const [changesetsText, versioning, contributing, releaseWorkflow] = await Promise.all([
   readFile('.changeset/config.json', 'utf8'),
   readFile('VERSIONING.md', 'utf8'),
@@ -91,10 +93,26 @@ function assertSnapshotPolicy(workflow) {
   );
 }
 
-function assertSecurityBeforePublish(workflow, jobName, publishPattern) {
-  const job = indentedBlock(workflow, jobName);
-  const security = job.search(/\bpnpm\s+(?:run\s+)?security:check\b/);
-  const publish = job.search(publishPattern);
+function isExactBlockingRun(step, command) {
+  return (
+    step !== null &&
+    typeof step === 'object' &&
+    !Array.isArray(step) &&
+    typeof step.run === 'string' &&
+    step.run.trim() === command &&
+    !Object.hasOwn(step, 'if') &&
+    !Object.hasOwn(step, 'continue-on-error')
+  );
+}
+
+function assertSecurityBeforePublish(workflow, jobName, publishCommand) {
+  const steps = parse(workflow)?.jobs?.[jobName]?.steps;
+  assert.ok(Array.isArray(steps), `release workflow must define steps for the ${jobName} job`);
+
+  const security = steps.findIndex((step) => isExactBlockingRun(step, 'pnpm security:check'));
+  const publish = steps.findIndex(
+    (step) => typeof step?.run === 'string' && step.run.trim() === publishCommand,
+  );
 
   assert.notEqual(security, -1, `${jobName} job must run the security lock gate`);
   assert.notEqual(publish, -1, `${jobName} job must retain its package publish operation`);
@@ -118,11 +136,7 @@ for (const packagePath of ['packages/styles', 'packages/react', 'packages/alpine
   assert.match(releaseWorkflow, new RegExp(packagePath));
 }
 assertSnapshotPolicy(releaseWorkflow);
-assertSecurityBeforePublish(releaseWorkflow, 'release', /\bpnpm\s+(?:run\s+)?release\b/);
-assertSecurityBeforePublish(
-  releaseWorkflow,
-  'snapshot',
-  /\bpnpm\s+(?:exec\s+)?changeset\s+publish\s+--tag\s+snapshot\b/,
-);
+assertSecurityBeforePublish(releaseWorkflow, 'release', 'pnpm run release');
+assertSecurityBeforePublish(releaseWorkflow, 'snapshot', 'pnpm changeset publish --tag snapshot');
 
 console.log('Release policy is configured for independent package versioning.');
