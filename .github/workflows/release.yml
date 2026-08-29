@@ -80,6 +80,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm security:check
       - name: Version PR
         id: changesets
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
@@ -164,6 +165,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm security:check
       - name: Describe snapshot
         run: |
           printf 'Snapshot ref: %s\n' "$GITHUB_SHA"

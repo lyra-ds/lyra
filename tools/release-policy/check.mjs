@@ -91,6 +91,16 @@ function assertSnapshotPolicy(workflow) {
   );
 }
 
+function assertSecurityBeforePublish(workflow, jobName, publishPattern) {
+  const job = indentedBlock(workflow, jobName);
+  const security = job.search(/\bpnpm\s+(?:run\s+)?security:check\b/);
+  const publish = job.search(publishPattern);
+
+  assert.notEqual(security, -1, `${jobName} job must run the security lock gate`);
+  assert.notEqual(publish, -1, `${jobName} job must retain its package publish operation`);
+  assert.ok(security < publish, `${jobName} job must run the security lock gate before publishing`);
+}
+
 assert.deepEqual(changesets.fixed, []);
 assert.deepEqual(changesets.linked, []);
 assert.match(versioning, /independent SemVer/);
@@ -108,5 +118,11 @@ for (const packagePath of ['packages/styles', 'packages/react', 'packages/alpine
   assert.match(releaseWorkflow, new RegExp(packagePath));
 }
 assertSnapshotPolicy(releaseWorkflow);
+assertSecurityBeforePublish(releaseWorkflow, 'release', /\bpnpm\s+(?:run\s+)?release\b/);
+assertSecurityBeforePublish(
+  releaseWorkflow,
+  'snapshot',
+  /\bpnpm\s+(?:exec\s+)?changeset\s+publish\s+--tag\s+snapshot\b/,
+);
 
 console.log('Release policy is configured for independent package versioning.');
