@@ -6,6 +6,12 @@ import { parse } from 'yaml';
 
 const SEMVER = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/u;
 
+function isPlainRecord(value) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
 function parsedVersion(version) {
   const match = SEMVER.exec(version);
   if (match === null) return undefined;
@@ -40,6 +46,19 @@ function resolvedVersions(lockfile, packageName) {
   return [...versions].sort();
 }
 
+function nonCanonicalGovernedKeys(lockfile, packageName) {
+  const prefix = `/${packageName}@`;
+  const keys = new Set();
+
+  for (const graph of [lockfile.packages, lockfile.snapshots]) {
+    for (const key of Object.keys(graph)) {
+      if (key.startsWith(prefix)) keys.add(key);
+    }
+  }
+
+  return [...keys].sort();
+}
+
 const RULES = [
   {
     packageName: 'brace-expansion',
@@ -60,9 +79,24 @@ const RULES = [
 ];
 
 export function validateSecurityLock(lockfile) {
+  if (!isPlainRecord(lockfile)) return ['pnpm-lock.yaml root must be a plain record.'];
+  if (lockfile.lockfileVersion !== '9.0') {
+    return ['pnpm-lock.yaml lockfileVersion must be the pnpm 11 canonical value "9.0".'];
+  }
+
   const errors = [];
 
+  for (const section of ['packages', 'snapshots']) {
+    if (!isPlainRecord(lockfile[section])) {
+      errors.push(`pnpm-lock.yaml ${section} must be a plain record.`);
+    }
+  }
+  if (errors.length !== 0) return errors;
+
   for (const rule of RULES) {
+    for (const key of nonCanonicalGovernedKeys(lockfile, rule.packageName)) {
+      errors.push(`pnpm-lock.yaml contains non-canonical governed key ${key}.`);
+    }
     for (const versionText of resolvedVersions(lockfile, rule.packageName)) {
       const version = parsedVersion(versionText);
       if (version === undefined) {
