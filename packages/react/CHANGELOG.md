@@ -1,5 +1,11 @@
 # @lyra-ds/react
 
+## 0.5.0
+
+### Minor Changes
+
+- [#205](https://github.com/lyra-ds/lyra/pull/205) [`ff90c9e`](https://github.com/lyra-ds/lyra/commit/ff90c9eed2f82f0fc5a030b8923b185f2c16034d) Thanks [@franciscpd](https://github.com/franciscpd)! - Replace FileUpload's simulated progress with a consumer-controlled upload lifecycle across React, Alpine, and shared Styles. Add real progress, retry, cancellation, stale-attempt protection, native form semantics, and migration examples.
+
 ## 0.4.2
 
 ## 0.4.1

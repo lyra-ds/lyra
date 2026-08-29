@@ -1,5 +1,17 @@
 # @lyra-ds/styles
 
+## 0.5.0
+
+### Minor Changes
+
+- [#205](https://github.com/lyra-ds/lyra/pull/205) [`ff90c9e`](https://github.com/lyra-ds/lyra/commit/ff90c9eed2f82f0fc5a030b8923b185f2c16034d) Thanks [@franciscpd](https://github.com/franciscpd)! - Replace FileUpload's simulated progress with a consumer-controlled upload lifecycle across React, Alpine, and shared Styles. Add real progress, retry, cancellation, stale-attempt protection, native form semantics, and migration examples.
+
+### Patch Changes
+
+- [#194](https://github.com/lyra-ds/lyra/pull/194) [`cc18cab`](https://github.com/lyra-ds/lyra/commit/cc18cabe83eb201e5931fd7cf00be18a399c14a0) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix WCAG AA contrast for CalendarView event chips, quiet dark text, and primary-control interaction states. Improve light-sunken contrast in Combobox options, File Manager view controls, and Workspace slug prefixes; light branded hover/active states now meet AA. Dark `--text-faint` now shares the AA-safe `--text-muted` value.
+
+- [#205](https://github.com/lyra-ds/lyra/pull/205) [`79d55e2`](https://github.com/lyra-ds/lyra/commit/79d55e2bc2c7fc2ee3f073c007e9100b82db25b5) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep FileManager metadata WCAG AA readable when a file row is hovered in light and dark themes.
+
 ## 0.4.2
 
 ### Patch Changes

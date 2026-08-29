@@ -1,5 +1,15 @@
 # @lyra-ds/alpine
 
+## 0.6.0
+
+### Minor Changes
+
+- [#205](https://github.com/lyra-ds/lyra/pull/205) [`ff90c9e`](https://github.com/lyra-ds/lyra/commit/ff90c9eed2f82f0fc5a030b8923b185f2c16034d) Thanks [@franciscpd](https://github.com/franciscpd)! - Replace FileUpload's simulated progress with a consumer-controlled upload lifecycle across React, Alpine, and shared Styles. Add real progress, retry, cancellation, stale-attempt protection, native form semantics, and migration examples.
+
+### Patch Changes
+
+- [#192](https://github.com/lyra-ds/lyra/pull/192) [`64dab7b`](https://github.com/lyra-ds/lyra/commit/64dab7b8ca526b33cb1004c0cec89c0f86aa57b6) Thanks [@franciscpd](https://github.com/franciscpd)! - Stabilize overlay visibility, focus, and active-descendant behavior across supported browsers.
+
 ## 0.5.0
 
 ### Minor Changes
