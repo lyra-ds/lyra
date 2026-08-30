@@ -258,13 +258,6 @@ function hasTrackedDocument(path, documents) {
 
 function validateOverlayProgramEntries(components, errors) {
   const entries = components.filter((entry) => OVERLAY_TARGET_CONTRACTS.has(entry?.id));
-  const overlayDraftIsAuthored = entries.some(
-    (entry) =>
-      entry?.governingSpecification?.path !== null ||
-      entry?.governingSpecification?.status !== 'not-authored' ||
-      entry?.implementationStatus !== 'planned',
-  );
-  if (!overlayDraftIsAuthored) return;
 
   for (const entry of entries) {
     const id = entry.id;
@@ -284,6 +277,15 @@ function validateOverlayProgramEntries(components, errors) {
 
 function validateOverlaySpecification(document, entries, errors) {
   const normalizedDocument = document.replace(/\s+/gu, ' ');
+  const statusLines = [...document.matchAll(/^\*\*Status:\*\* [^\r\n]+$/gmu)].map(
+    (match) => match[0],
+  );
+  const recognizedStatusLines = statusLines.filter((line) =>
+    [...OVERLAY_STATUS_METADATA.values()].some((pattern) => pattern.test(line)),
+  );
+  if (statusLines.length !== 1 || recognizedStatusLines.length !== 1) {
+    errors.push('overlay specification must contain exactly one recognized status metadata line');
+  }
   for (const entry of entries) {
     const status = entry?.governingSpecification?.status;
     const statusPattern = OVERLAY_STATUS_METADATA.get(status);
@@ -554,7 +556,7 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
 }
 
 function referencedPaths(ledger) {
-  const paths = new Set([ledger?.programSpecification]);
+  const paths = new Set([ledger?.programSpecification, OVERLAY_SPEC_PATH]);
   for (const entry of ledger?.components ?? []) {
     paths.add(entry?.governingSpecification?.path);
     paths.add(entry?.migrationGuides?.en);

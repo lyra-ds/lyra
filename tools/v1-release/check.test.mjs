@@ -154,7 +154,7 @@ function plannedEntry(id, stream, wave) {
 }
 
 function validProgram() {
-  return {
+  const input = {
     ledger: {
       schemaVersion: 1,
       targetRelease: '1.0.0',
@@ -181,17 +181,20 @@ function validProgram() {
         '**Status:** Approved',
     },
   };
-}
-
-function overlayDraftProgram(document) {
-  const input = validProgram();
   for (const entry of input.ledger.components) {
     if (!OVERLAY_IDS.includes(entry.id)) continue;
     entry.governingSpecification = { path: OVERLAY_SPEC_PATH, status: 'draft' };
     entry.targetContracts = OVERLAY_TARGET_CONTRACTS[entry.id];
     entry.implementationStatus = 'specified';
   }
-  if (document !== undefined) input.documents[OVERLAY_SPEC_PATH] = document;
+  input.documents[OVERLAY_SPEC_PATH] = structurallyCompleteOverlaySpecification();
+  return input;
+}
+
+function overlayDraftProgram(document) {
+  const input = validProgram();
+  if (document === undefined) delete input.documents[OVERLAY_SPEC_PATH];
+  else input.documents[OVERLAY_SPEC_PATH] = document;
   return input;
 }
 
@@ -349,7 +352,7 @@ for (const [name, workflow] of [
   });
 }
 
-test('accepts the complete planned V1 program', () => {
+test('accepts the complete V1 program at the authored overlay checkpoint', () => {
   assert.deepEqual(validateV1Program(validProgram()), []);
 });
 
@@ -359,6 +362,31 @@ test('rejects overlay draft entries without their tracked family specification',
   for (const id of OVERLAY_IDS) {
     assert.ok(
       errors.some((error) => error.includes(`${id}: draft specification must name a tracked path`)),
+    );
+  }
+});
+
+test('rejects wholesale overlay checkpoint demotion independently of supplied documents', () => {
+  const input = overlayDraftProgram(structurallyCompleteOverlaySpecification());
+  for (const entry of input.ledger.components) {
+    if (!OVERLAY_IDS.includes(entry.id)) continue;
+    entry.governingSpecification = { path: null, status: 'not-authored' };
+    entry.targetContracts = [`v1-${entry.id}`];
+    entry.implementationStatus = 'planned';
+  }
+  delete input.documents[OVERLAY_SPEC_PATH];
+
+  const errors = validateV1Program(input);
+  for (const id of OVERLAY_IDS) {
+    assert.ok(
+      errors.some((error) =>
+        error.includes(`${id}: overlay specification path must equal ${OVERLAY_SPEC_PATH}`),
+      ),
+      id,
+    );
+    assert.ok(
+      errors.some((error) => error.includes(`${id}: overlay targetContracts must equal`)),
+      id,
     );
   }
 });
@@ -505,6 +533,21 @@ test('rejects draft ledger status when the overlay document is approved or omits
     );
   }
 });
+
+for (const [name, extraStatus] of [
+  ['conflicting Approved status', '**Status:** Approved'],
+  ['duplicate Draft status', '**Status:** Draft — awaiting written review'],
+]) {
+  test(`rejects overlay specification with ${name}`, () => {
+    const document = `${structurallyCompleteOverlaySpecification()}\n${extraStatus}\n`;
+
+    assert.ok(
+      validateV1Program(overlayDraftProgram(document)).some((error) =>
+        error.includes('exactly one recognized status metadata line'),
+      ),
+    );
+  });
+}
 
 test('accepts an explicitly approved overlay document when every ledger entry matches', () => {
   const document = structurallyCompleteOverlaySpecification().replace(
@@ -777,6 +820,29 @@ test('CLI rejects readable but untracked referenced documents', async () => {
   } finally {
     await writeFile(LEDGER_PATH, originalLedger);
     await rm(UNTRACKED_DOCUMENT_PATH, { force: true });
+  }
+});
+
+test('CLI rejects wholesale demotion after the overlay checkpoint is tracked', async () => {
+  const originalLedger = await readFile(LEDGER_PATH, 'utf8');
+  const ledger = JSON.parse(originalLedger);
+  for (const entry of ledger.components) {
+    if (!OVERLAY_IDS.includes(entry.id)) continue;
+    entry.governingSpecification = { path: null, status: 'not-authored' };
+    entry.targetContracts = [`v1-${entry.id}`];
+    entry.implementationStatus = 'planned';
+  }
+
+  await writeFile(LEDGER_PATH, `${JSON.stringify(ledger, null, 2)}\n`);
+  try {
+    await assert.rejects(
+      execFileAsync(process.execPath, ['tools/v1-release/check.mjs']),
+      (error) =>
+        error.code === 1 &&
+        error.stderr.includes(`dialog: overlay specification path must equal ${OVERLAY_SPEC_PATH}`),
+    );
+  } finally {
+    await writeFile(LEDGER_PATH, originalLedger);
   }
 });
 
