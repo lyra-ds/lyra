@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
+import { parse } from 'yaml';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const execFileAsync = promisify(execFile);
@@ -74,6 +75,39 @@ const REQUIRED_ENTRY_KEYS = new Set([
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+export function validateV1ReleaseWiring({ packageJson, workflow }) {
+  const errors = [];
+  const script = packageJson?.scripts?.['v1-release:check'];
+  if (script !== 'node tools/v1-release/check.mjs') {
+    errors.push('package.json must define the exact v1-release:check command');
+  }
+  const document = parse(workflow);
+  const steps = document?.jobs?.lint?.steps;
+  const commands = Array.isArray(steps)
+    ? steps.filter((step) => typeof step?.run === 'string').map((step) => step.run.trim())
+    : [];
+  const frozenInstallIndex = Array.isArray(steps)
+    ? steps.findIndex(
+        (step) =>
+          typeof step?.run === 'string' && step.run.trim() === 'pnpm install --frozen-lockfile',
+      )
+    : -1;
+  const hasUnconditionalCommand = Array.isArray(steps)
+    ? steps.some(
+        (step, index) =>
+          typeof step?.run === 'string' &&
+          step.run.trim() === 'pnpm v1-release:check' &&
+          !Object.hasOwn(step, 'if') &&
+          step['continue-on-error'] !== true &&
+          index > frozenInstallIndex,
+      )
+    : false;
+  if (!commands.includes('pnpm v1-release:check') || !hasUnconditionalCommand) {
+    errors.push('lint must run pnpm v1-release:check unconditionally');
+  }
+  return errors;
 }
 
 function isNonEmptyStringArray(value) {

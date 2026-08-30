@@ -4,11 +4,13 @@ import { readFile, rm, writeFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { validateV1Program } from './check.mjs';
+import { validateV1Program, validateV1ReleaseWiring } from './check.mjs';
 
 const execFileAsync = promisify(execFile);
 const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
 const UNTRACKED_DOCUMENT_PATH = 'tools/v1-release/.check-untracked-test.md';
+const PACKAGE_JSON_PATH = 'package.json';
+const CI_WORKFLOW_PATH = '.github/workflows/ci.yml';
 
 const P1_IDS = [
   'dialog',
@@ -126,6 +128,92 @@ function qualifiedProgram() {
     ...Object.fromEntries(ACCEPTANCE_CELLS.map((cell) => [`evidence/${cell}.json`, '{}'])),
   });
   return input;
+}
+
+function validV1ReleaseWorkflow() {
+  return `jobs:
+  lint:
+    steps:
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm v1-core:check
+      - run: pnpm v1-release:check
+`;
+}
+
+function validV1ReleasePackageJson() {
+  return { scripts: { 'v1-release:check': 'node tools/v1-release/check.mjs' } };
+}
+
+test('requires the repository package command and lint workflow gate', async () => {
+  const [packageJson, workflow] = await Promise.all([
+    readFile(PACKAGE_JSON_PATH, 'utf8').then(JSON.parse),
+    readFile(CI_WORKFLOW_PATH, 'utf8'),
+  ]);
+
+  assert.deepEqual(validateV1ReleaseWiring({ packageJson, workflow }), []);
+});
+
+for (const [name, workflow] of [
+  [
+    'comment-only command text',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-release:check',
+      '      # pnpm v1-release:check',
+    ),
+  ],
+  [
+    'echoed command text',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-release:check',
+      '      - run: echo pnpm v1-release:check',
+    ),
+  ],
+  [
+    'conditional command',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-release:check',
+      '      - if: false\n        run: pnpm v1-release:check',
+    ),
+  ],
+  [
+    'continue-on-error command',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-release:check',
+      '      - continue-on-error: true\n        run: pnpm v1-release:check',
+    ),
+  ],
+  [
+    'command in a wrong job',
+    `jobs:
+  lint:
+    steps:
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm v1-core:check
+  test:
+    steps:
+      - run: pnpm v1-release:check
+`,
+  ],
+  [
+    'command before frozen install',
+    `jobs:
+  lint:
+    steps:
+      - run: pnpm v1-release:check
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm v1-core:check
+`,
+  ],
+]) {
+  test(`rejects ${name}`, () => {
+    assert.deepEqual(
+      validateV1ReleaseWiring({
+        packageJson: validV1ReleasePackageJson(),
+        workflow,
+      }),
+      ['lint must run pnpm v1-release:check unconditionally'],
+    );
+  });
 }
 
 test('accepts the complete planned V1 program', () => {
