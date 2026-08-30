@@ -93,6 +93,15 @@ const OVERLAY_SPEC_REFERENCES = [
   './lyra-v1/05-quality-performance.md',
 ];
 
+const OVERLAY_CANCELLATION_CLAUSES = [
+  '`CreateWorkspaceRequest` is `{ operationId: string; data: { name: string; slug: string }; signal: AbortSignal }`.',
+  '`CreateWorkspaceResult` MUST carry the same `operationId`.',
+  'Lyra MUST commit `canceling` before calling `controller.abort({ operationId })` synchronously in the same accepted close interaction task.',
+  '`signal.reason` MUST equal `{ operationId }`.',
+  'Duplicate close requests while `canceling` MUST NOT call `abort` again.',
+  'A terminal result with a noncurrent `operationId` MUST be ignored as stale.',
+];
+
 function plannedEntry(id, stream, wave) {
   return {
     id,
@@ -171,6 +180,8 @@ function structurallyCompleteOverlaySpecification() {
     'OF-MODAL OF-ANCHORED OF-MENU OF-TOOLTIP OF-COMPOSED',
     '',
     'Chromium Firefox WebKit React 18 React 19 deferred-by-release-profile',
+    '',
+    ...OVERLAY_CANCELLATION_CLAUSES,
     '',
     ...OVERLAY_SPEC_REFERENCES.map((path) => `- [Required specification](${path})`),
     '',
@@ -395,6 +406,20 @@ test('requires the exact overlay family scope metadata', () => {
       error.includes('draft metadata is incomplete'),
     ),
   );
+});
+
+test('requires a concrete operation-scoped CreateWorkspaceDialog cancellation contract', () => {
+  const specification = structurallyCompleteOverlaySpecification();
+
+  for (const clause of OVERLAY_CANCELLATION_CLAUSES) {
+    const document = specification.replace(clause, 'Incomplete cancellation contract.');
+    assert.ok(
+      validateV1Program(overlayDraftProgram(document)).some((error) =>
+        error.includes('concrete CreateWorkspaceDialog cancellation contract'),
+      ),
+      clause,
+    );
+  }
 });
 
 for (const id of OVERLAY_IDS) {

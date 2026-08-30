@@ -436,23 +436,38 @@ infrastructure.
   on the form and disable duplicate submission. An invalid submit MUST stay in
   `editing` or enter `error`, MUST NOT notify the consumer, and MUST focus the
   first invalid field under the modal focus order. A valid submit MUST create a
-  fresh operation ID, commit `submitting`, and then notify the consumer exactly
-  once in the same interaction task with that ID and the normalized
-  `{ name, slug }`; duplicate submits for that ID MUST be ignored.
+  fresh operation ID and one Lyra-owned `AbortController`. The public
+  Lyra-owned `CreateWorkspaceRequest` is
+  `{ operationId: string; data: { name: string; slug: string }; signal: AbortSignal }`.
+  Lyra MUST commit `submitting` and then notify the consumer exactly once in the
+  same interaction task with that request; duplicate submits for its ID MUST be
+  ignored. The signal MUST be initially un-aborted, MUST belong only to that
+  operation ID, and MUST be the only cancellation interface exposed to the
+  consumer.
   The consumer handler MUST synchronously return or asynchronously settle with
-  exactly one result: `accepted`, `rejected` with an error message, or
-  `canceled`. Returning `undefined`, throwing, or rejecting the asynchronous
-  operation MUST be treated as `rejected`, never as implicit acceptance.
+  a Lyra-owned `CreateWorkspaceResult`. `CreateWorkspaceResult` MUST carry the
+  same `operationId`. Its status MUST be exactly `accepted`, `rejected` with an
+  error message, or `canceled`. Returning `undefined`, throwing, or rejecting
+  the asynchronous operation MUST be treated as `rejected` for the current ID,
+  never as implicit acceptance.
   `accepted` MUST commit the `accepted` state and domain result and only then
   request modal close; `rejected` MUST commit `error`, keep the dialog open,
   preserve the entered values, expose the error, and focus its summary or first
-  invalid field; `canceled` MUST return to `editing` with values preserved. A
-  user close while `submitting` MUST enter
-  `canceling`, signal cancellation once for that operation ID, and wait for its
-  terminal result; a resulting `canceled` MUST then allow that requested close.
-  The first terminal result wins. Results for an old ID, results after destroy,
-  and any later settlement MUST be ignored without closing, announcing, or
-  changing state.
+  invalid field; `canceled` MUST return to `editing` with values preserved. On
+  an accepted user close while `submitting`, Lyra MUST retain `aria-busy="true"`
+  and the current ID. Lyra MUST commit `canceling` before calling
+  `controller.abort({ operationId })` synchronously in the same accepted close
+  interaction task. The consumer MUST observe exactly one `abort` event during
+  that call, `signal.aborted` MUST be `true`, and `signal.reason` MUST equal
+  `{ operationId }`. Duplicate close requests while `canceling` MUST NOT call
+  `abort` again. Destroying a pending composition MUST use the same single-abort
+  path before releasing the operation and MUST NOT request another close. Lyra
+  MUST then wait for the result carrying that ID; `canceled` MUST allow the
+  pending user close, while the other terminal results retain their outcomes
+  above. The first terminal result wins. A terminal result with a noncurrent
+  `operationId` MUST be ignored as stale. Results after destroy and any later
+  settlement MUST likewise be ignored without closing, announcing, or changing
+  state.
 
 React controlled props and domain callbacks remain application inputs. A Lyra
 close or selection callback communicates one requested next state or committed

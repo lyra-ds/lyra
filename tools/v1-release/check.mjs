@@ -73,6 +73,15 @@ const OVERLAY_SPEC_REFERENCES = [
   './lyra-v1/05-quality-performance.md',
 ];
 
+const OVERLAY_CANCELLATION_CLAUSES = [
+  '`CreateWorkspaceRequest` is `{ operationId: string; data: { name: string; slug: string }; signal: AbortSignal }`.',
+  '`CreateWorkspaceResult` MUST carry the same `operationId`.',
+  'Lyra MUST commit `canceling` before calling `controller.abort({ operationId })` synchronously in the same accepted close interaction task.',
+  '`signal.reason` MUST equal `{ operationId }`.',
+  'Duplicate close requests while `canceling` MUST NOT call `abort` again.',
+  'A terminal result with a noncurrent `operationId` MUST be ignored as stale.',
+];
+
 const P1_IDS = new Set([
   'dialog',
   'drawer',
@@ -251,6 +260,13 @@ function validateOverlaySpecification(document, errors) {
   for (const marker of OVERLAY_SPEC_MARKERS) {
     if (!document.includes(marker)) {
       errors.push(`overlay specification must contain required marker ${marker}`);
+    }
+  }
+  for (const clause of OVERLAY_CANCELLATION_CLAUSES) {
+    if (!normalizedDocument.includes(clause)) {
+      errors.push(
+        `overlay specification must define concrete CreateWorkspaceDialog cancellation contract: ${clause}`,
+      );
     }
   }
   for (const reference of OVERLAY_SPEC_REFERENCES) {
