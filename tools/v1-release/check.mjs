@@ -10,6 +10,10 @@ const execFileAsync = promisify(execFile);
 const ACCEPTANCE_PROFILE_NAME = 'v1-interactive';
 const OVERLAY_SPEC_PATH = 'docs/superpowers/specs/2026-08-30-overlay-family-design.md';
 const DATA_FILES_SPEC_PATH = 'docs/superpowers/specs/2026-08-15-data-files-family-design.md';
+const DATA_FILES_STATUS_METADATA = new Map([
+  ['file-upload-wave', '**Status:** Implemented under Automated Core — FileUpload wave'],
+  ['implemented', '**Status:** Implemented'],
+]);
 
 const OVERLAY_TARGET_CONTRACTS = new Map([
   ['dialog', ['OF-MODAL']],
@@ -219,26 +223,37 @@ export function validateV1ReleaseWiring({ packageJson, workflow }) {
   }
   const document = parse(workflow);
   const steps = document?.jobs?.lint?.steps;
-  const commands = Array.isArray(steps)
-    ? steps.filter((step) => typeof step?.run === 'string').map((step) => step.run.trim())
-    : [];
+  const isUnconditionalCommand = (step, command) =>
+    typeof step?.run === 'string' &&
+    step.run.trim() === command &&
+    !Object.hasOwn(step, 'if') &&
+    !Object.hasOwn(step, 'continue-on-error');
   const frozenInstallIndex = Array.isArray(steps)
-    ? steps.findIndex(
-        (step) =>
-          typeof step?.run === 'string' && step.run.trim() === 'pnpm install --frozen-lockfile',
-      )
+    ? steps.findIndex((step) => isUnconditionalCommand(step, 'pnpm install --frozen-lockfile'))
     : -1;
-  const hasUnconditionalCommand = Array.isArray(steps)
-    ? steps.some(
-        (step, index) =>
-          typeof step?.run === 'string' &&
-          step.run.trim() === 'pnpm v1-release:check' &&
-          !Object.hasOwn(step, 'if') &&
-          !Object.hasOwn(step, 'continue-on-error') &&
-          index > frozenInstallIndex,
+  const v1CoreIndex = Array.isArray(steps)
+    ? steps.findIndex((step) => isUnconditionalCommand(step, 'pnpm v1-core:check'))
+    : -1;
+  const releaseCheckIndices = Array.isArray(steps)
+    ? steps.flatMap((step, index) =>
+        typeof step?.run === 'string' && step.run.trim() === 'pnpm v1-release:check' ? [index] : [],
       )
-    : false;
-  if (!commands.includes('pnpm v1-release:check') || !hasUnconditionalCommand) {
+    : [];
+  if (frozenInstallIndex === -1) {
+    errors.push('lint must run pnpm install --frozen-lockfile unconditionally');
+  }
+  if (v1CoreIndex === -1) {
+    errors.push('lint must run pnpm v1-core:check unconditionally');
+  }
+  const releaseCheckIndex = releaseCheckIndices[0];
+  if (
+    releaseCheckIndices.length !== 1 ||
+    !isUnconditionalCommand(steps?.[releaseCheckIndex], 'pnpm v1-release:check') ||
+    releaseCheckIndex < frozenInstallIndex ||
+    releaseCheckIndex < v1CoreIndex ||
+    frozenInstallIndex === -1 ||
+    v1CoreIndex === -1
+  ) {
     errors.push('lint must run pnpm v1-release:check unconditionally');
   }
   return errors;
@@ -254,6 +269,42 @@ function isNonEmptyStringArray(value) {
 
 function hasTrackedDocument(path, documents) {
   return typeof path === 'string' && Object.hasOwn(documents, path);
+}
+
+function declaredNotApplicableEntries(document) {
+  const declarations = new Set();
+  for (const match of (document ?? '').matchAll(
+    /^<!-- lyra-v1-not-applicable: (\{[^\r\n]+\}) -->$/gmu,
+  )) {
+    try {
+      const declaration = JSON.parse(match[1]);
+      if (
+        isPlainObject(declaration) &&
+        typeof declaration.component === 'string' &&
+        ACCEPTANCE_CELLS.has(declaration.cell) &&
+        typeof declaration.reason === 'string' &&
+        declaration.reason.trim() !== ''
+      ) {
+        declarations.add(
+          JSON.stringify([declaration.component, declaration.cell, declaration.reason]),
+        );
+      }
+    } catch {
+      // An unreadable directive cannot authorize a ledger exclusion.
+    }
+  }
+  return declarations;
+}
+
+function dataFilesGoverningStatus(document) {
+  const statusLines = [...(document ?? '').matchAll(/^\*\*Status:\*\* [^\r\n]+$/gmu)].map(
+    (match) => match[0],
+  );
+  if (statusLines.length !== 1) return null;
+  for (const [status, metadata] of DATA_FILES_STATUS_METADATA) {
+    if (statusLines[0] === metadata) return status;
+  }
+  return null;
 }
 
 function validateOverlayProgramEntries(components, errors) {
@@ -360,7 +411,11 @@ function validateQualifiedEntry(entry, profile, documents, errors, label) {
   if (specification?.status !== 'implemented') {
     errors.push(`${label}: qualified component requires an implemented specification`);
   }
-  if (!/^\*\*Status:\*\* Implemented$/mu.test(documents[specification?.path] ?? '')) {
+  const hasImplementedSpecification =
+    specification?.path === DATA_FILES_SPEC_PATH
+      ? dataFilesGoverningStatus(documents[specification.path]) === 'implemented'
+      : /^\*\*Status:\*\* Implemented$/mu.test(documents[specification?.path] ?? '');
+  if (!hasImplementedSpecification) {
     errors.push(`${label}: implemented specification metadata is missing`);
   }
 
@@ -456,6 +511,15 @@ export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
   } else if (!hasTrackedDocument(specification.path, documents)) {
     errors.push(`${label}: ${specification.status} specification must name a tracked path`);
   }
+  const dataFilesStatus =
+    specification?.path === DATA_FILES_SPEC_PATH
+      ? dataFilesGoverningStatus(documents[DATA_FILES_SPEC_PATH])
+      : null;
+  if (specification?.path === DATA_FILES_SPEC_PATH && dataFilesStatus === null) {
+    errors.push(
+      `${label}: Data and Files specification must contain exactly one recognized governing status metadata line`,
+    );
+  }
   if (
     isPlainObject(specification) &&
     SPECIFICATION_STATES.has(specification.status) &&
@@ -466,9 +530,7 @@ export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
       label === 'data-table' &&
       lifecyclePair === 'implemented:planned' &&
       specification.path === DATA_FILES_SPEC_PATH &&
-      /^\*\*Status:\*\* Implemented under Automated Core — FileUpload wave$/mu.test(
-        documents[DATA_FILES_SPEC_PATH] ?? '',
-      );
+      dataFilesStatus === 'file-upload-wave';
     if (!VALID_LIFECYCLE_PAIRS.has(lifecyclePair) && !isPlannedDataTableException) {
       errors.push(
         `${label}: lifecycle pair ${specification.status} + ${entry.implementationStatus} is invalid`,
@@ -485,17 +547,31 @@ export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
     errors.push(`${label}: notApplicable must be an array`);
   } else {
     const excluded = new Set();
+    const declaredExclusions = declaredNotApplicableEntries(documents[specification?.path]);
     for (const exclusion of entry.notApplicable) {
-      if (
-        !isPlainObject(exclusion) ||
-        !ACCEPTANCE_CELLS.has(exclusion.cell) ||
-        typeof exclusion.reason !== 'string' ||
-        exclusion.reason.trim() === '' ||
-        excluded.has(exclusion.cell)
-      ) {
+      const isValidExclusion =
+        isPlainObject(exclusion) &&
+        ACCEPTANCE_CELLS.has(exclusion.cell) &&
+        typeof exclusion.reason === 'string' &&
+        exclusion.reason.trim() !== '' &&
+        !excluded.has(exclusion.cell);
+      if (!isValidExclusion) {
         errors.push(`${label}: notApplicable reason must be non-empty and each cell unique`);
+      } else if (specification?.path === OVERLAY_SPEC_PATH) {
+        errors.push(
+          `${label}: overlay specification requires every acceptance cell; notApplicable must be empty`,
+        );
+      } else if (
+        !declaredExclusions.has(JSON.stringify([label, exclusion.cell, exclusion.reason]))
+      ) {
+        errors.push(
+          `${label}: notApplicable cell ${exclusion.cell} must match an exact governing specification declaration`,
+        );
       }
-      excluded.add(exclusion?.cell);
+      if (!isPlainObject(exclusion) || !ACCEPTANCE_CELLS.has(exclusion.cell)) {
+        continue;
+      }
+      excluded.add(exclusion.cell);
     }
   }
   if (entry.manualEvidence !== 'deferred-by-release-profile') {

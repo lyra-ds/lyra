@@ -259,6 +259,10 @@ function qualifiedProgram() {
   return input;
 }
 
+function notApplicableDirective(component, cell, reason) {
+  return `<!-- lyra-v1-not-applicable: ${JSON.stringify({ component, cell, reason })} -->`;
+}
+
 function validV1ReleaseWorkflow() {
   return `jobs:
   lint:
@@ -349,6 +353,89 @@ for (const [name, workflow] of [
       }),
       ['lint must run pnpm v1-release:check unconditionally'],
     );
+  });
+}
+
+for (const [name, workflow, expected] of [
+  [
+    'missing frozen install prerequisite',
+    `jobs:
+  lint:
+    steps:
+      - run: pnpm v1-core:check
+      - run: pnpm v1-release:check
+`,
+    'lint must run pnpm install --frozen-lockfile unconditionally',
+  ],
+  [
+    'missing v1-core prerequisite',
+    `jobs:
+  lint:
+    steps:
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm v1-release:check
+`,
+    'lint must run pnpm v1-core:check unconditionally',
+  ],
+  [
+    'duplicate release-check steps',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-release:check',
+      '      - run: pnpm v1-release:check\n      - run: pnpm v1-release:check',
+    ),
+    'lint must run pnpm v1-release:check unconditionally',
+  ],
+  [
+    'release check before v1-core',
+    `jobs:
+  lint:
+    steps:
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm v1-release:check
+      - run: pnpm v1-core:check
+`,
+    'lint must run pnpm v1-release:check unconditionally',
+  ],
+  [
+    'conditional frozen install prerequisite',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm install --frozen-lockfile',
+      '      - if: true\n        run: pnpm install --frozen-lockfile',
+    ),
+    'lint must run pnpm install --frozen-lockfile unconditionally',
+  ],
+  [
+    'tolerated frozen install prerequisite',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm install --frozen-lockfile',
+      '      - continue-on-error: false\n        run: pnpm install --frozen-lockfile',
+    ),
+    'lint must run pnpm install --frozen-lockfile unconditionally',
+  ],
+  [
+    'conditional v1-core prerequisite',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-core:check',
+      '      - if: true\n        run: pnpm v1-core:check',
+    ),
+    'lint must run pnpm v1-core:check unconditionally',
+  ],
+  [
+    'tolerated v1-core prerequisite',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-core:check',
+      '      - continue-on-error: false\n        run: pnpm v1-core:check',
+    ),
+    'lint must run pnpm v1-core:check unconditionally',
+  ],
+]) {
+  test(`rejects ${name}`, () => {
+    const errors = validateV1ReleaseWiring({
+      packageJson: validV1ReleasePackageJson(),
+      workflow,
+    });
+
+    assert.ok(errors.includes(expected), errors.join('\n'));
   });
 }
 
@@ -624,6 +711,25 @@ test('rejects the planned DataTable exception without FileUpload-scoped metadata
   );
 });
 
+test('rejects dual governing statuses for the planned DataTable exception', () => {
+  const entry = plannedEntry('data-table', 'data-table', 'data-table');
+  entry.governingSpecification = {
+    path: 'docs/superpowers/specs/2026-08-15-data-files-family-design.md',
+    status: 'implemented',
+  };
+
+  assert.ok(
+    validateV1Entry(entry, validProgram().ledger.acceptanceProfiles, {
+      'docs/superpowers/specs/2026-08-15-data-files-family-design.md':
+        '**Status:** Implemented under Automated Core — FileUpload wave\n\n**Status:** Implemented',
+    }).some((error) =>
+      error.includes(
+        'data-table: Data and Files specification must contain exactly one recognized governing status metadata line',
+      ),
+    ),
+  );
+});
+
 test('does not let the planned DataTable exception authorize a qualified claim', () => {
   const input = qualifiedProgram();
   const entry = input.ledger.components[0];
@@ -638,6 +744,26 @@ test('does not let the planned DataTable exception authorize a qualified claim',
   assert.ok(
     validateV1Entry(entry, input.ledger.acceptanceProfiles, input.documents).some((error) =>
       error.includes('implemented specification metadata is missing'),
+    ),
+  );
+});
+
+test('rejects an attempted qualified DataTable claim made by appending generic status', () => {
+  const input = qualifiedProgram();
+  const entry = input.ledger.components[0];
+  entry.id = 'data-table';
+  entry.governingSpecification = {
+    path: 'docs/superpowers/specs/2026-08-15-data-files-family-design.md',
+    status: 'implemented',
+  };
+  input.documents['docs/superpowers/specs/2026-08-15-data-files-family-design.md'] =
+    '**Status:** Implemented under Automated Core — FileUpload wave\n\n**Status:** Implemented';
+
+  assert.ok(
+    validateV1Entry(entry, input.ledger.acceptanceProfiles, input.documents).some((error) =>
+      error.includes(
+        'data-table: Data and Files specification must contain exactly one recognized governing status metadata line',
+      ),
     ),
   );
 });
@@ -767,6 +893,74 @@ for (const [name, mutate, expected] of [
 
 test('accepts a qualified entry only with complete tracked evidence', () => {
   assert.deepEqual(validateV1Program(qualifiedProgram()), []);
+});
+
+test('rejects a qualified entry that excludes all 23 cells without governing declarations', () => {
+  const input = qualifiedProgram();
+  const entry = input.ledger.components[0];
+  entry.notApplicable = ACCEPTANCE_CELLS.map((cell) => ({
+    cell,
+    reason: `Arbitrary ${cell} exclusion`,
+  }));
+  entry.acceptanceEvidence = {};
+
+  const errors = validateV1Program(input);
+  for (const cell of ACCEPTANCE_CELLS) {
+    assert.ok(
+      errors.some((error) =>
+        error.includes(
+          `tabs: notApplicable cell ${cell} must match an exact governing specification declaration`,
+        ),
+      ),
+      cell,
+    );
+  }
+});
+
+for (const id of OVERLAY_IDS) {
+  test(`rejects every ${id} overlay exclusion even when the draft contains a declaration`, () => {
+    const input = validProgram();
+    const entry = input.ledger.components.find((candidate) => candidate.id === id);
+    const reason = 'Attempted overlay exclusion';
+    entry.notApplicable = [{ cell: 'rtl', reason }];
+    input.documents[OVERLAY_SPEC_PATH] += `\n${notApplicableDirective(id, 'rtl', reason)}\n`;
+
+    assert.ok(
+      validateV1Program(input).some((error) =>
+        error.includes(
+          `${id}: overlay specification requires every acceptance cell; notApplicable must be empty`,
+        ),
+      ),
+    );
+  });
+}
+
+test('accepts a non-overlay exclusion only when its governing spec declares the exact cell and reason', () => {
+  const input = qualifiedProgram();
+  const entry = input.ledger.components[0];
+  const reason = 'No direction-sensitive behavior in this exact contract';
+  entry.notApplicable = [{ cell: 'rtl', reason }];
+  delete entry.acceptanceEvidence.rtl;
+  input.documents['docs/spec.md'] += `\n${notApplicableDirective('tabs', 'rtl', reason)}\n`;
+
+  assert.deepEqual(validateV1Program(input), []);
+});
+
+test('rejects a non-overlay exclusion whose reason differs from the governing declaration', () => {
+  const input = qualifiedProgram();
+  const entry = input.ledger.components[0];
+  entry.notApplicable = [{ cell: 'rtl', reason: 'Ledger-only reason' }];
+  delete entry.acceptanceEvidence.rtl;
+  input.documents['docs/spec.md'] +=
+    `\n${notApplicableDirective('tabs', 'rtl', 'Specification reason')}\n`;
+
+  assert.ok(
+    validateV1Program(input).some((error) =>
+      error.includes(
+        'tabs: notApplicable cell rtl must match an exact governing specification declaration',
+      ),
+    ),
+  );
 });
 
 test('rejects added profiles and requires every entry to use v1-interactive', () => {
