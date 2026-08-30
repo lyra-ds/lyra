@@ -1,0 +1,301 @@
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+
+const P1_IDS = new Set([
+  'dialog',
+  'drawer',
+  'bottom-sheet',
+  'popover',
+  'dropdown',
+  'tooltip',
+  'command-palette',
+  'workspace-switcher',
+  'create-workspace-dialog',
+  'tabs',
+  'data-table',
+]);
+const IMPLEMENTATION_STATES = new Set([
+  'planned',
+  'specified',
+  'evaluating',
+  'implementing',
+  'qualified',
+]);
+const SPECIFICATION_STATES = new Set(['not-authored', 'draft', 'approved', 'implemented']);
+const ACCEPTANCE_CELLS = new Set([
+  'chromium',
+  'firefox',
+  'webkit',
+  'react-18',
+  'react-19',
+  'ssr',
+  'hydration',
+  'keyboard-focus',
+  'axe-light',
+  'axe-dark',
+  'forced-colors',
+  'reduced-motion',
+  'ltr',
+  'rtl',
+  'coarse-pointer',
+  'bundle-standalone',
+  'bundle-composition',
+  'packed-esm',
+  'packed-cjs',
+  'packed-types',
+  'consumer-vite',
+  'consumer-next',
+  'consumer-commonjs',
+]);
+const REQUIRED_ENTRY_KEYS = new Set([
+  'id',
+  'stream',
+  'wave',
+  'priority',
+  'governingSpecification',
+  'currentContract',
+  'targetContracts',
+  'implementationStatus',
+  'acceptanceProfile',
+  'notApplicable',
+  'acceptanceEvidence',
+  'migrationGuides',
+  'compatibility',
+  'immutableEvidence',
+  'manualEvidence',
+]);
+
+function isPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isNonEmptyStringArray(value) {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((item) => typeof item === 'string' && item)
+  );
+}
+
+function hasTrackedDocument(path, documents) {
+  return typeof path === 'string' && Object.hasOwn(documents, path);
+}
+
+function validateQualifiedEntry(entry, profile, documents, errors, label) {
+  const specification = entry.governingSpecification;
+  if (specification?.status !== 'implemented') {
+    errors.push(`${label}: qualified component requires an implemented specification`);
+  }
+  if (!/^\*\*Status:\*\* Implemented$/mu.test(documents[specification?.path] ?? '')) {
+    errors.push(`${label}: implemented specification metadata is missing`);
+  }
+
+  for (const locale of ['en', 'ptBR']) {
+    if (!hasTrackedDocument(entry.migrationGuides?.[locale], documents)) {
+      errors.push(`${label}: qualified component requires tracked ${locale} migration`);
+    }
+  }
+  for (const packageName of ['styles', 'react', 'alpine']) {
+    if (
+      typeof entry.compatibility?.[packageName] !== 'string' ||
+      !entry.compatibility[packageName]
+    ) {
+      errors.push(`${label}: qualified component requires ${packageName} compatibility`);
+    }
+  }
+
+  const excluded = new Set(
+    Array.isArray(entry.notApplicable)
+      ? entry.notApplicable.filter(isPlainObject).map((exclusion) => exclusion.cell)
+      : [],
+  );
+  for (const cell of profile ?? []) {
+    if (excluded.has(cell)) continue;
+    const evidence = entry.acceptanceEvidence?.[cell];
+    if (
+      !isPlainObject(evidence) ||
+      evidence.result !== 'PASS' ||
+      !/^[0-9a-f]{40}$/u.test(evidence.revision ?? '') ||
+      !hasTrackedDocument(evidence.artifact, documents)
+    ) {
+      errors.push(`${label}: qualified component requires passing ${cell} evidence`);
+    }
+  }
+  if (
+    !Array.isArray(entry.immutableEvidence) ||
+    entry.immutableEvidence.length === 0 ||
+    entry.immutableEvidence.some((path) => !hasTrackedDocument(path, documents))
+  ) {
+    errors.push(`${label}: qualified component requires immutable evidence`);
+  }
+}
+
+export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
+  const errors = [];
+  if (!isPlainObject(entry)) return ['component entry must be a plain object'];
+
+  const label = typeof entry.id === 'string' ? entry.id : '<unknown>';
+  const keys = new Set(Object.keys(entry));
+  for (const key of REQUIRED_ENTRY_KEYS) {
+    if (!keys.has(key)) errors.push(`${label}: ${key} is required`);
+  }
+  for (const key of keys) {
+    if (!REQUIRED_ENTRY_KEYS.has(key)) errors.push(`${label}: unknown field ${key}`);
+  }
+  if (typeof entry.stream !== 'string' || !entry.stream)
+    errors.push(`${label}: stream must be a non-empty string`);
+  if (typeof entry.wave !== 'string' || !entry.wave)
+    errors.push(`${label}: wave must be a non-empty string`);
+  if (entry.priority !== 'P1') errors.push(`${label}: priority must equal P1`);
+  if (!IMPLEMENTATION_STATES.has(entry.implementationStatus)) {
+    errors.push(`${label}: implementationStatus is invalid`);
+  }
+  if (!isNonEmptyStringArray(entry.currentContract)) {
+    errors.push(`${label}: currentContract must be a non-empty string array`);
+  }
+  if (!isNonEmptyStringArray(entry.targetContracts)) {
+    errors.push(`${label}: targetContracts must be a non-empty string array`);
+  }
+
+  const specification = entry.governingSpecification;
+  if (!isPlainObject(specification) || !SPECIFICATION_STATES.has(specification.status)) {
+    errors.push(`${label}: governing specification status is invalid`);
+  } else if (specification.status === 'not-authored') {
+    if (specification.path !== null)
+      errors.push(`${label}: not-authored specification path must be null`);
+  } else if (!hasTrackedDocument(specification.path, documents)) {
+    errors.push(`${label}: ${specification.status} specification must name a tracked path`);
+  }
+
+  const profile = acceptanceProfiles?.[entry.acceptanceProfile];
+  if (!Array.isArray(profile)) errors.push(`${label}: acceptanceProfile is unknown`);
+  if (!Array.isArray(entry.notApplicable)) {
+    errors.push(`${label}: notApplicable must be an array`);
+  } else {
+    const excluded = new Set();
+    for (const exclusion of entry.notApplicable) {
+      if (
+        !isPlainObject(exclusion) ||
+        !ACCEPTANCE_CELLS.has(exclusion.cell) ||
+        typeof exclusion.reason !== 'string' ||
+        exclusion.reason.trim() === '' ||
+        excluded.has(exclusion.cell)
+      ) {
+        errors.push(`${label}: notApplicable reason must be non-empty and each cell unique`);
+      }
+      excluded.add(exclusion?.cell);
+    }
+  }
+  if (entry.manualEvidence !== 'deferred-by-release-profile') {
+    errors.push(`${label}: absent manual evidence must be deferred-by-release-profile`);
+  }
+  if (entry.implementationStatus === 'qualified') {
+    validateQualifiedEntry(entry, profile, documents, errors, label);
+  }
+  return errors;
+}
+
+export function validateV1Program({ ledger, documents = {} } = {}) {
+  const errors = [];
+  if (!isPlainObject(ledger)) return ['ledger must be a plain object'];
+  if (!isPlainObject(documents)) return ['documents must be a plain object'];
+  if (ledger.schemaVersion !== 1) errors.push('schemaVersion must equal 1');
+  if (ledger.targetRelease !== '1.0.0') errors.push('targetRelease must equal 1.0.0');
+  if (ledger.releaseStatus !== 'planning') errors.push('releaseStatus must equal planning');
+  if (
+    ledger.programSpecification !==
+      'docs/superpowers/specs/2026-08-30-lyra-v1-deliberate-release-design.md' ||
+    !/^\*\*Status:\*\* Approved$/mu.test(documents[ledger.programSpecification] ?? '')
+  ) {
+    errors.push('programSpecification must reference the approved deliberate V1 design');
+  }
+  const profile = ledger.acceptanceProfiles?.['v1-interactive'];
+  if (
+    !Array.isArray(profile) ||
+    profile.length !== ACCEPTANCE_CELLS.size ||
+    profile.some((cell) => !ACCEPTANCE_CELLS.has(cell)) ||
+    new Set(profile).size !== profile.length
+  ) {
+    errors.push('acceptance profile contains unknown cells, missing cells, or duplicate cells');
+  }
+  if (!Array.isArray(ledger.components)) return [...errors, 'components must be an array'];
+  const ids = ledger.components.map((entry) => entry?.id);
+  if (ids.length !== P1_IDS.size || ids.some((id) => !P1_IDS.has(id))) {
+    errors.push('P1 component set must match');
+  }
+  if (new Set(ids).size !== ids.length) errors.push('component IDs must be unique');
+  for (const entry of ledger.components) {
+    errors.push(...validateV1Entry(entry, ledger.acceptanceProfiles, documents));
+  }
+  return errors;
+}
+
+function referencedPaths(ledger) {
+  const paths = new Set([ledger?.programSpecification]);
+  for (const entry of ledger?.components ?? []) {
+    paths.add(entry?.governingSpecification?.path);
+    paths.add(entry?.migrationGuides?.en);
+    paths.add(entry?.migrationGuides?.ptBR);
+    if (Array.isArray(entry?.immutableEvidence)) {
+      for (const path of entry.immutableEvidence) paths.add(path);
+    }
+    if (isPlainObject(entry?.acceptanceEvidence)) {
+      for (const evidence of Object.values(entry.acceptanceEvidence)) paths.add(evidence?.artifact);
+    }
+  }
+  return [...paths].filter((path) => path !== null && path !== undefined);
+}
+
+function isInsideRepository(path) {
+  const resolved = resolve(repositoryRoot, path);
+  return resolved === repositoryRoot || resolved.startsWith(`${repositoryRoot}/`);
+}
+
+async function collectDocuments(ledger) {
+  const documents = {};
+  const errors = [];
+  for (const path of referencedPaths(ledger)) {
+    if (typeof path !== 'string' || !path || !isInsideRepository(path)) {
+      errors.push(`referenced path must be a non-empty repository-relative path: ${String(path)}`);
+      continue;
+    }
+    try {
+      documents[path] = await readFile(resolve(repositoryRoot, path), 'utf8');
+    } catch {
+      errors.push(`referenced path is not a tracked readable file: ${path}`);
+    }
+  }
+  return { documents, errors };
+}
+
+async function main() {
+  let ledger;
+  try {
+    ledger = JSON.parse(
+      await readFile(
+        resolve(repositoryRoot, 'docs/superpowers/baselines/lyra-v1/program.json'),
+        'utf8',
+      ),
+    );
+  } catch (error) {
+    console.error(`Unable to read V1 program ledger: ${error.message}`);
+    process.exitCode = 1;
+    return;
+  }
+  const { documents, errors: documentErrors } = await collectDocuments(ledger);
+  const errors = [...documentErrors, ...validateV1Program({ ledger, documents })];
+  if (errors.length === 0) {
+    console.log('Lyra V1 program ledger is internally consistent.');
+    return;
+  }
+  console.error('Lyra V1 program ledger is inconsistent:');
+  for (const error of errors) console.error(`- ${error}`);
+  process.exitCode = 1;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  await main();
+}
