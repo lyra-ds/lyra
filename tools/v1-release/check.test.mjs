@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { readFile, rm, writeFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
 import test from 'node:test';
 
 import { validateV1Program } from './check.mjs';
+
+const execFileAsync = promisify(execFile);
+const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
+const UNTRACKED_DOCUMENT_PATH = 'tools/v1-release/.check-untracked-test.md';
 
 const P1_IDS = [
   'dialog',
@@ -190,6 +197,60 @@ for (const [name, mutate, expected] of [
 
 test('accepts a qualified entry only with complete tracked evidence', () => {
   assert.deepEqual(validateV1Program(qualifiedProgram()), []);
+});
+
+test('rejects added profiles and requires every entry to use v1-interactive', () => {
+  const input = validProgram();
+  input.ledger.acceptanceProfiles.escape = [];
+  input.ledger.components[0].acceptanceProfile = 'escape';
+
+  const errors = validateV1Program(input);
+  assert.ok(
+    errors.some((error) => error.includes('acceptanceProfiles must contain only v1-interactive')),
+  );
+  assert.ok(
+    errors.some((error) => error.includes('dialog: acceptanceProfile must equal v1-interactive')),
+  );
+});
+
+test('rejects an unknown qualified evidence record even when it is invalid', () => {
+  const input = qualifiedProgram();
+  input.ledger.components[0].acceptanceEvidence.phantom = {
+    result: 'FAIL',
+    revision: 'not-a-revision',
+    artifact: 'missing.json',
+  };
+
+  const errors = validateV1Program(input);
+  assert.ok(
+    errors.some((error) => error.includes('acceptanceEvidence contains unknown cell phantom')),
+  );
+  assert.ok(
+    errors.some((error) => error.includes('qualified component evidence phantom is invalid')),
+  );
+});
+
+test('CLI rejects readable but untracked referenced documents', async () => {
+  const originalLedger = await readFile(LEDGER_PATH, 'utf8');
+  const ledger = JSON.parse(originalLedger);
+  ledger.components[0].governingSpecification = {
+    path: UNTRACKED_DOCUMENT_PATH,
+    status: 'draft',
+  };
+
+  await writeFile(UNTRACKED_DOCUMENT_PATH, '# Untracked draft\n');
+  await writeFile(LEDGER_PATH, `${JSON.stringify(ledger, null, 2)}\n`);
+  try {
+    await assert.rejects(
+      execFileAsync(process.execPath, ['tools/v1-release/check.mjs']),
+      (error) =>
+        error.code === 1 &&
+        error.stderr.includes(`referenced path is not Git-tracked: ${UNTRACKED_DOCUMENT_PATH}`),
+    );
+  } finally {
+    await writeFile(LEDGER_PATH, originalLedger);
+    await rm(UNTRACKED_DOCUMENT_PATH, { force: true });
+  }
 });
 
 test('reports malformed qualified exclusions without throwing', () => {

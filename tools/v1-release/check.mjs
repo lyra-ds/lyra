@@ -1,8 +1,12 @@
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const execFileAsync = promisify(execFile);
+const ACCEPTANCE_PROFILE_NAME = 'v1-interactive';
 
 const P1_IDS = new Set([
   'dialog',
@@ -112,6 +116,22 @@ function validateQualifiedEntry(entry, profile, documents, errors, label) {
       ? entry.notApplicable.filter(isPlainObject).map((exclusion) => exclusion.cell)
       : [],
   );
+  const evidenceEntries = isPlainObject(entry.acceptanceEvidence)
+    ? Object.entries(entry.acceptanceEvidence)
+    : [];
+  for (const [cell, evidence] of evidenceEntries) {
+    if (!profile?.includes(cell)) {
+      errors.push(`${label}: acceptanceEvidence contains unknown cell ${cell}`);
+    }
+    if (
+      !isPlainObject(evidence) ||
+      evidence.result !== 'PASS' ||
+      !/^[0-9a-f]{40}$/u.test(evidence.revision ?? '') ||
+      !hasTrackedDocument(evidence.artifact, documents)
+    ) {
+      errors.push(`${label}: qualified component evidence ${cell} is invalid`);
+    }
+  }
   for (const cell of profile ?? []) {
     if (excluded.has(cell)) continue;
     const evidence = entry.acceptanceEvidence?.[cell];
@@ -170,7 +190,10 @@ export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
     errors.push(`${label}: ${specification.status} specification must name a tracked path`);
   }
 
-  const profile = acceptanceProfiles?.[entry.acceptanceProfile];
+  const profile = acceptanceProfiles?.[ACCEPTANCE_PROFILE_NAME];
+  if (entry.acceptanceProfile !== ACCEPTANCE_PROFILE_NAME) {
+    errors.push(`${label}: acceptanceProfile must equal ${ACCEPTANCE_PROFILE_NAME}`);
+  }
   if (!Array.isArray(profile)) errors.push(`${label}: acceptanceProfile is unknown`);
   if (!Array.isArray(entry.notApplicable)) {
     errors.push(`${label}: notApplicable must be an array`);
@@ -212,14 +235,19 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
   ) {
     errors.push('programSpecification must reference the approved deliberate V1 design');
   }
-  const profile = ledger.acceptanceProfiles?.['v1-interactive'];
+  const profile = ledger.acceptanceProfiles?.[ACCEPTANCE_PROFILE_NAME];
   if (
+    !isPlainObject(ledger.acceptanceProfiles) ||
+    Object.keys(ledger.acceptanceProfiles).length !== 1 ||
+    !Object.hasOwn(ledger.acceptanceProfiles, ACCEPTANCE_PROFILE_NAME) ||
     !Array.isArray(profile) ||
     profile.length !== ACCEPTANCE_CELLS.size ||
     profile.some((cell) => !ACCEPTANCE_CELLS.has(cell)) ||
     new Set(profile).size !== profile.length
   ) {
-    errors.push('acceptance profile contains unknown cells, missing cells, or duplicate cells');
+    errors.push(
+      'acceptance profile contains unknown cells, missing cells, or duplicate cells; acceptanceProfiles must contain only v1-interactive with every required acceptance cell exactly once',
+    );
   }
   if (!Array.isArray(ledger.components)) return [...errors, 'components must be an array'];
   const ids = ledger.components.map((entry) => entry?.id);
@@ -260,6 +288,14 @@ async function collectDocuments(ledger) {
   for (const path of referencedPaths(ledger)) {
     if (typeof path !== 'string' || !path || !isInsideRepository(path)) {
       errors.push(`referenced path must be a non-empty repository-relative path: ${String(path)}`);
+      continue;
+    }
+    try {
+      await execFileAsync('git', ['ls-files', '--error-unmatch', '--', path], {
+        cwd: repositoryRoot,
+      });
+    } catch {
+      errors.push(`referenced path is not Git-tracked: ${path}`);
       continue;
     }
     try {
