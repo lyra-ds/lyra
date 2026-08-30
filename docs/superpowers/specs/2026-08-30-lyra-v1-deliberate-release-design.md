@@ -1,6 +1,6 @@
 # Lyra Deliberate V1.0 Release Design
 
-**Status:** Draft — awaiting written review
+**Status:** Approved
 
 **Date:** 2026-08-30
 
@@ -284,13 +284,17 @@ Lyra V1.0 is complete only when all of the following are true:
       exact versioned tarballs.
 - [ ] Merge and npm publication occur only after explicit final authorization.
 
-## 12. First implementation boundary
+## 12. First implementation boundaries
 
 The first implementation plan covers only the V1 ledger plus the overlay
-family specification and evidence-based foundation decision. It does not
-migrate production overlays. Production migration receives a separate plan
-after the decision record is approved.
+family specification. It stops for explicit approval of that specification,
+as required by the Phase 0 evidence index.
 
-This boundary prevents a library preference from becoming production code
-before the current behavior and candidate alternatives are measured against
-the same contract.
+After that approval, a second plan covers the evidence harness and foundation
+decision. Production overlay migration receives a third plan only after the
+decision record is approved. None of these approvals authorizes a remote or
+production action.
+
+These boundaries prevent an evaluation plan or library preference from
+preceding the governing contract, and prevent a candidate from becoming
+production code before the alternatives are measured against that contract.
