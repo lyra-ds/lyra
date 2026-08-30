@@ -54,6 +54,17 @@ const ACCEPTANCE_CELLS = [
 
 const OVERLAY_IDS = P1_IDS.slice(0, 9);
 const OVERLAY_SPEC_PATH = 'docs/superpowers/specs/2026-08-30-overlay-family-design.md';
+const OVERLAY_TARGET_CONTRACTS = {
+  dialog: ['OF-MODAL'],
+  drawer: ['OF-MODAL'],
+  'bottom-sheet': ['OF-MODAL'],
+  popover: ['OF-ANCHORED'],
+  dropdown: ['OF-ANCHORED', 'OF-MENU'],
+  tooltip: ['OF-ANCHORED', 'OF-TOOLTIP'],
+  'command-palette': ['OF-COMPOSED', 'OF-MODAL'],
+  'workspace-switcher': ['OF-COMPOSED', 'OF-ANCHORED'],
+  'create-workspace-dialog': ['OF-COMPOSED', 'OF-MODAL'],
+};
 const OVERLAY_SPEC_HEADINGS = [
   'Decision summary',
   'Scope and ownership',
@@ -137,6 +148,7 @@ function overlayDraftProgram(document) {
   for (const entry of input.ledger.components) {
     if (!OVERLAY_IDS.includes(entry.id)) continue;
     entry.governingSpecification = { path: OVERLAY_SPEC_PATH, status: 'draft' };
+    entry.targetContracts = OVERLAY_TARGET_CONTRACTS[entry.id];
     entry.implementationStatus = 'specified';
   }
   if (document !== undefined) input.documents[OVERLAY_SPEC_PATH] = document;
@@ -167,6 +179,11 @@ function structurallyCompleteOverlaySpecification() {
 
 function qualifiedProgram() {
   const input = validProgram();
+  const tabsIndex = input.ledger.components.findIndex(({ id }) => id === 'tabs');
+  [input.ledger.components[0], input.ledger.components[tabsIndex]] = [
+    input.ledger.components[tabsIndex],
+    input.ledger.components[0],
+  ];
   const entry = input.ledger.components[0];
   entry.implementationStatus = 'qualified';
   entry.governingSpecification = { path: 'docs/spec.md', status: 'implemented' };
@@ -379,6 +396,59 @@ test('requires the exact overlay family scope metadata', () => {
     ),
   );
 });
+
+for (const id of OVERLAY_IDS) {
+  test(`rejects an incorrect ${id} overlay draft target map`, () => {
+    const input = overlayDraftProgram(structurallyCompleteOverlaySpecification());
+    const entry = input.ledger.components.find((candidate) => candidate.id === id);
+    entry.targetContracts = ['legacy-target'];
+
+    assert.ok(
+      validateV1Program(input).some((error) =>
+        error.includes(
+          `${id}: overlay targetContracts must equal ${OVERLAY_TARGET_CONTRACTS[id].join(', ')}`,
+        ),
+      ),
+    );
+  });
+}
+
+for (const id of OVERLAY_IDS) {
+  test(`rejects an incorrect ${id} overlay draft lifecycle map`, () => {
+    const specification = structurallyCompleteOverlaySpecification();
+    const mutations = [
+      {
+        change(entry, input) {
+          entry.governingSpecification.path = 'docs/alternate-overlay-spec.md';
+          input.documents['docs/alternate-overlay-spec.md'] = specification;
+        },
+        expected: `${id}: overlay specification path must equal ${OVERLAY_SPEC_PATH}`,
+      },
+      {
+        change(entry) {
+          entry.governingSpecification.status = 'approved';
+        },
+        expected: `${id}: overlay specification status must equal draft`,
+      },
+      {
+        change(entry) {
+          entry.implementationStatus = 'planned';
+        },
+        expected: `${id}: overlay implementationStatus must equal specified`,
+      },
+    ];
+
+    for (const mutation of mutations) {
+      const input = overlayDraftProgram(specification);
+      const entry = input.ledger.components.find((candidate) => candidate.id === id);
+      mutation.change(entry, input);
+      assert.ok(
+        validateV1Program(input).some((error) => error.includes(mutation.expected)),
+        mutation.expected,
+      );
+    }
+  });
+}
 
 test('accepts a structurally complete tracked overlay family draft', () => {
   assert.deepEqual(

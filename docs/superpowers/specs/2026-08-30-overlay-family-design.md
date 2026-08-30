@@ -92,6 +92,48 @@ An Alpine registration is listed only when it exists in the current plugin.
 | WorkspaceSwitcher     | `@lyra-ds/react/workspace-switcher`: root `div` attributes and ref except `onChange`; `workspaces`, `current`, `onChange`, `onCreate`, `createLabel`, `defaultOpen`; `Workspace` type                                                                                                                                                                                         | `lyraWorkspaceSwitcher({ defaultOpen })`; `trigger`, `popover`, `option` bindings and `lyra:change` event                                                                                                    | `.lyra-wssw`, `__trigger`, `__id`, `__name`, `__plan`, `__pop`, `__pop--up`, `__pop-label`, `__item`, `__meta`, `__sep`, `__create`, `__plus`, `__create-label`                                                                                                        | React trigger has `aria-haspopup="listbox"`, `aria-expanded`, and `aria-controls`; its popup is a labelled `listbox`; Alpine binds `aria-haspopup`/`aria-expanded` and listbox/option roles but does not currently create the controls relationship; workspace buttons are options with `aria-selected` | Selection value/data are consumer inputs; open state is internal from `defaultOpen`; consumer owns change/create effects                       | It duplicates anchored placement and dismissal and lacks the full stable-relationship, dynamic, typeahead, pointer-origin, portal, and direction contract                   |
 | CreateWorkspaceDialog | `@lyra-ds/react/create-workspace-dialog`: `open`, `onClose`, `onCreate`, `title`, `slugPrefix`; composes React Dialog                                                                                                                                                                                                                                                         | Unsupported: no `lyraCreateWorkspaceDialog` registration or public Alpine option type exists                                                                                                                 | `.lyra-wscreate`, `__preview`, `__preview-hint`, `__slug`, `__slug-prefix`, `__slug-input`, plus composed Dialog and field classes                                                                                                                                     | Semantics and naming come from Dialog plus native labelled inputs and buttons                                                                                                                                                                                                                           | Consumer owns `open` and creation; local React state owns name, slug, and touched state                                                        | It inherits the divergent Dialog foundation and has no Alpine component surface; validation focus and safe initial focus are not a family composition contract              |
 
+### React export paths
+
+Every React overlay value and type is available from both the package root and
+the component subpath. These two paths are part of the current inventory; the
+root is not merely an internal barrel.
+
+| Component             | `@lyra-ds/react` root exports                                                                 | Component subpath and the same exports                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Dialog                | `Dialog`; `DialogProps`                                                                       | `@lyra-ds/react/dialog`: `Dialog`; `DialogProps`                                                                                |
+| Drawer                | `Drawer`; `DrawerProps`                                                                       | `@lyra-ds/react/drawer`: `Drawer`; `DrawerProps`                                                                                |
+| BottomSheet           | `BottomSheet`; `BottomSheetProps`                                                             | `@lyra-ds/react/bottom-sheet`: `BottomSheet`; `BottomSheetProps`                                                                |
+| Popover               | `Popover`; `PopoverProps`                                                                     | `@lyra-ds/react/popover`: `Popover`; `PopoverProps`                                                                             |
+| Dropdown              | `Dropdown`; `DropdownItem`, `DropdownProps`                                                   | `@lyra-ds/react/dropdown`: `Dropdown`; `DropdownItem`, `DropdownProps`                                                          |
+| Tooltip               | `Tooltip`; `TooltipProps`                                                                     | `@lyra-ds/react/tooltip`: `Tooltip`; `TooltipProps`                                                                             |
+| CommandPalette        | `CommandPalette`; `CommandGroup`, `CommandItem`, `CommandPaletteHints`, `CommandPaletteProps` | `@lyra-ds/react/command-palette`: `CommandPalette`; `CommandGroup`, `CommandItem`, `CommandPaletteHints`, `CommandPaletteProps` |
+| WorkspaceSwitcher     | `WorkspaceSwitcher`; `Workspace`, `WorkspaceSwitcherProps`                                    | `@lyra-ds/react/workspace-switcher`: `WorkspaceSwitcher`; `Workspace`, `WorkspaceSwitcherProps`                                 |
+| CreateWorkspaceDialog | `CreateWorkspaceDialog`; `CreateWorkspaceDialogProps`                                         | `@lyra-ds/react/create-workspace-dialog`: `CreateWorkspaceDialog`; `CreateWorkspaceDialogProps`                                 |
+
+### Alpine public adapter contracts
+
+`@lyra-ds/alpine` has one default plugin export. Installing that plugin
+registers the eight `lyra…` data names below; those registration functions are
+not named root exports. The option and data model types listed here are named
+type exports from the package root.
+
+| Component         | Registered data and exact exported root types                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Current custom event contract                                                                                                                               | Material current difference from React                                                                                                                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dialog            | `lyraDialog`; `LyraDialogOptions` is `{ defaultOpen?: boolean; closeOnEsc?: boolean; closeOnOverlayClick?: boolean; labelId?: string }`                                                                                                                                                                                                                                                                                                                                                                                                                       | None                                                                                                                                                        | Alpine owns `open` and has no `onClose` notification; React is controlled and requests dismissal through `onClose`.                                                                                                                                                     |
+| Drawer            | `lyraDrawer`; `LyraDrawerOptions` is `{ defaultOpen?: boolean; labelId?: string }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | None                                                                                                                                                        | Alpine owns `open` and has no `onClose` notification; React is controlled and requests dismissal through `onClose`.                                                                                                                                                     |
+| BottomSheet       | `lyraBottomSheet`; `LyraBottomSheetOptions` is `{ defaultOpen?: boolean }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `lyra:close`, detail `{}`. Close button, Escape, and accepted backdrop click set local `open` to `false` before dispatch.                                   | React requests each dismissal through `onClose`. The Alpine event bubbles, crosses a shadow boundary, and is cancelable, but the current adapter does not inspect cancellation, so prevention cannot undo or stop the local close.                                      |
+| Popover           | `lyraPopover`; `LyraPopoverOptions` is `{ defaultOpen?: boolean; side?: 'auto' \| 'bottom' \| 'top'; align?: 'start' \| 'end' \| 'center'; width?: number; ariaLabel?: string }`                                                                                                                                                                                                                                                                                                                                                                              | None                                                                                                                                                        | Alpine owns `open`; React may be controlled and reports transitions through `onOpenChange`.                                                                                                                                                                             |
+| Dropdown          | `lyraDropdown`; `LyraDropdownOptions` is `{ defaultOpen?: boolean; align?: 'start' \| 'end' }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                | None                                                                                                                                                        | Alpine consumes served command markup, closes after item activation, and emits no selection result; React receives typed `items` and runs an item's `onSelect`.                                                                                                         |
+| Tooltip           | `lyraTooltip`; `LyraTooltipOptions` is `{ tip: string; placement?: 'top' \| 'bottom' \| 'left' \| 'right' }`                                                                                                                                                                                                                                                                                                                                                                                                                                                  | None                                                                                                                                                        | Both adapters own transient focus/hover state, but Alpine derives the bubble from served bindings and CSS while React renders it.                                                                                                                                       |
+| CommandPalette    | `lyraCommandPalette`; `LyraCommandPaletteOptions` is <code>{ groups?: LyraCommandPaletteGroup[]; open?: boolean; place&#x68;older?: string; emptyMessage?: string; searchLabel?: string; hints?: LyraCommandPaletteHints; hotkey?: string \| false; inline?: boolean; label?: string }</code>; `LyraCommandPaletteItem` is `{ id: string; label: string; hint?: string; shortcut?: string }`; `LyraCommandPaletteGroup` is `{ label?: string; items: LyraCommandPaletteItem[] }`; `LyraCommandPaletteHints` has optional string `navigate`, `select`, `close` | `lyra:select`, detail `{ item: LyraCommandPaletteItem }`. It dispatches before a non-inline palette sets local `open` to `false`; inline mode remains open. | Alpine items have no per-item callback and selection is event-owned. React calls the item's `onSelect`, then palette `onSelect(item)`, then `onClose`; Alpine event cancellation is not inspected and therefore does not prevent the current close.                     |
+| WorkspaceSwitcher | `lyraWorkspaceSwitcher`; `LyraWorkspaceSwitcherOptions` is `{ defaultOpen?: boolean }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `lyra:change`, detail `{ id: string }`, where `id` is the activated served option's `data-id` or `''`. It dispatches before closing and restoring focus.    | Alpine reads consumer-served options, does not update their served `aria-selected`, and has no create event. React receives typed `workspaces` and invokes `onChange(id, workspace)` or `onCreate`. Alpine event cancellation is not inspected and does not stop close. |
+
+All three Alpine `$dispatch` events bubble, are composed, and are cancelable
+under the shipped Alpine event mechanism, so a listener on the served component
+root observes them. The payload shapes above are structural current contracts;
+the package does not export separately named event-detail types. There is no
+`lyraCreateWorkspaceDialog` registration, Alpine option type, or creation event.
+
 The existing support inventory therefore claims Alpine behavior for eight of
 the nine components. CreateWorkspaceDialog MUST remain explicitly unsupported
 in Alpine until an approved change supplies a real registration, server-markup
@@ -175,14 +217,16 @@ presentation, responsive geometry, and motion.
 ### Initial and restored focus
 
 - Each modal opening API MUST allow the composition to declare an initial-focus
-  target. If it is connected, visible, enabled, non-inert, and safe, it MUST
-  receive focus. Otherwise a short transactional dialog MAY focus the first
-  safe field or action.
-- A modal with large reading content MUST initially focus its named heading or
-  panel container so content is not skipped. A destructive confirmation MUST
-  focus the least destructive action, never the destructive action. After
-  validation failure, the first invalid enabled field or its focusable error
-  summary MUST receive focus.
+  target. On every open or validation re-entry, the focus resolver MUST choose
+  the first applicable safe target in this order: after a validation failure,
+  the first invalid enabled field or its focusable error summary; for large
+  reading content, the named heading or panel; for a destructive confirmation,
+  the least destructive action; the declared target; the first safe task
+  control in DOM order; and finally the named panel container with
+  `tabindex="-1"`. A candidate is safe only when connected, visible, enabled,
+  non-inert, and not the destructive action. The final panel fallback is
+  mandatory, so an absent or invalid declared target MUST never leave focus in
+  background content or without an outcome.
 - The opener MUST be captured immediately before focus moves into the modal.
   On close, focus MUST return to that opener only if it remains connected,
   focusable, visible, enabled, non-inert, and meaningful.
@@ -287,20 +331,25 @@ WorkspaceSwitcher listbox.
   first enabled item. ArrowUp MUST open it and focus the last enabled item. A
   pointer activation MAY open without moving focus until the user navigates,
   provided the menu remains reachable and named.
-- The menu MUST use one real-DOM-focus roving model. Exactly one enabled item
-  MAY have `tabindex="0"` while open; other items use `-1`. ArrowDown and
-  ArrowUp MUST wrap among items. Home and End MUST move to the first and last
-  item. Separators and group labels MUST never receive composite focus.
+- The menu MUST use one real-DOM-focus roving model. Exactly one command item,
+  whether enabled or `aria-disabled`, MUST own `tabindex="0"` while focus is in
+  the menu; every other command item MUST use `-1`. ArrowDown and ArrowUp MUST
+  move and wrap through every command item, including disabled items. Home and
+  End MUST move to the first and last command item. Separators and group labels
+  MUST never receive composite focus.
 - An `aria-disabled="true"` item MUST remain discoverable by arrow navigation
-  when present in the public item model, but MUST NOT activate, select, close
-  the menu, or emit a result. A native disabled item outside focus navigation
-  MUST not be used when it would make the item undiscoverable.
+  when present in the public item model. It MAY receive DOM focus and become
+  the sole `tabindex="0"` item so assistive technology can announce it, but it
+  MUST NOT activate, select, close the menu, or emit a result. A native disabled
+  item outside focus navigation MUST not be used when it would make the item
+  undiscoverable.
 - Printable-character typeahead MUST compare localized item text
-  case-insensitively, start after the current item, wrap once, and ignore
-  disabled matches for activation while still allowing their announcement.
-  The buffer resets after 500 ms. Repeating one character within the buffer
-  MUST cycle through items beginning with that character instead of building a
-  repeated-character query.
+  case-insensitively, start after the current item, wrap once, and include
+  disabled matches in the same sequence as arrow navigation. A disabled match
+  MUST receive focus and become the sole `tabindex="0"` item, but MUST retain
+  the no-activation outcome above. The buffer resets after 500 ms. Repeating
+  one character within the buffer MUST cycle through all matching command
+  items, enabled or disabled, instead of building a repeated-character query.
 - Enter or Space on an enabled command MUST invoke its consumer selection
   handler once and close according to the item policy. Consumer cancellation
   MUST prevent Lyra's selection and close defaults without a partial state
@@ -329,9 +378,16 @@ use Popover or another non-modal dialog pattern.
 
 - Keyboard focus on the semantic trigger MUST expose the tooltip immediately
   without moving focus. Hover MUST expose it after a 500 ms initial delay. All
-  tooltips in one document MUST share a coordinator: after one tooltip opens,
-  another hovered tooltip within a 300 ms grace window opens without the full
-  delay. The coordinator MUST reset after the grace window and on teardown.
+  tooltips in one document MUST share a coordinator. The coordinator becomes
+  warm when any tooltip logically opens. The warm delay is exactly 0 ms: while
+  it is warm, entering another trigger MUST expose its tooltip in the same
+  interaction turn without starting the 500 ms timer. The
+  300 ms warm grace begins when the last visible tooltip logically closes and
+  no trigger or tooltip branch retains focus or hover ownership. Opening or
+  retaining any tooltip cancels that expiry; after the next logical close, a
+  fresh 300 ms interval begins. If the interval expires with no owner and no
+  visible tooltip, the coordinator becomes cold and the next hover uses 500 ms.
+  Destroying the final coordinator owner MUST cancel all timers and reset cold.
 - Leaving both trigger and tooltip MUST close after a 100 ms pointer-transition
   grace period so the pointer can cross into hoverable content. Focus leaving
   the trigger and tooltip branch MUST close immediately unless the pointer is
@@ -373,9 +429,30 @@ infrastructure.
   available, and change/create effects MUST remain consumer operations.
 - CreateWorkspaceDialog MUST compose `OF-MODAL` through Dialog and MUST NOT
   implement another focus scope, portal, presence controller, scroll lock, or
-  dismiss listener. After validation failure it MUST focus the first invalid
-  field; on creation it MUST not close until the consumer accepts the creation
-  operation under the documented callback contract.
+  dismiss listener. Its creation state machine MUST expose `editing`,
+  `submitting`, `canceling`, `error`, or `accepted` through a Lyra-owned
+  `data-state` on the composition root and MUST retain at most one current
+  operation ID. `submitting` and `canceling` MUST also expose `aria-busy="true"`
+  on the form and disable duplicate submission. An invalid submit MUST stay in
+  `editing` or enter `error`, MUST NOT notify the consumer, and MUST focus the
+  first invalid field under the modal focus order. A valid submit MUST create a
+  fresh operation ID, commit `submitting`, and then notify the consumer exactly
+  once in the same interaction task with that ID and the normalized
+  `{ name, slug }`; duplicate submits for that ID MUST be ignored.
+  The consumer handler MUST synchronously return or asynchronously settle with
+  exactly one result: `accepted`, `rejected` with an error message, or
+  `canceled`. Returning `undefined`, throwing, or rejecting the asynchronous
+  operation MUST be treated as `rejected`, never as implicit acceptance.
+  `accepted` MUST commit the `accepted` state and domain result and only then
+  request modal close; `rejected` MUST commit `error`, keep the dialog open,
+  preserve the entered values, expose the error, and focus its summary or first
+  invalid field; `canceled` MUST return to `editing` with values preserved. A
+  user close while `submitting` MUST enter
+  `canceling`, signal cancellation once for that operation ID, and wait for its
+  terminal result; a resulting `canceled` MUST then allow that requested close.
+  The first terminal result wins. Results for an old ID, results after destroy,
+  and any later settlement MUST be ignored without closing, announcing, or
+  changing state.
 
 React controlled props and domain callbacks remain application inputs. A Lyra
 close or selection callback communicates one requested next state or committed

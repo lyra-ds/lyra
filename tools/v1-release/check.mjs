@@ -10,6 +10,18 @@ const execFileAsync = promisify(execFile);
 const ACCEPTANCE_PROFILE_NAME = 'v1-interactive';
 const OVERLAY_SPEC_PATH = 'docs/superpowers/specs/2026-08-30-overlay-family-design.md';
 
+const OVERLAY_TARGET_CONTRACTS = new Map([
+  ['dialog', ['OF-MODAL']],
+  ['drawer', ['OF-MODAL']],
+  ['bottom-sheet', ['OF-MODAL']],
+  ['popover', ['OF-ANCHORED']],
+  ['dropdown', ['OF-ANCHORED', 'OF-MENU']],
+  ['tooltip', ['OF-ANCHORED', 'OF-TOOLTIP']],
+  ['command-palette', ['OF-COMPOSED', 'OF-MODAL']],
+  ['workspace-switcher', ['OF-COMPOSED', 'OF-ANCHORED']],
+  ['create-workspace-dialog', ['OF-COMPOSED', 'OF-MODAL']],
+]);
+
 const OVERLAY_SPEC_HEADINGS = [
   'Decision summary',
   'Scope and ownership',
@@ -172,6 +184,38 @@ function isNonEmptyStringArray(value) {
 
 function hasTrackedDocument(path, documents) {
   return typeof path === 'string' && Object.hasOwn(documents, path);
+}
+
+function validateOverlayProgramEntries(components, errors) {
+  const entries = components.filter((entry) => OVERLAY_TARGET_CONTRACTS.has(entry?.id));
+  const overlayDraftIsAuthored = entries.some(
+    (entry) =>
+      entry?.governingSpecification?.path !== null ||
+      entry?.governingSpecification?.status !== 'not-authored' ||
+      entry?.implementationStatus !== 'planned',
+  );
+  if (!overlayDraftIsAuthored) return;
+
+  for (const entry of entries) {
+    const id = entry.id;
+    const expectedTargets = OVERLAY_TARGET_CONTRACTS.get(id);
+    if (entry.governingSpecification?.path !== OVERLAY_SPEC_PATH) {
+      errors.push(`${id}: overlay specification path must equal ${OVERLAY_SPEC_PATH}`);
+    }
+    if (entry.governingSpecification?.status !== 'draft') {
+      errors.push(`${id}: overlay specification status must equal draft`);
+    }
+    if (entry.implementationStatus !== 'specified') {
+      errors.push(`${id}: overlay implementationStatus must equal specified`);
+    }
+    if (
+      !Array.isArray(entry.targetContracts) ||
+      entry.targetContracts.length !== expectedTargets.length ||
+      entry.targetContracts.some((contract, index) => contract !== expectedTargets[index])
+    ) {
+      errors.push(`${id}: overlay targetContracts must equal ${expectedTargets.join(', ')}`);
+    }
+  }
 }
 
 function validateOverlaySpecification(document, errors) {
@@ -386,6 +430,7 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
   for (const entry of ledger.components) {
     errors.push(...validateV1Entry(entry, ledger.acceptanceProfiles, documents));
   }
+  validateOverlayProgramEntries(ledger.components, errors);
   if (hasTrackedDocument(OVERLAY_SPEC_PATH, documents)) {
     validateOverlaySpecification(documents[OVERLAY_SPEC_PATH], errors);
   }
