@@ -52,6 +52,36 @@ const ACCEPTANCE_CELLS = [
   'consumer-commonjs',
 ];
 
+const OVERLAY_IDS = P1_IDS.slice(0, 9);
+const OVERLAY_SPEC_PATH = 'docs/superpowers/specs/2026-08-30-overlay-family-design.md';
+const OVERLAY_SPEC_HEADINGS = [
+  'Decision summary',
+  'Scope and ownership',
+  'Current contract inventory',
+  'Shared layer contract',
+  'Modal contract',
+  'Anchored layer contract',
+  'Menu contract',
+  'Tooltip contract',
+  'Composed overlay contract',
+  'React and Alpine boundary',
+  'SSR, hydration, and no-JavaScript contract',
+  'Acceptance matrix',
+  'Public API and migration policy',
+  'Foundation evaluation gate',
+  'Failure handling',
+  'Approval checklist',
+];
+
+const OVERLAY_SPEC_REFERENCES = [
+  './2026-08-30-lyra-v1-deliberate-release-design.md',
+  './lyra-v1/01-design-product-principles.md',
+  './lyra-v1/02-tokens-visual-language.md',
+  './lyra-v1/03-interaction-accessibility.md',
+  './lyra-v1/04-component-architecture.md',
+  './lyra-v1/05-quality-performance.md',
+];
+
 function plannedEntry(id, stream, wave) {
   return {
     id,
@@ -100,6 +130,39 @@ function validProgram() {
         '**Status:** Approved',
     },
   };
+}
+
+function overlayDraftProgram(document) {
+  const input = validProgram();
+  for (const entry of input.ledger.components) {
+    if (!OVERLAY_IDS.includes(entry.id)) continue;
+    entry.governingSpecification = { path: OVERLAY_SPEC_PATH, status: 'draft' };
+    entry.implementationStatus = 'specified';
+  }
+  if (document !== undefined) input.documents[OVERLAY_SPEC_PATH] = document;
+  return input;
+}
+
+function structurallyCompleteOverlaySpecification() {
+  return [
+    '# Lyra V1 Overlay Family Design',
+    '',
+    '**Status:** Draft — awaiting written review',
+    '',
+    '**Date:** 2026-08-30',
+    '',
+    '**Owner:** Lyra maintainers',
+    '',
+    '**Scope:** Dialog, Drawer, BottomSheet, Popover, Dropdown, Tooltip, CommandPalette, WorkspaceSwitcher, and CreateWorkspaceDialog across the public Styles, React, and claimed Alpine surfaces.',
+    '',
+    ...OVERLAY_SPEC_HEADINGS.flatMap((heading) => [`## ${heading}`, '', 'Normative text.', '']),
+    'OF-MODAL OF-ANCHORED OF-MENU OF-TOOLTIP OF-COMPOSED',
+    '',
+    'Chromium Firefox WebKit React 18 React 19 deferred-by-release-profile',
+    '',
+    ...OVERLAY_SPEC_REFERENCES.map((path) => `- [Required specification](${path})`),
+    '',
+  ].join('\n');
 }
 
 function qualifiedProgram() {
@@ -225,6 +288,103 @@ for (const [name, workflow] of [
 
 test('accepts the complete planned V1 program', () => {
   assert.deepEqual(validateV1Program(validProgram()), []);
+});
+
+test('rejects overlay draft entries without their tracked family specification', () => {
+  const errors = validateV1Program(overlayDraftProgram());
+
+  for (const id of OVERLAY_IDS) {
+    assert.ok(
+      errors.some((error) => error.includes(`${id}: draft specification must name a tracked path`)),
+    );
+  }
+});
+
+test('rejects an overlay family draft without the complete required structure', () => {
+  const errors = validateV1Program(
+    overlayDraftProgram('# Lyra V1 Overlay Family Design\n\n**Status:** Draft'),
+  );
+
+  assert.ok(errors.some((error) => error.includes('draft metadata is incomplete')));
+  for (const heading of OVERLAY_SPEC_HEADINGS) {
+    assert.ok(
+      errors.some((error) => error.includes(`level-two heading \"${heading}\" exactly once`)),
+    );
+  }
+  for (const name of OVERLAY_IDS) {
+    const componentName = {
+      dialog: 'Dialog',
+      drawer: 'Drawer',
+      'bottom-sheet': 'BottomSheet',
+      popover: 'Popover',
+      dropdown: 'Dropdown',
+      tooltip: 'Tooltip',
+      'command-palette': 'CommandPalette',
+      'workspace-switcher': 'WorkspaceSwitcher',
+      'create-workspace-dialog': 'CreateWorkspaceDialog',
+    }[name];
+    assert.ok(errors.some((error) => error.includes(`component ${componentName}`)));
+  }
+  for (const contractId of ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP', 'OF-COMPOSED']) {
+    assert.ok(errors.some((error) => error.includes(`contract ${contractId}`)));
+  }
+  for (const marker of [
+    'Chromium',
+    'Firefox',
+    'WebKit',
+    'React 18',
+    'React 19',
+    'deferred-by-release-profile',
+  ]) {
+    assert.ok(errors.some((error) => error.includes(`required marker ${marker}`)));
+  }
+  for (const reference of OVERLAY_SPEC_REFERENCES) {
+    assert.ok(errors.some((error) => error.includes(`required link ${reference}`)));
+  }
+});
+
+test('requires every overlay family heading at level two exactly once', () => {
+  for (const heading of OVERLAY_SPEC_HEADINGS) {
+    const document = structurallyCompleteOverlaySpecification().replace(
+      `## ${heading}`,
+      `### ${heading}`,
+    );
+    assert.ok(
+      validateV1Program(overlayDraftProgram(document)).some((error) =>
+        error.includes(`level-two heading \"${heading}\" exactly once`),
+      ),
+    );
+  }
+
+  const duplicated = structurallyCompleteOverlaySpecification().replace(
+    '## Decision summary',
+    '## Decision summary\n\n## Decision summary',
+  );
+  assert.ok(
+    validateV1Program(overlayDraftProgram(duplicated)).some((error) =>
+      error.includes('level-two heading \"Decision summary\" exactly once'),
+    ),
+  );
+});
+
+test('requires the exact overlay family scope metadata', () => {
+  const document = structurallyCompleteOverlaySpecification().replace(
+    '**Scope:** Dialog, Drawer, BottomSheet, Popover, Dropdown, Tooltip, CommandPalette, WorkspaceSwitcher, and CreateWorkspaceDialog across the public Styles, React, and claimed Alpine surfaces.',
+    '**Scope:** Overlay components.',
+  );
+
+  assert.ok(
+    validateV1Program(overlayDraftProgram(document)).some((error) =>
+      error.includes('draft metadata is incomplete'),
+    ),
+  );
+});
+
+test('accepts a structurally complete tracked overlay family draft', () => {
+  assert.deepEqual(
+    validateV1Program(overlayDraftProgram(structurallyCompleteOverlaySpecification())),
+    [],
+  );
 });
 
 for (const [name, mutate, expected] of [

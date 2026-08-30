@@ -8,6 +8,58 @@ import { parse } from 'yaml';
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const execFileAsync = promisify(execFile);
 const ACCEPTANCE_PROFILE_NAME = 'v1-interactive';
+const OVERLAY_SPEC_PATH = 'docs/superpowers/specs/2026-08-30-overlay-family-design.md';
+
+const OVERLAY_SPEC_HEADINGS = [
+  'Decision summary',
+  'Scope and ownership',
+  'Current contract inventory',
+  'Shared layer contract',
+  'Modal contract',
+  'Anchored layer contract',
+  'Menu contract',
+  'Tooltip contract',
+  'Composed overlay contract',
+  'React and Alpine boundary',
+  'SSR, hydration, and no-JavaScript contract',
+  'Acceptance matrix',
+  'Public API and migration policy',
+  'Foundation evaluation gate',
+  'Failure handling',
+  'Approval checklist',
+];
+
+const OVERLAY_SPEC_COMPONENTS = [
+  'Dialog',
+  'Drawer',
+  'BottomSheet',
+  'Popover',
+  'Dropdown',
+  'Tooltip',
+  'CommandPalette',
+  'WorkspaceSwitcher',
+  'CreateWorkspaceDialog',
+];
+
+const OVERLAY_SPEC_CONTRACTS = ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP', 'OF-COMPOSED'];
+
+const OVERLAY_SPEC_MARKERS = [
+  'Chromium',
+  'Firefox',
+  'WebKit',
+  'React 18',
+  'React 19',
+  'deferred-by-release-profile',
+];
+
+const OVERLAY_SPEC_REFERENCES = [
+  './2026-08-30-lyra-v1-deliberate-release-design.md',
+  './lyra-v1/01-design-product-principles.md',
+  './lyra-v1/02-tokens-visual-language.md',
+  './lyra-v1/03-interaction-accessibility.md',
+  './lyra-v1/04-component-architecture.md',
+  './lyra-v1/05-quality-performance.md',
+];
 
 const P1_IDS = new Set([
   'dialog',
@@ -120,6 +172,48 @@ function isNonEmptyStringArray(value) {
 
 function hasTrackedDocument(path, documents) {
   return typeof path === 'string' && Object.hasOwn(documents, path);
+}
+
+function validateOverlaySpecification(document, errors) {
+  const normalizedDocument = document.replace(/\s+/gu, ' ');
+  if (
+    !/^# Lyra V1 Overlay Family Design$/mu.test(document) ||
+    !/^\*\*Status:\*\* Draft — awaiting written review$/mu.test(document) ||
+    !/^\*\*Date:\*\* 2026-08-30$/mu.test(document) ||
+    !/^\*\*Owner:\*\* Lyra maintainers$/mu.test(document) ||
+    !normalizedDocument.includes(
+      '**Scope:** Dialog, Drawer, BottomSheet, Popover, Dropdown, Tooltip, CommandPalette, WorkspaceSwitcher, and CreateWorkspaceDialog across the public Styles, React, and claimed Alpine surfaces.',
+    )
+  ) {
+    errors.push('overlay specification draft metadata is incomplete');
+  }
+
+  const headings = [...document.matchAll(/^## ([^\r\n]+)$/gmu)].map((match) => match[1]);
+  for (const heading of OVERLAY_SPEC_HEADINGS) {
+    if (headings.filter((candidate) => candidate === heading).length !== 1) {
+      errors.push(`overlay specification must contain level-two heading "${heading}" exactly once`);
+    }
+  }
+  for (const component of OVERLAY_SPEC_COMPONENTS) {
+    if (!document.includes(component)) {
+      errors.push(`overlay specification must name component ${component}`);
+    }
+  }
+  for (const contract of OVERLAY_SPEC_CONTRACTS) {
+    if (!document.includes(contract)) {
+      errors.push(`overlay specification must define contract ${contract}`);
+    }
+  }
+  for (const marker of OVERLAY_SPEC_MARKERS) {
+    if (!document.includes(marker)) {
+      errors.push(`overlay specification must contain required marker ${marker}`);
+    }
+  }
+  for (const reference of OVERLAY_SPEC_REFERENCES) {
+    if (!document.includes(`](${reference})`)) {
+      errors.push(`overlay specification must contain required link ${reference}`);
+    }
+  }
 }
 
 function validateQualifiedEntry(entry, profile, documents, errors, label) {
@@ -291,6 +385,9 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
   if (new Set(ids).size !== ids.length) errors.push('component IDs must be unique');
   for (const entry of ledger.components) {
     errors.push(...validateV1Entry(entry, ledger.acceptanceProfiles, documents));
+  }
+  if (hasTrackedDocument(OVERLAY_SPEC_PATH, documents)) {
+    validateOverlaySpecification(documents[OVERLAY_SPEC_PATH], errors);
   }
   return errors;
 }
