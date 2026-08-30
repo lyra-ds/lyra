@@ -100,7 +100,7 @@ export function validateV1ReleaseWiring({ packageJson, workflow }) {
           typeof step?.run === 'string' &&
           step.run.trim() === 'pnpm v1-release:check' &&
           !Object.hasOwn(step, 'if') &&
-          step['continue-on-error'] !== true &&
+          !Object.hasOwn(step, 'continue-on-error') &&
           index > frozenInstallIndex,
       )
     : false;

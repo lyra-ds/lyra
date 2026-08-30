@@ -183,6 +183,13 @@ for (const [name, workflow] of [
     ),
   ],
   [
+    'expression continue-on-error command',
+    validV1ReleaseWorkflow().replace(
+      '      - run: pnpm v1-release:check',
+      '      - continue-on-error: ${{ true }}\n        run: pnpm v1-release:check',
+    ),
+  ],
+  [
     'command in a wrong job',
     `jobs:
   lint:
