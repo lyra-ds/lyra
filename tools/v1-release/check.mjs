@@ -9,6 +9,7 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const execFileAsync = promisify(execFile);
 const ACCEPTANCE_PROFILE_NAME = 'v1-interactive';
 const OVERLAY_SPEC_PATH = 'docs/superpowers/specs/2026-08-30-overlay-family-design.md';
+const DATA_FILES_SPEC_PATH = 'docs/superpowers/specs/2026-08-15-data-files-family-design.md';
 
 const OVERLAY_TARGET_CONTRACTS = new Map([
   ['dialog', ['OF-MODAL']],
@@ -82,6 +83,58 @@ const OVERLAY_CANCELLATION_CLAUSES = [
   'A terminal result with a noncurrent `operationId` MUST be ignored as stale.',
 ];
 
+const OVERLAY_NORMATIVE_CLAUSE_GROUPS = new Map([
+  [
+    'public inventory and events',
+    [
+      'Every React overlay value and type is available from both the package root and the component subpath.',
+      'All three Alpine `$dispatch` events bubble, are composed, and are cancelable under the shipped Alpine event mechanism, so a listener on the served component root observes them.',
+      'The payload shapes above are structural current contracts; the package does not export separately named event-detail types.',
+    ],
+  ],
+  [
+    'total modal focus fallback',
+    [
+      'The final panel fallback is mandatory, so an absent or invalid declared target MUST never leave focus in background content or without an outcome.',
+    ],
+  ],
+  [
+    'disabled menu behavior',
+    [
+      'An `aria-disabled="true"` item MUST remain discoverable by arrow navigation when present in the public item model.',
+      'but it MUST NOT activate, select, close the menu, or emit a result.',
+    ],
+  ],
+  [
+    'exact tooltip delays',
+    [
+      'Hover MUST expose it after a 500 ms initial delay.',
+      'The warm delay is exactly 0 ms: while it is warm, entering another trigger MUST expose its tooltip in the same interaction turn without starting the 500 ms timer.',
+      'The 300 ms warm grace begins when the last visible tooltip logically closes and no trigger or tooltip branch retains focus or hover ownership.',
+      'Leaving both trigger and tooltip MUST close after a 100 ms pointer-transition grace period so the pointer can cross into hoverable content.',
+    ],
+  ],
+  [
+    'future menu adoption',
+    [
+      'Any future surface MUST be added through a separately approved revision of this specification before adopting `OF-MENU`.',
+    ],
+  ],
+]);
+
+const OVERLAY_FOUNDATION_CANDIDATES = [
+  'incumbent Lyra implementation',
+  'Radix',
+  'Base UI',
+  'active Zag direction',
+];
+
+const OVERLAY_STATUS_METADATA = new Map([
+  ['draft', /^\*\*Status:\*\* Draft — awaiting written review$/mu],
+  ['approved', /^\*\*Status:\*\* Approved$/mu],
+  ['implemented', /^\*\*Status:\*\* Implemented$/mu],
+]);
+
 const P1_IDS = new Set([
   'dialog',
   'drawer',
@@ -103,6 +156,14 @@ const IMPLEMENTATION_STATES = new Set([
   'qualified',
 ]);
 const SPECIFICATION_STATES = new Set(['not-authored', 'draft', 'approved', 'implemented']);
+const VALID_LIFECYCLE_PAIRS = new Set([
+  'not-authored:planned',
+  'draft:specified',
+  'approved:specified',
+  'approved:evaluating',
+  'approved:implementing',
+  'implemented:qualified',
+]);
 const ACCEPTANCE_CELLS = new Set([
   'chromium',
   'firefox',
@@ -211,12 +272,6 @@ function validateOverlayProgramEntries(components, errors) {
     if (entry.governingSpecification?.path !== OVERLAY_SPEC_PATH) {
       errors.push(`${id}: overlay specification path must equal ${OVERLAY_SPEC_PATH}`);
     }
-    if (entry.governingSpecification?.status !== 'draft') {
-      errors.push(`${id}: overlay specification status must equal draft`);
-    }
-    if (entry.implementationStatus !== 'specified') {
-      errors.push(`${id}: overlay implementationStatus must equal specified`);
-    }
     if (
       !Array.isArray(entry.targetContracts) ||
       entry.targetContracts.length !== expectedTargets.length ||
@@ -227,11 +282,19 @@ function validateOverlayProgramEntries(components, errors) {
   }
 }
 
-function validateOverlaySpecification(document, errors) {
+function validateOverlaySpecification(document, entries, errors) {
   const normalizedDocument = document.replace(/\s+/gu, ' ');
+  for (const entry of entries) {
+    const status = entry?.governingSpecification?.status;
+    const statusPattern = OVERLAY_STATUS_METADATA.get(status);
+    if (!statusPattern?.test(document)) {
+      errors.push(
+        `${entry?.id ?? '<unknown>'}: overlay specification metadata must match ${status} status`,
+      );
+    }
+  }
   if (
     !/^# Lyra V1 Overlay Family Design$/mu.test(document) ||
-    !/^\*\*Status:\*\* Draft — awaiting written review$/mu.test(document) ||
     !/^\*\*Date:\*\* 2026-08-30$/mu.test(document) ||
     !/^\*\*Owner:\*\* Lyra maintainers$/mu.test(document) ||
     !normalizedDocument.includes(
@@ -267,6 +330,20 @@ function validateOverlaySpecification(document, errors) {
       errors.push(
         `overlay specification must define concrete CreateWorkspaceDialog cancellation contract: ${clause}`,
       );
+    }
+  }
+  for (const [contractName, clauses] of OVERLAY_NORMATIVE_CLAUSE_GROUPS) {
+    for (const clause of clauses) {
+      if (!normalizedDocument.includes(clause)) {
+        errors.push(
+          `overlay specification must contain required ${contractName} clause: ${clause}`,
+        );
+      }
+    }
+  }
+  for (const candidate of OVERLAY_FOUNDATION_CANDIDATES) {
+    if (!document.includes(candidate)) {
+      errors.push(`overlay specification must name foundation candidate ${candidate}`);
     }
   }
   for (const reference of OVERLAY_SPEC_REFERENCES) {
@@ -377,6 +454,25 @@ export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
   } else if (!hasTrackedDocument(specification.path, documents)) {
     errors.push(`${label}: ${specification.status} specification must name a tracked path`);
   }
+  if (
+    isPlainObject(specification) &&
+    SPECIFICATION_STATES.has(specification.status) &&
+    IMPLEMENTATION_STATES.has(entry.implementationStatus)
+  ) {
+    const lifecyclePair = `${specification.status}:${entry.implementationStatus}`;
+    const isPlannedDataTableException =
+      label === 'data-table' &&
+      lifecyclePair === 'implemented:planned' &&
+      specification.path === DATA_FILES_SPEC_PATH &&
+      /^\*\*Status:\*\* Implemented under Automated Core — FileUpload wave$/mu.test(
+        documents[DATA_FILES_SPEC_PATH] ?? '',
+      );
+    if (!VALID_LIFECYCLE_PAIRS.has(lifecyclePair) && !isPlannedDataTableException) {
+      errors.push(
+        `${label}: lifecycle pair ${specification.status} + ${entry.implementationStatus} is invalid`,
+      );
+    }
+  }
 
   const profile = acceptanceProfiles?.[ACCEPTANCE_PROFILE_NAME];
   if (entry.acceptanceProfile !== ACCEPTANCE_PROFILE_NAME) {
@@ -448,7 +544,11 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
   }
   validateOverlayProgramEntries(ledger.components, errors);
   if (hasTrackedDocument(OVERLAY_SPEC_PATH, documents)) {
-    validateOverlaySpecification(documents[OVERLAY_SPEC_PATH], errors);
+    validateOverlaySpecification(
+      documents[OVERLAY_SPEC_PATH],
+      ledger.components.filter((entry) => OVERLAY_TARGET_CONTRACTS.has(entry?.id)),
+      errors,
+    );
   }
   return errors;
 }

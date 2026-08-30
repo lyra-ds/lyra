@@ -4,7 +4,7 @@ import { readFile, rm, writeFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { validateV1Program, validateV1ReleaseWiring } from './check.mjs';
+import { validateV1Entry, validateV1Program, validateV1ReleaseWiring } from './check.mjs';
 
 const execFileAsync = promisify(execFile);
 const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
@@ -102,6 +102,37 @@ const OVERLAY_CANCELLATION_CLAUSES = [
   'A terminal result with a noncurrent `operationId` MUST be ignored as stale.',
 ];
 
+const OVERLAY_NORMATIVE_CLAUSE_GROUPS = {
+  'public inventory and events': [
+    'Every React overlay value and type is available from both the package root and the component subpath.',
+    'All three Alpine `$dispatch` events bubble, are composed, and are cancelable under the shipped Alpine event mechanism, so a listener on the served component root observes them.',
+    'The payload shapes above are structural current contracts; the package does not export separately named event-detail types.',
+  ],
+  'total modal focus fallback': [
+    'The final panel fallback is mandatory, so an absent or invalid declared target MUST never leave focus in background content or without an outcome.',
+  ],
+  'disabled menu behavior': [
+    'An `aria-disabled="true"` item MUST remain discoverable by arrow navigation when present in the public item model.',
+    'but it MUST NOT activate, select, close the menu, or emit a result.',
+  ],
+  'exact tooltip delays': [
+    'Hover MUST expose it after a 500 ms initial delay.',
+    'The warm delay is exactly 0 ms: while it is warm, entering another trigger MUST expose its tooltip in the same interaction turn without starting the 500 ms timer.',
+    'The 300 ms warm grace begins when the last visible tooltip logically closes and no trigger or tooltip branch retains focus or hover ownership.',
+    'Leaving both trigger and tooltip MUST close after a 100 ms pointer-transition grace period so the pointer can cross into hoverable content.',
+  ],
+  'future menu adoption': [
+    'Any future surface MUST be added through a separately approved revision of this specification before adopting `OF-MENU`.',
+  ],
+};
+
+const OVERLAY_FOUNDATION_CANDIDATES = [
+  'incumbent Lyra implementation',
+  'Radix',
+  'Base UI',
+  'active Zag direction',
+];
+
 function plannedEntry(id, stream, wave) {
   return {
     id,
@@ -182,6 +213,10 @@ function structurallyCompleteOverlaySpecification() {
     'Chromium Firefox WebKit React 18 React 19 deferred-by-release-profile',
     '',
     ...OVERLAY_CANCELLATION_CLAUSES,
+    '',
+    ...Object.values(OVERLAY_NORMATIVE_CLAUSE_GROUPS).flat(),
+    '',
+    ...OVERLAY_FOUNDATION_CANDIDATES,
     '',
     ...OVERLAY_SPEC_REFERENCES.map((path) => `- [Required specification](${path})`),
     '',
@@ -422,6 +457,148 @@ test('requires a concrete operation-scoped CreateWorkspaceDialog cancellation co
   }
 });
 
+for (const [contractName, clauses] of Object.entries(OVERLAY_NORMATIVE_CLAUSE_GROUPS)) {
+  test(`requires the durable ${contractName} contract`, () => {
+    const specification = structurallyCompleteOverlaySpecification();
+
+    for (const clause of clauses) {
+      const document = specification.replace(clause, 'Omitted normative contract.');
+      assert.ok(
+        validateV1Program(overlayDraftProgram(document)).some((error) =>
+          error.includes(`required ${contractName} clause`),
+        ),
+        clause,
+      );
+    }
+  });
+}
+
+test('requires every named overlay foundation candidate', () => {
+  const specification = structurallyCompleteOverlaySpecification();
+
+  for (const candidate of OVERLAY_FOUNDATION_CANDIDATES) {
+    const document = specification.replace(candidate, 'omitted candidate');
+    assert.ok(
+      validateV1Program(overlayDraftProgram(document)).some((error) =>
+        error.includes(`foundation candidate ${candidate}`),
+      ),
+      candidate,
+    );
+  }
+});
+
+test('rejects draft ledger status when the overlay document is approved or omits status', () => {
+  for (const document of [
+    structurallyCompleteOverlaySpecification().replace(
+      '**Status:** Draft — awaiting written review',
+      '**Status:** Approved',
+    ),
+    structurallyCompleteOverlaySpecification().replace(
+      '**Status:** Draft — awaiting written review\n\n',
+      '',
+    ),
+  ]) {
+    assert.ok(
+      validateV1Program(overlayDraftProgram(document)).some((error) =>
+        error.includes('dialog: overlay specification metadata must match draft status'),
+      ),
+    );
+  }
+});
+
+test('accepts an explicitly approved overlay document when every ledger entry matches', () => {
+  const document = structurallyCompleteOverlaySpecification().replace(
+    '**Status:** Draft — awaiting written review',
+    '**Status:** Approved',
+  );
+  const input = overlayDraftProgram(document);
+  for (const entry of input.ledger.components) {
+    if (!OVERLAY_IDS.includes(entry.id)) continue;
+    entry.governingSpecification.status = 'approved';
+  }
+
+  assert.deepEqual(validateV1Program(input), []);
+});
+
+for (const state of ['evaluating', 'implementing', 'qualified']) {
+  test(`rejects draft overlay entries that claim ${state}`, () => {
+    const input = overlayDraftProgram(structurallyCompleteOverlaySpecification());
+    const entry = input.ledger.components.find(({ id }) => id === 'dropdown');
+    entry.implementationStatus = state;
+
+    assert.ok(
+      validateV1Program(input).some((error) =>
+        error.includes(`dropdown: lifecycle pair draft + ${state} is invalid`),
+      ),
+    );
+  });
+}
+
+for (const implementationStatus of ['specified', 'evaluating', 'implementing']) {
+  test(`accepts approved + ${implementationStatus}`, () => {
+    const entry = plannedEntry('tabs', 'tabs', 'tabs');
+    entry.governingSpecification = { path: 'docs/spec.md', status: 'approved' };
+    entry.implementationStatus = implementationStatus;
+
+    assert.deepEqual(
+      validateV1Entry(entry, validProgram().ledger.acceptanceProfiles, {
+        'docs/spec.md': '**Status:** Approved',
+      }),
+      [],
+    );
+  });
+}
+
+test('accepts the planned DataTable exception for its FileUpload-only implemented family spec', () => {
+  const entry = plannedEntry('data-table', 'data-table', 'data-table');
+  entry.governingSpecification = {
+    path: 'docs/superpowers/specs/2026-08-15-data-files-family-design.md',
+    status: 'implemented',
+  };
+
+  assert.deepEqual(
+    validateV1Entry(entry, validProgram().ledger.acceptanceProfiles, {
+      'docs/superpowers/specs/2026-08-15-data-files-family-design.md':
+        '**Status:** Implemented under Automated Core — FileUpload wave',
+    }),
+    [],
+  );
+});
+
+test('rejects the planned DataTable exception without FileUpload-scoped metadata', () => {
+  const entry = plannedEntry('data-table', 'data-table', 'data-table');
+  entry.governingSpecification = {
+    path: 'docs/superpowers/specs/2026-08-15-data-files-family-design.md',
+    status: 'implemented',
+  };
+
+  assert.ok(
+    validateV1Entry(entry, validProgram().ledger.acceptanceProfiles, {
+      'docs/superpowers/specs/2026-08-15-data-files-family-design.md': '**Status:** Implemented',
+    }).some((error) =>
+      error.includes('data-table: lifecycle pair implemented + planned is invalid'),
+    ),
+  );
+});
+
+test('does not let the planned DataTable exception authorize a qualified claim', () => {
+  const input = qualifiedProgram();
+  const entry = input.ledger.components[0];
+  entry.id = 'data-table';
+  entry.governingSpecification = {
+    path: 'docs/superpowers/specs/2026-08-15-data-files-family-design.md',
+    status: 'implemented',
+  };
+  input.documents['docs/superpowers/specs/2026-08-15-data-files-family-design.md'] =
+    '**Status:** Implemented under Automated Core — FileUpload wave';
+
+  assert.ok(
+    validateV1Entry(entry, input.ledger.acceptanceProfiles, input.documents).some((error) =>
+      error.includes('implemented specification metadata is missing'),
+    ),
+  );
+});
+
 for (const id of OVERLAY_IDS) {
   test(`rejects an incorrect ${id} overlay draft target map`, () => {
     const input = overlayDraftProgram(structurallyCompleteOverlaySpecification());
@@ -453,13 +630,13 @@ for (const id of OVERLAY_IDS) {
         change(entry) {
           entry.governingSpecification.status = 'approved';
         },
-        expected: `${id}: overlay specification status must equal draft`,
+        expected: `${id}: overlay specification metadata must match approved status`,
       },
       {
         change(entry) {
           entry.implementationStatus = 'planned';
         },
-        expected: `${id}: overlay implementationStatus must equal specified`,
+        expected: `${id}: lifecycle pair draft + planned is invalid`,
       },
     ];
 

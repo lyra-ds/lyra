@@ -325,7 +325,8 @@ trigger restoration are inapplicable because focus MUST remain on the trigger.
 
 `OF-MENU` applies to Dropdown and to a future explicitly declared menu surface;
 it does not apply to Popover dialog content, Tooltip descriptions, or the
-WorkspaceSwitcher listbox.
+WorkspaceSwitcher listbox. Any future surface MUST be added through a separately
+approved revision of this specification before adopting `OF-MENU`.
 
 - Enter, Space, and ArrowDown on the trigger MUST open the menu and focus the
   first enabled item. ArrowUp MUST open it and focus the last enabled item. A

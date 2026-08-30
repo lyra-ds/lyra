@@ -95,6 +95,7 @@ frozen required-check contexts remain `lint`, `typecheck`, `test`, and `build`.
 - [ ] Manual Windows/NVDA and macOS/VoiceOver workflow execution is deferred to
       optional post-release evidence under Automated Core and is not passed.
 
-The next artifact is the overlay-foundation family specification. Its evaluation
-or implementation plan must not be created until that specification reaches
-`Approved`.
+The overlay-family specification now exists as a draft. Foundation evaluation,
+candidate dependency installation, and an overlay implementation plan remain
+blocked until the specification reaches `Approved` through an explicit
+maintainer checkpoint.
