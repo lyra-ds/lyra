@@ -130,8 +130,12 @@ test('rejects a registry artifact for the incumbent candidate', () => {
 for (const [field, suffix] of [
   ['tarballUrl', '?download=1'],
   ['tarballUrl', '#archive'],
+  ['tarballUrl', '?'],
+  ['tarballUrl', '#'],
   ['repositoryUrl', '?tab=readme'],
   ['repositoryUrl', '#readme'],
+  ['repositoryUrl', '?'],
+  ['repositoryUrl', '#'],
 ]) {
   test(`rejects a registry ${field} with ${suffix[0] === '?' ? 'a query' : 'a fragment'}`, () => {
     const manifest = structuredClone(validManifest);

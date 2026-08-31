@@ -96,12 +96,40 @@ test('accepts closed candidate-neutral relationship, event, and announcement sha
   assert.deepEqual(validateScenario(scenario), []);
 });
 
+test('accepts neutral prose and strings that merely contain candidate-like text', () => {
+  const scenario = structuredClone(validScenario);
+  scenario.initial.state = {
+    motion: 'zigzag',
+    algorithm: 'radix sort',
+    account: 'incumbent account',
+  };
+  scenario.expected.announcements = [{ message: 'The radix sort is complete.' }];
+  assert.deepEqual(validateScenario(scenario), []);
+});
+
+for (const key of ['candidateIndex', 'candidateVariant', 'vendorMode']) {
+  test(`rejects nested coupling key ${key}`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.initial.state[key] = 'neutral';
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
+
+for (const identity of ['radix', 'base-ui', 'zag', 'incumbent']) {
+  test(`rejects exact candidate identity ${identity} in generic state`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.initial.state.library = identity;
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
+
 for (const [label, mutate] of [
   ['nested initial state', (scenario) => { scenario.initial.state.vendorAttribute = 'data-radix'; }],
   ['operation target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
   ['relationship', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'dialog', vendorSelector: '[data-radix]' }]; }],
   ['event', (scenario) => { scenario.expected.events = [{ target: 'dialog', type: 'opened', vendorEvent: 'radix:open' }]; }],
-  ['announcement', (scenario) => { scenario.expected.announcements = [{ message: 'Opened by base-ui' }]; }],
+  ['announcement', (scenario) => { scenario.expected.announcements = [{ message: 'base-ui' }]; }],
+  ['identifier token', (scenario) => { scenario.expected.events = [{ target: '@zag-js/dialog', type: 'opened' }]; }],
 ]) {
   test(`rejects candidate coupling in ${label}`, () => {
     const scenario = structuredClone(validScenario);

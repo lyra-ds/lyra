@@ -116,11 +116,13 @@ function validateUrl(value, path, errors) {
     errors.push(`${path} must be an absolute URL`);
     return;
   }
+  if (value.includes('?') || value.includes('#')) {
+    errors.push(`${path} must not contain a query or fragment`);
+  }
   try {
     const url = new URL(value);
     if (!['http:', 'https:'].includes(url.protocol)) errors.push(`${path} must use HTTP(S)`);
     if (url.username || url.password) errors.push(`${path} must not contain credentials`);
-    if (url.search || url.hash) errors.push(`${path} must not contain a query or fragment`);
   } catch {
     errors.push(`${path} must be an absolute URL`);
   }

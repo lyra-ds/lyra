@@ -64,26 +64,46 @@ export function requireUniqueStrings(value, path, errors) {
   }
 }
 
-const COUPLED_TERMS = [
+const EXACT_COUPLED_IDENTITIES = new Set([
   'incumbent',
   'lyra',
+  '@lyra-ds/react',
   'radix',
+  '@radix-ui/react-dialog',
   'base-ui',
   'base ui',
+  '@base-ui-components/react',
   'zag',
+  '@zag-js/dialog',
   'vendor',
-];
+]);
+const IDENTIFIER_COUPLING_TOKENS = new Set(['incumbent', 'lyra', 'radix', 'zag', 'vendor']);
+const IDENTIFIER_FIELDS = new Set(['source', 'target', 'name', 'type']);
 
-function rejectCandidateVendorCoupling(value, path, errors) {
+function isExactCoupledIdentity(value) {
+  return EXACT_COUPLED_IDENTITIES.has(value.trim().toLowerCase());
+}
+
+function hasCoupledIdentifierToken(value) {
+  const tokens = value.toLowerCase().split(/[^a-z0-9]+/u).filter(Boolean);
+  return tokens.some((token, index) =>
+    IDENTIFIER_COUPLING_TOKENS.has(token) ||
+    [tokens[index], tokens[index + 1]].join('-') === 'base-ui',
+  );
+}
+
+function rejectCandidateVendorCoupling(value, path, errors, identifierLike = false) {
   if (typeof value === 'string') {
-    if (COUPLED_TERMS.some((term) => value.toLowerCase().includes(term))) {
+    if (isExactCoupledIdentity(value) || (identifierLike && hasCoupledIdentifierToken(value))) {
       errors.push(`${path} contains candidate or vendor coupling`);
     }
     return;
   }
   if (value === null || typeof value === 'boolean' || typeof value === 'number') return;
   if (Array.isArray(value)) {
-    value.forEach((entry, index) => rejectCandidateVendorCoupling(entry, `${path}[${index}]`, errors));
+    value.forEach((entry, index) => {
+      rejectCandidateVendorCoupling(entry, `${path}[${index}]`, errors, identifierLike);
+    });
     return;
   }
   if (!isPlainRecord(value)) {
@@ -92,13 +112,10 @@ function rejectCandidateVendorCoupling(value, path, errors) {
   }
   for (const [key, entry] of Object.entries(value)) {
     const normalizedKey = key.toLowerCase().replaceAll(/[-_]/gu, '');
-    if (
-      COUPLED_TERMS.some((term) => normalizedKey.includes(term.replaceAll(/[- ]/gu, ''))) ||
-      /^(candidate|vendor)(id|name|selector|attribute|part|event|type)?$/u.test(normalizedKey)
-    ) {
+    if (normalizedKey.includes('candidate') || normalizedKey.includes('vendor')) {
       errors.push(`${path}.${key} contains candidate or vendor coupling`);
     }
-    rejectCandidateVendorCoupling(entry, `${path}.${key}`, errors);
+    rejectCandidateVendorCoupling(entry, `${path}.${key}`, errors, IDENTIFIER_FIELDS.has(key));
   }
 }
 
