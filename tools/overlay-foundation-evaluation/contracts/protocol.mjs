@@ -85,6 +85,7 @@ function isExactCoupledIdentity(value) {
 
 function hasCoupledIdentifierToken(value) {
   const tokens = value
+    .replaceAll(/([A-Z]+)([A-Z][a-z])/gu, '$1 $2')
     .replaceAll(/([a-z0-9])([A-Z])/gu, '$1 $2')
     .toLowerCase()
     .split(/[^a-z0-9]+/u)

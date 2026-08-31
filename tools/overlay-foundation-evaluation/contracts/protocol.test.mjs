@@ -124,6 +124,7 @@ for (const [label, mutate] of [
   ['scenarioId', (scenario) => { scenario.scenarioId = 'radix.modal.v1'; }],
   ['components item', (scenario) => { scenario.components = ['radix-dialog']; }],
   ['PascalCase components item', (scenario) => { scenario.components = ['RadixDialog']; }],
+  ['uppercase acronym components item', (scenario) => { scenario.components = ['BaseUIDialog']; }],
   ['operation.operation', (scenario) => { scenario.operations[0].operation = 'radix-open'; }],
   ['operation.target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
   ['role', (scenario) => { scenario.expected.roles[0].role = 'radix-dialog'; }],
