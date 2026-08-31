@@ -107,6 +107,43 @@ test('accepts neutral prose and strings that merely contain candidate-like text'
   assert.deepEqual(validateScenario(scenario), []);
 });
 
+test('accepts neutral prose with valid identifiers in every normative identifier path', () => {
+  const scenario = structuredClone(validScenario);
+  scenario.components = ['Dialog'];
+  scenario.operations = [{ operation: 'open', target: 'primary-trigger' }];
+  scenario.expected.roles = [{ role: 'dialog', name: 'radix sort' }];
+  scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'dialog' }];
+  scenario.expected.states = [{ target: 'dialog', name: 'open', value: true }];
+  scenario.expected.focus = { target: 'first-focusable' };
+  scenario.expected.events = [{ target: 'dialog', type: 'opened' }];
+  scenario.expected.announcements = [{ message: 'The incumbent account is ready.' }];
+  assert.deepEqual(validateScenario(scenario), []);
+});
+
+for (const [label, mutate] of [
+  ['scenarioId', (scenario) => { scenario.scenarioId = 'radix.modal.v1'; }],
+  ['components item', (scenario) => { scenario.components = ['radix-dialog']; }],
+  ['operation.operation', (scenario) => { scenario.operations[0].operation = 'radix-open'; }],
+  ['operation.target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
+  ['role', (scenario) => { scenario.expected.roles[0].role = 'radix-dialog'; }],
+  ['relationship source', (scenario) => { scenario.expected.relationships = [{ source: 'radix-trigger', name: 'controls', target: 'dialog' }]; }],
+  ['relationship name', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'radix-controls', target: 'dialog' }]; }],
+  ['relationship target', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'radix-dialog' }]; }],
+  ['state target', (scenario) => { scenario.expected.states[0].target = 'radix-dialog'; }],
+  ['state name', (scenario) => { scenario.expected.states[0].name = 'radix-open'; }],
+  ['focus target', (scenario) => { scenario.expected.focus.target = 'radix-focus'; }],
+  ['event target', (scenario) => { scenario.expected.events = [{ target: 'radix-dialog', type: 'opened' }]; }],
+  ['event type', (scenario) => { scenario.expected.events = [{ target: 'dialog', type: 'radix-opened' }]; }],
+  ['requiredCells item', (scenario) => { scenario.requiredCells = ['radix-browser']; }],
+  ['capture item', (scenario) => { scenario.capture = ['radix-events']; }],
+]) {
+  test(`rejects candidate token in identifier path ${label}`, () => {
+    const scenario = structuredClone(validScenario);
+    mutate(scenario);
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
+
 for (const key of ['candidateIndex', 'candidateVariant', 'vendorMode']) {
   test(`rejects nested coupling key ${key}`, () => {
     const scenario = structuredClone(validScenario);

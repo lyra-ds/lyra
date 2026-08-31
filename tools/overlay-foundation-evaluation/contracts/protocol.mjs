@@ -78,7 +78,6 @@ const EXACT_COUPLED_IDENTITIES = new Set([
   'vendor',
 ]);
 const IDENTIFIER_COUPLING_TOKENS = new Set(['incumbent', 'lyra', 'radix', 'zag', 'vendor']);
-const IDENTIFIER_FIELDS = new Set(['source', 'target', 'name', 'type']);
 
 function isExactCoupledIdentity(value) {
   return EXACT_COUPLED_IDENTITIES.has(value.trim().toLowerCase());
@@ -92,9 +91,20 @@ function hasCoupledIdentifierToken(value) {
   );
 }
 
-function rejectCandidateVendorCoupling(value, path, errors, identifierLike = false) {
+function requireCandidateNeutralIdentifier(value, path, errors) {
+  if (typeof value === 'string' && (isExactCoupledIdentity(value) || hasCoupledIdentifierToken(value))) {
+    errors.push(`${path} contains candidate or vendor coupling`);
+  }
+}
+
+function requireCandidateNeutralIdentifierArray(value, path, errors) {
+  if (!Array.isArray(value)) return;
+  value.forEach((entry, index) => requireCandidateNeutralIdentifier(entry, `${path}[${index}]`, errors));
+}
+
+function rejectCandidateVendorCoupling(value, path, errors) {
   if (typeof value === 'string') {
-    if (isExactCoupledIdentity(value) || (identifierLike && hasCoupledIdentifierToken(value))) {
+    if (isExactCoupledIdentity(value)) {
       errors.push(`${path} contains candidate or vendor coupling`);
     }
     return;
@@ -102,7 +112,7 @@ function rejectCandidateVendorCoupling(value, path, errors, identifierLike = fal
   if (value === null || typeof value === 'boolean' || typeof value === 'number') return;
   if (Array.isArray(value)) {
     value.forEach((entry, index) => {
-      rejectCandidateVendorCoupling(entry, `${path}[${index}]`, errors, identifierLike);
+      rejectCandidateVendorCoupling(entry, `${path}[${index}]`, errors);
     });
     return;
   }
@@ -115,7 +125,7 @@ function rejectCandidateVendorCoupling(value, path, errors, identifierLike = fal
     if (normalizedKey.includes('candidate') || normalizedKey.includes('vendor')) {
       errors.push(`${path}.${key} contains candidate or vendor coupling`);
     }
-    rejectCandidateVendorCoupling(entry, `${path}.${key}`, errors, IDENTIFIER_FIELDS.has(key));
+    rejectCandidateVendorCoupling(entry, `${path}.${key}`, errors);
   }
 }
 
@@ -142,9 +152,11 @@ function validateOperations(value, errors) {
     }
     rejectUnknownKeys(operation, ['operation', 'target'], path, errors);
     requireMember(operation.operation, FIXTURE_OPERATIONS, `${path}.operation`, errors);
+    requireCandidateNeutralIdentifier(operation.operation, `${path}.operation`, errors);
     if (typeof operation.target !== 'string' || operation.target.length === 0) {
       errors.push(`${path}.target must be a non-empty string`);
     }
+    requireCandidateNeutralIdentifier(operation.target, `${path}.target`, errors);
   });
 }
 
@@ -175,22 +187,23 @@ function validateExpected(value, errors) {
     if (typeof value.focus.target !== 'string' || value.focus.target.length === 0) {
       errors.push('scenario.expected.focus.target must be a non-empty string');
     }
+    requireCandidateNeutralIdentifier(value.focus.target, 'scenario.expected.focus.target', errors);
   }
 }
 
 function validateRelationships(value, errors) {
-  validateNamedRecords(value, 'scenario.expected.relationships', ['source', 'name', 'target'], errors);
+  validateNamedRecords(value, 'scenario.expected.relationships', ['source', 'name', 'target'], ['source', 'name', 'target'], errors);
 }
 
 function validateEvents(value, errors) {
-  validateNamedRecords(value, 'scenario.expected.events', ['target', 'type'], errors);
+  validateNamedRecords(value, 'scenario.expected.events', ['target', 'type'], ['target', 'type'], errors);
 }
 
 function validateAnnouncements(value, errors) {
-  validateNamedRecords(value, 'scenario.expected.announcements', ['message'], errors);
+  validateNamedRecords(value, 'scenario.expected.announcements', ['message'], [], errors);
 }
 
-function validateNamedRecords(value, path, keys, errors) {
+function validateNamedRecords(value, path, keys, identifierKeys, errors) {
   if (!Array.isArray(value)) return;
   value.forEach((entry, index) => {
     const entryPath = `${path}[${index}]`;
@@ -199,6 +212,9 @@ function validateNamedRecords(value, path, keys, errors) {
     for (const key of keys) {
       if (typeof entry[key] !== 'string' || entry[key].length === 0) {
         errors.push(`${entryPath}.${key} must be a non-empty string`);
+      }
+      if (identifierKeys.includes(key)) {
+        requireCandidateNeutralIdentifier(entry[key], `${entryPath}.${key}`, errors);
       }
     }
   });
@@ -215,6 +231,7 @@ function validateRoles(value, errors) {
         errors.push(`${path}.${key} must be a non-empty string`);
       }
     }
+    requireCandidateNeutralIdentifier(role.role, `${path}.role`, errors);
   });
 }
 
@@ -228,6 +245,7 @@ function validateStates(value, errors) {
       if (typeof state[key] !== 'string' || state[key].length === 0) {
         errors.push(`${path}.${key} must be a non-empty string`);
       }
+      requireCandidateNeutralIdentifier(state[key], `${path}.${key}`, errors);
     }
     if (!Object.hasOwn(state, 'value')) errors.push(`${path}.value is required`);
   });
@@ -262,12 +280,16 @@ export function validateScenario(value) {
     'scenario.scenarioId',
     errors,
   );
+  requireCandidateNeutralIdentifier(value.scenarioId, 'scenario.scenarioId', errors);
   requireUniqueStrings(value.components, 'scenario.components', errors);
+  requireCandidateNeutralIdentifierArray(value.components, 'scenario.components', errors);
   validateInitial(value.initial, errors);
   validateOperations(value.operations, errors);
   validateExpected(value.expected, errors);
   requireUniqueStrings(value.requiredCells, 'scenario.requiredCells', errors);
+  requireCandidateNeutralIdentifierArray(value.requiredCells, 'scenario.requiredCells', errors);
   requireUniqueStrings(value.capture, 'scenario.capture', errors);
+  requireCandidateNeutralIdentifierArray(value.capture, 'scenario.capture', errors);
   rejectCandidateVendorCoupling(value, 'scenario', errors);
   return errors;
 }
