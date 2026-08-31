@@ -86,7 +86,7 @@ function sortJson(value, path, ancestors) {
     }
     if (!isPlainRecord(value)) throw new TypeError(`${path} must contain only JSON values`);
 
-    const sorted = {};
+    const sorted = Object.create(null);
     for (const key of Object.keys(value).sort()) {
       const descriptor = Object.getOwnPropertyDescriptor(value, key);
       if (descriptor === undefined || !Object.hasOwn(descriptor, 'value')) {

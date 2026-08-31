@@ -190,6 +190,27 @@ test('canonicalizes nested JSON objects without reordering arrays', () => {
   assert.throws(() => canonicalJson({ invalid: undefined }), /JSON/u);
 });
 
+test('retains own __proto__ properties in canonical written evidence', async () => {
+  const evidenceRoot = await makeEvidenceRoot();
+  const payload = JSON.parse('{"__proto__":{"polluted":true},"a":1}');
+  const canonicalPayload = canonicalJson(payload);
+  assert.equal(canonicalPayload, '{\n  "__proto__": {\n    "polluted": true\n  },\n  "a": 1\n}\n');
+  assert.notEqual(canonicalPayload, canonicalJson({ a: 1 }));
+  assert.equal(Object.prototype.polluted, undefined);
+
+  const attempt = { ...firstAttempt, expected: payload, observed: payload };
+  assert.deepEqual(validateAttempt(attempt), []);
+  const written = await writeAttempt({ evidenceRoot, attempt });
+  const bytes = await readFile(written.path);
+  const stored = JSON.parse(bytes.toString('utf8'));
+  assert.equal(Object.hasOwn(stored.expected, '__proto__'), true);
+  assert.equal(Object.hasOwn(stored.observed, '__proto__'), true);
+  assert.equal(written.sha256, sha256(bytes));
+  const withoutProto = { ...attempt, expected: { a: 1 }, observed: { a: 1 } };
+  assert.notEqual(written.sha256, sha256(Buffer.from(canonicalJson(withoutProto))));
+  assert.equal(Object.prototype.polluted, undefined);
+});
+
 test('writes canonical immutable scenario evidence with a reusable checksum', async () => {
   const evidenceRoot = await makeEvidenceRoot();
   const written = await writeAttempt({ evidenceRoot, attempt: firstAttempt });
