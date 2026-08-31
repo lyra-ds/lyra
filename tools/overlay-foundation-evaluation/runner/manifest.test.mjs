@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+
+import {
+  validateAdapterDescriptor,
+  validateCandidateManifest,
+} from './manifest.mjs';
+
+const sha = 'a'.repeat(64);
+const revision = 'b'.repeat(40);
+const external = (id, name) => ({
+  id,
+  adapter: `candidates/${id}.mjs`,
+  contracts: ['OF-MODAL'],
+  artifacts: [
+    {
+      source: 'registry',
+      name,
+      version: '1.2.3',
+      tarballUrl: `https://registry.example.invalid/${id}-1.2.3.tgz`,
+      sha256: sha,
+      license: 'MIT',
+      repositoryUrl: `https://github.com/example/${id}`,
+    },
+  ],
+});
+const validManifest = {
+  schemaVersion: 1,
+  lyraRevision: revision,
+  toolchain: { node: '24.18.0', pnpm: '11.13.1' },
+  candidates: [
+    {
+      id: 'incumbent',
+      adapter: 'candidates/incumbent.mjs',
+      contracts: ['OF-MODAL'],
+      revision,
+      artifacts: [
+        {
+          source: 'workspace-pack',
+          name: '@lyra-ds/react',
+          version: '0.5.0',
+          sha256: sha,
+        },
+      ],
+    },
+    external('radix', '@radix-ui/react-dialog'),
+    external('base-ui', '@base-ui-components/react'),
+    external('zag', '@zag-js/dialog'),
+  ],
+};
+
+test('accepts a complete prospective manifest', () => {
+  assert.deepEqual(
+    validateCandidateManifest(validManifest, { node: '24.18.0', pnpm: '11.13.1' }),
+    [],
+  );
+});
+
+for (const version of ['^1.2.3', '~1.2.3', 'latest', 'workspace:*']) {
+  test(`rejects non-exact version ${version}`, () => {
+    const manifest = structuredClone(validManifest);
+    manifest.candidates[1].artifacts[0].version = version;
+    assert.match(
+      validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+      /exact version/u,
+    );
+  });
+}
+
+test('rejects a missing candidate, duplicate contract, credentialed URL, and uppercase hash', () => {
+  const manifest = structuredClone(validManifest);
+  manifest.candidates.pop();
+  manifest.candidates[1].contracts.push('OF-MODAL');
+  manifest.candidates[1].artifacts[0].tarballUrl =
+    'https://user:pass@registry.example.invalid/a.tgz';
+  manifest.candidates[1].artifacts[0].sha256 = sha.toUpperCase();
+  const errors = validateCandidateManifest(manifest, manifest.toolchain).join('\n');
+  assert.match(errors, /candidate IDs must be exactly/u);
+  assert.match(errors, /contracts must be unique/u);
+  assert.match(errors, /credentials/u);
+  assert.match(errors, /lowercase SHA-256/u);
+});
+
+test('rejects a descriptor with the wrong ID or a different contract set', () => {
+  const candidate = validManifest.candidates[1];
+  const errors = validateAdapterDescriptor(candidate, {
+    candidateId: 'zag',
+    supportedContractIds: ['OF-MENU'],
+  }).join('\n');
+  assert.match(errors, /candidate ID/u);
+  assert.match(errors, /supportedContractIds/u);
+});
