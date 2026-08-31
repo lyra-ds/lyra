@@ -16,7 +16,12 @@ const GIT_REVISION = /^[a-f0-9]{40}$/u;
 export function validateCandidateManifest(value, expectedToolchain) {
   const errors = [];
   if (!isPlainRecord(value)) return ['manifest must be a plain record'];
-  rejectUnknownKeys(value, ['schemaVersion', 'lyraRevision', 'toolchain', 'candidates'], 'manifest', errors);
+  rejectUnknownKeys(
+    value,
+    ['schemaVersion', 'lyraRevision', 'toolchain', 'candidates'],
+    'manifest',
+    errors,
+  );
   requireExactInteger(value.schemaVersion, 1, 'manifest.schemaVersion', errors);
   requirePattern(value.lyraRevision, GIT_REVISION, 'manifest.lyraRevision', errors);
   validateToolchain(value.toolchain, expectedToolchain, errors);
@@ -50,7 +55,9 @@ function validateCandidates(value, errors) {
   }
   const ids = value.map((candidate) => (isPlainRecord(candidate) ? candidate.id : undefined));
   if (ids.length !== CANDIDATE_IDS.length || ids.some((id, index) => id !== CANDIDATE_IDS[index])) {
-    errors.push('manifest candidate IDs must be exactly incumbent, radix, base-ui, zag in canonical order');
+    errors.push(
+      'manifest candidate IDs must be exactly incumbent, radix, base-ui, zag in canonical order',
+    );
   }
   value.forEach((candidate, index) => validateCandidate(candidate, index, errors));
 }
@@ -62,9 +69,17 @@ function validateCandidate(value, index, errors) {
     return;
   }
   const incumbent = value.id === 'incumbent';
-  rejectUnknownKeys(value, incumbent ? ['id', 'adapter', 'contracts', 'revision', 'artifacts'] : ['id', 'adapter', 'contracts', 'artifacts'], path, errors);
+  rejectUnknownKeys(
+    value,
+    incumbent
+      ? ['id', 'adapter', 'contracts', 'revision', 'artifacts']
+      : ['id', 'adapter', 'contracts', 'artifacts'],
+    path,
+    errors,
+  );
   requireMember(value.id, CANDIDATE_IDS, `${path}.id`, errors);
-  if (value.adapter !== `candidates/${value.id}.mjs`) errors.push(`${path}.adapter must match candidates/<candidate-id>.mjs`);
+  if (value.adapter !== `candidates/${value.id}.mjs`)
+    errors.push(`${path}.adapter must match candidates/<candidate-id>.mjs`);
   validateContracts(value.contracts, `${path}.contracts`, errors);
   if (incumbent) requirePattern(value.revision, GIT_REVISION, `${path}.revision`, errors);
   validateArtifacts(value.id, value.artifacts, `${path}.artifacts`, errors);
@@ -82,7 +97,9 @@ function validateArtifacts(candidateId, value, path, errors) {
     errors.push(`${path} must be a non-empty array`);
     return;
   }
-  value.forEach((artifact, index) => validateArtifact(candidateId, artifact, `${path}[${index}]`, errors));
+  value.forEach((artifact, index) =>
+    validateArtifact(candidateId, artifact, `${path}[${index}]`, errors),
+  );
 }
 
 function validateArtifact(candidateId, value, path, errors) {
@@ -93,25 +110,38 @@ function validateArtifact(candidateId, value, path, errors) {
   if (value.source === 'workspace-pack') {
     rejectUnknownKeys(value, ['source', 'name', 'version', 'sha256'], path, errors);
   } else if (value.source === 'registry') {
-    rejectUnknownKeys(value, ['source', 'name', 'version', 'tarballUrl', 'sha256', 'license', 'repositoryUrl'], path, errors);
-    validateUrl(value.tarballUrl, `${path}.tarballUrl`, errors);
+    rejectUnknownKeys(
+      value,
+      ['source', 'name', 'version', 'tarballUrl', 'sha256', 'license', 'repositoryUrl'],
+      path,
+      errors,
+    );
+    validateUrl(value.tarballUrl, `${path}.tarballUrl`, errors, true);
     validateUrl(value.repositoryUrl, `${path}.repositoryUrl`, errors);
-    if (typeof value.license !== 'string' || value.license.length === 0) errors.push(`${path}.license must be a non-empty string`);
+    if (typeof value.license !== 'string' || value.license.length === 0)
+      errors.push(`${path}.license must be a non-empty string`);
   } else {
     errors.push(`${path}.source is invalid`);
   }
   if (candidateId === 'incumbent' && value.source !== 'workspace-pack') {
     errors.push(`${path} incumbent must use workspace-pack artifacts`);
   }
-  if (candidateId !== 'incumbent' && CANDIDATE_IDS.includes(candidateId) && value.source !== 'registry') {
+  if (
+    candidateId !== 'incumbent' &&
+    CANDIDATE_IDS.includes(candidateId) &&
+    value.source !== 'registry'
+  ) {
     errors.push(`${path} external candidates must use registry artifacts`);
   }
-  if (typeof value.name !== 'string' || value.name.length === 0) errors.push(`${path}.name must be a non-empty string`);
-  if (typeof value.version !== 'string' || !EXACT_VERSION.test(value.version)) errors.push(`${path}.version must be an exact version`);
-  if (typeof value.sha256 !== 'string' || !SHA_256.test(value.sha256)) errors.push(`${path}.sha256 must be a lowercase SHA-256`);
+  if (typeof value.name !== 'string' || value.name.length === 0)
+    errors.push(`${path}.name must be a non-empty string`);
+  if (typeof value.version !== 'string' || !EXACT_VERSION.test(value.version))
+    errors.push(`${path}.version must be an exact version`);
+  if (typeof value.sha256 !== 'string' || !SHA_256.test(value.sha256))
+    errors.push(`${path}.sha256 must be a lowercase SHA-256`);
 }
 
-function validateUrl(value, path, errors) {
+function validateUrl(value, path, errors, httpsOnly = false) {
   if (typeof value !== 'string') {
     errors.push(`${path} must be an absolute URL`);
     return;
@@ -121,7 +151,11 @@ function validateUrl(value, path, errors) {
   }
   try {
     const url = new URL(value);
-    if (!['http:', 'https:'].includes(url.protocol)) errors.push(`${path} must use HTTP(S)`);
+    if (httpsOnly && url.protocol !== 'https:') {
+      errors.push(`${path} must use HTTPS`);
+    } else if (!httpsOnly && !['http:', 'https:'].includes(url.protocol)) {
+      errors.push(`${path} must use HTTP(S)`);
+    }
     if (url.username || url.password) errors.push(`${path} must not contain credentials`);
   } catch {
     errors.push(`${path} must be an absolute URL`);
@@ -132,9 +166,19 @@ export function validateAdapterDescriptor(candidate, descriptor) {
   const errors = [];
   if (!isPlainRecord(candidate)) return ['candidate must be a plain record'];
   if (!isPlainRecord(descriptor)) return ['adapter descriptor must be a plain record'];
-  rejectUnknownKeys(descriptor, ['candidateId', 'supportedContractIds'], 'adapter descriptor', errors);
-  if (descriptor.candidateId !== candidate.id) errors.push('adapter descriptor candidate ID must exactly match the candidate');
-  validateContracts(descriptor.supportedContractIds, 'adapter descriptor.supportedContractIds', errors);
+  rejectUnknownKeys(
+    descriptor,
+    ['candidateId', 'supportedContractIds'],
+    'adapter descriptor',
+    errors,
+  );
+  if (descriptor.candidateId !== candidate.id)
+    errors.push('adapter descriptor candidate ID must exactly match the candidate');
+  validateContracts(
+    descriptor.supportedContractIds,
+    'adapter descriptor.supportedContractIds',
+    errors,
+  );
   if (Array.isArray(candidate.contracts) && Array.isArray(descriptor.supportedContractIds)) {
     const candidateContracts = new Set(candidate.contracts);
     const descriptorContracts = new Set(descriptor.supportedContractIds);

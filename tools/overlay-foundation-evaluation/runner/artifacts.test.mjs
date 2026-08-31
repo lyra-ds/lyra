@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -85,6 +85,7 @@ test('writes an exact artifact only after size and SHA verification', async (t) 
   assert.equal(result.sha256, record.sha256);
   assert.equal(result.bytes, bytes.byteLength);
   assert.deepEqual(await readFile(result.path), Buffer.from(bytes));
+  assert.equal((await stat(result.path)).mode & 0o777, 0o600);
 });
 
 test('removes partial output on checksum mismatch', async (t) => {
@@ -183,23 +184,18 @@ for (const [field, value] of [
   });
 }
 
-test('rejects every forbidden lifecycle script', async (t) => {
-  const lifecycleScripts = {
-    preinstall: 'node write-marker.mjs',
-    install: 'node write-marker.mjs',
-    postinstall: 'node write-marker.mjs',
-    prepare: 'node write-marker.mjs',
-  };
-  const artifact = await createArchive(t, { ...packageManifest, scripts: lifecycleScripts });
-  await assert.rejects(
-    inspectPackageArchive({ artifact, runCommand: execFilePromise }),
-    (error) => {
-      for (const key of Object.keys(lifecycleScripts))
-        assert.match(error.message, new RegExp(key, 'u'));
-      return true;
-    },
-  );
-});
+for (const lifecycleScript of ['preinstall', 'install', 'postinstall', 'prepare']) {
+  test(`rejects the forbidden ${lifecycleScript} lifecycle script by itself`, async (t) => {
+    const artifact = await createArchive(t, {
+      ...packageManifest,
+      scripts: { [lifecycleScript]: 'node write-marker.mjs' },
+    });
+    await assert.rejects(
+      inspectPackageArchive({ artifact, runCommand: execFilePromise }),
+      new RegExp(lifecycleScript, 'u'),
+    );
+  });
+}
 
 test('rejects duplicate package manifests', async (t) => {
   const artifact = await createArchive(t, packageManifest, { duplicateManifest: true });

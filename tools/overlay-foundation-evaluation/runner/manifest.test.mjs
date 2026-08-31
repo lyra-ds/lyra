@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import {
-  validateAdapterDescriptor,
-  validateCandidateManifest,
-} from './manifest.mjs';
+import { validateAdapterDescriptor, validateCandidateManifest } from './manifest.mjs';
 
 const sha = 'a'.repeat(64);
 const revision = 'b'.repeat(40);
@@ -91,16 +88,22 @@ test('rejects a descriptor with the wrong ID or a different contract set', () =>
   assert.match(errors, /supportedContractIds/u);
 });
 
-for (const [index, id] of [['1', 'radix'], ['2', 'base-ui'], ['3', 'zag']]) {
+for (const [index, id] of [
+  ['1', 'radix'],
+  ['2', 'base-ui'],
+  ['3', 'zag'],
+]) {
   test(`rejects a workspace-pack artifact for external candidate ${id}`, () => {
     const manifest = structuredClone(validManifest);
     const artifact = manifest.candidates[Number(index)].artifacts[0];
-    manifest.candidates[Number(index)].artifacts = [{
-      source: 'workspace-pack',
-      name: artifact.name,
-      version: artifact.version,
-      sha256: artifact.sha256,
-    }];
+    manifest.candidates[Number(index)].artifacts = [
+      {
+        source: 'workspace-pack',
+        name: artifact.name,
+        version: artifact.version,
+        sha256: artifact.sha256,
+      },
+    ];
     assert.match(
       validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
       /external candidates must use registry artifacts/u,
@@ -124,6 +127,16 @@ test('rejects a registry artifact for the incumbent candidate', () => {
   assert.match(
     validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
     /incumbent must use workspace-pack artifacts/u,
+  );
+});
+
+test('rejects an HTTP registry tarball URL', () => {
+  const manifest = structuredClone(validManifest);
+  manifest.candidates[1].artifacts[0].tarballUrl =
+    'http://registry.example.invalid/radix-1.2.3.tgz';
+  assert.match(
+    validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+    /must use HTTPS/u,
   );
 });
 
