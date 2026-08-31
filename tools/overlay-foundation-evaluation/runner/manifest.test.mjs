@@ -90,3 +90,55 @@ test('rejects a descriptor with the wrong ID or a different contract set', () =>
   assert.match(errors, /candidate ID/u);
   assert.match(errors, /supportedContractIds/u);
 });
+
+for (const [index, id] of [['1', 'radix'], ['2', 'base-ui'], ['3', 'zag']]) {
+  test(`rejects a workspace-pack artifact for external candidate ${id}`, () => {
+    const manifest = structuredClone(validManifest);
+    const artifact = manifest.candidates[Number(index)].artifacts[0];
+    manifest.candidates[Number(index)].artifacts = [{
+      source: 'workspace-pack',
+      name: artifact.name,
+      version: artifact.version,
+      sha256: artifact.sha256,
+    }];
+    assert.match(
+      validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+      /external candidates must use registry artifacts/u,
+    );
+  });
+}
+
+test('rejects a registry artifact for the incumbent candidate', () => {
+  const manifest = structuredClone(validManifest);
+  manifest.candidates[0].artifacts = [
+    {
+      source: 'registry',
+      name: '@lyra-ds/react',
+      version: '0.5.0',
+      tarballUrl: 'https://registry.example.invalid/lyra-0.5.0.tgz',
+      sha256: sha,
+      license: 'MIT',
+      repositoryUrl: 'https://github.com/example/lyra',
+    },
+  ];
+  assert.match(
+    validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+    /incumbent must use workspace-pack artifacts/u,
+  );
+});
+
+for (const [field, suffix] of [
+  ['tarballUrl', '?download=1'],
+  ['tarballUrl', '#archive'],
+  ['repositoryUrl', '?tab=readme'],
+  ['repositoryUrl', '#readme'],
+]) {
+  test(`rejects a registry ${field} with ${suffix[0] === '?' ? 'a query' : 'a fragment'}`, () => {
+    const manifest = structuredClone(validManifest);
+    manifest.candidates[1].artifacts[0][field] += suffix;
+    assert.match(
+      validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+      /must not contain a query or fragment/u,
+    );
+  });
+}

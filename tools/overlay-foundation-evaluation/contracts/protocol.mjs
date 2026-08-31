@@ -64,6 +64,44 @@ export function requireUniqueStrings(value, path, errors) {
   }
 }
 
+const COUPLED_TERMS = [
+  'incumbent',
+  'lyra',
+  'radix',
+  'base-ui',
+  'base ui',
+  'zag',
+  'vendor',
+];
+
+function rejectCandidateVendorCoupling(value, path, errors) {
+  if (typeof value === 'string') {
+    if (COUPLED_TERMS.some((term) => value.toLowerCase().includes(term))) {
+      errors.push(`${path} contains candidate or vendor coupling`);
+    }
+    return;
+  }
+  if (value === null || typeof value === 'boolean' || typeof value === 'number') return;
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => rejectCandidateVendorCoupling(entry, `${path}[${index}]`, errors));
+    return;
+  }
+  if (!isPlainRecord(value)) {
+    errors.push(`${path} must contain only JSON values`);
+    return;
+  }
+  for (const [key, entry] of Object.entries(value)) {
+    const normalizedKey = key.toLowerCase().replaceAll(/[-_]/gu, '');
+    if (
+      COUPLED_TERMS.some((term) => normalizedKey.includes(term.replaceAll(/[- ]/gu, ''))) ||
+      /^(candidate|vendor)(id|name|selector|attribute|part|event|type)?$/u.test(normalizedKey)
+    ) {
+      errors.push(`${path}.${key} contains candidate or vendor coupling`);
+    }
+    rejectCandidateVendorCoupling(entry, `${path}.${key}`, errors);
+  }
+}
+
 function validateInitial(value, errors) {
   if (!isPlainRecord(value)) {
     errors.push('scenario.initial must be a plain record');
@@ -109,7 +147,10 @@ function validateExpected(value, errors) {
   }
   requireUniqueStrings(value.cleanup, 'scenario.expected.cleanup', errors);
   validateRoles(value.roles, errors);
+  validateRelationships(value.relationships, errors);
   validateStates(value.states, errors);
+  validateEvents(value.events, errors);
+  validateAnnouncements(value.announcements, errors);
   if (!isPlainRecord(value.focus)) {
     errors.push('scenario.expected.focus must be a plain record');
   } else {
@@ -118,6 +159,32 @@ function validateExpected(value, errors) {
       errors.push('scenario.expected.focus.target must be a non-empty string');
     }
   }
+}
+
+function validateRelationships(value, errors) {
+  validateNamedRecords(value, 'scenario.expected.relationships', ['source', 'name', 'target'], errors);
+}
+
+function validateEvents(value, errors) {
+  validateNamedRecords(value, 'scenario.expected.events', ['target', 'type'], errors);
+}
+
+function validateAnnouncements(value, errors) {
+  validateNamedRecords(value, 'scenario.expected.announcements', ['message'], errors);
+}
+
+function validateNamedRecords(value, path, keys, errors) {
+  if (!Array.isArray(value)) return;
+  value.forEach((entry, index) => {
+    const entryPath = `${path}[${index}]`;
+    if (!isPlainRecord(entry)) return errors.push(`${entryPath} must be a plain record`);
+    rejectUnknownKeys(entry, keys, entryPath, errors);
+    for (const key of keys) {
+      if (typeof entry[key] !== 'string' || entry[key].length === 0) {
+        errors.push(`${entryPath}.${key} must be a non-empty string`);
+      }
+    }
+  });
 }
 
 function validateRoles(value, errors) {
@@ -184,5 +251,6 @@ export function validateScenario(value) {
   validateExpected(value.expected, errors);
   requireUniqueStrings(value.requiredCells, 'scenario.requiredCells', errors);
   requireUniqueStrings(value.capture, 'scenario.capture', errors);
+  rejectCandidateVendorCoupling(value, 'scenario', errors);
   return errors;
 }

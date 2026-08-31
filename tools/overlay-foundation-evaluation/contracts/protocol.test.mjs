@@ -87,3 +87,25 @@ test('rejects unknown operations and missing expected focus', () => {
   assert.match(errors, /operation is invalid/u);
   assert.match(errors, /expected.focus/u);
 });
+
+test('accepts closed candidate-neutral relationship, event, and announcement shapes', () => {
+  const scenario = structuredClone(validScenario);
+  scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'dialog' }];
+  scenario.expected.events = [{ target: 'dialog', type: 'opened' }];
+  scenario.expected.announcements = [{ message: 'Settings opened' }];
+  assert.deepEqual(validateScenario(scenario), []);
+});
+
+for (const [label, mutate] of [
+  ['nested initial state', (scenario) => { scenario.initial.state.vendorAttribute = 'data-radix'; }],
+  ['operation target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
+  ['relationship', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'dialog', vendorSelector: '[data-radix]' }]; }],
+  ['event', (scenario) => { scenario.expected.events = [{ target: 'dialog', type: 'opened', vendorEvent: 'radix:open' }]; }],
+  ['announcement', (scenario) => { scenario.expected.announcements = [{ message: 'Opened by base-ui' }]; }],
+]) {
+  test(`rejects candidate coupling in ${label}`, () => {
+    const scenario = structuredClone(validScenario);
+    mutate(scenario);
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}

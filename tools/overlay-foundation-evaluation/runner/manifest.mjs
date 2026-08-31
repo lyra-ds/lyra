@@ -67,7 +67,7 @@ function validateCandidate(value, index, errors) {
   if (value.adapter !== `candidates/${value.id}.mjs`) errors.push(`${path}.adapter must match candidates/<candidate-id>.mjs`);
   validateContracts(value.contracts, `${path}.contracts`, errors);
   if (incumbent) requirePattern(value.revision, GIT_REVISION, `${path}.revision`, errors);
-  validateArtifacts(value.artifacts, `${path}.artifacts`, errors);
+  validateArtifacts(value.id, value.artifacts, `${path}.artifacts`, errors);
 }
 
 function validateContracts(value, path, errors) {
@@ -77,15 +77,15 @@ function validateContracts(value, path, errors) {
   value.forEach((contractId) => requireMember(contractId, CONTRACT_IDS, `${path} entry`, errors));
 }
 
-function validateArtifacts(value, path, errors) {
+function validateArtifacts(candidateId, value, path, errors) {
   if (!Array.isArray(value) || value.length === 0) {
     errors.push(`${path} must be a non-empty array`);
     return;
   }
-  value.forEach((artifact, index) => validateArtifact(artifact, `${path}[${index}]`, errors));
+  value.forEach((artifact, index) => validateArtifact(candidateId, artifact, `${path}[${index}]`, errors));
 }
 
-function validateArtifact(value, path, errors) {
+function validateArtifact(candidateId, value, path, errors) {
   if (!isPlainRecord(value)) {
     errors.push(`${path} must be a plain record`);
     return;
@@ -99,6 +99,12 @@ function validateArtifact(value, path, errors) {
     if (typeof value.license !== 'string' || value.license.length === 0) errors.push(`${path}.license must be a non-empty string`);
   } else {
     errors.push(`${path}.source is invalid`);
+  }
+  if (candidateId === 'incumbent' && value.source !== 'workspace-pack') {
+    errors.push(`${path} incumbent must use workspace-pack artifacts`);
+  }
+  if (candidateId !== 'incumbent' && CANDIDATE_IDS.includes(candidateId) && value.source !== 'registry') {
+    errors.push(`${path} external candidates must use registry artifacts`);
   }
   if (typeof value.name !== 'string' || value.name.length === 0) errors.push(`${path}.name must be a non-empty string`);
   if (typeof value.version !== 'string' || !EXACT_VERSION.test(value.version)) errors.push(`${path}.version must be an exact version`);
@@ -114,6 +120,7 @@ function validateUrl(value, path, errors) {
     const url = new URL(value);
     if (!['http:', 'https:'].includes(url.protocol)) errors.push(`${path} must use HTTP(S)`);
     if (url.username || url.password) errors.push(`${path} must not contain credentials`);
+    if (url.search || url.hash) errors.push(`${path} must not contain a query or fragment`);
   } catch {
     errors.push(`${path} must be an absolute URL`);
   }
