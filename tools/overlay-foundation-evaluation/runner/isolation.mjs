@@ -138,6 +138,16 @@ export async function createOwnedRunRoot({ tmpdir, runId }, { writeOwnerMarker =
     const ownerToken = randomUUID();
     const marker = JSON.stringify({ ownerToken, ...createdIdentity });
     await writeOwnerMarker(join(runRoot, OWNER_FILE), marker, { flag: 'wx', mode: 0o600 });
+    const verified = await readOwnedRoot(runRoot);
+    if (verified.record.ownerToken !== ownerToken) {
+      throw new Error('ownership mismatch after owner-marker creation');
+    }
+    if (
+      !sameIdentity(createdIdentity, verified.current) ||
+      !sameIdentity(verified.record, verified.current)
+    ) {
+      throw new Error('identity mismatch after owner-marker creation');
+    }
     return { runRoot, ownerToken };
   } catch (error) {
     try {

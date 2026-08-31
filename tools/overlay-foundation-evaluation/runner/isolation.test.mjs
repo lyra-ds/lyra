@@ -278,6 +278,57 @@ test('preserves a replacement when owner-marker creation fails', async (t) => {
   assert.deepEqual(await readdir(replacementRoot), ['foreign.txt']);
 });
 
+test('rejects a no-op owner-marker writer and removes the original root', async (t) => {
+  const root = await testDirectory(t);
+  let createdRunRoot;
+  let caught;
+  try {
+    await createOwnedRunRoot(
+      { tmpdir: root, runId: 'marker-writer-no-op' },
+      {
+        async writeOwnerMarker(markerPath) {
+          createdRunRoot = dirname(markerPath);
+        },
+      },
+    );
+  } catch (error) {
+    caught = error;
+  }
+
+  assert.equal(caught?.code, 'ENOENT');
+  assert.equal(await exists(createdRunRoot), false);
+});
+
+test('rejects a successful owner-marker writer that replaces the root', async (t) => {
+  const root = await testDirectory(t);
+  const replacementBytes = Buffer.from('foreign replacement after successful writer\n');
+  let replacementRoot;
+  let markerBytes;
+  let caught;
+  try {
+    await createOwnedRunRoot(
+      { tmpdir: root, runId: 'marker-success-replacement' },
+      {
+        async writeOwnerMarker(markerPath, marker, options) {
+          replacementRoot = dirname(markerPath);
+          markerBytes = Buffer.from(marker);
+          await rename(replacementRoot, `${replacementRoot}.original`);
+          await mkdir(replacementRoot);
+          await writeFile(markerPath, marker, options);
+          await writeFile(join(replacementRoot, 'foreign.txt'), replacementBytes);
+        },
+      },
+    );
+  } catch (error) {
+    caught = error;
+  }
+
+  assert.match(caught?.message ?? '', /identity mismatch after owner-marker creation/u);
+  assert.deepEqual(await readFile(join(replacementRoot, 'foreign.txt')), replacementBytes);
+  assert.deepEqual(await readFile(join(replacementRoot, ownerFile)), markerBytes);
+  assert.deepEqual((await readdir(replacementRoot)).sort(), [ownerFile, 'foreign.txt'].sort());
+});
+
 test('refuses cleanup after the owned directory is replaced', async (t) => {
   const root = await testDirectory(t);
   const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'core-test-002' });
