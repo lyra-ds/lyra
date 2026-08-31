@@ -123,6 +123,7 @@ test('accepts neutral prose with valid identifiers in every normative identifier
 for (const [label, mutate] of [
   ['scenarioId', (scenario) => { scenario.scenarioId = 'radix.modal.v1'; }],
   ['components item', (scenario) => { scenario.components = ['radix-dialog']; }],
+  ['PascalCase components item', (scenario) => { scenario.components = ['RadixDialog']; }],
   ['operation.operation', (scenario) => { scenario.operations[0].operation = 'radix-open'; }],
   ['operation.target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
   ['role', (scenario) => { scenario.expected.roles[0].role = 'radix-dialog'; }],
@@ -132,8 +133,10 @@ for (const [label, mutate] of [
   ['state target', (scenario) => { scenario.expected.states[0].target = 'radix-dialog'; }],
   ['state name', (scenario) => { scenario.expected.states[0].name = 'radix-open'; }],
   ['focus target', (scenario) => { scenario.expected.focus.target = 'radix-focus'; }],
+  ['camelCase focus target', (scenario) => { scenario.expected.focus.target = 'radixDialog'; }],
   ['event target', (scenario) => { scenario.expected.events = [{ target: 'radix-dialog', type: 'opened' }]; }],
   ['event type', (scenario) => { scenario.expected.events = [{ target: 'dialog', type: 'radix-opened' }]; }],
+  ['cleanup item', (scenario) => { scenario.expected.cleanup = ['radix-cleanup']; }],
   ['requiredCells item', (scenario) => { scenario.requiredCells = ['radix-browser']; }],
   ['capture item', (scenario) => { scenario.capture = ['radix-events']; }],
 ]) {

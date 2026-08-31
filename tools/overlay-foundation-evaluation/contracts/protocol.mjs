@@ -84,7 +84,11 @@ function isExactCoupledIdentity(value) {
 }
 
 function hasCoupledIdentifierToken(value) {
-  const tokens = value.toLowerCase().split(/[^a-z0-9]+/u).filter(Boolean);
+  const tokens = value
+    .replaceAll(/([a-z0-9])([A-Z])/gu, '$1 $2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .filter(Boolean);
   return tokens.some((token, index) =>
     IDENTIFIER_COUPLING_TOKENS.has(token) ||
     [tokens[index], tokens[index + 1]].join('-') === 'base-ui',
@@ -175,6 +179,7 @@ function validateExpected(value, errors) {
     if (!Array.isArray(value[key])) errors.push(`scenario.expected.${key} must be an array`);
   }
   requireUniqueStrings(value.cleanup, 'scenario.expected.cleanup', errors);
+  requireCandidateNeutralIdentifierArray(value.cleanup, 'scenario.expected.cleanup', errors);
   validateRoles(value.roles, errors);
   validateRelationships(value.relationships, errors);
   validateStates(value.states, errors);
