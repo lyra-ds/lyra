@@ -12,7 +12,6 @@ const { validateV1Entry, validateV1Program, validateV1ReleaseWiring } = releaseC
 
 const execFileAsync = promisify(execFile);
 const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
-const UNTRACKED_DOCUMENT_PATH = 'tools/v1-release/.check-untracked-test.md';
 const PACKAGE_JSON_PATH = 'package.json';
 const CI_WORKFLOW_PATH = '.github/workflows/ci.yml';
 
@@ -1036,23 +1035,25 @@ test('CLI rejects readable but untracked referenced documents', async () => {
   const ledger = JSON.parse(originalLedger);
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'lyra-v1-ledger-'));
   const temporaryLedger = join(temporaryDirectory, 'program.json');
+  const untrackedDirectory = await mkdtemp('tools/v1-release/.check-untracked-test-');
+  const untrackedDocumentPath = join(untrackedDirectory, 'document.md');
   ledger.components[0].governingSpecification = {
-    path: UNTRACKED_DOCUMENT_PATH,
+    path: untrackedDocumentPath,
     status: 'draft',
   };
 
-  await writeFile(UNTRACKED_DOCUMENT_PATH, '# Untracked draft\n');
+  await writeFile(untrackedDocumentPath, '# Untracked draft\n');
   await writeFile(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`);
   try {
     await assert.rejects(
       execFileAsync(process.execPath, ['tools/v1-release/check.mjs', '--ledger', temporaryLedger]),
       (error) =>
         error.code === 1 &&
-        error.stderr.includes(`referenced path is not Git-tracked: ${UNTRACKED_DOCUMENT_PATH}`),
+        error.stderr.includes(`referenced path is not Git-tracked: ${untrackedDocumentPath}`),
     );
   } finally {
     await rm(temporaryDirectory, { recursive: true, force: true });
-    await rm(UNTRACKED_DOCUMENT_PATH, { force: true });
+    await rm(untrackedDirectory, { recursive: true, force: true });
   }
 });
 
