@@ -136,6 +136,14 @@ const OVERLAY_FOUNDATION_CANDIDATES = [
   'active Zag direction',
 ];
 
+const OVERLAY_APPROVAL_CONFIRMATIONS = [
+  'A Lyra maintainer confirms all nine current React contracts and eight actual Alpine registrations are inventoried truthfully, with CreateWorkspaceDialog explicitly unsupported in Alpine.',
+  'Accessibility review confirms `OF-MODAL`, `OF-ANCHORED`, `OF-MENU`, and `OF-TOOLTIP` cover semantics, keyboard, focus, pointer/touch, nesting, restoration, motion, direction, and teardown without preserving the known overlay P1 findings.',
+  'Architecture review confirms `OF-COMPOSED` reuses lower-level contracts, public Lyra APIs stay vendor-neutral, and duplicate production responsibilities are prohibited.',
+  'Quality review confirms every `v1-interactive` cell is mapped for all five contract IDs, evidence fields are exact, manual absence is `deferred-by-release-profile`, and bundle limits match the approved program.',
+  'The decision owner records written approval of this exact revision before any candidate evaluation, dependency change, evidence-harness plan, or runtime migration begins.',
+];
+
 function plannedEntry(id, stream, wave) {
   return {
     id,
@@ -227,6 +235,17 @@ function structurallyCompleteOverlaySpecification() {
     ...OVERLAY_SPEC_REFERENCES.map((path) => `- [Required specification](${path})`),
     '',
   ].join('\n');
+}
+
+function approvedOverlaySpecification({ checked = true } = {}) {
+  return structurallyCompleteOverlaySpecification()
+    .replace('**Status:** Draft — awaiting written review', '**Status:** Approved')
+    .replace(
+      '## Approval checklist\n\nNormative text.',
+      `## Approval checklist\n\n${OVERLAY_APPROVAL_CONFIRMATIONS.map(
+        (confirmation) => `- [${checked ? 'x' : ' '}] ${confirmation}`,
+      ).join('\n')}`,
+    );
 }
 
 function qualifiedProgram() {
@@ -639,11 +658,40 @@ for (const [name, extraStatus] of [
   });
 }
 
-test('accepts an explicitly approved overlay document when every ledger entry matches', () => {
-  const document = structurallyCompleteOverlaySpecification().replace(
-    '**Status:** Draft — awaiting written review',
-    '**Status:** Approved',
+test('rejects approved overlay metadata while the written approval checklist is incomplete', () => {
+  const input = overlayDraftProgram(approvedOverlaySpecification({ checked: false }));
+  for (const entry of input.ledger.components) {
+    if (!OVERLAY_IDS.includes(entry.id)) continue;
+    entry.governingSpecification.status = 'approved';
+  }
+
+  assert.ok(
+    validateV1Program(input).some((error) =>
+      error.includes('approved overlay specification requires every approval confirmation'),
+    ),
   );
+});
+
+test('rejects an approved overlay document with a substituted approval confirmation', () => {
+  const document = approvedOverlaySpecification().replace(
+    OVERLAY_APPROVAL_CONFIRMATIONS[2],
+    'Architecture review was completed.',
+  );
+  const input = overlayDraftProgram(document);
+  for (const entry of input.ledger.components) {
+    if (!OVERLAY_IDS.includes(entry.id)) continue;
+    entry.governingSpecification.status = 'approved';
+  }
+
+  assert.ok(
+    validateV1Program(input).some((error) =>
+      error.includes('approved overlay specification requires every approval confirmation'),
+    ),
+  );
+});
+
+test('accepts an explicitly approved overlay document when every ledger entry matches', () => {
+  const document = approvedOverlaySpecification();
   const input = overlayDraftProgram(document);
   for (const entry of input.ledger.components) {
     if (!OVERLAY_IDS.includes(entry.id)) continue;

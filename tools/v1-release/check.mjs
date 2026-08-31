@@ -133,6 +133,14 @@ const OVERLAY_FOUNDATION_CANDIDATES = [
   'active Zag direction',
 ];
 
+const OVERLAY_APPROVAL_CONFIRMATIONS = [
+  'A Lyra maintainer confirms all nine current React contracts and eight actual Alpine registrations are inventoried truthfully, with CreateWorkspaceDialog explicitly unsupported in Alpine.',
+  'Accessibility review confirms `OF-MODAL`, `OF-ANCHORED`, `OF-MENU`, and `OF-TOOLTIP` cover semantics, keyboard, focus, pointer/touch, nesting, restoration, motion, direction, and teardown without preserving the known overlay P1 findings.',
+  'Architecture review confirms `OF-COMPOSED` reuses lower-level contracts, public Lyra APIs stay vendor-neutral, and duplicate production responsibilities are prohibited.',
+  'Quality review confirms every `v1-interactive` cell is mapped for all five contract IDs, evidence fields are exact, manual absence is `deferred-by-release-profile`, and bundle limits match the approved program.',
+  'The decision owner records written approval of this exact revision before any candidate evaluation, dependency change, evidence-harness plan, or runtime migration begins.',
+];
+
 const OVERLAY_STATUS_METADATA = new Map([
   ['draft', /^\*\*Status:\*\* Draft — awaiting written review$/mu],
   ['approved', /^\*\*Status:\*\* Approved$/mu],
@@ -402,6 +410,16 @@ function validateOverlaySpecification(document, entries, errors) {
   for (const reference of OVERLAY_SPEC_REFERENCES) {
     if (!document.includes(`](${reference})`)) {
       errors.push(`overlay specification must contain required link ${reference}`);
+    }
+  }
+  if (recognizedStatusLines[0] === '**Status:** Approved') {
+    const hasEveryApprovalConfirmation = OVERLAY_APPROVAL_CONFIRMATIONS.every((confirmation) =>
+      normalizedDocument.includes(`- [x] ${confirmation}`),
+    );
+    if (!hasEveryApprovalConfirmation) {
+      errors.push(
+        'approved overlay specification requires every approval confirmation to be checked exactly',
+      );
     }
   }
 }
