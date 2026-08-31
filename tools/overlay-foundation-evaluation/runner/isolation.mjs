@@ -18,6 +18,8 @@ import { isPlainRecord } from '../contracts/protocol.mjs';
 
 const execFilePromise = promisify(execFile);
 const OWNER_FILE = '.lyra-overlay-evaluation-owner.json';
+const REQUIRED_NODE_VERSION = '24.18.0';
+const REQUIRED_PNPM_VERSION = '11.13.1';
 const RUN_ID = /^[0-9A-Za-z][0-9A-Za-z._-]{0,99}$/u;
 const CANDIDATE_ID = /^[a-z0-9][a-z0-9-]*$/u;
 const AUDIT_SEVERITIES = Object.freeze(['info', 'low', 'moderate', 'high', 'critical']);
@@ -88,33 +90,75 @@ async function readOwnedRoot(runRoot) {
   return { current, record };
 }
 
-export async function createOwnedRunRoot({ tmpdir, runId }) {
-  if (typeof tmpdir !== 'string' || !isAbsolute(resolve(tmpdir))) {
-    throw new Error('TMPDIR must be a path');
+function requireAbsolutePath(value, name) {
+  if (typeof value !== 'string' || !isAbsolute(value)) {
+    throw new Error(`${name} must be absolute`);
   }
+  return resolve(value);
+}
+
+async function rollbackCreatedRunRoot({ tmpdir, runRoot, createdIdentity }) {
+  let current;
+  try {
+    current = await lstat(runRoot, { bigint: true });
+  } catch (error) {
+    if (error?.code === 'ENOENT') return;
+    throw error;
+  }
+  if (
+    !current.isDirectory() ||
+    current.isSymbolicLink() ||
+    !sameIdentity(createdIdentity, current)
+  ) {
+    return;
+  }
+
+  const quarantine = join(tmpdir, `.lyra-overlay-rollback-${randomUUID()}`);
+  await rename(runRoot, quarantine);
+  const quarantined = await lstat(quarantine, { bigint: true });
+  if (!sameIdentity(createdIdentity, quarantined)) {
+    await rename(quarantine, runRoot).catch(() => {});
+    throw new Error('run-root identity changed during creation rollback');
+  }
+  await rm(quarantine, { recursive: true });
+}
+
+export async function createOwnedRunRoot({ tmpdir, runId }, { writeOwnerMarker = writeFile } = {}) {
+  const resolvedTmpdir = requireAbsolutePath(tmpdir, 'TMPDIR');
   if (typeof runId !== 'string' || !RUN_ID.test(runId)) {
     throw new Error('runId must contain only safe path characters');
   }
-  const resolvedTmpdir = resolve(tmpdir);
   const temporaryDirectory = await stat(resolvedTmpdir);
   if (!temporaryDirectory.isDirectory()) throw new Error('TMPDIR must be a directory');
 
   const runRoot = await mkdtemp(join(resolvedTmpdir, `lyra-overlay-${runId}-`));
+  const created = await lstat(runRoot, { bigint: true });
+  const createdIdentity = identity(created);
   try {
-    const created = await lstat(runRoot, { bigint: true });
     const ownerToken = randomUUID();
-    const marker = JSON.stringify({ ownerToken, ...identity(created) });
-    await writeFile(join(runRoot, OWNER_FILE), marker, { flag: 'wx', mode: 0o600 });
+    const marker = JSON.stringify({ ownerToken, ...createdIdentity });
+    await writeOwnerMarker(join(runRoot, OWNER_FILE), marker, { flag: 'wx', mode: 0o600 });
     return { runRoot, ownerToken };
   } catch (error) {
-    await rm(runRoot, { recursive: true, force: true }).catch(() => {});
+    try {
+      await rollbackCreatedRunRoot({
+        tmpdir: resolvedTmpdir,
+        runRoot,
+        createdIdentity,
+      });
+    } catch (rollbackError) {
+      throw new AggregateError(
+        [error, rollbackError],
+        'owner-marker creation and owned-root rollback both failed',
+      );
+    }
     throw error;
   }
 }
 
 export async function cleanupOwnedRunRoot({ tmpdir, runRoot, ownerToken }) {
-  const resolvedTmpdir = resolve(tmpdir);
-  const resolvedRunRoot = resolve(runRoot);
+  const resolvedTmpdir = requireAbsolutePath(tmpdir, 'tmpdir');
+  const resolvedRunRoot = requireAbsolutePath(runRoot, 'runRoot');
   if (dirname(resolvedRunRoot) !== resolvedTmpdir) {
     throw new Error('owned run root must be a direct child of TMPDIR');
   }
@@ -217,14 +261,16 @@ async function readExpectedToolchain(repositoryRoot) {
     await readFile(join(repositoryRoot, 'package.json')),
     'repository package manifest must be valid JSON',
   );
-  if (!isPlainRecord(repositoryManifest) || typeof repositoryManifest.packageManager !== 'string') {
-    throw new Error('repository packageManager must pin pnpm exactly');
+  if (node !== REQUIRED_NODE_VERSION) {
+    throw new Error(`repository Node pin must equal ${REQUIRED_NODE_VERSION}`);
   }
-  const match = /^pnpm@([^\s]+)$/u.exec(repositoryManifest.packageManager);
-  if (node.length === 0 || match === null) {
-    throw new Error('repository toolchain must pin Node and pnpm exactly');
+  if (
+    !isPlainRecord(repositoryManifest) ||
+    repositoryManifest.packageManager !== `pnpm@${REQUIRED_PNPM_VERSION}`
+  ) {
+    throw new Error(`repository pnpm pin must equal ${REQUIRED_PNPM_VERSION}`);
   }
-  return { node, pnpm: match[1] };
+  return { node: REQUIRED_NODE_VERSION, pnpm: REQUIRED_PNPM_VERSION };
 }
 
 async function removeOwnedNodeModules({ fixtureRoot, runRoot }) {
@@ -351,9 +397,9 @@ async function writeEvidence(path, bytes) {
 
 async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot, runCommand }) {
   const expectedToolchain = await readExpectedToolchain(repositoryRoot);
-  if (process.versions.node !== expectedToolchain.node) {
+  if (process.versions.node !== REQUIRED_NODE_VERSION) {
     throw new Error(
-      `Node version mismatch: expected ${expectedToolchain.node}, received ${process.versions.node}`,
+      `Node version mismatch: expected ${REQUIRED_NODE_VERSION}, received ${process.versions.node}`,
     );
   }
 
@@ -366,9 +412,9 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
     await runCommand('pnpm', ['--version'], { cwd: repositoryRoot }),
   );
   const actualPnpm = pnpmVersionBytes.toString('utf8').trim();
-  if (actualPnpm !== expectedToolchain.pnpm) {
+  if (actualPnpm !== REQUIRED_PNPM_VERSION) {
     throw new Error(
-      `pnpm version mismatch: expected ${expectedToolchain.pnpm}, received ${actualPnpm}`,
+      `pnpm version mismatch: expected ${REQUIRED_PNPM_VERSION}, received ${actualPnpm}`,
     );
   }
 
@@ -459,9 +505,9 @@ export async function installExternalCandidate({
   repositoryRoot,
   runCommand = defaultRunCommand,
 }) {
+  const resolvedRunRoot = requireAbsolutePath(runRoot, 'runRoot');
+  const resolvedRepositoryRoot = requireAbsolutePath(repositoryRoot, 'repositoryRoot');
   assertCandidateInputs(candidate, artifacts);
-  const resolvedRunRoot = resolve(runRoot);
-  const resolvedRepositoryRoot = resolve(repositoryRoot);
   const owned = await readOwnedRoot(resolvedRunRoot);
   if (!sameIdentity(owned.record, owned.current)) throw new Error('run-root identity mismatch');
   const repositoryStat = await stat(resolvedRepositoryRoot);

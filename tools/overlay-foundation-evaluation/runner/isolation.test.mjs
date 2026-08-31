@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { test } from 'node:test';
 
@@ -17,6 +17,8 @@ import {
 const execFilePromise = promisify(execFile);
 const ownerFile = '.lyra-overlay-evaluation-owner.json';
 const missingLicense = Symbol('missing license');
+const requiredNodeVersion = '24.18.0';
+const requiredPnpmVersion = '11.13.1';
 const cleanAudit = {
   metadata: {
     vulnerabilities: {
@@ -64,21 +66,16 @@ async function runBytes(command, args, options = {}) {
   }
 }
 
-async function pnpmVersion() {
-  const result = await runBytes('pnpm', ['--version']);
-  return Buffer.from(result.stdout).toString('utf8').trim();
-}
-
 async function createRepository(t, root, overrides = {}) {
   const repositoryRoot = join(root, 'repository');
   await mkdir(repositoryRoot);
-  await writeFile(join(repositoryRoot, '.nvmrc'), `${overrides.node ?? process.versions.node}\n`);
+  await writeFile(join(repositoryRoot, '.nvmrc'), `${overrides.node ?? requiredNodeVersion}\n`);
   await writeFile(
     join(repositoryRoot, 'package.json'),
     JSON.stringify({
       name: 'synthetic-repository',
       private: true,
-      packageManager: `pnpm@${overrides.pnpm ?? (await pnpmVersion())}`,
+      packageManager: `pnpm@${overrides.pnpm ?? requiredPnpmVersion}`,
     }),
   );
   await writeFile(join(repositoryRoot, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n');
@@ -240,6 +237,47 @@ test('creates a unique owned child of TMPDIR and removes only that child', async
   assert.equal((await stat(second.runRoot)).isDirectory(), true);
 });
 
+test('rejects a relative TMPDIR before creating an owned directory', async (t) => {
+  const root = await testDirectory(t);
+  const contentsBefore = await readdir(root);
+  await assert.rejects(
+    createOwnedRunRoot({
+      tmpdir: relative(process.cwd(), root),
+      runId: 'relative-create-root',
+    }),
+    /TMPDIR must be absolute/u,
+  );
+  assert.deepEqual(await readdir(root), contentsBefore);
+});
+
+test('preserves a replacement when owner-marker creation fails', async (t) => {
+  const root = await testDirectory(t);
+  const markerFailure = new Error('synthetic owner-marker failure');
+  const replacementBytes = Buffer.from('foreign replacement bytes\n');
+  let replacementRoot;
+  let caught;
+  try {
+    await createOwnedRunRoot(
+      { tmpdir: root, runId: 'marker-failure-replacement' },
+      {
+        async writeOwnerMarker(markerPath) {
+          replacementRoot = dirname(markerPath);
+          await rename(replacementRoot, `${replacementRoot}.original`);
+          await mkdir(replacementRoot);
+          await writeFile(join(replacementRoot, 'foreign.txt'), replacementBytes);
+          throw markerFailure;
+        },
+      },
+    );
+  } catch (error) {
+    caught = error;
+  }
+
+  assert.equal(caught, markerFailure);
+  assert.deepEqual(await readFile(join(replacementRoot, 'foreign.txt')), replacementBytes);
+  assert.deepEqual(await readdir(replacementRoot), ['foreign.txt']);
+});
+
 test('refuses cleanup after the owned directory is replaced', async (t) => {
   const root = await testDirectory(t);
   const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'core-test-002' });
@@ -272,12 +310,65 @@ test('refuses cleanup outside the exact TMPDIR parent', async (t) => {
   assert.equal((await stat(owned.runRoot)).isDirectory(), true);
 });
 
+for (const field of ['tmpdir', 'runRoot']) {
+  test(`rejects a relative cleanup ${field} without removing the owned root`, async (t) => {
+    const root = await testDirectory(t);
+    const owned = await createOwnedRunRoot({ tmpdir: root, runId: `relative-${field}` });
+    const markerBefore = await readFile(join(owned.runRoot, ownerFile));
+    const input = {
+      tmpdir: root,
+      ...owned,
+      [field]: relative(process.cwd(), field === 'tmpdir' ? root : owned.runRoot),
+    };
+    await assert.rejects(cleanupOwnedRunRoot(input), new RegExp(`${field} must be absolute`, 'u'));
+    assert.deepEqual(await readFile(join(owned.runRoot, ownerFile)), markerBefore);
+  });
+}
+
+for (const field of ['runRoot', 'repositoryRoot']) {
+  test(`rejects a relative install ${field} before filesystem or command effects`, async (t) => {
+    const root = await testDirectory(t);
+    const repositoryRoot = await createRepository(t, root);
+    const fixture = await createSyntheticCandidate(root);
+    const owned = await createOwnedRunRoot({ tmpdir: root, runId: `relative-install-${field}` });
+    const runRootBefore = await readdir(owned.runRoot);
+    let commandCalls = 0;
+    const input = {
+      candidate: fixture.candidate,
+      artifacts: fixture.artifacts,
+      runRoot: owned.runRoot,
+      repositoryRoot,
+      runCommand: async () => {
+        commandCalls += 1;
+        throw new Error('command must not run');
+      },
+      [field]: relative(process.cwd(), field === 'runRoot' ? owned.runRoot : repositoryRoot),
+    };
+    await assert.rejects(
+      installExternalCandidate(input),
+      new RegExp(`${field} must be absolute`, 'u'),
+    );
+    assert.equal(commandCalls, 0);
+    assert.deepEqual(await readdir(owned.runRoot), runRootBefore);
+  });
+}
+
 test('installs exact local tarballs frozen and offline without running lifecycle scripts', async (t) => {
   const setup = await installFixture(t);
   const result = await setup.install();
   const { repositoryRoot, repositoryLockBefore, fixture, owned, recorder } = setup;
   const fixtureRoot = dirname(result.fixtureManifestPath);
   const storeRoot = join(owned.runRoot, 'pnpm-store');
+
+  assert.equal(process.versions.node, requiredNodeVersion);
+  assert.equal(
+    (await readFile(join(repositoryRoot, '.nvmrc'), 'utf8')).trim(),
+    requiredNodeVersion,
+  );
+  assert.equal(
+    JSON.parse(await readFile(join(repositoryRoot, 'package.json'), 'utf8')).packageManager,
+    `pnpm@${requiredPnpmVersion}`,
+  );
 
   assert.equal(await exists(fixture.markerPath), false);
   assert.equal(await exists(join(repositoryRoot, 'node_modules', fixture.packageName)), false);
@@ -305,7 +396,9 @@ test('installs exact local tarballs frozen and offline without running lifecycle
     assert.equal(await sha256File(result[pathKey]), result[shaKey]);
   }
 
-  assert.deepEqual(JSON.parse(await readFile(result.fixtureManifestPath, 'utf8')).dependencies, {
+  const fixtureManifest = JSON.parse(await readFile(result.fixtureManifestPath, 'utf8'));
+  assert.equal(fixtureManifest.packageManager, `pnpm@${requiredPnpmVersion}`);
+  assert.deepEqual(fixtureManifest.dependencies, {
     [fixture.packageName]: `file:${resolve(fixture.artifacts[0].path)}`,
   });
   const expectedInventory = [
@@ -462,9 +555,55 @@ test('rejects missing vulnerability totals and malformed audit output', () => {
   assert.deepEqual(validateAuditReport(cleanAudit), []);
 });
 
+for (const [testName, label, repositoryOverrides, reportedPnpm, expected] of [
+  [
+    'rejects an edited Node pin against the literal required version before pnpm',
+    'Node',
+    { node: '24.18.1' },
+    requiredPnpmVersion,
+    /repository Node pin must equal 24\.18\.0/u,
+  ],
+  [
+    'rejects an edited pnpm pin even when the fake executable reports that wrong pin',
+    'pnpm',
+    { pnpm: '12.0.0' },
+    '12.0.0',
+    /repository pnpm pin must equal 11\.13\.1/u,
+  ],
+]) {
+  test(testName, async (t) => {
+    const root = await testDirectory(t);
+    const repositoryRoot = await createRepository(t, root, repositoryOverrides);
+    const fixture = await createSyntheticCandidate(root);
+    const owned = await createOwnedRunRoot({ tmpdir: root, runId: `edited-${label}-pin` });
+    const calls = [];
+    await assert.rejects(
+      installExternalCandidate({
+        candidate: fixture.candidate,
+        artifacts: fixture.artifacts,
+        runRoot: owned.runRoot,
+        repositoryRoot,
+        runCommand: async (command, args) => {
+          calls.push({ command, args: [...args] });
+          if (command === 'git') return { stdout: Buffer.alloc(0) };
+          if (command === 'pnpm' && args[0] === '--version') {
+            return { stdout: Buffer.from(`${reportedPnpm}\n`) };
+          }
+          throw new Error('installation must not continue past an edited toolchain pin');
+        },
+      }),
+      expected,
+    );
+    assert.equal(
+      calls.some(({ command }) => command === 'pnpm'),
+      false,
+    );
+  });
+}
+
 for (const [label, repositoryOverrides, recorderOptions, expected] of [
-  ['Node', { node: '0.0.0' }, {}, /Node version mismatch/u],
-  ['pnpm', {}, { pnpmVersionOutput: '0.0.0\n' }, /pnpm version mismatch/u],
+  ['Node', { node: '0.0.0' }, {}, /repository Node pin must equal 24\.18\.0/u],
+  ['pnpm', {}, { pnpmVersionOutput: '0.0.0\n' }, /pnpm version mismatch: expected 11\.13\.1/u],
 ]) {
   test(`rejects an inexact ${label} toolchain before installation`, async (t) => {
     const root = await testDirectory(t);
