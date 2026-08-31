@@ -512,9 +512,10 @@ A future foundation MUST remain below unexported Lyra-owned React and Alpine
 adapter interfaces. Public source types, inferred exports, emitted `.d.ts` and
 `.d.cts`, callback/event payloads, refs, option objects, examples, generated
 documentation, CSS selectors, and supported `data-*` attributes MUST NOT name
-or structurally require vendor types, parts, selectors, enums, DOM, or events.
-Incidental vendor attributes MUST NOT appear in the public contract or the
-conformance fixtures.
+or structurally require vendor-owned types, parts, selectors, enums, DOM
+markers, or event types. Web-platform types used by a Lyra-owned contract,
+including `AbortSignal`, are not vendor leakage. Incidental vendor attributes
+MUST NOT appear in the public contract or the conformance fixtures.
 
 ## SSR, hydration, and no-JavaScript contract
 

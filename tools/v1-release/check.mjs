@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { parse } from 'yaml';
@@ -591,6 +591,13 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
   if (ledger.targetRelease !== '1.0.0') errors.push('targetRelease must equal 1.0.0');
   if (ledger.releaseStatus !== 'planning') errors.push('releaseStatus must equal planning');
   if (
+    ledger.releaseStatus === 'planning' &&
+    Array.isArray(ledger.components) &&
+    ledger.components.some((entry) => entry?.implementationStatus === 'qualified')
+  ) {
+    errors.push('planning release cannot contain qualified components');
+  }
+  if (
     ledger.programSpecification !==
       'docs/superpowers/specs/2026-08-30-lyra-v1-deliberate-release-design.md' ||
     !/^\*\*Status:\*\* Approved$/mu.test(documents[ledger.programSpecification] ?? '')
@@ -647,9 +654,23 @@ function referencedPaths(ledger) {
   return [...paths].filter((path) => path !== null && path !== undefined);
 }
 
+export function isRepositoryRelativePath(
+  path,
+  root = repositoryRoot,
+  pathApi = { isAbsolute, relative, resolve, sep },
+) {
+  if (pathApi.isAbsolute(path)) return false;
+  const relativePath = pathApi.relative(root, pathApi.resolve(root, path));
+  return (
+    relativePath === '' ||
+    (relativePath !== '..' &&
+      !relativePath.startsWith(`..${pathApi.sep}`) &&
+      !pathApi.isAbsolute(relativePath))
+  );
+}
+
 function isInsideRepository(path) {
-  const resolved = resolve(repositoryRoot, path);
-  return resolved === repositoryRoot || resolved.startsWith(`${repositoryRoot}/`);
+  return isRepositoryRelativePath(path);
 }
 
 async function collectDocuments(ledger) {
@@ -677,15 +698,20 @@ async function collectDocuments(ledger) {
   return { documents, errors };
 }
 
-async function main() {
+function ledgerPathFromArgs(args) {
+  if (args.length === 0) {
+    return resolve(repositoryRoot, 'docs/superpowers/baselines/lyra-v1/program.json');
+  }
+  if (args.length === 2 && args[0] === '--ledger' && args[1]) {
+    return resolve(args[1]);
+  }
+  throw new Error('Usage: check.mjs [--ledger <path>]');
+}
+
+async function main(args = process.argv.slice(2)) {
   let ledger;
   try {
-    ledger = JSON.parse(
-      await readFile(
-        resolve(repositoryRoot, 'docs/superpowers/baselines/lyra-v1/program.json'),
-        'utf8',
-      ),
-    );
+    ledger = JSON.parse(await readFile(ledgerPathFromArgs(args), 'utf8'));
   } catch (error) {
     console.error(`Unable to read V1 program ledger: ${error.message}`);
     process.exitCode = 1;
@@ -703,5 +729,5 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  await main();
+  await main(process.argv.slice(2));
 }

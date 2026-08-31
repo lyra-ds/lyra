@@ -290,6 +290,11 @@ The first implementation plan covers only the V1 ledger plus the overlay
 family specification. It stops for explicit approval of that specification,
 as required by the Phase 0 evidence index.
 
+While the ledger remains in `planning`, the release gate MUST reject every
+`qualified` component claim. A later candidate phase may enable qualification
+only after its ledger schema binds every evidence revision to the exact release
+candidate and verifies each referenced artifact against its recorded SHA-256.
+
 After that approval, a second plan covers the evidence harness and foundation
 decision. Production overlay migration receives a third plan only after the
 decision record is approved. None of these approvals authorizes a remote or

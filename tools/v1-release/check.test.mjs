@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { join, win32 } from 'node:path';
+import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { validateV1Entry, validateV1Program, validateV1ReleaseWiring } from './check.mjs';
+import * as releaseCheck from './check.mjs';
+
+const { validateV1Entry, validateV1Program, validateV1ReleaseWiring } = releaseCheck;
 
 const execFileAsync = promisify(execFile);
 const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
@@ -891,8 +895,41 @@ for (const [name, mutate, expected] of [
   });
 }
 
-test('accepts a qualified entry only with complete tracked evidence', () => {
-  assert.deepEqual(validateV1Program(qualifiedProgram()), []);
+test('accepts a structurally complete qualified entry at the entry boundary', () => {
+  const input = qualifiedProgram();
+
+  assert.deepEqual(
+    validateV1Entry(input.ledger.components[0], input.ledger.acceptanceProfiles, input.documents),
+    [],
+  );
+});
+
+test('refuses qualified claims while the release program is planning', () => {
+  assert.ok(
+    validateV1Program(qualifiedProgram()).some((error) =>
+      error.includes('planning release cannot contain qualified components'),
+    ),
+  );
+});
+
+test('recognizes repository descendants with Windows path separators', () => {
+  assert.equal(typeof releaseCheck.isRepositoryRelativePath, 'function');
+  assert.equal(
+    releaseCheck.isRepositoryRelativePath(
+      String.raw`docs\evidence.json`,
+      String.raw`C:\work\lyra`,
+      win32,
+    ),
+    true,
+  );
+  assert.equal(
+    releaseCheck.isRepositoryRelativePath(
+      String.raw`..\outside.json`,
+      String.raw`C:\work\lyra`,
+      win32,
+    ),
+    false,
+  );
 });
 
 test('rejects a qualified entry that excludes all 23 cells without governing declarations', () => {
@@ -943,7 +980,7 @@ test('accepts a non-overlay exclusion only when its governing spec declares the 
   delete entry.acceptanceEvidence.rtl;
   input.documents['docs/spec.md'] += `\n${notApplicableDirective('tabs', 'rtl', reason)}\n`;
 
-  assert.deepEqual(validateV1Program(input), []);
+  assert.deepEqual(validateV1Entry(entry, input.ledger.acceptanceProfiles, input.documents), []);
 });
 
 test('rejects a non-overlay exclusion whose reason differs from the governing declaration', () => {
@@ -997,22 +1034,24 @@ test('rejects an unknown qualified evidence record even when it is invalid', () 
 test('CLI rejects readable but untracked referenced documents', async () => {
   const originalLedger = await readFile(LEDGER_PATH, 'utf8');
   const ledger = JSON.parse(originalLedger);
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'lyra-v1-ledger-'));
+  const temporaryLedger = join(temporaryDirectory, 'program.json');
   ledger.components[0].governingSpecification = {
     path: UNTRACKED_DOCUMENT_PATH,
     status: 'draft',
   };
 
   await writeFile(UNTRACKED_DOCUMENT_PATH, '# Untracked draft\n');
-  await writeFile(LEDGER_PATH, `${JSON.stringify(ledger, null, 2)}\n`);
+  await writeFile(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`);
   try {
     await assert.rejects(
-      execFileAsync(process.execPath, ['tools/v1-release/check.mjs']),
+      execFileAsync(process.execPath, ['tools/v1-release/check.mjs', '--ledger', temporaryLedger]),
       (error) =>
         error.code === 1 &&
         error.stderr.includes(`referenced path is not Git-tracked: ${UNTRACKED_DOCUMENT_PATH}`),
     );
   } finally {
-    await writeFile(LEDGER_PATH, originalLedger);
+    await rm(temporaryDirectory, { recursive: true, force: true });
     await rm(UNTRACKED_DOCUMENT_PATH, { force: true });
   }
 });
@@ -1020,6 +1059,8 @@ test('CLI rejects readable but untracked referenced documents', async () => {
 test('CLI rejects wholesale demotion after the overlay checkpoint is tracked', async () => {
   const originalLedger = await readFile(LEDGER_PATH, 'utf8');
   const ledger = JSON.parse(originalLedger);
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'lyra-v1-ledger-'));
+  const temporaryLedger = join(temporaryDirectory, 'program.json');
   for (const entry of ledger.components) {
     if (!OVERLAY_IDS.includes(entry.id)) continue;
     entry.governingSpecification = { path: null, status: 'not-authored' };
@@ -1027,18 +1068,27 @@ test('CLI rejects wholesale demotion after the overlay checkpoint is tracked', a
     entry.implementationStatus = 'planned';
   }
 
-  await writeFile(LEDGER_PATH, `${JSON.stringify(ledger, null, 2)}\n`);
+  await writeFile(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`);
   try {
     await assert.rejects(
-      execFileAsync(process.execPath, ['tools/v1-release/check.mjs']),
+      execFileAsync(process.execPath, ['tools/v1-release/check.mjs', '--ledger', temporaryLedger]),
       (error) =>
         error.code === 1 &&
         error.stderr.includes(`dialog: overlay specification path must equal ${OVERLAY_SPEC_PATH}`),
     );
   } finally {
-    await writeFile(LEDGER_PATH, originalLedger);
+    await rm(temporaryDirectory, { recursive: true, force: true });
   }
 });
+
+for (const args of [['--ledger'], ['--ledger', LEDGER_PATH, 'unexpected']]) {
+  test(`CLI rejects malformed ledger arguments: ${args.join(' ')}`, async () => {
+    await assert.rejects(
+      execFileAsync(process.execPath, ['tools/v1-release/check.mjs', ...args]),
+      (error) => error.code === 1 && error.stderr.includes('Usage: check.mjs [--ledger <path>]'),
+    );
+  });
+}
 
 test('reports malformed qualified exclusions without throwing', () => {
   const input = qualifiedProgram();
