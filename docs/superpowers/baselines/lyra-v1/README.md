@@ -4,6 +4,16 @@ This index records the Phase 0 contract and baseline artifacts. Phase 0 defines
 the supported browser and assistive-technology matrix; it does not claim that
 the complete matrix has already been executed.
 
+## Deliberate V1 program
+
+- [Machine-readable V1 program ledger](./program.json)
+- [Approved deliberate-release design](../../specs/2026-08-30-lyra-v1-deliberate-release-design.md)
+
+The ledger is the machine-readable completion source for the remaining P1
+contracts. A `planned`, `specified`, `evaluating`, or `implementing` entry is
+not complete. Only `qualified` with complete immutable evidence can satisfy the
+V1 exit gate.
+
 ## Approved product and foundational specifications
 
 - [Lyra v1.0 roadmap PRD](../../specs/2026-08-12-lyra-v1-roadmap-prd.md)
@@ -85,6 +95,7 @@ frozen required-check contexts remain `lint`, `typecheck`, `test`, and `build`.
 - [ ] Manual Windows/NVDA and macOS/VoiceOver workflow execution is deferred to
       optional post-release evidence under Automated Core and is not passed.
 
-The next artifact is the overlay-foundation family specification. Its evaluation
-or implementation plan must not be created until that specification reaches
-`Approved`.
+The overlay-family specification now exists as a draft. Foundation evaluation,
+candidate dependency installation, and an overlay implementation plan remain
+blocked until the specification reaches `Approved` through an explicit
+maintainer checkpoint.

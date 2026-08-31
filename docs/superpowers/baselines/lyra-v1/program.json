@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "targetRelease": "1.0.0",
+  "programSpecification": "docs/superpowers/specs/2026-08-30-lyra-v1-deliberate-release-design.md",
+  "releaseStatus": "planning",
+  "acceptanceProfiles": {
+    "v1-interactive": [
+      "chromium",
+      "firefox",
+      "webkit",
+      "react-18",
+      "react-19",
+      "ssr",
+      "hydration",
+      "keyboard-focus",
+      "axe-light",
+      "axe-dark",
+      "forced-colors",
+      "reduced-motion",
+      "ltr",
+      "rtl",
+      "coarse-pointer",
+      "bundle-standalone",
+      "bundle-composition",
+      "packed-esm",
+      "packed-cjs",
+      "packed-types",
+      "consumer-vite",
+      "consumer-next",
+      "consumer-commonjs"
+    ]
+  },
+  "components": [
+    {
+      "id": "dialog",
+      "stream": "overlay",
+      "wave": "modal",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/dialog/dialog.tsx"],
+      "targetContracts": ["OF-MODAL"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "drawer",
+      "stream": "overlay",
+      "wave": "modal",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/drawer/drawer.tsx"],
+      "targetContracts": ["OF-MODAL"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "bottom-sheet",
+      "stream": "overlay",
+      "wave": "modal",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/bottom-sheet/bottom-sheet.tsx"],
+      "targetContracts": ["OF-MODAL"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "popover",
+      "stream": "overlay",
+      "wave": "anchored",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/popover/popover.tsx"],
+      "targetContracts": ["OF-ANCHORED"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "dropdown",
+      "stream": "overlay",
+      "wave": "anchored",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/dropdown/dropdown.tsx"],
+      "targetContracts": ["OF-ANCHORED", "OF-MENU"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "tooltip",
+      "stream": "overlay",
+      "wave": "anchored",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/tooltip/tooltip.tsx"],
+      "targetContracts": ["OF-ANCHORED", "OF-TOOLTIP"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "command-palette",
+      "stream": "overlay",
+      "wave": "composed",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/command-palette/command-palette.tsx"],
+      "targetContracts": ["OF-COMPOSED", "OF-MODAL"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "workspace-switcher",
+      "stream": "overlay",
+      "wave": "composed",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/workspace-switcher/workspace-switcher.tsx"],
+      "targetContracts": ["OF-COMPOSED", "OF-ANCHORED"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "create-workspace-dialog",
+      "stream": "overlay",
+      "wave": "composed",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
+        "status": "draft"
+      },
+      "currentContract": ["packages/react/src/create-workspace-dialog/create-workspace-dialog.tsx"],
+      "targetContracts": ["OF-COMPOSED", "OF-MODAL"],
+      "implementationStatus": "specified",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "tabs",
+      "stream": "tabs",
+      "wave": "tabs",
+      "priority": "P1",
+      "governingSpecification": { "path": null, "status": "not-authored" },
+      "currentContract": ["packages/react/src/tabs/tabs.tsx"],
+      "targetContracts": ["v1-tabs"],
+      "implementationStatus": "planned",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    },
+    {
+      "id": "data-table",
+      "stream": "data-table",
+      "wave": "data-table",
+      "priority": "P1",
+      "governingSpecification": {
+        "path": "docs/superpowers/specs/2026-08-15-data-files-family-design.md",
+        "status": "implemented"
+      },
+      "currentContract": ["packages/react/src/data-table/data-table.tsx"],
+      "targetContracts": ["v1-data-table"],
+      "implementationStatus": "planned",
+      "acceptanceProfile": "v1-interactive",
+      "notApplicable": [],
+      "acceptanceEvidence": {},
+      "migrationGuides": { "en": null, "ptBR": null },
+      "compatibility": { "styles": null, "react": null, "alpine": null },
+      "immutableEvidence": [],
+      "manualEvidence": "deferred-by-release-profile"
+    }
+  ]
+}
