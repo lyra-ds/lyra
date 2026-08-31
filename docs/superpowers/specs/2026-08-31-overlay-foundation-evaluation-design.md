@@ -1,6 +1,6 @@
 # Lyra V1 Overlay Foundation Evaluation Design
 
-**Status:** Draft — awaiting written review
+**Status:** Approved
 
 **Date:** 2026-08-31
 
@@ -371,14 +371,14 @@ This design is complete when:
 
 ## Approval checklist
 
-- [ ] Maintainer review confirms the four-candidate scope and staged execution
+- [x] Maintainer review confirms the four-candidate scope and staged execution
       do not permit early selection.
-- [ ] Accessibility review confirms every approved contract scenario maps to
+- [x] Accessibility review confirms every approved contract scenario maps to
       independent automated evidence cells.
-- [ ] Architecture review confirms candidate isolation, Lyra-owned fixtures,
+- [x] Architecture review confirms candidate isolation, Lyra-owned fixtures,
       and the no-production-dependency boundary.
-- [ ] Quality review confirms artifact identity, first-attempt preservation,
+- [x] Quality review confirms artifact identity, first-attempt preservation,
       bundle/runtime fairness, and fail-closed behavior.
-- [ ] The decision owner approves this exact design before the first
+- [x] The decision owner approves this exact design before the first
       implementation plan, candidate manifest, dependency installation, or
       workflow is added.

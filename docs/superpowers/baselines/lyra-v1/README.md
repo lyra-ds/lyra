@@ -58,9 +58,9 @@ defines the evidence required to evaluate the incumbent Lyra implementation,
 Radix, Base UI, and the active Zag.js direction. It is a template only; no
 overlay candidate evaluation or implementation plan is part of Phase 0.
 
-The draft
+The approved
 [overlay-foundation evaluation design](../../specs/2026-08-31-overlay-foundation-evaluation-design.md)
-defines the proposed isolated harness, equal-fixture protocol, immutable
+defines the isolated harness, equal-fixture protocol, immutable
 evidence model, and decision checkpoints. It does not select or install a
 candidate.
 
