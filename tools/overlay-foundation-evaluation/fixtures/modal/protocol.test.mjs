@@ -70,6 +70,20 @@ test('rejects vendor identity embedded in normative prose and records', () => {
   }
 });
 
+test('rejects bare vendor identities in normative scalar and nested fields', () => {
+  const observations = ['radix', 'base-ui', 'zag', 'incumbent', 'lyra'].map((identity, index) => {
+    const observation = structuredClone(validObservation);
+    if (index % 2 === 0) observation.announcements[0].message = identity;
+    else observation.states[0].value = { note: identity };
+    return observation;
+  });
+  for (const observation of observations) {
+    const errors = validateModalObservation(observation).join('\n');
+    assert.match(errors, /candidate|vendor|coupling/u);
+    assert.match(errors, /normative fields/u);
+  }
+});
+
 test('accepts neutral prose containing non-identity substrings', () => {
   const observation = structuredClone(validObservation);
   observation.announcements[0].message = 'The radix sort is complete.';
