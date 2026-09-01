@@ -16,6 +16,7 @@ const REQUIRED_PNPM_VERSION = '11.13.1';
 const ERROR_SCOPES = new Set(['candidate', 'run']);
 const CLASSIFICATIONS = new Set(FAILURE_CLASSIFICATIONS);
 const normalizedBoundaryErrors = new WeakMap();
+const incumbentManifestMismatchErrors = new WeakSet();
 
 async function defaultCharacterizeIncumbent(options) {
   const { characterizeIncumbent } = await import('../candidates/incumbent.mjs');
@@ -42,6 +43,16 @@ class CorePreflightError extends Error {
     this.stage = stage;
     normalizedBoundaryErrors.set(this, Object.freeze({ classification, scope, stage }));
   }
+}
+
+function incumbentManifestMismatchError(message) {
+  const error = new CorePreflightError(message, {
+    classification: 'policy',
+    scope: 'candidate',
+    stage: 'artifact',
+  });
+  incumbentManifestMismatchErrors.add(error);
+  return error;
 }
 
 function errorMessage(error) {
@@ -131,7 +142,7 @@ function artifactError(error) {
 }
 
 function incumbentError(error) {
-  if (error instanceof CorePreflightError) return error;
+  if (incumbentManifestMismatchErrors.has(error)) return error;
   if (/repository worktree|clean worktree/iu.test(errorMessage(error))) {
     return boundaryError(error, {
       classification: 'policy',
@@ -374,23 +385,13 @@ function assertIncumbentMatchesManifest(manifest, candidate, characterization) {
     JSON.stringify(canonicalArtifactSet(characterization.artifacts)) ===
       JSON.stringify(canonicalArtifactSet(candidate.artifacts));
   if (!matches) {
-    throw new CorePreflightError(
+    throw incumbentManifestMismatchError(
       'incumbent characterization does not exactly match its manifest record',
-      {
-        classification: 'policy',
-        scope: 'candidate',
-        stage: 'artifact',
-      },
     );
   }
   if (manifest.lyraRevision !== characterization.revision) {
-    throw new CorePreflightError(
+    throw incumbentManifestMismatchError(
       'incumbent characterization does not exactly match the manifest Lyra revision',
-      {
-        classification: 'policy',
-        scope: 'candidate',
-        stage: 'artifact',
-      },
     );
   }
 }
@@ -567,7 +568,10 @@ async function persistCheckedAttempt({
   await requireRepositoryIntegrity(integrityInput);
   await persistAttempt({ attempt, evidenceRoot, operations });
   attempts.push(attempt);
-  if (attempt.result === 'FAIL' && attempt.observed.scope === 'candidate') {
+  if (
+    attempt.result === 'PASS' ||
+    (attempt.result === 'FAIL' && attempt.observed.scope === 'candidate')
+  ) {
     await requireRepositoryIntegrity(integrityInput);
   }
 }
@@ -626,6 +630,8 @@ export async function runCorePreflight(
     throw runPolicyError(error);
   }
 
+  const runId = createRunId(manifest);
+  const attempts = [];
   const adapters = new Map();
   for (const [index, candidate] of manifest.candidates.entries()) {
     operations.event(`load-adapter:${candidate.id}`);
@@ -634,16 +640,24 @@ export async function runCorePreflight(
     } catch (error) {
       adapters.set(candidate.id, { error: adapterError(error) });
     }
+    await requireRepositoryIntegrity({
+      runId,
+      candidate,
+      repositoryRoot: root,
+      repositoryBefore,
+      runCommand,
+      evidenceRoot: preparedEvidenceRoot,
+      operations,
+      attempts,
+    });
   }
 
   let owned;
   try {
-    owned = await operations.createOwnedRunRoot({ tmpdir, runId: createRunId(manifest) });
+    owned = await operations.createOwnedRunRoot({ tmpdir, runId });
   } catch (error) {
     throw runPolicyError(error);
   }
-  const runId = createRunId(manifest);
-  const attempts = [];
   let primaryError;
   try {
     await assertEvidenceOutsideOwnedRoot(preparedEvidenceRoot, owned.runRoot);

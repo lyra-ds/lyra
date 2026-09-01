@@ -261,6 +261,13 @@ async function readAttempt(evidenceRoot, candidateId, stage) {
   );
 }
 
+async function repositoryAttemptPaths(evidenceRoot) {
+  const attemptRoot = join(evidenceRoot, 'attempts', 'preflight');
+  return (await readdir(attemptRoot, { recursive: true })).filter((path) =>
+    path.endsWith(join('repository', 'attempt-1.json')),
+  );
+}
+
 async function assertOwnedRootsRemoved(temporaryDirectory) {
   assert.deepEqual(await readdir(temporaryDirectory), []);
 }
@@ -482,6 +489,45 @@ test('re-enforces candidate-local metadata when a caller reuses and mutates a no
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
+test('detects a real top-level adapter repository mutation before loading the next adapter', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  await writeFile(
+    join(
+      fixture.repositoryRoot,
+      'tools',
+      'overlay-foundation-evaluation',
+      'candidates',
+      'base-ui.mjs',
+    ),
+    `import { writeFileSync } from 'node:fs';
+writeFileSync(${JSON.stringify(fixture.trackedFile)}, 'mutated during adapter import\\n');
+export const adapterDescriptor = ${JSON.stringify({
+      candidateId: 'base-ui',
+      supportedContractIds: ['OF-MODAL'],
+    })};
+`,
+  );
+
+  await assert.rejects(
+    runFixture(fixture, successfulDependencies(events), fileBackedRepositoryCommand(fixture)),
+    /repository worktree changed/u,
+  );
+
+  assert.equal(events.includes('load-adapter:zag'), false);
+  assert.equal(events.includes('characterize:incumbent'), false);
+  assert.equal(events.includes('cleanup-owned-root'), false);
+  const failure = await readAttempt(fixture.evidenceRoot, 'base-ui', 'repository');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.classification, 'policy');
+  assert.equal(failure.observed.scope, 'run');
+  assert.equal((await repositoryAttemptPaths(fixture.evidenceRoot)).length, 1);
+  await assert.rejects(readAttempt(fixture.evidenceRoot, 'incumbent', 'artifact'), {
+    code: 'ENOENT',
+  });
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
 for (const [name, mutate] of [
   ['revision', (characterization) => (characterization.revision = alternateRevision)],
   ['artifact name', (characterization) => (characterization.artifacts[0].name = '@lyra-ds/other')],
@@ -647,6 +693,37 @@ test('rechecks repository integrity after writing a candidate-local failure and 
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
+test('rechecks repository integrity after a PASS write before starting the next candidate', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const dependencies = successfulDependencies(events, {
+    writeAttempt: async (input) => {
+      await writeAttempt(input);
+      if (input.attempt.candidateId === 'radix' && input.attempt.result === 'PASS') {
+        await writeFile(fixture.trackedFile, 'mutated while recording PASS evidence\n');
+      }
+    },
+  });
+
+  await assert.rejects(
+    runFixture(fixture, dependencies, fileBackedRepositoryCommand(fixture)),
+    /repository worktree changed/u,
+  );
+
+  assert.equal(events.includes('acquire:base-ui'), false);
+  assert.equal(events.includes('acquire:zag'), false);
+  assert.equal((await readAttempt(fixture.evidenceRoot, 'radix', 'installation')).result, 'PASS');
+  const failure = await readAttempt(fixture.evidenceRoot, 'radix', 'repository');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.classification, 'policy');
+  assert.equal(failure.observed.scope, 'run');
+  assert.equal((await repositoryAttemptPaths(fixture.evidenceRoot)).length, 1);
+  await assert.rejects(readAttempt(fixture.evidenceRoot, 'base-ui', 'installation'), {
+    code: 'ENOENT',
+  });
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
 test('detects an actual repository mutation before writing a candidate installation PASS', async (t) => {
   const fixture = await createFixture(t);
   const events = [];
@@ -790,6 +867,55 @@ test('wraps a frozen evidence failure with its cause while forcing run-fatal met
     return true;
   });
   assert.equal(events.includes('acquire:zag'), false);
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('re-normalizes a prior run-fatal wrapper at the incumbent boundary despite forged preservation fields', async (t) => {
+  const priorFixture = await createFixture(t);
+  const priorEvents = [];
+  const frozenEvidenceError = Object.freeze(new Error('prior frozen evidence failure'));
+  let priorRunFatalWrapper;
+  await assert.rejects(
+    runFixture(
+      priorFixture,
+      successfulDependencies(priorEvents, {
+        writeAttempt: async (input) => {
+          if (input.attempt.candidateId === 'base-ui') throw frozenEvidenceError;
+          return writeAttempt(input);
+        },
+      }),
+    ),
+    (error) => {
+      priorRunFatalWrapper = error;
+      assert.equal(error.cause, frozenEvidenceError);
+      assert.equal(error.scope, 'run');
+      return true;
+    },
+  );
+  priorRunFatalWrapper.code = 'INCUMBENT_MANIFEST_MISMATCH';
+  priorRunFatalWrapper.incumbentManifestMismatch = true;
+
+  const fixture = await createFixture(t);
+  const events = [];
+  const summary = await runFixture(
+    fixture,
+    successfulDependencies(events, {
+      characterizeIncumbent: async () => {
+        throw priorRunFatalWrapper;
+      },
+    }),
+  );
+
+  assert.equal(summary.result, 'FAIL');
+  assert.equal(events.includes('acquire:radix'), true);
+  assert.equal(events.includes('acquire:zag'), true);
+  const failure = await readAttempt(fixture.evidenceRoot, 'incumbent', 'artifact');
+  assert.equal(failure.classification, 'packaging');
+  assert.equal(failure.observed.scope, 'candidate');
+  assert.equal(failure.observed.message, 'prior frozen evidence failure');
+  await assert.rejects(readAttempt(fixture.evidenceRoot, 'incumbent', 'installation'), {
+    code: 'ENOENT',
+  });
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
