@@ -20,6 +20,7 @@ import { runCorePreflight } from './core.mjs';
 
 const revision = 'b'.repeat(40);
 const alternateRevision = 'c'.repeat(40);
+const runId = `core-${revision.slice(0, 12)}`;
 const incumbentPackedBytes = Object.freeze({
   alpine: Buffer.from('incumbent alpine packed bytes'),
   react: Buffer.from('incumbent react packed bytes'),
@@ -312,14 +313,14 @@ function fileBackedRepositoryCommand(fixture) {
 async function readAttempt(evidenceRoot, candidateId, stage) {
   return JSON.parse(
     await readFile(
-      join(evidenceRoot, 'attempts', 'preflight', candidateId, stage, 'attempt-1.json'),
+      join(evidenceRoot, 'attempts', runId, 'preflight', candidateId, stage, 'attempt-1.json'),
       'utf8',
     ),
   );
 }
 
 async function repositoryAttemptPaths(evidenceRoot) {
-  const attemptRoot = join(evidenceRoot, 'attempts', 'preflight');
+  const attemptRoot = join(evidenceRoot, 'attempts', runId, 'preflight');
   return (await readdir(attemptRoot, { recursive: true })).filter((path) =>
     path.endsWith(join('repository', 'attempt-1.json')),
   );
@@ -548,7 +549,15 @@ test('records a checksum failure as candidate-local security evidence, continues
   assert.equal(await readFile(sibling, 'utf8'), 'preserve me');
   assert.deepEqual(await readdir(fixture.temporaryDirectory), ['foreign-sibling.txt']);
   await access(
-    join(fixture.evidenceRoot, 'attempts', 'preflight', 'zag', 'installation', 'attempt-1.json'),
+    join(
+      fixture.evidenceRoot,
+      'attempts',
+      runId,
+      'preflight',
+      'zag',
+      'installation',
+      'attempt-1.json',
+    ),
   );
 });
 
@@ -886,6 +895,7 @@ for (const [name, mutate] of [
         join(
           fixture.evidenceRoot,
           'attempts',
+          runId,
           'preflight',
           'incumbent',
           'artifact',

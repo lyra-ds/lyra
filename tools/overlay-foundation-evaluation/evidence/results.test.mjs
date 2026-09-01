@@ -228,6 +228,7 @@ test('writes canonical immutable scenario evidence with a reusable checksum', as
     join(
       evidenceRoot,
       'attempts',
+      firstAttempt.runId,
       'scenario',
       'incumbent',
       'OF-MODAL',
@@ -258,7 +259,15 @@ test('uses a separate preflight attempt path layout', async () => {
   const written = await writeAttempt({ evidenceRoot, attempt: preflight });
   assert.equal(
     written.path,
-    join(evidenceRoot, 'attempts', 'preflight', 'incumbent', 'repository', 'attempt-1.json'),
+    join(
+      evidenceRoot,
+      'attempts',
+      firstAttempt.runId,
+      'preflight',
+      'incumbent',
+      'repository',
+      'attempt-1.json',
+    ),
   );
 });
 
@@ -284,7 +293,23 @@ test('cannot overwrite an existing attempt', async () => {
   await assert.rejects(writeAttempt({ evidenceRoot, attempt: firstAttempt }), /already exists/u);
 });
 
-for (const descendant of [['attempts'], ['attempts', 'scenario', 'incumbent']]) {
+test('isolates identical attempt identities from independent runs', async () => {
+  const evidenceRoot = await makeEvidenceRoot();
+  const firstRun = await writeAttempt({ evidenceRoot, attempt: firstAttempt });
+  const secondRun = await writeAttempt({
+    evidenceRoot,
+    attempt: { ...firstAttempt, runId: '20260831T130000Z-core-002' },
+  });
+
+  assert.notEqual(firstRun.path, secondRun.path);
+  assert.match(firstRun.path, new RegExp(`/attempts/${firstAttempt.runId}/`, 'u'));
+  assert.match(secondRun.path, /\/attempts\/20260831T130000Z-core-002\//u);
+});
+
+for (const descendant of [
+  ['attempts'],
+  ['attempts', firstAttempt.runId, 'scenario', 'incumbent'],
+]) {
   test(`rejects an evidence descendant symlink at ${descendant.join('/')}`, async () => {
     const evidenceRoot = await makeEvidenceRoot();
     const foreignRoot = await makeEvidenceRoot();
@@ -315,6 +340,7 @@ test('anchors the final write against deterministic parent replacement', async (
   await mkdir(
     join(
       foreignRoot,
+      firstAttempt.runId,
       'scenario',
       'incumbent',
       'OF-MODAL',
@@ -366,6 +392,7 @@ test('keeps the primary write error first and continues every close after close 
   await mkdir(
     join(
       foreignRoot,
+      firstAttempt.runId,
       'scenario',
       'incumbent',
       'OF-MODAL',
@@ -405,7 +432,7 @@ test('keeps the primary write error first and continues every close after close 
   assert.match(failure.errors[0].message, /identity changed|symbolic link|containment/u);
   assert.equal(failure.errors[1], closeFailures[0]);
   assert.equal(failure.errors[2], closeFailures[1]);
-  assert.equal(closeCalls, 8);
+  assert.equal(closeCalls, 9);
   assert.equal(
     (await readdir(displacedAttempts, { recursive: true })).some((path) =>
       path.endsWith('attempt-1.json'),
@@ -420,6 +447,7 @@ test('preserves and reports a partial file when its anchored identity changes be
   const displacedAttempts = join(evidenceRoot, 'displaced-attempts');
   const displacedCell = join(
     displacedAttempts,
+    firstAttempt.runId,
     'scenario',
     'incumbent',
     'OF-MODAL',
@@ -432,6 +460,7 @@ test('preserves and reports a partial file when its anchored identity changes be
   await mkdir(
     join(
       foreignRoot,
+      firstAttempt.runId,
       'scenario',
       'incumbent',
       'OF-MODAL',

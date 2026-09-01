@@ -163,11 +163,13 @@ async function createSyntheticCandidate(root, transitiveLicense = 'Apache-2.0') 
 
 function commandRecorder({
   audit = cleanAudit,
+  failRepositoryStatusAfterInstall = false,
   mutateCandidateCopyAfterFirstInstall = false,
   mutateRepository,
   pnpmVersionOutput,
 } = {}) {
   const calls = [];
+  let repositoryStatusCalls = 0;
   let listBytes;
   const auditBytes =
     typeof audit === 'string' ? Buffer.from(audit) : Buffer.from(JSON.stringify(audit));
@@ -179,6 +181,12 @@ function commandRecorder({
     },
     async runCommand(command, args, options = {}) {
       calls.push({ command, args: [...args], options: { ...options } });
+      if (command === 'git' && args[0] === 'status') {
+        repositoryStatusCalls += 1;
+        if (failRepositoryStatusAfterInstall && repositoryStatusCalls === 2) {
+          throw new Error('injected repository status failure');
+        }
+      }
       if (command === 'pnpm' && args[0] === '--version' && pnpmVersionOutput !== undefined) {
         return { stdout: Buffer.from(pnpmVersionOutput), stderr: Buffer.alloc(0) };
       }
@@ -226,7 +234,10 @@ function commandRecorder({
   };
 }
 
-async function installFixture(t, { audit = cleanAudit, transitiveLicense, mutate } = {}) {
+async function installFixture(
+  t,
+  { audit = cleanAudit, failRepositoryStatusAfterInstall = false, transitiveLicense, mutate } = {},
+) {
   const root = await testDirectory(t);
   const repositoryRoot = await createRepository(t, root);
   const repositoryLockBefore = await sha256File(join(repositoryRoot, 'pnpm-lock.yaml'));
@@ -234,6 +245,7 @@ async function installFixture(t, { audit = cleanAudit, transitiveLicense, mutate
   const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'core-install' });
   const recorder = commandRecorder({
     audit,
+    failRepositoryStatusAfterInstall,
     mutateRepository: mutate
       ? () => writeFile(join(repositoryRoot, 'tracked.txt'), 'foreign edit\n')
       : undefined,
@@ -746,6 +758,61 @@ test('exposes only verified installation evidence completed before an audit reje
   assert.equal(Object.hasOwn(partial, 'licenseInventoryPath'), false);
   assert.equal(Object.hasOwn(partial, 'licenseInventorySha256'), false);
   assert.equal(readPartialInstallationEvidence(new Error('unrelated')), undefined);
+});
+
+test('preserves partial installation evidence on a repository-mutation wrapper', async (t) => {
+  const audit = structuredClone(cleanAudit);
+  audit.metadata.vulnerabilities.high = 1;
+  const setup = await installFixture(t, { audit, mutate: true });
+  let failure;
+  try {
+    await setup.install();
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.equal(failure instanceof Error, true);
+  assert.match(failure.message, /repository worktree changed during candidate installation/u);
+  assert.match(failure.cause?.message ?? '', /high/u);
+  const partial = readPartialInstallationEvidence(failure);
+  assert.deepEqual(Object.keys(partial).sort(), [
+    'auditPath',
+    'auditSha256',
+    'fixtureManifestPath',
+    'fixtureManifestSha256',
+    'lockfilePath',
+    'lockfileSha256',
+    'resolvedGraphPath',
+    'resolvedGraphSha256',
+  ]);
+});
+
+test('preserves partial installation evidence on a status-verification wrapper', async (t) => {
+  const audit = structuredClone(cleanAudit);
+  audit.metadata.vulnerabilities.high = 1;
+  const setup = await installFixture(t, { audit, failRepositoryStatusAfterInstall: true });
+  let failure;
+  try {
+    await setup.install();
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.equal(failure instanceof Error, true);
+  assert.match(failure.message, /status could not be verified after installation/u);
+  assert.ok(failure.cause instanceof AggregateError);
+  assert.match(failure.cause.errors[0].message, /high/u);
+  assert.match(failure.cause.errors[1].message, /injected repository status failure/u);
+  assert.deepEqual(Object.keys(readPartialInstallationEvidence(failure)).sort(), [
+    'auditPath',
+    'auditSha256',
+    'fixtureManifestPath',
+    'fixtureManifestSha256',
+    'lockfilePath',
+    'lockfileSha256',
+    'resolvedGraphPath',
+    'resolvedGraphSha256',
+  ]);
 });
 
 test('rejects a repository mutation and preserves the foreign edit for diagnosis', async (t) => {

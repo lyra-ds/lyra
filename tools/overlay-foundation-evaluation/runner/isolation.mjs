@@ -56,6 +56,17 @@ function rememberInstallationEvidence(error, evidence) {
   }
 }
 
+function inheritInstallationEvidence(error, sourceError) {
+  const evidence = readPartialInstallationEvidence(sourceError);
+  if (
+    evidence !== undefined &&
+    error !== null &&
+    (typeof error === 'object' || typeof error === 'function')
+  ) {
+    partialInstallationEvidence.set(error, evidence);
+  }
+}
+
 function recordInstallationEvidence(evidence, prefix, path, digest) {
   evidence[`${prefix}Path`] = path;
   evidence[`${prefix}Sha256`] = digest;
@@ -730,14 +741,21 @@ export async function installExternalCandidate({
       await runCommand('git', statusArguments, { cwd: resolvedRepositoryRoot }),
     );
   } catch (error) {
-    throw new Error('repository worktree status could not be verified after installation', {
-      cause: primaryError === undefined ? error : new AggregateError([primaryError, error]),
-    });
+    const wrapper = new Error(
+      'repository worktree status could not be verified after installation',
+      {
+        cause: primaryError === undefined ? error : new AggregateError([primaryError, error]),
+      },
+    );
+    inheritInstallationEvidence(wrapper, primaryError);
+    throw wrapper;
   }
   if (!repositoryBefore.equals(repositoryAfter)) {
-    throw new Error('repository worktree changed during candidate installation', {
+    const wrapper = new Error('repository worktree changed during candidate installation', {
       cause: primaryError,
     });
+    inheritInstallationEvidence(wrapper, primaryError);
+    throw wrapper;
   }
   if (primaryError !== undefined) throw primaryError;
   return evidence;

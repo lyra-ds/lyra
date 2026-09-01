@@ -488,6 +488,7 @@ export async function acquireExternalArtifact({
   fetchImpl = fetch,
   maxBytes = 50_000_000,
 }) {
+  await mkdir(destinationRoot, { recursive: true, mode: 0o700 });
   const response = await fetchImpl(record.tarballUrl, { redirect: 'error' });
   if (response.status !== 200 || response.body === null) {
     throw new Error(`artifact request failed with HTTP ${response.status}`);
@@ -843,13 +844,16 @@ export function canonicalJson(value) {
 export async function writeAttempt({ evidenceRoot, attempt }) {
   const errors = validateAttempt(attempt);
   if (errors.length !== 0) throw new Error(errors.join('\n'));
+  const identityPath =
+    attempt.recordType === 'scenario'
+      ? [attempt.candidateId, attempt.contractId, attempt.scenarioId, attempt.cellId]
+      : [attempt.candidateId, attempt.stage];
   const directory = join(
     evidenceRoot,
     'attempts',
-    attempt.candidateId,
-    attempt.contractId,
-    attempt.scenarioId,
-    attempt.cellId,
+    attempt.runId,
+    attempt.recordType,
+    ...identityPath,
   );
   await mkdir(directory, { recursive: true });
   const path = join(directory, `attempt-${attempt.attemptNumber}.json`);
@@ -1379,7 +1383,7 @@ Expected: all commands exit 0.
 git diff --exit-code origin/main -- pnpm-lock.yaml
 git diff --exit-code origin/main -- packages
 git diff --exit-code origin/main -- .github/workflows
-node -e "const p=require('./docs/superpowers/baselines/lyra-v1/program.json'); const x=p.components.filter(c=>['Dialog','Drawer','BottomSheet','Popover','Dropdown','Tooltip','CommandPalette','WorkspaceSwitcher','CreateWorkspaceDialog'].includes(c.component)); if(x.some(c=>!['specified','planned'].includes(c.implementationStatus))) process.exit(1)"
+node -e "const p=require('./docs/superpowers/baselines/lyra-v1/program.json'); const x=p.components.filter(c=>['dialog','drawer','bottom-sheet','popover','dropdown','tooltip','command-palette','workspace-switcher','create-workspace-dialog'].includes(c.id)); if(x.some(c=>!['specified','planned'].includes(c.implementationStatus))) process.exit(1)"
 ```
 
 Expected: all commands exit 0. The ledger check permits the pre-existing

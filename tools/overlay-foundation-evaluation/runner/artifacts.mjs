@@ -10,6 +10,7 @@ import { validateSpdxExpression } from '../contracts/spdx.mjs';
 
 const execFilePromise = promisify(execFile);
 const PACKAGE_MANIFEST = 'package/package.json';
+const MAX_MEMBER_LIST_BYTES = 8_388_608;
 const MAX_MANIFEST_BYTES = 1_048_576;
 const FORBIDDEN_LIFECYCLE_SCRIPTS = Object.freeze([
   'preinstall',
@@ -123,7 +124,7 @@ function byteLength(output) {
   return typeof output === 'string' ? Buffer.byteLength(output) : output.byteLength;
 }
 
-async function runTar(runCommand, args, maxBuffer) {
+async function runTar(runCommand, args, maxBuffer, overflowMessage) {
   try {
     const result = await runCommand('tar', args, { encoding: null, maxBuffer });
     return commandStdout(result);
@@ -132,7 +133,7 @@ async function runTar(runCommand, args, maxBuffer) {
       error?.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER' ||
       /maxBuffer length exceeded/u.test(error?.message ?? '')
     ) {
-      throw new Error('archive package manifest exceeds 1 MiB', { cause: error });
+      throw new Error(overflowMessage, { cause: error });
     }
     throw error;
   }
@@ -143,7 +144,12 @@ export async function inspectPackageArchive({ artifact, runCommand = execFilePro
   if (artifact.sha256 !== artifact.record.sha256) throw new Error('artifact checksum mismatch');
   await verifyRegularFile({ path: artifact.path, expectedSha256: artifact.record.sha256 });
 
-  const listed = await runTar(runCommand, ['-tzf', artifact.path], MAX_MANIFEST_BYTES);
+  const listed = await runTar(
+    runCommand,
+    ['-tzf', artifact.path],
+    MAX_MEMBER_LIST_BYTES,
+    'archive member listing exceeds 8 MiB',
+  );
   const members = Buffer.from(listed).toString('utf8').split('\n').filter(Boolean);
   if (members.filter((member) => member === PACKAGE_MANIFEST).length !== 1) {
     throw new Error(`artifact archive must contain exactly one ${PACKAGE_MANIFEST}`);
@@ -153,6 +159,7 @@ export async function inspectPackageArchive({ artifact, runCommand = execFilePro
     runCommand,
     ['-xOzf', artifact.path, '--', PACKAGE_MANIFEST],
     MAX_MANIFEST_BYTES,
+    'archive package manifest exceeds 1 MiB',
   );
   if (byteLength(extracted) > MAX_MANIFEST_BYTES) {
     throw new Error('archive package manifest exceeds 1 MiB');

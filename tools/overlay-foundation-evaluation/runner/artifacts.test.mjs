@@ -173,6 +173,46 @@ test('accepts an archive with exact package metadata', async (t) => {
   assert.deepEqual(result.lifecycleScripts, []);
 });
 
+test('uses a distinct bounded member-list buffer and reports its overflow accurately', async (t) => {
+  const artifact = await createArchive(t, packageManifest);
+  await assert.rejects(
+    inspectPackageArchive({
+      artifact,
+      runCommand: async (command, args, options) => {
+        assert.equal(command, 'tar');
+        assert.equal(args[0], '-tzf');
+        assert.equal(options.maxBuffer, 8_388_608);
+        const error = new Error('stdout maxBuffer length exceeded');
+        error.code = 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
+        throw error;
+      },
+    }),
+    /archive member listing exceeds 8 MiB/u,
+  );
+});
+
+test('retains the 1 MiB cap and diagnostic for extracted package manifests', async (t) => {
+  const artifact = await createArchive(t, packageManifest);
+  let calls = 0;
+  await assert.rejects(
+    inspectPackageArchive({
+      artifact,
+      runCommand: async (command, args, options) => {
+        assert.equal(command, 'tar');
+        calls += 1;
+        if (calls === 1) return Buffer.from('package/package.json\n');
+        assert.equal(args[0], '-xOzf');
+        assert.equal(options.maxBuffer, 1_048_576);
+        const error = new Error('stdout maxBuffer length exceeded');
+        error.code = 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
+        throw error;
+      },
+    }),
+    /archive package manifest exceeds 1 MiB/u,
+  );
+  assert.equal(calls, 2);
+});
+
 test('rejects approved archive bytes replaced between inspection steps', async (t) => {
   const artifact = await createArchive(t, packageManifest);
   const replacement = await createArchive(t, { ...packageManifest, padding: 'different bytes' });

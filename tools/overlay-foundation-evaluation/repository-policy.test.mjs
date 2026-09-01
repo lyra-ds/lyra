@@ -80,6 +80,24 @@ test('wires core tests without a production dependency or external manifest', as
   assert.deepEqual(await hashFiles(immutablePaths), immutableBefore);
 });
 
+test('keeps executable plan snippets aligned with the implemented core protocol', async () => {
+  const plan = await readFile(
+    resolve(
+      repositoryRoot,
+      'docs/superpowers/plans/2026-08-31-overlay-foundation-core-protocol.md',
+    ),
+    'utf8',
+  );
+
+  assert.match(plan, /await mkdir\(destinationRoot, \{ recursive: true, mode: 0o700 \}\);/u);
+  assert.match(plan, /'attempts',\s+attempt\.runId,\s+attempt\.recordType,/u);
+  assert.match(plan, /attempt\.recordType === 'scenario'/u);
+  assert.match(
+    plan,
+    /const x=p\.components\.filter\(c=>\['dialog','drawer','bottom-sheet','popover','dropdown','tooltip','command-palette','workspace-switcher','create-workspace-dialog'\]\.includes\(c\.id\)\)/u,
+  );
+});
+
 for (const documentPath of threatModelDocuments) {
   test(`pins the fail-closed filesystem threat boundary in ${documentPath}`, async () => {
     const document = await readFile(resolve(repositoryRoot, documentPath), 'utf8');

@@ -552,6 +552,7 @@ export async function writeAttempt(
       : [attempt.candidateId, attempt.stage];
   const relativePath = [
     'attempts',
+    attempt.runId,
     attempt.recordType,
     ...identityPath,
     `attempt-${attempt.attemptNumber}.json`,
