@@ -52,7 +52,13 @@ const EXPECTED_OPERATIONS = new Map([
   ],
   [
     'of-modal.validation-initial-focus.v1',
-    ['updateContent:validation-errors', 'open:modal-opener'],
+    [
+      'updateContent:enabled-invalid-field-case',
+      'open:modal-opener',
+      'close:modal-panel',
+      'updateContent:focusable-summary-fallback-case',
+      'open:modal-opener',
+    ],
   ],
   [
     'of-modal.destructive-initial-focus.v1',
@@ -88,7 +94,11 @@ const EXPECTED_OPERATIONS = new Map([
       'open:parent-modal',
       'open:child-modal',
       'press:escape-key',
+      'close:parent-modal',
       'setDirection:rtl',
+      'open:parent-modal',
+      'open:child-modal',
+      'press:escape-key',
     ],
   ],
   [
@@ -132,8 +142,8 @@ const EXPECTED_OPERATIONS = new Map([
     [
       'open:connected-opener',
       'close:modal-panel',
+      'open:connected-opener',
       'updateContent:disconnect-opener',
-      'open:documented-successor',
       'close:modal-panel',
     ],
   ],
@@ -220,6 +230,59 @@ test('explicitly enumerates each scenario ordered operations and normative expec
       'cleanup',
     ]);
   }
+});
+
+test('runs nested topmost ownership and restoration in both LTR and RTL', () => {
+  const scenario = MODAL_SCENARIOS.find(
+    ({ scenarioId }) => scenarioId === 'of-modal.nested-topmost.v1',
+  );
+  assert.deepEqual(scenario.expected.events, [
+    { target: 'ltr-child-modal', type: 'escape-owned' },
+    { target: 'ltr-child-modal', type: 'closed' },
+    { target: 'ltr-parent-modal-safe-target', type: 'focus-restored' },
+    { target: 'rtl-child-modal', type: 'escape-owned' },
+    { target: 'rtl-child-modal', type: 'closed' },
+    { target: 'rtl-parent-modal-safe-target', type: 'focus-restored' },
+  ]);
+  assert.deepEqual(scenario.expected.focus, { target: 'rtl-parent-modal-safe-target' });
+});
+
+test('disconnects the active opener before closing to exercise successor restoration', () => {
+  const scenario = MODAL_SCENARIOS.find(
+    ({ scenarioId }) => scenarioId === 'of-modal.opener-restoration-successor.v1',
+  );
+  assert.deepEqual(scenario.expected.relationships, [
+    { source: 'modal-panel', name: 'opened-by', target: 'meaningful-opener' },
+    { source: 'disconnected-opener', name: 'succeeds-to', target: 'documented-successor' },
+  ]);
+  assert.deepEqual(scenario.expected.focus, { target: 'documented-successor' });
+  assert.deepEqual(scenario.expected.events, [
+    { target: 'connected-meaningful-opener', type: 'focus-restored' },
+    { target: 'documented-successor', type: 'focus-restored' },
+  ]);
+  assert.deepEqual(scenario.expected.states, [
+    { target: 'connected-meaningful-opener', name: 'restoration-wins', value: true },
+    { target: 'disconnected-opener', name: 'connected', value: false },
+    { target: 'documented-successor', name: 'restoration-wins', value: true },
+    { target: 'document-body', name: 'focus-received', value: false },
+  ]);
+});
+
+test('records literal initial focus for invalid-field and summary-fallback phases', () => {
+  const scenario = MODAL_SCENARIOS.find(
+    ({ scenarioId }) => scenarioId === 'of-modal.validation-initial-focus.v1',
+  );
+  assert.deepEqual(scenario.expected.focus, { target: 'focusable-validation-summary' });
+  assert.deepEqual(scenario.expected.events, [
+    { target: 'first-invalid-enabled-field', type: 'validation-initial-focus-applied' },
+    { target: 'focusable-validation-summary', type: 'validation-initial-focus-applied' },
+  ]);
+  assert.deepEqual(scenario.expected.states, [
+    { target: 'first-invalid-enabled-field', name: 'invalid', value: true },
+    { target: 'first-invalid-enabled-field', name: 'initial-focus-received', value: true },
+    { target: 'disabled-invalid-field', name: 'initial-focus-received', value: false },
+    { target: 'focusable-validation-summary', name: 'initial-focus-received', value: true },
+  ]);
 });
 
 test('returns the exact modal scenarios for a behavioral cell', () => {
