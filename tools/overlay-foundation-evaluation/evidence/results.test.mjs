@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -275,6 +275,27 @@ test('cannot overwrite an existing attempt', async () => {
   await assert.rejects(writeAttempt({ evidenceRoot, attempt: firstAttempt }), /already exists/u);
 });
 
+for (const descendant of [['attempts'], ['attempts', 'scenario', 'incumbent']]) {
+  test(`rejects an evidence descendant symlink at ${descendant.join('/')}`, async () => {
+    const evidenceRoot = await makeEvidenceRoot();
+    const foreignRoot = await makeEvidenceRoot();
+    const foreignSentinel = join(foreignRoot, 'sentinel.txt');
+    const sentinelBytes = Buffer.from('foreign evidence target must remain unchanged\n');
+    await writeFile(foreignSentinel, sentinelBytes);
+    await mkdir(join(evidenceRoot, ...descendant.slice(0, -1)), { recursive: true });
+    await symlink(foreignRoot, join(evidenceRoot, ...descendant), 'dir');
+    const foreignBefore = await readdir(foreignRoot);
+
+    await assert.rejects(
+      writeAttempt({ evidenceRoot, attempt: firstAttempt }),
+      /symbolic link|containment/u,
+    );
+
+    assert.deepEqual(await readFile(foreignSentinel), sentinelBytes);
+    assert.deepEqual(await readdir(foreignRoot), foreignBefore);
+  });
+}
+
 for (const [label, attempts, pattern] of [
   ['an attempt sequence gap', [firstAttempt, passingRetry({ attemptNumber: 3 })], /contiguous/u],
   ['duplicate attempt numbers', [firstAttempt, passingRetry({ attemptNumber: 1 })], /duplicate/u],
@@ -287,6 +308,11 @@ for (const [label, attempts, pattern] of [
   [
     'a changed scenario identity',
     [firstAttempt, passingRetry({ scenarioId: 'of-modal.escape.v1' })],
+    /identity/u,
+  ],
+  [
+    'a changed run identity',
+    [firstAttempt, passingRetry({ runId: '20260831T130000Z-core-002' })],
     /identity/u,
   ],
 ]) {

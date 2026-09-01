@@ -5,8 +5,8 @@ import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 
 import { FAILURE_CLASSIFICATIONS, isPlainRecord } from '../contracts/protocol.mjs';
-import { writeAttempt } from '../evidence/results.mjs';
-import { acquireExternalArtifact, inspectPackageArchive } from './artifacts.mjs';
+import { readDirectoryIdentity, writeAttempt, writeEvidenceFile } from '../evidence/results.mjs';
+import { acquireExternalArtifact, inspectPackageArchive, verifyRegularFile } from './artifacts.mjs';
 import { cleanupOwnedRunRoot, createOwnedRunRoot, installExternalCandidate } from './isolation.mjs';
 import { validateAdapterDescriptor, validateCandidateManifest } from './manifest.mjs';
 
@@ -30,7 +30,9 @@ const defaultDependencies = Object.freeze({
   createOwnedRunRoot,
   installExternalCandidate,
   inspectPackageArchive,
+  verifyRegularFile,
   writeAttempt,
+  writeEvidenceFile,
   event() {},
 });
 
@@ -173,7 +175,7 @@ function installationError(error) {
       stage: 'audit',
     });
   }
-  if (/license/iu.test(message)) {
+  if (/checksum|artifact bytes|license/iu.test(message)) {
     return boundaryError(error, {
       classification: 'security',
       scope: 'candidate',
@@ -326,7 +328,7 @@ function createRunId(manifest) {
   return `core-${manifest.lyraRevision.slice(0, 12)}`;
 }
 
-function attemptBase(runId, candidate, stage) {
+function attemptBase(runId, candidate, stage, artifactPaths = []) {
   return {
     schemaVersion: 1,
     recordType: 'preflight',
@@ -334,13 +336,13 @@ function attemptBase(runId, candidate, stage) {
     candidateId: candidate.id,
     stage,
     attemptNumber: 1,
-    artifactPaths: [],
+    artifactPaths,
   };
 }
 
-function corePreflightPass(runId, candidate, stage, observed) {
+function corePreflightPass(runId, candidate, stage, observed, artifactPaths = []) {
   return {
-    ...attemptBase(runId, candidate, stage),
+    ...attemptBase(runId, candidate, stage, artifactPaths),
     result: 'PASS',
     observed,
   };
@@ -451,26 +453,18 @@ async function prepareEvidenceRoot(value) {
   await mkdir(evidenceRoot, { recursive: true, mode: 0o700 });
   await assertNoEvidenceSymlinkComponents(evidenceRoot);
   const canonicalPath = await realpath(evidenceRoot);
-  const info = await lstat(canonicalPath);
-  if (!info.isDirectory() || info.isSymbolicLink()) {
-    throw new Error('evidenceRoot must resolve to a real directory');
-  }
-  return Object.freeze({ canonicalPath, device: info.dev, inode: info.ino });
+  const pinned = await readDirectoryIdentity(canonicalPath);
+  return Object.freeze({ canonicalPath, ...pinned });
 }
 
 async function verifyEvidenceRoot(evidenceRoot) {
-  let info;
+  let identity;
   try {
-    info = await lstat(evidenceRoot.canonicalPath);
+    identity = await readDirectoryIdentity(evidenceRoot.canonicalPath);
   } catch (error) {
     throw new Error('evidenceRoot canonical directory is no longer available', { cause: error });
   }
-  if (
-    !info.isDirectory() ||
-    info.isSymbolicLink() ||
-    info.dev !== evidenceRoot.device ||
-    info.ino !== evidenceRoot.inode
-  ) {
+  if (identity.device !== evidenceRoot.device || identity.inode !== evidenceRoot.inode) {
     throw new Error('evidenceRoot canonical directory identity changed during core preflight');
   }
   return evidenceRoot.canonicalPath;
@@ -484,6 +478,133 @@ async function assertEvidenceOutsideOwnedRoot(evidenceRoot, runRoot) {
   ) {
     throw new Error('evidenceRoot must be outside the owned run root');
   }
+}
+
+const INSTALL_EVIDENCE_FILES = Object.freeze([
+  ['fixtureManifest', 'package.json'],
+  ['lockfile', 'pnpm-lock.yaml'],
+  ['resolvedGraph', 'resolved-graph.json'],
+  ['audit', 'audit.json'],
+  ['licenseInventory', 'license-inventory.json'],
+]);
+
+function evidenceRelativePath(runId, candidateId, category, filename) {
+  return ['files', runId, candidateId, category, filename].join('/');
+}
+
+async function preserveVerifiedFile({
+  sourcePath,
+  expectedSha256,
+  relativePath,
+  evidenceRoot,
+  operations,
+  preservedEvidence,
+  stage,
+}) {
+  const verified = await operations.verifyRegularFile({
+    path: sourcePath,
+    expectedSha256,
+  });
+  let written;
+  try {
+    written = await operations.writeEvidenceFile({
+      evidenceRoot: await verifyEvidenceRoot(evidenceRoot),
+      relativePath,
+      bytes: verified.bytes,
+      expectedSha256,
+    });
+  } catch (error) {
+    throw runPolicyError(error, stage);
+  }
+  try {
+    await operations.verifyRegularFile({
+      path: written.path,
+      expectedSha256,
+    });
+  } catch (error) {
+    throw runPolicyError(error, stage);
+  }
+  const record = Object.freeze({
+    path: written.path,
+    relativePath: written.relativePath,
+    sha256: written.sha256,
+  });
+  preservedEvidence.push(record);
+  return { bytes: Number(verified.size), path: written.relativePath, sha256: written.sha256 };
+}
+
+async function preserveArtifactRecords({
+  artifacts,
+  runId,
+  candidateId,
+  evidenceRoot,
+  operations,
+  preservedEvidence,
+  stage,
+}) {
+  const observed = [];
+  const artifactPaths = [];
+  for (const artifact of artifacts) {
+    const preserved = await preserveVerifiedFile({
+      sourcePath: artifact.path,
+      expectedSha256: artifact.sha256,
+      relativePath: evidenceRelativePath(runId, candidateId, 'artifacts', `${artifact.sha256}.tgz`),
+      evidenceRoot,
+      operations,
+      preservedEvidence,
+      stage,
+    });
+    observed.push({ ...artifact, ...preserved });
+    artifactPaths.push(preserved.path);
+  }
+  return { artifactPaths, observed };
+}
+
+async function preserveInstallationEvidence({
+  installed,
+  runId,
+  candidateId,
+  evidenceRoot,
+  operations,
+  preservedEvidence,
+}) {
+  const observed = { ...installed };
+  const artifactPaths = [];
+  for (const [prefix, filename] of INSTALL_EVIDENCE_FILES) {
+    const pathKey = `${prefix}Path`;
+    const shaKey = `${prefix}Sha256`;
+    const preserved = await preserveVerifiedFile({
+      sourcePath: installed[pathKey],
+      expectedSha256: installed[shaKey],
+      relativePath: evidenceRelativePath(runId, candidateId, 'installation', filename),
+      evidenceRoot,
+      operations,
+      preservedEvidence,
+      stage: 'installation',
+    });
+    observed[pathKey] = preserved.path;
+    observed[shaKey] = preserved.sha256;
+    artifactPaths.push(preserved.path);
+  }
+  return { artifactPaths, observed };
+}
+
+async function verifyPreservedEvidence({ evidenceRoot, operations, preservedEvidence }) {
+  if (preservedEvidence.length === 0) return;
+  const root = await verifyEvidenceRoot(evidenceRoot);
+  for (const record of preservedEvidence) {
+    if (record.path !== join(root, record.relativePath)) {
+      throw new Error('preserved evidence path no longer matches its canonical root');
+    }
+    await operations.verifyRegularFile({
+      path: record.path,
+      expectedSha256: record.sha256,
+    });
+  }
+}
+
+function preserveBoundaryError(error, normalize) {
+  return normalizedBoundaryMetadata(error) === undefined ? normalize(error) : error;
 }
 
 async function persistAttempt({ attempt, evidenceRoot, operations }) {
@@ -675,10 +796,9 @@ export async function runCorePreflight(
     throw runPolicyError(error);
   }
   let primaryError;
+  const preservedEvidence = [];
   try {
     await assertEvidenceOutsideOwnedRoot(preparedEvidenceRoot, owned.runRoot);
-    const artifactRoot = join(owned.runRoot, 'artifacts');
-    await mkdir(artifactRoot, { recursive: true, mode: 0o700 });
 
     const incumbentCandidate = manifest.candidates[0];
     let incumbentAttempt;
@@ -686,17 +806,34 @@ export async function runCorePreflight(
     if (incumbentFailure === undefined) {
       operations.event('characterize:incumbent');
       try {
+        const incumbentRoot = join(owned.runRoot, 'candidate-incumbent');
+        await mkdir(incumbentRoot, { mode: 0o700 });
         const characterization = await operations.characterizeIncumbent({
           repositoryRoot: root,
-          outputRoot: join(owned.runRoot, 'incumbent'),
+          outputRoot: join(incumbentRoot, 'packs'),
           runCommand,
         });
         assertIncumbentMatchesManifest(manifest, incumbentCandidate, characterization);
+        let preserved;
+        try {
+          preserved = await preserveArtifactRecords({
+            artifacts: characterization.artifacts,
+            runId,
+            candidateId: incumbentCandidate.id,
+            evidenceRoot: preparedEvidenceRoot,
+            operations,
+            preservedEvidence,
+            stage: 'artifact',
+          });
+        } catch (error) {
+          throw preserveBoundaryError(error, artifactError);
+        }
         incumbentAttempt = corePreflightPass(
           runId,
           incumbentCandidate,
           'artifact',
-          characterization,
+          { ...characterization, artifacts: preserved.observed },
+          preserved.artifactPaths,
         );
       } catch (error) {
         incumbentFailure = snapshotFailure(incumbentCandidate, incumbentError(error));
@@ -725,6 +862,10 @@ export async function runCorePreflight(
       let candidateFailure = adapters.get(candidate.id).failure;
       if (candidateFailure === undefined) {
         try {
+          const candidateRoot = join(owned.runRoot, `candidate-${candidate.id}`);
+          await mkdir(candidateRoot, { mode: 0o700 });
+          const artifactRoot = join(candidateRoot, 'acquired-artifacts');
+          await mkdir(artifactRoot, { mode: 0o700 });
           const artifacts = [];
           for (const record of candidate.artifacts) {
             operations.event(`acquire:${candidate.id}`);
@@ -760,7 +901,43 @@ export async function runCorePreflight(
           } catch (error) {
             throw installationError(error);
           }
-          attempt = corePreflightPass(runId, candidate, 'installation', installed);
+          let preservedArtifacts;
+          try {
+            preservedArtifacts = await preserveArtifactRecords({
+              artifacts,
+              runId,
+              candidateId: candidate.id,
+              evidenceRoot: preparedEvidenceRoot,
+              operations,
+              preservedEvidence,
+              stage: 'artifact',
+            });
+          } catch (error) {
+            throw preserveBoundaryError(error, artifactError);
+          }
+          let preservedInstallation;
+          try {
+            preservedInstallation = await preserveInstallationEvidence({
+              installed,
+              runId,
+              candidateId: candidate.id,
+              evidenceRoot: preparedEvidenceRoot,
+              operations,
+              preservedEvidence,
+            });
+          } catch (error) {
+            throw preserveBoundaryError(error, installationError);
+          }
+          attempt = corePreflightPass(
+            runId,
+            candidate,
+            'installation',
+            {
+              ...preservedInstallation.observed,
+              artifacts: preservedArtifacts.observed,
+            },
+            [...preservedArtifacts.artifactPaths, ...preservedInstallation.artifactPaths],
+          );
         } catch (error) {
           const normalizedFailure =
             normalizedBoundaryMetadata(error) === undefined
@@ -807,17 +984,41 @@ export async function runCorePreflight(
     throw primaryError;
   } finally {
     operations.event('cleanup-owned-root');
+    let cleanupError;
     try {
       await operations.cleanupOwnedRunRoot({ tmpdir, ...owned });
     } catch (error) {
-      const cleanupError = runPolicyError(error);
-      if (primaryError !== undefined) {
-        throw new AggregateError(
-          [primaryError, cleanupError],
-          'core preflight and cleanup both failed',
-        );
-      }
-      throw cleanupError;
+      cleanupError = runPolicyError(error);
+    }
+    let verificationError;
+    try {
+      await verifyPreservedEvidence({
+        evidenceRoot: preparedEvidenceRoot,
+        operations,
+        preservedEvidence,
+      });
+    } catch (error) {
+      verificationError = runPolicyError(error);
+    }
+    const secondaryErrors = [cleanupError, verificationError].filter(
+      (error) => error !== undefined,
+    );
+    if (primaryError !== undefined && secondaryErrors.length > 0) {
+      throw new AggregateError(
+        [primaryError, ...secondaryErrors],
+        secondaryErrors.length === 1 && cleanupError !== undefined
+          ? 'core preflight and cleanup both failed'
+          : 'core preflight and post-cleanup verification failed',
+      );
+    }
+    if (secondaryErrors.length === 2) {
+      throw new AggregateError(
+        secondaryErrors,
+        'core cleanup and post-cleanup evidence verification both failed',
+      );
+    }
+    if (secondaryErrors.length === 1) {
+      throw secondaryErrors[0];
     }
   }
 }

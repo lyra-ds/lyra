@@ -14,16 +14,26 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { writeAttempt } from '../evidence/results.mjs';
+import { sha256 } from './artifacts.mjs';
 import { cleanupOwnedRunRoot, createOwnedRunRoot } from './isolation.mjs';
 import { runCorePreflight } from './core.mjs';
 
 const revision = 'b'.repeat(40);
 const alternateRevision = 'c'.repeat(40);
-const hashes = Object.freeze({
-  alpine: 'a'.repeat(64),
-  react: 'b'.repeat(64),
-  styles: 'c'.repeat(64),
+const incumbentPackedBytes = Object.freeze({
+  alpine: Buffer.from('incumbent alpine packed bytes'),
+  react: Buffer.from('incumbent react packed bytes'),
+  styles: Buffer.from('incumbent styles packed bytes'),
 });
+const hashes = Object.freeze({
+  alpine: sha256(incumbentPackedBytes.alpine),
+  react: sha256(incumbentPackedBytes.react),
+  styles: sha256(incumbentPackedBytes.styles),
+});
+
+function externalArchiveBytes(id) {
+  return Buffer.from(`${id} approved archive bytes`);
+}
 
 function externalCandidate(id, name) {
   return {
@@ -36,8 +46,7 @@ function externalCandidate(id, name) {
         name,
         version: '1.2.3',
         tarballUrl: `https://registry.example.invalid/${id}-1.2.3.tgz`,
-        sha256:
-          id === 'radix' ? 'd'.repeat(64) : id === 'base-ui' ? 'e'.repeat(64) : 'f'.repeat(64),
+        sha256: sha256(externalArchiveBytes(id)),
         license: 'MIT',
         repositoryUrl: `https://github.com/example/${id}`,
       },
@@ -84,7 +93,7 @@ function candidateManifest() {
   };
 }
 
-function incumbentCharacterization() {
+function incumbentCharacterization(outputRoot = '/owned/incumbent') {
   return {
     schemaVersion: 1,
     candidateId: 'incumbent',
@@ -97,7 +106,7 @@ function incumbentCharacterization() {
         bytes: 30,
         license: 'MIT',
         lifecycleScripts: [],
-        path: '/owned/incumbent/alpine.tgz',
+        path: join(outputRoot, `${hashes.alpine}.tgz`),
       },
       {
         name: '@lyra-ds/styles',
@@ -106,7 +115,7 @@ function incumbentCharacterization() {
         bytes: 10,
         license: 'MIT',
         lifecycleScripts: [],
-        path: '/owned/incumbent/styles.tgz',
+        path: join(outputRoot, `${hashes.styles}.tgz`),
       },
       {
         name: '@lyra-ds/react',
@@ -115,10 +124,20 @@ function incumbentCharacterization() {
         bytes: 20,
         license: 'MIT',
         lifecycleScripts: [],
-        path: '/owned/incumbent/react.tgz',
+        path: join(outputRoot, `${hashes.react}.tgz`),
       },
     ],
   };
+}
+
+async function writeIncumbentCharacterization(outputRoot) {
+  await mkdir(outputRoot, { recursive: true });
+  const characterization = incumbentCharacterization(outputRoot);
+  for (const artifact of characterization.artifacts) {
+    const key = artifact.name.slice('@lyra-ds/'.length);
+    await writeFile(artifact.path, incumbentPackedBytes[key]);
+  }
+  return characterization;
 }
 
 async function writeAdapter(path, candidateId, supportedContractIds = ['OF-MODAL']) {
@@ -196,10 +215,10 @@ test('creates core fixtures when TMPDIR is unset', async (t) => {
   assert.match(fixture.root, /overlay-core-test-/u);
 });
 
-function inspectedArtifact(record, destinationRoot) {
+function inspectedArtifact(record, path) {
   return {
     record,
-    path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
+    path,
     sha256: record.sha256,
     bytes: 123,
     packageName: record.name,
@@ -209,26 +228,45 @@ function inspectedArtifact(record, destinationRoot) {
   };
 }
 
+async function writeAcquiredArtifact(record, destinationRoot) {
+  const candidateId = record.tarballUrl.match(/\/(radix|base-ui|zag)-/u)?.[1];
+  const bytes = externalArchiveBytes(candidateId);
+  await mkdir(destinationRoot, { recursive: true });
+  const path = join(destinationRoot, `${record.sha256}.tgz`);
+  await writeFile(path, bytes);
+  return { record, path, sha256: record.sha256, bytes: bytes.byteLength };
+}
+
+async function writeInstallEvidence(candidate, runRoot) {
+  const fixtureRoot = join(runRoot, `candidate-${candidate.id}`, 'fixture');
+  await mkdir(fixtureRoot, { recursive: true });
+  const files = {
+    fixtureManifest: ['package.json', Buffer.from(`package ${candidate.id}`)],
+    lockfile: ['pnpm-lock.yaml', Buffer.from(`lock ${candidate.id}`)],
+    resolvedGraph: ['resolved-graph.json', Buffer.from(`graph ${candidate.id}`)],
+    audit: ['audit.json', Buffer.from(`audit ${candidate.id}`)],
+    licenseInventory: ['license-inventory.json', Buffer.from(`licenses ${candidate.id}`)],
+  };
+  const evidence = { candidateId: candidate.id };
+  for (const [prefix, [name, bytes]] of Object.entries(files)) {
+    const path = join(fixtureRoot, name);
+    await writeFile(path, bytes);
+    evidence[`${prefix}Path`] = path;
+    evidence[`${prefix}Sha256`] = sha256(bytes);
+  }
+  return evidence;
+}
+
 function successfulDependencies(events, overrides = {}) {
   return {
     event: (event) => events.push(event),
-    characterizeIncumbent: async () => incumbentCharacterization(),
-    acquireExternalArtifact: async ({ record, destinationRoot }) => ({
-      record,
-      path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
-      sha256: record.sha256,
-      bytes: 123,
-    }),
+    characterizeIncumbent: async ({ outputRoot }) => writeIncumbentCharacterization(outputRoot),
+    acquireExternalArtifact: async ({ record, destinationRoot }) =>
+      writeAcquiredArtifact(record, destinationRoot),
     inspectPackageArchive: async ({ artifact }) =>
-      inspectedArtifact(artifact.record, artifact.path.slice(0, artifact.path.lastIndexOf('/'))),
-    installExternalCandidate: async ({ candidate }) => ({
-      candidateId: candidate.id,
-      fixtureManifestSha256: '1'.repeat(64),
-      lockfileSha256: '2'.repeat(64),
-      resolvedGraphSha256: '3'.repeat(64),
-      auditSha256: '4'.repeat(64),
-      licenseInventorySha256: '5'.repeat(64),
-    }),
+      inspectedArtifact(artifact.record, artifact.path),
+    installExternalCandidate: async ({ candidate, runRoot }) =>
+      writeInstallEvidence(candidate, runRoot),
     ...overrides,
   };
 }
@@ -342,6 +380,141 @@ test('composes validation, adapter loading, preflight, evidence, repository proo
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
+test('preserves verified preflight files and hashes after owned-root cleanup', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const incumbentBytes = new Map([
+    ['@lyra-ds/styles', Buffer.from('styles packed bytes')],
+    ['@lyra-ds/react', Buffer.from('react packed bytes')],
+    ['@lyra-ds/alpine', Buffer.from('alpine packed bytes')],
+  ]);
+  for (const artifact of fixture.manifest.candidates[0].artifacts) {
+    artifact.sha256 = sha256(incumbentBytes.get(artifact.name));
+  }
+  const externalBytes = new Map();
+  for (const candidate of fixture.manifest.candidates.slice(1)) {
+    const bytes = Buffer.from(`${candidate.id} approved archive bytes`);
+    candidate.artifacts[0].sha256 = sha256(bytes);
+    externalBytes.set(candidate.id, bytes);
+  }
+
+  const dependencies = successfulDependencies(events, {
+    characterizeIncumbent: async ({ outputRoot }) => {
+      await mkdir(outputRoot, { recursive: true });
+      return {
+        schemaVersion: 1,
+        candidateId: 'incumbent',
+        revision,
+        artifacts: await Promise.all(
+          fixture.manifest.candidates[0].artifacts.map(async (record) => {
+            const bytes = incumbentBytes.get(record.name);
+            const path = join(outputRoot, `${record.sha256}.tgz`);
+            await writeFile(path, bytes);
+            return {
+              name: record.name,
+              version: record.version,
+              sha256: record.sha256,
+              bytes: bytes.byteLength,
+              license: 'MIT',
+              lifecycleScripts: [],
+              path,
+            };
+          }),
+        ),
+      };
+    },
+    acquireExternalArtifact: async ({ record, destinationRoot }) => {
+      const candidateId = fixture.manifest.candidates.find((candidate) =>
+        candidate.artifacts.includes(record),
+      ).id;
+      const bytes = externalBytes.get(candidateId);
+      await mkdir(destinationRoot, { recursive: true });
+      const path = join(destinationRoot, `${record.sha256}.tgz`);
+      await writeFile(path, bytes);
+      return { record, path, sha256: record.sha256, bytes: bytes.byteLength };
+    },
+    inspectPackageArchive: async ({ artifact }) => ({
+      ...artifact,
+      packageName: artifact.record.name,
+      packageVersion: artifact.record.version,
+      license: artifact.record.license,
+      lifecycleScripts: [],
+    }),
+    installExternalCandidate: async ({ candidate, runRoot }) => {
+      const directory = join(runRoot, `candidate-${candidate.id}`, 'fixture');
+      await mkdir(directory, { recursive: true });
+      const files = {
+        fixtureManifest: ['package.json', Buffer.from(`package ${candidate.id}`)],
+        lockfile: ['pnpm-lock.yaml', Buffer.from(`lock ${candidate.id}`)],
+        resolvedGraph: ['resolved-graph.json', Buffer.from(`graph ${candidate.id}`)],
+        audit: ['audit.json', Buffer.from(`audit ${candidate.id}`)],
+        licenseInventory: ['license-inventory.json', Buffer.from(`licenses ${candidate.id}`)],
+      };
+      const evidence = {};
+      for (const [prefix, [name, bytes]] of Object.entries(files)) {
+        const path = join(directory, name);
+        await writeFile(path, bytes);
+        evidence[`${prefix}Path`] = path;
+        evidence[`${prefix}Sha256`] = sha256(bytes);
+      }
+      return evidence;
+    },
+  });
+
+  await runFixture(fixture, dependencies);
+
+  for (const [candidateId, stage] of [
+    ['incumbent', 'artifact'],
+    ['radix', 'installation'],
+    ['base-ui', 'installation'],
+    ['zag', 'installation'],
+  ]) {
+    const attempt = await readAttempt(fixture.evidenceRoot, candidateId, stage);
+    assert.notDeepEqual(attempt.artifactPaths, []);
+    for (const relativePath of attempt.artifactPaths) {
+      assert.equal(relativePath.startsWith('/'), false);
+      const bytes = await readFile(join(fixture.evidenceRoot, relativePath));
+      const recorded =
+        attempt.observed.artifacts?.find(({ path }) => path === relativePath)?.sha256 ??
+        Object.entries(attempt.observed)
+          .filter(([key]) => key.endsWith('Path'))
+          .find(([, path]) => path === relativePath)
+          ?.at(0)
+          ?.replace(/Path$/u, 'Sha256');
+      const digest =
+        typeof recorded === 'string' && recorded.length === 64
+          ? recorded
+          : attempt.observed[recorded];
+      assert.equal(sha256(bytes), digest);
+    }
+  }
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('uses candidate-owned acquisition roots when candidates share an artifact name', async (t) => {
+  const fixture = await createFixture(t);
+  fixture.manifest.candidates[2].artifacts[0].name =
+    fixture.manifest.candidates[1].artifacts[0].name;
+  const events = [];
+  const acquisitionRoots = new Map();
+  const dependencies = successfulDependencies(events, {
+    acquireExternalArtifact: async ({ record, destinationRoot }) => {
+      const candidate = fixture.manifest.candidates
+        .slice(1)
+        .find(({ artifacts }) => artifacts.includes(record));
+      acquisitionRoots.set(candidate.id, destinationRoot);
+      return writeAcquiredArtifact(record, destinationRoot);
+    },
+  });
+
+  await runFixture(fixture, dependencies);
+
+  assert.equal(new Set(acquisitionRoots.values()).size, 3);
+  for (const [candidateId, root] of acquisitionRoots) {
+    assert.match(root, new RegExp(`candidate-${candidateId}.+artifacts`, 'u'));
+  }
+});
+
 test('records a checksum failure as candidate-local security evidence, continues to Zag, and cleans only owned data', async (t) => {
   const fixture = await createFixture(t);
   const sibling = join(fixture.temporaryDirectory, 'foreign-sibling.txt');
@@ -352,12 +525,7 @@ test('records a checksum failure as candidate-local security evidence, continues
       if (record.name === '@base-ui-components/react') {
         throw new Error('artifact checksum mismatch');
       }
-      return {
-        record,
-        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
-        sha256: record.sha256,
-        bytes: 123,
-      };
+      return writeAcquiredArtifact(record, destinationRoot);
     },
   });
 
@@ -392,10 +560,7 @@ test('records license, lifecycle, and audit failures locally and continues indep
           'artifact package manifest contains forbidden lifecycle scripts: postinstall',
         );
       }
-      return inspectedArtifact(
-        artifact.record,
-        artifact.path.slice(0, artifact.path.lastIndexOf('/')),
-      );
+      return inspectedArtifact(artifact.record, artifact.path);
     },
     installExternalCandidate: async ({ candidate }) => {
       if (candidate.id === 'base-ui') {
@@ -595,16 +760,11 @@ test('assigns fresh metadata snapshots when external stages reuse the same Error
   const dependencies = successfulDependencies(events, {
     acquireExternalArtifact: async ({ record, destinationRoot }) => {
       if (record.name === '@radix-ui/react-dialog') throw sharedError;
-      return {
-        record,
-        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
-        sha256: record.sha256,
-        bytes: 123,
-      };
+      return writeAcquiredArtifact(record, destinationRoot);
     },
-    installExternalCandidate: async ({ candidate }) => {
+    installExternalCandidate: async ({ candidate, runRoot }) => {
       if (candidate.id === 'base-ui') throw sharedError;
-      return { candidateId: candidate.id };
+      return writeInstallEvidence(candidate, runRoot);
     },
   });
 
@@ -681,13 +841,15 @@ for (const [name, mutate] of [
 test('accepts a reordered incumbent artifact set when every canonical identity is exact', async (t) => {
   const fixture = await createFixture(t);
   const events = [];
-  const characterization = incumbentCharacterization();
-  characterization.artifacts.reverse();
 
   const summary = await runFixture(
     fixture,
     successfulDependencies(events, {
-      characterizeIncumbent: async () => characterization,
+      characterizeIncumbent: async ({ outputRoot }) => {
+        const characterization = await writeIncumbentCharacterization(outputRoot);
+        characterization.artifacts.reverse();
+        return characterization;
+      },
     }),
   );
 
@@ -730,12 +892,7 @@ test('detects an actual repository mutation before continuing a candidate-local 
         await writeFile(fixture.trackedFile, 'mutated during candidate acquisition\n');
         throw new Error('artifact checksum mismatch');
       }
-      return {
-        record,
-        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
-        sha256: record.sha256,
-        bytes: 123,
-      };
+      return writeAcquiredArtifact(record, destinationRoot);
     },
   });
 
@@ -761,12 +918,7 @@ test('rechecks repository integrity after writing a candidate-local failure and 
       if (record.name === '@base-ui-components/react') {
         throw new Error('artifact checksum mismatch');
       }
-      return {
-        record,
-        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
-        sha256: record.sha256,
-        bytes: 123,
-      };
+      return writeAcquiredArtifact(record, destinationRoot);
     },
     writeAttempt: async (input) => {
       await writeAttempt(input);

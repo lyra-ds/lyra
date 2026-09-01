@@ -103,9 +103,39 @@ test('accepts neutral prose and strings that merely contain candidate-like text'
     algorithm: 'radix sort',
     account: 'incumbent account',
   };
+  scenario.initial.markup =
+    '<button>Open incumbent account</button><p>The radix sort is ready.</p>';
   scenario.expected.announcements = [{ message: 'The radix sort is complete.' }];
   assert.deepEqual(validateScenario(scenario), []);
 });
+
+for (const [label, state] of [
+  ['selector value', { selector: '[data-radix-dialog-content]' }],
+  ['attribute value', { configuration: { attribute: 'data-radix-trigger' } }],
+  ['part array value', { parts: ['trigger', 'BaseUIOverlay'] }],
+  ['event type value', { eventType: 'zag.open' }],
+  ['class-like value', { className: 'radix-dialog' }],
+  ['ID-like value', { triggerId: '@zag-js/dialog' }],
+]) {
+  test(`rejects candidate coupling hidden in neutral control ${label}`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.initial.state = state;
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
+
+for (const [label, markup] of [
+  ['attribute name', '<button data-radix-trigger>Open</button>'],
+  ['class value', '<div class="base-ui-dialog">Content</div>'],
+  ['ID value', '<div id="zag-tooltip">Content</div>'],
+  ['custom tag name', '<radix-dialog>Content</radix-dialog>'],
+]) {
+  test(`rejects candidate coupling in markup ${label}`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.initial.markup = markup;
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
 
 test('accepts neutral prose with valid identifiers in every normative identifier path', () => {
   const scenario = structuredClone(validScenario);
@@ -248,6 +278,12 @@ for (const [label, mutate] of [
     assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
   });
 }
+
+test('requires the terminal scenario revision suffix to match revision', () => {
+  const scenario = structuredClone(validScenario);
+  scenario.revision = 2;
+  assert.match(validateScenario(scenario).join('\n'), /scenarioId.*revision/u);
+});
 
 for (const key of ['candidateIndex', 'candidateVariant', 'vendorMode']) {
   test(`rejects nested coupling key ${key}`, () => {

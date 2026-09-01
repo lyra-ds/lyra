@@ -1,5 +1,6 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { constants as fsConstants } from 'node:fs';
+import { lstat, mkdir, open, realpath } from 'node:fs/promises';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import {
   CANDIDATE_IDS,
@@ -61,6 +62,107 @@ function requireSafeSegment(value, path, errors) {
   ) {
     errors.push(`${path} must be a traversal-safe path segment`);
   }
+}
+
+export async function readDirectoryIdentity(path) {
+  const info = await lstat(path, { bigint: true });
+  if (!info.isDirectory() || info.isSymbolicLink()) {
+    throw new Error('evidence directory must be a real directory, not a symbolic link');
+  }
+  return { device: info.dev, inode: info.ino };
+}
+
+function sameDirectoryIdentity(left, right) {
+  return left.device === right.device && left.inode === right.inode;
+}
+
+function isInsideOrEqual(parent, child) {
+  const childRelative = relative(parent, child);
+  return childRelative === '' || (!childRelative.startsWith('..') && !isAbsolute(childRelative));
+}
+
+function relativeEvidenceSegments(value) {
+  if (typeof value !== 'string' || value.length === 0 || value.includes('\\')) {
+    throw new Error('evidence path must be a traversal-safe relative path');
+  }
+  const segments = value.split('/');
+  const errors = [];
+  for (const segment of segments) requireSafeSegment(segment, 'evidence path', errors);
+  if (segments.some((segment) => segment === '' || segment === '.' || segment === '..')) {
+    errors.push('evidence path must be a traversal-safe relative path');
+  }
+  if (errors.length > 0) throw new Error(errors.join('\n'));
+  return segments;
+}
+
+async function requirePinnedRoot(root, pinned) {
+  const current = await readDirectoryIdentity(root);
+  if (!sameDirectoryIdentity(pinned, current)) {
+    throw new Error('evidence root identity changed during write');
+  }
+}
+
+async function ensureEvidenceDirectory(evidenceRoot, segments) {
+  if (typeof evidenceRoot !== 'string' || !isAbsolute(evidenceRoot)) {
+    throw new TypeError('evidenceRoot must be an absolute path');
+  }
+  const root = resolve(evidenceRoot);
+  const canonicalRoot = await realpath(root);
+  if (canonicalRoot !== root) {
+    throw new Error('evidenceRoot path must not contain a symbolic link');
+  }
+  const pinned = await readDirectoryIdentity(root);
+  let directory = root;
+  for (const segment of segments) {
+    directory = join(directory, segment);
+    try {
+      await mkdir(directory, { mode: 0o700 });
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+    }
+    const info = await lstat(directory, { bigint: true });
+    if (!info.isDirectory() || info.isSymbolicLink()) {
+      throw new Error(`evidence descendant must not be a symbolic link: ${directory}`);
+    }
+    const canonicalDirectory = await realpath(directory);
+    if (!isInsideOrEqual(canonicalRoot, canonicalDirectory)) {
+      throw new Error(`evidence descendant escapes canonical containment: ${directory}`);
+    }
+    await requirePinnedRoot(root, pinned);
+  }
+  return { directory, pinned, root };
+}
+
+async function writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes }) {
+  const segments = relativeEvidenceSegments(relativePath);
+  const filename = segments.pop();
+  const { directory, pinned, root } = await ensureEvidenceDirectory(evidenceRoot, segments);
+  const path = join(directory, filename);
+  let output;
+  try {
+    output = await open(
+      path,
+      fsConstants.O_NOFOLLOW | fsConstants.O_EXCL | fsConstants.O_CREAT | fsConstants.O_WRONLY,
+      0o600,
+    );
+    await output.writeFile(bytes);
+  } finally {
+    await output?.close();
+  }
+  await requirePinnedRoot(root, pinned);
+  const written = await lstat(path, { bigint: true });
+  if (!written.isFile() || written.isSymbolicLink() || written.size !== BigInt(bytes.byteLength)) {
+    throw new Error('evidence file identity or size changed during write');
+  }
+  return path;
+}
+
+export async function writeEvidenceFile({ evidenceRoot, relativePath, bytes, expectedSha256 }) {
+  const body = Buffer.from(bytes);
+  const digest = sha256(body);
+  if (digest !== expectedSha256) throw new Error('evidence file checksum mismatch');
+  const path = await writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes: body });
+  return { path, relativePath, sha256: digest };
 }
 
 function sortJson(value, path, ancestors) {
@@ -194,23 +296,23 @@ export function canonicalJson(value) {
 export async function writeAttempt({ evidenceRoot, attempt }) {
   const errors = validateAttempt(attempt);
   if (errors.length !== 0) throw new Error(errors.join('\n'));
-  if (typeof evidenceRoot !== 'string' || evidenceRoot.length === 0) {
-    throw new TypeError('evidenceRoot must be a non-empty string');
-  }
-
   const identityPath =
     attempt.recordType === 'scenario'
       ? [attempt.candidateId, attempt.contractId, attempt.scenarioId, attempt.cellId]
       : [attempt.candidateId, attempt.stage];
-  const directory = join(evidenceRoot, 'attempts', attempt.recordType, ...identityPath);
-  await mkdir(directory, { recursive: true });
-  const path = join(directory, `attempt-${attempt.attemptNumber}.json`);
+  const relativePath = [
+    'attempts',
+    attempt.recordType,
+    ...identityPath,
+    `attempt-${attempt.attemptNumber}.json`,
+  ].join('/');
   const bytes = Buffer.from(canonicalJson(attempt));
+  let path;
   try {
-    await writeFile(path, bytes, { flag: 'wx', mode: 0o600 });
+    path = await writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes });
   } catch (error) {
     if (error?.code === 'EEXIST') {
-      throw new Error(`attempt already exists: ${path}`, { cause: error });
+      throw new Error(`attempt already exists: ${error.path ?? relativePath}`, { cause: error });
     }
     throw error;
   }
@@ -219,8 +321,8 @@ export async function writeAttempt({ evidenceRoot, attempt }) {
 
 function identityKeys(recordType) {
   return recordType === 'scenario'
-    ? ['recordType', 'candidateId', 'contractId', 'scenarioId', 'cellId']
-    : ['recordType', 'candidateId', 'stage'];
+    ? ['recordType', 'runId', 'candidateId', 'contractId', 'scenarioId', 'cellId']
+    : ['recordType', 'runId', 'candidateId', 'stage'];
 }
 
 export function summarizeAttempts(attempts) {

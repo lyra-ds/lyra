@@ -93,12 +93,13 @@ async function packAndInspect({
 
   const path = join(outputRoot, createdTarballs[0]);
   const archiveBytes = await readFile(path);
+  const digest = sha256(archiveBytes);
   const inspected = await inspectPackageArchive({
     artifact: {
       bytes: archiveBytes.byteLength,
       path,
-      record,
-      sha256: sha256(archiveBytes),
+      record: { ...record, sha256: digest },
+      sha256: digest,
     },
   });
   return {

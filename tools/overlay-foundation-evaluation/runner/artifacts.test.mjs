@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { promisify } from 'node:util';
 import { test } from 'node:test';
 
@@ -52,11 +52,13 @@ async function createArchive(
   }
   const members = duplicateManifest ? ['package', 'package/package.json'] : ['package'];
   await execFilePromise('tar', ['-czf', archivePath, '-C', sourceRoot, ...members]);
+  const archiveBytes = await readFile(archivePath);
+  const digest = sha256(archiveBytes);
   return {
-    record: externalArtifact(),
+    record: externalArtifact({ sha256: digest }),
     path: archivePath,
-    sha256: 'a'.repeat(64),
-    bytes: 1,
+    sha256: digest,
+    bytes: archiveBytes.byteLength,
   };
 }
 
@@ -84,6 +86,7 @@ test('writes an exact artifact only after size and SHA verification', async (t) 
   });
   assert.equal(result.sha256, record.sha256);
   assert.equal(result.bytes, bytes.byteLength);
+  assert.equal(basename(result.path), `${record.sha256}.tgz`);
   assert.deepEqual(await readFile(result.path), Buffer.from(bytes));
   assert.equal((await stat(result.path)).mode & 0o777, 0o600);
 });
@@ -168,6 +171,48 @@ test('accepts an archive with exact package metadata', async (t) => {
   assert.equal(result.packageVersion, packageManifest.version);
   assert.equal(result.license, packageManifest.license);
   assert.deepEqual(result.lifecycleScripts, []);
+});
+
+test('rejects approved archive bytes replaced between inspection steps', async (t) => {
+  const artifact = await createArchive(t, packageManifest);
+  const replacement = await createArchive(t, { ...packageManifest, padding: 'different bytes' });
+  const replacementBytes = await readFile(replacement.path);
+  let tarCalls = 0;
+
+  await assert.rejects(
+    inspectPackageArchive({
+      artifact,
+      runCommand: async (...args) => {
+        const result = await execFilePromise(...args);
+        tarCalls += 1;
+        if (tarCalls === 1) await writeFile(artifact.path, replacementBytes);
+        return result;
+      },
+    }),
+    /checksum|identity|size/u,
+  );
+});
+
+test('rejects a symlink substituted for approved archive bytes', async (t) => {
+  const artifact = await createArchive(t, packageManifest);
+  const replacement = await createArchive(t, packageManifest);
+  await rm(artifact.path);
+  await symlink(replacement.path, artifact.path);
+
+  await assert.rejects(
+    inspectPackageArchive({ artifact, runCommand: execFilePromise }),
+    /symbolic link|regular file|ELOOP/u,
+  );
+});
+
+test('rejects an archive whose matching license is not a valid SPDX expression', async (t) => {
+  const license = 'Definitely-Not-SPDX';
+  const artifact = await createArchive(t, { ...packageManifest, license });
+  artifact.record.license = license;
+  await assert.rejects(
+    inspectPackageArchive({ artifact, runCommand: execFilePromise }),
+    /SPDX license/u,
+  );
 });
 
 for (const [field, value] of [

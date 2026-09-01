@@ -36,6 +36,17 @@ function isInsideOrEqual(parent, child) {
   return path === '' || (path !== '..' && !path.startsWith(`..${sep}`));
 }
 
+function publicCharacterization(characterization) {
+  return {
+    ...characterization,
+    artifacts: characterization.artifacts.map((artifact) => {
+      const { path: disposablePath, ...facts } = artifact;
+      void disposablePath;
+      return facts;
+    }),
+  };
+}
+
 export async function runIncumbentCli({
   argv = process.argv.slice(2),
   characterize = characterizeIncumbent,
@@ -76,7 +87,10 @@ export async function runIncumbentCli({
   }
   if (primaryError !== undefined) throw primaryError;
 
-  await writeResult(output, canonicalJson(characterization), { flag: 'wx', mode: 0o600 });
+  await writeResult(output, canonicalJson(publicCharacterization(characterization)), {
+    flag: 'wx',
+    mode: 0o600,
+  });
   return { characterization, output };
 }
 

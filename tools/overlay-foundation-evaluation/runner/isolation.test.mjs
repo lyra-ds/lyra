@@ -131,13 +131,22 @@ async function createSyntheticCandidate(root, transitiveLicense = 'Apache-2.0') 
       )}, 'executed');\n`,
     },
   );
+  const artifactSha256 = await sha256File(artifactPath);
+  const artifactBytes = (await stat(artifactPath)).size;
 
   return {
     candidate: { id: 'radix' },
     artifacts: [
       {
-        record: { name: packageName, version: packageVersion, license },
+        record: {
+          name: packageName,
+          version: packageVersion,
+          license,
+          sha256: artifactSha256,
+        },
         path: artifactPath,
+        sha256: artifactSha256,
+        bytes: artifactBytes,
         packageName,
         packageVersion,
         license,
@@ -151,7 +160,12 @@ async function createSyntheticCandidate(root, transitiveLicense = 'Apache-2.0') 
   };
 }
 
-function commandRecorder({ audit = cleanAudit, mutateRepository, pnpmVersionOutput } = {}) {
+function commandRecorder({
+  audit = cleanAudit,
+  mutateCandidateCopyAfterFirstInstall = false,
+  mutateRepository,
+  pnpmVersionOutput,
+} = {}) {
   const calls = [];
   let listBytes;
   const auditBytes =
@@ -185,6 +199,18 @@ function commandRecorder({ audit = cleanAudit, mutateRepository, pnpmVersionOutp
       );
       if (command === 'pnpm' && args[0] === 'list') {
         listBytes = Buffer.from(result.stdout);
+      }
+      if (
+        mutateCandidateCopyAfterFirstInstall &&
+        command === 'pnpm' &&
+        args[0] === 'install' &&
+        !args.includes('--frozen-lockfile')
+      ) {
+        const fixtureManifest = JSON.parse(
+          await readFile(join(options.cwd, 'package.json'), 'utf8'),
+        );
+        const [dependency] = Object.values(fixtureManifest.dependencies);
+        await writeFile(dependency.slice('file:'.length), 'replaced after first install');
       }
       if (
         mutateRepository &&
@@ -350,6 +376,67 @@ test('refuses cleanup when a replacement copies the original ownership marker', 
   assert.equal((await stat(owned.runRoot)).isDirectory(), true);
 });
 
+test('restores the original run root when post-rename quarantine verification fails', async (t) => {
+  const root = await testDirectory(t);
+  const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'cleanup-restore' });
+  const verificationError = new Error('synthetic quarantine verification failure');
+  let quarantinePath;
+
+  await assert.rejects(
+    cleanupOwnedRunRoot(
+      { tmpdir: root, ...owned },
+      {
+        async readQuarantinedRoot(path) {
+          quarantinePath = path;
+          throw verificationError;
+        },
+      },
+    ),
+    (error) => {
+      assert.equal(error.cause, verificationError);
+      assert.match(error.message, new RegExp(owned.runRoot.replaceAll('/', '\\/'), 'u'));
+      assert.match(error.message, /quarantine/u);
+      assert.match(error.message, /restored/u);
+      return true;
+    },
+  );
+
+  assert.equal((await stat(owned.runRoot)).isDirectory(), true);
+  await assert.rejects(stat(quarantinePath), { code: 'ENOENT' });
+});
+
+test('preserves uncertain quarantine and foreign original bytes when restoration is unsafe', async (t) => {
+  const root = await testDirectory(t);
+  const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'cleanup-restore-unsafe' });
+  const foreignBytes = Buffer.from('foreign path occupant\n');
+  let quarantinePath;
+
+  await assert.rejects(
+    cleanupOwnedRunRoot(
+      { tmpdir: root, ...owned },
+      {
+        async readQuarantinedRoot(path) {
+          quarantinePath = path;
+          await mkdir(owned.runRoot);
+          await writeFile(join(owned.runRoot, 'foreign.txt'), foreignBytes);
+          throw new Error('synthetic quarantine verification failure');
+        },
+      },
+    ),
+    (error) => {
+      assert.equal(error instanceof AggregateError, true);
+      assert.match(error.message, /restoration failed/u);
+      assert.match(error.message, new RegExp(owned.runRoot.replaceAll('/', '\\/'), 'u'));
+      assert.match(error.message, new RegExp(quarantinePath.replaceAll('/', '\\/'), 'u'));
+      assert.match(error.errors[1].message, /original path.*exists/u);
+      return true;
+    },
+  );
+
+  assert.deepEqual(await readFile(join(owned.runRoot, 'foreign.txt')), foreignBytes);
+  assert.equal((await stat(quarantinePath)).isDirectory(), true);
+});
+
 test('refuses cleanup outside the exact TMPDIR parent', async (t) => {
   const firstRoot = await testDirectory(t, 'lyra-overlay-parent-a-');
   const secondRoot = await testDirectory(t, 'lyra-overlay-parent-b-');
@@ -407,9 +494,10 @@ for (const field of ['runRoot', 'repositoryRoot']) {
 test('installs exact local tarballs frozen and offline without running lifecycle scripts', async (t) => {
   const setup = await installFixture(t);
   const result = await setup.install();
-  const { repositoryRoot, repositoryLockBefore, fixture, owned, recorder } = setup;
+  const { repositoryRoot, repositoryLockBefore, fixture, recorder } = setup;
   const fixtureRoot = dirname(result.fixtureManifestPath);
-  const storeRoot = join(owned.runRoot, 'pnpm-store');
+  const candidateRoot = dirname(fixtureRoot);
+  const storeRoot = join(candidateRoot, 'pnpm-store');
 
   assert.equal(process.versions.node, requiredNodeVersion);
   assert.equal(
@@ -450,7 +538,11 @@ test('installs exact local tarballs frozen and offline without running lifecycle
   const fixtureManifest = JSON.parse(await readFile(result.fixtureManifestPath, 'utf8'));
   assert.equal(fixtureManifest.packageManager, `pnpm@${requiredPnpmVersion}`);
   assert.deepEqual(fixtureManifest.dependencies, {
-    [fixture.packageName]: `file:${resolve(fixture.artifacts[0].path)}`,
+    [fixture.packageName]: `file:${join(
+      candidateRoot,
+      'artifacts',
+      `${fixture.artifacts[0].sha256}.tgz`,
+    )}`,
   });
   const expectedInventory = [
     { name: fixture.packageName, version: '1.0.0', license: 'MIT' },
@@ -501,13 +593,71 @@ test('installs exact local tarballs frozen and offline without running lifecycle
   }
 });
 
-for (const [label, license] of [
-  ['missing', missingLicense],
-  ['empty', ''],
+test('rejects source artifact bytes replaced after inspection and before candidate copy', async (t) => {
+  const setup = await installFixture(t);
+  await writeFile(setup.fixture.artifacts[0].path, 'replacement bytes');
+  await assert.rejects(setup.install(), /artifact checksum mismatch/u);
+});
+
+test('rejects candidate-owned artifact bytes replaced between the two installs', async (t) => {
+  const root = await testDirectory(t);
+  const repositoryRoot = await createRepository(t, root);
+  const fixture = await createSyntheticCandidate(root);
+  const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'copy-replacement' });
+  const recorder = commandRecorder({ mutateCandidateCopyAfterFirstInstall: true });
+
+  await assert.rejects(
+    installExternalCandidate({
+      candidate: fixture.candidate,
+      artifacts: fixture.artifacts,
+      runRoot: owned.runRoot,
+      repositoryRoot,
+      runCommand: recorder.runCommand,
+    }),
+    /artifact checksum mismatch/u,
+  );
+  assert.equal(
+    recorder.calls.some(
+      ({ command, args }) =>
+        command === 'pnpm' && args[0] === 'install' && args.includes('--frozen-lockfile'),
+    ),
+    false,
+  );
+});
+
+test('uses distinct candidate-owned stores and artifact copies for overlapping package names', async (t) => {
+  const setup = await installFixture(t);
+  const first = await setup.install();
+  const second = await installExternalCandidate({
+    candidate: { id: 'zag' },
+    artifacts: setup.fixture.artifacts,
+    runRoot: setup.owned.runRoot,
+    repositoryRoot: setup.repositoryRoot,
+    runCommand: setup.recorder.runCommand,
+  });
+  const installCalls = setup.recorder.calls.filter(
+    ({ command, args }) => command === 'pnpm' && args[0] === 'install',
+  );
+  const stores = installCalls.map(({ args }) => args[args.indexOf('--store-dir') + 1]);
+  assert.equal(new Set(stores).size, 2);
+
+  const firstManifest = JSON.parse(await readFile(first.fixtureManifestPath, 'utf8'));
+  const secondManifest = JSON.parse(await readFile(second.fixtureManifestPath, 'utf8'));
+  const firstArtifact = Object.values(firstManifest.dependencies)[0].slice('file:'.length);
+  const secondArtifact = Object.values(secondManifest.dependencies)[0].slice('file:'.length);
+  assert.notEqual(firstArtifact, secondArtifact);
+  assert.match(firstArtifact, new RegExp(setup.fixture.artifacts[0].sha256, 'u'));
+  assert.match(secondArtifact, new RegExp(setup.fixture.artifacts[0].sha256, 'u'));
+});
+
+for (const [label, license, expected] of [
+  ['missing', missingLicense, /non-empty SPDX license string/u],
+  ['empty', '', /non-empty SPDX license string/u],
+  ['invalid SPDX', 'Definitely-Not-SPDX', /valid SPDX license string/u],
 ]) {
   test(`fails closed when a transitive package has a ${label} license`, async (t) => {
     const setup = await installFixture(t, { transitiveLicense: license });
-    await assert.rejects(setup.install(), /non-empty SPDX license string/u);
+    await assert.rejects(setup.install(), expected);
   });
 }
 
@@ -553,7 +703,7 @@ test('rejects and records malformed audit output', async (t) => {
   const setup = await installFixture(t, { audit: 'not-json' });
   await assert.rejects(setup.install(), /audit output must be valid JSON/u);
   assert.deepEqual(
-    await readFile(join(setup.owned.runRoot, 'candidate-radix', 'audit.json')),
+    await readFile(join(setup.owned.runRoot, 'candidate-radix', 'fixture', 'audit.json')),
     setup.recorder.auditBytes,
   );
 });

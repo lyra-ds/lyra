@@ -1,10 +1,12 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { open, unlink } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { lstat, open, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { isPlainRecord } from '../contracts/protocol.mjs';
+import { validateSpdxExpression } from '../contracts/spdx.mjs';
 
 const execFilePromise = promisify(execFile);
 const PACKAGE_MANIFEST = 'package/package.json';
@@ -20,11 +22,50 @@ export function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
-function safeArtifactName(name) {
-  return name
-    .replace(/^@/u, '')
-    .replaceAll('/', '-')
-    .replaceAll(/[^0-9A-Za-z._-]/gu, '_');
+function sameFileIdentity(left, right) {
+  return left.dev === right.dev && left.ino === right.ino && left.size === right.size;
+}
+
+export async function verifyRegularFile({ path, expectedSha256 }) {
+  let input;
+  try {
+    input = await open(path, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW);
+  } catch (error) {
+    if (error?.code === 'ELOOP') {
+      throw new Error('approved artifact path must not be a symbolic link', { cause: error });
+    }
+    throw error;
+  }
+
+  try {
+    const before = await input.stat({ bigint: true });
+    if (!before.isFile()) throw new Error('approved artifact path must be a regular file');
+    const bytes = await input.readFile();
+    const after = await input.stat({ bigint: true });
+    if (!sameFileIdentity(before, after) || BigInt(bytes.byteLength) !== before.size) {
+      throw new Error('approved artifact file identity or size changed while reading');
+    }
+
+    const named = await lstat(path, { bigint: true });
+    if (named.isSymbolicLink() || !named.isFile()) {
+      throw new Error('approved artifact path must remain a regular file, not a symbolic link');
+    }
+    if (!sameFileIdentity(before, named)) {
+      throw new Error('approved artifact path identity or size changed while reading');
+    }
+
+    const actual = sha256(bytes);
+    if (actual !== expectedSha256) throw new Error('artifact checksum mismatch');
+    return {
+      bytes,
+      device: before.dev,
+      inode: before.ino,
+      sha256: actual,
+      size: before.size,
+    };
+  } finally {
+    await input.close();
+  }
 }
 
 export async function acquireExternalArtifact({
@@ -33,7 +74,7 @@ export async function acquireExternalArtifact({
   fetchImpl = fetch,
   maxBytes = 50_000_000,
 }) {
-  const path = join(destinationRoot, `${safeArtifactName(record.name)}-${record.version}.tgz`);
+  const path = join(destinationRoot, `${record.sha256}.tgz`);
   let output;
   let created = false;
 
@@ -64,7 +105,8 @@ export async function acquireExternalArtifact({
     await output.writeFile(body);
     await output.close();
     output = undefined;
-    return { record, path, sha256: actual, bytes };
+    const verified = await verifyRegularFile({ path, expectedSha256: record.sha256 });
+    return { record, path, sha256: verified.sha256, bytes: body.byteLength };
   } catch (error) {
     await output?.close().catch(() => {});
     if (created) await unlink(path).catch(() => {});
@@ -97,6 +139,10 @@ async function runTar(runCommand, args, maxBuffer) {
 }
 
 export async function inspectPackageArchive({ artifact, runCommand = execFilePromise }) {
+  if (!isPlainRecord(artifact?.record)) throw new Error('artifact record must be present');
+  if (artifact.sha256 !== artifact.record.sha256) throw new Error('artifact checksum mismatch');
+  await verifyRegularFile({ path: artifact.path, expectedSha256: artifact.record.sha256 });
+
   const listed = await runTar(runCommand, ['-tzf', artifact.path], MAX_MANIFEST_BYTES);
   const members = Buffer.from(listed).toString('utf8').split('\n').filter(Boolean);
   if (members.filter((member) => member === PACKAGE_MANIFEST).length !== 1) {
@@ -129,6 +175,10 @@ export async function inspectPackageArchive({ artifact, runCommand = execFilePro
   ]) {
     if (manifest[field] !== expected) throw new Error(`package ${field} mismatch`);
   }
+  const licenseErrors = validateSpdxExpression(manifest.license);
+  if (licenseErrors.length > 0) {
+    throw new Error(`package SPDX license is invalid: ${licenseErrors.join('; ')}`);
+  }
 
   const lifecycleScripts = isPlainRecord(manifest.scripts)
     ? FORBIDDEN_LIFECYCLE_SCRIPTS.filter((key) => Object.hasOwn(manifest.scripts, key))
@@ -139,11 +189,18 @@ export async function inspectPackageArchive({ artifact, runCommand = execFilePro
     );
   }
 
+  const verified = await verifyRegularFile({
+    path: artifact.path,
+    expectedSha256: artifact.record.sha256,
+  });
+
   return {
     ...artifact,
+    bytes: Number(verified.size),
     packageName: manifest.name,
     packageVersion: manifest.version,
     license: manifest.license,
     lifecycleScripts,
+    sha256: verified.sha256,
   };
 }

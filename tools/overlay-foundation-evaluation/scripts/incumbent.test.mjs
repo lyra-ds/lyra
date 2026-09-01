@@ -84,6 +84,51 @@ test('writes one canonical result to a nonexistent explicit output with wx', asy
   await assert.rejects(stat(setup.runRoot), { code: 'ENOENT' });
 });
 
+test('omits disposable packed paths from the public result after cleanup', async (t) => {
+  const setup = await fixture(t);
+  const packedPath = join(setup.runRoot, 'packs', 'lyra-react.tgz');
+  const exactCharacterization = {
+    ...characterization,
+    artifacts: [
+      {
+        name: '@lyra-ds/react',
+        version: '0.5.0',
+        license: 'MIT',
+        bytes: 123,
+        sha256: 'a'.repeat(64),
+        lifecycleScripts: [],
+        path: packedPath,
+      },
+    ],
+  };
+
+  await runIncumbentCli({
+    argv: ['--output', setup.output],
+    ...setup.dependencies,
+    characterize: async (options) => {
+      setup.calls.push({ options, type: 'characterize' });
+      await mkdir(join(setup.runRoot, 'packs'), { recursive: true });
+      await writeFile(packedPath, 'packed bytes');
+      return exactCharacterization;
+    },
+    repositoryRoot: setup.root,
+    temporaryDirectory: setup.root,
+  });
+
+  const result = JSON.parse(await readFile(setup.output, 'utf8'));
+  assert.deepEqual(result.artifacts, [
+    {
+      name: '@lyra-ds/react',
+      version: '0.5.0',
+      license: 'MIT',
+      bytes: 123,
+      sha256: 'a'.repeat(64),
+      lifecycleScripts: [],
+    },
+  ]);
+  await assert.rejects(stat(packedPath), { code: 'ENOENT' });
+});
+
 test('rejects an existing output before creating a run root or characterizing', async (t) => {
   const setup = await fixture(t);
   await writeFile(setup.output, 'preserve me');

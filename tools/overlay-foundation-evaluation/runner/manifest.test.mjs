@@ -53,6 +53,26 @@ test('accepts a complete prospective manifest', () => {
   );
 });
 
+test('rejects duplicate logical artifact identities within one candidate', () => {
+  const manifest = structuredClone(validManifest);
+  manifest.candidates[1].artifacts.push(structuredClone(manifest.candidates[1].artifacts[0]));
+  assert.match(
+    validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+    /artifact identities must be unique/u,
+  );
+});
+
+for (const license of ['', '   ', 'Definitely-Not-SPDX', 'MIT OR']) {
+  test(`rejects invalid direct SPDX license ${JSON.stringify(license)}`, () => {
+    const manifest = structuredClone(validManifest);
+    manifest.candidates[1].artifacts[0].license = license;
+    assert.match(
+      validateCandidateManifest(manifest, manifest.toolchain).join('\n'),
+      /SPDX license/u,
+    );
+  });
+}
+
 for (const version of ['^1.2.3', '~1.2.3', 'latest', 'workspace:*']) {
   test(`rejects non-exact version ${version}`, () => {
     const manifest = structuredClone(validManifest);

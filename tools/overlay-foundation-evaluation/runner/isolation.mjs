@@ -4,17 +4,21 @@ import {
   lstat,
   mkdir,
   mkdtemp,
+  open,
   readFile,
   realpath,
   rename,
   rm,
   stat,
+  unlink,
   writeFile,
 } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
 import { isPlainRecord } from '../contracts/protocol.mjs';
+import { validateSpdxExpression } from '../contracts/spdx.mjs';
+import { verifyRegularFile } from './artifacts.mjs';
 
 const execFilePromise = promisify(execFile);
 const OWNER_FILE = '.lyra-overlay-evaluation-owner.json';
@@ -22,6 +26,7 @@ const REQUIRED_NODE_VERSION = '24.18.0';
 const REQUIRED_PNPM_VERSION = '11.13.1';
 const RUN_ID = /^[0-9A-Za-z][0-9A-Za-z._-]{0,99}$/u;
 const CANDIDATE_ID = /^[a-z0-9][a-z0-9-]*$/u;
+const SHA_256 = /^[a-f0-9]{64}$/u;
 const AUDIT_SEVERITIES = Object.freeze(['info', 'low', 'moderate', 'high', 'critical']);
 const DEPENDENCY_FIELDS = Object.freeze([
   'dependencies',
@@ -166,7 +171,37 @@ export async function createOwnedRunRoot({ tmpdir, runId }, { writeOwnerMarker =
   }
 }
 
-export async function cleanupOwnedRunRoot({ tmpdir, runRoot, ownerToken }) {
+async function restoreQuarantinedRunRoot({ quarantine, runRoot, expectedIdentity }) {
+  const quarantined = await lstat(quarantine, { bigint: true });
+  if (
+    !quarantined.isDirectory() ||
+    quarantined.isSymbolicLink() ||
+    !sameIdentity(expectedIdentity, quarantined)
+  ) {
+    throw new Error('quarantine identity is uncertain; refusing restoration');
+  }
+  try {
+    await lstat(runRoot, { bigint: true });
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    await rename(quarantine, runRoot);
+    const restored = await lstat(runRoot, { bigint: true });
+    if (
+      !restored.isDirectory() ||
+      restored.isSymbolicLink() ||
+      !sameIdentity(expectedIdentity, restored)
+    ) {
+      throw new Error('restored run-root identity is uncertain');
+    }
+    return;
+  }
+  throw new Error('cleanup original path already exists; refusing restoration');
+}
+
+export async function cleanupOwnedRunRoot(
+  { tmpdir, runRoot, ownerToken },
+  { readQuarantinedRoot = readOwnedRoot } = {},
+) {
   const resolvedTmpdir = requireAbsolutePath(tmpdir, 'tmpdir');
   const resolvedRunRoot = requireAbsolutePath(runRoot, 'runRoot');
   if (dirname(resolvedRunRoot) !== resolvedTmpdir) {
@@ -179,14 +214,32 @@ export async function cleanupOwnedRunRoot({ tmpdir, runRoot, ownerToken }) {
 
   const quarantine = join(resolvedTmpdir, `.lyra-overlay-cleanup-${randomUUID()}`);
   await rename(resolvedRunRoot, quarantine);
-  const quarantined = await readOwnedRoot(quarantine);
-  if (
-    quarantined.record.ownerToken !== ownerToken ||
-    !sameIdentity(record, quarantined.current) ||
-    !sameIdentity(quarantined.record, quarantined.current)
-  ) {
-    await rename(quarantine, resolvedRunRoot).catch(() => {});
-    throw new Error('run-root identity mismatch during cleanup');
+  try {
+    const quarantined = await readQuarantinedRoot(quarantine);
+    if (
+      quarantined.record.ownerToken !== ownerToken ||
+      !sameIdentity(record, quarantined.current) ||
+      !sameIdentity(quarantined.record, quarantined.current)
+    ) {
+      throw new Error('run-root identity mismatch during cleanup');
+    }
+  } catch (verificationError) {
+    const paths = `original=${resolvedRunRoot}; quarantine=${quarantine}`;
+    try {
+      await restoreQuarantinedRunRoot({
+        quarantine,
+        runRoot: resolvedRunRoot,
+        expectedIdentity: record,
+      });
+    } catch (restorationError) {
+      throw new AggregateError(
+        [verificationError, restorationError],
+        `run-root quarantine verification failed and restoration failed; ${paths}`,
+      );
+    }
+    throw new Error(`run-root quarantine verification failed; restored ${paths}`, {
+      cause: verificationError,
+    });
   }
   await rm(quarantine, { recursive: true });
 }
@@ -241,6 +294,13 @@ function assertCandidateInputs(candidate, artifacts) {
       throw new Error('direct artifact license mismatch');
     }
     if (
+      typeof artifact.sha256 !== 'string' ||
+      !SHA_256.test(artifact.sha256) ||
+      artifact.sha256 !== artifact.record.sha256
+    ) {
+      throw new Error('direct artifact checksum mismatch');
+    }
+    if (
       typeof artifact.packageName !== 'string' ||
       artifact.packageName.length === 0 ||
       typeof artifact.packageVersion !== 'string' ||
@@ -251,9 +311,67 @@ function assertCandidateInputs(candidate, artifacts) {
     ) {
       throw new Error('candidate artifact metadata is incomplete');
     }
+    const licenseErrors = validateSpdxExpression(artifact.license);
+    if (licenseErrors.length > 0) {
+      throw new Error(`direct artifact SPDX license is invalid: ${licenseErrors.join('; ')}`);
+    }
     if (!isAbsolute(artifact.path)) throw new Error('artifact path must be absolute');
     if (names.has(artifact.packageName)) throw new Error('candidate artifact names must be unique');
     names.add(artifact.packageName);
+  }
+}
+
+async function requireCandidateRoot(runRoot, candidateId) {
+  const candidateRoot = join(runRoot, `candidate-${candidateId}`);
+  try {
+    await mkdir(candidateRoot, { mode: 0o700 });
+  } catch (error) {
+    if (error?.code !== 'EEXIST') throw error;
+  }
+  const info = await lstat(candidateRoot, { bigint: true });
+  if (!info.isDirectory() || info.isSymbolicLink()) {
+    throw new Error('candidate root must be a real owned directory');
+  }
+  return candidateRoot;
+}
+
+async function copyVerifiedArtifact({ artifact, artifactRoot }) {
+  const verified = await verifyRegularFile({
+    path: artifact.path,
+    expectedSha256: artifact.record.sha256,
+  });
+  const path = join(artifactRoot, `${artifact.record.sha256}.tgz`);
+  let output;
+  let created = false;
+  try {
+    output = await open(path, 'wx', 0o600);
+    created = true;
+    await output.writeFile(verified.bytes);
+    await output.close();
+    output = undefined;
+    const copied = await verifyRegularFile({
+      path,
+      expectedSha256: artifact.record.sha256,
+    });
+    return {
+      ...artifact,
+      bytes: Number(copied.size),
+      path,
+      sha256: copied.sha256,
+    };
+  } catch (error) {
+    await output?.close().catch(() => {});
+    if (created) await unlink(path).catch(() => {});
+    throw error;
+  }
+}
+
+async function verifyArtifactCopies(artifacts) {
+  for (const artifact of artifacts) {
+    await verifyRegularFile({
+      path: artifact.path,
+      expectedSha256: artifact.record.sha256,
+    });
   }
 }
 
@@ -380,6 +498,12 @@ async function createLicenseInventory({ graph, fixtureRoot, artifacts }) {
         `installed package ${manifest.name} must declare a non-empty SPDX license string`,
       );
     }
+    const licenseErrors = validateSpdxExpression(manifest.license);
+    if (licenseErrors.length > 0) {
+      throw new Error(
+        `installed package ${manifest.name} must declare a valid SPDX license string: ${licenseErrors.join('; ')}`,
+      );
+    }
     inventory.push({
       name: manifest.name,
       version: manifest.version,
@@ -413,10 +537,18 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
     );
   }
 
-  const fixtureRoot = join(runRoot, `candidate-${candidate.id}`);
-  const storeRoot = join(runRoot, 'pnpm-store');
+  const candidateRoot = await requireCandidateRoot(runRoot, candidate.id);
+  const artifactRoot = join(candidateRoot, 'artifacts');
+  const fixtureRoot = join(candidateRoot, 'fixture');
+  const storeRoot = join(candidateRoot, 'pnpm-store');
+  await mkdir(artifactRoot, { mode: 0o700 });
   await mkdir(fixtureRoot, { mode: 0o700 });
-  await mkdir(storeRoot, { recursive: true, mode: 0o700 });
+  await mkdir(storeRoot, { mode: 0o700 });
+
+  const copiedArtifacts = [];
+  for (const artifact of artifacts) {
+    copiedArtifacts.push(await copyVerifiedArtifact({ artifact, artifactRoot }));
+  }
 
   const pnpmVersionBytes = outputBytes(
     await runCommand('pnpm', ['--version'], { cwd: repositoryRoot }),
@@ -429,7 +561,7 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   }
 
   const dependencies = {};
-  for (const artifact of [...artifacts].sort((left, right) =>
+  for (const artifact of [...copiedArtifacts].sort((left, right) =>
     left.packageName < right.packageName ? -1 : left.packageName > right.packageName ? 1 : 0,
   )) {
     dependencies[artifact.packageName] = `file:${resolve(artifact.path)}`;
@@ -446,12 +578,15 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   const fixtureManifestPath = join(fixtureRoot, 'package.json');
   const fixtureManifestSha256 = await writeEvidence(fixtureManifestPath, fixtureManifest);
 
+  await verifyArtifactCopies(copiedArtifacts);
   await runCommand(
     'pnpm',
     ['install', '--ignore-workspace', '--ignore-scripts', '--store-dir', storeRoot],
     { cwd: fixtureRoot },
   );
+  await verifyArtifactCopies(copiedArtifacts);
   await removeOwnedNodeModules({ fixtureRoot, runRoot });
+  await verifyArtifactCopies(copiedArtifacts);
   await runCommand(
     'pnpm',
     [
@@ -465,6 +600,7 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
     ],
     { cwd: fixtureRoot },
   );
+  await verifyArtifactCopies(copiedArtifacts);
 
   const resolvedGraphBytes = outputBytes(
     await runCommand('pnpm', ['list', '--json', '--depth', 'Infinity', '--ignore-workspace'], {
@@ -487,7 +623,11 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   const auditErrors = validateAuditReport(audit);
   if (auditErrors.length > 0) throw new Error(`audit report rejected: ${auditErrors.join('; ')}`);
 
-  const inventory = await createLicenseInventory({ graph, fixtureRoot, artifacts });
+  const inventory = await createLicenseInventory({
+    graph,
+    fixtureRoot,
+    artifacts: copiedArtifacts,
+  });
   const licenseInventoryBytes = Buffer.from(JSON.stringify(inventory));
   const licenseInventoryPath = join(fixtureRoot, 'license-inventory.json');
   const licenseInventorySha256 = await writeEvidence(licenseInventoryPath, licenseInventoryBytes);

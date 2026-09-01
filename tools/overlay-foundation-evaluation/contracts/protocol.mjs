@@ -81,23 +81,50 @@ const EXACT_COUPLED_IDENTITIES = new Set([
   'vendor',
 ]);
 const IDENTIFIER_COUPLING_TOKENS = new Set(['incumbent', 'lyra', 'radix', 'zag', 'vendor']);
+const CONTROL_KEY_TOKENS = new Set([
+  'attr',
+  'attribute',
+  'attributes',
+  'class',
+  'classes',
+  'classname',
+  'event',
+  'events',
+  'id',
+  'ids',
+  'part',
+  'parts',
+  'selector',
+  'selectors',
+  'source',
+  'target',
+  'type',
+]);
+
+function identifierTokens(value) {
+  return value
+    .replaceAll(/([A-Z]+)([A-Z][a-z])/gu, '$1 $2')
+    .replaceAll(/([a-z0-9])([A-Z])/gu, '$1 $2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .filter(Boolean);
+}
 
 function isExactCoupledIdentity(value) {
   return EXACT_COUPLED_IDENTITIES.has(value.trim().toLowerCase());
 }
 
 function hasCoupledIdentifierToken(value) {
-  const tokens = value
-    .replaceAll(/([A-Z]+)([A-Z][a-z])/gu, '$1 $2')
-    .replaceAll(/([a-z0-9])([A-Z])/gu, '$1 $2')
-    .toLowerCase()
-    .split(/[^a-z0-9]+/u)
-    .filter(Boolean);
+  const tokens = identifierTokens(value);
   return tokens.some(
     (token, index) =>
       IDENTIFIER_COUPLING_TOKENS.has(token) ||
       [tokens[index], tokens[index + 1]].join('-') === 'base-ui',
   );
+}
+
+function isControlKey(value) {
+  return identifierTokens(value).some((token) => CONTROL_KEY_TOKENS.has(token));
 }
 
 function requireCandidateNeutralIdentifier(value, path, errors) {
@@ -114,6 +141,24 @@ function requireCandidateNeutralIdentifierArray(value, path, errors) {
   value.forEach((entry, index) =>
     requireCandidateNeutralIdentifier(entry, `${path}[${index}]`, errors),
   );
+}
+
+function rejectCandidateCoupledControlValue(value, path, errors) {
+  if (typeof value === 'string') {
+    requireCandidateNeutralIdentifier(value, path, errors);
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      rejectCandidateCoupledControlValue(entry, `${path}[${index}]`, errors),
+    );
+    return;
+  }
+  if (isPlainRecord(value)) {
+    for (const [key, entry] of Object.entries(value)) {
+      rejectCandidateCoupledControlValue(entry, `${path}.${key}`, errors);
+    }
+  }
 }
 
 function rejectCandidateVendorCoupling(value, path, errors) {
@@ -139,7 +184,52 @@ function rejectCandidateVendorCoupling(value, path, errors) {
     if (normalizedKey.includes('candidate') || normalizedKey.includes('vendor')) {
       errors.push(`${path}.${key} contains candidate or vendor coupling`);
     }
+    requireCandidateNeutralIdentifier(key, `${path}.${key}`, errors);
+    if (isControlKey(key)) {
+      rejectCandidateCoupledControlValue(entry, `${path}.${key}`, errors);
+    }
     rejectCandidateVendorCoupling(entry, `${path}.${key}`, errors);
+  }
+}
+
+function isStructuralMarkupAttribute(name) {
+  const normalized = name.toLowerCase();
+  return (
+    normalized.startsWith('data-') ||
+    isControlKey(name) ||
+    [
+      'aria-activedescendant',
+      'aria-controls',
+      'aria-describedby',
+      'aria-labelledby',
+      'aria-owns',
+      'for',
+      'role',
+      'slot',
+    ].includes(normalized)
+  );
+}
+
+function validateMarkup(markup, errors) {
+  if (typeof markup !== 'string') return;
+  const tagPattern = /<\s*\/?\s*([A-Za-z][0-9A-Za-z:._-]*)([^<>]*?)>/gu;
+  for (const tag of markup.matchAll(tagPattern)) {
+    const tagName = tag[1];
+    requireCandidateNeutralIdentifier(tagName, 'scenario.initial.markup tag', errors);
+    if (/^<\s*\//u.test(tag[0])) continue;
+
+    const attributes = tag[2];
+    const attributePattern = /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gu;
+    for (const attribute of attributes.matchAll(attributePattern)) {
+      const attributeName = attribute[1];
+      if (attributeName === '/') continue;
+      const path = `scenario.initial.markup attribute ${attributeName}`;
+      requireCandidateNeutralIdentifier(attributeName, path, errors);
+      const attributeValue = attribute[2] ?? attribute[3] ?? attribute[4];
+      if (attributeValue !== undefined && isStructuralMarkupAttribute(attributeName)) {
+        requireCandidateNeutralIdentifier(attributeValue, `${path} value`, errors);
+      }
+    }
   }
 }
 
@@ -150,6 +240,7 @@ function validateInitial(value, errors) {
   }
   rejectUnknownKeys(value, ['markup', 'state'], 'scenario.initial', errors);
   if (typeof value.markup !== 'string') errors.push('scenario.initial.markup must be a string');
+  validateMarkup(value.markup, errors);
   if (!isPlainRecord(value.state)) errors.push('scenario.initial.state must be a plain record');
 }
 
@@ -307,6 +398,15 @@ export function validateScenario(value) {
     'scenario.scenarioId',
     errors,
   );
+  const revisionSuffix =
+    typeof value.scenarioId === 'string' ? /\.v(\d+)$/u.exec(value.scenarioId)?.[1] : undefined;
+  if (
+    revisionSuffix !== undefined &&
+    Number.isSafeInteger(value.revision) &&
+    revisionSuffix !== String(value.revision)
+  ) {
+    errors.push('scenario.scenarioId terminal revision must equal scenario.revision');
+  }
   requireCandidateNeutralIdentifier(value.scenarioId, 'scenario.scenarioId', errors);
   requireUniqueStrings(value.components, 'scenario.components', errors);
   requireCandidateNeutralIdentifierArray(value.components, 'scenario.components', errors);

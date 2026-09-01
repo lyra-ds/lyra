@@ -8,6 +8,7 @@ import {
   requirePattern,
   requireUniqueStrings,
 } from '../contracts/protocol.mjs';
+import { validateSpdxExpression } from '../contracts/spdx.mjs';
 
 const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 const SHA_256 = /^[a-f0-9]{64}$/u;
@@ -97,6 +98,16 @@ function validateArtifacts(candidateId, value, path, errors) {
     errors.push(`${path} must be a non-empty array`);
     return;
   }
+  const identities = new Set();
+  for (const artifact of value) {
+    if (!isPlainRecord(artifact)) continue;
+    const identity = `${artifact.source}\u0000${artifact.name}\u0000${artifact.version}`;
+    if (identities.has(identity)) {
+      errors.push(`${path} artifact identities must be unique`);
+      break;
+    }
+    identities.add(identity);
+  }
   value.forEach((artifact, index) =>
     validateArtifact(candidateId, artifact, `${path}[${index}]`, errors),
   );
@@ -118,8 +129,9 @@ function validateArtifact(candidateId, value, path, errors) {
     );
     validateUrl(value.tarballUrl, `${path}.tarballUrl`, errors, true);
     validateUrl(value.repositoryUrl, `${path}.repositoryUrl`, errors);
-    if (typeof value.license !== 'string' || value.license.length === 0)
-      errors.push(`${path}.license must be a non-empty string`);
+    for (const licenseError of validateSpdxExpression(value.license)) {
+      errors.push(`${path}.license is not a valid SPDX license: ${licenseError}`);
+    }
   } else {
     errors.push(`${path}.source is invalid`);
   }
