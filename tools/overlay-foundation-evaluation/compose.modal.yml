@@ -1,0 +1,38 @@
+services:
+  modal:
+    image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    init: true
+    ipc: host
+    user: '${UID:?Set UID with id -u}:${GID:?Set GID with id -g}'
+    environment:
+      OVERLAY_EVALUATION_REVISION: '${OVERLAY_EVALUATION_REVISION:?set OVERLAY_EVALUATION_REVISION}'
+    volumes:
+      - type: bind
+        source: '${OVERLAY_NODE_ROOT:?set OVERLAY_NODE_ROOT}'
+        target: /opt/node
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_INPUT_ROOT:?set OVERLAY_INPUT_ROOT}'
+        target: /input
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_EVIDENCE_ROOT:?set OVERLAY_EVIDENCE_ROOT}'
+        target: /evidence
+      - type: bind
+        source: '${OVERLAY_OWNED_WORK_ROOT:?set OVERLAY_OWNED_WORK_ROOT}'
+        target: /work
+    command:
+      - /bin/sh
+      - -euxc
+      - |
+        export PATH="/opt/node/bin:/tmp/corepack-shims:$PATH"
+        corepack enable --install-directory /tmp/corepack-shims
+        git clone --no-hardlinks /input/repository.bundle /work/repository
+        git -C /work/repository checkout --detach "$OVERLAY_EVALUATION_REVISION"
+        test "$(git -C /work/repository rev-parse HEAD)" = "$OVERLAY_EVALUATION_REVISION"
+        cd /work/repository
+        corepack pnpm@11.13.1 install --frozen-lockfile
+        corepack pnpm@11.13.1 overlay:evaluate:modal \
+          --manifest /input/candidates.json \
+          --repository /work/repository \
+          --evidence /evidence
