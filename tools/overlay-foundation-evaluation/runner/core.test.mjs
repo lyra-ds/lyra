@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
-import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { writeAttempt } from '../evidence/results.mjs';
-import { cleanupOwnedRunRoot } from './isolation.mjs';
+import { cleanupOwnedRunRoot, createOwnedRunRoot } from './isolation.mjs';
 import { runCorePreflight } from './core.mjs';
 
 const revision = 'b'.repeat(40);
@@ -140,6 +149,8 @@ async function createFixture(t, mutateAdapter = () => {}) {
     join(repositoryRoot, 'package.json'),
     `${JSON.stringify({ name: 'synthetic-repository', private: true, packageManager: 'pnpm@11.13.1' })}\n`,
   );
+  const trackedFile = join(repositoryRoot, 'tracked.txt');
+  await writeFile(trackedFile, 'original repository bytes\n');
   const descriptorIds = {
     incumbent: 'incumbent',
     radix: 'radix',
@@ -167,6 +178,7 @@ async function createFixture(t, mutateAdapter = () => {}) {
     repositoryRoot,
     root,
     temporaryDirectory,
+    trackedFile,
   };
 }
 
@@ -227,6 +239,17 @@ async function cleanRepositoryCommand(command, args) {
   assert.equal(command, 'git');
   assert.deepEqual(args, ['status', '--porcelain=v1', '--untracked-files=all']);
   return { stdout: '' };
+}
+
+function fileBackedRepositoryCommand(fixture) {
+  return async (command, args) => {
+    assert.equal(command, 'git');
+    assert.deepEqual(args, ['status', '--porcelain=v1', '--untracked-files=all']);
+    const trackedBytes = await readFile(fixture.trackedFile, 'utf8');
+    return {
+      stdout: trackedBytes === 'original repository bytes\n' ? '' : ' M tracked.txt\n',
+    };
+  };
 }
 
 async function readAttempt(evidenceRoot, candidateId, stage) {
@@ -400,6 +423,65 @@ test('records an adapter mismatch as candidate-local policy evidence and continu
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
+test('forces adapter failures to candidate-local policy metadata despite valid run-scoped caller fields', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  await writeFile(
+    join(
+      fixture.repositoryRoot,
+      'tools',
+      'overlay-foundation-evaluation',
+      'candidates',
+      'base-ui.mjs',
+    ),
+    `const error = Object.assign(new Error('adversarial adapter failure'), {
+  classification: 'security',
+  scope: 'run',
+  stage: 'repository',
+});
+throw error;
+`,
+  );
+
+  const summary = await runFixture(fixture, successfulDependencies(events));
+
+  assert.equal(summary.result, 'FAIL');
+  assert.equal(events.includes('acquire:base-ui'), false);
+  assert.equal(events.includes('acquire:zag'), true);
+  const failure = await readAttempt(fixture.evidenceRoot, 'base-ui', 'adapter');
+  assert.equal(failure.classification, 'policy');
+  assert.equal(failure.observed.scope, 'candidate');
+  assert.equal(failure.observed.message, 'adversarial adapter failure');
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('re-enforces candidate-local metadata when a caller reuses and mutates a normalized Error', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const reusedError = new Error('artifact checksum mismatch');
+  const dependencies = successfulDependencies(events, {
+    acquireExternalArtifact: async ({ record }) => {
+      if (record.name === '@base-ui-components/react') {
+        reusedError.classification = 'security';
+        reusedError.scope = 'run';
+        reusedError.stage = 'repository';
+      }
+      throw reusedError;
+    },
+  });
+
+  const summary = await runFixture(fixture, dependencies);
+
+  assert.equal(summary.result, 'FAIL');
+  assert.equal(events.includes('acquire:zag'), true);
+  for (const candidateId of ['radix', 'base-ui', 'zag']) {
+    const failure = await readAttempt(fixture.evidenceRoot, candidateId, 'artifact');
+    assert.equal(failure.classification, 'security');
+    assert.equal(failure.observed.scope, 'candidate');
+  }
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
 for (const [name, mutate] of [
   ['revision', (characterization) => (characterization.revision = alternateRevision)],
   ['artifact name', (characterization) => (characterization.artifacts[0].name = '@lyra-ds/other')],
@@ -472,19 +554,54 @@ test('accepts a reordered incumbent artifact set when every canonical identity i
   assert.equal((await readAttempt(fixture.evidenceRoot, 'incumbent', 'artifact')).result, 'PASS');
 });
 
-test('repository mutation is run-fatal after its failure record and prevents Zag from starting', async (t) => {
+test('detects an actual repository mutation before recording or continuing an incumbent failure', async (t) => {
   const fixture = await createFixture(t);
   const events = [];
   const dependencies = successfulDependencies(events, {
-    installExternalCandidate: async ({ candidate }) => {
-      if (candidate.id === 'base-ui') {
-        throw new Error('repository worktree changed during candidate installation');
-      }
-      return { candidateId: candidate.id };
+    characterizeIncumbent: async () => {
+      await writeFile(fixture.trackedFile, 'mutated during incumbent characterization\n');
+      throw new Error('synthetic incumbent characterization failure');
     },
   });
 
-  await assert.rejects(runFixture(fixture, dependencies), /repository worktree changed/u);
+  await assert.rejects(
+    runFixture(fixture, dependencies, fileBackedRepositoryCommand(fixture)),
+    /repository worktree changed/u,
+  );
+
+  assert.equal(events.includes('acquire:radix'), false);
+  const failure = await readAttempt(fixture.evidenceRoot, 'incumbent', 'repository');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.classification, 'policy');
+  assert.equal(failure.observed.scope, 'run');
+  await assert.rejects(readAttempt(fixture.evidenceRoot, 'incumbent', 'artifact'), {
+    code: 'ENOENT',
+  });
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('detects an actual repository mutation before continuing a candidate-local acquisition failure', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const dependencies = successfulDependencies(events, {
+    acquireExternalArtifact: async ({ record, destinationRoot }) => {
+      if (record.name === '@base-ui-components/react') {
+        await writeFile(fixture.trackedFile, 'mutated during candidate acquisition\n');
+        throw new Error('artifact checksum mismatch');
+      }
+      return {
+        record,
+        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
+        sha256: record.sha256,
+        bytes: 123,
+      };
+    },
+  });
+
+  await assert.rejects(
+    runFixture(fixture, dependencies, fileBackedRepositoryCommand(fixture)),
+    /repository worktree changed/u,
+  );
 
   assert.equal(events.includes('acquire:zag'), false);
   const failure = await readAttempt(fixture.evidenceRoot, 'base-ui', 'repository');
@@ -495,17 +612,122 @@ test('repository mutation is run-fatal after its failure record and prevents Zag
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
-test('ownership corruption is run-fatal and prevents the next candidate from starting', async (t) => {
+test('rechecks repository integrity after writing a candidate-local failure and before continuing', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const dependencies = successfulDependencies(events, {
+    acquireExternalArtifact: async ({ record, destinationRoot }) => {
+      if (record.name === '@base-ui-components/react') {
+        throw new Error('artifact checksum mismatch');
+      }
+      return {
+        record,
+        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
+        sha256: record.sha256,
+        bytes: 123,
+      };
+    },
+    writeAttempt: async (input) => {
+      await writeAttempt(input);
+      if (input.attempt.candidateId === 'base-ui') {
+        await writeFile(fixture.trackedFile, 'mutated while recording local failure\n');
+      }
+    },
+  });
+
+  await assert.rejects(
+    runFixture(fixture, dependencies, fileBackedRepositoryCommand(fixture)),
+    /repository worktree changed/u,
+  );
+
+  assert.equal(events.includes('acquire:zag'), false);
+  const failure = await readAttempt(fixture.evidenceRoot, 'base-ui', 'repository');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.observed.scope, 'run');
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('detects an actual repository mutation before writing a candidate installation PASS', async (t) => {
   const fixture = await createFixture(t);
   const events = [];
   const dependencies = successfulDependencies(events, {
     installExternalCandidate: async ({ candidate }) => {
-      if (candidate.id === 'radix') throw new Error('run-root ownership mismatch');
+      if (candidate.id === 'radix') {
+        await writeFile(fixture.trackedFile, 'mutated during candidate installation\n');
+      }
       return { candidateId: candidate.id };
     },
   });
 
-  await assert.rejects(runFixture(fixture, dependencies), /ownership mismatch/u);
+  await assert.rejects(
+    runFixture(fixture, dependencies, fileBackedRepositoryCommand(fixture)),
+    /repository worktree changed/u,
+  );
+
+  assert.equal(events.includes('acquire:base-ui'), false);
+  const failure = await readAttempt(fixture.evidenceRoot, 'radix', 'repository');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.observed.scope, 'run');
+  await assert.rejects(readAttempt(fixture.evidenceRoot, 'radix', 'installation'), {
+    code: 'ENOENT',
+  });
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('writes an immutable repository failure when the final status check detects mutation', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  let mutateOnStatus = false;
+  const dependencies = successfulDependencies(events, {
+    event: (event) => {
+      events.push(event);
+      if (event === 'verify-repository-unchanged') mutateOnStatus = true;
+    },
+  });
+  const repositoryCommand = fileBackedRepositoryCommand(fixture);
+  const runCommand = async (...args) => {
+    if (mutateOnStatus) {
+      mutateOnStatus = false;
+      await writeFile(fixture.trackedFile, 'mutated before final status\n');
+    }
+    return repositoryCommand(...args);
+  };
+
+  await assert.rejects(
+    runFixture(fixture, dependencies, runCommand),
+    /repository worktree changed/u,
+  );
+
+  const failure = await readAttempt(fixture.evidenceRoot, 'zag', 'repository');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.classification, 'policy');
+  assert.equal(failure.observed.scope, 'run');
+  assert.equal(events.at(-1), 'cleanup-owned-root');
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('ownership corruption is run-fatal and prevents the next candidate from starting', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const ownershipError = Object.assign(new Error('run-root ownership mismatch'), {
+    classification: 'infrastructure',
+    scope: 'candidate',
+    stage: 'installation',
+  });
+  const dependencies = successfulDependencies(events, {
+    installExternalCandidate: async ({ candidate }) => {
+      if (candidate.id === 'radix') throw ownershipError;
+      return { candidateId: candidate.id };
+    },
+  });
+
+  await assert.rejects(runFixture(fixture, dependencies), (error) => {
+    assert.equal(error, ownershipError);
+    assert.equal(error.classification, 'policy');
+    assert.equal(error.scope, 'run');
+    assert.equal(error.stage, 'repository');
+    return true;
+  });
 
   assert.equal(events.includes('acquire:base-ui'), false);
   const failure = await readAttempt(fixture.evidenceRoot, 'radix', 'repository');
@@ -517,7 +739,11 @@ test('ownership corruption is run-fatal and prevents the next candidate from sta
 test('an evidence-write failure is run-fatal and prevents Zag from starting', async (t) => {
   const fixture = await createFixture(t);
   const events = [];
-  const evidenceError = new Error('synthetic evidence write failure');
+  const evidenceError = Object.assign(new Error('synthetic evidence write failure'), {
+    classification: 'security',
+    scope: 'candidate',
+    stage: 'artifact',
+  });
   const dependencies = successfulDependencies(events, {
     writeAttempt: async (input) => {
       if (input.attempt.candidateId === 'base-ui') throw evidenceError;
@@ -529,11 +755,41 @@ test('an evidence-write failure is run-fatal and prevents Zag from starting', as
     assert.equal(error, evidenceError);
     assert.equal(error.scope, 'run');
     assert.equal(error.classification, 'policy');
+    assert.equal(error.stage, 'installation');
     return true;
   });
 
   assert.equal(events.includes('acquire:zag'), false);
   assert.equal(events.at(-1), 'cleanup-owned-root');
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('wraps a frozen evidence failure with its cause while forcing run-fatal metadata', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const evidenceError = Object.freeze(
+    Object.assign(new Error('frozen evidence write failure'), {
+      classification: 'security',
+      scope: 'candidate',
+      stage: 'artifact',
+    }),
+  );
+  const dependencies = successfulDependencies(events, {
+    writeAttempt: async (input) => {
+      if (input.attempt.candidateId === 'base-ui') throw evidenceError;
+      return writeAttempt(input);
+    },
+  });
+
+  await assert.rejects(runFixture(fixture, dependencies), (error) => {
+    assert.notEqual(error, evidenceError);
+    assert.equal(error.cause, evidenceError);
+    assert.equal(error.classification, 'policy');
+    assert.equal(error.scope, 'run');
+    assert.equal(error.stage, 'installation');
+    return true;
+  });
+  assert.equal(events.includes('acquire:zag'), false);
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
@@ -552,9 +808,9 @@ for (const [name, metadata] of [
     });
 
     await assert.rejects(runFixture(fixture, dependencies), (error) => {
+      assert.equal(error, invalid);
       assert.equal(error.classification, 'policy');
       assert.equal(error.scope, 'run');
-      assert.equal(error.cause, invalid);
       return true;
     });
 
@@ -570,7 +826,11 @@ test('preserves the primary and cleanup failures in order with AggregateError', 
   const fixture = await createFixture(t);
   const events = [];
   const primaryError = new Error('repository worktree changed during candidate installation');
-  const cleanupError = new Error('synthetic cleanup failure');
+  const cleanupError = Object.assign(new Error('synthetic cleanup failure'), {
+    classification: 'security',
+    scope: 'candidate',
+    stage: 'artifact',
+  });
   const dependencies = successfulDependencies(events, {
     installExternalCandidate: async () => {
       throw primaryError;
@@ -589,13 +849,15 @@ test('preserves the primary and cleanup failures in order with AggregateError', 
     assert.equal(error.errors[0].classification, 'policy');
     assert.equal(error.errors[0].scope, 'run');
     assert.equal(error.errors[1], cleanupError);
+    assert.equal(error.errors[1].classification, 'policy');
     assert.equal(error.errors[1].scope, 'run');
+    assert.equal(error.errors[1].stage, 'repository');
     return true;
   });
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
-test('normalizes an invalid evidence root to an allowed run-fatal policy error and still cleans up', async (t) => {
+test('normalizes an invalid evidence root before creating an owned run root', async (t) => {
   const fixture = await createFixture(t);
   const events = [];
 
@@ -618,7 +880,87 @@ test('normalizes an invalid evidence root to an allowed run-fatal policy error a
       return true;
     },
   );
-  assert.equal(events.at(-1), 'cleanup-owned-root');
+  assert.equal(events.includes('cleanup-owned-root'), false);
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('rejects an evidence-root symlink into a foreign owned root before writing or cleanup', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  let writes = 0;
+  const foreignOwned = await createOwnedRunRoot({
+    tmpdir: fixture.temporaryDirectory,
+    runId: 'foreign-evidence-owner',
+  });
+  const foreignEvidence = join(foreignOwned.runRoot, 'foreign-evidence');
+  const foreignSentinel = join(foreignEvidence, 'preserve.txt');
+  await mkdir(foreignEvidence);
+  await writeFile(foreignSentinel, 'foreign evidence must survive\n');
+  await symlink(foreignEvidence, fixture.evidenceRoot, 'dir');
+
+  try {
+    await assert.rejects(
+      runFixture(
+        fixture,
+        successfulDependencies(events, {
+          writeAttempt: async () => {
+            writes += 1;
+            throw new Error('evidence writer must not run');
+          },
+        }),
+      ),
+      (error) => {
+        assert.equal(error.classification, 'policy');
+        assert.equal(error.scope, 'run');
+        assert.equal(error.stage, 'repository');
+        assert.match(error.message, /evidenceRoot.*symbolic link/u);
+        return true;
+      },
+    );
+
+    assert.equal(writes, 0);
+    assert.equal(events.includes('cleanup-owned-root'), false);
+    assert.equal(await readFile(foreignSentinel, 'utf8'), 'foreign evidence must survive\n');
+  } finally {
+    await cleanupOwnedRunRoot({ tmpdir: fixture.temporaryDirectory, ...foreignOwned });
+  }
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('rejects a canonical evidence directory contained by the current owned run root', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  let writes = 0;
+  const precreatedOwned = await createOwnedRunRoot({
+    tmpdir: fixture.temporaryDirectory,
+    runId: 'precreated-current-owner',
+  });
+  fixture.evidenceRoot = join(precreatedOwned.runRoot, 'evidence');
+
+  try {
+    await assert.rejects(
+      runFixture(
+        fixture,
+        successfulDependencies(events, {
+          createOwnedRunRoot: async () => precreatedOwned,
+          writeAttempt: async () => {
+            writes += 1;
+            throw new Error('evidence writer must not run');
+          },
+        }),
+      ),
+      /evidenceRoot must be outside the owned run root/u,
+    );
+    assert.equal(writes, 0);
+    assert.equal(events.at(-1), 'cleanup-owned-root');
+  } finally {
+    try {
+      await access(precreatedOwned.runRoot);
+      await cleanupOwnedRunRoot({ tmpdir: fixture.temporaryDirectory, ...precreatedOwned });
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+  }
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 

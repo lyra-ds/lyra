@@ -1,10 +1,9 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, realpath, stat } from 'node:fs/promises';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { lstat, mkdir, readFile, realpath, stat } from 'node:fs/promises';
+import { isAbsolute, join, parse, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 
-import { characterizeIncumbent } from '../candidates/incumbent.mjs';
 import { FAILURE_CLASSIFICATIONS, isPlainRecord } from '../contracts/protocol.mjs';
 import { writeAttempt } from '../evidence/results.mjs';
 import { acquireExternalArtifact, inspectPackageArchive } from './artifacts.mjs';
@@ -16,12 +15,18 @@ const REQUIRED_NODE_VERSION = '24.18.0';
 const REQUIRED_PNPM_VERSION = '11.13.1';
 const ERROR_SCOPES = new Set(['candidate', 'run']);
 const CLASSIFICATIONS = new Set(FAILURE_CLASSIFICATIONS);
-const PREFLIGHT_STAGES = new Set(['adapter', 'artifact', 'installation', 'audit', 'repository']);
+const normalizedBoundaryErrors = new WeakMap();
+
+async function defaultCharacterizeIncumbent(options) {
+  const { characterizeIncumbent } = await import('../candidates/incumbent.mjs');
+  return characterizeIncumbent(options);
+}
 
 const defaultDependencies = Object.freeze({
   acquireExternalArtifact,
-  characterizeIncumbent,
+  characterizeIncumbent: defaultCharacterizeIncumbent,
   cleanupOwnedRunRoot,
+  createOwnedRunRoot,
   installExternalCandidate,
   inspectPackageArchive,
   writeAttempt,
@@ -35,6 +40,7 @@ class CorePreflightError extends Error {
     this.classification = classification;
     this.scope = scope;
     this.stage = stage;
+    normalizedBoundaryErrors.set(this, Object.freeze({ classification, scope, stage }));
   }
 }
 
@@ -64,6 +70,7 @@ function annotateError(error, { classification, scope, stage }) {
           writable: true,
         });
       }
+      normalizedBoundaryErrors.set(error, Object.freeze({ classification, scope, stage }));
       return error;
     } catch {
       // Fall through to a preserving wrapper for frozen or specially shaped errors.
@@ -77,30 +84,19 @@ function annotateError(error, { classification, scope, stage }) {
   });
 }
 
-function boundaryError(error, defaults) {
-  if (
-    error instanceof CorePreflightError &&
-    CLASSIFICATIONS.has(error.classification) &&
-    ERROR_SCOPES.has(error.scope) &&
-    PREFLIGHT_STAGES.has(error.stage)
-  ) {
-    return error;
-  }
+function normalizedBoundaryMetadata(error) {
+  return error instanceof Error ? normalizedBoundaryErrors.get(error) : undefined;
+}
 
-  if (hasErrorMetadata(error)) {
-    if (CLASSIFICATIONS.has(error.classification) && ERROR_SCOPES.has(error.scope)) {
+function boundaryError(error, defaults) {
+  if (normalizedBoundaryMetadata(error) === undefined && hasErrorMetadata(error)) {
+    if (!CLASSIFICATIONS.has(error.classification) || !ERROR_SCOPES.has(error.scope)) {
       return annotateError(error, {
-        classification: error.classification,
-        scope: error.scope,
-        stage: PREFLIGHT_STAGES.has(error.stage) ? error.stage : defaults.stage,
+        classification: 'policy',
+        scope: 'run',
+        stage: defaults.stage,
       });
     }
-    return new CorePreflightError(errorMessage(error), {
-      cause: error,
-      classification: 'policy',
-      scope: 'run',
-      stage: defaults.stage,
-    });
   }
 
   return annotateError(error, {
@@ -135,6 +131,7 @@ function artifactError(error) {
 }
 
 function incumbentError(error) {
+  if (error instanceof CorePreflightError) return error;
   if (/repository worktree|clean worktree/iu.test(errorMessage(error))) {
     return boundaryError(error, {
       classification: 'policy',
@@ -339,13 +336,14 @@ function corePreflightPass(runId, candidate, stage, observed) {
 }
 
 function corePreflightFailure(runId, candidate, error) {
+  const metadata = normalizedBoundaryMetadata(error) ?? error;
   return {
-    ...attemptBase(runId, candidate, error.stage),
+    ...attemptBase(runId, candidate, metadata.stage),
     result: 'FAIL',
-    classification: error.classification,
+    classification: metadata.classification,
     observed: {
       message: error.message,
-      scope: error.scope,
+      scope: metadata.scope,
     },
   };
 }
@@ -416,25 +414,166 @@ function summarizeCorePreflight(runId, manifest, attempts) {
   };
 }
 
-function assertEvidenceOutsideOwnedRoot(evidenceRoot, runRoot) {
-  const evidence = requireAbsoluteDirectoryRoot(evidenceRoot, 'evidenceRoot');
-  if (evidence === runRoot || isStrictDescendant(runRoot, evidence)) {
+async function assertNoEvidenceSymlinkComponents(evidenceRoot) {
+  const pathRoot = parse(evidenceRoot).root;
+  const components = relative(pathRoot, evidenceRoot).split(sep).filter(Boolean);
+  let current = pathRoot;
+  for (const component of components) {
+    current = join(current, component);
+    let info;
+    try {
+      info = await lstat(current);
+    } catch (error) {
+      if (error?.code === 'ENOENT') return;
+      throw error;
+    }
+    if (info.isSymbolicLink()) {
+      throw new Error('evidenceRoot path must not contain a symbolic link');
+    }
+  }
+}
+
+async function prepareEvidenceRoot(value) {
+  const evidenceRoot = requireAbsoluteDirectoryRoot(value, 'evidenceRoot');
+  await assertNoEvidenceSymlinkComponents(evidenceRoot);
+  await mkdir(evidenceRoot, { recursive: true, mode: 0o700 });
+  await assertNoEvidenceSymlinkComponents(evidenceRoot);
+  const canonicalPath = await realpath(evidenceRoot);
+  const info = await lstat(canonicalPath);
+  if (!info.isDirectory() || info.isSymbolicLink()) {
+    throw new Error('evidenceRoot must resolve to a real directory');
+  }
+  return Object.freeze({ canonicalPath, device: info.dev, inode: info.ino });
+}
+
+async function verifyEvidenceRoot(evidenceRoot) {
+  let info;
+  try {
+    info = await lstat(evidenceRoot.canonicalPath);
+  } catch (error) {
+    throw new Error('evidenceRoot canonical directory is no longer available', { cause: error });
+  }
+  if (
+    !info.isDirectory() ||
+    info.isSymbolicLink() ||
+    info.dev !== evidenceRoot.device ||
+    info.ino !== evidenceRoot.inode
+  ) {
+    throw new Error('evidenceRoot canonical directory identity changed during core preflight');
+  }
+  return evidenceRoot.canonicalPath;
+}
+
+async function assertEvidenceOutsideOwnedRoot(evidenceRoot, runRoot) {
+  const canonicalRunRoot = await realpath(runRoot);
+  if (
+    evidenceRoot.canonicalPath === canonicalRunRoot ||
+    isStrictDescendant(canonicalRunRoot, evidenceRoot.canonicalPath)
+  ) {
     throw new Error('evidenceRoot must be outside the owned run root');
   }
-  return evidence;
 }
 
 async function persistAttempt({ attempt, evidenceRoot, operations }) {
   operations.event(`write-preflight:${attempt.candidateId}`);
   try {
-    await operations.writeAttempt({ evidenceRoot, attempt });
+    await operations.writeAttempt({
+      evidenceRoot: await verifyEvidenceRoot(evidenceRoot),
+      attempt,
+    });
   } catch (error) {
     throw runPolicyError(error, attempt.stage);
   }
 }
 
+function repositoryMutationError() {
+  return new CorePreflightError('repository worktree changed during core preflight', {
+    classification: 'policy',
+    scope: 'run',
+    stage: 'repository',
+  });
+}
+
+async function assertRepositoryUnchanged(repositoryRoot, repositoryBefore, runCommand) {
+  let repositoryAfter;
+  try {
+    repositoryAfter = await readRepositoryStatus(repositoryRoot, runCommand);
+  } catch (error) {
+    throw runPolicyError(error);
+  }
+  if (repositoryAfter !== repositoryBefore) throw repositoryMutationError();
+}
+
+async function persistRepositoryFailure({
+  runId,
+  candidate,
+  error,
+  evidenceRoot,
+  operations,
+  attempts,
+}) {
+  const repositoryFailure = runPolicyError(error);
+  const repositoryAttempt = corePreflightFailure(runId, candidate, repositoryFailure);
+  await persistAttempt({ attempt: repositoryAttempt, evidenceRoot, operations });
+  attempts.push(repositoryAttempt);
+  return repositoryFailure;
+}
+
+async function requireRepositoryIntegrity({
+  runId,
+  candidate,
+  repositoryRoot,
+  repositoryBefore,
+  runCommand,
+  evidenceRoot,
+  operations,
+  attempts,
+}) {
+  try {
+    await assertRepositoryUnchanged(repositoryRoot, repositoryBefore, runCommand);
+  } catch (error) {
+    throw await persistRepositoryFailure({
+      runId,
+      candidate,
+      error,
+      evidenceRoot,
+      operations,
+      attempts,
+    });
+  }
+}
+
+async function persistCheckedAttempt({
+  runId,
+  candidate,
+  attempt,
+  repositoryRoot,
+  repositoryBefore,
+  runCommand,
+  evidenceRoot,
+  operations,
+  attempts,
+}) {
+  const integrityInput = {
+    runId,
+    candidate,
+    repositoryRoot,
+    repositoryBefore,
+    runCommand,
+    evidenceRoot,
+    operations,
+    attempts,
+  };
+  await requireRepositoryIntegrity(integrityInput);
+  await persistAttempt({ attempt, evidenceRoot, operations });
+  attempts.push(attempt);
+  if (attempt.result === 'FAIL' && attempt.observed.scope === 'candidate') {
+    await requireRepositoryIntegrity(integrityInput);
+  }
+}
+
 function isRunFatal(error) {
-  return error.scope === 'run';
+  return (normalizedBoundaryMetadata(error) ?? error).scope === 'run';
 }
 
 export async function runCorePreflight(
@@ -480,6 +619,13 @@ export async function runCorePreflight(
     });
   }
 
+  let preparedEvidenceRoot;
+  try {
+    preparedEvidenceRoot = await prepareEvidenceRoot(evidenceRoot);
+  } catch (error) {
+    throw runPolicyError(error);
+  }
+
   const adapters = new Map();
   for (const [index, candidate] of manifest.candidates.entries()) {
     operations.event(`load-adapter:${candidate.id}`);
@@ -492,7 +638,7 @@ export async function runCorePreflight(
 
   let owned;
   try {
-    owned = await createOwnedRunRoot({ tmpdir, runId: createRunId(manifest) });
+    owned = await operations.createOwnedRunRoot({ tmpdir, runId: createRunId(manifest) });
   } catch (error) {
     throw runPolicyError(error);
   }
@@ -500,7 +646,7 @@ export async function runCorePreflight(
   const attempts = [];
   let primaryError;
   try {
-    const resolvedEvidenceRoot = assertEvidenceOutsideOwnedRoot(evidenceRoot, owned.runRoot);
+    await assertEvidenceOutsideOwnedRoot(preparedEvidenceRoot, owned.runRoot);
     const artifactRoot = join(owned.runRoot, 'artifacts');
     await mkdir(artifactRoot, { recursive: true, mode: 0o700 });
 
@@ -529,12 +675,17 @@ export async function runCorePreflight(
     if (incumbentFailure !== undefined) {
       incumbentAttempt = corePreflightFailure(runId, incumbentCandidate, incumbentFailure);
     }
-    await persistAttempt({
+    await persistCheckedAttempt({
+      runId,
+      candidate: incumbentCandidate,
       attempt: incumbentAttempt,
-      evidenceRoot: resolvedEvidenceRoot,
+      repositoryRoot: root,
+      repositoryBefore,
+      runCommand,
+      evidenceRoot: preparedEvidenceRoot,
       operations,
+      attempts,
     });
-    attempts.push(incumbentAttempt);
     if (incumbentFailure !== undefined && isRunFatal(incumbentFailure)) throw incumbentFailure;
 
     for (const candidate of manifest.candidates.slice(1)) {
@@ -579,38 +730,45 @@ export async function runCorePreflight(
           }
           attempt = corePreflightPass(runId, candidate, 'installation', installed);
         } catch (error) {
-          candidateFailure = boundaryError(error, {
-            classification: 'policy',
-            scope: 'run',
-            stage: 'installation',
-          });
+          candidateFailure =
+            normalizedBoundaryMetadata(error) === undefined
+              ? runPolicyError(error, 'installation')
+              : error;
         }
       }
       if (candidateFailure !== undefined) {
         attempt = corePreflightFailure(runId, candidate, candidateFailure);
       }
-      await persistAttempt({ attempt, evidenceRoot: resolvedEvidenceRoot, operations });
-      attempts.push(attempt);
+      await persistCheckedAttempt({
+        runId,
+        candidate,
+        attempt,
+        repositoryRoot: root,
+        repositoryBefore,
+        runCommand,
+        evidenceRoot: preparedEvidenceRoot,
+        operations,
+        attempts,
+      });
       if (candidateFailure !== undefined && isRunFatal(candidateFailure)) throw candidateFailure;
     }
 
     operations.event('verify-repository-unchanged');
-    let repositoryAfter;
     try {
-      repositoryAfter = await readRepositoryStatus(root, runCommand);
+      await assertRepositoryUnchanged(root, repositoryBefore, runCommand);
     } catch (error) {
-      throw runPolicyError(error);
-    }
-    if (repositoryAfter !== repositoryBefore) {
-      throw new CorePreflightError('repository worktree changed during core preflight', {
-        classification: 'policy',
-        scope: 'run',
-        stage: 'repository',
+      throw await persistRepositoryFailure({
+        runId,
+        candidate: manifest.candidates.at(-1),
+        error,
+        evidenceRoot: preparedEvidenceRoot,
+        operations,
+        attempts,
       });
     }
     return summarizeCorePreflight(runId, manifest, attempts);
   } catch (error) {
-    primaryError = runPolicyError(error, error?.stage);
+    primaryError = runPolicyError(error, normalizedBoundaryMetadata(error)?.stage ?? 'repository');
     throw primaryError;
   } finally {
     operations.event('cleanup-owned-root');

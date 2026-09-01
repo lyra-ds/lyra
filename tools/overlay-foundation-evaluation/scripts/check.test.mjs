@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { access, chmod, mkdir, mkdtemp, readdir, rm, symlink, writeFile } from 'node:fs/promises';
-import { delimiter, join } from 'node:path';
+import { delimiter, join, resolve } from 'node:path';
 import { test } from 'node:test';
+import { pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
 
 import { checkManifestFile, main } from './check.mjs';
 
 const revision = 'b'.repeat(40);
 const sha = 'a'.repeat(64);
+const execFilePromise = promisify(execFile);
 
 function externalCandidate(id, name) {
   return {
@@ -124,6 +128,51 @@ test('validates only: no fetch, pnpm process, adapter import, or repository writ
   assert.equal(fetchCalls, 0);
   await assert.rejects(access(pnpmMarker), { code: 'ENOENT' });
   assert.deepEqual(await readdir(fixture.repositoryRoot, { recursive: true }), before);
+});
+
+test('importing and calling the checker never loads the real incumbent module', async (t) => {
+  const fixture = await createFixture(t);
+  const markerPath = join(fixture.root, 'real-incumbent-loaded.txt');
+  const preloadPath = join(fixture.root, 'module-load-hook.mjs');
+  const childPath = join(fixture.root, 'check-in-child.mjs');
+  const realIncumbentUrl = pathToFileURL(
+    resolve(import.meta.dirname, '../candidates/incumbent.mjs'),
+  ).href;
+  const checkerUrl = pathToFileURL(resolve(import.meta.dirname, 'check.mjs')).href;
+  await writeFile(
+    preloadPath,
+    `import { appendFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
+const target = ${JSON.stringify(realIncumbentUrl)};
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    const resolved = nextResolve(specifier, context);
+    if (resolved.url === target) appendFileSync(process.env.INCUMBENT_LOAD_MARKER, 'loaded\\n');
+    return resolved;
+  },
+});
+`,
+  );
+  await writeFile(
+    childPath,
+    `import { checkManifestFile } from ${JSON.stringify(checkerUrl)};
+await checkManifestFile({
+  manifestPath: process.env.CHECK_MANIFEST_PATH,
+  repositoryRoot: process.env.CHECK_REPOSITORY_ROOT,
+});
+`,
+  );
+
+  await execFilePromise(process.execPath, ['--import', preloadPath, childPath], {
+    env: {
+      ...process.env,
+      CHECK_MANIFEST_PATH: fixture.manifestPath,
+      CHECK_REPOSITORY_ROOT: fixture.repositoryRoot,
+      INCUMBENT_LOAD_MARKER: markerPath,
+    },
+  });
+
+  await assert.rejects(access(markerPath), { code: 'ENOENT' });
 });
 
 test('prints exactly one success line for a valid explicit manifest', async (t) => {
