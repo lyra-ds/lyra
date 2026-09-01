@@ -90,3 +90,93 @@ export function createModalRuntime(request) {
     destroy,
   });
 }
+
+function part(props, children) {
+  return Object.freeze({ children, props: Object.freeze(props) });
+}
+
+function fixtureParts(onOpenChange, openNested) {
+  return Object.freeze({
+    trigger: part(
+      { type: 'button', 'data-fixture-control': 'opener', onClick: () => onOpenChange(true) },
+      'Open modal',
+    ),
+    backdrop: part({ 'data-fixture-part': 'backdrop' }),
+    panel: part({ 'data-fixture-part': 'panel' }),
+    title: part({ 'data-fixture-part': 'title' }, 'Workspace details'),
+    description: part(
+      { 'data-fixture-part': 'description' },
+      'Review the workspace details before continuing.',
+    ),
+    initialTarget: part(
+      { type: 'button', 'data-fixture-part': 'initial-target' },
+      'Safe initial target',
+    ),
+    ordinaryAction: part({ type: 'button', 'data-fixture-action': 'ordinary' }, 'Save workspace'),
+    destructiveAction: part(
+      { type: 'button', 'data-fixture-action': 'destructive' },
+      'Delete workspace',
+    ),
+    close: part(
+      { type: 'button', 'data-fixture-control': 'close', onClick: () => onOpenChange(false) },
+      'Close modal',
+    ),
+    nestedTrigger: part(
+      { type: 'button', 'data-fixture-control': 'nested-opener', onClick: openNested },
+      'Open nested modal',
+    ),
+  });
+}
+
+function observedWithDiagnostics(runtime, diagnostics) {
+  const observation = runtime.observe();
+  return {
+    ...observation,
+    diagnostics: { ...observation.diagnostics, ...structuredClone(diagnostics) },
+  };
+}
+
+export function useModalFixtureRuntime({ React, request, diagnostics, onReady }) {
+  const [open, setOpen] = React.useState(() => request.scenario.initial.state.open === true);
+  const runtimeRef = React.useRef();
+  if (runtimeRef.current === undefined) runtimeRef.current = createModalRuntime(request);
+  const runtime = runtimeRef.current;
+  const onOpenChange = React.useCallback(
+    (nextOpen) => {
+      if (typeof nextOpen !== 'boolean') return false;
+      setOpen(nextOpen);
+      return runtime.operations[nextOpen ? 'open' : 'close']({
+        event: { target: 'modal-panel', type: nextOpen ? 'opened' : 'closed' },
+      });
+    },
+    [runtime],
+  );
+  const openNested = React.useCallback(
+    () =>
+      runtime.operations.open({
+        event: { target: 'child-modal', type: 'opened' },
+      }),
+    [runtime],
+  );
+  const fixtureRef = React.useRef();
+  if (fixtureRef.current === undefined) {
+    fixtureRef.current = Object.freeze({
+      destroy: runtime.destroy,
+      observe: () => observedWithDiagnostics(runtime, diagnostics),
+      openNested,
+      operations: runtime.operations,
+    });
+  }
+  const fixture = fixtureRef.current;
+  React.useEffect(() => {
+    onReady?.(fixture);
+  }, [fixture, onReady]);
+  React.useEffect(() => runtime.destroy, [runtime]);
+  return Object.freeze({
+    fixture,
+    onOpenChange,
+    open,
+    openNested,
+    parts: fixtureParts(onOpenChange, openNested),
+  });
+}
