@@ -28,6 +28,7 @@ const RUN_ID = /^[0-9A-Za-z][0-9A-Za-z._-]{0,99}$/u;
 const CANDIDATE_ID = /^[a-z0-9][a-z0-9-]*$/u;
 const SHA_256 = /^[a-f0-9]{64}$/u;
 const AUDIT_SEVERITIES = Object.freeze(['info', 'low', 'moderate', 'high', 'critical']);
+const FIXTURE_REACT_VERSIONS = new Set(['18.3.1', '19.2.8']);
 const DEPENDENCY_FIELDS = Object.freeze([
   'dependencies',
   'devDependencies',
@@ -368,6 +369,9 @@ function validateFixtureDependencies(value = {}) {
   }
   if (value.react !== value['react-dom']) {
     throw new Error('react and react-dom fixture versions must match');
+  }
+  if (value.react !== undefined && !FIXTURE_REACT_VERSIONS.has(value.react)) {
+    throw new Error('fixture dependency versions must equal 18.3.1 or 19.2.8');
   }
   return value;
 }

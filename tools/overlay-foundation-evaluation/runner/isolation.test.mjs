@@ -691,6 +691,11 @@ for (const [label, fixtureDependencies, expected] of [
     { react: '19.2.8', 'react-dom': '19.2.8', vite: '8.2.1' },
     /unsupported fixture dependency vite/u,
   ],
+  [
+    'unsupported exact version',
+    { react: '17.0.2', 'react-dom': '17.0.2' },
+    /fixture dependency versions must equal 18\.3\.1 or 19\.2\.8/u,
+  ],
   ['mismatched pair', { react: '18.3.1', 'react-dom': '19.2.8' }, /fixture versions must match/u],
   ['missing react-dom', { react: '19.2.8' }, /fixture versions must match/u],
 ]) {
