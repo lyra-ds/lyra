@@ -101,7 +101,7 @@ function expectedScenario(observation) {
 
 function containsVendorFact(value) {
   if (typeof value === 'string') {
-    return /(?:^|\s)(?:incumbent|lyra|radix|base[ -]?ui|zag|vendor)(?:\s+(?:dialog|modal|selector|component|primitive|implementation))?(?:\s*$)/iu.test(
+    return /(?:@(?:radix-ui\/react-dialog|base-ui-components\/react|zag-js\/dialog|lyra-ds\/react)|\b(?:incumbent|lyra|radix|base[ -]?ui|zag|vendor)\s+(?:dialog|modal|selector|component|primitive|implementation|adapter)\b)/iu.test(
       value,
     );
   }

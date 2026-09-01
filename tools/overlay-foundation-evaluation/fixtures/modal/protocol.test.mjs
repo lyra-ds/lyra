@@ -59,3 +59,19 @@ test('allows vendor facts only inside diagnostics', () => {
   assert.match(validateModalObservation(observation).join('\n'), /candidate|vendor|coupling/u);
   assert.deepEqual(validateModalObservation(validObservation), []);
 });
+
+test('rejects vendor identity embedded in normative prose and records', () => {
+  const announcement = structuredClone(validObservation);
+  announcement.announcements[0].message = 'Radix dialog opened';
+  const state = structuredClone(validObservation);
+  state.states[0].value = { note: 'Zag dialog active' };
+  for (const observation of [announcement, state]) {
+    assert.match(validateModalObservation(observation).join('\n'), /candidate|vendor|coupling/u);
+  }
+});
+
+test('accepts neutral prose containing non-identity substrings', () => {
+  const observation = structuredClone(validObservation);
+  observation.announcements[0].message = 'The radix sort is complete.';
+  assert.deepEqual(validateModalObservation(observation), []);
+});
