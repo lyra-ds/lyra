@@ -121,25 +121,126 @@ test('accepts neutral prose with valid identifiers in every normative identifier
 });
 
 for (const [label, mutate] of [
-  ['scenarioId', (scenario) => { scenario.scenarioId = 'radix.modal.v1'; }],
-  ['components item', (scenario) => { scenario.components = ['radix-dialog']; }],
-  ['PascalCase components item', (scenario) => { scenario.components = ['RadixDialog']; }],
-  ['uppercase acronym components item', (scenario) => { scenario.components = ['BaseUIDialog']; }],
-  ['operation.operation', (scenario) => { scenario.operations[0].operation = 'radix-open'; }],
-  ['operation.target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
-  ['role', (scenario) => { scenario.expected.roles[0].role = 'radix-dialog'; }],
-  ['relationship source', (scenario) => { scenario.expected.relationships = [{ source: 'radix-trigger', name: 'controls', target: 'dialog' }]; }],
-  ['relationship name', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'radix-controls', target: 'dialog' }]; }],
-  ['relationship target', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'radix-dialog' }]; }],
-  ['state target', (scenario) => { scenario.expected.states[0].target = 'radix-dialog'; }],
-  ['state name', (scenario) => { scenario.expected.states[0].name = 'radix-open'; }],
-  ['focus target', (scenario) => { scenario.expected.focus.target = 'radix-focus'; }],
-  ['camelCase focus target', (scenario) => { scenario.expected.focus.target = 'radixDialog'; }],
-  ['event target', (scenario) => { scenario.expected.events = [{ target: 'radix-dialog', type: 'opened' }]; }],
-  ['event type', (scenario) => { scenario.expected.events = [{ target: 'dialog', type: 'radix-opened' }]; }],
-  ['cleanup item', (scenario) => { scenario.expected.cleanup = ['radix-cleanup']; }],
-  ['requiredCells item', (scenario) => { scenario.requiredCells = ['radix-browser']; }],
-  ['capture item', (scenario) => { scenario.capture = ['radix-events']; }],
+  [
+    'scenarioId',
+    (scenario) => {
+      scenario.scenarioId = 'radix.modal.v1';
+    },
+  ],
+  [
+    'components item',
+    (scenario) => {
+      scenario.components = ['radix-dialog'];
+    },
+  ],
+  [
+    'PascalCase components item',
+    (scenario) => {
+      scenario.components = ['RadixDialog'];
+    },
+  ],
+  [
+    'uppercase acronym components item',
+    (scenario) => {
+      scenario.components = ['BaseUIDialog'];
+    },
+  ],
+  [
+    'operation.operation',
+    (scenario) => {
+      scenario.operations[0].operation = 'radix-open';
+    },
+  ],
+  [
+    'operation.target',
+    (scenario) => {
+      scenario.operations[0].target = 'radix-trigger';
+    },
+  ],
+  [
+    'role',
+    (scenario) => {
+      scenario.expected.roles[0].role = 'radix-dialog';
+    },
+  ],
+  [
+    'relationship source',
+    (scenario) => {
+      scenario.expected.relationships = [
+        { source: 'radix-trigger', name: 'controls', target: 'dialog' },
+      ];
+    },
+  ],
+  [
+    'relationship name',
+    (scenario) => {
+      scenario.expected.relationships = [
+        { source: 'trigger', name: 'radix-controls', target: 'dialog' },
+      ];
+    },
+  ],
+  [
+    'relationship target',
+    (scenario) => {
+      scenario.expected.relationships = [
+        { source: 'trigger', name: 'controls', target: 'radix-dialog' },
+      ];
+    },
+  ],
+  [
+    'state target',
+    (scenario) => {
+      scenario.expected.states[0].target = 'radix-dialog';
+    },
+  ],
+  [
+    'state name',
+    (scenario) => {
+      scenario.expected.states[0].name = 'radix-open';
+    },
+  ],
+  [
+    'focus target',
+    (scenario) => {
+      scenario.expected.focus.target = 'radix-focus';
+    },
+  ],
+  [
+    'camelCase focus target',
+    (scenario) => {
+      scenario.expected.focus.target = 'radixDialog';
+    },
+  ],
+  [
+    'event target',
+    (scenario) => {
+      scenario.expected.events = [{ target: 'radix-dialog', type: 'opened' }];
+    },
+  ],
+  [
+    'event type',
+    (scenario) => {
+      scenario.expected.events = [{ target: 'dialog', type: 'radix-opened' }];
+    },
+  ],
+  [
+    'cleanup item',
+    (scenario) => {
+      scenario.expected.cleanup = ['radix-cleanup'];
+    },
+  ],
+  [
+    'requiredCells item',
+    (scenario) => {
+      scenario.requiredCells = ['radix-browser'];
+    },
+  ],
+  [
+    'capture item',
+    (scenario) => {
+      scenario.capture = ['radix-events'];
+    },
+  ],
 ]) {
   test(`rejects candidate token in identifier path ${label}`, () => {
     const scenario = structuredClone(validScenario);
@@ -165,12 +266,44 @@ for (const identity of ['radix', 'base-ui', 'zag', 'incumbent']) {
 }
 
 for (const [label, mutate] of [
-  ['nested initial state', (scenario) => { scenario.initial.state.vendorAttribute = 'data-radix'; }],
-  ['operation target', (scenario) => { scenario.operations[0].target = 'radix-trigger'; }],
-  ['relationship', (scenario) => { scenario.expected.relationships = [{ source: 'trigger', name: 'controls', target: 'dialog', vendorSelector: '[data-radix]' }]; }],
-  ['event', (scenario) => { scenario.expected.events = [{ target: 'dialog', type: 'opened', vendorEvent: 'radix:open' }]; }],
-  ['announcement', (scenario) => { scenario.expected.announcements = [{ message: 'base-ui' }]; }],
-  ['identifier token', (scenario) => { scenario.expected.events = [{ target: '@zag-js/dialog', type: 'opened' }]; }],
+  [
+    'nested initial state',
+    (scenario) => {
+      scenario.initial.state.vendorAttribute = 'data-radix';
+    },
+  ],
+  [
+    'operation target',
+    (scenario) => {
+      scenario.operations[0].target = 'radix-trigger';
+    },
+  ],
+  [
+    'relationship',
+    (scenario) => {
+      scenario.expected.relationships = [
+        { source: 'trigger', name: 'controls', target: 'dialog', vendorSelector: '[data-radix]' },
+      ];
+    },
+  ],
+  [
+    'event',
+    (scenario) => {
+      scenario.expected.events = [{ target: 'dialog', type: 'opened', vendorEvent: 'radix:open' }];
+    },
+  ],
+  [
+    'announcement',
+    (scenario) => {
+      scenario.expected.announcements = [{ message: 'base-ui' }];
+    },
+  ],
+  [
+    'identifier token',
+    (scenario) => {
+      scenario.expected.events = [{ target: '@zag-js/dialog', type: 'opened' }];
+    },
+  ],
 ]) {
   test(`rejects candidate coupling in ${label}`, () => {
     const scenario = structuredClone(validScenario);

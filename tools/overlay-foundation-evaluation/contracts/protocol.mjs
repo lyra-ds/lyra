@@ -57,7 +57,10 @@ export function requirePattern(value, pattern, path, errors) {
 }
 
 export function requireUniqueStrings(value, path, errors) {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || item.length === 0)) {
+  if (
+    !Array.isArray(value) ||
+    value.some((item) => typeof item !== 'string' || item.length === 0)
+  ) {
     errors.push(`${path} must be an array of non-empty strings`);
   } else if (new Set(value).size !== value.length) {
     errors.push(`${path} must be unique`);
@@ -90,21 +93,27 @@ function hasCoupledIdentifierToken(value) {
     .toLowerCase()
     .split(/[^a-z0-9]+/u)
     .filter(Boolean);
-  return tokens.some((token, index) =>
-    IDENTIFIER_COUPLING_TOKENS.has(token) ||
-    [tokens[index], tokens[index + 1]].join('-') === 'base-ui',
+  return tokens.some(
+    (token, index) =>
+      IDENTIFIER_COUPLING_TOKENS.has(token) ||
+      [tokens[index], tokens[index + 1]].join('-') === 'base-ui',
   );
 }
 
 function requireCandidateNeutralIdentifier(value, path, errors) {
-  if (typeof value === 'string' && (isExactCoupledIdentity(value) || hasCoupledIdentifierToken(value))) {
+  if (
+    typeof value === 'string' &&
+    (isExactCoupledIdentity(value) || hasCoupledIdentifierToken(value))
+  ) {
     errors.push(`${path} contains candidate or vendor coupling`);
   }
 }
 
 function requireCandidateNeutralIdentifierArray(value, path, errors) {
   if (!Array.isArray(value)) return;
-  value.forEach((entry, index) => requireCandidateNeutralIdentifier(entry, `${path}[${index}]`, errors));
+  value.forEach((entry, index) =>
+    requireCandidateNeutralIdentifier(entry, `${path}[${index}]`, errors),
+  );
 }
 
 function rejectCandidateVendorCoupling(value, path, errors) {
@@ -198,11 +207,23 @@ function validateExpected(value, errors) {
 }
 
 function validateRelationships(value, errors) {
-  validateNamedRecords(value, 'scenario.expected.relationships', ['source', 'name', 'target'], ['source', 'name', 'target'], errors);
+  validateNamedRecords(
+    value,
+    'scenario.expected.relationships',
+    ['source', 'name', 'target'],
+    ['source', 'name', 'target'],
+    errors,
+  );
 }
 
 function validateEvents(value, errors) {
-  validateNamedRecords(value, 'scenario.expected.events', ['target', 'type'], ['target', 'type'], errors);
+  validateNamedRecords(
+    value,
+    'scenario.expected.events',
+    ['target', 'type'],
+    ['target', 'type'],
+    errors,
+  );
 }
 
 function validateAnnouncements(value, errors) {

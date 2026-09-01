@@ -9,6 +9,7 @@ import {
   symlink,
   writeFile,
 } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
@@ -131,7 +132,7 @@ async function writeAdapter(path, candidateId, supportedContractIds = ['OF-MODAL
 }
 
 async function createFixture(t, mutateAdapter = () => {}) {
-  const root = await mkdtemp(join(process.env.TMPDIR, 'overlay-core-test-'));
+  const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), 'overlay-core-test-'));
   t.after(() => rm(root, { recursive: true }));
   const repositoryRoot = join(root, 'repository');
   const candidateRoot = join(
@@ -181,6 +182,19 @@ async function createFixture(t, mutateAdapter = () => {}) {
     trackedFile,
   };
 }
+
+test('creates core fixtures when TMPDIR is unset', async (t) => {
+  const originalTmpdir = process.env.TMPDIR;
+  delete process.env.TMPDIR;
+  t.after(() => {
+    if (originalTmpdir === undefined) delete process.env.TMPDIR;
+    else process.env.TMPDIR = originalTmpdir;
+  });
+
+  const fixture = await createFixture(t);
+
+  assert.match(fixture.root, /overlay-core-test-/u);
+});
 
 function inspectedArtifact(record, destinationRoot) {
   return {

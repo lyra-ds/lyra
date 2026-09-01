@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { access, chmod, mkdir, mkdtemp, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -75,7 +76,7 @@ async function createFixture(
   t,
   { adapterSource = 'throw new Error("adapter module imported");\n' } = {},
 ) {
-  const root = await mkdtemp(join(process.env.TMPDIR, 'overlay-check-test-'));
+  const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), 'overlay-check-test-'));
   t.after(() => rm(root, { recursive: true }));
   const repositoryRoot = join(root, 'repository');
   const candidateRoot = join(
@@ -97,6 +98,19 @@ async function createFixture(
   await writeFile(manifestPath, `${JSON.stringify(candidateManifest(), null, 2)}\n`);
   return { candidateRoot, manifestPath, repositoryRoot, root };
 }
+
+test('creates checker fixtures when TMPDIR is unset', async (t) => {
+  const originalTmpdir = process.env.TMPDIR;
+  delete process.env.TMPDIR;
+  t.after(() => {
+    if (originalTmpdir === undefined) delete process.env.TMPDIR;
+    else process.env.TMPDIR = originalTmpdir;
+  });
+
+  const fixture = await createFixture(t);
+
+  assert.match(fixture.root, /overlay-check-test-/u);
+});
 
 test('validates only: no fetch, pnpm process, adapter import, or repository write occurs', async (t) => {
   const fixture = await createFixture(t);
