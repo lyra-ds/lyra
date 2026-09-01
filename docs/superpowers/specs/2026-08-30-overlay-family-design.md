@@ -1,6 +1,6 @@
 # Lyra V1 Overlay Family Design
 
-**Status:** Draft — awaiting written review
+**Status:** Approved
 
 **Date:** 2026-08-30
 
@@ -28,9 +28,9 @@ technology-neutral observable contracts:
   CreateWorkspaceDialog to reuse the applicable lower-level contract without
   forking it.
 
-This draft defines the behavior that a later evaluation MUST measure. It does
-not approve this specification, select an implementation foundation, authorize
-a dependency, claim compatibility or migration completion, or authorize a
+This approved specification defines the behavior that a later evaluation MUST
+measure. It does not select an implementation foundation, authorize a
+dependency, claim compatibility or migration completion, or authorize a
 runtime change. The incumbent Lyra implementation, Radix, Base UI, and the
 active Zag direction remain unevaluated alternatives.
 
@@ -500,7 +500,7 @@ rendering, or private DOM.
 | Tooltip               | `OF-ANCHORED` geometry plus `OF-TOOLTIP` | `lyraTooltip` MUST meet the same descriptive scenarios                                                                        |
 | CommandPalette        | `OF-COMPOSED` plus `OF-MODAL`            | `lyraCommandPalette` MUST preserve modal and combobox/listbox outcomes over server markup                                     |
 | WorkspaceSwitcher     | `OF-COMPOSED` plus `OF-ANCHORED`         | `lyraWorkspaceSwitcher` MUST preserve anchored listbox outcomes over server markup                                            |
-| CreateWorkspaceDialog | `OF-COMPOSED` plus `OF-MODAL`            | Unsupported; no Alpine parity or registration is claimed in this draft                                                        |
+| CreateWorkspaceDialog | `OF-COMPOSED` plus `OF-MODAL`            | Unsupported; no Alpine parity or registration is claimed in this specification                                                |
 
 An unsupported Alpine surface MUST remain marked `Unsupported` in public docs
 and the support matrix, with React as the supported component surface and
@@ -554,7 +554,7 @@ Every cell in the ledger's `v1-interactive` profile is applicable to every
 contract ID because each contract has a React surface and an interactive
 browser outcome. `required` means that the later harness MUST map the cell to
 contract-specific scenarios and produce exact-candidate evidence. No automated
-cell is excluded by this draft.
+cell is excluded by this specification.
 
 | `v1-interactive` cell | `OF-MODAL` | `OF-ANCHORED` | `OF-MENU` | `OF-TOOLTIP` | `OF-COMPOSED` | Required outcome                                                                                         |
 | --------------------- | ---------- | ------------- | --------- | ------------ | ------------- | -------------------------------------------------------------------------------------------------------- |
@@ -641,7 +641,7 @@ listed in the inventory are Lyra-owned current contracts. The later foundation
 evaluation MUST use them as the incumbent boundary; it MUST NOT silently treat
 a vendor surface as the target API.
 
-This draft does not freeze a replacement signature or claim compatibility.
+This specification does not freeze a replacement signature or claim compatibility.
 Before implementation, any source, type, DOM, event, behavior, ref, class,
 attribute, server-markup, or adapter-support change MUST be added to an
 approved revision of this specification and then mapped in English and
@@ -657,7 +657,7 @@ placement observers and measurement nodes, internal IDs not referenced by a
 public relationship, and vendor-emitted parts/selectors/`data-*` attributes.
 No migration guide or documentation may teach those details.
 
-Styles, React, and Alpine remain independently versioned. This draft records no
+Styles, React, and Alpine remain independently versioned. This specification records no
 compatibility ranges, deprecation release, removal release, migration path, or
 completed codemod. Those fields remain absent in the program ledger until the
 approved implementation and exact packed-consumer evidence exist.
@@ -669,7 +669,7 @@ MUST run the incumbent Lyra implementation, Radix, Base UI, and the active Zag
 direction against the same accepted fixtures, inputs, production build
 configuration, and evidence schema. The comparison MAY retain the incumbent
 and MUST NOT preselect a winner by popularity, familiarity, implementation
-effort, or this draft's wording.
+effort, or this specification's wording.
 
 The later ADR MUST use the
 [overlay foundation ADR template](../templates/overlay-foundation-adr.md) and
@@ -721,24 +721,24 @@ an approved correction.
 
 ## Approval checklist
 
-This checklist records the review required to move this document beyond Draft.
-Unchecked items are not evidence of failure or completion; they are the written
-approval gate.
+This checklist records the completed written review that moved this document
+to `Approved`. Each checked item is required by the machine-checked approval
+gate.
 
-- [ ] A Lyra maintainer confirms all nine current React contracts and eight
+- [x] A Lyra maintainer confirms all nine current React contracts and eight
       actual Alpine registrations are inventoried truthfully, with
       CreateWorkspaceDialog explicitly unsupported in Alpine.
-- [ ] Accessibility review confirms `OF-MODAL`, `OF-ANCHORED`, `OF-MENU`, and
+- [x] Accessibility review confirms `OF-MODAL`, `OF-ANCHORED`, `OF-MENU`, and
       `OF-TOOLTIP` cover semantics, keyboard, focus, pointer/touch, nesting,
       restoration, motion, direction, and teardown without preserving the
       known overlay P1 findings.
-- [ ] Architecture review confirms `OF-COMPOSED` reuses lower-level contracts,
+- [x] Architecture review confirms `OF-COMPOSED` reuses lower-level contracts,
       public Lyra APIs stay vendor-neutral, and duplicate production
       responsibilities are prohibited.
-- [ ] Quality review confirms every `v1-interactive` cell is mapped for all
+- [x] Quality review confirms every `v1-interactive` cell is mapped for all
       five contract IDs, evidence fields are exact, manual absence is
       `deferred-by-release-profile`, and bundle limits match the approved
       program.
-- [ ] The decision owner records written approval of this exact revision before
+- [x] The decision owner records written approval of this exact revision before
       any candidate evaluation, dependency change, evidence-harness plan, or
       runtime migration begins.

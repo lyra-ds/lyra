@@ -94,6 +94,16 @@ async function flush(): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
+function localIso(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+function calendarDayKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
 async function expectVisible(element: HTMLElement): Promise<void> {
   await vi.waitFor(() => expect(element.style.display).not.toBe('none'), { timeout: 3000 });
 }
@@ -232,7 +242,13 @@ describe('lyraRecurrenceSelector', () => {
 
   it('serializes a nested date-picker selection and only dispatches interaction changes', async () => {
     setViewport(false);
-    const host = mount("{ startDate: '2026-08-03' }");
+    const start = new Date();
+    start.setHours(12, 0, 0, 0);
+    const endDate = new Date(start);
+    endDate.setDate(endDate.getDate() + 7);
+    const startDate = localIso(start);
+    const serializedEndDate = localIso(endDate);
+    const host = mount(`{ startDate: '${startDate}' }`);
     const events: unknown[] = [];
     selector(host).addEventListener('lyra:change', (event) =>
       events.push((event as CustomEvent).detail),
@@ -250,19 +266,21 @@ describe('lyraRecurrenceSelector', () => {
     if (!trigger) throw new Error('Expected nested date picker');
     await userEvent.click(trigger);
     await flush();
-    const day = selector(host).querySelector<HTMLButtonElement>('[data-key="2026-7-10"]');
+    const day = selector(host).querySelector<HTMLButtonElement>(
+      `[data-key="${calendarDayKey(endDate)}"]`,
+    );
     if (!day) throw new Error('Expected nested calendar day');
     await userEvent.click(day);
     await flush();
     expect(data(host).value).toEqual({
       freq: 'weekly',
       interval: 1,
-      byWeekday: [1],
-      end: { type: 'date', date: '2026-08-10' },
+      byWeekday: [start.getDay()],
+      end: { type: 'date', date: serializedEndDate },
     });
     expect(JSON.parse(JSON.stringify(events.at(-1)))).toEqual(events.at(-1));
     expect(selector(host).querySelector('[aria-live="polite"]')?.textContent).toBe(
-      'Repeats every Monday, until Aug 10, 2026',
+      `Repeats every ${start.toLocaleDateString('en-US', { weekday: 'long' })}, until ${endDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`,
     );
   });
 

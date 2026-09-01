@@ -58,6 +58,17 @@ defines the evidence required to evaluate the incumbent Lyra implementation,
 Radix, Base UI, and the active Zag.js direction. It is a template only; no
 overlay candidate evaluation or implementation plan is part of Phase 0.
 
+The approved
+[overlay-foundation evaluation design](../../specs/2026-08-31-overlay-foundation-evaluation-design.md)
+defines the isolated harness, equal-fixture protocol, immutable
+evidence model, and decision checkpoints. It does not select or install a
+candidate.
+
+The approved
+[overlay-foundation core protocol implementation plan](../../plans/2026-08-31-overlay-foundation-core-protocol.md)
+wires the repository-owned validation and incumbent-characterization harness.
+It does not select or install a candidate.
+
 ## Release policy
 
 - [Independent package versioning policy](../../../../VERSIONING.md)
@@ -95,7 +106,7 @@ frozen required-check contexts remain `lint`, `typecheck`, `test`, and `build`.
 - [ ] Manual Windows/NVDA and macOS/VoiceOver workflow execution is deferred to
       optional post-release evidence under Automated Core and is not passed.
 
-The overlay-family specification now exists as a draft. Foundation evaluation,
-candidate dependency installation, and an overlay implementation plan remain
-blocked until the specification reaches `Approved` through an explicit
-maintainer checkpoint.
+The overlay-family specification is approved. A separately approved evaluation
+design and implementation plan must compare the incumbent, Radix, Base UI, and
+the active Zag direction before any candidate dependency or production overlay
+migration is authorized.

@@ -38,7 +38,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/dialog/dialog.tsx"],
       "targetContracts": ["OF-MODAL"],
@@ -58,7 +58,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/drawer/drawer.tsx"],
       "targetContracts": ["OF-MODAL"],
@@ -78,7 +78,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/bottom-sheet/bottom-sheet.tsx"],
       "targetContracts": ["OF-MODAL"],
@@ -98,7 +98,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/popover/popover.tsx"],
       "targetContracts": ["OF-ANCHORED"],
@@ -118,7 +118,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/dropdown/dropdown.tsx"],
       "targetContracts": ["OF-ANCHORED", "OF-MENU"],
@@ -138,7 +138,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/tooltip/tooltip.tsx"],
       "targetContracts": ["OF-ANCHORED", "OF-TOOLTIP"],
@@ -158,7 +158,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/command-palette/command-palette.tsx"],
       "targetContracts": ["OF-COMPOSED", "OF-MODAL"],
@@ -178,7 +178,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/workspace-switcher/workspace-switcher.tsx"],
       "targetContracts": ["OF-COMPOSED", "OF-ANCHORED"],
@@ -198,7 +198,7 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "draft"
+        "status": "approved"
       },
       "currentContract": ["packages/react/src/create-workspace-dialog/create-workspace-dialog.tsx"],
       "targetContracts": ["OF-COMPOSED", "OF-MODAL"],

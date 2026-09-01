@@ -1,0 +1,137 @@
+import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { test } from 'node:test';
+import { promisify } from 'node:util';
+
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const immutablePaths = ['pnpm-lock.yaml', 'docs/superpowers/baselines/lyra-v1/program.json'];
+const threatModelDocuments = [
+  'docs/superpowers/specs/2026-08-31-overlay-foundation-evaluation-design.md',
+  'tools/overlay-foundation-evaluation/README.md',
+];
+const threatModelClauses = [
+  'Hostile archives, pre-existing symlinks and path replacements, observed identity or containment changes, and uncertain cleanup are in scope and MUST fail closed.',
+  'A non-cooperating same-UID process concurrently renaming already-open evidence directories is out of scope.',
+  'The harness makes no namespace-isolation claim.',
+  'If this boundary changes, a Linux-native namespace/openat2 design MUST be adopted before external candidates are executed.',
+];
+const execFilePromise = promisify(execFile);
+
+async function hashFiles(paths) {
+  return Promise.all(
+    paths.map(async (path) =>
+      createHash('sha256')
+        .update(await readFile(resolve(repositoryRoot, path)))
+        .digest('hex'),
+    ),
+  );
+}
+
+async function documentedPnpmCommand(scriptName) {
+  const readme = await readFile(
+    resolve(repositoryRoot, 'tools/overlay-foundation-evaluation/README.md'),
+    'utf8',
+  );
+  const line = readme.split('\n').find((value) => value.startsWith(`\`pnpm ${scriptName}`));
+  assert.notEqual(line, undefined);
+  return line.slice(1, line.indexOf('`', 1)).split(' ');
+}
+
+async function runRejectedPnpm(args) {
+  assert.equal((await execFilePromise('pnpm', ['--version'])).stdout.trim(), '11.13.1');
+  try {
+    await execFilePromise('pnpm', args, { cwd: repositoryRoot });
+  } catch (error) {
+    return `${error.stdout ?? ''}${error.stderr ?? ''}`;
+  }
+  assert.fail(`pnpm ${args.join(' ')} unexpectedly succeeded`);
+}
+
+test('wires core tests without a production dependency or external manifest', async () => {
+  const immutableBefore = await hashFiles(immutablePaths);
+  const rootPackage = JSON.parse(await readFile(resolve(repositoryRoot, 'package.json'), 'utf8'));
+  assert.equal(
+    rootPackage.scripts['overlay:evaluate:core:test'],
+    'node --test tools/overlay-foundation-evaluation/*.test.mjs tools/overlay-foundation-evaluation/*/*.test.mjs',
+  );
+  assert.equal(
+    rootPackage.scripts['overlay:evaluate:check'],
+    'node tools/overlay-foundation-evaluation/scripts/check.mjs',
+  );
+  assert.equal(
+    rootPackage.scripts['overlay:evaluate:incumbent'],
+    'node tools/overlay-foundation-evaluation/scripts/incumbent.mjs',
+  );
+  assert.match(rootPackage.scripts.test, /pnpm overlay:evaluate:core:test/u);
+  for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+    for (const name of Object.keys(rootPackage[section] ?? {})) {
+      assert.doesNotMatch(name, /radix|base-ui|zag/u);
+    }
+  }
+  await assert.rejects(
+    stat(resolve(repositoryRoot, 'tools/overlay-foundation-evaluation/candidates.json')),
+    { code: 'ENOENT' },
+  );
+  assert.deepEqual(await hashFiles(immutablePaths), immutableBefore);
+});
+
+test('keeps executable plan snippets aligned with the implemented core protocol', async () => {
+  const plan = await readFile(
+    resolve(
+      repositoryRoot,
+      'docs/superpowers/plans/2026-08-31-overlay-foundation-core-protocol.md',
+    ),
+    'utf8',
+  );
+
+  assert.match(plan, /await mkdir\(destinationRoot, \{ recursive: true, mode: 0o700 \}\);/u);
+  assert.match(plan, /'attempts',\s+attempt\.runId,\s+attempt\.recordType,/u);
+  assert.match(plan, /attempt\.recordType === 'scenario'/u);
+  assert.match(
+    plan,
+    /const x=p\.components\.filter\(c=>\['dialog','drawer','bottom-sheet','popover','dropdown','tooltip','command-palette','workspace-switcher','create-workspace-dialog'\]\.includes\(c\.id\)\)/u,
+  );
+});
+
+for (const documentPath of threatModelDocuments) {
+  test(`pins the fail-closed filesystem threat boundary in ${documentPath}`, async () => {
+    const document = await readFile(resolve(repositoryRoot, documentPath), 'utf8');
+    const normalizedDocument = document.replace(/\s+/gu, ' ');
+    for (const clause of threatModelClauses) {
+      assert.ok(normalizedDocument.includes(clause), `${documentPath} must retain: ${clause}`);
+    }
+  });
+}
+
+test('forwards a documented manifest path through pnpm to the checker', async () => {
+  const command = await documentedPnpmCommand('overlay:evaluate:check');
+  assert.deepEqual(command, ['pnpm', 'overlay:evaluate:check', '--manifest', '<path>']);
+  const manifestPath = resolve(
+    repositoryRoot,
+    'tools/overlay-foundation-evaluation/missing-forwarding-manifest.json',
+  );
+
+  const output = await runRejectedPnpm([command[1], command[2], manifestPath]);
+
+  assert.doesNotMatch(output, /usage: check\.mjs/u);
+  assert.match(output, /ENOENT|no such file or directory/u);
+});
+
+test('forwards a documented output path through pnpm before incumbent build', async (t) => {
+  const command = await documentedPnpmCommand('overlay:evaluate:incumbent');
+  assert.deepEqual(command, ['pnpm', 'overlay:evaluate:incumbent', '--output', '<path>']);
+  const temporaryRoot = await mkdtemp(join(tmpdir(), 'overlay-root-forwarding-'));
+  t.after(() => rm(temporaryRoot, { recursive: true }));
+  const outputPath = join(temporaryRoot, 'incumbent.json');
+  await writeFile(outputPath, 'existing output\n');
+
+  const output = await runRejectedPnpm([command[1], command[2], outputPath]);
+
+  assert.doesNotMatch(output, /usage: incumbent\.mjs/u);
+  assert.match(output, /output path must not exist/u);
+});

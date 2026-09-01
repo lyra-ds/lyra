@@ -88,18 +88,20 @@ test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild
   assert.equal(packageScripts['packages/alpine/package.json'].test, undefined);
 });
 
-test('checks the lock before prebuilding React and Alpine for clean root tests', () => {
+test('checks the lock and overlay core before prebuilding React and Alpine', () => {
   const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
   const rootTestCommands = rootScripts.test.split(' && ');
   const requiredOrder = [
     'pnpm security:check',
+    'pnpm overlay:evaluate:core:test',
     'pnpm --filter @lyra-ds/react run build',
     'pnpm --filter @lyra-ds/alpine run build',
-    rootTestCommands.find((command) => command.startsWith('node --test ')),
   ];
+  const prerequisites = rootTestCommands.filter((command) => requiredOrder.includes(command));
 
+  assert.deepEqual(prerequisites, requiredOrder);
   assert.deepEqual(
-    requiredOrder.map((command) => rootTestCommands.indexOf(command)),
+    prerequisites.map((command) => rootTestCommands.indexOf(command)),
     [0, 1, 2, 3],
   );
 });
