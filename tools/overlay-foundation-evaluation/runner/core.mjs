@@ -346,15 +346,26 @@ function corePreflightPass(runId, candidate, stage, observed) {
   };
 }
 
-function corePreflightFailure(runId, candidate, error) {
+function snapshotFailure(candidate, error) {
   const metadata = normalizedBoundaryMetadata(error) ?? error;
-  return {
-    ...attemptBase(runId, candidate, metadata.stage),
-    result: 'FAIL',
+  return Object.freeze({
+    candidateId: candidate.id,
     classification: metadata.classification,
+    scope: metadata.scope,
+    stage: metadata.stage,
+    message: errorMessage(error),
+    error,
+  });
+}
+
+function corePreflightFailure(runId, failure) {
+  return {
+    ...attemptBase(runId, { id: failure.candidateId }, failure.stage),
+    result: 'FAIL',
+    classification: failure.classification,
     observed: {
-      message: error.message,
-      scope: metadata.scope,
+      message: failure.message,
+      scope: failure.scope,
     },
   };
 }
@@ -514,7 +525,10 @@ async function persistRepositoryFailure({
   attempts,
 }) {
   const repositoryFailure = runPolicyError(error);
-  const repositoryAttempt = corePreflightFailure(runId, candidate, repositoryFailure);
+  const repositoryAttempt = corePreflightFailure(
+    runId,
+    snapshotFailure(candidate, repositoryFailure),
+  );
   await persistAttempt({ attempt: repositoryAttempt, evidenceRoot, operations });
   attempts.push(repositoryAttempt);
   return repositoryFailure;
@@ -576,8 +590,8 @@ async function persistCheckedAttempt({
   }
 }
 
-function isRunFatal(error) {
-  return (normalizedBoundaryMetadata(error) ?? error).scope === 'run';
+function isRunFatal(failure) {
+  return failure.scope === 'run';
 }
 
 export async function runCorePreflight(
@@ -638,7 +652,9 @@ export async function runCorePreflight(
     try {
       adapters.set(candidate.id, { adapter: await loadAdapter(candidate, index, root) });
     } catch (error) {
-      adapters.set(candidate.id, { error: adapterError(error) });
+      adapters.set(candidate.id, {
+        failure: snapshotFailure(candidate, adapterError(error)),
+      });
     }
     await requireRepositoryIntegrity({
       runId,
@@ -666,7 +682,7 @@ export async function runCorePreflight(
 
     const incumbentCandidate = manifest.candidates[0];
     let incumbentAttempt;
-    let incumbentFailure = adapters.get('incumbent').error;
+    let incumbentFailure = adapters.get('incumbent').failure;
     if (incumbentFailure === undefined) {
       operations.event('characterize:incumbent');
       try {
@@ -683,11 +699,11 @@ export async function runCorePreflight(
           characterization,
         );
       } catch (error) {
-        incumbentFailure = incumbentError(error);
+        incumbentFailure = snapshotFailure(incumbentCandidate, incumbentError(error));
       }
     }
     if (incumbentFailure !== undefined) {
-      incumbentAttempt = corePreflightFailure(runId, incumbentCandidate, incumbentFailure);
+      incumbentAttempt = corePreflightFailure(runId, incumbentFailure);
     }
     await persistCheckedAttempt({
       runId,
@@ -700,11 +716,13 @@ export async function runCorePreflight(
       operations,
       attempts,
     });
-    if (incumbentFailure !== undefined && isRunFatal(incumbentFailure)) throw incumbentFailure;
+    if (incumbentFailure !== undefined && isRunFatal(incumbentFailure)) {
+      throw incumbentFailure.error;
+    }
 
     for (const candidate of manifest.candidates.slice(1)) {
       let attempt;
-      let candidateFailure = adapters.get(candidate.id).error;
+      let candidateFailure = adapters.get(candidate.id).failure;
       if (candidateFailure === undefined) {
         try {
           const artifacts = [];
@@ -744,14 +762,15 @@ export async function runCorePreflight(
           }
           attempt = corePreflightPass(runId, candidate, 'installation', installed);
         } catch (error) {
-          candidateFailure =
+          const normalizedFailure =
             normalizedBoundaryMetadata(error) === undefined
               ? runPolicyError(error, 'installation')
               : error;
+          candidateFailure = snapshotFailure(candidate, normalizedFailure);
         }
       }
       if (candidateFailure !== undefined) {
-        attempt = corePreflightFailure(runId, candidate, candidateFailure);
+        attempt = corePreflightFailure(runId, candidateFailure);
       }
       await persistCheckedAttempt({
         runId,
@@ -764,7 +783,9 @@ export async function runCorePreflight(
         operations,
         attempts,
       });
-      if (candidateFailure !== undefined && isRunFatal(candidateFailure)) throw candidateFailure;
+      if (candidateFailure !== undefined && isRunFatal(candidateFailure)) {
+        throw candidateFailure.error;
+      }
     }
 
     operations.event('verify-repository-unchanged');

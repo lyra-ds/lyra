@@ -528,6 +528,87 @@ export const adapterDescriptor = ${JSON.stringify({
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 
+test('preserves deferred adapter metadata when incumbent characterization reuses the same Error', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const sharedError = new Error('shared adapter and incumbent failure');
+  const sharedKey = `overlay-core-shared-error:${fixture.root}`;
+  const sharedSymbol = Symbol.for(sharedKey);
+  globalThis[sharedSymbol] = sharedError;
+  t.after(() => {
+    delete globalThis[sharedSymbol];
+  });
+  await writeFile(
+    join(
+      fixture.repositoryRoot,
+      'tools',
+      'overlay-foundation-evaluation',
+      'candidates',
+      'radix.mjs',
+    ),
+    `throw globalThis[Symbol.for(${JSON.stringify(sharedKey)})];\n`,
+  );
+
+  const summary = await runFixture(
+    fixture,
+    successfulDependencies(events, {
+      characterizeIncumbent: async () => {
+        throw sharedError;
+      },
+    }),
+  );
+
+  assert.equal(summary.result, 'FAIL');
+  assert.equal(events.includes('acquire:radix'), false);
+  assert.equal(events.includes('acquire:base-ui'), true);
+  assert.equal(events.includes('acquire:zag'), true);
+  const incumbentFailure = await readAttempt(fixture.evidenceRoot, 'incumbent', 'artifact');
+  assert.equal(incumbentFailure.classification, 'packaging');
+  assert.equal(incumbentFailure.observed.scope, 'candidate');
+  const radixFailure = await readAttempt(fixture.evidenceRoot, 'radix', 'adapter');
+  assert.equal(radixFailure.classification, 'policy');
+  assert.equal(radixFailure.observed.scope, 'candidate');
+  assert.equal(radixFailure.observed.message, 'shared adapter and incumbent failure');
+  assert.equal((await readAttempt(fixture.evidenceRoot, 'base-ui', 'installation')).result, 'PASS');
+  assert.equal((await readAttempt(fixture.evidenceRoot, 'zag', 'installation')).result, 'PASS');
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('assigns fresh metadata snapshots when external stages reuse the same Error', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const sharedError = new Error('shared external candidate failure');
+  const dependencies = successfulDependencies(events, {
+    acquireExternalArtifact: async ({ record, destinationRoot }) => {
+      if (record.name === '@radix-ui/react-dialog') throw sharedError;
+      return {
+        record,
+        path: join(destinationRoot, `${record.name.replaceAll('/', '-')}.tgz`),
+        sha256: record.sha256,
+        bytes: 123,
+      };
+    },
+    installExternalCandidate: async ({ candidate }) => {
+      if (candidate.id === 'base-ui') throw sharedError;
+      return { candidateId: candidate.id };
+    },
+  });
+
+  const summary = await runFixture(fixture, dependencies);
+
+  assert.equal(summary.result, 'FAIL');
+  const radixFailure = await readAttempt(fixture.evidenceRoot, 'radix', 'artifact');
+  assert.equal(radixFailure.classification, 'packaging');
+  assert.equal(radixFailure.observed.scope, 'candidate');
+  const baseFailure = await readAttempt(fixture.evidenceRoot, 'base-ui', 'installation');
+  assert.equal(baseFailure.classification, 'infrastructure');
+  assert.equal(baseFailure.observed.scope, 'candidate');
+  assert.equal(events.includes('install:radix'), false);
+  assert.equal(events.includes('acquire:zag'), true);
+  assert.equal((await readAttempt(fixture.evidenceRoot, 'zag', 'installation')).result, 'PASS');
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
 for (const [name, mutate] of [
   ['revision', (characterization) => (characterization.revision = alternateRevision)],
   ['artifact name', (characterization) => (characterization.artifacts[0].name = '@lyra-ds/other')],
