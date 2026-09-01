@@ -16,7 +16,7 @@ const threatModelDocuments = [
 ];
 const threatModelClauses = [
   'Hostile archives, pre-existing symlinks and path replacements, observed identity or containment changes, and uncertain cleanup are in scope and MUST fail closed.',
-  'A non-cooperating same-UID process concurrently renaming already-open directories is out of scope.',
+  'A non-cooperating same-UID process concurrently renaming already-open evidence directories is out of scope.',
   'The harness makes no namespace-isolation claim.',
   'If this boundary changes, a Linux-native namespace/openat2 design MUST be adopted before external candidates are executed.',
 ];
@@ -80,15 +80,15 @@ test('wires core tests without a production dependency or external manifest', as
   assert.deepEqual(await hashFiles(immutablePaths), immutableBefore);
 });
 
-test('pins the fail-closed filesystem threat boundary in tracked operator documents', async () => {
-  for (const documentPath of threatModelDocuments) {
+for (const documentPath of threatModelDocuments) {
+  test(`pins the fail-closed filesystem threat boundary in ${documentPath}`, async () => {
     const document = await readFile(resolve(repositoryRoot, documentPath), 'utf8');
     const normalizedDocument = document.replace(/\s+/gu, ' ');
     for (const clause of threatModelClauses) {
       assert.ok(normalizedDocument.includes(clause), `${documentPath} must retain: ${clause}`);
     }
-  }
-});
+  });
+}
 
 test('forwards a documented manifest path through pnpm to the checker', async () => {
   const command = await documentedPnpmCommand('overlay:evaluate:check');

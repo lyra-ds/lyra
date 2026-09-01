@@ -109,7 +109,7 @@ normalizing private observations into the common evidence schema.
 
 Hostile archives, pre-existing symlinks and path replacements, observed identity
 or containment changes, and uncertain cleanup are in scope and MUST fail closed.
-A non-cooperating same-UID process concurrently renaming already-open
+A non-cooperating same-UID process concurrently renaming already-open evidence
 directories is out of scope.
 The harness makes no namespace-isolation claim.
 If this boundary changes, a Linux-native namespace/openat2 design MUST be
