@@ -64,6 +64,11 @@ defines the isolated harness, equal-fixture protocol, immutable
 evidence model, and decision checkpoints. It does not select or install a
 candidate.
 
+The approved
+[overlay-foundation core protocol implementation plan](../../plans/2026-08-31-overlay-foundation-core-protocol.md)
+wires the repository-owned validation and incumbent-characterization harness.
+It does not select or install a candidate.
+
 ## Release policy
 
 - [Independent package versioning policy](../../../../VERSIONING.md)
