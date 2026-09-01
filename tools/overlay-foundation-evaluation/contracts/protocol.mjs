@@ -210,26 +210,117 @@ function isStructuralMarkupAttribute(name) {
   );
 }
 
+function isMarkupNameCharacter(character) {
+  return typeof character === 'string' && /[0-9A-Za-z:._-]/u.test(character);
+}
+
+function skipMarkupWhitespace(markup, start) {
+  let cursor = start;
+  while (/\s/u.test(markup[cursor] ?? '')) cursor += 1;
+  return cursor;
+}
+
+function rejectMalformedMarkup(errors) {
+  errors.push('scenario.initial.markup contains a malformed or incomplete tag');
+}
+
+function scanMarkupTag(markup, start, errors) {
+  let cursor = skipMarkupWhitespace(markup, start + 1);
+  const closing = markup[cursor] === '/';
+  if (closing) cursor = skipMarkupWhitespace(markup, cursor + 1);
+  if (!/[A-Za-z]/u.test(markup[cursor] ?? '')) {
+    if (closing) rejectMalformedMarkup(errors);
+    return closing ? markup.length : start + 1;
+  }
+
+  const tagNameStart = cursor;
+  while (isMarkupNameCharacter(markup[cursor])) cursor += 1;
+  const tagName = markup.slice(tagNameStart, cursor);
+  requireCandidateNeutralIdentifier(tagName, 'scenario.initial.markup tag', errors);
+  if (cursor < markup.length && !/[\s/>]/u.test(markup[cursor])) {
+    rejectMalformedMarkup(errors);
+    return markup.length;
+  }
+
+  while (cursor < markup.length) {
+    cursor = skipMarkupWhitespace(markup, cursor);
+    if (cursor >= markup.length) {
+      rejectMalformedMarkup(errors);
+      return markup.length;
+    }
+    if (markup[cursor] === '>') return cursor + 1;
+    if (markup[cursor] === '<' || closing) {
+      rejectMalformedMarkup(errors);
+      return markup.length;
+    }
+    if (markup[cursor] === '/') {
+      cursor = skipMarkupWhitespace(markup, cursor + 1);
+      if (markup[cursor] === '>') return cursor + 1;
+      rejectMalformedMarkup(errors);
+      return markup.length;
+    }
+
+    const attributeStart = cursor;
+    while (cursor < markup.length && !/[\s"'<>/=`]/u.test(markup[cursor])) {
+      cursor += 1;
+    }
+    if (cursor === attributeStart) {
+      rejectMalformedMarkup(errors);
+      return markup.length;
+    }
+    const attributeName = markup.slice(attributeStart, cursor);
+    const path = `scenario.initial.markup attribute ${attributeName}`;
+    requireCandidateNeutralIdentifier(attributeName, path, errors);
+
+    cursor = skipMarkupWhitespace(markup, cursor);
+    if (markup[cursor] !== '=') continue;
+    cursor = skipMarkupWhitespace(markup, cursor + 1);
+    if (cursor >= markup.length || /[<>]/u.test(markup[cursor])) {
+      rejectMalformedMarkup(errors);
+      return markup.length;
+    }
+
+    let attributeValue;
+    if (markup[cursor] === '"' || markup[cursor] === "'") {
+      const quote = markup[cursor];
+      const valueStart = cursor + 1;
+      cursor = valueStart;
+      while (cursor < markup.length && markup[cursor] !== quote) cursor += 1;
+      if (cursor >= markup.length) {
+        rejectMalformedMarkup(errors);
+        return markup.length;
+      }
+      attributeValue = markup.slice(valueStart, cursor);
+      cursor += 1;
+    } else {
+      const valueStart = cursor;
+      while (cursor < markup.length && !/[\s"'=<>`]/u.test(markup[cursor])) cursor += 1;
+      if (cursor === valueStart) {
+        rejectMalformedMarkup(errors);
+        return markup.length;
+      }
+      attributeValue = markup.slice(valueStart, cursor);
+    }
+    if (isStructuralMarkupAttribute(attributeName)) {
+      requireCandidateNeutralIdentifier(attributeValue, `${path} value`, errors);
+    }
+    if (cursor < markup.length && !/[\s/>]/u.test(markup[cursor])) {
+      rejectMalformedMarkup(errors);
+      return markup.length;
+    }
+  }
+
+  rejectMalformedMarkup(errors);
+  return markup.length;
+}
+
 function validateMarkup(markup, errors) {
   if (typeof markup !== 'string') return;
-  const tagPattern = /<\s*\/?\s*([A-Za-z][0-9A-Za-z:._-]*)([^<>]*?)>/gu;
-  for (const tag of markup.matchAll(tagPattern)) {
-    const tagName = tag[1];
-    requireCandidateNeutralIdentifier(tagName, 'scenario.initial.markup tag', errors);
-    if (/^<\s*\//u.test(tag[0])) continue;
-
-    const attributes = tag[2];
-    const attributePattern = /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gu;
-    for (const attribute of attributes.matchAll(attributePattern)) {
-      const attributeName = attribute[1];
-      if (attributeName === '/') continue;
-      const path = `scenario.initial.markup attribute ${attributeName}`;
-      requireCandidateNeutralIdentifier(attributeName, path, errors);
-      const attributeValue = attribute[2] ?? attribute[3] ?? attribute[4];
-      if (attributeValue !== undefined && isStructuralMarkupAttribute(attributeName)) {
-        requireCandidateNeutralIdentifier(attributeValue, `${path} value`, errors);
-      }
-    }
+  let cursor = 0;
+  while (cursor < markup.length) {
+    const tagStart = markup.indexOf('<', cursor);
+    if (tagStart === -1) return;
+    cursor = scanMarkupTag(markup, tagStart, errors);
   }
 }
 

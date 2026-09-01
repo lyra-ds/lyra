@@ -237,7 +237,11 @@ async function writeAcquiredArtifact(record, destinationRoot) {
   return { record, path, sha256: record.sha256, bytes: bytes.byteLength };
 }
 
-async function writeInstallEvidence(candidate, runRoot) {
+async function writeInstallEvidence(
+  candidate,
+  runRoot,
+  includedPrefixes = ['fixtureManifest', 'lockfile', 'resolvedGraph', 'audit', 'licenseInventory'],
+) {
   const fixtureRoot = join(runRoot, `candidate-${candidate.id}`, 'fixture');
   await mkdir(fixtureRoot, { recursive: true });
   const files = {
@@ -249,6 +253,7 @@ async function writeInstallEvidence(candidate, runRoot) {
   };
   const evidence = { candidateId: candidate.id };
   for (const [prefix, [name, bytes]] of Object.entries(files)) {
+    if (!includedPrefixes.includes(prefix)) continue;
     const path = join(fixtureRoot, name);
     await writeFile(path, bytes);
     evidence[`${prefix}Path`] = path;
@@ -587,6 +592,60 @@ test('records license, lifecycle, and audit failures locally and continues indep
     assert.equal(attempt.classification, 'security');
     assert.equal(attempt.observed.scope, 'candidate');
   }
+  await assertOwnedRootsRemoved(fixture.temporaryDirectory);
+});
+
+test('preserves verified artifact and partial install evidence through an audit failure', async (t) => {
+  const fixture = await createFixture(t);
+  const events = [];
+  const auditFailure = new Error('audit report rejected: audit reports 1 high vulnerabilities');
+  const partialByError = new WeakMap();
+  const dependencies = successfulDependencies(events, {
+    installExternalCandidate: async ({ candidate, runRoot }) => {
+      if (candidate.id !== 'base-ui') return writeInstallEvidence(candidate, runRoot);
+      const partialEvidence = await writeInstallEvidence(candidate, runRoot, [
+        'fixtureManifest',
+        'lockfile',
+        'resolvedGraph',
+        'audit',
+      ]);
+      partialByError.set(auditFailure, partialEvidence);
+      throw auditFailure;
+    },
+    readPartialInstallationEvidence: (error) => {
+      assert.equal(error, auditFailure);
+      return partialByError.get(error);
+    },
+  });
+
+  const summary = await runFixture(fixture, dependencies);
+
+  assert.equal(summary.result, 'FAIL');
+  assert.equal(auditFailure.classification, 'security');
+  assert.equal(auditFailure.scope, 'candidate');
+  assert.equal(auditFailure.stage, 'audit');
+  const failure = await readAttempt(fixture.evidenceRoot, 'base-ui', 'audit');
+  assert.equal(failure.result, 'FAIL');
+  assert.equal(failure.classification, 'security');
+  assert.equal(failure.observed.scope, 'candidate');
+  assert.equal(failure.artifactPaths.length, 5);
+  assert.equal(failure.observed.artifacts.length, 1);
+  assert.equal(Object.hasOwn(failure.observed, 'licenseInventoryPath'), false);
+  assert.equal(Object.hasOwn(failure.observed, 'licenseInventorySha256'), false);
+  for (const relativePath of failure.artifactPaths) {
+    const bytes = await readFile(join(fixture.evidenceRoot, relativePath));
+    const artifact = failure.observed.artifacts.find(({ path }) => path === relativePath);
+    if (artifact !== undefined) {
+      assert.equal(sha256(bytes), artifact.sha256);
+      continue;
+    }
+    const pathKey = Object.keys(failure.observed).find(
+      (key) => key.endsWith('Path') && failure.observed[key] === relativePath,
+    );
+    assert.notEqual(pathKey, undefined);
+    assert.equal(sha256(bytes), failure.observed[pathKey.replace(/Path$/u, 'Sha256')]);
+  }
+  assert.equal(events.includes('acquire:zag'), true);
   await assertOwnedRootsRemoved(fixture.temporaryDirectory);
 });
 

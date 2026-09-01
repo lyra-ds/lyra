@@ -11,6 +11,7 @@ import {
   cleanupOwnedRunRoot,
   createOwnedRunRoot,
   installExternalCandidate,
+  readPartialInstallationEvidence,
   validateAuditReport,
 } from './isolation.mjs';
 
@@ -713,6 +714,38 @@ test('rejects an installed graph whose audit has a high advisory', async (t) => 
   audit.metadata.vulnerabilities.high = 1;
   const setup = await installFixture(t, { audit });
   await assert.rejects(setup.install(), /high/u);
+});
+
+test('exposes only verified installation evidence completed before an audit rejection', async (t) => {
+  const audit = structuredClone(cleanAudit);
+  audit.metadata.vulnerabilities.high = 1;
+  const setup = await installFixture(t, { audit });
+  let failure;
+  try {
+    await setup.install();
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.equal(failure instanceof Error, true);
+  assert.match(failure.message, /high/u);
+  const partial = readPartialInstallationEvidence(failure);
+  assert.deepEqual(Object.keys(partial).sort(), [
+    'auditPath',
+    'auditSha256',
+    'fixtureManifestPath',
+    'fixtureManifestSha256',
+    'lockfilePath',
+    'lockfileSha256',
+    'resolvedGraphPath',
+    'resolvedGraphSha256',
+  ]);
+  for (const prefix of ['fixtureManifest', 'lockfile', 'resolvedGraph', 'audit']) {
+    assert.equal(await sha256File(partial[`${prefix}Path`]), partial[`${prefix}Sha256`]);
+  }
+  assert.equal(Object.hasOwn(partial, 'licenseInventoryPath'), false);
+  assert.equal(Object.hasOwn(partial, 'licenseInventorySha256'), false);
+  assert.equal(readPartialInstallationEvidence(new Error('unrelated')), undefined);
 });
 
 test('rejects a repository mutation and preserves the foreign edit for diagnosis', async (t) => {

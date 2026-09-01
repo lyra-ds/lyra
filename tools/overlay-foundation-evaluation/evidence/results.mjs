@@ -1,5 +1,5 @@
 import { constants as fsConstants } from 'node:fs';
-import { lstat, mkdir, open, realpath } from 'node:fs/promises';
+import { lstat, mkdir, open, realpath, unlink } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import {
@@ -24,6 +24,9 @@ const PREFLIGHT_STAGES = Object.freeze([
 ]);
 const RECORD_TYPES = Object.freeze(['scenario', 'preflight']);
 const SAFE_SEGMENT = /^[0-9A-Za-z][0-9A-Za-z._-]*$/u;
+const PROC_SELF_FD = '/proc/self/fd';
+const DIRECTORY_OPEN_FLAGS =
+  fsConstants.O_RDONLY | fsConstants.O_DIRECTORY | fsConstants.O_NOFOLLOW;
 const SCENARIO_KEYS = Object.freeze([
   'schemaVersion',
   'recordType',
@@ -102,7 +105,60 @@ async function requirePinnedRoot(root, pinned) {
   }
 }
 
-async function ensureEvidenceDirectory(evidenceRoot, segments) {
+async function closeDirectoryHandles(records) {
+  for (const { handle } of [...records].reverse()) await handle.close();
+}
+
+async function proveAnchoredDirectory(handle, canonicalRoot) {
+  if (!Number.isSafeInteger(handle.fd) || handle.fd < 0) {
+    throw new Error('anchored evidence traversal requires an open directory descriptor');
+  }
+  const descriptorPath = join(PROC_SELF_FD, String(handle.fd));
+  let descriptorTarget;
+  try {
+    descriptorTarget = await realpath(descriptorPath);
+  } catch (error) {
+    throw new Error('anchored evidence traversal through /proc/self/fd is unavailable', {
+      cause: error,
+    });
+  }
+  const descriptorStat = await handle.stat({ bigint: true });
+  if (!descriptorStat.isDirectory()) {
+    throw new Error('anchored evidence descriptor must reference a directory');
+  }
+  const targetIdentity = await readDirectoryIdentity(descriptorTarget);
+  const descriptorIdentity = { device: descriptorStat.dev, inode: descriptorStat.ino };
+  if (!sameDirectoryIdentity(descriptorIdentity, targetIdentity)) {
+    throw new Error('anchored evidence descriptor identity could not be proven');
+  }
+  if (!isInsideOrEqual(canonicalRoot, descriptorTarget)) {
+    throw new Error('anchored evidence descriptor escapes canonical containment');
+  }
+  return { descriptorIdentity, descriptorPath, descriptorTarget };
+}
+
+async function requireAnchoredDirectoryChain({ canonicalRoot, records, root, rootIdentity }) {
+  await requirePinnedRoot(root, rootIdentity);
+  for (const record of records) {
+    const descriptor = await proveAnchoredDirectory(record.handle, canonicalRoot);
+    if (
+      descriptor.descriptorTarget !== record.canonicalPath ||
+      !sameDirectoryIdentity(descriptor.descriptorIdentity, record.identity)
+    ) {
+      throw new Error('anchored evidence directory identity changed during write');
+    }
+    const namedIdentity = await readDirectoryIdentity(record.namedPath);
+    if (!sameDirectoryIdentity(namedIdentity, record.identity)) {
+      throw new Error('named evidence directory identity changed during write');
+    }
+    const namedCanonicalPath = await realpath(record.namedPath);
+    if (namedCanonicalPath !== record.canonicalPath) {
+      throw new Error('named evidence directory containment changed during write');
+    }
+  }
+}
+
+async function openEvidenceDirectoryChain(evidenceRoot, segments) {
   if (typeof evidenceRoot !== 'string' || !isAbsolute(evidenceRoot)) {
     throw new TypeError('evidenceRoot must be an absolute path');
   }
@@ -111,49 +167,128 @@ async function ensureEvidenceDirectory(evidenceRoot, segments) {
   if (canonicalRoot !== root) {
     throw new Error('evidenceRoot path must not contain a symbolic link');
   }
-  const pinned = await readDirectoryIdentity(root);
-  let directory = root;
-  for (const segment of segments) {
-    directory = join(directory, segment);
+  const rootIdentity = await readDirectoryIdentity(root);
+  const records = [];
+  try {
+    const rootHandle = await open(root, DIRECTORY_OPEN_FLAGS);
     try {
-      await mkdir(directory, { mode: 0o700 });
+      const anchoredRoot = await proveAnchoredDirectory(rootHandle, canonicalRoot);
+      if (
+        anchoredRoot.descriptorTarget !== canonicalRoot ||
+        !sameDirectoryIdentity(anchoredRoot.descriptorIdentity, rootIdentity)
+      ) {
+        throw new Error('evidence root identity changed before anchored traversal');
+      }
     } catch (error) {
-      if (error?.code !== 'EEXIST') throw error;
+      await rootHandle.close();
+      throw error;
     }
-    const info = await lstat(directory, { bigint: true });
-    if (!info.isDirectory() || info.isSymbolicLink()) {
-      throw new Error(`evidence descendant must not be a symbolic link: ${directory}`);
+    records.push({
+      canonicalPath: canonicalRoot,
+      handle: rootHandle,
+      identity: rootIdentity,
+      namedPath: root,
+    });
+
+    for (const segment of segments) {
+      const parent = records.at(-1);
+      const parentAnchor = await proveAnchoredDirectory(parent.handle, canonicalRoot);
+      const anchoredPath = join(parentAnchor.descriptorPath, segment);
+      try {
+        await mkdir(anchoredPath, { mode: 0o700 });
+      } catch (error) {
+        if (error?.code !== 'EEXIST') throw error;
+      }
+      const anchoredInfo = await lstat(anchoredPath, { bigint: true });
+      if (!anchoredInfo.isDirectory() || anchoredInfo.isSymbolicLink()) {
+        throw new Error(
+          `evidence descendant must not be a symbolic link: ${join(parent.namedPath, segment)}`,
+        );
+      }
+      const handle = await open(anchoredPath, DIRECTORY_OPEN_FLAGS);
+      try {
+        const anchored = await proveAnchoredDirectory(handle, canonicalRoot);
+        const namedPath = join(parent.namedPath, segment);
+        const namedIdentity = await readDirectoryIdentity(namedPath);
+        if (!sameDirectoryIdentity(anchored.descriptorIdentity, namedIdentity)) {
+          throw new Error('named evidence directory does not match its anchored descriptor');
+        }
+        const namedCanonicalPath = await realpath(namedPath);
+        if (namedCanonicalPath !== anchored.descriptorTarget) {
+          throw new Error('named evidence directory does not match canonical containment');
+        }
+        records.push({
+          canonicalPath: anchored.descriptorTarget,
+          handle,
+          identity: anchored.descriptorIdentity,
+          namedPath,
+        });
+      } catch (error) {
+        await handle.close();
+        throw error;
+      }
+      await requirePinnedRoot(root, rootIdentity);
     }
-    const canonicalDirectory = await realpath(directory);
-    if (!isInsideOrEqual(canonicalRoot, canonicalDirectory)) {
-      throw new Error(`evidence descendant escapes canonical containment: ${directory}`);
-    }
-    await requirePinnedRoot(root, pinned);
+    await requireAnchoredDirectoryChain({ canonicalRoot, records, root, rootIdentity });
+    return { canonicalRoot, records, root, rootIdentity };
+  } catch (error) {
+    await closeDirectoryHandles(records);
+    throw error;
   }
-  return { directory, pinned, root };
 }
 
-async function writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes }) {
+async function writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes, beforeFinalOpen }) {
   const segments = relativeEvidenceSegments(relativePath);
   const filename = segments.pop();
-  const { directory, pinned, root } = await ensureEvidenceDirectory(evidenceRoot, segments);
-  const path = join(directory, filename);
+  const chain = await openEvidenceDirectoryChain(evidenceRoot, segments);
+  const directory = chain.records.at(-1);
+  const path = join(directory.namedPath, filename);
+  const anchoredPath = join(PROC_SELF_FD, String(directory.handle.fd), filename);
   let output;
+  let created = false;
+  let primaryError;
   try {
+    await requireAnchoredDirectoryChain(chain);
+    if (beforeFinalOpen !== undefined) await beforeFinalOpen();
     output = await open(
-      path,
+      anchoredPath,
       fsConstants.O_NOFOLLOW | fsConstants.O_EXCL | fsConstants.O_CREAT | fsConstants.O_WRONLY,
       0o600,
     );
+    created = true;
     await output.writeFile(bytes);
+    const written = await output.stat({ bigint: true });
+    if (!written.isFile() || written.size !== BigInt(bytes.byteLength)) {
+      throw new Error('evidence file identity or size changed during write');
+    }
+    await requireAnchoredDirectoryChain(chain);
+    const named = await lstat(path, { bigint: true });
+    if (
+      !named.isFile() ||
+      named.isSymbolicLink() ||
+      named.dev !== written.dev ||
+      named.ino !== written.ino ||
+      named.size !== written.size
+    ) {
+      throw new Error('named evidence file does not match its anchored descriptor');
+    }
+  } catch (error) {
+    primaryError = error;
   } finally {
     await output?.close();
+    if (primaryError !== undefined && created) {
+      try {
+        await unlink(anchoredPath);
+      } catch (error) {
+        primaryError = new AggregateError(
+          [primaryError, error],
+          'evidence write failed and its anchored partial file could not be removed',
+        );
+      }
+    }
+    await closeDirectoryHandles(chain.records);
   }
-  await requirePinnedRoot(root, pinned);
-  const written = await lstat(path, { bigint: true });
-  if (!written.isFile() || written.isSymbolicLink() || written.size !== BigInt(bytes.byteLength)) {
-    throw new Error('evidence file identity or size changed during write');
-  }
+  if (primaryError !== undefined) throw primaryError;
   return path;
 }
 
@@ -293,7 +428,7 @@ export function canonicalJson(value) {
   return `${JSON.stringify(sortJson(value, 'value', new Set()), null, 2)}\n`;
 }
 
-export async function writeAttempt({ evidenceRoot, attempt }) {
+export async function writeAttempt({ evidenceRoot, attempt }, { beforeFinalOpen } = {}) {
   const errors = validateAttempt(attempt);
   if (errors.length !== 0) throw new Error(errors.join('\n'));
   const identityPath =
@@ -309,7 +444,12 @@ export async function writeAttempt({ evidenceRoot, attempt }) {
   const bytes = Buffer.from(canonicalJson(attempt));
   let path;
   try {
-    path = await writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes });
+    path = await writeExclusiveEvidenceBytes({
+      evidenceRoot,
+      relativePath,
+      bytes,
+      beforeFinalOpen,
+    });
   } catch (error) {
     if (error?.code === 'EEXIST') {
       throw new Error(`attempt already exists: ${error.path ?? relativePath}`, { cause: error });

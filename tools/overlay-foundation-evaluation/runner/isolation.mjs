@@ -33,9 +33,32 @@ const DEPENDENCY_FIELDS = Object.freeze([
   'devDependencies',
   'optionalDependencies',
 ]);
+const partialInstallationEvidence = new WeakMap();
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+export function readPartialInstallationEvidence(error) {
+  if (error === null || (typeof error !== 'object' && typeof error !== 'function')) {
+    return undefined;
+  }
+  return partialInstallationEvidence.get(error);
+}
+
+function rememberInstallationEvidence(error, evidence) {
+  if (
+    error !== null &&
+    (typeof error === 'object' || typeof error === 'function') &&
+    Object.keys(evidence).length > 0
+  ) {
+    partialInstallationEvidence.set(error, Object.freeze({ ...evidence }));
+  }
+}
+
+function recordInstallationEvidence(evidence, prefix, path, digest) {
+  evidence[`${prefix}Path`] = path;
+  evidence[`${prefix}Sha256`] = digest;
 }
 
 function outputBytes(result) {
@@ -529,7 +552,10 @@ async function writeEvidence(path, bytes) {
   return sha256(bytes);
 }
 
-async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot, runCommand }) {
+async function installAndCaptureWithEvidence(
+  { candidate, artifacts, runRoot, repositoryRoot, runCommand },
+  evidence,
+) {
   const expectedToolchain = await readExpectedToolchain(repositoryRoot);
   if (process.versions.node !== REQUIRED_NODE_VERSION) {
     throw new Error(
@@ -577,6 +603,12 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   );
   const fixtureManifestPath = join(fixtureRoot, 'package.json');
   const fixtureManifestSha256 = await writeEvidence(fixtureManifestPath, fixtureManifest);
+  recordInstallationEvidence(
+    evidence,
+    'fixtureManifest',
+    fixtureManifestPath,
+    fixtureManifestSha256,
+  );
 
   await verifyArtifactCopies(copiedArtifacts);
   await runCommand(
@@ -584,6 +616,11 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
     ['install', '--ignore-workspace', '--ignore-scripts', '--store-dir', storeRoot],
     { cwd: fixtureRoot },
   );
+  const lockfilePath = join(fixtureRoot, 'pnpm-lock.yaml');
+  const lockfileBytes = await readFile(lockfilePath);
+  const lockfileSha256 = sha256(lockfileBytes);
+  await verifyRegularFile({ path: lockfilePath, expectedSha256: lockfileSha256 });
+  recordInstallationEvidence(evidence, 'lockfile', lockfilePath, lockfileSha256);
   await verifyArtifactCopies(copiedArtifacts);
   await removeOwnedNodeModules({ fixtureRoot, runRoot });
   await verifyArtifactCopies(copiedArtifacts);
@@ -600,6 +637,7 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
     ],
     { cwd: fixtureRoot },
   );
+  await verifyRegularFile({ path: lockfilePath, expectedSha256: lockfileSha256 });
   await verifyArtifactCopies(copiedArtifacts);
 
   const resolvedGraphBytes = outputBytes(
@@ -609,6 +647,7 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   );
   const resolvedGraphPath = join(fixtureRoot, 'resolved-graph.json');
   const resolvedGraphSha256 = await writeEvidence(resolvedGraphPath, resolvedGraphBytes);
+  recordInstallationEvidence(evidence, 'resolvedGraph', resolvedGraphPath, resolvedGraphSha256);
   const graph = parseJson(resolvedGraphBytes, 'resolved graph output must be valid JSON');
 
   const auditBytes = outputBytes(
@@ -619,6 +658,7 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   );
   const auditPath = join(fixtureRoot, 'audit.json');
   const auditSha256 = await writeEvidence(auditPath, auditBytes);
+  recordInstallationEvidence(evidence, 'audit', auditPath, auditSha256);
   const audit = parseJson(auditBytes, 'audit output must be valid JSON');
   const auditErrors = validateAuditReport(audit);
   if (auditErrors.length > 0) throw new Error(`audit report rejected: ${auditErrors.join('; ')}`);
@@ -631,21 +671,24 @@ async function installAndCapture({ candidate, artifacts, runRoot, repositoryRoot
   const licenseInventoryBytes = Buffer.from(JSON.stringify(inventory));
   const licenseInventoryPath = join(fixtureRoot, 'license-inventory.json');
   const licenseInventorySha256 = await writeEvidence(licenseInventoryPath, licenseInventoryBytes);
-
-  const lockfilePath = join(fixtureRoot, 'pnpm-lock.yaml');
-  const lockfileBytes = await readFile(lockfilePath);
-  return {
-    fixtureManifestPath,
-    fixtureManifestSha256,
-    lockfilePath,
-    lockfileSha256: sha256(lockfileBytes),
-    resolvedGraphPath,
-    resolvedGraphSha256,
-    auditPath,
-    auditSha256,
+  recordInstallationEvidence(
+    evidence,
+    'licenseInventory',
     licenseInventoryPath,
     licenseInventorySha256,
-  };
+  );
+
+  return Object.freeze({ ...evidence });
+}
+
+async function installAndCapture(input) {
+  const evidence = {};
+  try {
+    return await installAndCaptureWithEvidence(input, evidence);
+  } catch (error) {
+    rememberInstallationEvidence(error, evidence);
+    throw error;
+  }
 }
 
 export async function installExternalCandidate({

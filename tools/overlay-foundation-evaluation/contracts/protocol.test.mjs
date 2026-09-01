@@ -104,7 +104,7 @@ test('accepts neutral prose and strings that merely contain candidate-like text'
     account: 'incumbent account',
   };
   scenario.initial.markup =
-    '<button>Open incumbent account</button><p>The radix sort is ready.</p>';
+    '<button title="a > b">Open incumbent account</button><p>2 < 3 and the radix sort is ready.</p>';
   scenario.expected.announcements = [{ message: 'The radix sort is complete.' }];
   assert.deepEqual(validateScenario(scenario), []);
 });
@@ -126,6 +126,7 @@ for (const [label, state] of [
 
 for (const [label, markup] of [
   ['attribute name', '<button data-radix-trigger>Open</button>'],
+  ['quoted greater-than bypass', '<div title="a > b" data-radix-trigger>Content</div>'],
   ['class value', '<div class="base-ui-dialog">Content</div>'],
   ['ID value', '<div id="zag-tooltip">Content</div>'],
   ['custom tag name', '<radix-dialog>Content</radix-dialog>'],
@@ -134,6 +135,21 @@ for (const [label, markup] of [
     const scenario = structuredClone(validScenario);
     scenario.initial.markup = markup;
     assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
+
+for (const [label, markup] of [
+  ['unterminated quoted attribute', '<div title="unterminated>Content</div>'],
+  ['missing attribute value', '<div title=></div>'],
+  ['incomplete opening tag', '<div title="neutral"'],
+  ['missing attribute separator', '<div title="neutral"class="dialog"></div>'],
+  ['invalid tag-name delimiter', '<div$invalid></div>'],
+  ['invalid attribute-name character', '<div title`invalid></div>'],
+]) {
+  test(`rejects malformed markup with ${label}`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.initial.markup = markup;
+    assert.match(validateScenario(scenario).join('\n'), /malformed|incomplete/u);
   });
 }
 

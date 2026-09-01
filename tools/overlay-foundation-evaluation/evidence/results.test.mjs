@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, readdir, stat, symlink, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename,
+  stat,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -295,6 +304,60 @@ for (const descendant of [['attempts'], ['attempts', 'scenario', 'incumbent']]) 
     assert.deepEqual(await readdir(foreignRoot), foreignBefore);
   });
 }
+
+test('anchors the final write against deterministic parent replacement', async () => {
+  const evidenceRoot = await makeEvidenceRoot();
+  const foreignRoot = await makeEvidenceRoot();
+  const foreignSentinel = join(foreignRoot, 'sentinel.txt');
+  const sentinelBytes = Buffer.from('foreign evidence target must remain unchanged\n');
+  const displacedAttempts = join(evidenceRoot, 'displaced-attempts');
+  await writeFile(foreignSentinel, sentinelBytes);
+  await mkdir(
+    join(
+      foreignRoot,
+      'scenario',
+      'incumbent',
+      'OF-MODAL',
+      'of-modal.initial-focus.v1',
+      'chromium-react18-default',
+    ),
+    { recursive: true },
+  );
+  const foreignBefore = await readdir(foreignRoot, { recursive: true });
+  let seamCalls = 0;
+
+  let failure;
+  try {
+    await writeAttempt(
+      { evidenceRoot, attempt: firstAttempt },
+      {
+        async beforeFinalOpen() {
+          seamCalls += 1;
+          await rename(join(evidenceRoot, 'attempts'), displacedAttempts);
+          await symlink(foreignRoot, join(evidenceRoot, 'attempts'), 'dir');
+        },
+      },
+    );
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.notEqual(failure, undefined);
+  const failureMessages =
+    failure instanceof AggregateError
+      ? failure.errors.map((error) => error.message).join('\n')
+      : failure.message;
+  assert.match(failureMessages, /identity changed|symbolic link|containment/u);
+  assert.equal(seamCalls, 1);
+  assert.deepEqual(await readFile(foreignSentinel), sentinelBytes);
+  assert.deepEqual(await readdir(foreignRoot, { recursive: true }), foreignBefore);
+  assert.equal(
+    (await readdir(displacedAttempts, { recursive: true })).some((path) =>
+      path.endsWith('attempt-1.json'),
+    ),
+    false,
+  );
+});
 
 for (const [label, attempts, pattern] of [
   ['an attempt sequence gap', [firstAttempt, passingRetry({ attemptNumber: 3 })], /contiguous/u],

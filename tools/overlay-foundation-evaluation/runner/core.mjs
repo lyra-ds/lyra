@@ -7,7 +7,12 @@ import { promisify } from 'node:util';
 import { FAILURE_CLASSIFICATIONS, isPlainRecord } from '../contracts/protocol.mjs';
 import { readDirectoryIdentity, writeAttempt, writeEvidenceFile } from '../evidence/results.mjs';
 import { acquireExternalArtifact, inspectPackageArchive, verifyRegularFile } from './artifacts.mjs';
-import { cleanupOwnedRunRoot, createOwnedRunRoot, installExternalCandidate } from './isolation.mjs';
+import {
+  cleanupOwnedRunRoot,
+  createOwnedRunRoot,
+  installExternalCandidate,
+  readPartialInstallationEvidence,
+} from './isolation.mjs';
 import { validateAdapterDescriptor, validateCandidateManifest } from './manifest.mjs';
 
 const execFilePromise = promisify(execFile);
@@ -30,6 +35,7 @@ const defaultDependencies = Object.freeze({
   createOwnedRunRoot,
   installExternalCandidate,
   inspectPackageArchive,
+  readPartialInstallationEvidence,
   verifyRegularFile,
   writeAttempt,
   writeEvidenceFile,
@@ -348,11 +354,13 @@ function corePreflightPass(runId, candidate, stage, observed, artifactPaths = []
   };
 }
 
-function snapshotFailure(candidate, error) {
+function snapshotFailure(candidate, error, { artifactPaths = [], observed = {} } = {}) {
   const metadata = normalizedBoundaryMetadata(error) ?? error;
   return Object.freeze({
+    artifactPaths: Object.freeze([...artifactPaths]),
     candidateId: candidate.id,
     classification: metadata.classification,
+    evidence: Object.freeze({ ...observed }),
     scope: metadata.scope,
     stage: metadata.stage,
     message: errorMessage(error),
@@ -362,10 +370,11 @@ function snapshotFailure(candidate, error) {
 
 function corePreflightFailure(runId, failure) {
   return {
-    ...attemptBase(runId, { id: failure.candidateId }, failure.stage),
+    ...attemptBase(runId, { id: failure.candidateId }, failure.stage, failure.artifactPaths),
     result: 'FAIL',
     classification: failure.classification,
     observed: {
+      ...failure.evidence,
       message: failure.message,
       scope: failure.scope,
     },
@@ -567,12 +576,22 @@ async function preserveInstallationEvidence({
   evidenceRoot,
   operations,
   preservedEvidence,
+  requireComplete = true,
 }) {
+  if (!isPlainRecord(installed)) {
+    throw new Error('installation evidence must be a plain record');
+  }
   const observed = { ...installed };
   const artifactPaths = [];
   for (const [prefix, filename] of INSTALL_EVIDENCE_FILES) {
     const pathKey = `${prefix}Path`;
     const shaKey = `${prefix}Sha256`;
+    const hasPath = Object.hasOwn(installed, pathKey);
+    const hasSha = Object.hasOwn(installed, shaKey);
+    if (!hasPath && !hasSha && !requireComplete) continue;
+    if (!hasPath || !hasSha) {
+      throw new Error(`installation evidence for ${prefix} must include both path and SHA-256`);
+    }
     const preserved = await preserveVerifiedFile({
       sourcePath: installed[pathKey],
       expectedSha256: installed[shaKey],
@@ -860,6 +879,10 @@ export async function runCorePreflight(
     for (const candidate of manifest.candidates.slice(1)) {
       let attempt;
       let candidateFailure = adapters.get(candidate.id).failure;
+      const artifactPaths = [];
+      const artifactObservations = [];
+      const installationArtifactPaths = [];
+      let installationObservation = {};
       if (candidateFailure === undefined) {
         try {
           const candidateRoot = join(owned.runRoot, `candidate-${candidate.id}`);
@@ -879,11 +902,35 @@ export async function runCorePreflight(
             } catch (error) {
               throw artifactError(error);
             }
+            let preservedArtifact;
+            try {
+              preservedArtifact = await preserveArtifactRecords({
+                artifacts: [acquired],
+                runId,
+                candidateId: candidate.id,
+                evidenceRoot: preparedEvidenceRoot,
+                operations,
+                preservedEvidence,
+                stage: 'artifact',
+              });
+            } catch (error) {
+              throw preserveBoundaryError(error, artifactError);
+            }
+            artifactPaths.push(...preservedArtifact.artifactPaths);
+            artifactObservations.push(preservedArtifact.observed[0]);
             operations.event(`inspect:${candidate.id}`);
             try {
-              artifacts.push(
-                await operations.inspectPackageArchive({ artifact: acquired, runCommand }),
-              );
+              const inspected = await operations.inspectPackageArchive({
+                artifact: acquired,
+                runCommand,
+              });
+              artifacts.push(inspected);
+              artifactObservations[artifactObservations.length - 1] = {
+                ...inspected,
+                bytes: preservedArtifact.observed[0].bytes,
+                path: preservedArtifact.observed[0].path,
+                sha256: preservedArtifact.observed[0].sha256,
+              };
             } catch (error) {
               throw artifactError(error);
             }
@@ -899,21 +946,25 @@ export async function runCorePreflight(
               runCommand,
             });
           } catch (error) {
+            const partialInstallation = operations.readPartialInstallationEvidence(error);
+            if (partialInstallation !== undefined) {
+              try {
+                const preservedPartialInstallation = await preserveInstallationEvidence({
+                  installed: partialInstallation,
+                  runId,
+                  candidateId: candidate.id,
+                  evidenceRoot: preparedEvidenceRoot,
+                  operations,
+                  preservedEvidence,
+                  requireComplete: false,
+                });
+                installationArtifactPaths.push(...preservedPartialInstallation.artifactPaths);
+                installationObservation = preservedPartialInstallation.observed;
+              } catch (preservationError) {
+                throw preserveBoundaryError(preservationError, installationError);
+              }
+            }
             throw installationError(error);
-          }
-          let preservedArtifacts;
-          try {
-            preservedArtifacts = await preserveArtifactRecords({
-              artifacts,
-              runId,
-              candidateId: candidate.id,
-              evidenceRoot: preparedEvidenceRoot,
-              operations,
-              preservedEvidence,
-              stage: 'artifact',
-            });
-          } catch (error) {
-            throw preserveBoundaryError(error, artifactError);
           }
           let preservedInstallation;
           try {
@@ -934,16 +985,22 @@ export async function runCorePreflight(
             'installation',
             {
               ...preservedInstallation.observed,
-              artifacts: preservedArtifacts.observed,
+              artifacts: artifactObservations,
             },
-            [...preservedArtifacts.artifactPaths, ...preservedInstallation.artifactPaths],
+            [...artifactPaths, ...preservedInstallation.artifactPaths],
           );
         } catch (error) {
           const normalizedFailure =
             normalizedBoundaryMetadata(error) === undefined
               ? runPolicyError(error, 'installation')
               : error;
-          candidateFailure = snapshotFailure(candidate, normalizedFailure);
+          candidateFailure = snapshotFailure(candidate, normalizedFailure, {
+            artifactPaths: [...artifactPaths, ...installationArtifactPaths],
+            observed: {
+              ...installationObservation,
+              ...(artifactObservations.length === 0 ? {} : { artifacts: artifactObservations }),
+            },
+          });
         }
       }
       if (candidateFailure !== undefined) {
