@@ -236,7 +236,13 @@ function commandRecorder({
 
 async function installFixture(
   t,
-  { audit = cleanAudit, failRepositoryStatusAfterInstall = false, transitiveLicense, mutate } = {},
+  {
+    audit = cleanAudit,
+    failRepositoryStatusAfterInstall = false,
+    fixtureDependencies,
+    transitiveLicense,
+    mutate,
+  } = {},
 ) {
   const root = await testDirectory(t);
   const repositoryRoot = await createRepository(t, root);
@@ -257,6 +263,7 @@ async function installFixture(
       runRoot: owned.runRoot,
       repositoryRoot,
       runCommand: recorder.runCommand,
+      ...(fixtureDependencies === undefined ? {} : { fixtureDependencies }),
     });
   return { root, repositoryRoot, repositoryLockBefore, fixture, owned, recorder, install };
 }
@@ -604,6 +611,137 @@ test('installs exact local tarballs frozen and offline without running lifecycle
     assert.deepEqual(call.args, ['status', '--porcelain=v1', '--untracked-files=all']);
     assert.deepEqual(call.options, { cwd: repositoryRoot });
   }
+});
+
+for (const reactVersion of ['18.3.1', '19.2.8']) {
+  test(`installs the exact matching React ${reactVersion} fixture pair frozen and offline`, async (t) => {
+    const fixtureDependencies = { react: reactVersion, 'react-dom': reactVersion };
+    const setup = await installFixture(t, { fixtureDependencies });
+    const result = await setup.install();
+    const fixtureRoot = dirname(result.fixtureManifestPath);
+    const candidateRoot = dirname(fixtureRoot);
+    const manifest = JSON.parse(await readFile(result.fixtureManifestPath, 'utf8'));
+
+    assert.deepEqual(manifest.dependencies, {
+      [setup.fixture.packageName]: `file:${join(
+        candidateRoot,
+        'artifacts',
+        `${setup.fixture.artifacts[0].sha256}.tgz`,
+      )}`,
+      react: reactVersion,
+      'react-dom': reactVersion,
+    });
+    const lockfile = await readFile(result.lockfilePath, 'utf8');
+    assert.match(
+      lockfile,
+      new RegExp(`react:\\n\\s+specifier: ${reactVersion.replaceAll('.', '\\.')}\\n`, 'u'),
+    );
+    assert.match(
+      lockfile,
+      new RegExp(`react-dom:\\n\\s+specifier: ${reactVersion.replaceAll('.', '\\.')}`, 'u'),
+    );
+    assert.equal(await sha256File(result.lockfilePath), result.lockfileSha256);
+    assert.equal(await exists(setup.fixture.markerPath), false);
+    assert.equal(
+      await sha256File(join(setup.repositoryRoot, 'pnpm-lock.yaml')),
+      setup.repositoryLockBefore,
+    );
+    assert.equal(
+      Buffer.from(
+        (
+          await runBytes('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+            cwd: setup.repositoryRoot,
+          })
+        ).stdout,
+      ).toString('utf8'),
+      '',
+    );
+
+    const installCalls = setup.recorder.calls.filter(
+      ({ command, args }) => command === 'pnpm' && args[0] === 'install',
+    );
+    assert.equal(installCalls.length, 2);
+    assert.equal(installCalls[0].args.includes('--ignore-scripts'), true);
+    assert.equal(installCalls[1].args.includes('--ignore-scripts'), true);
+    assert.equal(installCalls[1].args.includes('--frozen-lockfile'), true);
+    assert.equal(installCalls[1].args.includes('--offline'), true);
+  });
+}
+
+for (const [label, fixtureDependencies, expected] of [
+  ['range', { react: '^19.2.8', 'react-dom': '^19.2.8' }, /react must be an exact version/u],
+  ['tag', { react: 'latest', 'react-dom': 'latest' }, /react must be an exact version/u],
+  [
+    'workspace protocol',
+    { react: 'workspace:19.2.8', 'react-dom': 'workspace:19.2.8' },
+    /react must be an exact version/u,
+  ],
+  [
+    'file protocol',
+    { react: 'file:react.tgz', 'react-dom': 'file:react-dom.tgz' },
+    /react must be an exact version/u,
+  ],
+  [
+    'link protocol',
+    { react: 'link:../react', 'react-dom': 'link:../react-dom' },
+    /react must be an exact version/u,
+  ],
+  [
+    'unknown key',
+    { react: '19.2.8', 'react-dom': '19.2.8', vite: '8.2.1' },
+    /unsupported fixture dependency vite/u,
+  ],
+  ['mismatched pair', { react: '18.3.1', 'react-dom': '19.2.8' }, /fixture versions must match/u],
+  ['missing react-dom', { react: '19.2.8' }, /fixture versions must match/u],
+]) {
+  test(`rejects fixture dependency ${label} before commands or candidate writes`, async (t) => {
+    const root = await testDirectory(t);
+    const repositoryRoot = await createRepository(t, root);
+    const fixture = await createSyntheticCandidate(root);
+    const owned = await createOwnedRunRoot({
+      tmpdir: root,
+      runId: `dependency-${label.replaceAll(' ', '-')}`,
+    });
+    const before = await readdir(owned.runRoot);
+    const recorder = commandRecorder();
+
+    await assert.rejects(
+      installExternalCandidate({
+        candidate: fixture.candidate,
+        artifacts: fixture.artifacts,
+        fixtureDependencies,
+        runRoot: owned.runRoot,
+        repositoryRoot,
+        runCommand: recorder.runCommand,
+      }),
+      expected,
+    );
+    assert.deepEqual(recorder.calls, []);
+    assert.deepEqual(await readdir(owned.runRoot), before);
+  });
+}
+
+test('rejects a fixture dependency that duplicates a direct artifact name', async (t) => {
+  const root = await testDirectory(t);
+  const repositoryRoot = await createRepository(t, root);
+  const fixture = await createSyntheticCandidate(root);
+  fixture.artifacts[0].packageName = 'react';
+  fixture.artifacts[0].record.name = 'react';
+  const owned = await createOwnedRunRoot({ tmpdir: root, runId: 'duplicate-react-artifact' });
+  const recorder = commandRecorder();
+
+  await assert.rejects(
+    installExternalCandidate({
+      candidate: fixture.candidate,
+      artifacts: fixture.artifacts,
+      fixtureDependencies: { react: '19.2.8', 'react-dom': '19.2.8' },
+      runRoot: owned.runRoot,
+      repositoryRoot,
+      runCommand: recorder.runCommand,
+    }),
+    /duplicates direct artifact react/u,
+  );
+  assert.deepEqual(recorder.calls, []);
 });
 
 test('rejects source artifact bytes replaced after inspection and before candidate copy', async (t) => {

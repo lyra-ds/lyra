@@ -355,6 +355,23 @@ function assertCandidateInputs(candidate, artifacts) {
   }
 }
 
+function validateFixtureDependencies(value = {}) {
+  if (!isPlainRecord(value)) {
+    throw new Error('fixtureDependencies must be a plain record');
+  }
+  const allowed = new Set(['react', 'react-dom']);
+  for (const [name, version] of Object.entries(value)) {
+    if (!allowed.has(name)) throw new Error(`unsupported fixture dependency ${name}`);
+    if (typeof version !== 'string' || !/^\d+\.\d+\.\d+$/u.test(version)) {
+      throw new Error(`fixture dependency ${name} must be an exact version`);
+    }
+  }
+  if (value.react !== value['react-dom']) {
+    throw new Error('react and react-dom fixture versions must match');
+  }
+  return value;
+}
+
 async function requireCandidateRoot(runRoot, candidateId) {
   const candidateRoot = join(runRoot, `candidate-${candidateId}`);
   try {
@@ -564,7 +581,7 @@ async function writeEvidence(path, bytes) {
 }
 
 async function installAndCaptureWithEvidence(
-  { candidate, artifacts, runRoot, repositoryRoot, runCommand },
+  { candidate, artifacts, fixtureDependencies, runRoot, repositoryRoot, runCommand },
   evidence,
 ) {
   const expectedToolchain = await readExpectedToolchain(repositoryRoot);
@@ -602,6 +619,12 @@ async function installAndCaptureWithEvidence(
     left.packageName < right.packageName ? -1 : left.packageName > right.packageName ? 1 : 0,
   )) {
     dependencies[artifact.packageName] = `file:${resolve(artifact.path)}`;
+  }
+  for (const [name, version] of Object.entries(fixtureDependencies)) {
+    if (Object.hasOwn(dependencies, name)) {
+      throw new Error(`fixture dependency ${name} duplicates direct artifact ${name}`);
+    }
+    dependencies[name] = version;
   }
   const fixtureManifest = Buffer.from(
     JSON.stringify({
@@ -705,6 +728,7 @@ async function installAndCapture(input) {
 export async function installExternalCandidate({
   candidate,
   artifacts,
+  fixtureDependencies,
   runRoot,
   repositoryRoot,
   runCommand = defaultRunCommand,
@@ -712,6 +736,14 @@ export async function installExternalCandidate({
   const resolvedRunRoot = requireAbsolutePath(runRoot, 'runRoot');
   const resolvedRepositoryRoot = requireAbsolutePath(repositoryRoot, 'repositoryRoot');
   assertCandidateInputs(candidate, artifacts);
+  const validatedFixtureDependencies = validateFixtureDependencies(fixtureDependencies);
+  for (const artifact of artifacts) {
+    if (Object.hasOwn(validatedFixtureDependencies, artifact.packageName)) {
+      throw new Error(
+        `fixture dependency ${artifact.packageName} duplicates direct artifact ${artifact.packageName}`,
+      );
+    }
+  }
   const owned = await readOwnedRoot(resolvedRunRoot);
   if (!sameIdentity(owned.record, owned.current)) throw new Error('run-root identity mismatch');
   const repositoryStat = await stat(resolvedRepositoryRoot);
@@ -727,6 +759,7 @@ export async function installExternalCandidate({
     evidence = await installAndCapture({
       candidate,
       artifacts,
+      fixtureDependencies: validatedFixtureDependencies,
       runRoot: resolvedRunRoot,
       repositoryRoot: resolvedRepositoryRoot,
       runCommand,
