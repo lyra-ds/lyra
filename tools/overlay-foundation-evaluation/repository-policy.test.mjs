@@ -10,6 +10,16 @@ import { promisify } from 'node:util';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const immutablePaths = ['pnpm-lock.yaml', 'docs/superpowers/baselines/lyra-v1/program.json'];
+const threatModelDocuments = [
+  'docs/superpowers/specs/2026-08-31-overlay-foundation-evaluation-design.md',
+  'tools/overlay-foundation-evaluation/README.md',
+];
+const threatModelClauses = [
+  'Hostile archives, pre-existing symlinks and path replacements, observed identity or containment changes, and uncertain cleanup are in scope and MUST fail closed.',
+  'A non-cooperating same-UID process concurrently renaming already-open directories is out of scope.',
+  'The harness makes no namespace-isolation claim.',
+  'If this boundary changes, a Linux-native namespace/openat2 design MUST be adopted before external candidates are executed.',
+];
 const execFilePromise = promisify(execFile);
 
 async function hashFiles(paths) {
@@ -68,6 +78,16 @@ test('wires core tests without a production dependency or external manifest', as
     { code: 'ENOENT' },
   );
   assert.deepEqual(await hashFiles(immutablePaths), immutableBefore);
+});
+
+test('pins the fail-closed filesystem threat boundary in tracked operator documents', async () => {
+  for (const documentPath of threatModelDocuments) {
+    const document = await readFile(resolve(repositoryRoot, documentPath), 'utf8');
+    const normalizedDocument = document.replace(/\s+/gu, ' ');
+    for (const clause of threatModelClauses) {
+      assert.ok(normalizedDocument.includes(clause), `${documentPath} must retain: ${clause}`);
+    }
+  }
 });
 
 test('forwards a documented manifest path through pnpm to the checker', async () => {

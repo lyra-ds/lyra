@@ -105,6 +105,16 @@ candidate identity. Candidate-specific code is limited to translating the
 shared fixture request into the candidate's private implementation and
 normalizing private observations into the common evidence schema.
 
+### Filesystem threat model
+
+Hostile archives, pre-existing symlinks and path replacements, observed identity
+or containment changes, and uncertain cleanup are in scope and MUST fail closed.
+A non-cooperating same-UID process concurrently renaming already-open
+directories is out of scope.
+The harness makes no namespace-isolation claim.
+If this boundary changes, a Linux-native namespace/openat2 design MUST be
+adopted before external candidates are executed.
+
 ## Candidate manifest and isolated installation
 
 A tracked `candidates.json` is the source of candidate identity. Each record

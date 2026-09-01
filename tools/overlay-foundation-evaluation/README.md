@@ -15,3 +15,13 @@ prospective manifest without network access or installation.
 the current clean Lyra revision into an explicit disposable output path.
 
 These commands do not select a foundation or authorize production changes.
+
+## Filesystem threat boundary
+
+Hostile archives, pre-existing symlinks and path replacements, observed identity
+or containment changes, and uncertain cleanup are in scope and MUST fail closed.
+A non-cooperating same-UID process concurrently renaming already-open
+directories is out of scope.
+The harness makes no namespace-isolation claim.
+If this boundary changes, a Linux-native namespace/openat2 design MUST be
+adopted before external candidates are executed.

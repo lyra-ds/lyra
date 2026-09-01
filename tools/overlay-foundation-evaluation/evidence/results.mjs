@@ -105,8 +105,36 @@ async function requirePinnedRoot(root, pinned) {
   }
 }
 
-async function closeDirectoryHandles(records) {
-  for (const { handle } of [...records].reverse()) await handle.close();
+async function defaultCloseHandle(handle) {
+  await handle.close();
+}
+
+async function collectCleanupError(errors, operation) {
+  try {
+    await operation();
+    return true;
+  } catch (error) {
+    errors.push(error);
+    return false;
+  }
+}
+
+function combinePrimaryAndCleanup(primaryError, cleanupErrors, message) {
+  if (cleanupErrors.length === 0) return primaryError;
+  if (primaryError === undefined) {
+    return cleanupErrors.length === 1
+      ? cleanupErrors[0]
+      : new AggregateError(cleanupErrors, message);
+  }
+  return new AggregateError([primaryError, ...cleanupErrors], message);
+}
+
+async function closeDirectoryHandles(records, closeHandle = defaultCloseHandle) {
+  const errors = [];
+  for (const { handle } of [...records].reverse()) {
+    await collectCleanupError(errors, () => closeHandle(handle));
+  }
+  return errors;
 }
 
 async function proveAnchoredDirectory(handle, canonicalRoot) {
@@ -158,7 +186,11 @@ async function requireAnchoredDirectoryChain({ canonicalRoot, records, root, roo
   }
 }
 
-async function openEvidenceDirectoryChain(evidenceRoot, segments) {
+async function openEvidenceDirectoryChain(
+  evidenceRoot,
+  segments,
+  { closeHandle = defaultCloseHandle } = {},
+) {
   if (typeof evidenceRoot !== 'string' || !isAbsolute(evidenceRoot)) {
     throw new TypeError('evidenceRoot must be an absolute path');
   }
@@ -180,8 +212,13 @@ async function openEvidenceDirectoryChain(evidenceRoot, segments) {
         throw new Error('evidence root identity changed before anchored traversal');
       }
     } catch (error) {
-      await rootHandle.close();
-      throw error;
+      const cleanupErrors = [];
+      await collectCleanupError(cleanupErrors, () => closeHandle(rootHandle));
+      throw combinePrimaryAndCleanup(
+        error,
+        cleanupErrors,
+        'evidence traversal failed while closing its root descriptor',
+      );
     }
     records.push({
       canonicalPath: canonicalRoot,
@@ -224,29 +261,47 @@ async function openEvidenceDirectoryChain(evidenceRoot, segments) {
           namedPath,
         });
       } catch (error) {
-        await handle.close();
-        throw error;
+        const cleanupErrors = [];
+        await collectCleanupError(cleanupErrors, () => closeHandle(handle));
+        throw combinePrimaryAndCleanup(
+          error,
+          cleanupErrors,
+          'evidence traversal failed while closing its descendant descriptor',
+        );
       }
       await requirePinnedRoot(root, rootIdentity);
     }
     await requireAnchoredDirectoryChain({ canonicalRoot, records, root, rootIdentity });
     return { canonicalRoot, records, root, rootIdentity };
   } catch (error) {
-    await closeDirectoryHandles(records);
-    throw error;
+    const cleanupErrors = await closeDirectoryHandles(records, closeHandle);
+    throw combinePrimaryAndCleanup(
+      error,
+      cleanupErrors,
+      'evidence traversal failed and descriptor cleanup was incomplete',
+    );
   }
 }
 
-async function writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes, beforeFinalOpen }) {
+async function writeExclusiveEvidenceBytes({
+  evidenceRoot,
+  relativePath,
+  bytes,
+  beforeFinalOpen,
+  beforePartialCleanup,
+  closeHandle = defaultCloseHandle,
+}) {
   const segments = relativeEvidenceSegments(relativePath);
   const filename = segments.pop();
-  const chain = await openEvidenceDirectoryChain(evidenceRoot, segments);
+  const chain = await openEvidenceDirectoryChain(evidenceRoot, segments, { closeHandle });
   const directory = chain.records.at(-1);
   const path = join(directory.namedPath, filename);
   const anchoredPath = join(PROC_SELF_FD, String(directory.handle.fd), filename);
   let output;
+  let outputIdentity;
   let created = false;
   let primaryError;
+  const cleanupErrors = [];
   try {
     await requireAnchoredDirectoryChain(chain);
     if (beforeFinalOpen !== undefined) await beforeFinalOpen();
@@ -256,9 +311,17 @@ async function writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes, 
       0o600,
     );
     created = true;
+    const opened = await output.stat({ bigint: true });
+    if (!opened.isFile()) throw new Error('evidence output descriptor must reference a file');
+    outputIdentity = { device: opened.dev, inode: opened.ino };
     await output.writeFile(bytes);
     const written = await output.stat({ bigint: true });
-    if (!written.isFile() || written.size !== BigInt(bytes.byteLength)) {
+    if (
+      !written.isFile() ||
+      written.dev !== outputIdentity.device ||
+      written.ino !== outputIdentity.inode ||
+      written.size !== BigInt(bytes.byteLength)
+    ) {
       throw new Error('evidence file identity or size changed during write');
     }
     await requireAnchoredDirectoryChain(chain);
@@ -275,20 +338,69 @@ async function writeExclusiveEvidenceBytes({ evidenceRoot, relativePath, bytes, 
   } catch (error) {
     primaryError = error;
   } finally {
-    await output?.close();
-    if (primaryError !== undefined && created) {
-      try {
-        await unlink(anchoredPath);
-      } catch (error) {
-        primaryError = new AggregateError(
-          [primaryError, error],
-          'evidence write failed and its anchored partial file could not be removed',
+    if (output !== undefined) {
+      await collectCleanupError(cleanupErrors, () => closeHandle(output));
+    }
+    if ((primaryError !== undefined || cleanupErrors.length > 0) && created) {
+      let cleanupBoundaryTrusted = true;
+      if (beforePartialCleanup !== undefined) {
+        cleanupBoundaryTrusted = await collectCleanupError(cleanupErrors, () =>
+          beforePartialCleanup({ anchoredPath }),
         );
       }
+      if (!cleanupBoundaryTrusted) {
+        cleanupErrors.push(
+          new Error('partial evidence cleanup boundary is uncertain; the file was preserved'),
+        );
+      } else if (outputIdentity === undefined) {
+        cleanupErrors.push(
+          new Error('partial evidence file identity is unavailable; the file was preserved'),
+        );
+      } else {
+        let partial;
+        try {
+          partial = await lstat(anchoredPath, { bigint: true });
+        } catch (error) {
+          cleanupErrors.push(
+            new Error(
+              'partial evidence file identity could not be verified; the file was preserved',
+              { cause: error },
+            ),
+          );
+        }
+        if (
+          partial !== undefined &&
+          (!partial.isFile() ||
+            partial.isSymbolicLink() ||
+            partial.dev !== outputIdentity.device ||
+            partial.ino !== outputIdentity.inode)
+        ) {
+          cleanupErrors.push(
+            new Error(
+              'partial evidence file identity changed before cleanup; the file was preserved',
+            ),
+          );
+        } else if (partial !== undefined) {
+          await collectCleanupError(cleanupErrors, async () => {
+            try {
+              await unlink(anchoredPath);
+            } catch (error) {
+              throw new Error('verified partial evidence file could not be removed', {
+                cause: error,
+              });
+            }
+          });
+        }
+      }
     }
-    await closeDirectoryHandles(chain.records);
+    cleanupErrors.push(...(await closeDirectoryHandles(chain.records, closeHandle)));
   }
-  if (primaryError !== undefined) throw primaryError;
+  const failure = combinePrimaryAndCleanup(
+    primaryError,
+    cleanupErrors,
+    'evidence write failed and cleanup was incomplete',
+  );
+  if (failure !== undefined) throw failure;
   return path;
 }
 
@@ -428,7 +540,10 @@ export function canonicalJson(value) {
   return `${JSON.stringify(sortJson(value, 'value', new Set()), null, 2)}\n`;
 }
 
-export async function writeAttempt({ evidenceRoot, attempt }, { beforeFinalOpen } = {}) {
+export async function writeAttempt(
+  { evidenceRoot, attempt },
+  { beforeFinalOpen, beforePartialCleanup, closeHandle } = {},
+) {
   const errors = validateAttempt(attempt);
   if (errors.length !== 0) throw new Error(errors.join('\n'));
   const identityPath =
@@ -449,6 +564,8 @@ export async function writeAttempt({ evidenceRoot, attempt }, { beforeFinalOpen 
       relativePath,
       bytes,
       beforeFinalOpen,
+      beforePartialCleanup,
+      closeHandle,
     });
   } catch (error) {
     if (error?.code === 'EEXIST') {

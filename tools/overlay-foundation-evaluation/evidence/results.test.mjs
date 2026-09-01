@@ -359,6 +359,117 @@ test('anchors the final write against deterministic parent replacement', async (
   );
 });
 
+test('keeps the primary write error first and continues every close after close failures', async () => {
+  const evidenceRoot = await makeEvidenceRoot();
+  const foreignRoot = await makeEvidenceRoot();
+  const displacedAttempts = join(evidenceRoot, 'displaced-attempts');
+  await mkdir(
+    join(
+      foreignRoot,
+      'scenario',
+      'incumbent',
+      'OF-MODAL',
+      'of-modal.initial-focus.v1',
+      'chromium-react18-default',
+    ),
+    { recursive: true },
+  );
+  const closeFailures = [
+    new Error('injected output close failure'),
+    new Error('injected first directory close failure'),
+  ];
+  let closeCalls = 0;
+
+  let failure;
+  try {
+    await writeAttempt(
+      { evidenceRoot, attempt: firstAttempt },
+      {
+        async beforeFinalOpen() {
+          await rename(join(evidenceRoot, 'attempts'), displacedAttempts);
+          await symlink(foreignRoot, join(evidenceRoot, 'attempts'), 'dir');
+        },
+        async closeHandle(handle) {
+          const closeFailure = closeFailures[closeCalls];
+          closeCalls += 1;
+          await handle.close();
+          if (closeFailure !== undefined) throw closeFailure;
+        },
+      },
+    );
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.ok(failure instanceof AggregateError);
+  assert.match(failure.errors[0].message, /identity changed|symbolic link|containment/u);
+  assert.equal(failure.errors[1], closeFailures[0]);
+  assert.equal(failure.errors[2], closeFailures[1]);
+  assert.equal(closeCalls, 8);
+  assert.equal(
+    (await readdir(displacedAttempts, { recursive: true })).some((path) =>
+      path.endsWith('attempt-1.json'),
+    ),
+    false,
+  );
+});
+
+test('preserves and reports a partial file when its anchored identity changes before cleanup', async () => {
+  const evidenceRoot = await makeEvidenceRoot();
+  const foreignRoot = await makeEvidenceRoot();
+  const displacedAttempts = join(evidenceRoot, 'displaced-attempts');
+  const displacedCell = join(
+    displacedAttempts,
+    'scenario',
+    'incumbent',
+    'OF-MODAL',
+    'of-modal.initial-focus.v1',
+    'chromium-react18-default',
+  );
+  const partialPath = join(displacedCell, 'attempt-1.json');
+  const preservedOriginalPath = `${partialPath}.verified-original`;
+  const replacementBytes = Buffer.from('replacement must not be removed\n');
+  await mkdir(
+    join(
+      foreignRoot,
+      'scenario',
+      'incumbent',
+      'OF-MODAL',
+      'of-modal.initial-focus.v1',
+      'chromium-react18-default',
+    ),
+    { recursive: true },
+  );
+  let cleanupSeamCalls = 0;
+
+  let failure;
+  try {
+    await writeAttempt(
+      { evidenceRoot, attempt: firstAttempt },
+      {
+        async beforeFinalOpen() {
+          await rename(join(evidenceRoot, 'attempts'), displacedAttempts);
+          await symlink(foreignRoot, join(evidenceRoot, 'attempts'), 'dir');
+        },
+        async beforePartialCleanup({ anchoredPath }) {
+          cleanupSeamCalls += 1;
+          await rename(anchoredPath, `${anchoredPath}.verified-original`);
+          await writeFile(anchoredPath, replacementBytes, { flag: 'wx', mode: 0o600 });
+        },
+      },
+    );
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.ok(failure instanceof AggregateError);
+  assert.match(failure.errors[0].message, /identity changed|symbolic link|containment/u);
+  assert.match(failure.errors[1].message, /partial.*identity changed.*preserved/u);
+  assert.equal(cleanupSeamCalls, 1);
+  assert.deepEqual(await readFile(partialPath), replacementBytes);
+  assert.equal(await readFile(preservedOriginalPath, 'utf8'), canonicalJson(firstAttempt));
+});
+
 for (const [label, attempts, pattern] of [
   ['an attempt sequence gap', [firstAttempt, passingRetry({ attemptNumber: 3 })], /contiguous/u],
   ['duplicate attempt numbers', [firstAttempt, passingRetry({ attemptNumber: 1 })], /duplicate/u],
