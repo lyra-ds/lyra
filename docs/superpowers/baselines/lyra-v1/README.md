@@ -69,6 +69,25 @@ The approved
 wires the repository-owned validation and incumbent-characterization harness.
 It does not select or install a candidate.
 
+The approved modal wave now exposes a container-only local diagnostic for the
+same four candidates across 15 cells: `chromium`, `firefox`, `webkit`,
+`react-18`, `react-19`, `ssr`, `hydration`, `keyboard-focus`, `axe-light`,
+`axe-dark`, `forced-colors`, `reduced-motion`, `ltr`, `rtl`, and
+`coarse-pointer`. Its external manifest binds the clean pre-manifest revision;
+its external evidence preserves attempt 1 as the effective result. The eight
+cells `bundle-standalone`, `bundle-composition`, `packed-esm`, `packed-cjs`,
+`packed-types`, `consumer-vite`, `consumer-next`, and `consumer-commonjs`
+remain owned by the later decision-evidence plan.
+
+The container uses only
+`mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e`
+and the explicit `OVERLAY_NODE_ROOT`, `OVERLAY_INPUT_ROOT`,
+`OVERLAY_EVIDENCE_ROOT`, `OVERLAY_OWNED_WORK_ROOT`, and
+`OVERLAY_EVALUATION_REVISION` bindings. The tracked manifest does not
+authorize production use, change ledger status, select a foundation, or supply
+the eight later cells. Modal evidence remains local diagnostic evidence and is
+non-authoritative until the separately approved decision process is complete.
+
 ## Release policy
 
 - [Independent package versioning policy](../../../../VERSIONING.md)
