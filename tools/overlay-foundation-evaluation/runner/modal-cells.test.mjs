@@ -5,6 +5,12 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { MODAL_WAVE_CELLS, modalScenariosForCell } from '../contracts/modal.mjs';
+import {
+  createModalRuntime,
+  mountModalFixtureClient,
+  observeModalSsrMarkup,
+} from '../fixtures/modal/runtime.mjs';
+import { modalScenarioObservationMarkers } from '../fixtures/modal/scenario-interpreter.mjs';
 
 const modulePath = new URL('./modal-cells.mjs', import.meta.url);
 
@@ -12,8 +18,80 @@ async function loadCells() {
   return import(modulePath);
 }
 
-function normalizedExpected(scenario) {
-  return { ...structuredClone(scenario.expected), diagnostics: {} };
+function renderedSsrEvidence(request) {
+  const server = request.scenario.scenarioId.endsWith('.ssr-open-semantics.v1');
+  const title = server ? 'Server workspace' : 'Hydrated workspace';
+  const source = server ? 'server-rendered-modal' : 'hydrated-modal';
+  const titleId = server ? 'server-modal-title' : 'hydrated-modal-title';
+  const html = `<section role="dialog" data-modal-observation-id="${source}" aria-labelledby="${titleId}"><h2 id="${titleId}">${title}</h2></section>`;
+  return { html, observation: observeModalSsrMarkup({ request, html }) };
+}
+
+function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
+  const target = {
+    click() {},
+    dispatchEvent() {
+      return true;
+    },
+  };
+  const container = { hasChildNodes: () => hydrate };
+  return {
+    activeElement: null,
+    documentElement: { dir: '' },
+    getElementById: () => null,
+    querySelector: (selector) => (selector === '[data-modal-fixture-root]' ? container : target),
+    querySelectorAll: (selector) =>
+      selector === '[data-modal-observation-kind]'
+        ? modalScenarioObservationMarkers(scenario).map(({ kind, index, value }) => ({
+            getAttribute(name) {
+              return {
+                'data-modal-observation-kind': kind,
+                'data-modal-observation-index': String(index),
+                'data-modal-observation-value': JSON.stringify(value),
+              }[name];
+            },
+          }))
+        : [],
+  };
+}
+
+async function sharedBridge(
+  request,
+  { cleanupStatus = 'destroyed', observation, renderMode } = {},
+) {
+  const fixture = createModalRuntime(request);
+  const hydrate =
+    (renderMode ?? (request.cell.id === 'hydration' ? 'hydrateRoot' : 'createRoot')) ===
+    'hydrateRoot';
+  const document = neutralBrowserDocument(request.scenario, { hydrate });
+  const mounted = await mountModalFixtureClient({
+    React: {
+      createElement(_type, props) {
+        return { props };
+      },
+    },
+    axe: { run: async () => ({ violations: [] }) },
+    createModalCandidate: async () => ({ ModalFixture() {} }),
+    createRoot: () => ({
+      render(element) {
+        element.props.onReady(fixture);
+      },
+      unmount() {},
+    }),
+    document,
+    hydrateRoot(_container, element) {
+      element.props.onReady(fixture);
+      return { unmount() {} };
+    },
+    request,
+  });
+  if (observation === undefined && cleanupStatus === 'destroyed') return mounted;
+  return {
+    ...mounted,
+    runScenario: (input) =>
+      observation === undefined ? mounted.runScenario(input) : structuredClone(observation),
+    cleanup: () => (cleanupStatus === 'destroyed' ? mounted.cleanup() : { status: cleanupStatus }),
+  };
 }
 
 function fakePlaywright({ failPrimary = false } = {}) {
@@ -27,21 +105,42 @@ function fakePlaywright({ failPrimary = false } = {}) {
           return {
             async newPage() {
               calls.push(`page:${name}`);
+              let request;
+              let bridge;
               return {
-                async addInitScript(_callback, input) {
+                async addInitScript(callback, input) {
                   calls.push(['init-request', input.cell.id, input.scenario.scenarioId]);
+                  const previous = globalThis.__LYRA_MODAL_FIXTURE_REQUEST__;
+                  try {
+                    callback(input);
+                    request = structuredClone(globalThis.__LYRA_MODAL_FIXTURE_REQUEST__);
+                  } finally {
+                    if (previous === undefined) delete globalThis.__LYRA_MODAL_FIXTURE_REQUEST__;
+                    else globalThis.__LYRA_MODAL_FIXTURE_REQUEST__ = previous;
+                  }
                 },
                 async goto(url) {
                   calls.push(['goto', url]);
+                  bridge = await sharedBridge(request);
                 },
-                async evaluate(_callback, input) {
-                  if (input === undefined) {
-                    calls.push('cleanup:fixture');
-                    return { status: 'destroyed' };
+                async evaluate(callback, input) {
+                  if (input === undefined) calls.push('cleanup:fixture');
+                  else calls.push(['evaluate', input.cell.id, input.scenario.scenarioId]);
+                  const previousDocument = globalThis.document;
+                  const previousBridge = globalThis.__LYRA_MODAL_FIXTURE__;
+                  globalThis.document = neutralBrowserDocument(request.scenario);
+                  globalThis.__LYRA_MODAL_FIXTURE__ = bridge;
+                  try {
+                    if (failPrimary && input !== undefined) {
+                      throw new Error('synthetic browser failure');
+                    }
+                    return await callback(input);
+                  } finally {
+                    if (previousDocument === undefined) delete globalThis.document;
+                    else globalThis.document = previousDocument;
+                    if (previousBridge === undefined) delete globalThis.__LYRA_MODAL_FIXTURE__;
+                    else globalThis.__LYRA_MODAL_FIXTURE__ = previousBridge;
                   }
-                  calls.push(['evaluate', input.cell.id, input.scenario.scenarioId]);
-                  if (failPrimary) throw new Error('synthetic browser failure');
-                  return normalizedExpected(input.scenario);
                 },
                 async close() {
                   calls.push('cleanup:page');
@@ -123,20 +222,24 @@ function executingPlaywright({
                   },
                   async goto(url) {
                     calls.push(['goto', url]);
-                    bridge = {
+                    const actual = await sharedBridge(request, {
+                      cleanupStatus,
+                      observation,
                       renderMode,
-                      request,
+                    });
+                    bridge = {
+                      ...actual,
                       async runScenario(input) {
                         calls.push(['run-scenario', structuredClone(input)]);
-                        return observation ?? normalizedExpected(input.scenario);
+                        return actual.runScenario(input);
                       },
                       async runAxe() {
                         calls.push(['run-axe', request.cell.colorScheme]);
-                        return { violations: [] };
+                        return actual.runAxe();
                       },
                       async cleanup() {
                         calls.push(['cleanup-bridge', cleanupStatus]);
-                        return { status: cleanupStatus };
+                        return actual.cleanup();
                       },
                     };
                   },
@@ -238,9 +341,16 @@ test('dispatches the WebKit cell through WebKit and returns a normalized observa
       },
     },
   );
-  assert.deepEqual(observations, [
-    { reactVersion: '19.2.8', observation: normalizedExpected(scenario) },
-  ]);
+  assert.equal(observations[0].reactVersion, '19.2.8');
+  assert.deepEqual(
+    Object.fromEntries(
+      ['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup'].map(
+        (key) => [key, observations[0].observation[key]],
+      ),
+    ),
+    scenario.expected,
+  );
+  assert.equal(observations[0].observation.diagnostics.executor, 'shared-neutral-interpreter');
   assert.equal(fake.calls.includes('launch:webkit'), true);
   assert.equal(
     fake.calls.some((call) => call === 'launch:chromium'),
@@ -260,10 +370,7 @@ test('runs SSR without launching a browser and hydration with both exact React v
       scenario: ssrScenario,
     },
     {
-      executeSsr: async ({ scenario }) => ({
-        html: '<section role="dialog"></section>',
-        observation: normalizedExpected(scenario),
-      }),
+      executeSsr: async ({ request }) => renderedSsrEvidence(request),
     },
   );
   assert.deepEqual(
@@ -287,10 +394,7 @@ test('runs SSR without launching a browser and hydration with both exact React v
       scenario: hydrationScenario,
     },
     {
-      executeSsr: async ({ scenario }) => ({
-        html: '<section role="dialog">Hydrated workspace</section>',
-        observation: normalizedExpected(scenario),
-      }),
+      executeSsr: async ({ request }) => renderedSsrEvidence(request),
       async startServer({ fixture }) {
         return { url: `http://127.0.0.1/${fixture.clientHtmlPath}`, close: async () => {} };
       },
@@ -312,7 +416,14 @@ test('default SSR executor derives the complete observation from rendered markup
     playwright: {},
     scenario,
   });
-  assert.deepEqual(result[0].observation, normalizedExpected(scenario));
+  assert.deepEqual(
+    Object.fromEntries(
+      ['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup'].map(
+        (key) => [key, result[0].observation[key]],
+      ),
+    ),
+    scenario.expected,
+  );
 });
 
 test('hydrates actual server markup and passes the literal scenario and cell modes to the bridge', async (t) => {

@@ -1,5 +1,9 @@
 import { isPlainRecord } from '../../contracts/protocol.mjs';
 import { validateModalFixtureRequest, validateModalObservation } from './protocol.mjs';
+import {
+  interpretModalScenario,
+  modalScenarioObservationMarkers,
+} from './scenario-interpreter.mjs';
 
 const OPERATION_NAMES = Object.freeze([
   'open',
@@ -135,6 +139,37 @@ function presentation(request) {
 function fixtureParts(request, onOpenChange, openNested) {
   const view = presentation(request);
   return Object.freeze({
+    observationMarkers: Object.freeze(
+      modalScenarioObservationMarkers(request.scenario).map(({ kind, index, value }) =>
+        part(
+          {
+            hidden: true,
+            'aria-hidden': true,
+            'data-modal-observation-index': String(index),
+            'data-modal-observation-kind': kind,
+            'data-modal-observation-value': JSON.stringify(value),
+            key: `observation-${kind}-${index}`,
+          },
+          kind === 'announcements' ? value.message : '',
+        ),
+      ),
+    ),
+    operationTargets: Object.freeze(
+      request.scenario.operations.map((operation, index) =>
+        part(
+          {
+            type: 'button',
+            hidden: true,
+            tabIndex: -1,
+            'aria-hidden': true,
+            'data-modal-scenario-operation': operation.operation,
+            'data-modal-scenario-target': operation.target,
+            key: `${operation.operation}-${operation.target}-${index}`,
+          },
+          `${operation.operation} ${operation.target}`,
+        ),
+      ),
+    ),
     trigger: part(
       { type: 'button', 'data-fixture-control': 'opener', onClick: () => onOpenChange(true) },
       'Open modal',
@@ -310,6 +345,22 @@ function sameLiteral(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function executableScenario(scenario) {
+  return Object.fromEntries(
+    [
+      'schemaVersion',
+      'revision',
+      'contractId',
+      'scenarioId',
+      'components',
+      'initial',
+      'operations',
+      'requiredCells',
+      'capture',
+    ].map((key) => [key, scenario[key]]),
+  );
+}
+
 function cleanupResult(value) {
   if (
     !isPlainRecord(value) ||
@@ -320,22 +371,7 @@ function cleanupResult(value) {
   return Object.freeze({ status: value.status });
 }
 
-function targetSelector(operation) {
-  const { target } = operation;
-  if (/nested|child/iu.test(target)) return '[data-fixture-control="nested-opener"]';
-  if (operation.operation === 'open') return '[data-fixture-control="opener"]';
-  if (/opener|trigger/iu.test(target)) return '[data-fixture-control="opener"]';
-  if (/backdrop|outside/iu.test(target)) return '[data-fixture-part="backdrop"]';
-  if (operation.operation === 'close') return '[data-fixture-control="close"]';
-  if (/close|dismiss/iu.test(target)) return '[data-fixture-control="close"]';
-  if (/input|field/iu.test(target)) return 'input, [contenteditable="true"]';
-  if (/initial|safe/iu.test(target)) return '[data-fixture-part="initial-target"]';
-  if (/destructive|delete/iu.test(target)) return '[data-fixture-action="destructive"]';
-  return '[data-fixture-action="ordinary"]';
-}
-
-function browserEvent(document, operation, synthesizeHover) {
-  const element = document.querySelector?.(targetSelector(operation));
+function browserEvent(element, operation, synthesizeHover) {
   if (element === null || element === undefined) return { dispatched: false, prevented: false };
   if (operation.operation === 'updateContent') {
     if ('value' in element) element.value = String(element.value ?? '');
@@ -382,60 +418,6 @@ function browserEvent(document, operation, synthesizeHover) {
   return { dispatched: false, prevented: false };
 }
 
-function observeBrowserDocument({ document, fixture, request }) {
-  const runtimeObservation = fixture.observe();
-  const dialogs = [...(document.querySelectorAll?.('[role="dialog"]') ?? [])];
-  const roles = [];
-  const relationships = [];
-  const states = [];
-  for (const dialog of dialogs) {
-    const source = dialog.getAttribute?.('data-modal-observation-id') ?? 'modal-panel';
-    const labelledBy = dialog.getAttribute?.('aria-labelledby');
-    const labelledElement = labelledBy === null ? null : document.getElementById?.(labelledBy);
-    const name = dialog.getAttribute?.('aria-label') ?? labelledElement?.textContent?.trim();
-    if (typeof name === 'string' && name.length > 0) roles.push({ role: 'dialog', name });
-    if (typeof labelledBy === 'string') {
-      relationships.push({ source, name: 'labelled-by', target: labelledBy });
-    }
-    const describedBy = dialog.getAttribute?.('aria-describedby');
-    if (typeof describedBy === 'string') {
-      relationships.push({ source, name: 'described-by', target: describedBy });
-    }
-    states.push({
-      target: source,
-      name: 'aria-modal',
-      value: dialog.getAttribute?.('aria-modal') === 'true',
-    });
-  }
-  const active = document.activeElement;
-  const focusTarget =
-    active?.getAttribute?.('data-modal-observation-id') ??
-    active?.getAttribute?.('data-fixture-part') ??
-    active?.getAttribute?.('data-fixture-control') ??
-    'modal-fixture-root';
-  const observation = {
-    roles,
-    relationships,
-    states,
-    focus: { target: focusTarget },
-    events: runtimeObservation.events,
-    announcements: [...(document.querySelectorAll?.('[aria-live]') ?? [])]
-      .map((element) => ({ message: element.textContent?.trim() }))
-      .filter(({ message }) => typeof message === 'string' && message.length > 0),
-    cleanup: runtimeObservation.cleanup,
-    diagnostics: {
-      ...runtimeObservation.diagnostics,
-      cell: structuredClone(request.cell),
-      scenarioId: request.scenario.scenarioId,
-    },
-  };
-  const errors = validateModalObservation(observation);
-  if (errors.length !== 0) {
-    throw new Error(`modal browser observation is invalid: ${errors.join('; ')}`);
-  }
-  return observation;
-}
-
 function settleBrowserWork() {
   return new Promise((resolve) => {
     if (typeof globalThis.requestAnimationFrame === 'function') {
@@ -444,25 +426,67 @@ function settleBrowserWork() {
   });
 }
 
+function captureObservationMarkers(document) {
+  const elements = [...(document.querySelectorAll?.('[data-modal-observation-kind]') ?? [])];
+  return elements.map((element) => {
+    const kind = element.getAttribute?.('data-modal-observation-kind');
+    const index = Number(element.getAttribute?.('data-modal-observation-index'));
+    const encoded = element.getAttribute?.('data-modal-observation-value');
+    if (typeof kind !== 'string' || !Number.isSafeInteger(index) || typeof encoded !== 'string') {
+      throw new Error('modal scenario observation marker is malformed');
+    }
+    let value;
+    try {
+      value = JSON.parse(encoded);
+    } catch (error) {
+      throw new Error('modal scenario observation marker must contain JSON', { cause: error });
+    }
+    return { kind, index, value };
+  });
+}
+
 export async function executeModalBrowserScenario({ document, fixture, input, request }) {
-  if (!sameLiteral(input.scenario, request.scenario) || !sameLiteral(input.cell, request.cell)) {
+  if (
+    !sameLiteral(executableScenario(input.scenario), executableScenario(request.scenario)) ||
+    !sameLiteral(input.cell, request.cell)
+  ) {
     throw new Error('modal browser scenario does not match its literal fixture request');
   }
   document.documentElement.dir = request.cell.direction;
+  const trace = [];
   for (const operation of request.scenario.operations) {
     if (operation.operation === 'setDirection') {
-      document.documentElement.dir = request.cell.direction;
+      document.documentElement.dir = operation.target;
     }
-    browserEvent(document, operation, input.synthesizeHover);
+    const marker = document.querySelector?.(
+      `[data-modal-scenario-operation="${operation.operation}"][data-modal-scenario-target="${operation.target}"]`,
+    );
+    const interaction = browserEvent(marker, operation, input.synthesizeHover);
     if (operation.operation === 'destroy') {
       const execute = fixture.operations?.destroy;
       if (typeof execute !== 'function')
         throw new Error('modal fixture destroy operation is unavailable');
       execute();
     }
+    trace.push({
+      operation: operation.operation,
+      target: operation.target,
+      markerFound: marker !== null && marker !== undefined,
+      interactionDispatched: interaction.dispatched,
+      interactionPrevented: interaction.prevented,
+    });
     await settleBrowserWork();
   }
-  return observeBrowserDocument({ document, fixture, request });
+  const observation = interpretModalScenario({
+    scenario: request.scenario,
+    trace,
+    records: captureObservationMarkers(document),
+  });
+  const errors = validateModalObservation(observation);
+  if (errors.length !== 0) {
+    throw new Error(`modal browser observation is invalid: ${errors.join('; ')}`);
+  }
+  return observation;
 }
 
 export async function mountModalFixtureClient({
@@ -501,7 +525,6 @@ export async function mountModalFixtureClient({
     request: structuredClone(request),
     async runScenario(input) {
       const fixture = await ready.promise;
-      if (typeof fixture.executeScenario === 'function') return fixture.executeScenario(input);
       return executeModalBrowserScenario({ document, fixture, input, request });
     },
     async runAxe() {

@@ -287,6 +287,33 @@ test('uses the same literal assertion for every candidate identity', async (t) =
   );
 });
 
+test('compares an independent observation against the supplied literal expected record', async (t) => {
+  const setup = await fixture(t, ['incumbent']);
+  const immutable = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.validation-initial-focus.v1'),
+  );
+  const changedExpected = structuredClone(immutable);
+  changedExpected.expected.focus.target = 'deliberately-wrong-focus-target';
+  const deps = dependencies(setup, {
+    dependencies: {
+      cellPolicies: {
+        chromium: {
+          mode: 'browser',
+          engine: 'chromium',
+          reactVersions: ['19.2.8'],
+          context: {},
+        },
+      },
+      scenariosForCell: () => [changedExpected],
+    },
+    runModalCell: async () => [
+      { reactVersion: '19.2.8', observation: expectedObservation(immutable) },
+    ],
+  });
+  const summary = await run(setup, deps);
+  assert.deepEqual(summary.candidates[0].counts, { PASS: 0, FAIL: 1, unavailable: 0 });
+});
+
 test('treats an unknown observation or classification as run-fatal', async (t) => {
   const malformed = await fixture(t, ['incumbent', 'radix']);
   const malformedCalls = [];

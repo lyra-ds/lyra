@@ -264,6 +264,23 @@ for (const candidate of CANDIDATES) {
       ['data-fixture-part', 'panel'],
       ['data-fixture-part', 'title'],
     ]);
+    assert.deepEqual(
+      elements(tree)
+        .filter(({ props }) => props['data-modal-scenario-target'] !== undefined)
+        .map(({ props }) => [
+          props['data-modal-scenario-operation'],
+          props['data-modal-scenario-target'],
+        ]),
+      request.scenario.operations.map(({ operation, target }) => [operation, target]),
+    );
+    assert.deepEqual(
+      new Set(
+        elements(tree)
+          .map(({ props }) => props['data-modal-observation-kind'])
+          .filter(Boolean),
+      ),
+      new Set(['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup']),
+    );
 
     if (candidate === 'incumbent') {
       const root = oneByType(tree, 'Dialog');

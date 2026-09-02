@@ -290,6 +290,11 @@ export async function prepareModalFixture(
         join(fixtureSources, 'modal', 'runtime.mjs'),
       ],
       [
+        'scenarioInterpreter',
+        join(repositoryFixtureRoot, 'scenario-interpreter.mjs'),
+        join(fixtureSources, 'modal', 'scenario-interpreter.mjs'),
+      ],
+      [
         'entryClient',
         join(repositoryFixtureRoot, 'entry-client.mjs'),
         join(fixtureSources, 'modal', 'entry-client.mjs'),

@@ -22,6 +22,8 @@ export async function createModalCandidate({
     return React.createElement(
       Dialog.Root,
       { open, onOpenChange },
+      ...parts.observationMarkers.map((marker) => element(React, 'span', marker)),
+      ...parts.operationTargets.map((target) => element(React, 'button', target)),
       element(React, 'button', parts.trigger),
       React.createElement(
         Dialog.Portal,

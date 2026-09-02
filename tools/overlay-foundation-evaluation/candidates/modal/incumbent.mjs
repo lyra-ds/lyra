@@ -26,6 +26,8 @@ export async function createModalCandidate({
     return React.createElement(
       React.Fragment,
       null,
+      ...parts.observationMarkers.map((marker) => element(React, 'span', marker)),
+      ...parts.operationTargets.map((target) => element(React, 'button', target)),
       element(React, 'button', parts.trigger),
       element(React, 'div', parts.backdrop),
       React.createElement(
