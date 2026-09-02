@@ -1,4 +1,4 @@
-import { useModalFixtureRuntime } from '../../fixtures/modal/runtime.mjs';
+import { useModalFixtureRuntime, useModalResourceClaim } from '../../fixtures/modal/runtime.mjs';
 
 const PACKAGE_NAME = '@lyra-ds/react/dialog';
 const PRIVATE_PROPS = Object.freeze(['onClose']);
@@ -22,6 +22,18 @@ export async function createModalCandidate({
       request,
       onReady,
       diagnostics: { packageName: PACKAGE_NAME, privateProps: PRIVATE_PROPS },
+    });
+    useModalResourceClaim({
+      React,
+      active: open,
+      kind: 'scroll-lock',
+      owner: parts.panel.props['data-modal-id'],
+    });
+    useModalResourceClaim({
+      React,
+      active: nestedOpen,
+      kind: 'scroll-lock',
+      owner: parts.nestedView.panelId,
     });
     const onPrimaryOpenChange = (nextOpen) => {
       if (nextOpen === false && nestedOpen) onNestedOpenChange(false);

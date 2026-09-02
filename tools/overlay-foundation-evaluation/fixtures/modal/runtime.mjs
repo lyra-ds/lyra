@@ -29,7 +29,26 @@ export function installModalResourceTracker(scope = globalThis) {
   const originalClearInterval = scope.clearInterval;
   const listeners = [];
   const timers = new Map();
+  const claims = new Map();
+  let nextClaimId = 0;
+  let nextListenerId = 0;
+  let nextTimerId = 0;
   const capture = (options) => (typeof options === 'boolean' ? options : options?.capture === true);
+  const targetName = (target) => {
+    if (target === scope) return 'window';
+    if (target === scope.document) return 'document';
+    return (
+      target?.getAttribute?.('data-modal-id') ??
+      target?.getAttribute?.('id') ??
+      (target?.hasAttribute?.('data-modal-fixture-root') ? 'modal-fixture-root' : 'event-target')
+    );
+  };
+  const listenerClassification = (type) =>
+    /^(?:blur|focus|focusin|focusout|keydown|keyup)$/u.test(type)
+      ? 'focus'
+      : /^(?:click|contextmenu|mousedown|mouseup|pointercancel|pointerdown|pointerup)$/u.test(type)
+        ? 'pointer'
+        : 'other';
   if (typeof originalAdd === 'function' && typeof originalRemove === 'function') {
     const removeTrackedListener = (entry, { native = false, detachAbort = true } = {}) => {
       const index = listeners.indexOf(entry);
@@ -59,6 +78,7 @@ export function installModalResourceTracker(scope = globalThis) {
       const signal = typeof options === 'object' && options !== null ? options.signal : undefined;
       if (signal?.aborted === true) return originalAdd.call(this, type, listener, options);
       const entry = {
+        id: ++nextListenerId,
         target: this,
         type,
         listener,
@@ -104,7 +124,7 @@ export function installModalResourceTracker(scope = globalThis) {
         return undefined;
       };
       handle = originalSetTimeout.call(scope, wrapped, delay, ...args);
-      timers.set(handle, 'timeout');
+      timers.set(handle, { id: ++nextTimerId, kind: 'timeout' });
       return handle;
     };
     scope.clearTimeout = (handle) => {
@@ -115,7 +135,7 @@ export function installModalResourceTracker(scope = globalThis) {
   if (typeof originalSetInterval === 'function' && typeof originalClearInterval === 'function') {
     scope.setInterval = (callback, delay, ...args) => {
       const handle = originalSetInterval.call(scope, callback, delay, ...args);
-      timers.set(handle, 'interval');
+      timers.set(handle, { id: ++nextTimerId, kind: 'interval' });
       return handle;
     };
     scope.clearInterval = (handle) => {
@@ -125,7 +145,42 @@ export function installModalResourceTracker(scope = globalThis) {
   }
   let restored = false;
   const tracker = Object.freeze({
-    snapshot: () => ({ listeners: listeners.length, timers: timers.size }),
+    acquireClaim({ kind, owner }) {
+      if (
+        typeof kind !== 'string' ||
+        kind.length === 0 ||
+        typeof owner !== 'string' ||
+        owner.length === 0
+      ) {
+        throw new TypeError('modal resource claim kind and owner must be non-empty strings');
+      }
+      const claim = Object.freeze({ id: ++nextClaimId, kind, owner });
+      claims.set(claim.id, claim);
+      let released = false;
+      return Object.freeze({
+        release() {
+          if (released) return false;
+          released = true;
+          return claims.delete(claim.id);
+        },
+      });
+    },
+    snapshot: () => ({
+      listeners: listeners.length,
+      timers: timers.size,
+      claims: [...claims.values()].map((claim) => ({ ...claim })),
+      listenerEntries: listeners.map((entry) => {
+        const ownerTarget = entry.target?.closest?.('[data-modal-panel]') ?? entry.target;
+        return {
+          classification: listenerClassification(entry.type),
+          id: entry.id,
+          owner: targetName(ownerTarget),
+          target: targetName(entry.target),
+          type: entry.type,
+        };
+      }),
+      timerEntries: [...timers.values()].map((timer) => ({ ...timer })),
+    }),
     restore() {
       if (restored) return false;
       if (targetPrototype !== undefined && typeof originalAdd === 'function') {
@@ -148,6 +203,14 @@ export function installModalResourceTracker(scope = globalThis) {
     value: tracker,
   });
   return tracker;
+}
+
+export function useModalResourceClaim({ React, active, kind, owner }) {
+  React.useEffect(() => {
+    if (!active) return undefined;
+    const handle = globalThis.__LYRA_MODAL_RESOURCE_TRACKER__?.acquireClaim?.({ kind, owner });
+    return typeof handle?.release === 'function' ? () => handle.release() : undefined;
+  }, [active, kind, owner]);
 }
 
 function emptyObservation({ destroyed, events, resources }) {
@@ -1187,6 +1250,18 @@ function matchingElements(document, target) {
   return matches;
 }
 
+function backgroundClaimElements(document) {
+  const elements = [...matchingElements(document, 'background')];
+  const fixtureRoot = document.querySelector?.('[data-modal-fixture-root]');
+  if (fixtureRoot !== null && fixtureRoot !== undefined) elements.push(fixtureRoot);
+  elements.push(
+    ...(document.querySelectorAll?.(
+      '[data-modal-fixture-root], [data-modal-id="background"], [inert], [aria-hidden="true"]',
+    ) ?? []),
+  );
+  return [...new Set(elements)].filter((element) => element.isConnected !== false);
+}
+
 function uniqueValues(values) {
   const seen = new Set();
   return values.filter((value) => {
@@ -1225,10 +1300,56 @@ function singleStateValue(snapshot, target, name) {
 }
 
 function observedScrollClaimCount(snapshot) {
+  const count = singleStateValue(snapshot, 'page-scroll-claim', 'remaining-count');
+  return Number.isSafeInteger(count) && count >= 0 ? count : undefined;
+}
+
+function observedScrollClaimOwners(snapshot) {
+  const claims = snapshot?.resources?.claims;
+  if (!Array.isArray(claims)) return undefined;
+  const owners = claims.filter(({ kind }) => kind === 'scroll-lock').map(({ owner }) => owner);
+  return owners.every((owner) => typeof owner === 'string') &&
+    new Set(owners).size === owners.length
+    ? owners
+    : undefined;
+}
+
+function scrollClaimsMatchLock(snapshot) {
+  const count = observedScrollClaimCount(snapshot);
   const active = singleStateValue(snapshot, 'page-scroll-lock', 'active');
-  if (active === false) return 0;
-  if (active !== true) return undefined;
-  return Math.max(1, connectedDialogCount(snapshot));
+  return count !== undefined && active === count > 0;
+}
+
+function validScrollClaimSequence(probe, scenario, trace) {
+  const baseline = trace[0]?.snapshot;
+  let previousOwners = observedScrollClaimOwners(baseline);
+  if (
+    previousOwners === undefined ||
+    previousOwners.length !== 0 ||
+    !scrollClaimsMatchLock(baseline)
+  ) {
+    return false;
+  }
+  for (const index of probe.operationIndexes ?? []) {
+    const snapshot = operationSnapshot(trace, index);
+    const currentOwners = observedScrollClaimOwners(snapshot);
+    const operation = scenario.operations[index];
+    if (currentOwners === undefined || !scrollClaimsMatchLock(snapshot)) return false;
+    const added = currentOwners.filter((owner) => !previousOwners.includes(owner));
+    const removed = previousOwners.filter((owner) => !currentOwners.includes(owner));
+    if (
+      (operation?.operation === 'open' &&
+        (added.length !== 1 || added[0] !== operation.target || removed.length !== 0)) ||
+      (operation?.operation === 'close' &&
+        (added.length !== 0 || removed.length !== 1 || removed[0] !== operation.target)) ||
+      (!['open', 'close'].includes(operation?.operation) &&
+        (added.length !== 0 || removed.length !== 0))
+    ) {
+      return false;
+    }
+    previousOwners = currentOwners;
+  }
+  return true;
 }
 
 function fallbackProbeFact(probe) {
@@ -1281,7 +1402,8 @@ function relationshipProbeFact(probe, document, snapshot, trace) {
       : probe.property === 'topmost-over' || probe.property === 'owned-by'
         ? currentDialogs >= 2
         : probe.property === 'shares-scroll-owner-with'
-          ? currentDialogs >= 2 && singleStateValue(snapshot, 'page-scroll-lock', 'active') === true
+          ? (observedScrollClaimOwners(snapshot)?.length ?? 0) >= 2 &&
+            scrollClaimsMatchLock(snapshot)
           : probe.property === 'restores-focus-inside'
             ? previousDialogs >= 2 && currentDialogs === 1 && active !== 'document-body'
             : probe.property === 'outside-of'
@@ -1305,7 +1427,7 @@ function relationshipProbeFact(probe, document, snapshot, trace) {
     : fallbackProbeFact(probe);
 }
 
-function stateProbeFact(probe, document, snapshot, trace, action) {
+function stateProbeFact(probe, document, snapshot, trace, action, scenario) {
   const direct = directState(snapshot, probe.target, probe.property);
   if (direct.length > 0) {
     return {
@@ -1357,8 +1479,7 @@ function stateProbeFact(probe, document, snapshot, trace, action) {
       );
   } else if (probe.property === 'owns-scroll-claim') {
     value =
-      connectedDialogCount(snapshot) >= 2 &&
-      singleStateValue(snapshot, 'page-scroll-lock', 'active') === true;
+      (observedScrollClaimOwners(snapshot)?.length ?? 0) >= 2 && scrollClaimsMatchLock(snapshot);
   } else if (probe.property === 'logical-open') {
     value = elements.some((candidate) => candidate.isConnected !== false);
   } else if (probe.property === 'dismisses') {
@@ -1375,7 +1496,11 @@ function stateProbeFact(probe, document, snapshot, trace, action) {
     const counts = (probe.operationIndexes ?? []).map((index) =>
       observedScrollClaimCount(operationSnapshot(trace, index)),
     );
-    value = counts.some((count) => count === undefined) ? 'unobserved' : Math.max(0, ...counts);
+    value =
+      counts.some((count) => count === undefined) ||
+      !validScrollClaimSequence(probe, scenario, trace)
+        ? 'unobserved'
+        : Math.max(0, ...counts);
   } else if (probe.property === 'final-claim-count') {
     value = observedScrollClaimCount(snapshot) ?? 'unobserved';
   } else if (probe.property === 'resource-claim-count') {
@@ -1624,17 +1749,27 @@ function eventProbeFact(probe, snapshot, action, trace) {
   }
   if (
     probe.property === 'claim-acquired-per-modal' &&
-    previousDialogs === 1 &&
-    currentDialogs === 2 &&
-    singleStateValue(snapshot, 'page-scroll-lock', 'active') === true
+    action?.operation === 'open' &&
+    observedScrollClaimOwners(trace.at(-2)?.snapshot)?.length === 1 &&
+    observedScrollClaimOwners(snapshot)?.length === 2 &&
+    observedScrollClaimOwners(snapshot).filter(
+      (owner) =>
+        owner === action.target &&
+        !observedScrollClaimOwners(trace.at(-2)?.snapshot).includes(owner),
+    ).length === 1 &&
+    scrollClaimsMatchLock(trace.at(-2)?.snapshot) &&
+    scrollClaimsMatchLock(snapshot)
   ) {
     return { target: probe.target, type: probe.property };
   }
   if (
     probe.property === 'final-claim-released' &&
-    previousDialogs === 1 &&
-    currentDialogs === 0 &&
-    singleStateValue(snapshot, 'page-scroll-lock', 'active') === false
+    action?.operation === 'close' &&
+    observedScrollClaimOwners(trace.at(-2)?.snapshot)?.length === 1 &&
+    observedScrollClaimOwners(trace.at(-2)?.snapshot)?.[0] === action.target &&
+    observedScrollClaimOwners(snapshot)?.length === 0 &&
+    scrollClaimsMatchLock(trace.at(-2)?.snapshot) &&
+    scrollClaimsMatchLock(snapshot)
   ) {
     return { target: probe.target, type: probe.property };
   }
@@ -1702,22 +1837,71 @@ function announcementProbeFact(probe, snapshot) {
   return messages.length === 1 ? { message: messages[0] } : fallbackProbeFact(probe);
 }
 
-function cleanupLabel(probe) {
-  return probe.property.startsWith('no-')
-    ? `${probe.property}-${probe.target}`
-    : `${probe.target}-${probe.property}`;
+function measuredResourceCount(snapshot, target) {
+  const value = singleStateValue(snapshot, target, 'remaining-count');
+  return Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+}
+
+function resourceEntries(snapshot, key) {
+  const entries = snapshot?.resources?.[key];
+  return Array.isArray(entries) ? entries : [];
+}
+
+function resourceEntriesReleased(trace, key, matches) {
+  const seen = new Set(
+    trace
+      .slice(0, -1)
+      .flatMap(({ snapshot }) => resourceEntries(snapshot, key))
+      .filter(matches)
+      .map(({ id }) => id),
+  );
+  return (
+    seen.size > 0 &&
+    resourceEntries(trace.at(-1)?.snapshot, key).every(
+      (entry) => !seen.has(entry.id) || !matches(entry),
+    )
+  );
+}
+
+function resourceCountReleased(trace, target) {
+  const before = trace.slice(0, -1).map(({ snapshot }) => measuredResourceCount(snapshot, target));
+  return (
+    before.some((count) => count > 0) && measuredResourceCount(trace.at(-1)?.snapshot, target) === 0
+  );
+}
+
+function focusListener(entry) {
+  return (
+    entry.classification === 'focus' &&
+    (/modal/iu.test(entry.owner) || ['document', 'window'].includes(entry.owner))
+  );
+}
+
+function allMeasuredResourcesReleased(snapshot) {
+  return (
+    [
+      'modal-listeners',
+      'background-inert-claim',
+      'page-scroll-claim',
+      'modal-timers',
+      'modal-guards',
+      'modal-portals',
+    ].every((target) => measuredResourceCount(snapshot, target) === 0) &&
+    resourceEntries(snapshot, 'listenerEntries').length === 0 &&
+    resourceEntries(snapshot, 'timerEntries').length === 0 &&
+    resourceEntries(snapshot, 'claims').length === 0
+  );
+}
+
+function targetObservedBeforeCleanup(trace, target) {
+  return trace.slice(0, -1).some(({ snapshot }) => snapshotObservedTarget(snapshot, target));
+}
+
+function snapshotObservedTarget(snapshot, target) {
+  return snapshot.states.some((state) => state.target === target);
 }
 
 function cleanupProbeFact(probe, document, snapshot, action, trace) {
-  const label = cleanupLabel(probe);
-  const countTargets = {
-    guards: 'modal-guards',
-    inert: 'background-inert-claim',
-    listeners: 'modal-listeners',
-    portal: 'modal-portals',
-    scroll: 'page-scroll-claim',
-    timers: 'modal-timers',
-  };
   const portals = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].filter(
     (portal) => portal.isConnected !== false,
   );
@@ -1728,72 +1912,165 @@ function cleanupProbeFact(probe, document, snapshot, action, trace) {
   ].filter((guard) => guard.isConnected !== false);
   const fixtureRoot = document.querySelector?.('[data-modal-fixture-root]');
   const rootUnmounted = fixtureRoot?.hasChildNodes?.() === false;
-  let satisfied = false;
-  if (probe.target === 'background' && probe.property === 'interactive') {
-    const elements = matchingElements(document, 'background');
-    satisfied =
-      elements.length > 0 &&
-      elements.every(
-        (element) => element.inert !== true && element.getAttribute?.('aria-hidden') !== 'true',
-      );
-  } else if (probe.target === 'background-accessibility-branch' && probe.property === 'restored') {
-    const elements = matchingElements(document, 'background');
-    satisfied =
-      elements.length > 0 &&
-      elements.every(
-        (element) => element.inert !== true && element.getAttribute?.('aria-hidden') !== 'true',
-      );
-  } else if (probe.property === 'released-once' && countTargets[probe.target] !== undefined) {
-    satisfied = directState(snapshot, countTargets[probe.target], 'remaining-count').some(
-      ({ value }) => value === 0,
+  const backgrounds = backgroundClaimElements(document);
+  const backgroundRestored =
+    backgrounds.length > 0 &&
+    backgrounds.every(
+      (element) => element.inert !== true && element.getAttribute?.('aria-hidden') !== 'true',
     );
+  if (probe.target === 'background' && probe.property === 'interactive') {
+    if (backgroundRestored) return 'background-interactive';
+  } else if (probe.target === 'background-accessibility-branch' && probe.property === 'restored') {
+    if (backgroundRestored) return 'background-accessibility-branch-restored';
+  } else if (probe.target === 'focus-loop-listener' && probe.property === 'released') {
+    if (resourceEntriesReleased(trace, 'listenerEntries', focusListener)) {
+      return 'focus-loop-listener-released';
+    }
+  } else if (probe.target === 'focus-recovery-listener' && probe.property === 'released') {
+    if (resourceEntriesReleased(trace, 'listenerEntries', focusListener)) {
+      return 'focus-recovery-listener-released';
+    }
+  } else if (probe.target === 'restoration-guard' && probe.property === 'released') {
+    if (resourceEntriesReleased(trace, 'listenerEntries', focusListener)) {
+      return 'restoration-guard-released';
+    }
+  } else if (probe.target === 'pointer-sequence-guard' && probe.property === 'released') {
+    if (
+      resourceEntriesReleased(
+        trace,
+        'listenerEntries',
+        ({ classification }) => classification === 'pointer',
+      )
+    ) {
+      return 'pointer-sequence-guard-released';
+    }
+  } else if (
+    ['initial-focus-guard', 'validation-focus-guard', 'destructive-focus-guard'].includes(
+      probe.target,
+    ) &&
+    probe.property === 'released'
+  ) {
+    if (
+      rootUnmounted &&
+      guards.length === 0 &&
+      (resourceCountReleased(trace, 'modal-guards') ||
+        resourceEntriesReleased(trace, 'listenerEntries', focusListener))
+    ) {
+      if (probe.target === 'initial-focus-guard') return 'initial-focus-guard-released';
+      if (probe.target === 'validation-focus-guard') return 'validation-focus-guard-released';
+      return 'destructive-focus-guard-released';
+    }
+  } else if (probe.target === 'panel-fallback-focus' && probe.property === 'released') {
+    if (rootUnmounted && targetObservedBeforeCleanup(trace, 'modal-panel')) {
+      return 'panel-fallback-focus-released';
+    }
+  } else if (probe.target === 'controlled-layer-resources' && probe.property === 'released') {
+    if (rootUnmounted && allMeasuredResourcesReleased(snapshot)) {
+      return 'controlled-layer-resources-released';
+    }
+  } else if (probe.target === 'committed-close-semantics' && probe.property === 'released') {
+    if (connectedDialogCount(snapshot) === 0 && portals.length === 0) {
+      return 'committed-close-semantics-released';
+    }
+  } else if (probe.target === 'committed-close-resources' && probe.property === 'released') {
+    if (rootUnmounted && allMeasuredResourcesReleased(snapshot)) {
+      return 'committed-close-resources-released';
+    }
+  } else if (probe.target === 'child-ownership' && probe.property === 'released') {
+    if (
+      targetObservedBeforeCleanup(trace, 'child-modal') &&
+      !snapshotObservedTarget(snapshot, 'child-modal') &&
+      !resourceEntries(snapshot, 'claims').some(({ owner }) => owner === 'child-modal')
+    ) {
+      return 'child-ownership-released';
+    }
+  } else if (probe.target === 'parent-ownership' && probe.property === 'released') {
+    if (
+      targetObservedBeforeCleanup(trace, 'parent-modal') &&
+      !snapshotObservedTarget(snapshot, 'parent-modal') &&
+      !resourceEntries(snapshot, 'claims').some(({ owner }) => owner === 'parent-modal')
+    ) {
+      return 'parent-ownership-released';
+    }
+  } else if (probe.target === 'portal' && probe.property === 'no-orphan') {
+    if (resourceCountReleased(trace, 'modal-portals') && portals.length === 0) {
+      return 'no-orphan-portal';
+    }
+  } else if (probe.target === 'modal-portal' && probe.property === 'removed') {
+    if (resourceCountReleased(trace, 'modal-portals') && portals.length === 0) {
+      return 'modal-portal-removed';
+    }
   } else if (probe.property === 'retained') {
     if (probe.target === 'single-event-owner') {
-      satisfied =
+      if (
         action?.dispatched === true &&
         action.prevented !== true &&
-        action.surfaces?.filter((surface) => surface === 'hydrated-input').length === 1;
+        action.surfaces?.filter((surface) => surface === 'hydrated-input').length === 1
+      ) {
+        return 'single-event-owner-retained';
+      }
     } else if (probe.target === 'single-modal-owner') {
-      satisfied = connectedDialogCount(snapshot) === 1;
+      if (connectedDialogCount(snapshot) === 1) return 'single-modal-owner-retained';
     } else if (probe.target === 'parent-scroll-claim') {
-      satisfied =
-        connectedDialogCount(snapshot) === 1 &&
-        singleStateValue(snapshot, 'page-scroll-lock', 'active') === true;
-    } else {
-      satisfied = connectedDialogCount(snapshot) > 0;
+      if (observedScrollClaimOwners(snapshot)?.length === 1 && scrollClaimsMatchLock(snapshot)) {
+        return 'parent-scroll-claim-retained';
+      }
     }
-  } else if (probe.property === 'no-orphan') {
-    satisfied = portals.length === 0;
-  } else if (probe.property === 'removed') {
-    satisfied = portals.length === 0;
   } else if (probe.property === 'released') {
     if (probe.target === 'child-scroll-claim') {
       const previous = trace.at(-2)?.snapshot;
-      satisfied =
-        connectedDialogCount(previous) >= 2 &&
-        connectedDialogCount(snapshot) === 1 &&
-        singleStateValue(snapshot, 'page-scroll-lock', 'active') === true;
+      if (
+        observedScrollClaimOwners(previous)?.length === 2 &&
+        observedScrollClaimOwners(snapshot)?.length === 1 &&
+        observedScrollClaimOwners(previous).filter(
+          (owner) => !observedScrollClaimOwners(snapshot).includes(owner),
+        ).length === 1 &&
+        scrollClaimsMatchLock(previous) &&
+        scrollClaimsMatchLock(snapshot)
+      ) {
+        return 'child-scroll-claim-released';
+      }
     } else if (probe.target === 'page-scroll-lock') {
-      satisfied =
+      if (
         connectedDialogCount(snapshot) === 0 &&
-        singleStateValue(snapshot, 'page-scroll-lock', 'active') === false;
-    } else {
-      satisfied =
-        rootUnmounted &&
-        portals.length === 0 &&
-        guards.length === 0 &&
-        singleStateValue(snapshot, 'page-scroll-lock', 'active') === false;
+        observedScrollClaimOwners(snapshot)?.length === 0 &&
+        scrollClaimsMatchLock(snapshot)
+      ) {
+        return 'page-scroll-lock-released';
+      }
     }
   } else if (probe.property === 'resumed') {
-    satisfied =
+    if (
       probe.target === 'page-scroll' &&
       singleStateValue(snapshot, 'page-scroll-lock', 'active') === false &&
       action?.operation === 'point' &&
       action.target === 'page-scroll-surface' &&
       action.dispatched === true &&
-      action.prevented !== true;
+      action.prevented !== true
+    ) {
+      return 'page-scroll-resumed';
+    }
+  } else if (probe.property === 'released-once') {
+    if (probe.target === 'listeners' && resourceCountReleased(trace, 'modal-listeners')) {
+      return 'listeners-released-once';
+    }
+    if (probe.target === 'inert' && resourceCountReleased(trace, 'background-inert-claim')) {
+      return 'inert-released-once';
+    }
+    if (probe.target === 'scroll' && resourceCountReleased(trace, 'page-scroll-claim')) {
+      return 'scroll-released-once';
+    }
+    if (probe.target === 'timers' && resourceCountReleased(trace, 'modal-timers')) {
+      return 'timers-released-once';
+    }
+    if (probe.target === 'guards' && resourceCountReleased(trace, 'modal-guards')) {
+      return 'guards-released-once';
+    }
+    if (probe.target === 'portal' && resourceCountReleased(trace, 'modal-portals')) {
+      return 'portal-released-once';
+    }
   }
-  return satisfied ? label : `${probe.target}-not-${probe.property}`;
+  return `cleanup-not-observed-${probe.target}`;
 }
 
 function observeProbeResults({
@@ -1825,7 +2102,7 @@ function observeProbeResults({
       else if (probe.category === 'relationships') {
         fact = relationshipProbeFact(probe, document, snapshot, currentTrace.slice(0, -1));
       } else if (probe.category === 'states') {
-        fact = stateProbeFact(probe, document, snapshot, currentTrace, action);
+        fact = stateProbeFact(probe, document, snapshot, currentTrace, action, scenario);
       } else if (probe.category === 'focus') {
         fact = focusProbeFact(probe, snapshot, currentTrace);
       } else if (probe.category === 'events') {
@@ -1936,17 +2213,16 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
     states.push({
       target: 'background-inert-claim',
       name: 'remaining-count',
-      value: observedElements.filter(
+      value: backgroundClaimElements(document).filter(
         (element) =>
           element.isConnected !== false &&
-          (element.inert === true || element.hasAttribute?.('inert')),
+          (element.inert === true ||
+            element.hasAttribute?.('inert') ||
+            element.getAttribute?.('aria-hidden') === 'true'),
       ).length,
     });
-    const scrollClaimCount = [document.body, document.documentElement].filter(
-      (element) =>
-        element?.style?.overflow === 'hidden' ||
-        element?.getAttribute?.('data-modal-scroll-lock') === 'true',
-    ).length;
+    const resourceClaims = Array.isArray(resourceSnapshot.claims) ? resourceSnapshot.claims : [];
+    const scrollClaimCount = resourceClaims.filter(({ kind }) => kind === 'scroll-lock').length;
     states.push({
       target: 'page-scroll-claim',
       name: 'remaining-count',
@@ -1994,7 +2270,16 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
       ? {}
       : {
           resources: {
+            claims: Array.isArray(resourceSnapshot.claims)
+              ? structuredClone(resourceSnapshot.claims)
+              : [],
+            listenerEntries: Array.isArray(resourceSnapshot.listenerEntries)
+              ? structuredClone(resourceSnapshot.listenerEntries)
+              : [],
             listeners: resourceSnapshot.listeners,
+            timerEntries: Array.isArray(resourceSnapshot.timerEntries)
+              ? structuredClone(resourceSnapshot.timerEntries)
+              : [],
             timers: resourceSnapshot.timers,
           },
         }),

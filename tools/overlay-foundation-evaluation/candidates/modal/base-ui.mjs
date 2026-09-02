@@ -1,4 +1,4 @@
-import { useModalFixtureRuntime } from '../../fixtures/modal/runtime.mjs';
+import { useModalFixtureRuntime, useModalResourceClaim } from '../../fixtures/modal/runtime.mjs';
 
 const PACKAGE_NAME = '@base-ui-components/react/dialog';
 const PRIVATE_PROPS = Object.freeze(['onOpenChange']);
@@ -13,6 +13,7 @@ export async function createModalCandidate({
 }) {
   const { Dialog } = await importModule(PACKAGE_NAME);
   function NestedModal({ closeControls, open, openControls, onOpenChange, trigger, view }) {
+    useModalResourceClaim({ React, active: open, kind: 'scroll-lock', owner: view.panelId });
     return React.createElement(
       Dialog.Root,
       { open, onOpenChange },
@@ -41,6 +42,12 @@ export async function createModalCandidate({
       request,
       onReady,
       diagnostics: { packageName: PACKAGE_NAME, privateProps: PRIVATE_PROPS },
+    });
+    useModalResourceClaim({
+      React,
+      active: open,
+      kind: 'scroll-lock',
+      owner: parts.panel.props['data-modal-id'],
     });
     const onPrimaryOpenChange = (nextOpen) => {
       if (nextOpen === false && nestedOpen) onNestedOpenChange(false);

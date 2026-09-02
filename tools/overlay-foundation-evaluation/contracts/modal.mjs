@@ -65,7 +65,7 @@ function modalScenario({
   expected,
   cells,
   state = {},
-  captureResources = false,
+  captureResources = true,
 }) {
   return freezeJson({
     schemaVersion: 1,
@@ -906,6 +906,7 @@ export const MODAL_SCENARIOS = Object.freeze([
   }),
   modalScenario({
     id: 'ssr-open-semantics',
+    captureResources: false,
     state: { open: true, environment: 'server' },
     operations: [{ operation: 'open', target: 'server-rendered-modal' }],
     probes: {

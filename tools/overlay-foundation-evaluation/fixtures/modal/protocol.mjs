@@ -195,10 +195,99 @@ function validateSnapshot(snapshot, path, errors) {
     if (!isPlainRecord(snapshot.resources)) {
       errors.push(`${path}.resources must be a plain record`);
     } else {
-      rejectUnknownKeys(snapshot.resources, ['listeners', 'timers'], `${path}.resources`, errors);
+      rejectUnknownKeys(
+        snapshot.resources,
+        ['claims', 'listenerEntries', 'listeners', 'timerEntries', 'timers'],
+        `${path}.resources`,
+        errors,
+      );
       for (const key of ['listeners', 'timers']) {
         if (!Number.isSafeInteger(snapshot.resources[key]) || snapshot.resources[key] < 0) {
           errors.push(`${path}.resources.${key} must be a non-negative safe integer`);
+        }
+      }
+      if (snapshot.resources.claims !== undefined) {
+        if (!Array.isArray(snapshot.resources.claims)) {
+          errors.push(`${path}.resources.claims must be an array`);
+        } else {
+          const ids = new Set();
+          snapshot.resources.claims.forEach((claim, index) => {
+            const claimPath = `${path}.resources.claims[${index}]`;
+            if (!isPlainRecord(claim)) {
+              errors.push(`${claimPath} must be a plain record`);
+              return;
+            }
+            rejectUnknownKeys(claim, ['id', 'kind', 'owner'], claimPath, errors);
+            if (!Number.isSafeInteger(claim.id) || claim.id < 1) {
+              errors.push(`${claimPath}.id must be a positive safe integer`);
+            } else if (ids.has(claim.id)) {
+              errors.push(`${claimPath}.id must be unique`);
+            }
+            ids.add(claim.id);
+            for (const key of ['kind', 'owner']) {
+              if (typeof claim[key] !== 'string' || claim[key].length === 0) {
+                errors.push(`${claimPath}.${key} must be a non-empty string`);
+              }
+            }
+          });
+        }
+      }
+      if (snapshot.resources.listenerEntries !== undefined) {
+        if (!Array.isArray(snapshot.resources.listenerEntries)) {
+          errors.push(`${path}.resources.listenerEntries must be an array`);
+        } else {
+          const ids = new Set();
+          snapshot.resources.listenerEntries.forEach((entry, index) => {
+            const entryPath = `${path}.resources.listenerEntries[${index}]`;
+            if (!isPlainRecord(entry)) {
+              errors.push(`${entryPath} must be a plain record`);
+              return;
+            }
+            rejectUnknownKeys(
+              entry,
+              ['classification', 'id', 'owner', 'target', 'type'],
+              entryPath,
+              errors,
+            );
+            if (!Number.isSafeInteger(entry.id) || entry.id < 1) {
+              errors.push(`${entryPath}.id must be a positive safe integer`);
+            } else if (ids.has(entry.id)) {
+              errors.push(`${entryPath}.id must be unique`);
+            }
+            ids.add(entry.id);
+            if (!['focus', 'pointer', 'other'].includes(entry.classification)) {
+              errors.push(`${entryPath}.classification is invalid`);
+            }
+            for (const key of ['owner', 'target', 'type']) {
+              if (typeof entry[key] !== 'string' || entry[key].length === 0) {
+                errors.push(`${entryPath}.${key} must be a non-empty string`);
+              }
+            }
+          });
+        }
+      }
+      if (snapshot.resources.timerEntries !== undefined) {
+        if (!Array.isArray(snapshot.resources.timerEntries)) {
+          errors.push(`${path}.resources.timerEntries must be an array`);
+        } else {
+          const ids = new Set();
+          snapshot.resources.timerEntries.forEach((entry, index) => {
+            const entryPath = `${path}.resources.timerEntries[${index}]`;
+            if (!isPlainRecord(entry)) {
+              errors.push(`${entryPath} must be a plain record`);
+              return;
+            }
+            rejectUnknownKeys(entry, ['id', 'kind'], entryPath, errors);
+            if (!Number.isSafeInteger(entry.id) || entry.id < 1) {
+              errors.push(`${entryPath}.id must be a positive safe integer`);
+            } else if (ids.has(entry.id)) {
+              errors.push(`${entryPath}.id must be unique`);
+            }
+            ids.add(entry.id);
+            if (!['interval', 'timeout'].includes(entry.kind)) {
+              errors.push(`${entryPath}.kind is invalid`);
+            }
+          });
         }
       }
     }

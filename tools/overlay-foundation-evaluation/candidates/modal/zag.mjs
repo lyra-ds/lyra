@@ -1,4 +1,4 @@
-import { useModalFixtureRuntime } from '../../fixtures/modal/runtime.mjs';
+import { useModalFixtureRuntime, useModalResourceClaim } from '../../fixtures/modal/runtime.mjs';
 
 const PACKAGE_NAMES = Object.freeze(['@zag-js/dialog', '@zag-js/react']);
 const PRIVATE_PROPS = Object.freeze([
@@ -33,6 +33,7 @@ export async function createModalCandidate({
   const dialog = await importModule(PACKAGE_NAMES[0]);
   const { normalizeProps, useMachine } = await importModule(PACKAGE_NAMES[1]);
   function NestedModal({ closeControls, open, openControls, onOpenChange, trigger, view }) {
+    useModalResourceClaim({ React, active: open, kind: 'scroll-lock', owner: view.panelId });
     const service = useMachine(
       dialog.machine({
         id: 'of-modal-child-fixture',
@@ -78,6 +79,12 @@ export async function createModalCandidate({
         packageNames: PACKAGE_NAMES,
         privateProps: PRIVATE_PROPS,
       },
+    });
+    useModalResourceClaim({
+      React,
+      active: open,
+      kind: 'scroll-lock',
+      owner: parts.panel.props['data-modal-id'],
     });
     const service = useMachine(
       dialog.machine({
