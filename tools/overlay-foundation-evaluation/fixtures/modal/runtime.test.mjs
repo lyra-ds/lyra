@@ -600,6 +600,7 @@ function candidateOwnedBrowserHarness(
     semanticContradiction = false,
     semanticEventContradiction = false,
     timerDuringCleanup = false,
+    transientListenerDuringOperation = 'none',
   } = {},
 ) {
   let nextTimerHandle = 0;
@@ -894,6 +895,11 @@ function candidateOwnedBrowserHarness(
       { connected: false },
     );
     const focusLoop = () => {};
+    const addTransientModalListener = () => {
+      const transientListener = () => {};
+      panel.addEventListener(modalListenerType, transientListener);
+      panel.removeEventListener(modalListenerType, transientListener);
+    };
     const connectModal = () => {
       if (emptyCandidate) return;
       panel.isConnected = true;
@@ -964,6 +970,9 @@ function candidateOwnedBrowserHarness(
             }
             events.push({ target: operation.target, type: 'destroyed-once' });
             live.textContent = 'Disposable workspace dialog removed';
+          }
+          if (transientListenerDuringOperation === operation.operation) {
+            addTransientModalListener();
           }
           complete(control);
         };
@@ -1291,12 +1300,12 @@ test('tracks actual browser listeners and timers without claimed release markers
   assert.deepEqual(totals(), { listeners: 1, timers: 2 });
   assert.equal(Array.isArray(tracker.snapshot().listenerEntries), true);
   assert.deepEqual(
-    tracker.snapshot().listenerEntries.map(({ classification, owner, type }) => ({
-      classification,
+    tracker.snapshot().listenerEntries.map(({ owner, purpose, type }) => ({
       owner,
+      purpose,
       type,
     })),
-    [{ classification: 'focus-loop', owner: 'event-target', type: 'keydown' }],
+    [{ owner: 'event-target', purpose: 'other', type: 'keydown' }],
   );
   target.removeEventListener('keydown', listener);
   scope.clearTimeout(timeout);
@@ -1313,6 +1322,94 @@ test('tracks actual browser listeners and timers without claimed release markers
   assert.deepEqual(totals(), { listeners: 1, timers: 0 });
   signal.abort();
   assert.deepEqual(totals(), { listeners: 0, timers: 0 });
+  tracker.restore();
+});
+
+test('records immutable listener purpose, owner, target, and operation at acquisition', () => {
+  class FakeEventTarget {
+    constructor(id, owner = undefined) {
+      this.id = id;
+      this.owner = owner;
+      this.listeners = [];
+    }
+    addEventListener(type, listener) {
+      this.listeners.push({ listener, type });
+    }
+    removeEventListener(type, listener) {
+      this.listeners = this.listeners.filter(
+        (entry) => entry.type !== type || entry.listener !== listener,
+      );
+    }
+    closest(selector) {
+      return selector === '[data-modal-panel]' ? this.owner : null;
+    }
+    getAttribute(name) {
+      return name === 'data-modal-id' ? this.id : null;
+    }
+  }
+  const scope = {
+    EventTarget: FakeEventTarget,
+    clearInterval() {},
+    clearTimeout() {},
+    setInterval: () => 1,
+    setTimeout: () => 2,
+  };
+  const tracker = installModalResourceTracker(scope);
+  const owner = new FakeEventTarget('original-modal');
+  const target = new FakeEventTarget('original-target', owner);
+  const focusRestore = () => {};
+  const dismiss = () => {};
+
+  tracker.runInPhase(
+    {
+      operation: 'open',
+      owner: 'ignored-operation-target',
+      phase: 'operation',
+      purpose: 'focus-restore',
+    },
+    () => target.addEventListener('keydown', focusRestore),
+  );
+  tracker.runInPhase(
+    {
+      operation: 'open',
+      owner: 'ignored-operation-target',
+      phase: 'operation',
+      purpose: 'dismiss',
+    },
+    () => target.addEventListener('keydown', dismiss),
+  );
+  owner.id = 'mutated-modal';
+  target.id = 'mutated-target';
+
+  assert.deepEqual(
+    tracker
+      .snapshot()
+      .listenerEntries.map(
+        ({ acquiredOperation, owner: entryOwner, purpose, target: entryTarget, type }) => ({
+          acquiredOperation,
+          owner: entryOwner,
+          purpose,
+          target: entryTarget,
+          type,
+        }),
+      ),
+    [
+      {
+        acquiredOperation: 'open',
+        owner: 'original-modal',
+        purpose: 'focus-restore',
+        target: 'original-target',
+        type: 'keydown',
+      },
+      {
+        acquiredOperation: 'open',
+        owner: 'original-modal',
+        purpose: 'dismiss',
+        target: 'original-target',
+        type: 'keydown',
+      },
+    ],
+  );
   tracker.restore();
 });
 
@@ -2101,21 +2198,25 @@ test('returns cleanup evidence only after root unmount and actual resource relea
     listenerEntries: [],
     listenerLifecycles: [
       {
+        acquiredOperation: 'open',
         acquiredPhase: 'operation',
-        classification: 'focus-loop',
         id: 7,
         owner: 'modal-panel',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'destroy',
         releasedPhase: 'operation',
         target: 'modal-panel',
         type: 'keydown',
       },
       {
+        acquiredOperation: 'open',
         acquiredPhase: 'operation',
-        classification: 'focus-loop',
         id: 8,
         owner: 'modal-panel',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'close',
         releasedPhase: 'operation',
         target: 'modal-panel',
         type: 'keydown',
@@ -2125,20 +2226,28 @@ test('returns cleanup evidence only after root unmount and actual resource relea
     timerEntries: [],
     timerLifecycles: [
       {
+        acquiredOperation: 'open',
         acquiredPhase: 'operation',
         id: 1,
         kind: 'interval',
         owner: 'open-phase-modal',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'destroy',
         releasedPhase: 'operation',
+        target: 'window',
       },
       {
+        acquiredOperation: 'open',
         acquiredPhase: 'operation',
         id: 2,
         kind: 'interval',
         owner: 'exit-phase-modal',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'close',
         releasedPhase: 'operation',
+        target: 'window',
       },
     ],
     timers: 0,
@@ -2175,84 +2284,19 @@ test('returns cleanup evidence only after root unmount and actual resource relea
 
 test('a leaked candidate-owned focus-loop listener cannot emit released cleanup evidence', async () => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
-  const { evaluateModalScenario } = await import('../../runner/modal.mjs');
-  const immutableScenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
     scenarioId.endsWith('.focus-wrap-dynamic.v1'),
   );
-  const scenario = structuredClone(immutableScenario);
-  if (!scenario.capture.includes('resources')) scenario.capture.push('resources');
-
-  class CandidateEventTarget {
-    constructor(id) {
-      this.id = id;
-      this.listeners = [];
-    }
-    addEventListener(type, listener, options) {
-      this.listeners.push({ listener, options, type });
-    }
-    removeEventListener(type, listener) {
-      this.listeners = this.listeners.filter(
-        (entry) => entry.type !== type || entry.listener !== listener,
-      );
-    }
-    getAttribute(name) {
-      return name === 'data-modal-id' ? this.id : null;
-    }
-    closest() {
-      return this;
-    }
-  }
 
   const execute = async (leakFocusLoopListener) => {
-    const scope = {
-      EventTarget: CandidateEventTarget,
-      clearInterval() {},
-      clearTimeout() {},
-      setInterval: () => 1,
-      setTimeout: () => 2,
-    };
-    const tracker = installModalResourceTracker(scope);
     const request = requestFor(scenario);
-    const harness = behaviorBrowserHarness(scenario, {
-      accessibleName: 'Workspace commands',
-      resourceSnapshot: () => tracker.snapshot(),
+    const harness = candidateOwnedBrowserHarness(scenario, {
+      leakListener: leakFocusLoopListener,
     });
-    const effectCleanups = [];
-    const React = {
-      createElement(type, props) {
-        return { props: props ?? {}, type };
-      },
-      useEffect(effect) {
-        const cleanup = effect();
-        if (typeof cleanup === 'function') effectCleanups.push(cleanup);
-      },
-    };
-    const focusOwner = new CandidateEventTarget('modal-panel');
-    const focusLoop = () => {};
     const mounted = await mountModalFixtureClient({
-      React,
-      createModalCandidate: async () => ({
-        ModalFixture({ onReady }) {
-          React.useEffect(() => {
-            focusOwner.addEventListener('keydown', focusLoop);
-            return leakFocusLoopListener
-              ? undefined
-              : () => focusOwner.removeEventListener('keydown', focusLoop);
-          }, []);
-          onReady(harness.fixture);
-          return React.createElement('section', { 'data-candidate-root': '' });
-        },
-      }),
-      createRoot: () => ({
-        render(element) {
-          harness.setRootHasChildren(true);
-          element.type(element.props);
-        },
-        unmount() {
-          for (const cleanup of effectCleanups.splice(0).reverse()) cleanup();
-          harness.setRootHasChildren(false);
-        },
-      }),
+      React: harness.React,
+      createModalCandidate: harness.createModalCandidate,
+      createRoot: harness.createRoot,
       document: harness.document,
       hydrateRoot() {
         throw new Error('unexpected hydration');
@@ -2265,33 +2309,22 @@ test('a leaked candidate-owned focus-loop listener cannot emit released cleanup 
       hydrate: false,
       synthesizeHover: false,
     });
-    const observation = (await mounted.cleanup()).observation;
-    return {
-      observation,
-      verdict: evaluateModalScenario({
-        cellId: request.cell.id,
-        scenario,
-        observations: [{ reactVersion: request.cell.reactVersion, observation }],
-      }),
-    };
+    return (await mounted.cleanup()).observation;
   };
 
   const released = await execute(false);
   const leaked = await execute(true);
-  assert.equal(released.verdict, true);
-  assert.equal(leaked.verdict, false);
-  assert.equal(leaked.observation.cleanup.includes('focus-loop-listener-released'), false);
+  assert.equal(released.cleanup.includes('focus-loop-listener-released'), true);
+  assert.equal(leaked.cleanup.includes('focus-loop-listener-released'), false);
   assert.deepEqual(
-    leaked.observation.trace
-      .at(-1)
-      .snapshot.resources.listenerEntries.map(({ classification, owner, type }) => ({
-        classification,
-        owner,
-        type,
-      })),
-    [{ classification: 'focus-loop', owner: 'modal-panel', type: 'keydown' }],
+    leaked.trace.at(-1).snapshot.resources.listenerEntries.map(({ owner, purpose, type }) => ({
+      owner,
+      purpose,
+      type,
+    })),
+    [{ owner: 'modal-panel', purpose: 'focus-loop', type: 'keydown' }],
   );
-  assert.equal(immutableScenario.capture.includes('resources'), true);
+  assert.equal(scenario.capture.includes('resources'), true);
 });
 
 test('a matching listener acquired only during cleanup cannot satisfy focus-loop release', async () => {
@@ -2362,27 +2395,119 @@ test('a transient listener acquired and released during cleanup cannot satisfy f
   assert.equal(observation.cleanup.includes('focus-loop-listener-released'), false);
 });
 
-test('cleanup listener probes require the measured event purpose they name', async (t) => {
+test('cleanup facts reject listener identities first acquired during close, destroy, or teardown', async (t) => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.unmount-cleanup.v1'),
+  );
+  for (const acquiredOperation of ['close', 'destroy', 'teardown']) {
+    await t.test(acquiredOperation, async () => {
+      const request = requestFor(scenario);
+      const harness = candidateOwnedBrowserHarness(scenario, {
+        ...(acquiredOperation === 'teardown'
+          ? { listenerDuringCleanup: 'transient' }
+          : { transientListenerDuringOperation: acquiredOperation }),
+      });
+      const mounted = await mountModalFixtureClient({
+        React: harness.React,
+        createModalCandidate: harness.createModalCandidate,
+        createRoot: harness.createRoot,
+        document: harness.document,
+        hydrateRoot() {
+          throw new Error('unexpected hydration');
+        },
+        request,
+      });
+      await mounted.runScenario({
+        scenario,
+        cell: request.cell,
+        hydrate: false,
+        synthesizeHover: false,
+      });
+      const observation = (await mounted.cleanup()).observation;
+      const invalidLifecycle = observation.trace
+        .at(-1)
+        .snapshot.resources.listenerLifecycles.find(
+          (entry) => entry.acquiredOperation === acquiredOperation,
+        );
+
+      assert.equal(observation.cleanup.includes('listeners-released-once'), false);
+      assert.notEqual(invalidLifecycle, undefined);
+      assert.equal(invalidLifecycle.releaseCount, 1);
+    });
+  }
+});
+
+test('cleanup facts require every matching lifecycle identity to have been observed active', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.focus-wrap-dynamic.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = candidateOwnedBrowserHarness(scenario, {
+    transientListenerDuringOperation: 'open',
+  });
+  const mounted = await mountModalFixtureClient({
+    React: harness.React,
+    createModalCandidate: harness.createModalCandidate,
+    createRoot: harness.createRoot,
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const observation = (await mounted.cleanup()).observation;
+  const observedIds = new Set(
+    observation.trace
+      .slice(0, -1)
+      .flatMap(({ snapshot }) => snapshot.resources.listenerEntries.map(({ id }) => id)),
+  );
+  const unobservedLifecycles = observation.trace
+    .at(-1)
+    .snapshot.resources.listenerLifecycles.filter(({ id }) => !observedIds.has(id));
+
+  assert.equal(unobservedLifecycles.length > 0, true, JSON.stringify(observation.trace, null, 2));
+  assert.equal(
+    unobservedLifecycles.every(
+      ({ acquiredOperation, releaseCount, releasedOperation }) =>
+        acquiredOperation === 'open' && releaseCount === 1 && releasedOperation === 'open',
+    ),
+    true,
+  );
+  assert.equal(observation.cleanup.includes('focus-loop-listener-released'), false);
+});
+
+test('cleanup listener probes bind purpose independently of the event type', async (t) => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
   const cases = [
     {
       scenarioSuffix: '.focus-wrap-dynamic.v1',
       listenerType: 'focusin',
-      forbiddenFact: 'focus-loop-listener-released',
+      fact: 'focus-loop-listener-released',
+      purpose: 'focus-loop',
     },
     {
       scenarioSuffix: '.focused-node-removal.v1',
       listenerType: 'keydown',
-      forbiddenFact: 'focus-recovery-listener-released',
+      fact: 'focus-recovery-listener-released',
+      purpose: 'focus-restore',
     },
     {
       scenarioSuffix: '.pointer-origin-dismiss.v1',
       listenerType: 'click',
-      forbiddenFact: 'pointer-sequence-guard-released',
+      fact: 'pointer-sequence-guard-released',
+      purpose: 'pointer',
     },
   ];
-  for (const { scenarioSuffix, listenerType, forbiddenFact } of cases) {
-    await t.test(`${listenerType} cannot prove ${forbiddenFact}`, async () => {
+  for (const { scenarioSuffix, listenerType, fact, purpose } of cases) {
+    await t.test(`${listenerType} is recorded as ${purpose}`, async () => {
       const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
         scenarioId.endsWith(scenarioSuffix),
       );
@@ -2406,7 +2531,13 @@ test('cleanup listener probes require the measured event purpose they name', asy
       });
       const observation = (await mounted.cleanup()).observation;
 
-      assert.equal(observation.cleanup.includes(forbiddenFact), false);
+      assert.equal(observation.cleanup.includes(fact), true);
+      assert.equal(
+        observation.trace
+          .at(-1)
+          .snapshot.resources.listenerLifecycles.every((entry) => entry.purpose === purpose),
+        true,
+      );
     });
   }
 });
@@ -2441,35 +2572,61 @@ test('cleanup timer evidence rejects cleanup-only acquisition and records factua
     observation.trace
       .at(-1)
       .snapshot.resources.timerLifecycles.map(
-        ({ acquiredPhase, kind, owner, releaseCount, releasedPhase }) => ({
+        ({
+          acquiredOperation,
           acquiredPhase,
           kind,
           owner,
+          purpose,
           releaseCount,
+          releasedOperation,
           releasedPhase,
+          target,
+        }) => ({
+          acquiredOperation,
+          acquiredPhase,
+          kind,
+          owner,
+          purpose,
+          releaseCount,
+          releasedOperation,
+          releasedPhase,
+          target,
         }),
       ),
     [
       {
+        acquiredOperation: 'open',
         acquiredPhase: 'operation',
         kind: 'interval',
         owner: 'open-phase-modal',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'destroy',
         releasedPhase: 'operation',
+        target: 'window',
       },
       {
+        acquiredOperation: 'open',
         acquiredPhase: 'operation',
         kind: 'interval',
         owner: 'exit-phase-modal',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'close',
         releasedPhase: 'operation',
+        target: 'window',
       },
       {
+        acquiredOperation: 'teardown',
         acquiredPhase: 'cleanup',
         kind: 'timeout',
         owner: 'fixture-cleanup',
+        purpose: 'other',
         releaseCount: 1,
+        releasedOperation: 'teardown',
         releasedPhase: 'cleanup',
+        target: 'window',
       },
     ],
   );
@@ -2706,13 +2863,11 @@ test('portal, listener, and timer leaks change the post-cleanup factual trace', 
     ],
   );
   assert.deepEqual(
-    leaked.trace
-      .at(-1)
-      .snapshot.resources.listenerEntries.map(({ classification, owner, type }) => ({
-        classification,
-        owner,
-        type,
-      })),
-    [{ classification: 'focus-loop', owner: 'modal-panel', type: 'keydown' }],
+    leaked.trace.at(-1).snapshot.resources.listenerEntries.map(({ owner, purpose, type }) => ({
+      owner,
+      purpose,
+      type,
+    })),
+    [{ owner: 'modal-panel', purpose: 'other', type: 'keydown' }],
   );
 });

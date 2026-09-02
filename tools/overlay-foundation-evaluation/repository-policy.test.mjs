@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,13 +11,43 @@ import { MODAL_EXTERNAL_ARTIFACTS } from './candidates/catalog.mjs';
 import { MODAL_WAVE_CELLS } from './contracts/modal.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const task7BaseRevision = '869fb9e26f40c3772e41111b60d14c480cf3fd28';
-const immutablePaths = [
-  'pnpm-lock.yaml',
-  'packages',
-  '.github/workflows',
-  'docs/superpowers/baselines/lyra-v1/program.json',
-];
+const immutableCheckoutObjects = Object.freeze({
+  '.github/workflows': 'ce01db38c96a8dfcf78b2737258ef6d653121355',
+  'docs/superpowers/baselines/lyra-v1/program.json': '0765f0339c2e11e0c18e1b9ae67ad3296877f91f',
+  packages: '62f0c9bad9608f67c380ed45f862fd4eee53809e',
+  'pnpm-lock.yaml': '9a5a4470cfd63f3b9c2db2a86112e445cf0f5245',
+});
+const rootDependencySnapshot = Object.freeze({
+  devDependencies: {
+    '@arethetypeswrong/cli': '0.18.5',
+    '@changesets/changelog-github': '0.7.0',
+    '@changesets/cli': '2.31.1',
+    '@size-limit/preset-small-lib': '12.1.0',
+    '@types/react': '19.2.18',
+    '@types/react-dom': '19.2.4',
+    '@vitest/browser-playwright': '4.1.10',
+    'axe-core': '4.13.0',
+    eslint: '10.8.1',
+    'eslint-plugin-jsx-a11y': '6.10.2',
+    'eslint-plugin-react-hooks': '7.1.1',
+    playwright: '1.62.1',
+    prettier: '3.9.6',
+    publint: '0.3.23',
+    react: '19.2.8',
+    'react-dom': '19.2.8',
+    'size-limit': '12.1.0',
+    stylelint: '17.14.1',
+    'stylelint-config-standard': '40.0.0',
+    tsdown: '0.22.14',
+    typescript: '5.9.3',
+    'typescript-eslint': '8.66.0',
+    vite: '8.2.1',
+    vitest: '4.1.10',
+    'vitest-browser-react': '2.2.0',
+    wrangler: '4.120.0',
+    yaml: '2.9.0',
+  },
+});
 const modalScripts = Object.freeze({
   'overlay:evaluate:modal:test':
     'node --test tools/overlay-foundation-evaluation/contracts/modal.test.mjs tools/overlay-foundation-evaluation/fixtures/modal/*.test.mjs tools/overlay-foundation-evaluation/candidates/modal/*.test.mjs tools/overlay-foundation-evaluation/runner/modal*.test.mjs tools/overlay-foundation-evaluation/scripts/create-modal-manifest.test.mjs tools/overlay-foundation-evaluation/scripts/modal.test.mjs',
@@ -106,22 +136,24 @@ test('wires core and modal commands without putting the live diagnostic in ordin
 
 test('keeps dependencies, lockfile, packages, workflows, and the V1 ledger immutable', async () => {
   const rootPackage = JSON.parse(await readFile(resolve(repositoryRoot, 'package.json'), 'utf8'));
-  const baselinePackage = JSON.parse(
-    (
-      await execFilePromise('git', ['show', `${task7BaseRevision}:package.json`], {
-        cwd: repositoryRoot,
-      })
-    ).stdout,
+  const currentDependencies = Object.fromEntries(
+    ['dependencies', 'devDependencies', 'optionalDependencies']
+      .filter((section) => rootPackage[section] !== undefined)
+      .map((section) => [section, rootPackage[section]]),
   );
-  for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
-    assert.deepEqual(rootPackage[section], baselinePackage[section]);
-  }
+  assert.deepEqual(currentDependencies, rootDependencySnapshot);
 
   await execFilePromise(
     'git',
-    ['diff', '--exit-code', task7BaseRevision, '--', ...immutablePaths],
+    ['diff', '--exit-code', 'HEAD', '--', ...Object.keys(immutableCheckoutObjects)],
     { cwd: repositoryRoot },
   );
+  for (const [path, expectedObject] of Object.entries(immutableCheckoutObjects)) {
+    const { stdout } = await execFilePromise('git', ['rev-parse', `HEAD:${path}`], {
+      cwd: repositoryRoot,
+    });
+    assert.equal(stdout.trim(), expectedObject, `${path} must match its checkout snapshot`);
+  }
 
   const program = JSON.parse(
     await readFile(
@@ -138,6 +170,47 @@ test('keeps dependencies, lockfile, packages, workflows, and the V1 ledger immut
     true,
   );
 });
+
+test(
+  'checks immutable checkout snapshots in a one-commit shallow clone',
+  { skip: process.env.OVERLAY_POLICY_SHALLOW_PROBE === '1' },
+  async (t) => {
+    const temporaryRoot = await mkdtemp(join(tmpdir(), 'overlay-policy-shallow-'));
+    t.after(() => rm(temporaryRoot, { recursive: true }));
+    const shallowRoot = join(temporaryRoot, 'repository');
+    await execFilePromise(
+      'git',
+      ['clone', '--quiet', '--depth', '1', '--no-local', repositoryRoot, shallowRoot],
+      { cwd: temporaryRoot },
+    );
+    assert.equal(
+      (
+        await execFilePromise('git', ['rev-list', '--count', 'HEAD'], { cwd: shallowRoot })
+      ).stdout.trim(),
+      '1',
+    );
+    await copyFile(
+      resolve(repositoryRoot, 'tools/overlay-foundation-evaluation/repository-policy.test.mjs'),
+      resolve(shallowRoot, 'tools/overlay-foundation-evaluation/repository-policy.test.mjs'),
+    );
+    const childEnvironment = { ...process.env, OVERLAY_POLICY_SHALLOW_PROBE: '1' };
+    delete childEnvironment.NODE_TEST_CONTEXT;
+
+    const { stdout } = await execFilePromise(
+      process.execPath,
+      [
+        '--test',
+        '--test-name-pattern=keeps dependencies, lockfile, packages, workflows, and the V1 ledger immutable',
+        'tools/overlay-foundation-evaluation/repository-policy.test.mjs',
+      ],
+      {
+        cwd: shallowRoot,
+        env: childEnvironment,
+      },
+    );
+    assert.match(stdout, /pass 1\b/u);
+  },
+);
 
 test('tracks the four exact modal candidate records without selection metadata', async () => {
   const manifest = JSON.parse(

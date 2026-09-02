@@ -15,6 +15,22 @@ const OPERATION_NAMES = Object.freeze([
   'updateContent',
   'destroy',
 ]);
+const RESOURCE_PURPOSES = Object.freeze([
+  'dismiss',
+  'focus-loop',
+  'focus-restore',
+  'pointer',
+  'other',
+]);
+const RESOURCE_ACQUISITION_OPERATIONS = new Set(['open', 'press', 'point', 'updateContent']);
+const RESOURCE_RELEASE_OPERATIONS = new Set([
+  'open',
+  'close',
+  'destroy',
+  'press',
+  'point',
+  'updateContent',
+]);
 
 export function installModalResourceTracker(scope = globalThis) {
   if (scope.__LYRA_MODAL_RESOURCE_TRACKER__ !== undefined) {
@@ -36,7 +52,12 @@ export function installModalResourceTracker(scope = globalThis) {
   let nextClaimId = 0;
   let nextListenerId = 0;
   let nextTimerId = 0;
-  let resourceContext = Object.freeze({ owner: 'unattributed', phase: 'setup' });
+  let resourceContext = Object.freeze({
+    operation: 'setup',
+    owner: 'unattributed',
+    phase: 'setup',
+    purpose: 'other',
+  });
   const capture = (options) => (typeof options === 'boolean' ? options : options?.capture === true);
   const targetName = (target) => {
     if (target === scope) return 'window';
@@ -47,26 +68,22 @@ export function installModalResourceTracker(scope = globalThis) {
       (target?.hasAttribute?.('data-modal-fixture-root') ? 'modal-fixture-root' : 'event-target')
     );
   };
-  const listenerClassification = (type) =>
-    /^(?:keydown|keyup)$/u.test(type)
-      ? 'focus-loop'
-      : /^(?:blur|focus|focusin|focusout)$/u.test(type)
-        ? 'focus-restore'
-        : /^(?:click|contextmenu|mousedown|mouseup)$/u.test(type)
-          ? 'dismiss'
-          : /^(?:pointercancel|pointerdown|pointerup)$/u.test(type)
-            ? 'pointer'
-            : 'other';
   if (typeof originalAdd === 'function' && typeof originalRemove === 'function') {
     const removeTrackedListener = (entry, { native = false, detachAbort = true } = {}) => {
       const index = listeners.indexOf(entry);
       if (index !== -1) {
         listeners.splice(index, 1);
         entry.releaseCount += 1;
+        entry.releasedOperation = resourceContext.operation;
         entry.releasedPhase = resourceContext.phase;
       }
       if (native) {
-        originalRemove.call(entry.target, entry.type, entry.registeredListener, entry.capture);
+        originalRemove.call(
+          entry.eventTarget,
+          entry.identity.type,
+          entry.registeredListener,
+          entry.capture,
+        );
       }
       if (detachAbort && entry.signal !== undefined && entry.abortHandler !== undefined) {
         originalRemove.call(entry.signal, 'abort', entry.abortHandler, false);
@@ -79,8 +96,8 @@ export function installModalResourceTracker(scope = globalThis) {
       const captured = capture(options);
       const existing = listeners.find(
         (entry) =>
-          entry.target === this &&
-          entry.type === type &&
+          entry.eventTarget === this &&
+          entry.identity.type === type &&
           entry.listener === listener &&
           entry.capture === captured,
       );
@@ -89,15 +106,23 @@ export function installModalResourceTracker(scope = globalThis) {
       }
       const signal = typeof options === 'object' && options !== null ? options.signal : undefined;
       if (signal?.aborted === true) return originalAdd.call(this, type, listener, options);
-      const entry = {
+      const ownerTarget = this?.closest?.('[data-modal-panel]') ?? this;
+      const identity = Object.freeze({
+        acquiredOperation: resourceContext.operation,
+        acquiredPhase: resourceContext.phase,
         id: ++nextListenerId,
-        target: this,
+        owner: targetName(ownerTarget),
+        purpose: resourceContext.purpose,
+        target: targetName(this),
         type,
+      });
+      const entry = {
+        eventTarget: this,
+        identity,
         listener,
         capture: captured,
         signal,
         registeredListener: listener,
-        acquiredPhase: resourceContext.phase,
         releaseCount: 0,
       };
       if (typeof options === 'object' && options?.once === true) {
@@ -120,8 +145,8 @@ export function installModalResourceTracker(scope = globalThis) {
     targetPrototype.removeEventListener = function trackedRemove(type, listener, options) {
       const entry = listeners.find(
         (entry) =>
-          entry.target === this &&
-          entry.type === type &&
+          entry.eventTarget === this &&
+          entry.identity.type === type &&
           entry.listener === listener &&
           entry.capture === capture(options),
       );
@@ -135,6 +160,7 @@ export function installModalResourceTracker(scope = globalThis) {
     if (timer === undefined) return false;
     timers.delete(handle);
     timer.releaseCount += 1;
+    timer.releasedOperation = resourceContext.operation;
     timer.releasedPhase = resourceContext.phase;
     return true;
   };
@@ -148,10 +174,15 @@ export function installModalResourceTracker(scope = globalThis) {
       };
       handle = originalSetTimeout.call(scope, wrapped, delay, ...args);
       const timer = {
-        acquiredPhase: resourceContext.phase,
-        id: ++nextTimerId,
-        kind: 'timeout',
-        owner: resourceContext.owner,
+        identity: Object.freeze({
+          acquiredOperation: resourceContext.operation,
+          acquiredPhase: resourceContext.phase,
+          id: ++nextTimerId,
+          kind: 'timeout',
+          owner: resourceContext.owner,
+          purpose: resourceContext.purpose,
+          target: 'window',
+        }),
         releaseCount: 0,
       };
       timers.set(handle, timer);
@@ -167,10 +198,15 @@ export function installModalResourceTracker(scope = globalThis) {
     scope.setInterval = (callback, delay, ...args) => {
       const handle = originalSetInterval.call(scope, callback, delay, ...args);
       const timer = {
-        acquiredPhase: resourceContext.phase,
-        id: ++nextTimerId,
-        kind: 'interval',
-        owner: resourceContext.owner,
+        identity: Object.freeze({
+          acquiredOperation: resourceContext.operation,
+          acquiredPhase: resourceContext.phase,
+          id: ++nextTimerId,
+          kind: 'interval',
+          owner: resourceContext.owner,
+          purpose: resourceContext.purpose,
+          target: 'window',
+        }),
         releaseCount: 0,
       };
       timers.set(handle, timer);
@@ -194,13 +230,13 @@ export function installModalResourceTracker(scope = globalThis) {
       ) {
         throw new TypeError('persistent listener owner, target, and operation are required');
       }
-      const existingIds = new Set(listeners.map(({ id }) => id));
+      const existingIds = new Set(listeners.map(({ identity }) => identity.id));
       const result = operation();
       for (const entry of listeners) {
-        if (!existingIds.has(entry.id)) {
+        if (!existingIds.has(entry.identity.id)) {
           entry.persistentOwner = owner;
           entry.persistentRoot = target;
-          persistentListenerIds.add(entry.id);
+          persistentListenerIds.add(entry.identity.id);
         }
       }
       return result;
@@ -212,12 +248,22 @@ export function installModalResourceTracker(scope = globalThis) {
         context.owner.length === 0 ||
         typeof context.phase !== 'string' ||
         context.phase.length === 0 ||
+        typeof context.operation !== 'string' ||
+        context.operation.length === 0 ||
+        !RESOURCE_PURPOSES.includes(context.purpose) ||
         typeof operation !== 'function'
       ) {
-        throw new TypeError('modal resource phase, owner, and operation are required');
+        throw new TypeError(
+          'modal resource phase, owner, operation, purpose, and callback are required',
+        );
       }
       const previousContext = resourceContext;
-      resourceContext = Object.freeze({ owner: context.owner, phase: context.phase });
+      resourceContext = Object.freeze({
+        operation: context.operation,
+        owner: context.owner,
+        phase: context.phase,
+        purpose: context.purpose,
+      });
       let result;
       try {
         result = operation();
@@ -254,16 +300,11 @@ export function installModalResourceTracker(scope = globalThis) {
       });
     },
     snapshot: () => {
-      const candidateListeners = listeners.filter(({ id }) => !persistentListenerIds.has(id));
+      const candidateListeners = listeners.filter(
+        ({ identity }) => !persistentListenerIds.has(identity.id),
+      );
       const listenerRecord = (entry) => {
-        const ownerTarget = entry.target?.closest?.('[data-modal-panel]') ?? entry.target;
-        return {
-          classification: listenerClassification(entry.type),
-          id: entry.id,
-          owner: targetName(ownerTarget),
-          target: targetName(entry.target),
-          type: entry.type,
-        };
+        return { ...entry.identity };
       };
       return {
         listeners: candidateListeners.length,
@@ -272,20 +313,24 @@ export function installModalResourceTracker(scope = globalThis) {
         claims: [...claims.values()].map((claim) => ({ ...claim })),
         listenerEntries: candidateListeners.map(listenerRecord),
         listenerLifecycles: listenerLifecycles
-          .filter(({ id }) => !persistentListenerIds.has(id))
+          .filter(({ identity }) => !persistentListenerIds.has(identity.id))
           .map((entry) => ({
-            acquiredPhase: entry.acquiredPhase,
             ...listenerRecord(entry),
             releaseCount: entry.releaseCount,
+            ...(entry.releasedOperation === undefined
+              ? {}
+              : { releasedOperation: entry.releasedOperation }),
             ...(entry.releasedPhase === undefined ? {} : { releasedPhase: entry.releasedPhase }),
           })),
-        timerEntries: [...timers.values()].map(({ acquiredPhase, id, kind, owner }) => ({
-          acquiredPhase,
-          id,
-          kind,
-          owner,
+        timerEntries: [...timers.values()].map(({ identity }) => ({ ...identity })),
+        timerLifecycles: timerLifecycles.map((timer) => ({
+          ...timer.identity,
+          releaseCount: timer.releaseCount,
+          ...(timer.releasedOperation === undefined
+            ? {}
+            : { releasedOperation: timer.releasedOperation }),
+          ...(timer.releasedPhase === undefined ? {} : { releasedPhase: timer.releasedPhase }),
         })),
-        timerLifecycles: timerLifecycles.map((timer) => ({ ...timer })),
       };
     },
     restore() {
@@ -1991,13 +2036,10 @@ function resourceEntries(snapshot, key) {
 }
 
 function resourceEntriesReleased(trace, key, matches) {
-  const seen = new Set(
-    trace
-      .slice(0, -1)
-      .flatMap(({ snapshot }) => resourceEntries(snapshot, key))
-      .filter(matches)
-      .map(({ id }) => id),
-  );
+  const seen = new Set();
+  for (const { snapshot } of trace.slice(0, -1)) {
+    for (const entry of resourceEntries(snapshot, key).filter(matches)) seen.add(entry.id);
+  }
   const finalSnapshot = trace.at(-1)?.snapshot;
   if (seen.size === 0 || resourceEntries(finalSnapshot, key).some(matches)) return false;
   const lifecycleKey =
@@ -2009,10 +2051,15 @@ function resourceEntriesReleased(trace, key, matches) {
   if (lifecycleKey === undefined) return true;
   const matchingLifecycles = resourceEntries(finalSnapshot, lifecycleKey).filter(matches);
   return (
-    matchingLifecycles.length > 0 &&
+    matchingLifecycles.length === seen.size &&
+    matchingLifecycles.every(({ id }) => seen.has(id)) &&
     matchingLifecycles.every(
-      ({ acquiredPhase, releaseCount, releasedPhase }) =>
-        acquiredPhase !== 'cleanup' && releaseCount === 1 && typeof releasedPhase === 'string',
+      ({ acquiredOperation, acquiredPhase, releaseCount, releasedOperation, releasedPhase }) =>
+        acquiredPhase === 'operation' &&
+        RESOURCE_ACQUISITION_OPERATIONS.has(acquiredOperation) &&
+        releaseCount === 1 &&
+        ((releasedPhase === 'operation' && RESOURCE_RELEASE_OPERATIONS.has(releasedOperation)) ||
+          (releasedPhase === 'cleanup' && releasedOperation === 'teardown')),
     )
   );
 }
@@ -2050,7 +2097,26 @@ function listenerOwnedByModal(entry) {
 }
 
 function listenerOfPurpose(purpose) {
-  return (entry) => entry.classification === purpose && listenerOwnedByModal(entry);
+  return (entry) => entry.purpose === purpose && listenerOwnedByModal(entry);
+}
+
+function measuredListenerPurpose(scenario) {
+  const purposeByTarget = {
+    'destructive-focus-guard': 'focus-restore',
+    'focus-loop-listener': 'focus-loop',
+    'focus-recovery-listener': 'focus-restore',
+    'initial-focus-guard': 'focus-restore',
+    'pointer-sequence-guard': 'pointer',
+    'restoration-guard': 'focus-restore',
+    'validation-focus-guard': 'focus-restore',
+  };
+  const purposes = new Set(
+    scenario.probes
+      .filter(({ category, phase }) => category === 'cleanup' && phase === 'after-cleanup')
+      .map(({ target }) => purposeByTarget[target])
+      .filter((purpose) => purpose !== undefined),
+  );
+  return purposes.size === 1 ? [...purposes][0] : 'other';
 }
 
 function allMeasuredResourcesReleased(snapshot) {
@@ -2111,13 +2177,7 @@ function cleanupProbeFact(probe, document, snapshot, action, trace) {
       return 'restoration-guard-released';
     }
   } else if (probe.target === 'pointer-sequence-guard' && probe.property === 'released') {
-    if (
-      resourceEntriesReleased(
-        trace,
-        'listenerEntries',
-        ({ classification }) => classification === 'pointer',
-      )
-    ) {
+    if (resourceEntriesReleased(trace, 'listenerEntries', listenerOfPurpose('pointer'))) {
       return 'pointer-sequence-guard-released';
     }
   } else if (
@@ -2571,7 +2631,12 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
     const action =
       typeof resourceTracker?.runInPhase === 'function'
         ? await resourceTracker.runInPhase(
-            { owner: operation.target, phase: 'operation' },
+            {
+              operation: operation.operation,
+              owner: operation.target,
+              phase: 'operation',
+              purpose: measuredListenerPurpose(request.scenario),
+            },
             executeOperation,
           )
         : await executeOperation();
@@ -2903,7 +2968,12 @@ export async function mountModalFixtureClient({
       const result =
         typeof resourceTracker?.runInPhase === 'function'
           ? await resourceTracker.runInPhase(
-              { owner: 'fixture-cleanup', phase: 'cleanup' },
+              {
+                operation: 'teardown',
+                owner: 'fixture-cleanup',
+                phase: 'cleanup',
+                purpose: measuredListenerPurpose(request.scenario),
+              },
               performCleanup,
             )
           : await performCleanup();

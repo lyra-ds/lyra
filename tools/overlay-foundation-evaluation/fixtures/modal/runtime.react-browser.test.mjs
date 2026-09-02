@@ -7,7 +7,7 @@ const enabled = process.env.OVERLAY_MODAL_REACT_BROWSER_TEST === '1';
 
 test(
   'real React delegated root listeners stay excluded while a same-target candidate leak remains',
-  { skip: !enabled },
+  { skip: !enabled, timeout: 30_000 },
   async (t) => {
     const { chromium } = await import('playwright');
     const { createServer } = await import('vite');
@@ -36,52 +36,107 @@ test(
     assert.notEqual(address, null);
     assert.equal(typeof address, 'object');
 
-    const characterize = async (leak) => {
+    const characterize = async ({ fixture = 'runtime.react-browser.html', leak }) => {
       const page = await browser.newPage();
       const browserErrors = [];
+      const browserFailure = Promise.withResolvers();
+      void browserFailure.promise.catch(() => {});
+      let closing = false;
+      const failBrowser = (error) => {
+        const browserError = error instanceof Error ? error : new Error(String(error));
+        browserErrors.push(browserError);
+        browserFailure.reject(browserError);
+      };
       page.on('console', (message) => {
-        if (message.type() === 'error') browserErrors.push(message.text());
+        if (message.type() === 'error') browserErrors.push(new Error(message.text()));
       });
-      page.on('close', () => browserErrors.push('page closed unexpectedly'));
-      page.on('crash', () => browserErrors.push('page crashed'));
-      page.on('pageerror', (error) => browserErrors.push(error.message));
+      page.on('close', () => {
+        if (!closing) failBrowser(new Error('page closed unexpectedly'));
+      });
+      page.on('crash', () => failBrowser(new Error('page crashed')));
+      page.on('pageerror', failBrowser);
       try {
         await page.goto(
-          `http://127.0.0.1:${address.port}/tools/overlay-foundation-evaluation/fixtures/modal/runtime.react-browser.html?leak=${leak}`,
+          `http://127.0.0.1:${address.port}/tools/overlay-foundation-evaluation/fixtures/modal/${fixture}?leak=${leak}`,
+          { timeout: 5_000 },
         );
         try {
-          return await page.evaluate(async () => {
-            while (globalThis.__LYRA_REACT_TRACKER_RESULT__ === undefined) {
-              await new Promise((resolveFrame) => requestAnimationFrame(resolveFrame));
-            }
-            return globalThis.__LYRA_REACT_TRACKER_RESULT__;
-          });
+          const resultReady = page.evaluate(
+            (timeoutMilliseconds) =>
+              new Promise((resolveResult, rejectResult) => {
+                const timeout = setTimeout(
+                  () => rejectResult(new Error('React tracker result timed out')),
+                  timeoutMilliseconds,
+                );
+                const checkResult = () => {
+                  if (globalThis.__LYRA_REACT_TRACKER_RESULT__ !== undefined) {
+                    clearTimeout(timeout);
+                    resolveResult(globalThis.__LYRA_REACT_TRACKER_RESULT__);
+                    return;
+                  }
+                  requestAnimationFrame(checkResult);
+                };
+                checkResult();
+              }),
+            5_000,
+          );
+          void resultReady.catch(() => {});
+          const result = await Promise.race([resultReady, browserFailure.promise]);
+          if (browserErrors.length > 0) {
+            throw new AggregateError(
+              browserErrors,
+              browserErrors.map(({ message }) => message).join('\n'),
+            );
+          }
+          return result;
         } catch (error) {
-          throw new AggregateError([error], browserErrors.join('\n'));
+          if (browserErrors.includes(error)) throw error;
+          throw new AggregateError(
+            [error, ...browserErrors],
+            [error, ...browserErrors].map(({ message }) => message).join('\n'),
+          );
         }
       } finally {
+        closing = true;
         await page.close();
       }
     };
 
-    const clean = await characterize(false);
-    const leaked = await characterize(true);
+    let safetyTimer;
+    try {
+      await assert.rejects(
+        Promise.race([
+          characterize({ fixture: 'runtime.react-browser-failure.html', leak: false }),
+          new Promise((_, reject) => {
+            safetyTimer = setTimeout(
+              () => reject(new Error('browser failure propagation safety timeout')),
+              5_000,
+            );
+          }),
+        ]),
+        /react characterization failed before publishing result/u,
+      );
+    } finally {
+      clearTimeout(safetyTimer);
+    }
+    const clean = await characterize({ leak: false });
+    const leaked = await characterize({ leak: true });
     assert.equal(clean.persistentListeners > 0, true, JSON.stringify(clean));
     assert.equal(clean.listeners, 0, JSON.stringify(clean));
     assert.deepEqual(clean.listenerEntries, []);
     assert.equal(leaked.persistentListeners, clean.persistentListeners);
     assert.equal(leaked.listeners, 1);
     assert.deepEqual(
-      leaked.listenerEntries.map(({ classification, owner, target, type }) => ({
-        classification,
+      leaked.listenerEntries.map(({ owner, purpose, target, type }) => ({
         owner,
+        purpose,
         target,
         type,
       })),
       [
         {
-          classification: 'focus-loop',
           owner: 'modal-fixture-root',
+          purpose: 'other',
           target: 'modal-fixture-root',
           type: 'keydown',
         },

@@ -9,6 +9,13 @@ import {
 const REACT_VERSIONS = Object.freeze(['18.3.1', '19.2.8']);
 const DIRECTIONS = Object.freeze(['ltr', 'rtl']);
 const COLOR_SCHEMES = Object.freeze(['light', 'dark']);
+const RESOURCE_PURPOSES = Object.freeze([
+  'dismiss',
+  'focus-loop',
+  'focus-restore',
+  'pointer',
+  'other',
+]);
 const REQUEST_KEYS = Object.freeze(['schemaVersion', 'scenario', 'cell']);
 const EXECUTION_SCENARIO_KEYS = Object.freeze([
   'schemaVersion',
@@ -253,7 +260,7 @@ function validateSnapshot(snapshot, path, errors) {
             }
             rejectUnknownKeys(
               entry,
-              ['classification', 'id', 'owner', 'target', 'type'],
+              ['acquiredOperation', 'acquiredPhase', 'id', 'owner', 'purpose', 'target', 'type'],
               entryPath,
               errors,
             );
@@ -263,14 +270,10 @@ function validateSnapshot(snapshot, path, errors) {
               errors.push(`${entryPath}.id must be unique`);
             }
             ids.add(entry.id);
-            if (
-              !['dismiss', 'focus-loop', 'focus-restore', 'pointer', 'other'].includes(
-                entry.classification,
-              )
-            ) {
-              errors.push(`${entryPath}.classification is invalid`);
+            if (!RESOURCE_PURPOSES.includes(entry.purpose)) {
+              errors.push(`${entryPath}.purpose is invalid`);
             }
-            for (const key of ['owner', 'target', 'type']) {
+            for (const key of ['acquiredOperation', 'acquiredPhase', 'owner', 'target', 'type']) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
@@ -293,10 +296,12 @@ function validateSnapshot(snapshot, path, errors) {
               entry,
               [
                 'acquiredPhase',
-                'classification',
+                'acquiredOperation',
                 'id',
                 'owner',
+                'purpose',
                 'releaseCount',
+                'releasedOperation',
                 'releasedPhase',
                 'target',
                 'type',
@@ -310,20 +315,22 @@ function validateSnapshot(snapshot, path, errors) {
               errors.push(`${entryPath}.id must be unique`);
             }
             ids.add(entry.id);
-            if (
-              !['dismiss', 'focus-loop', 'focus-restore', 'pointer', 'other'].includes(
-                entry.classification,
-              )
-            ) {
-              errors.push(`${entryPath}.classification is invalid`);
+            if (!RESOURCE_PURPOSES.includes(entry.purpose)) {
+              errors.push(`${entryPath}.purpose is invalid`);
             }
-            for (const key of ['acquiredPhase', 'owner', 'target', 'type']) {
+            for (const key of ['acquiredOperation', 'acquiredPhase', 'owner', 'target', 'type']) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
             }
             if (!Number.isSafeInteger(entry.releaseCount) || entry.releaseCount < 0) {
               errors.push(`${entryPath}.releaseCount must be a non-negative safe integer`);
+            }
+            if (
+              entry.releasedOperation !== undefined &&
+              (typeof entry.releasedOperation !== 'string' || entry.releasedOperation.length === 0)
+            ) {
+              errors.push(`${entryPath}.releasedOperation must be a non-empty string when present`);
             }
             if (
               entry.releasedPhase !== undefined &&
@@ -345,7 +352,12 @@ function validateSnapshot(snapshot, path, errors) {
               errors.push(`${entryPath} must be a plain record`);
               return;
             }
-            rejectUnknownKeys(entry, ['acquiredPhase', 'id', 'kind', 'owner'], entryPath, errors);
+            rejectUnknownKeys(
+              entry,
+              ['acquiredOperation', 'acquiredPhase', 'id', 'kind', 'owner', 'purpose', 'target'],
+              entryPath,
+              errors,
+            );
             if (!Number.isSafeInteger(entry.id) || entry.id < 1) {
               errors.push(`${entryPath}.id must be a positive safe integer`);
             } else if (ids.has(entry.id)) {
@@ -355,7 +367,10 @@ function validateSnapshot(snapshot, path, errors) {
             if (!['interval', 'timeout'].includes(entry.kind)) {
               errors.push(`${entryPath}.kind is invalid`);
             }
-            for (const key of ['acquiredPhase', 'owner']) {
+            if (!RESOURCE_PURPOSES.includes(entry.purpose)) {
+              errors.push(`${entryPath}.purpose is invalid`);
+            }
+            for (const key of ['acquiredOperation', 'acquiredPhase', 'owner', 'target']) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
@@ -376,7 +391,18 @@ function validateSnapshot(snapshot, path, errors) {
             }
             rejectUnknownKeys(
               entry,
-              ['acquiredPhase', 'id', 'kind', 'owner', 'releaseCount', 'releasedPhase'],
+              [
+                'acquiredOperation',
+                'acquiredPhase',
+                'id',
+                'kind',
+                'owner',
+                'purpose',
+                'releaseCount',
+                'releasedOperation',
+                'releasedPhase',
+                'target',
+              ],
               entryPath,
               errors,
             );
@@ -389,13 +415,22 @@ function validateSnapshot(snapshot, path, errors) {
             if (!['interval', 'timeout'].includes(entry.kind)) {
               errors.push(`${entryPath}.kind is invalid`);
             }
-            for (const key of ['acquiredPhase', 'owner']) {
+            if (!RESOURCE_PURPOSES.includes(entry.purpose)) {
+              errors.push(`${entryPath}.purpose is invalid`);
+            }
+            for (const key of ['acquiredOperation', 'acquiredPhase', 'owner', 'target']) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
             }
             if (!Number.isSafeInteger(entry.releaseCount) || entry.releaseCount < 0) {
               errors.push(`${entryPath}.releaseCount must be a non-negative safe integer`);
+            }
+            if (
+              entry.releasedOperation !== undefined &&
+              (typeof entry.releasedOperation !== 'string' || entry.releasedOperation.length === 0)
+            ) {
+              errors.push(`${entryPath}.releasedOperation must be a non-empty string when present`);
             }
             if (
               entry.releasedPhase !== undefined &&
