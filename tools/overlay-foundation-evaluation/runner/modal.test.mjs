@@ -47,7 +47,13 @@ function expectedObservation(scenario) {
   return { ...structuredClone(scenario.expected), diagnostics: {} };
 }
 
-async function seedCoreAttempt(setup, candidate, result = 'PASS', classification) {
+async function seedCoreAttempt(
+  setup,
+  candidate,
+  result = 'PASS',
+  classification,
+  mutateAttempt = (attempt) => attempt,
+) {
   const runId = `core-${revision.slice(0, 12)}`;
   const bytes = Buffer.from(`artifact:${candidate.id}`);
   const digest = sha256(bytes);
@@ -57,7 +63,7 @@ async function seedCoreAttempt(setup, candidate, result = 'PASS', classification
     await mkdir(join(artifactPath, '..'), { recursive: true });
     await writeFile(artifactPath, bytes);
   }
-  const attempt = {
+  const attempt = mutateAttempt({
     schemaVersion: 1,
     recordType: 'preflight',
     runId,
@@ -90,7 +96,7 @@ async function seedCoreAttempt(setup, candidate, result = 'PASS', classification
           }
         : { message: 'synthetic preflight failure', scope: 'candidate' },
     artifactPaths: result === 'PASS' ? [relativePath] : [],
-  };
+  });
   await writeAttempt({ evidenceRoot: setup.evidenceRoot, attempt });
   return attempt;
 }
@@ -109,7 +115,9 @@ function dependencies(setup, overrides = {}) {
           candidate,
           state.result,
           state.classification ?? 'fixture',
+          overrides.mutateCoreAttempt ?? ((value) => value),
         );
+        await overrides.afterSeedCoreAttempt?.({ attempt, candidate });
         candidates.push({
           candidateId: candidate.id,
           stage: attempt.stage,
@@ -281,14 +289,25 @@ test('uses the same literal assertion for every candidate identity', async (t) =
 
 test('treats an unknown observation or classification as run-fatal', async (t) => {
   const malformed = await fixture(t, ['incumbent', 'radix']);
+  const malformedCalls = [];
   await assert.rejects(
     run(
       malformed,
       dependencies(malformed, {
-        runModalCell: async () => [{ reactVersion: '19.2.8', observation: {} }],
+        calls: malformedCalls,
+        runModalCell: async (input) => [
+          {
+            reactVersion: '19.2.8',
+            observation: { ...expectedObservation(input.scenario), unsupported: true },
+          },
+        ],
       }),
     ),
     /modal observation/u,
+  );
+  assert.equal(
+    malformedCalls.some((call) => call.startsWith('scenario:radix:')),
+    false,
   );
 
   const unknown = await fixture(t, ['incumbent', 'radix']);
@@ -306,6 +325,71 @@ test('treats an unknown observation or classification as run-fatal', async (t) =
     ),
     /unknown classification/u,
   );
+});
+
+test('requires one verified checksum mapping for every core path and prepares only verified artifacts', async (t) => {
+  const setup = await fixture(t, ['incumbent']);
+  const calls = [];
+  const deps = dependencies(setup, {
+    calls,
+    mutateCoreAttempt(attempt) {
+      if (attempt.result !== 'PASS') return attempt;
+      const unverified = structuredClone(attempt.observed.artifacts[0]);
+      unverified.path = `files/${attempt.runId}/${attempt.candidateId}/artifacts/unverified.tgz`;
+      unverified.sha256 = 'a'.repeat(64);
+      return {
+        ...attempt,
+        observed: { ...attempt.observed, artifacts: [...attempt.observed.artifacts, unverified] },
+      };
+    },
+  });
+  await assert.rejects(run(setup, deps), /one-to-one|verified.*artifact|path mapping/iu);
+  assert.equal(
+    calls.some((call) => call.startsWith('prepare:')),
+    false,
+  );
+});
+
+test('rejects duplicate or traversal-bearing core evidence paths before fixture preparation', async (t) => {
+  for (const kind of ['duplicate', 'traversal']) {
+    const setup = await fixture(t, ['incumbent']);
+    const calls = [];
+    const deps = dependencies(setup, {
+      calls,
+      async afterSeedCoreAttempt({ attempt, candidate }) {
+        if (attempt.result !== 'PASS') return attempt;
+        let corrupted;
+        if (kind === 'duplicate') {
+          corrupted = {
+            ...attempt,
+            artifactPaths: [...attempt.artifactPaths, attempt.artifactPaths[0]],
+          };
+        } else {
+          const artifact = { ...attempt.observed.artifacts[0], path: '../outside.tgz' };
+          corrupted = {
+            ...attempt,
+            observed: { ...attempt.observed, artifacts: [artifact] },
+            artifactPaths: ['../outside.tgz'],
+          };
+        }
+        const path = join(
+          setup.evidenceRoot,
+          'attempts',
+          attempt.runId,
+          'preflight',
+          candidate.id,
+          attempt.stage,
+          'attempt-1.json',
+        );
+        await writeFile(path, `${JSON.stringify(corrupted)}\n`);
+      },
+    });
+    await assert.rejects(run(setup, deps), /duplicate|unique|relative|traversal|evidence path/iu);
+    assert.equal(
+      calls.some((call) => call.startsWith('prepare:')),
+      false,
+    );
+  }
 });
 
 for (const [name, setupFailure, expected] of [
@@ -361,37 +445,118 @@ for (const [name, setupFailure, expected] of [
   });
 }
 
-test('writes attempt 2 on retry while attempt 1 remains the effective result', async (t) => {
+test('resume reuses exact core attempt 1 and writes attempt 2 while attempt 1 remains effective', async (t) => {
   const setup = await fixture(t, ['incumbent']);
   const scenario = modalScenariosForCell('ssr')[0];
-  const first = {
-    schemaVersion: 1,
-    recordType: 'scenario',
-    runId: `modal-${revision.slice(0, 12)}`,
-    candidateId: 'incumbent',
-    contractId: 'OF-MODAL',
-    scenarioId: scenario.scenarioId,
-    cellId: 'ssr',
-    attemptNumber: 1,
-    result: 'FAIL',
-    classification: 'product',
-    expected: scenario.expected,
-    observed: { ...expectedObservation(scenario), focus: { target: 'wrong-neutral-focus' } },
-    artifactPaths: [],
-  };
-  await writeAttempt({ evidenceRoot: setup.evidenceRoot, attempt: first });
-  const deps = dependencies(setup, {
+  const common = {
     dependencies: {
       cellPolicies: { ssr: { mode: 'ssr', reactVersions: ['19.2.8'] } },
       scenariosForCell: () => [scenario],
     },
+  };
+  const firstCalls = [];
+  await run(
+    setup,
+    dependencies(setup, {
+      ...common,
+      calls: firstCalls,
+      runModalCell(input) {
+        return [
+          {
+            reactVersion: '19.2.8',
+            observation: {
+              ...expectedObservation(input.scenario),
+              focus: { target: 'wrong-neutral-focus' },
+            },
+          },
+        ];
+      },
+    }),
+  );
+  assert.equal(firstCalls.filter((call) => call === 'core').length, 1);
+
+  const resumeCalls = [];
+  const deps = dependencies(setup, {
+    ...common,
+    calls: resumeCalls,
+    dependencies: {
+      ...common.dependencies,
+      async runCorePreflight() {
+        throw new Error('core preflight must not rerun during resume');
+      },
+    },
   });
-  const summary = await run(setup, deps);
+  const summary = await run(setup, deps, { resume: true });
   const records = await scenarioAttempts(setup.evidenceRoot);
   assert.deepEqual(records.map(({ attemptNumber }) => attemptNumber).sort(), [1, 2]);
   assert.equal(summary.candidates[0].counts.FAIL, 1);
   assert.equal(summary.candidates[0].counts.PASS, 0);
   assert.equal(summary.candidates[0].retries, 1);
+  assert.equal(resumeCalls.includes('core'), false);
+});
+
+test('resume rejects a manifest or revision that conflicts with the immutable run binding', async (t) => {
+  const setup = await fixture(t, ['incumbent']);
+  const scenario = modalScenariosForCell('ssr')[0];
+  const reduced = {
+    dependencies: {
+      cellPolicies: { ssr: { mode: 'ssr', reactVersions: ['19.2.8'] } },
+      scenariosForCell: () => [scenario],
+    },
+  };
+  await run(setup, dependencies(setup, reduced));
+  const changedManifest = structuredClone(setup.manifest);
+  changedManifest.candidates[0].artifacts = [
+    { name: 'changed', version: '1.0.0', sha256: 'a'.repeat(64) },
+  ];
+  await assert.rejects(
+    run(setup, dependencies(setup, reduced), { manifest: changedManifest, resume: true }),
+    /manifest.*conflict|run binding/iu,
+  );
+});
+
+test('resume rejects conflicting modal evidence before any core or scenario execution', async (t) => {
+  const setup = await fixture(t, ['incumbent']);
+  const scenario = modalScenariosForCell('ssr')[0];
+  const reduced = {
+    dependencies: {
+      cellPolicies: { ssr: { mode: 'ssr', reactVersions: ['19.2.8'] } },
+      scenariosForCell: () => [scenario],
+    },
+  };
+  await run(setup, dependencies(setup, reduced));
+  const path = join(
+    setup.evidenceRoot,
+    'attempts',
+    `modal-${revision.slice(0, 12)}`,
+    'scenario',
+    'incumbent',
+    'OF-MODAL',
+    scenario.scenarioId,
+    'ssr',
+    'attempt-1.json',
+  );
+  const attempt = JSON.parse(await readFile(path, 'utf8'));
+  attempt.expected.focus = { target: 'conflicting-neutral-focus' };
+  await writeFile(path, `${JSON.stringify(attempt)}\n`);
+  const calls = [];
+  await assert.rejects(
+    run(
+      setup,
+      dependencies(setup, {
+        calls,
+        dependencies: {
+          ...reduced.dependencies,
+          async runCorePreflight() {
+            calls.push('unexpected-core');
+          },
+        },
+      }),
+      { resume: true },
+    ),
+    /resume attempt conflicts|manifest or core attempt/iu,
+  );
+  assert.deepEqual(calls, []);
 });
 
 test('keeps SSR and hydration failures as distinct scenario-cell records', async (t) => {

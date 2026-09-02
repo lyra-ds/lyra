@@ -4,6 +4,12 @@ import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path
 import { pathToFileURL } from 'node:url';
 
 import { MODAL_WAVE_CELLS } from '../contracts/modal.mjs';
+import { isPlainRecord } from '../contracts/protocol.mjs';
+import {
+  validateModalFixtureRequest,
+  validateModalObservation,
+} from '../fixtures/modal/protocol.mjs';
+import { observeModalSsrMarkup } from '../fixtures/modal/runtime.mjs';
 
 const REACT_18 = '18.3.1';
 const REACT_19 = '19.2.8';
@@ -115,7 +121,17 @@ function inside(parent, child) {
   return childRelative === '' || (!childRelative.startsWith('..') && !isAbsolute(childRelative));
 }
 
-async function defaultStartServer({ fixture }) {
+function injectInitialMarkup(html, initialMarkup) {
+  if (initialMarkup === undefined) return html;
+  if (typeof initialMarkup !== 'string') throw new Error('hydration markup must be a string');
+  const marker =
+    /(<main\b[^>]*\bdata-modal-fixture-root(?:=(?:"[^"]*"|'[^']*'))?[^>]*>)([\s\S]*?)(<\/main>)/iu;
+  const matches = [...html.matchAll(new RegExp(marker.source, `${marker.flags}g`))];
+  if (matches.length !== 1) throw new Error('client HTML must contain one modal fixture root');
+  return html.replace(marker, `$1${initialMarkup}$3`);
+}
+
+async function defaultStartServer({ fixture, initialMarkup }) {
   const clientHtmlPath = resolve(fixture.clientHtmlPath);
   const root = await realpath(dirname(clientHtmlPath));
   const server = createServer(async (request, response) => {
@@ -125,7 +141,12 @@ async function defaultStartServer({ fixture }) {
       const path = await realpath(requested);
       if (!inside(root, path)) throw new Error('requested fixture path escapes its build root');
       response.writeHead(200, { 'content-type': contentType(path), 'cache-control': 'no-store' });
-      response.end(await readFile(path));
+      const bytes = await readFile(path);
+      response.end(
+        path === clientHtmlPath
+          ? injectInitialMarkup(bytes.toString('utf8'), initialMarkup)
+          : bytes,
+      );
     } catch {
       response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
       response.end('not found\n');
@@ -149,45 +170,97 @@ async function defaultStartServer({ fixture }) {
   };
 }
 
-async function executeBrowserScenario({ scenario, cell }) {
+async function installFixtureRequest(request) {
+  Object.defineProperty(globalThis, '__LYRA_MODAL_FIXTURE_REQUEST__', {
+    configurable: true,
+    enumerable: false,
+    value: request,
+    writable: false,
+  });
+}
+
+async function executeBrowserScenario({ scenario, cell, hydrate, axe, synthesizeHover }) {
   document.documentElement.dir = cell.direction;
   const bridge = globalThis.__LYRA_MODAL_FIXTURE__;
-  if (bridge === undefined || bridge.ready === undefined) {
+  if (bridge === undefined || typeof bridge.runScenario !== 'function') {
     throw new Error('modal fixture bridge is unavailable');
   }
-  const fixture = await bridge.ready;
-  for (const operation of scenario.operations) {
-    const execute = fixture.operations?.[operation.operation];
-    if (typeof execute !== 'function') throw new Error('modal fixture operation is unavailable');
-    if (operation.operation === 'destroy') execute();
-    else {
-      execute({
-        event: { target: operation.target, type: operation.operation },
-        prevented: false,
-      });
-    }
+  if (JSON.stringify(bridge.request) !== JSON.stringify({ schemaVersion: 1, scenario, cell })) {
+    throw new Error('modal fixture bridge request does not match the scenario cell');
   }
-  return fixture.observe();
+  const expectedMode = hydrate ? 'hydrateRoot' : 'createRoot';
+  if (bridge.renderMode !== expectedMode) {
+    throw new Error(`modal fixture rendered with ${bridge.renderMode}; expected ${expectedMode}`);
+  }
+  const observation = await bridge.runScenario({ scenario, cell, hydrate, synthesizeHover });
+  if (!axe) return observation;
+  if (typeof bridge.runAxe !== 'function') throw new Error('modal axe bridge is unavailable');
+  const audit = await bridge.runAxe();
+  if (
+    audit === null ||
+    typeof audit !== 'object' ||
+    Array.isArray(audit) ||
+    !Array.isArray(audit.violations)
+  ) {
+    return { axeResultValid: false, observation };
+  }
+  return {
+    axeResultValid: true,
+    axeViolations: audit.violations.length,
+    observation,
+  };
 }
 
 async function cleanupBrowserFixture() {
-  const fixture = await globalThis.__LYRA_MODAL_FIXTURE__?.ready;
-  return fixture?.destroy?.() ?? false;
+  const bridge = globalThis.__LYRA_MODAL_FIXTURE__;
+  if (bridge === undefined || typeof bridge.cleanup !== 'function') {
+    throw new Error('modal fixture cleanup bridge is unavailable');
+  }
+  const result = await bridge.cleanup();
+  if (
+    result === null ||
+    typeof result !== 'object' ||
+    Array.isArray(result) ||
+    (result.status !== 'destroyed' && result.status !== 'already-destroyed')
+  ) {
+    throw new Error('modal fixture cleanup result is uncertain');
+  }
+  return result;
 }
 
 function browserCell(policy, reactVersion, cellId) {
+  const context = policy.context ?? {};
   return {
     id: cellId,
     reactVersion,
     direction: policy.dir ?? 'ltr',
-    colorScheme: policy.context.colorScheme ?? 'light',
-    forcedColors: policy.context.forcedColors === 'active',
-    reducedMotion: policy.context.reducedMotion === 'reduce',
-    coarsePointer: policy.context.hasTouch === true,
+    colorScheme: context.colorScheme ?? 'light',
+    forcedColors: context.forcedColors === 'active',
+    reducedMotion: context.reducedMotion === 'reduce',
+    coarsePointer: context.hasTouch === true,
   };
 }
 
+function modalFixtureRequest(policy, reactVersion, cellId, scenario) {
+  const request = {
+    schemaVersion: 1,
+    scenario,
+    cell: browserCell(policy, reactVersion, cellId),
+  };
+  const errors = validateModalFixtureRequest(request);
+  if (errors.length !== 0)
+    throw new Error(`modal fixture request is invalid: ${errors.join('; ')}`);
+  return request;
+}
+
 function withBoundary(error, { classification, scope }) {
+  if (
+    error !== null &&
+    (typeof error === 'object' || typeof error === 'function') &&
+    (Object.hasOwn(error, 'classification') || Object.hasOwn(error, 'scope'))
+  ) {
+    return error;
+  }
   if (error instanceof Error && Object.isExtensible(error)) {
     error.classification = classification;
     error.scope = scope;
@@ -198,7 +271,7 @@ function withBoundary(error, { classification, scope }) {
 
 async function runBrowserVersion(
   { cellId, fixture, playwright, policy, reactVersion, scenario },
-  startServer,
+  { executeSsr, startServer },
 ) {
   let server;
   let browser;
@@ -208,7 +281,32 @@ async function runBrowserVersion(
   let primaryError;
   const cleanupErrors = [];
   try {
-    server = await startServer({ fixture });
+    const request = modalFixtureRequest(policy, reactVersion, cellId, scenario);
+    const ssr =
+      policy.hydrate === true
+        ? await executeSsr({ cellId, fixture, reactVersion, request, scenario })
+        : undefined;
+    if (
+      ssr !== undefined &&
+      (!isPlainRecord(ssr) || typeof ssr.html !== 'string' || !isPlainRecord(ssr.observation))
+    ) {
+      throw withBoundary(new Error('modal hydration SSR evidence is invalid'), {
+        classification: 'policy',
+        scope: 'run',
+      });
+    }
+    if (ssr !== undefined) {
+      const ssrObservationErrors = validateModalObservation(ssr.observation);
+      if (ssrObservationErrors.length !== 0) {
+        throw withBoundary(
+          new Error(
+            `modal hydration SSR observation is invalid: ${ssrObservationErrors.join('; ')}`,
+          ),
+          { classification: 'policy', scope: 'run' },
+        );
+      }
+    }
+    server = await startServer({ fixture, initialMarkup: ssr?.html, request });
     const engine = playwright?.[policy.engine];
     if (engine === undefined || typeof engine.launch !== 'function') {
       throw new Error(`Playwright ${policy.engine} engine is unavailable`);
@@ -216,19 +314,59 @@ async function runBrowserVersion(
     browser = await engine.launch();
     context = await browser.newContext(policy.context);
     page = await context.newPage();
+    if (typeof page.addInitScript !== 'function') {
+      throw new Error('Playwright page cannot install a modal fixture request');
+    }
+    await page.addInitScript(installFixtureRequest, request);
     await page.goto(server.url);
-    observation = await page.evaluate(executeBrowserScenario, {
+    const execution = await page.evaluate(executeBrowserScenario, {
       scenario,
-      cell: browserCell(policy, reactVersion, cellId),
+      cell: request.cell,
       hydrate: policy.hydrate === true,
       axe: policy.axe === true,
       synthesizeHover: policy.synthesizeHover !== false,
     });
+    if (policy.axe === true) {
+      if (!isPlainRecord(execution) || execution.axeResultValid !== true) {
+        throw withBoundary(new Error('modal axe result is invalid'), {
+          classification: 'policy',
+          scope: 'run',
+        });
+      }
+      if (!Number.isSafeInteger(execution.axeViolations) || execution.axeViolations < 0) {
+        throw withBoundary(new Error('modal axe violation count is invalid'), {
+          classification: 'policy',
+          scope: 'run',
+        });
+      }
+      if (execution.axeViolations !== 0) {
+        throw withBoundary(new Error(`modal axe found ${execution.axeViolations} violation(s)`), {
+          classification: 'product',
+          scope: 'candidate',
+        });
+      }
+      observation = {
+        ...execution.observation,
+        diagnostics: {
+          ...execution.observation?.diagnostics,
+          axeViolations: execution.axeViolations,
+        },
+      };
+    } else {
+      observation = execution;
+    }
+    const observationErrors = validateModalObservation(observation);
+    if (observationErrors.length !== 0) {
+      throw withBoundary(
+        new Error(`modal browser observation is invalid: ${observationErrors.join('; ')}`),
+        { classification: 'policy', scope: 'run' },
+      );
+    }
   } catch (error) {
     primaryError = withBoundary(error, { classification: 'infrastructure', scope: 'candidate' });
   } finally {
     for (const close of [
-      () => page?.evaluate(cleanupBrowserFixture),
+      () => (page === undefined ? undefined : page.evaluate(cleanupBrowserFixture)),
       () => page?.close(),
       () => context?.close(),
       () => browser?.close(),
@@ -252,24 +390,16 @@ async function runBrowserVersion(
   return observation;
 }
 
-async function defaultExecuteSsr({ fixture }) {
+async function defaultExecuteSsr({ fixture, request }) {
   const moduleUrl = `${pathToFileURL(fixture.ssrPath).href}?modal=${Date.now()}-${Math.random()}`;
   const module = await import(moduleUrl);
   if (typeof module.renderModalFixture !== 'function') {
     throw new Error('modal SSR output must export renderModalFixture');
   }
-  const html = await module.renderModalFixture();
+  const html = await module.renderModalFixture(request);
   if (typeof html !== 'string') throw new Error('modal SSR output must render a string');
-  return {
-    roles: [],
-    relationships: [],
-    states: [],
-    focus: { target: 'server-document-focus-unchanged' },
-    events: [],
-    announcements: [],
-    cleanup: ['no-browser-resource-claims'],
-    diagnostics: { htmlBytes: Buffer.byteLength(html) },
-  };
+  const observation = observeModalSsrMarkup({ request, html });
+  return { html, observation };
 }
 
 export async function runModalCell(
@@ -283,13 +413,34 @@ export async function runModalCell(
   for (const reactVersion of policy.reactVersions) {
     const fixture = fixtures.get(reactVersion);
     if (fixture === undefined) throw new Error(`fixture is missing for React ${reactVersion}`);
-    const observation =
-      policy.mode === 'ssr'
-        ? await executeSsr({ cellId, fixture, reactVersion, scenario })
-        : await runBrowserVersion(
-            { cellId, fixture, playwright, policy, reactVersion, scenario },
-            startServer,
-          );
+    const request = modalFixtureRequest(policy, reactVersion, cellId, scenario);
+    let observation;
+    if (policy.mode === 'ssr') {
+      const result = await executeSsr({ cellId, fixture, reactVersion, request, scenario });
+      if (
+        !isPlainRecord(result) ||
+        typeof result.html !== 'string' ||
+        !isPlainRecord(result.observation)
+      ) {
+        throw withBoundary(
+          new Error('modal SSR executor must return rendered HTML and an observation'),
+          { classification: 'policy', scope: 'run' },
+        );
+      }
+      observation = result.observation;
+      const observationErrors = validateModalObservation(observation);
+      if (observationErrors.length !== 0) {
+        throw withBoundary(
+          new Error(`modal SSR observation is invalid: ${observationErrors.join('; ')}`),
+          { classification: 'policy', scope: 'run' },
+        );
+      }
+    } else {
+      observation = await runBrowserVersion(
+        { cellId, fixture, playwright, policy, reactVersion, scenario },
+        { executeSsr, startServer },
+      );
+    }
     observations.push({ reactVersion, observation });
   }
   return observations;

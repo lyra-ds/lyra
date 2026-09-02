@@ -5,8 +5,6 @@ import { lstat, mkdir, open, realpath, rm, unlink } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
-import { MODAL_SCENARIOS } from '../contracts/modal.mjs';
-import { validateModalFixtureRequest } from '../fixtures/modal/protocol.mjs';
 import { installExternalCandidate } from './isolation.mjs';
 
 const execFilePromise = promisify(execFile);
@@ -96,41 +94,6 @@ async function verifySnapshots(sourceHashes, runRootReal) {
   }
 }
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, canonicalize(value[key])]),
-    );
-  }
-  return value;
-}
-
-function canonicalJson(value) {
-  return JSON.stringify(canonicalize(value));
-}
-
-function fixtureRequest(reactVersion) {
-  const request = {
-    schemaVersion: 1,
-    scenario: MODAL_SCENARIOS[0],
-    cell: {
-      id: reactVersion === '18.3.1' ? 'react-18' : 'react-19',
-      reactVersion,
-      direction: 'ltr',
-      colorScheme: 'light',
-      forcedColors: false,
-      reducedMotion: false,
-      coarsePointer: false,
-    },
-  };
-  const errors = validateModalFixtureRequest(request);
-  if (errors.length > 0) throw new Error(`modal fixture request is invalid: ${errors.join('; ')}`);
-  return request;
-}
-
 async function verifyViteToolchain(repositoryRoot) {
   const read = (path) => readRegularFileOnce(path, (handle) => handle.readFile());
   let repositoryManifest;
@@ -156,19 +119,32 @@ async function verifyViteToolchain(repositoryRoot) {
   }
   const vitePath = join(repositoryRoot, 'node_modules', 'vite', 'bin', 'vite.js');
   await read(vitePath);
+  let axeManifest;
+  try {
+    axeManifest = JSON.parse(
+      (await read(join(repositoryRoot, 'node_modules', 'axe-core', 'package.json'))).bytes.toString(
+        'utf8',
+      ),
+    );
+    await read(join(repositoryRoot, 'node_modules', 'axe-core', 'axe.js'));
+  } catch (error) {
+    throw new Error('repository axe toolchain metadata is invalid', { cause: error });
+  }
+  if (axeManifest?.name !== 'axe-core' || axeManifest?.version !== '4.13.0') {
+    throw new Error('repository axe-core version must equal 4.13.0');
+  }
   return vitePath;
 }
 
 function viteConfig({ fixtureRoot, repositoryRoot }) {
   const contractRoot = join(repositoryRoot, 'tools', 'overlay-foundation-evaluation', 'contracts');
   return Buffer.from(`const target = process.env.LYRA_MODAL_BUILD_TARGET;
-const define = JSON.parse(process.env.LYRA_MODAL_VITE_DEFINE);
 if (target !== 'client' && target !== 'ssr') throw new Error('invalid modal build target');
 export default {
   root: ${JSON.stringify(fixtureRoot)},
-  define,
   resolve: {
     alias: {
+      'axe-core': ${JSON.stringify(join(repositoryRoot, 'node_modules', 'axe-core', 'axe.js'))},
       '../../contracts/modal.mjs': ${JSON.stringify(join(contractRoot, 'modal.mjs'))},
       '../../contracts/protocol.mjs': ${JSON.stringify(join(contractRoot, 'protocol.mjs'))}
     }
@@ -258,10 +234,6 @@ export async function prepareModalFixture(
   }
   const runRootReal = await realpath(resolvedRunRoot);
   const vitePath = await verifyViteToolchain(resolvedRepositoryRoot);
-  const request = fixtureRequest(reactVersion);
-  const define = canonicalJson({
-    __LYRA_MODAL_FIXTURE_REQUEST__: canonicalJson(request),
-  });
   const createdPaths = [];
   let primaryError;
   try {
@@ -350,10 +322,7 @@ export async function prepareModalFixture(
     const clientRoot = join(modalRoot, 'dist-client');
     const ssrRoot = join(modalRoot, 'dist-ssr');
     const commonArgs = [vitePath, 'build', fixtureRoot, '--config', configPath];
-    const commandEnvironment = {
-      ...process.env,
-      LYRA_MODAL_VITE_DEFINE: define,
-    };
+    const commandEnvironment = { ...process.env };
     await runCommand(
       process.execPath,
       [...commonArgs, '--outDir', clientRoot, '--emptyOutDir', '--logLevel', 'silent'],

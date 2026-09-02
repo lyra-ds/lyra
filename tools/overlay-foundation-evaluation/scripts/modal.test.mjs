@@ -73,8 +73,16 @@ function dependencies(setup, overrides = {}) {
       calls.push(['import', 'playwright']);
       return { chromium: {}, firefox: {}, webkit: {} };
     },
+    ...(overrides.inspectModalEvidence === undefined
+      ? {}
+      : {
+          async inspectModalEvidence(input) {
+            calls.push(['inspect-evidence', input.manifest.lyraRevision]);
+            return overrides.inspectModalEvidence(input);
+          },
+        }),
     async runModalWave(input) {
-      calls.push(['run-wave', input.repositoryRoot]);
+      calls.push(['run-wave', input.repositoryRoot, input.resume]);
       return {
         schemaVersion: 1,
         runId: 'modal-111111111111',
@@ -183,6 +191,48 @@ test('rejects an existing conflicting evidence attempt before importing Playwrig
   );
   assert.equal(
     deps.calls.some((call) => call[0] === 'import'),
+    false,
+  );
+});
+
+test('validated resume reaches the wave before Playwright without rerunning core in the CLI', async (t) => {
+  const setup = await fixture(t);
+  const { runModalCli } = await import(modulePath);
+  const deps = dependencies(setup, {
+    inspectModalEvidence: async () => ({ resume: true }),
+  });
+  await runModalCli({ argv: argv(setup), ...deps });
+  assert.equal(
+    deps.calls.findIndex(([name]) => name === 'inspect-evidence') <
+      deps.calls.findIndex(([name]) => name === 'import'),
+    true,
+  );
+  assert.equal(deps.calls.at(-1)[2], true);
+});
+
+test('rejects a conflicting resume binding before importing Playwright', async (t) => {
+  const setup = await fixture(t);
+  const bindingRoot = join(setup.evidenceRoot, 'runs');
+  await mkdir(bindingRoot);
+  await writeFile(
+    join(bindingRoot, `modal-${revision.slice(0, 12)}.json`),
+    `${JSON.stringify({
+      schemaVersion: 1,
+      recordType: 'modal-run-binding',
+      runId: `modal-${revision.slice(0, 12)}`,
+      coreRunId: `core-${revision.slice(0, 12)}`,
+      lyraRevision: revision,
+      manifestSha256: 'a'.repeat(64),
+    })}\n`,
+  );
+  const { runModalCli } = await import(modulePath);
+  const deps = dependencies(setup);
+  await assert.rejects(
+    runModalCli({ argv: argv(setup), ...deps }),
+    /binding|manifest.*conflict|conflicting evidence/iu,
+  );
+  assert.equal(
+    deps.calls.some(([name]) => name === 'import'),
     false,
   );
 });

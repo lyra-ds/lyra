@@ -43,6 +43,7 @@ async function createSources(root) {
   await mkdir(fixtureSourceRoot, { recursive: true });
   await mkdir(dirname(adapterEntry), { recursive: true });
   await mkdir(join(repositoryRoot, 'node_modules', 'vite', 'bin'), { recursive: true });
+  await mkdir(join(repositoryRoot, 'node_modules', 'axe-core'), { recursive: true });
   await writeFile(
     join(repositoryRoot, 'package.json'),
     JSON.stringify({ devDependencies: { vite: '8.2.1' } }),
@@ -52,6 +53,14 @@ async function createSources(root) {
     JSON.stringify({ name: 'vite', version: '8.2.1' }),
   );
   await writeFile(join(repositoryRoot, 'node_modules', 'vite', 'bin', 'vite.js'), 'vite bin\n');
+  await writeFile(
+    join(repositoryRoot, 'node_modules', 'axe-core', 'package.json'),
+    JSON.stringify({ name: 'axe-core', version: '4.13.0' }),
+  );
+  await writeFile(
+    join(repositoryRoot, 'node_modules', 'axe-core', 'axe.js'),
+    'export default {};\n',
+  );
   const files = {
     [adapterEntry]: 'export const adapter = "synthetic";\n',
     [join(fixtureSourceRoot, 'protocol.mjs')]: 'export const protocol = 1;\n',
@@ -243,10 +252,8 @@ test('copies each allowed source once with hashes and returns verified contained
       ],
     ],
   );
-  const define = setup.calls[0].options.env.LYRA_MODAL_VITE_DEFINE;
-  assert.equal(setup.calls[1].options.env.LYRA_MODAL_VITE_DEFINE, define);
-  assert.deepEqual(Object.keys(JSON.parse(define)), ['__LYRA_MODAL_FIXTURE_REQUEST__']);
-  assert.doesNotMatch(define, /radix|candidate|vendor/iu);
+  assert.equal(setup.calls[0].options.env.LYRA_MODAL_VITE_DEFINE, undefined);
+  assert.equal(setup.calls[1].options.env.LYRA_MODAL_VITE_DEFINE, undefined);
   assert.deepEqual(
     setup.calls.map(({ options }) => options.cwd),
     [setup.fixtureRoot, setup.fixtureRoot],

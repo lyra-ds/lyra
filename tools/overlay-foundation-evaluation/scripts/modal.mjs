@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
 import { execFile } from 'node:child_process';
-import { lstat, realpath } from 'node:fs/promises';
+import { realpath } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 
 import { checkManifestFile } from './check.mjs';
-import { runModalWave as executeModalWave } from '../runner/modal.mjs';
+import {
+  inspectModalEvidence as inspectEvidence,
+  runModalWave as executeModalWave,
+} from '../runner/modal.mjs';
 
 const execFilePromise = promisify(execFile);
 const usage =
@@ -54,29 +57,11 @@ function parseArguments(argv) {
   };
 }
 
-async function pathExists(path) {
-  try {
-    await lstat(path);
-    return true;
-  } catch (error) {
-    if (error?.code === 'ENOENT') return false;
-    throw error;
-  }
-}
-
-async function rejectConflictingEvidence(evidenceRoot, revision) {
-  const attemptsRoot = resolve(evidenceRoot, 'attempts');
-  for (const runId of [`core-${revision.slice(0, 12)}`, `modal-${revision.slice(0, 12)}`]) {
-    if (await pathExists(resolve(attemptsRoot, runId))) {
-      throw new Error(`conflicting evidence attempt already exists for ${runId}`);
-    }
-  }
-}
-
 export async function runModalCli({
   argv,
   runCommand = defaultRunCommand,
   importPlaywright = () => import('playwright'),
+  inspectModalEvidence = inspectEvidence,
   runModalWave = executeModalWave,
   temporaryDirectory = process.env.TMPDIR ?? tmpdir(),
 }) {
@@ -104,7 +89,10 @@ export async function runModalCli({
   if (revision !== manifest.lyraRevision) {
     throw new Error('repository revision must equal manifest Lyra revision');
   }
-  await rejectConflictingEvidence(paths.evidenceRoot, manifest.lyraRevision);
+  const evidenceState = await inspectModalEvidence({
+    evidenceRoot: paths.evidenceRoot,
+    manifest,
+  });
 
   const playwright = await importPlaywright();
   return runModalWave({
@@ -112,6 +100,7 @@ export async function runModalCli({
     repositoryRoot,
     tmpdir: resolve(temporaryDirectory),
     evidenceRoot: paths.evidenceRoot,
+    resume: evidenceState.resume,
     playwright,
     fetchImpl: globalThis.fetch,
     runCommand,
