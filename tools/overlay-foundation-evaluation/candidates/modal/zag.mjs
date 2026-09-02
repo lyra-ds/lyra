@@ -25,8 +25,33 @@ export async function createModalCandidate({
 }) {
   const dialog = await importModule(PACKAGE_NAMES[0]);
   const { normalizeProps, useMachine } = await importModule(PACKAGE_NAMES[1]);
+  function NestedModal({ open, onOpenChange }) {
+    const service = useMachine(
+      dialog.machine({
+        id: 'of-modal-child-fixture',
+        open,
+        onOpenChange: ({ open: next }) => onOpenChange(next),
+      }),
+    );
+    const api = dialog.connect(service, normalizeProps);
+    return React.createElement(
+      'div',
+      api.getPositionerProps(),
+      React.createElement(
+        'section',
+        {
+          ...api.getContentProps(),
+          'data-modal-id': 'child-modal',
+          'data-modal-panel': '',
+          'data-modal-portal': '',
+        },
+        React.createElement('h2', api.getTitleProps(), 'Child workspace'),
+        React.createElement('button', { 'data-modal-id': 'child-modal-safe-target' }, 'Close'),
+      ),
+    );
+  }
   function ModalFixture({ request, onReady }) {
-    const { onOpenChange, open, parts } = useModalFixtureRuntime({
+    const { nestedOpen, onNestedOpenChange, onOpenChange, open, parts } = useModalFixtureRuntime({
       React,
       request,
       onReady,
@@ -47,8 +72,8 @@ export async function createModalCandidate({
     return React.createElement(
       React.Fragment,
       null,
-      ...parts.observationMarkers.map((marker) => element(React, 'span', {}, marker)),
-      ...parts.operationTargets.map((target) => element(React, 'button', {}, target)),
+      ...parts.entryControls.map((control) => element(React, 'button', {}, control)),
+      element(React, 'span', {}, parts.liveRegion),
       element(React, 'button', api.getTriggerProps(), parts.trigger),
       element(React, 'div', api.getBackdropProps(), parts.backdrop),
       React.createElement(
@@ -64,10 +89,14 @@ export async function createModalCandidate({
           element(React, 'button', {}, parts.initialTarget),
           element(React, 'button', {}, parts.ordinaryAction),
           element(React, 'button', {}, parts.destructiveAction),
+          ...parts.contentControls.map((control) => element(React, 'button', {}, control)),
           element(React, 'button', {}, parts.nestedTrigger),
           element(React, 'button', api.getCloseTriggerProps(), parts.close),
         ),
       ),
+      nestedOpen
+        ? React.createElement(NestedModal, { open: nestedOpen, onOpenChange: onNestedOpenChange })
+        : null,
     );
   }
   return Object.freeze({ ModalFixture });

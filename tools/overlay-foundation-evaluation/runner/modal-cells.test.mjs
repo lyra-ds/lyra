@@ -10,7 +10,6 @@ import {
   mountModalFixtureClient,
   observeModalSsrMarkup,
 } from '../fixtures/modal/runtime.mjs';
-import { modalScenarioObservationMarkers } from '../fixtures/modal/scenario-interpreter.mjs';
 
 const modulePath = new URL('./modal-cells.mjs', import.meta.url);
 
@@ -27,31 +26,63 @@ function renderedSsrEvidence(request) {
   return { html, observation: observeModalSsrMarkup({ request, html }) };
 }
 
-function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
-  const target = {
+function fakeElement(attributes = {}, { textContent = '' } = {}) {
+  const values = new Map(Object.entries(attributes));
+  return {
+    disabled: false,
+    hidden: false,
+    inert: false,
+    isConnected: true,
+    textContent,
     click() {},
-    dispatchEvent() {
-      return true;
+    dispatchEvent(event) {
+      return event.defaultPrevented !== true;
+    },
+    getAttribute(name) {
+      return values.get(name) ?? null;
+    },
+    hasAttribute(name) {
+      return values.has(name);
     },
   };
+}
+
+function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
   const container = { hasChildNodes: () => hydrate };
+  const title = fakeElement({ id: 'browser-title' }, { textContent: 'Observed browser fixture' });
+  const panel = fakeElement({
+    role: 'dialog',
+    'data-modal-id': 'browser-panel',
+    'aria-labelledby': 'browser-title',
+    'aria-modal': 'true',
+  });
+  const activeElement = fakeElement({ 'data-modal-id': 'browser-focus-target' });
+  const live = fakeElement({ 'aria-live': 'polite' }, { textContent: 'Browser fixture active' });
+  const portal = fakeElement({ 'data-modal-id': 'browser-portal', 'data-modal-portal': '' });
+  const controls = new Map(
+    scenario.operations.map(({ operation, target }) => [
+      `${operation}:${target}`,
+      fakeElement({ 'data-modal-operation': operation, 'data-modal-control': target }),
+    ]),
+  );
   return {
-    activeElement: null,
+    activeElement,
     documentElement: { dir: '' },
-    getElementById: () => null,
-    querySelector: (selector) => (selector === '[data-modal-fixture-root]' ? container : target),
-    querySelectorAll: (selector) =>
-      selector === '[data-modal-observation-kind]'
-        ? modalScenarioObservationMarkers(scenario).map(({ kind, index, value }) => ({
-            getAttribute(name) {
-              return {
-                'data-modal-observation-kind': kind,
-                'data-modal-observation-index': String(index),
-                'data-modal-observation-value': JSON.stringify(value),
-              }[name];
-            },
-          }))
-        : [],
+    defaultView: { Event },
+    getElementById: (id) => (id === 'browser-title' ? title : null),
+    querySelector(selector) {
+      if (selector === '[data-modal-fixture-root]') return container;
+      const operation = /data-modal-operation="([^"]+)"/u.exec(selector)?.[1];
+      const target = /data-modal-control="([^"]+)"/u.exec(selector)?.[1];
+      return controls.get(`${operation}:${target}`) ?? null;
+    },
+    querySelectorAll(selector) {
+      if (selector === '[role="dialog"], [role="alertdialog"]') return [panel];
+      if (selector === '[data-modal-id]') return [panel, portal];
+      if (selector === '[aria-live]') return [live];
+      if (selector === '[data-modal-portal]') return [portal];
+      return [];
+    },
   };
 }
 
@@ -342,15 +373,11 @@ test('dispatches the WebKit cell through WebKit and returns a normalized observa
     },
   );
   assert.equal(observations[0].reactVersion, '19.2.8');
-  assert.deepEqual(
-    Object.fromEntries(
-      ['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup'].map(
-        (key) => [key, observations[0].observation[key]],
-      ),
-    ),
-    scenario.expected,
-  );
-  assert.equal(observations[0].observation.diagnostics.executor, 'shared-neutral-interpreter');
+  assert.deepEqual(observations[0].observation.roles, [
+    { role: 'dialog', name: 'Observed browser fixture' },
+  ]);
+  assert.deepEqual(observations[0].observation.focus, { target: 'browser-focus-target' });
+  assert.equal(observations[0].observation.diagnostics.executor, 'shared-browser-driver');
   assert.equal(fake.calls.includes('launch:webkit'), true);
   assert.equal(
     fake.calls.some((call) => call === 'launch:chromium'),
@@ -422,7 +449,24 @@ test('default SSR executor derives the complete observation from rendered markup
         (key) => [key, result[0].observation[key]],
       ),
     ),
-    scenario.expected,
+    {
+      roles: [{ role: 'dialog', name: 'Server workspace' }],
+      relationships: [
+        {
+          source: 'server-rendered-modal',
+          name: 'labelled-by',
+          target: 'server-modal-title',
+        },
+      ],
+      states: [
+        { target: 'server-rendered-modal', name: 'semantically-available', value: true },
+        { target: 'browser-globals', name: 'accessed', value: false },
+      ],
+      focus: { target: 'server-document-focus-unchanged' },
+      events: [{ target: 'server-rendered-modal', type: 'rendered-open' }],
+      announcements: [{ message: 'Server workspace dialog is available' }],
+      cleanup: ['no-browser-resource-claims'],
+    },
   );
 });
 

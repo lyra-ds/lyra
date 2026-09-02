@@ -266,21 +266,45 @@ for (const candidate of CANDIDATES) {
     ]);
     assert.deepEqual(
       elements(tree)
-        .filter(({ props }) => props['data-modal-scenario-target'] !== undefined)
-        .map(({ props }) => [
-          props['data-modal-scenario-operation'],
-          props['data-modal-scenario-target'],
-        ]),
+        .filter(({ props }) => props['data-modal-control'] !== undefined)
+        .map(({ props }) => [props['data-modal-operation'], props['data-modal-control']]),
       request.scenario.operations.map(({ operation, target }) => [operation, target]),
     );
-    assert.deepEqual(
-      new Set(
-        elements(tree)
-          .map(({ props }) => props['data-modal-observation-kind'])
-          .filter(Boolean),
-      ),
-      new Set(['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup']),
+    const scenarioControls = elements(tree).filter(
+      ({ props }) => props['data-modal-control'] !== undefined,
     );
+    assert.equal(
+      scenarioControls.every(({ props }) => props.hidden !== true),
+      true,
+    );
+    assert.equal(
+      scenarioControls.every(({ props }) =>
+        ['onClick', 'onKeyDown', 'onPointerDown', 'onContextMenu'].some(
+          (handler) => typeof props[handler] === 'function',
+        ),
+      ),
+      true,
+    );
+    assert.equal(
+      elements(tree).some(({ props }) =>
+        Object.keys(props).some((name) => name.startsWith('data-modal-observation')),
+      ),
+      false,
+    );
+    const panel = elements(tree).find(({ props }) => props['data-fixture-part'] === 'panel');
+    for (const semanticProp of [
+      'role',
+      'aria-modal',
+      'aria-label',
+      'aria-labelledby',
+      'aria-describedby',
+    ]) {
+      assert.equal(
+        Object.hasOwn(panel.props, semanticProp),
+        false,
+        `candidate primitive must own ${semanticProp}`,
+      );
+    }
 
     if (candidate === 'incumbent') {
       const root = oneByType(tree, 'Dialog');
@@ -305,9 +329,33 @@ for (const candidate of CANDIDATES) {
     );
     nested.props.onClick();
 
+    const updatedTree = injected.render(ModalFixture, fixtureProps);
+    const announcement = elements(updatedTree).find(({ props }) => props['aria-live'] === 'polite');
+    assert.match(announcement.props.children, /opened$/u);
+
     assert.deepEqual(
       injected.stateUpdates,
-      candidate === 'incumbent' ? [false, true, false] : [true, true, false],
+      candidate === 'incumbent'
+        ? [
+            false,
+            'Workspace details dialog closed',
+            true,
+            'Workspace details dialog opened',
+            false,
+            'Workspace details dialog closed',
+            true,
+            'Child workspace dialog opened',
+          ]
+        : [
+            true,
+            'Workspace details dialog opened',
+            true,
+            'Workspace details dialog opened',
+            false,
+            'Workspace details dialog closed',
+            true,
+            'Child workspace dialog opened',
+          ],
     );
     const beforeTeardown = fixture.observe();
     assert.equal(beforeTeardown.diagnostics.packageName, imports[0]);
@@ -336,5 +384,67 @@ for (const candidate of CANDIDATES) {
     injected.cleanups[0]();
     assert.equal(fixture.observe().diagnostics.destroyed, true);
     assert.equal(fixture.openNested(), false);
+  });
+
+  test(`${candidate} keeps controlled close pending until the explicit commit`, async () => {
+    const capture = {};
+    const modules = injectedModules(candidate, capture);
+    const injected = fakeReact();
+    const adapter = await import(`./${candidate}.mjs`);
+    const { ModalFixture } = await adapter.createModalCandidate({
+      React: injected.React,
+      importModule: async (specifier) => modules.get(specifier),
+    });
+    const controlledRequest = {
+      ...structuredClone(request),
+      scenario: MODAL_SCENARIOS.find(({ scenarioId }) =>
+        scenarioId.endsWith('.controlled-close-commit.v1'),
+      ),
+    };
+    const props = { request: controlledRequest, onReady() {} };
+    const renderedOpen = (tree) => {
+      if (candidate === 'incumbent') return oneByType(tree, 'Dialog').props.open;
+      if (candidate === 'radix' || candidate === 'base-ui') {
+        return oneByType(tree, 'Root').props.open;
+      }
+      return capture.machineOptions.open;
+    };
+
+    let tree = injected.render(ModalFixture, props);
+    const open = elements(tree).find(
+      ({ props: elementProps }) =>
+        elementProps['data-modal-operation'] === 'open' &&
+        elementProps['data-modal-control'] === 'controlled-modal',
+    );
+    open.props.onClick();
+    tree = injected.render(ModalFixture, props);
+    assert.equal(renderedOpen(tree), true);
+    const controlledPanel = elements(tree).find(
+      ({ props: elementProps }) => elementProps['data-fixture-part'] === 'panel',
+    );
+    assert.equal(
+      elements(controlledPanel).some(
+        ({ props: elementProps }) =>
+          elementProps['data-modal-operation'] === 'press' &&
+          elementProps['data-modal-control'] === 'dismiss-control',
+      ),
+      true,
+    );
+
+    if (candidate === 'incumbent') oneByType(tree, 'Dialog').props.onClose();
+    else if (candidate === 'radix' || candidate === 'base-ui') {
+      oneByType(tree, 'Root').props.onOpenChange(false);
+    } else capture.machineOptions.onOpenChange({ open: false });
+    tree = injected.render(ModalFixture, props);
+    assert.equal(renderedOpen(tree), true);
+
+    const commit = elements(tree).find(
+      ({ props: elementProps }) =>
+        elementProps['data-modal-operation'] === 'updateContent' &&
+        elementProps['data-modal-control'] === 'controlled-close-commit',
+    );
+    commit.props.onClick();
+    tree = injected.render(ModalFixture, props);
+    assert.equal(renderedOpen(tree), false);
   });
 }

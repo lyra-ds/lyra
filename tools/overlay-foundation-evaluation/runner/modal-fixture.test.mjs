@@ -65,8 +65,6 @@ async function createSources(root) {
     [adapterEntry]: 'export const adapter = "synthetic";\n',
     [join(fixtureSourceRoot, 'protocol.mjs')]: 'export const protocol = 1;\n',
     [join(fixtureSourceRoot, 'runtime.mjs')]: 'export const runtime = 1;\n',
-    [join(fixtureSourceRoot, 'scenario-interpreter.mjs')]:
-      'export const scenarioInterpreter = 1;\n',
     [join(fixtureSourceRoot, 'entry-client.mjs')]: 'export const client = 1;\n',
     [join(fixtureSourceRoot, 'entry-server.mjs')]: 'export const server = 1;\n',
     [join(fixtureSourceRoot, 'index.html')]: '<main id="modal-fixture-root"></main>\n',
@@ -183,8 +181,8 @@ test('copies each allowed source once with hashes and returns verified contained
     react: '19.2.8',
     'react-dom': '19.2.8',
   });
-  assert.equal(reads.size, 7);
-  assert.deepEqual([...reads.values()], [1, 1, 1, 1, 1, 1, 1]);
+  assert.equal(reads.size, 6);
+  assert.deepEqual([...reads.values()], [1, 1, 1, 1, 1, 1]);
   assert.deepEqual(Object.keys(result.sourceHashes).sort(), [
     'adapter',
     'entryClient',
@@ -192,7 +190,6 @@ test('copies each allowed source once with hashes and returns verified contained
     'indexHtml',
     'protocol',
     'runtime',
-    'scenarioInterpreter',
   ]);
   for (const source of Object.values(result.sourceHashes)) {
     assert.equal(relative(setup.runRoot, source.path).startsWith('..'), false);

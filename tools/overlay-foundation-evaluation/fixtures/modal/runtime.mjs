@@ -1,9 +1,5 @@
 import { isPlainRecord } from '../../contracts/protocol.mjs';
 import { validateModalFixtureRequest, validateModalObservation } from './protocol.mjs';
-import {
-  interpretModalScenario,
-  modalScenarioObservationMarkers,
-} from './scenario-interpreter.mjs';
 
 const OPERATION_NAMES = Object.freeze([
   'open',
@@ -15,6 +11,106 @@ const OPERATION_NAMES = Object.freeze([
   'updateContent',
   'destroy',
 ]);
+
+export function installModalResourceTracker(scope = globalThis) {
+  if (scope.__LYRA_MODAL_RESOURCE_TRACKER__ !== undefined) {
+    return scope.__LYRA_MODAL_RESOURCE_TRACKER__;
+  }
+  const targetPrototype = scope.EventTarget?.prototype;
+  const originalAdd = targetPrototype?.addEventListener;
+  const originalRemove = targetPrototype?.removeEventListener;
+  const originalSetTimeout = scope.setTimeout;
+  const originalClearTimeout = scope.clearTimeout;
+  const originalSetInterval = scope.setInterval;
+  const originalClearInterval = scope.clearInterval;
+  const listeners = [];
+  const timers = new Map();
+  const capture = (options) => (typeof options === 'boolean' ? options : options?.capture === true);
+  if (typeof originalAdd === 'function' && typeof originalRemove === 'function') {
+    targetPrototype.addEventListener = function trackedAdd(type, listener, options) {
+      const result = originalAdd.call(this, type, listener, options);
+      if (
+        listener !== null &&
+        listener !== undefined &&
+        !listeners.some(
+          (entry) =>
+            entry.target === this &&
+            entry.type === type &&
+            entry.listener === listener &&
+            entry.capture === capture(options),
+        )
+      ) {
+        listeners.push({ target: this, type, listener, capture: capture(options) });
+      }
+      return result;
+    };
+    targetPrototype.removeEventListener = function trackedRemove(type, listener, options) {
+      const result = originalRemove.call(this, type, listener, options);
+      const index = listeners.findIndex(
+        (entry) =>
+          entry.target === this &&
+          entry.type === type &&
+          entry.listener === listener &&
+          entry.capture === capture(options),
+      );
+      if (index !== -1) listeners.splice(index, 1);
+      return result;
+    };
+  }
+  if (typeof originalSetTimeout === 'function' && typeof originalClearTimeout === 'function') {
+    scope.setTimeout = (callback, delay, ...args) => {
+      let handle;
+      const wrapped = (...callbackArgs) => {
+        timers.delete(handle);
+        if (typeof callback === 'function') return callback(...callbackArgs);
+        return undefined;
+      };
+      handle = originalSetTimeout.call(scope, wrapped, delay, ...args);
+      timers.set(handle, 'timeout');
+      return handle;
+    };
+    scope.clearTimeout = (handle) => {
+      timers.delete(handle);
+      return originalClearTimeout.call(scope, handle);
+    };
+  }
+  if (typeof originalSetInterval === 'function' && typeof originalClearInterval === 'function') {
+    scope.setInterval = (callback, delay, ...args) => {
+      const handle = originalSetInterval.call(scope, callback, delay, ...args);
+      timers.set(handle, 'interval');
+      return handle;
+    };
+    scope.clearInterval = (handle) => {
+      timers.delete(handle);
+      return originalClearInterval.call(scope, handle);
+    };
+  }
+  let restored = false;
+  const tracker = Object.freeze({
+    snapshot: () => ({ listeners: listeners.length, timers: timers.size }),
+    restore() {
+      if (restored) return false;
+      if (targetPrototype !== undefined && typeof originalAdd === 'function') {
+        targetPrototype.addEventListener = originalAdd;
+      }
+      if (targetPrototype !== undefined && typeof originalRemove === 'function') {
+        targetPrototype.removeEventListener = originalRemove;
+      }
+      if (typeof originalSetTimeout === 'function') scope.setTimeout = originalSetTimeout;
+      if (typeof originalClearTimeout === 'function') scope.clearTimeout = originalClearTimeout;
+      if (typeof originalSetInterval === 'function') scope.setInterval = originalSetInterval;
+      if (typeof originalClearInterval === 'function') scope.clearInterval = originalClearInterval;
+      restored = true;
+      return true;
+    },
+  });
+  Object.defineProperty(scope, '__LYRA_MODAL_RESOURCE_TRACKER__', {
+    configurable: true,
+    enumerable: false,
+    value: tracker,
+  });
+  return tracker;
+}
 
 function emptyObservation({ destroyed, events, resources }) {
   return {
@@ -136,52 +232,82 @@ function presentation(request) {
   });
 }
 
-function fixtureParts(request, onOpenChange, openNested) {
+function scenarioControl(
+  operation,
+  index,
+  { commitControlledClose, onOpenChange, openNested, runtime },
+) {
+  const record = (eventType = operation.operation) => {
+    if (operation.operation === 'destroy') return runtime.destroy();
+    const accepted = runtime.operations[operation.operation]({
+      event: { target: operation.target, type: eventType },
+    });
+    if (!accepted) return false;
+    if (operation.operation === 'open') {
+      if (/child|second/iu.test(operation.target)) openNested();
+      else onOpenChange(true);
+    } else if (operation.operation === 'close') onOpenChange(false);
+    else if (
+      operation.operation === 'updateContent' &&
+      operation.target === 'controlled-close-commit'
+    ) {
+      commitControlledClose();
+    }
+    return true;
+  };
+  const props = {
+    type: 'button',
+    'data-modal-control': operation.target,
+    'data-modal-operation': operation.operation,
+    'data-modal-id': operation.target,
+    key: `${operation.operation}-${operation.target}-${index}`,
+  };
+  if (operation.operation === 'press') props.onKeyDown = () => record('keydown');
+  else if (operation.operation === 'point') {
+    props.onPointerDown = () => record('pointerdown');
+    props.onContextMenu = () => record('contextmenu');
+  } else props.onClick = () => record();
+  return part(props, `${operation.operation} ${operation.target}`);
+}
+
+function fixtureParts(
+  request,
+  onOpenChange,
+  openNested,
+  runtime,
+  announcement,
+  commitControlledClose,
+) {
   const view = presentation(request);
+  const controls = request.scenario.operations.map((operation, index) => ({
+    operation,
+    part: scenarioControl(operation, index, {
+      commitControlledClose,
+      onOpenChange,
+      openNested,
+      runtime,
+    }),
+  }));
+  const belongsInContent = ({ operation, target }) =>
+    ['close', 'point', 'press'].includes(operation) ||
+    (operation === 'open' && /child|second/iu.test(target));
   return Object.freeze({
-    observationMarkers: Object.freeze(
-      modalScenarioObservationMarkers(request.scenario).map(({ kind, index, value }) =>
-        part(
-          {
-            hidden: true,
-            'aria-hidden': true,
-            'data-modal-observation-index': String(index),
-            'data-modal-observation-kind': kind,
-            'data-modal-observation-value': JSON.stringify(value),
-            key: `observation-${kind}-${index}`,
-          },
-          kind === 'announcements' ? value.message : '',
-        ),
-      ),
+    entryControls: Object.freeze(
+      controls.filter(({ operation }) => !belongsInContent(operation)).map(({ part }) => part),
     ),
-    operationTargets: Object.freeze(
-      request.scenario.operations.map((operation, index) =>
-        part(
-          {
-            type: 'button',
-            hidden: true,
-            tabIndex: -1,
-            'aria-hidden': true,
-            'data-modal-scenario-operation': operation.operation,
-            'data-modal-scenario-target': operation.target,
-            key: `${operation.operation}-${operation.target}-${index}`,
-          },
-          `${operation.operation} ${operation.target}`,
-        ),
-      ),
+    contentControls: Object.freeze(
+      controls.filter(({ operation }) => belongsInContent(operation)).map(({ part }) => part),
     ),
     trigger: part(
       { type: 'button', 'data-fixture-control': 'opener', onClick: () => onOpenChange(true) },
       'Open modal',
     ),
-    backdrop: part({ 'data-fixture-part': 'backdrop' }),
+    backdrop: part({ 'data-fixture-part': 'backdrop', 'data-modal-id': 'modal-backdrop' }),
     panel: part({
-      'aria-describedby': view.descriptionId,
-      'aria-labelledby': view.titleId,
-      'aria-modal': true,
       'data-fixture-part': 'panel',
-      'data-modal-observation-id': view.panelId,
-      role: 'dialog',
+      'data-modal-id': view.panelId,
+      'data-modal-panel': '',
+      'data-modal-portal': '',
     }),
     title: part({ 'data-fixture-part': 'title', id: view.titleId }, view.title),
     description: part(
@@ -189,7 +315,11 @@ function fixtureParts(request, onOpenChange, openNested) {
       view.description,
     ),
     initialTarget: part(
-      { type: 'button', 'data-fixture-part': 'initial-target' },
+      {
+        type: 'button',
+        'data-fixture-part': 'initial-target',
+        'data-modal-id': 'modal-safe-target',
+      },
       'Safe initial target',
     ),
     ordinaryAction: part({ type: 'button', 'data-fixture-action': 'ordinary' }, 'Save workspace'),
@@ -205,6 +335,7 @@ function fixtureParts(request, onOpenChange, openNested) {
       { type: 'button', 'data-fixture-control': 'nested-opener', onClick: openNested },
       'Open nested modal',
     ),
+    liveRegion: part({ 'aria-live': 'polite', 'data-modal-id': 'modal-live-region' }, announcement),
   });
 }
 
@@ -218,24 +349,59 @@ function observedWithDiagnostics(runtime, diagnostics) {
 
 export function useModalFixtureRuntime({ React, request, diagnostics, onReady }) {
   const [open, setOpen] = React.useState(() => request.scenario.initial.state.open === true);
+  const [nestedOpen, setNestedOpen] = React.useState(false);
+  const [announcement, setAnnouncement] = React.useState(() => {
+    const view = presentation(request);
+    return `${view.title} dialog ${request.scenario.initial.state.open === true ? 'available' : 'ready'}`;
+  });
+  const [pendingControlledClose, setPendingControlledClose] = React.useState(false);
   const runtimeRef = React.useRef();
   if (runtimeRef.current === undefined) runtimeRef.current = createModalRuntime(request);
   const runtime = runtimeRef.current;
   const onOpenChange = React.useCallback(
     (nextOpen) => {
       if (typeof nextOpen !== 'boolean') return false;
+      if (nextOpen === false && request.scenario.initial.state.controlled === true) {
+        setPendingControlledClose(true);
+        setAnnouncement(`${presentation(request).title} dialog close requested`);
+        return runtime.operations.close({
+          event: { target: 'controlled-modal', type: 'close-requested' },
+        });
+      }
       setOpen(nextOpen);
+      if (nextOpen === false && nestedOpen) setNestedOpen(false);
+      setAnnouncement(`${presentation(request).title} dialog ${nextOpen ? 'opened' : 'closed'}`);
       return runtime.operations[nextOpen ? 'open' : 'close']({
         event: { target: 'modal-panel', type: nextOpen ? 'opened' : 'closed' },
       });
     },
-    [runtime],
+    [nestedOpen, request, runtime],
   );
-  const openNested = React.useCallback(
-    () =>
-      runtime.operations.open({
-        event: { target: 'child-modal', type: 'opened' },
-      }),
+  const commitControlledClose = React.useCallback(() => {
+    if (pendingControlledClose !== true) return false;
+    setOpen(false);
+    setPendingControlledClose(false);
+    setAnnouncement(`${presentation(request).title} dialog closed`);
+    return runtime.operations.updateContent({
+      event: { target: 'controlled-modal', type: 'controlled-close-committed' },
+    });
+  }, [pendingControlledClose, request, runtime]);
+  const openNested = React.useCallback(() => {
+    setNestedOpen(true);
+    setAnnouncement('Child workspace dialog opened');
+    return runtime.operations.open({
+      event: { target: 'child-modal', type: 'opened' },
+    });
+  }, [runtime]);
+  const onNestedOpenChange = React.useCallback(
+    (nextOpen) => {
+      if (typeof nextOpen !== 'boolean') return false;
+      setNestedOpen(nextOpen);
+      setAnnouncement(`Child workspace dialog ${nextOpen ? 'opened' : 'closed'}`);
+      return runtime.operations[nextOpen ? 'open' : 'close']({
+        event: { target: 'child-modal', type: nextOpen ? 'opened' : 'closed' },
+      });
+    },
     [runtime],
   );
   const fixtureRef = React.useRef();
@@ -256,10 +422,19 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
   React.useEffect(() => runtime.destroy, [runtime]);
   return Object.freeze({
     fixture,
+    nestedOpen,
+    onNestedOpenChange,
     onOpenChange,
     open,
     openNested,
-    parts: fixtureParts(request, onOpenChange, openNested),
+    parts: fixtureParts(
+      request,
+      onOpenChange,
+      openNested,
+      runtime,
+      announcement,
+      commitControlledClose,
+    ),
   });
 }
 
@@ -310,7 +485,7 @@ export function observeModalSsrMarkup({ request, html }) {
       break;
     }
   }
-  const source = dialog?.['data-modal-observation-id'];
+  const source = dialog?.['data-modal-id'] ?? dialog?.['data-modal-observation-id'];
   const labelTarget = dialog?.['aria-labelledby'];
   const name =
     dialog?.['aria-label'] ??
@@ -371,51 +546,186 @@ function cleanupResult(value) {
   return Object.freeze({ status: value.status });
 }
 
-function browserEvent(element, operation, synthesizeHover) {
-  if (element === null || element === undefined) return { dispatched: false, prevented: false };
-  if (operation.operation === 'updateContent') {
-    if ('value' in element) element.value = String(element.value ?? '');
-    if (
-      typeof globalThis.InputEvent === 'function' &&
-      typeof element.dispatchEvent === 'function'
-    ) {
-      const event = new globalThis.InputEvent('input', { bubbles: true, cancelable: true });
-      return { dispatched: element.dispatchEvent(event), prevented: event.defaultPrevented };
+function browserEvent(document, type, init = {}) {
+  const view = document.defaultView ?? globalThis;
+  const EventConstructor =
+    (type.startsWith('key') ? view.KeyboardEvent : undefined) ??
+    (type.startsWith('pointer') ? view.PointerEvent : undefined) ??
+    (type === 'contextmenu' || type === 'click' ? view.MouseEvent : undefined) ??
+    view.Event ??
+    globalThis.Event;
+  if (typeof EventConstructor === 'function') {
+    const event = new EventConstructor(type, { bubbles: true, cancelable: true, ...init });
+    for (const [key, value] of Object.entries(init)) {
+      if (!(key in event)) Object.defineProperty(event, key, { value });
     }
+    return event;
+  }
+  return {
+    type,
+    ...init,
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+}
+
+function dispatch(document, element, type, init) {
+  if (element === null || element === undefined || typeof element.dispatchEvent !== 'function') {
     return { dispatched: false, prevented: false };
   }
-  let event;
-  if (operation.operation === 'press' && typeof globalThis.KeyboardEvent === 'function') {
-    event = new globalThis.KeyboardEvent('keydown', {
-      bubbles: true,
-      cancelable: true,
-      key: /escape|dismiss/iu.test(operation.target) ? 'Escape' : 'Tab',
+  const event = browserEvent(document, type, init);
+  const dispatched = element.dispatchEvent(event);
+  return { dispatched, prevented: event.defaultPrevented === true };
+}
+
+function click(element) {
+  if (element === null || element === undefined || typeof element.click !== 'function') {
+    return { dispatched: false, prevented: false };
+  }
+  element.click();
+  return { dispatched: true, prevented: false };
+}
+
+function removeElement(element) {
+  if (element === null || element === undefined || typeof element.remove !== 'function')
+    return false;
+  element.remove();
+  return true;
+}
+
+function focusElement(element) {
+  if (element === null || element === undefined || typeof element.focus !== 'function')
+    return false;
+  element.focus();
+  return true;
+}
+
+function mutateContent(document, target) {
+  const mutations = [];
+  const record = (name, changed) => mutations.push({ name, changed });
+  if (target === 'disconnect-opener') {
+    record(
+      'opener-disconnected',
+      removeElement(document.querySelector?.('[data-fixture-control="opener"]')),
+    );
+  } else if (target === 'remove-focused-target') {
+    record('focused-target-removed', removeElement(document.activeElement));
+  } else if (target === 'remove-nearest-safe-target') {
+    record(
+      'nearest-safe-target-removed',
+      removeElement(document.querySelector?.('[data-modal-id="nearest-safe-target"]')),
+    );
+  } else if (target === 'hide-disable-remove-tab-targets') {
+    const hidden = document.querySelector?.('[data-modal-id="hidden-tab-target"]');
+    const disabled = document.querySelector?.('[data-modal-id="disabled-tab-target"]');
+    const removed = document.querySelector?.('[data-modal-id="removed-tab-target"]');
+    if (hidden !== null && hidden !== undefined) hidden.hidden = true;
+    if (disabled !== null && disabled !== undefined) disabled.disabled = true;
+    record('hidden-tab-target-hidden', hidden !== null && hidden !== undefined);
+    record('disabled-tab-target-disabled', disabled !== null && disabled !== undefined);
+    record('removed-tab-target-removed', removeElement(removed));
+  } else if (target === 'enabled-invalid-field-case') {
+    const field = document.querySelector?.('[data-modal-control="enabled-invalid-field-case"]');
+    field?.setAttribute?.('aria-invalid', 'true');
+    record('invalid-field-enabled', field !== null && field !== undefined);
+  } else if (target === 'focusable-summary-fallback-case') {
+    record(
+      'validation-summary-focused',
+      focusElement(
+        document.querySelector?.('[data-modal-control="focusable-summary-fallback-case"]'),
+      ),
+    );
+  } else if (target === 'declare-safe-initial-focus') {
+    record(
+      'declared-safe-target-focused',
+      focusElement(document.querySelector?.('[data-modal-control="declare-safe-initial-focus"]')),
+    );
+  } else if (target === 'declare-invalid-initial-focus') {
+    const control = document.querySelector?.(
+      '[data-modal-control="declare-invalid-initial-focus"]',
+    );
+    if (control !== null && control !== undefined) control.disabled = true;
+    record('declared-target-disabled', control !== null && control !== undefined);
+  } else if (target === 'no-tabbable-content') {
+    const panel = document.querySelector?.('[data-modal-panel]');
+    for (const element of panel?.querySelectorAll?.('button, input, [tabindex]') ?? []) {
+      element.disabled = true;
+      element.setAttribute?.('tabindex', '-1');
+    }
+    record('tabbables-disabled', panel !== null && panel !== undefined);
+  } else if (target === 'hydrate-first-tree') {
+    const root = document.querySelector?.('[data-modal-fixture-root]');
+    record('hydration-tree-inspected', root !== null && root !== undefined);
+  }
+  return mutations;
+}
+
+function driveBrowserOperation({ document, fixture, operation, synthesizeHover }) {
+  const control = document.querySelector?.(
+    `[data-modal-operation="${operation.operation}"][data-modal-control="${operation.target}"]`,
+  );
+  const action = {
+    operation: operation.operation,
+    target: operation.target,
+    controlFound: control !== null && control !== undefined,
+    events: [],
+    surfaces: [],
+    dispatched: false,
+    prevented: false,
+  };
+  const commit = (type, element = control, init) => {
+    const result = dispatch(document, element, type, init);
+    action.events.push(type);
+    action.surfaces.push(observationId(element, 'missing-browser-surface'));
+    action.dispatched ||= result.dispatched;
+    action.prevented ||= result.prevented;
+  };
+  if (operation.operation === 'setDirection') {
+    document.documentElement.dir = operation.target;
+    Object.assign(action, click(control));
+  } else if (operation.operation === 'setMotionPreference') {
+    if (document.documentElement.dataset !== undefined) {
+      document.documentElement.dataset.motionPreference = operation.target;
+    }
+    Object.assign(action, click(control));
+  } else if (operation.operation === 'press') {
+    if (/focus-target|tab-from/iu.test(operation.target)) focusElement(control);
+    commit('keydown', control, {
+      key: /escape|dismiss/iu.test(operation.target)
+        ? 'Escape'
+        : /input/iu.test(operation.target)
+          ? 'Enter'
+          : 'Tab',
       shiftKey: /shift/iu.test(operation.target),
     });
-  } else if (operation.operation === 'point' && typeof globalThis.PointerEvent === 'function') {
-    if (synthesizeHover === true && typeof element.dispatchEvent === 'function') {
-      element.dispatchEvent(new globalThis.PointerEvent('pointerover', { bubbles: true }));
+  } else if (operation.operation === 'point') {
+    const origin = /child-interaction/iu.test(operation.target)
+      ? document.querySelector?.('[data-modal-id="child-modal-safe-target"]')
+      : /page-scroll/iu.test(operation.target)
+        ? (document.querySelector?.('[data-modal-id="page-scroll-surface"]') ?? document.body)
+        : document.querySelector?.('[data-fixture-part="backdrop"]');
+    if (/context-menu/iu.test(operation.target)) {
+      commit('contextmenu', origin);
+    } else {
+      if (synthesizeHover === true) dispatch(document, origin, 'pointerover');
+      commit('pointerdown', origin);
+      if (/cancel/iu.test(operation.target)) commit('pointercancel', origin);
+      else if (/drag-inside/iu.test(operation.target)) {
+        commit('pointerup', document.querySelector?.('[data-modal-panel]'));
+      } else commit('pointerup', origin);
     }
-    event = new globalThis.PointerEvent('pointerdown', { bubbles: true, cancelable: true });
-  } else if (typeof globalThis.MouseEvent === 'function') {
-    event = new globalThis.MouseEvent('click', { bubbles: true, cancelable: true });
+  } else if (operation.operation === 'destroy') {
+    Object.assign(action, click(control));
+    if (fixture.isDestroyed?.() !== true) fixture.destroy?.();
+  } else if (operation.operation === 'updateContent') {
+    Object.assign(action, click(control));
+    action.mutations = mutateContent(document, operation.target);
+  } else {
+    Object.assign(action, click(control));
   }
-  if (event !== undefined && typeof element.dispatchEvent === 'function') {
-    const dispatched = element.dispatchEvent(event);
-    const prevented = event.defaultPrevented;
-    if (operation.operation === 'point' && typeof globalThis.PointerEvent === 'function') {
-      const completionType = /cancel/iu.test(operation.target) ? 'pointercancel' : 'pointerup';
-      element.dispatchEvent(
-        new globalThis.PointerEvent(completionType, { bubbles: true, cancelable: true }),
-      );
-    }
-    return { dispatched, prevented };
-  }
-  if (typeof element.click === 'function') {
-    element.click();
-    return { dispatched: true, prevented: false };
-  }
-  return { dispatched: false, prevented: false };
+  return action;
 }
 
 function settleBrowserWork() {
@@ -426,23 +736,122 @@ function settleBrowserWork() {
   });
 }
 
-function captureObservationMarkers(document) {
-  const elements = [...(document.querySelectorAll?.('[data-modal-observation-kind]') ?? [])];
-  return elements.map((element) => {
-    const kind = element.getAttribute?.('data-modal-observation-kind');
-    const index = Number(element.getAttribute?.('data-modal-observation-index'));
-    const encoded = element.getAttribute?.('data-modal-observation-value');
-    if (typeof kind !== 'string' || !Number.isSafeInteger(index) || typeof encoded !== 'string') {
-      throw new Error('modal scenario observation marker is malformed');
-    }
-    let value;
-    try {
-      value = JSON.parse(encoded);
-    } catch (error) {
-      throw new Error('modal scenario observation marker must contain JSON', { cause: error });
-    }
-    return { kind, index, value };
+function observationId(element, fallback) {
+  return (
+    element?.getAttribute?.('data-modal-id') ??
+    element?.getAttribute?.('data-modal-observation-id') ??
+    element?.getAttribute?.('id') ??
+    fallback
+  );
+}
+
+function accessibleName(document, element) {
+  const direct = element.getAttribute?.('aria-label');
+  if (typeof direct === 'string' && direct.trim() !== '') return direct.trim();
+  const labelledBy = element.getAttribute?.('aria-labelledby');
+  if (typeof labelledBy !== 'string') return undefined;
+  const value = document.getElementById?.(labelledBy)?.textContent?.trim();
+  return typeof value === 'string' && value !== '' ? value : undefined;
+}
+
+function observeBrowserDocument({ document, fixture, diagnostics }) {
+  const dialogs = [...(document.querySelectorAll?.('[role="dialog"], [role="alertdialog"]') ?? [])];
+  const roles = dialogs.flatMap((dialog) => {
+    const role = dialog.getAttribute?.('role');
+    const name = accessibleName(document, dialog);
+    return typeof role === 'string' && name !== undefined ? [{ role, name }] : [];
   });
+  const relationships = [];
+  const states = [];
+  const observedElements = [...(document.querySelectorAll?.('[data-modal-id]') ?? [])];
+  for (const element of observedElements) {
+    const target = observationId(element, 'modal-element');
+    for (const [attribute, name] of [
+      ['aria-labelledby', 'labelled-by'],
+      ['aria-describedby', 'described-by'],
+      ['aria-controls', 'controls'],
+      ['aria-owns', 'owns'],
+    ]) {
+      const value = element.getAttribute?.(attribute);
+      if (typeof value === 'string' && value !== '') {
+        relationships.push({ source: target, name, target: value });
+      }
+    }
+    const role = element.getAttribute?.('role');
+    if (role === 'dialog' || role === 'alertdialog') {
+      states.push({
+        target,
+        name: 'aria-modal',
+        value: element.getAttribute?.('aria-modal') === 'true',
+      });
+    }
+    if (element.hasAttribute?.('aria-invalid')) {
+      states.push({
+        target,
+        name: 'invalid',
+        value: element.getAttribute?.('aria-invalid') === 'true',
+      });
+    }
+    if (element.hasAttribute?.('inert') || element.inert === true) {
+      states.push({ target, name: 'inert', value: element.inert === true });
+    }
+    if (element.disabled === true) states.push({ target, name: 'disabled', value: true });
+    if (element.hidden === true) states.push({ target, name: 'hidden', value: true });
+  }
+  const portals = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])];
+  for (const portal of portals) {
+    states.push({
+      target: observationId(portal, 'modal-portal'),
+      name: 'orphaned',
+      value: dialogs.length === 0 && portal.isConnected !== false,
+    });
+  }
+  const resourceSnapshot = document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__?.snapshot?.();
+  if (
+    isPlainRecord(resourceSnapshot) &&
+    Number.isInteger(resourceSnapshot.listeners) &&
+    Number.isInteger(resourceSnapshot.timers)
+  ) {
+    states.push({
+      target: 'modal-listeners',
+      name: 'remaining-count',
+      value: resourceSnapshot.listeners,
+    });
+    states.push({
+      target: 'modal-timers',
+      name: 'remaining-count',
+      value: resourceSnapshot.timers,
+    });
+  }
+  const active = document.activeElement;
+  const focusTarget =
+    active === document.body ? 'document-body' : observationId(active, 'modal-fixture-root');
+  const runtimeObservation = fixture.observe?.() ?? {
+    events: [],
+    cleanup: [],
+    diagnostics: {},
+  };
+  const observation = {
+    roles,
+    relationships,
+    states,
+    focus: { target: focusTarget },
+    events: structuredClone(runtimeObservation.events ?? []),
+    announcements: [...(document.querySelectorAll?.('[aria-live]') ?? [])]
+      .map((element) => element.textContent?.trim())
+      .filter((message) => typeof message === 'string' && message !== '')
+      .map((message) => ({ message })),
+    cleanup: structuredClone(runtimeObservation.cleanup ?? []),
+    diagnostics: {
+      ...structuredClone(runtimeObservation.diagnostics ?? {}),
+      ...structuredClone(diagnostics),
+    },
+  };
+  const errors = validateModalObservation(observation);
+  if (errors.length !== 0) {
+    throw new Error(`modal browser observation is invalid: ${errors.join('; ')}`);
+  }
+  return observation;
 }
 
 export async function executeModalBrowserScenario({ document, fixture, input, request }) {
@@ -453,40 +862,31 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
     throw new Error('modal browser scenario does not match its literal fixture request');
   }
   document.documentElement.dir = request.cell.direction;
-  const trace = [];
+  const preExecutionFocus = observationId(document.activeElement, 'modal-fixture-root');
+  const actions = [];
   for (const operation of request.scenario.operations) {
-    if (operation.operation === 'setDirection') {
-      document.documentElement.dir = operation.target;
-    }
-    const marker = document.querySelector?.(
-      `[data-modal-scenario-operation="${operation.operation}"][data-modal-scenario-target="${operation.target}"]`,
+    actions.push(
+      driveBrowserOperation({
+        document,
+        fixture,
+        operation,
+        synthesizeHover: input.synthesizeHover,
+      }),
     );
-    const interaction = browserEvent(marker, operation, input.synthesizeHover);
-    if (operation.operation === 'destroy') {
-      const execute = fixture.operations?.destroy;
-      if (typeof execute !== 'function')
-        throw new Error('modal fixture destroy operation is unavailable');
-      execute();
-    }
-    trace.push({
-      operation: operation.operation,
-      target: operation.target,
-      markerFound: marker !== null && marker !== undefined,
-      interactionDispatched: interaction.dispatched,
-      interactionPrevented: interaction.prevented,
-    });
     await settleBrowserWork();
   }
-  const observation = interpretModalScenario({
-    scenario: request.scenario,
-    trace,
-    records: captureObservationMarkers(document),
+  return observeBrowserDocument({
+    document,
+    fixture,
+    diagnostics: {
+      executor: 'shared-browser-driver',
+      operations: structuredClone(request.scenario.operations),
+      actions,
+      hydrate: input.hydrate === true,
+      preExecutionFocus,
+      postExecutionFocus: observationId(document.activeElement, 'modal-fixture-root'),
+    },
   });
-  const errors = validateModalObservation(observation);
-  if (errors.length !== 0) {
-    throw new Error(`modal browser observation is invalid: ${errors.join('; ')}`);
-  }
-  return observation;
 }
 
 export async function mountModalFixtureClient({
@@ -512,6 +912,7 @@ export async function mountModalFixtureClient({
     onReady: (fixture) => ready.resolve(fixture),
   });
   const renderMode = container.hasChildNodes() ? 'hydrateRoot' : 'createRoot';
+  const resourceTracker = document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__;
   let root;
   if (renderMode === 'hydrateRoot') root = hydrateRoot(container, element);
   else {
@@ -542,6 +943,7 @@ export async function mountModalFixtureClient({
       else if (fixture.destroy?.() === true) result = { status: 'destroyed' };
       else throw new Error('modal fixture cleanup result is uncertain');
       root?.unmount?.();
+      resourceTracker?.restore?.();
       cleaned = true;
       return cleanupResult(result);
     },

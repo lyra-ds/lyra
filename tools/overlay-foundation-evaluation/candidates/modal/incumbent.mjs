@@ -17,7 +17,7 @@ export async function createModalCandidate({
 }) {
   const { Dialog } = await importModule(PACKAGE_NAME);
   function ModalFixture({ request, onReady }) {
-    const { onOpenChange, open, parts } = useModalFixtureRuntime({
+    const { nestedOpen, onNestedOpenChange, onOpenChange, open, parts } = useModalFixtureRuntime({
       React,
       request,
       onReady,
@@ -26,8 +26,8 @@ export async function createModalCandidate({
     return React.createElement(
       React.Fragment,
       null,
-      ...parts.observationMarkers.map((marker) => element(React, 'span', marker)),
-      ...parts.operationTargets.map((target) => element(React, 'button', target)),
+      ...parts.entryControls.map((control) => element(React, 'button', control)),
+      element(React, 'span', parts.liveRegion),
       element(React, 'button', parts.trigger),
       element(React, 'div', parts.backdrop),
       React.createElement(
@@ -42,9 +42,24 @@ export async function createModalCandidate({
         element(React, 'button', parts.initialTarget),
         element(React, 'button', parts.ordinaryAction),
         element(React, 'button', parts.destructiveAction),
+        ...parts.contentControls.map((control) => element(React, 'button', control)),
         element(React, 'button', parts.nestedTrigger),
         element(React, 'button', parts.close),
       ),
+      nestedOpen
+        ? React.createElement(
+            Dialog,
+            {
+              open: nestedOpen,
+              onClose: () => onNestedOpenChange(false),
+              title: React.createElement('span', null, 'Child workspace'),
+              'data-modal-id': 'child-modal',
+              'data-modal-panel': '',
+              'data-modal-portal': '',
+            },
+            React.createElement('button', { 'data-modal-id': 'child-modal-safe-target' }, 'Close'),
+          )
+        : null,
     );
   }
   return Object.freeze({ ModalFixture });
