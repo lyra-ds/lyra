@@ -2101,7 +2101,17 @@ function listenerOfPurpose(purpose) {
   return (entry) => entry.purpose === purpose && listenerOwnedByModal(entry);
 }
 
-function measuredListenerPurpose(scenario) {
+function measuredListenerPurpose(scenario, operation) {
+  if (
+    operation?.operation === 'close' ||
+    (operation?.operation === 'press' && /dismiss|escape/iu.test(operation.target))
+  ) {
+    return 'dismiss';
+  }
+  if (operation?.operation === 'point') return 'pointer';
+  if (['destroy', 'setDirection', 'setMotionPreference'].includes(operation?.operation)) {
+    return 'other';
+  }
   const purposeByTarget = {
     'destructive-focus-guard': 'focus-restore',
     'focus-loop-listener': 'focus-loop',
@@ -2636,7 +2646,7 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
               operation: operation.operation,
               owner: operation.target,
               phase: 'operation',
-              purpose: measuredListenerPurpose(request.scenario),
+              purpose: measuredListenerPurpose(request.scenario, operation),
             },
             executeOperation,
           )

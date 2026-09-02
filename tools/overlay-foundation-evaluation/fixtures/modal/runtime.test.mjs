@@ -2484,6 +2484,51 @@ test('cleanup facts bind release proof to observed identities without treating a
   assert.equal(observation.cleanup.includes('focus-loop-listener-released'), true);
 });
 
+test('operation attribution keeps a close dismiss trampoline separate from focus restoration', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.declared-initial-focus.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = candidateOwnedBrowserHarness(scenario, {
+    modalListenerType: 'click',
+    transientListenerDuringOperation: 'close',
+  });
+  const mounted = await mountModalFixtureClient({
+    React: harness.React,
+    createModalCandidate: harness.createModalCandidate,
+    createRoot: harness.createRoot,
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const observation = (await mounted.cleanup()).observation;
+  const relevantLifecycles = observation.trace
+    .at(-1)
+    .snapshot.resources.listenerLifecycles.filter(
+      ({ acquiredOperation, owner, type }) =>
+        ['open', 'close'].includes(acquiredOperation) &&
+        owner === 'modal-panel' &&
+        type === 'click',
+    )
+    .map(({ acquiredOperation, purpose }) => ({ acquiredOperation, purpose }));
+
+  assert.deepEqual(relevantLifecycles, [
+    { acquiredOperation: 'open', purpose: 'focus-restore' },
+    { acquiredOperation: 'close', purpose: 'dismiss' },
+    { acquiredOperation: 'open', purpose: 'focus-restore' },
+  ]);
+  assert.equal(observation.cleanup.includes('initial-focus-guard-released'), true);
+});
+
 test('cleanup listener probes bind purpose independently of the event type', async (t) => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
   const cases = [
