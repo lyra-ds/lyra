@@ -845,7 +845,7 @@ function candidateOwnedBrowserHarness(
     let scrollClaim;
     const controlListeners = [];
     const title = new BrowserElement(
-      { id: 'modal-title' },
+      { id: 'modal-title', 'data-modal-id': 'modal-title' },
       {
         textContent: scenario.scenarioId.endsWith('.unmount-cleanup.v1')
           ? 'Disposable workspace'
@@ -853,7 +853,7 @@ function candidateOwnedBrowserHarness(
       },
     );
     const description = new BrowserElement(
-      { id: 'modal-description' },
+      { id: 'modal-description', 'data-modal-id': 'modal-description' },
       { textContent: 'Candidate-owned modal description' },
     );
     const background = new BrowserElement({ 'data-modal-id': 'background' });
@@ -1392,6 +1392,29 @@ test('normalizes candidate-generated ARIA references to neutral fixture targets'
     relationshipDescriptionId: 'radix-_r_2_',
     relationshipTitleId: 'radix-_r_1_',
     titleId: 'modal-title',
+  });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.deepEqual(observation.relationships, [
+    { source: 'modal-panel', name: 'labelled-by', target: 'unresolved-reference' },
+    { source: 'modal-panel', name: 'described-by', target: 'unresolved-reference' },
+  ]);
+});
+
+test('does not expose a resolved vendor-generated DOM id as an ARIA relationship target', async () => {
+  const scenario = MODAL_SCENARIOS[0];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, {
+    descriptionId: null,
+    relationshipDescriptionId: 'base-ui-_r_2_',
+    relationshipTitleId: 'base-ui-_r_1_',
+    renderedDescriptionId: 'base-ui-_r_2_',
+    renderedTitleId: 'base-ui-_r_1_',
+    titleId: null,
   });
   const observation = await executeModalBrowserScenario({
     document: harness.document,

@@ -1346,9 +1346,14 @@ function relationshipTarget(document, value) {
   return value
     .trim()
     .split(/\s+/u)
-    .map((identifier) =>
-      observationId(document.getElementById?.(identifier), 'unresolved-reference'),
-    )
+    .map((identifier) => {
+      const referenced = document.getElementById?.(identifier);
+      return (
+        referenced?.getAttribute?.('data-modal-id') ??
+        referenced?.getAttribute?.('data-modal-observation-id') ??
+        'unresolved-reference'
+      );
+    })
     .join(' ');
 }
 
