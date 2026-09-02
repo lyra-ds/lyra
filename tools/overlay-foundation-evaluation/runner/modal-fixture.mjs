@@ -241,7 +241,37 @@ export async function prepareModalFixture(
     'modal',
     `${candidate?.id}.mjs`,
   );
-  if (resolvedAdapterEntry !== expectedAdapterEntry) {
+  let canonicalAdapterEntry;
+  let canonicalCandidatesDirectory;
+  let canonicalExpectedAdapterEntry;
+  let canonicalModalDirectory;
+  try {
+    [
+      canonicalAdapterEntry,
+      canonicalCandidatesDirectory,
+      canonicalExpectedAdapterEntry,
+      canonicalModalDirectory,
+    ] = await Promise.all([
+      realpath(resolvedAdapterEntry),
+      realpath(
+        join(resolvedRepositoryRoot, 'tools', 'overlay-foundation-evaluation', 'candidates'),
+      ),
+      realpath(expectedAdapterEntry),
+      realpath(dirname(expectedAdapterEntry)),
+    ]);
+  } catch (error) {
+    throw new Error('adapterEntry must resolve to the selected private candidate adapter', {
+      cause: error,
+    });
+  }
+  if (canonicalAdapterEntry !== resolvedAdapterEntry) {
+    throw new Error('adapterEntry must be a canonical regular file, not a symbolic link');
+  }
+  if (
+    canonicalAdapterEntry !== canonicalExpectedAdapterEntry ||
+    !strictDescendant(canonicalCandidatesDirectory, canonicalModalDirectory) ||
+    !strictDescendant(canonicalModalDirectory, canonicalAdapterEntry)
+  ) {
     throw new Error('adapterEntry must be the selected private candidate adapter');
   }
   if (!REACT_VERSIONS.has(reactVersion)) {

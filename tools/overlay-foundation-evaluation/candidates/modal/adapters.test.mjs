@@ -293,6 +293,37 @@ test('candidate package imports execute from a browser-targeted isolated bundle'
   }
 });
 
+test('zag removes its primary portal tree after an open to close transition', async () => {
+  const capture = {};
+  const modules = injectedModules('zag', capture);
+  const injected = fakeReact();
+  const adapter = await import('./zag.mjs');
+  const { ModalFixture } = await adapter.createModalCandidate({
+    React: injected.React,
+    importModule: async (specifier) => modules.get(specifier),
+  });
+  const props = { request, onReady() {} };
+  const portalCount = (tree) =>
+    elements(tree).filter(({ props: elementProps }) =>
+      Object.hasOwn(elementProps, 'data-modal-portal'),
+    ).length;
+
+  let tree = injected.render(ModalFixture, props);
+  assert.equal(portalCount(tree), 0);
+  capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: true });
+  tree = injected.render(ModalFixture, props);
+  assert.equal(portalCount(tree), 1);
+  capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: false });
+  tree = injected.render(ModalFixture, props);
+  assert.equal(portalCount(tree), 0);
+  assert.deepEqual(
+    elements(tree)
+      .map(({ props: elementProps }) => elementProps['data-private-part'])
+      .filter((part) => ['backdrop', 'positioner', 'content'].includes(part)),
+    [],
+  );
+});
+
 for (const candidate of CANDIDATES) {
   test(`${candidate} exposes one private OF-MODAL entry without loading a vendor`, async () => {
     const main = await import(`../${candidate}.mjs`);
@@ -325,9 +356,13 @@ for (const candidate of CANDIDATES) {
         fixture = value;
       },
     };
-    const tree = injected.render(ModalFixture, fixtureProps);
+    let tree = injected.render(ModalFixture, fixtureProps);
     injected.render(ModalFixture, fixtureProps);
     assert.equal(fixture.observe().diagnostics.destroyed, false);
+    if (candidate === 'zag') {
+      capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: true });
+      tree = injected.render(ModalFixture, fixtureProps);
+    }
 
     assert.deepEqual(
       imports,
@@ -424,9 +459,8 @@ for (const candidate of CANDIDATES) {
       root.props.onOpenChange(true);
     } else {
       assert.equal(capture.machineOptions.id, 'of-modal-fixture');
-      assert.equal(capture.machineOptions.open, false);
+      assert.equal(capture.machineOptions.open, true);
       assert.deepEqual(capture.connected.normalizeProps, { normalized: true });
-      capture.machineOptions.onOpenChange({ open: true });
     }
     const opener = elements(tree).find(({ props }) => props['data-fixture-control'] === 'opener');
     opener.props.onClick();
@@ -571,7 +605,13 @@ for (const candidate of CANDIDATES) {
         },
         onReady() {},
       };
-      return { injected, ModalFixture, props };
+      return { capture, injected, ModalFixture, props };
+    };
+
+    const revealZagContent = (loaded, tree) => {
+      if (candidate !== 'zag') return tree;
+      loaded.capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: true });
+      return loaded.injected.render(loaded.ModalFixture, loaded.props);
     };
 
     const noTabbables = await load('no-tabbables-panel-fallback');
@@ -583,6 +623,7 @@ for (const candidate of CANDIDATES) {
     );
     prepare.props.onClick();
     tree = noTabbables.injected.render(noTabbables.ModalFixture, noTabbables.props);
+    tree = revealZagContent(noTabbables, tree);
     const panel = elements(tree).find(({ props }) => props['data-fixture-part'] === 'panel');
     assert.equal(panel.props.tabIndex, -1);
     assert.equal(
@@ -601,6 +642,7 @@ for (const candidate of CANDIDATES) {
     );
     configure.props.onClick();
     tree = destructive.injected.render(destructive.ModalFixture, destructive.props);
+    tree = revealZagContent(destructive, tree);
     const alertPanel = elements(tree).find(({ props }) => props['data-fixture-part'] === 'panel');
     assert.equal(alertPanel.props.role, 'alertdialog');
     const leastDestructive = elements(alertPanel).find(
@@ -615,6 +657,7 @@ for (const candidate of CANDIDATES) {
     );
     enabledCase.props.onClick();
     tree = validation.injected.render(validation.ModalFixture, validation.props);
+    tree = revealZagContent(validation, tree);
     assert.equal(
       elements(tree).find(({ props }) => props['data-modal-id'] === 'first-invalid-enabled-field')
         .props.autoFocus,
@@ -679,7 +722,7 @@ for (const candidate of CANDIDATES) {
       assert.equal(close.type, 'Close');
     } else if (candidate === 'zag') {
       assert.equal(open.props['data-private-part'], 'trigger');
-      assert.equal(close.props['data-private-part'], 'close');
+      assert.equal(close, undefined);
     } else {
       assert.equal(open.type, 'button');
       assert.equal(close.type, 'button');
@@ -699,6 +742,7 @@ for (const candidate of CANDIDATES) {
         elementProps['data-modal-operation'] === 'close' &&
         elementProps['data-modal-control'] === 'modal-panel',
     );
+    if (candidate === 'zag') assert.equal(close.props['data-private-part'], 'close');
     close.props.onClick();
     tree = injected.render(ModalFixture, props);
     assert.equal(renderedOpen(tree), candidate !== 'incumbent');
@@ -829,10 +873,16 @@ for (const candidate of CANDIDATES) {
       const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
         scenarioId.endsWith(`.${scenarioSuffix}.v1`),
       );
-      return injected.render(ModalFixture, {
+      const props = {
         request: { ...structuredClone(request), scenario: modalExecutionScenario(scenario) },
         onReady() {},
-      });
+      };
+      let tree = injected.render(ModalFixture, props);
+      if (candidate === 'zag' && capture.machineOptions.open !== true) {
+        capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: true });
+        tree = injected.render(ModalFixture, props);
+      }
+      return tree;
     };
 
     const hydration = await renderScenario('hydration-stability');
@@ -899,14 +949,15 @@ for (const candidate of CANDIDATES) {
       secondOpen.props.onClick();
       if (candidate === 'zag') {
         capture.machineOptionsById.get('of-modal-child-fixture').onOpenChange({ open: true });
+        nestedTree = injected.render(nested.type, { ...nested.props, open: true });
       } else {
         oneByType(nestedTree, 'Root').props.onOpenChange(true);
+        tree = injected.render(ModalFixture, props);
+        const updatedNested = elements(tree).find(
+          ({ type }) => typeof type === 'function' && type.name === 'NestedModal',
+        );
+        nestedTree = injected.render(updatedNested.type, updatedNested.props);
       }
-      tree = injected.render(ModalFixture, props);
-      const updatedNested = elements(tree).find(
-        ({ type }) => typeof type === 'function' && type.name === 'NestedModal',
-      );
-      nestedTree = injected.render(updatedNested.type, updatedNested.props);
       assert.equal(
         elements(nestedTree).find(({ props: elementProps }) =>
           Object.hasOwn(elementProps, 'data-modal-panel'),

@@ -34,6 +34,7 @@ const validObservation = {
     {
       phase: 'before-operations',
       snapshot: {
+        direction: 'ltr',
         roles: [],
         relationships: [],
         states: [],
@@ -47,6 +48,7 @@ const validObservation = {
       operationIndex: 0,
       operation: { operation: 'open', target: 'modal-opener' },
       snapshot: {
+        direction: 'ltr',
         roles: [{ role: 'dialog', name: 'Workspace details' }],
         relationships: [{ source: 'modal-panel', name: 'labelled-by', target: 'modal-title' }],
         states: [{ target: 'modal-panel', name: 'aria-modal', value: true }],
@@ -58,6 +60,7 @@ const validObservation = {
     {
       phase: 'after-cleanup',
       snapshot: {
+        direction: 'ltr',
         roles: [],
         relationships: [],
         states: [],
@@ -87,6 +90,16 @@ const validObservation = {
 test('accepts one complete neutral request and observation', () => {
   assert.deepEqual(validateModalFixtureRequest(validRequest), []);
   assert.deepEqual(validateModalObservation(validObservation), []);
+});
+
+test('requires every trace snapshot to carry a validated direction', () => {
+  const missing = structuredClone(validObservation);
+  delete missing.trace[0].snapshot.direction;
+  assert.match(validateModalObservation(missing).join('\n'), /direction must equal ltr or rtl/u);
+
+  const invalid = structuredClone(validObservation);
+  invalid.trace[1].snapshot.direction = 'sideways';
+  assert.match(validateModalObservation(invalid).join('\n'), /direction must equal ltr or rtl/u);
 });
 
 test('rejects every mixed SSR/browser trace topology', () => {

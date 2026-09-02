@@ -54,6 +54,10 @@ function closedCandidateObservation(scenario) {
     events: [],
     announcements: [],
   };
+  const traceSnapshot = {
+    direction: scenario.initial.state.direction ?? 'ltr',
+    ...snapshot,
+  };
   const actions = scenario.operations.map(({ operation, target }) => ({
     operation,
     target,
@@ -65,14 +69,14 @@ function closedCandidateObservation(scenario) {
     ...structuredClone(snapshot),
     cleanup: ['fixture-destroyed', 'root-unmounted', 'modal-portals-removed'],
     trace: [
-      { phase: 'before-operations', snapshot: structuredClone(snapshot) },
+      { phase: 'before-operations', snapshot: structuredClone(traceSnapshot) },
       ...scenario.operations.map((operation, operationIndex) => ({
         phase: 'after-operation',
         operationIndex,
         operation: structuredClone(operation),
-        snapshot: structuredClone(snapshot),
+        snapshot: structuredClone(traceSnapshot),
       })),
-      { phase: 'after-cleanup', snapshot: structuredClone(snapshot) },
+      { phase: 'after-cleanup', snapshot: structuredClone(traceSnapshot) },
     ],
     diagnostics: {
       actions,
@@ -547,6 +551,55 @@ test('rejects duplicate or traversal-bearing core evidence paths before fixture 
     );
   }
 });
+
+for (const [label, repositoryFailure] of [
+  [
+    'rejected git status',
+    () => {
+      throw new Error('synthetic git status rejection');
+    },
+  ],
+  ['undecodable git status', () => Uint8Array.of(0xc3, 0x28)],
+]) {
+  test(`${label} is repository-fatal before later modal evidence`, async (t) => {
+    const setup = await fixture(t, ['incumbent', 'radix']);
+    const calls = [];
+    const scenario = MODAL_SCENARIOS[0];
+    const deps = dependencies(setup, {
+      calls,
+      dependencies: {
+        cellPolicies: {
+          chromium: {
+            mode: 'browser',
+            engine: 'chromium',
+            reactVersions: ['19.2.8'],
+            context: {},
+          },
+        },
+        scenariosForCell: () => [scenario],
+      },
+      repositoryStatus(currentCalls) {
+        return currentCalls.some((call) => call.startsWith('scenario:')) ? repositoryFailure() : '';
+      },
+    });
+
+    await assert.rejects(run(setup, deps), (error) => {
+      assert.equal(error.name, 'ModalRunFatalError');
+      assert.equal(error.classification, 'policy');
+      assert.equal(error.scope, 'run');
+      assert.equal(error.code, 'repository');
+      return true;
+    });
+    assert.equal(
+      calls.some((call) => call.startsWith('scenario:radix:')),
+      false,
+    );
+    await assert.rejects(
+      readdir(join(setup.evidenceRoot, 'attempts', `modal-${revision.slice(0, 12)}`)),
+      { code: 'ENOENT' },
+    );
+  });
+}
 
 for (const [name, setupFailure, expected] of [
   [

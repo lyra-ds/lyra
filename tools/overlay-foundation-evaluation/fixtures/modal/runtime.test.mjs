@@ -1244,6 +1244,7 @@ test('derives SSR semantics from actual rendered markup without reading expected
     {
       phase: 'server-render',
       snapshot: {
+        direction: 'ltr',
         roles: observation.roles,
         relationships: observation.relationships,
         states: observation.states,
@@ -1611,6 +1612,37 @@ test('tracks distinct candidate-owned scroll claims until each owner releases', 
   assert.equal(first.release(), false);
   assert.deepEqual(tracker.snapshot().claims, []);
   tracker.restore();
+});
+
+test('records the live document direction across nested LTR to RTL operations', async () => {
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.nested-topmost.v1'),
+  );
+  const request = requestFor(scenario);
+  const rtlRuntimeRequest = structuredClone(request);
+  rtlRuntimeRequest.cell.direction = 'rtl';
+  assert.equal(createModalRuntime(rtlRuntimeRequest).observe().trace[0].snapshot.direction, 'rtl');
+  const harness = behaviorBrowserHarness(scenario);
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+
+  assert.deepEqual(
+    observation.trace.map(({ snapshot }) => snapshot.direction),
+    ['ltr', 'ltr', 'ltr', 'ltr', 'ltr', 'ltr', 'rtl', 'rtl', 'rtl', 'rtl'],
+  );
+  assert.deepEqual(observation.focus, { target: 'rtl-parent-modal-safe-target' });
+  assert.deepEqual(observation.events, [
+    { target: 'ltr-child-modal', type: 'escape-owned' },
+    { target: 'ltr-child-modal', type: 'closed' },
+    { target: 'ltr-parent-modal-safe-target', type: 'focus-restored' },
+    { target: 'rtl-child-modal', type: 'escape-owned' },
+    { target: 'rtl-child-modal', type: 'closed' },
+    { target: 'rtl-parent-modal-safe-target', type: 'focus-restored' },
+  ]);
 });
 
 test('the shared driver completes every immutable operation through behavior-bound controls', async (t) => {

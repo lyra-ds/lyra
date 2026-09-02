@@ -51,6 +51,7 @@ const OBSERVATION_KEYS = Object.freeze([
   'diagnostics',
 ]);
 const SNAPSHOT_KEYS = Object.freeze([
+  'direction',
   'roles',
   'relationships',
   'states',
@@ -222,6 +223,9 @@ function validateSnapshot(snapshot, path, errors) {
     return;
   }
   rejectUnknownKeys(snapshot, SNAPSHOT_KEYS, path, errors);
+  if (!DIRECTIONS.includes(snapshot.direction)) {
+    errors.push(`${path}.direction must equal ltr or rtl`);
+  }
   const wrapped = {
     roles: snapshot.roles,
     relationships: snapshot.relationships,

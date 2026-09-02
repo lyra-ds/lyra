@@ -291,22 +291,27 @@ function commandText(result) {
   const value = isPlainRecord(result) && Object.hasOwn(result, 'stdout') ? result.stdout : result;
   if (typeof value === 'string') return value;
   if (ArrayBuffer.isView(value)) {
-    return Buffer.from(value.buffer, value.byteOffset, value.byteLength).toString('utf8');
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(value);
+    } catch (error) {
+      throw new Error('repository command stdout must be valid UTF-8', { cause: error });
+    }
   }
   throw new Error('repository command must return stdout bytes or a string');
 }
 
 async function requireCleanRepository(repositoryRoot, runCommand) {
-  const status = commandText(
-    await runCommand('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
-      cwd: repositoryRoot,
-    }),
-  );
-  if (status !== '') {
-    throw Object.assign(new Error('repository worktree changed during modal evaluation'), {
-      classification: 'policy',
-      scope: 'run',
-    });
+  try {
+    const status = commandText(
+      await runCommand('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+        cwd: repositoryRoot,
+      }),
+    );
+    if (status !== '') {
+      throw new Error('repository worktree changed during modal evaluation');
+    }
+  } catch (error) {
+    throw runFatal(error, undefined, 'repository');
   }
 }
 

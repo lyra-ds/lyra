@@ -426,7 +426,7 @@ export function useModalResourceClaim({ React, active, kind, owner }) {
   }, [active, kind, owner]);
 }
 
-function emptyObservation({ destroyed, events, resources }) {
+function emptyObservation({ destroyed, direction = 'ltr', events, resources }) {
   const snapshot = {
     roles: [],
     relationships: [],
@@ -438,7 +438,12 @@ function emptyObservation({ destroyed, events, resources }) {
   return {
     ...snapshot,
     cleanup: [...resources].sort(),
-    trace: [{ phase: 'before-operations', snapshot: structuredClone(snapshot) }],
+    trace: [
+      {
+        phase: 'before-operations',
+        snapshot: { direction, ...structuredClone(snapshot) },
+      },
+    ],
     diagnostics: { destroyed },
   };
 }
@@ -513,7 +518,15 @@ export function createModalRuntime(request) {
     operations: Object.freeze(
       createOperations({ commit, isDestroyed: () => destroyed, resources }),
     ),
-    observe: () => structuredClone(emptyObservation({ destroyed, events, resources })),
+    observe: () =>
+      structuredClone(
+        emptyObservation({
+          destroyed,
+          direction: immutableRequest.cell.direction,
+          events,
+          resources,
+        }),
+      ),
     request: Object.freeze(immutableRequest),
     destroy,
   });
@@ -1152,6 +1165,7 @@ export function observeModalSsrMarkup({ request, html }) {
   const browserGlobalsAccessed =
     typeof globalThis.document !== 'undefined' || typeof globalThis.window !== 'undefined';
   const snapshot = {
+    direction: request.cell.direction,
     roles: semanticallyAvailable ? [{ role: 'dialog', name }] : [],
     relationships: semanticallyAvailable
       ? [{ source, name: 'labelled-by', target: labelTarget }]
@@ -1820,7 +1834,7 @@ function focusProbeFact(probe, snapshot, trace) {
   );
   if (probe.property === 'ordered-history') return { target: history.join('-then-') };
   if (probe.property === 'directional-parent-target') {
-    const direction = snapshot.direction ?? 'ltr';
+    const { direction } = snapshot;
     return {
       target: current === 'document-body' ? current : `${direction}-parent-modal-safe-target`,
     };
@@ -1893,7 +1907,7 @@ function eventProbeFact(probe, snapshot, action, trace) {
       (event) => event.target === probe.target && event.type === type,
     );
     if (source !== undefined) {
-      const direction = snapshot.direction ?? 'ltr';
+      const { direction } = snapshot;
       return {
         target:
           probe.target === 'parent-modal-safe-target'
@@ -1904,7 +1918,7 @@ function eventProbeFact(probe, snapshot, action, trace) {
     }
     const previousDialogs = connectedDialogCount(trace.at(-2)?.snapshot);
     const currentDialogs = connectedDialogCount(snapshot);
-    const direction = snapshot.direction ?? 'ltr';
+    const { direction } = snapshot;
     if (
       type === 'escape-owned' &&
       action?.operation === 'press' &&
@@ -2545,6 +2559,7 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
     diagnostics: {},
   };
   return {
+    direction: document.documentElement.dir,
     roles,
     relationships,
     states,

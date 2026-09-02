@@ -6,6 +6,8 @@ import { dirname, join, relative } from 'node:path';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
+import { resolveContractEntry } from './adapter-entry.mjs';
+
 const modulePath = new URL('./modal-fixture.mjs', import.meta.url);
 
 function sha256(bytes) {
@@ -262,6 +264,30 @@ test('copies each allowed source once with hashes and returns verified contained
     setup.calls.map(({ options }) => options.cwd),
     [setup.fixtureRoot, setup.fixtureRoot],
   );
+});
+
+test('prepares the contained canonical file selected through an internal modal symlink', async (t) => {
+  const prepareModalFixture = await loadPrepareModalFixture();
+  const setup = await createFixtureSetup(t);
+  const candidateRoot = dirname(dirname(setup.sources.adapterEntry));
+  const mainAdapter = join(candidateRoot, 'radix.mjs');
+  const implementation = join(dirname(setup.sources.adapterEntry), 'implementation.mjs');
+  await writeFile(mainAdapter, "export const modalAdapterPath = 'candidates/modal/radix.mjs';\n");
+  await rename(setup.sources.adapterEntry, implementation);
+  await symlink(implementation, setup.sources.adapterEntry);
+
+  const adapterEntry = await resolveContractEntry({
+    adapterModule: { modalAdapterPath: 'candidates/modal/radix.mjs' },
+    adapterPath: mainAdapter,
+    contractId: 'OF-MODAL',
+    repositoryRoot: setup.sources.repositoryRoot,
+  });
+  assert.equal(adapterEntry, implementation);
+
+  const result = await prepareModalFixture(input(setup, { adapterEntry }), {
+    installCandidate: setup.installCandidate,
+  });
+  assert.equal(result.sourceHashes.adapter.sha256, sha256(await readFile(implementation)));
 });
 
 test('builds the client against a contained browser-safe deep equality shim', async (t) => {

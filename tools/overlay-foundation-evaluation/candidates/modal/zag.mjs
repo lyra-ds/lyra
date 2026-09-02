@@ -128,36 +128,42 @@ export async function createModalCandidate({ React, importModule = importCandida
       ...parts.externalTargets.map((target) => element(React, 'button', {}, target)),
       element(React, 'span', {}, parts.liveRegion),
       element(React, 'button', api.getTriggerProps(), parts.trigger),
-      element(React, 'div', api.getBackdropProps(), parts.backdrop),
-      React.createElement(
-        'div',
-        api.getPositionerProps(),
-        element(
-          React,
-          'section',
-          api.getContentProps(),
-          parts.panel,
-          element(React, 'h2', api.getTitleProps(), parts.title),
-          element(React, 'p', api.getDescriptionProps(), parts.description),
-          element(React, 'button', {}, parts.initialTarget),
-          element(React, 'button', {}, parts.ordinaryAction),
-          element(React, 'button', {}, parts.destructiveAction),
-          parts.hydrationInput === undefined
-            ? null
-            : element(React, 'input', {}, parts.hydrationInput),
-          ...parts.supportingActions.map((action) => element(React, 'button', {}, action)),
-          ...primaryContentControls.map(operationControl),
-          React.createElement(NestedModal, {
-            closeControls: nestedContentControls,
-            open: nestedOpen,
-            openControls: nestedOpenControls,
-            onOpenChange: onNestedOpenChange,
-            trigger: parts.nestedTrigger,
-            view: parts.nestedView,
-          }),
-          element(React, 'button', api.getCloseTriggerProps(), parts.close),
-        ),
-      ),
+      open
+        ? React.createElement(
+            React.Fragment,
+            null,
+            element(React, 'div', api.getBackdropProps(), parts.backdrop),
+            React.createElement(
+              'div',
+              api.getPositionerProps(),
+              element(
+                React,
+                'section',
+                api.getContentProps(),
+                parts.panel,
+                element(React, 'h2', api.getTitleProps(), parts.title),
+                element(React, 'p', api.getDescriptionProps(), parts.description),
+                element(React, 'button', {}, parts.initialTarget),
+                element(React, 'button', {}, parts.ordinaryAction),
+                element(React, 'button', {}, parts.destructiveAction),
+                parts.hydrationInput === undefined
+                  ? null
+                  : element(React, 'input', {}, parts.hydrationInput),
+                ...parts.supportingActions.map((action) => element(React, 'button', {}, action)),
+                ...primaryContentControls.map(operationControl),
+                React.createElement(NestedModal, {
+                  closeControls: nestedContentControls,
+                  open: nestedOpen,
+                  openControls: nestedOpenControls,
+                  onOpenChange: onNestedOpenChange,
+                  trigger: parts.nestedTrigger,
+                  view: parts.nestedView,
+                }),
+                element(React, 'button', api.getCloseTriggerProps(), parts.close),
+              ),
+            ),
+          )
+        : null,
     );
   }
   return Object.freeze({ ModalFixture });
