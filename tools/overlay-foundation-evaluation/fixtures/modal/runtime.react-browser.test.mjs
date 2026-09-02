@@ -124,6 +124,59 @@ test(
     assert.equal(clean.persistentListeners > 0, true, JSON.stringify(clean));
     assert.equal(clean.listeners, 0, JSON.stringify(clean));
     assert.deepEqual(clean.listenerEntries, []);
+    const exercised = clean.listenerLifecycles.filter(
+      ({ releaseCount, releasedOperation }) => releaseCount === 1 && releasedOperation === 'close',
+    );
+    assert.equal(exercised.length, 6, JSON.stringify(clean));
+    assert.equal(new Set(exercised.map(({ id }) => id)).size, 6);
+    const panelListeners = exercised.filter(({ target }) => target === 'modal-panel');
+    assert.deepEqual(
+      panelListeners.map(({ boundary, purpose, uses }) => ({ boundary, purpose, uses })),
+      [
+        {
+          boundary: 'modal-panel',
+          purpose: 'other',
+          uses: [
+            {
+              effects: ['default-prevented'],
+              operation: 'press',
+              phase: 'operation',
+              purpose: 'focus-loop',
+              target: 'modal-panel',
+              type: 'keydown',
+            },
+          ],
+        },
+        {
+          boundary: 'modal-panel',
+          purpose: 'other',
+          uses: [
+            {
+              effects: ['default-prevented'],
+              operation: 'press',
+              phase: 'operation',
+              purpose: 'dismiss',
+              target: 'modal-panel',
+              type: 'keydown',
+            },
+          ],
+        },
+      ],
+    );
+    assert.deepEqual(
+      exercised
+        .filter(({ target }) => target !== 'modal-panel')
+        .map(({ boundary, target, uses }) => ({
+          boundary,
+          target,
+          purposes: uses.map(({ purpose }) => purpose),
+        })),
+      ['modal-opener', 'modal-backdrop', 'document', 'window'].map((target) => ({
+        boundary: 'outside-modal-boundary',
+        purposes: ['focus-loop'],
+        target,
+      })),
+    );
     assert.equal(leaked.persistentListeners, clean.persistentListeners);
     assert.equal(leaked.listeners, 1);
     assert.deepEqual(

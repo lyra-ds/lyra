@@ -592,10 +592,12 @@ function candidateOwnedBrowserHarness(
     acquirePortalOnDestroy = false,
     emptyCandidate = false,
     ignoreOpenFocus = false,
+    installModalListener = true,
     leakListener = false,
     listenerDuringCleanup = 'none',
     leakPortal = false,
     leakTimer = false,
+    modalListenerLocation = 'panel',
     modalListenerType = 'keydown',
     semanticContradiction = false,
     semanticEventContradiction = false,
@@ -608,6 +610,7 @@ function candidateOwnedBrowserHarness(
   class BrowserEventTarget {
     constructor() {
       this.nativeListeners = [];
+      this.parentTarget = undefined;
     }
     addEventListener(type, listener, options) {
       if (options?.signal?.aborted === true) return;
@@ -629,6 +632,8 @@ function candidateOwnedBrowserHarness(
       );
     }
     dispatchEvent(event) {
+      event.target ??= this;
+      event.currentTarget = this;
       for (const entry of [...this.nativeListeners]) {
         if (entry.type !== event.type) continue;
         if (typeof entry.listener === 'function') entry.listener.call(this, event);
@@ -637,10 +642,13 @@ function candidateOwnedBrowserHarness(
           this.removeEventListener(entry.type, entry.listener, entry.capture);
         }
       }
+      if (event.bubbles === true && this.parentTarget !== undefined) {
+        return this.parentTarget.dispatchEvent(event);
+      }
       return event.defaultPrevented !== true;
     }
   }
-  const scope = {
+  const scope = Object.assign(new BrowserEventTarget(), {
     Event: class {
       constructor(type, init = {}) {
         this.type = type;
@@ -670,7 +678,7 @@ function candidateOwnedBrowserHarness(
     },
     scrollX: 0,
     scrollY: 0,
-  };
+  });
   const tracker = installModalResourceTracker(scope);
   const elements = [];
   let activeElement;
@@ -691,9 +699,13 @@ function candidateOwnedBrowserHarness(
       this.dispatchEvent(new scope.Event('click', { bubbles: true, cancelable: true }));
     }
     closest(selector) {
-      return selector === '[data-modal-panel]' && this.hasAttribute('data-modal-panel')
-        ? this
-        : null;
+      if (selector !== '[data-modal-panel]') return null;
+      let current = this;
+      while (current instanceof BrowserElement) {
+        if (current.hasAttribute('data-modal-panel')) return current;
+        current = current.parentTarget;
+      }
+      return null;
     }
     focus() {
       activeElement = this;
@@ -810,6 +822,7 @@ function candidateOwnedBrowserHarness(
       return [];
     },
   });
+  document.parentTarget = scope;
   Object.defineProperty(document, 'activeElement', {
     configurable: true,
     get: () => activeElement,
@@ -836,6 +849,7 @@ function candidateOwnedBrowserHarness(
   };
 
   let candidateRenderCount = 0;
+  let cleanupListenerTarget;
   let fixture;
   function ModalFixture({ onReady, request }) {
     candidateRenderCount += 1;
@@ -860,6 +874,18 @@ function candidateOwnedBrowserHarness(
     const background = new BrowserElement({ 'data-modal-id': 'background' });
     const opener = new BrowserElement({ 'data-modal-id': 'modal-opener' });
     const safeTarget = new BrowserElement({ 'data-modal-id': 'modal-safe-target' });
+    const backdrop = new BrowserElement(
+      { 'data-fixture-part': 'backdrop', 'data-modal-id': 'modal-backdrop' },
+      { connected: false },
+    );
+    const firstEligibleTarget = new BrowserElement(
+      { 'data-modal-id': 'first-eligible-target' },
+      { connected: false },
+    );
+    const lastEligibleTarget = new BrowserElement(
+      { 'data-modal-id': 'last-eligible-target' },
+      { connected: false },
+    );
     const live = new BrowserElement({
       'aria-live': 'polite',
       'data-modal-id': 'modal-live-region',
@@ -885,6 +911,7 @@ function candidateOwnedBrowserHarness(
       },
       { connected: false },
     );
+    cleanupListenerTarget = panel;
     const contradictoryPanel = new BrowserElement(
       {
         'aria-modal': ariaModal === 'true' ? 'false' : 'true',
@@ -894,7 +921,21 @@ function candidateOwnedBrowserHarness(
       },
       { connected: false },
     );
-    const focusLoop = () => {};
+    const listenerTarget = {
+      backdrop,
+      document,
+      opener,
+      panel,
+      window: scope,
+    }[modalListenerLocation];
+    if (listenerTarget === undefined) {
+      throw new TypeError(`unsupported modal listener location: ${modalListenerLocation}`);
+    }
+    const focusLoop = (event) => {
+      if (event.type !== 'keydown' || event.key !== 'Tab') return;
+      event.preventDefault();
+      firstEligibleTarget.focus();
+    };
     const addTransientModalListener = () => {
       const transientListener = () => {};
       panel.addEventListener(modalListenerType, transientListener);
@@ -903,6 +944,12 @@ function candidateOwnedBrowserHarness(
     const connectModal = () => {
       if (emptyCandidate) return;
       panel.isConnected = true;
+      backdrop.isConnected = true;
+      firstEligibleTarget.isConnected = true;
+      lastEligibleTarget.isConnected = true;
+      const eventBoundary = modalListenerLocation === 'panel' ? panel : listenerTarget;
+      firstEligibleTarget.parentTarget = eventBoundary;
+      lastEligibleTarget.parentTarget = eventBoundary;
       owner.isConnected = true;
       portal.isConnected = true;
       guard.isConnected = true;
@@ -911,8 +958,10 @@ function candidateOwnedBrowserHarness(
       background.inert = true;
       background.setAttribute('inert', '');
       background.setAttribute('aria-hidden', 'true');
-      modalListener ??= focusLoop;
-      panel.addEventListener(modalListenerType, modalListener);
+      if (installModalListener) {
+        modalListener ??= focusLoop;
+        listenerTarget.addEventListener(modalListenerType, modalListener);
+      }
       modalTimer ??= scope.setInterval(() => {}, 1_000);
       scrollClaim ??= tracker.acquireClaim({ kind: 'scroll-lock', owner: 'modal-panel' });
       if (!ignoreOpenFocus) safeTarget.focus();
@@ -922,7 +971,7 @@ function candidateOwnedBrowserHarness(
     };
     const releaseModal = () => {
       if (!leakListener && modalListener !== undefined) {
-        panel.removeEventListener(modalListenerType, modalListener);
+        listenerTarget.removeEventListener(modalListenerType, modalListener);
         modalListener = undefined;
       }
       if (!leakTimer && modalTimer !== undefined) {
@@ -935,6 +984,9 @@ function candidateOwnedBrowserHarness(
         panel.isConnected = false;
         contradictoryPanel.isConnected = false;
       }
+      backdrop.isConnected = false;
+      firstEligibleTarget.isConnected = false;
+      lastEligibleTarget.isConnected = false;
       owner.isConnected = false;
       portal.isConnected = leakPortal;
       guard.isConnected = false;
@@ -1019,6 +1071,9 @@ function candidateOwnedBrowserHarness(
           background,
           opener,
           safeTarget,
+          backdrop,
+          firstEligibleTarget,
+          lastEligibleTarget,
           live,
           owner,
           portal,
@@ -1044,10 +1099,15 @@ function candidateOwnedBrowserHarness(
       unmount() {
         for (const cleanup of effectCleanups.splice(0).reverse()) cleanup();
         if (listenerDuringCleanup !== 'none') {
-          const cleanupListener = () => {};
-          root.addEventListener('keydown', cleanupListener);
+          const cleanupListener = (event) => {
+            if (event.key === 'Tab') event.preventDefault();
+          };
+          cleanupListenerTarget.addEventListener('keydown', cleanupListener);
+          cleanupListenerTarget.dispatchEvent(
+            new scope.Event('keydown', { bubbles: false, cancelable: true, key: 'Tab' }),
+          );
           if (listenerDuringCleanup === 'transient') {
-            root.removeEventListener('keydown', cleanupListener);
+            cleanupListenerTarget.removeEventListener('keydown', cleanupListener);
           }
         }
         if (timerDuringCleanup) {
@@ -1407,6 +1467,113 @@ test('records immutable listener purpose, owner, target, and operation at acquis
         purpose: 'dismiss',
         target: 'original-target',
         type: 'keydown',
+      },
+    ],
+  );
+  tracker.restore();
+});
+
+test('attributes two same-operation listeners to the distinct behavior each identity performs', () => {
+  class FakeEventTarget {
+    constructor(id, owner = undefined) {
+      this.id = id;
+      this.owner = owner;
+      this.listeners = [];
+    }
+    addEventListener(type, listener) {
+      this.listeners.push({ listener, type });
+    }
+    removeEventListener(type, listener) {
+      this.listeners = this.listeners.filter(
+        (entry) => entry.type !== type || entry.listener !== listener,
+      );
+    }
+    dispatchEvent(event) {
+      event.target ??= this;
+      for (const { listener, type } of [...this.listeners]) {
+        if (type === event.type) listener.call(this, event);
+      }
+      return event.defaultPrevented !== true;
+    }
+    closest(selector) {
+      return selector === '[data-modal-panel]' ? this.owner : null;
+    }
+    getAttribute(name) {
+      return name === 'data-modal-id' ? this.id : null;
+    }
+  }
+  const scope = {
+    EventTarget: FakeEventTarget,
+    clearInterval() {},
+    clearTimeout() {},
+    setInterval: () => 1,
+    setTimeout: () => 2,
+  };
+  const panel = new FakeEventTarget('modal-panel');
+  panel.owner = panel;
+  scope.document = {
+    activeElement: panel,
+    querySelectorAll: () => [panel],
+  };
+  const tracker = installModalResourceTracker(scope);
+  const focusLoop = (event) => {
+    if (event.key === 'Tab') event.preventDefault();
+  };
+  const dismiss = (event) => {
+    if (event.key === 'Escape') event.preventDefault();
+  };
+  tracker.runInPhase(
+    { operation: 'open', owner: 'modal-opener', phase: 'operation', purpose: 'other' },
+    () => {
+      panel.addEventListener('keydown', focusLoop);
+      panel.addEventListener('keydown', dismiss);
+    },
+  );
+  const dispatchKey = (key) => {
+    const event = {
+      defaultPrevented: false,
+      key,
+      preventDefault() {
+        this.defaultPrevented = true;
+      },
+      type: 'keydown',
+    };
+    tracker.runInPhase(
+      { operation: 'press', owner: `keyboard-${key}`, phase: 'operation', purpose: 'other' },
+      () => panel.dispatchEvent(event),
+    );
+  };
+  dispatchKey('Tab');
+  dispatchKey('Escape');
+
+  assert.deepEqual(
+    tracker.snapshot().listenerEntries.map(({ id, uses }) => ({ id, uses })),
+    [
+      {
+        id: 1,
+        uses: [
+          {
+            effects: ['default-prevented'],
+            operation: 'press',
+            phase: 'operation',
+            purpose: 'focus-loop',
+            target: 'modal-panel',
+            type: 'keydown',
+          },
+        ],
+      },
+      {
+        id: 2,
+        uses: [
+          {
+            effects: ['default-prevented'],
+            operation: 'press',
+            phase: 'operation',
+            purpose: 'dismiss',
+            target: 'modal-panel',
+            type: 'keydown',
+          },
+        ],
       },
     ],
   );
@@ -2200,6 +2367,7 @@ test('returns cleanup evidence only after root unmount and actual resource relea
       {
         acquiredOperation: 'open',
         acquiredPhase: 'operation',
+        boundary: 'modal-panel',
         id: 7,
         owner: 'modal-panel',
         purpose: 'other',
@@ -2208,10 +2376,12 @@ test('returns cleanup evidence only after root unmount and actual resource relea
         releasedPhase: 'operation',
         target: 'modal-panel',
         type: 'keydown',
+        uses: [],
       },
       {
         acquiredOperation: 'open',
         acquiredPhase: 'operation',
+        boundary: 'modal-panel',
         id: 8,
         owner: 'modal-panel',
         purpose: 'other',
@@ -2220,6 +2390,7 @@ test('returns cleanup evidence only after root unmount and actual resource relea
         releasedPhase: 'operation',
         target: 'modal-panel',
         type: 'keydown',
+        uses: [],
       },
     ],
     listeners: 0,
@@ -2317,14 +2488,85 @@ test('a leaked candidate-owned focus-loop listener cannot emit released cleanup 
   assert.equal(released.cleanup.includes('focus-loop-listener-released'), true);
   assert.equal(leaked.cleanup.includes('focus-loop-listener-released'), false);
   assert.deepEqual(
-    leaked.trace.at(-1).snapshot.resources.listenerEntries.map(({ owner, purpose, type }) => ({
-      owner,
-      purpose,
-      type,
-    })),
-    [{ owner: 'modal-panel', purpose: 'focus-loop', type: 'keydown' }],
+    leaked.trace
+      .at(-1)
+      .snapshot.resources.listenerEntries.map(({ owner, purpose, type, uses }) => ({
+        owner,
+        purpose,
+        type,
+        uses,
+      })),
+    [
+      {
+        owner: 'modal-panel',
+        purpose: 'other',
+        type: 'keydown',
+        uses: [
+          {
+            effects: ['default-prevented', 'focus-moved'],
+            operation: 'press',
+            phase: 'operation',
+            purpose: 'focus-loop',
+            target: 'last-eligible-target',
+            type: 'keydown',
+          },
+          {
+            effects: ['default-prevented'],
+            operation: 'press',
+            phase: 'operation',
+            purpose: 'focus-loop',
+            target: 'first-eligible-target',
+            type: 'keydown',
+          },
+        ],
+      },
+    ],
   );
   assert.equal(scenario.capture.includes('resources'), true);
+});
+
+test('a behaviorally exercised listener outside the panel boundary cannot prove panel cleanup', async (t) => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.focus-wrap-dynamic.v1'),
+  );
+  for (const modalListenerLocation of ['opener', 'backdrop', 'document', 'window']) {
+    await t.test(modalListenerLocation, async () => {
+      const request = requestFor(scenario);
+      const harness = candidateOwnedBrowserHarness(scenario, { modalListenerLocation });
+      const mounted = await mountModalFixtureClient({
+        React: harness.React,
+        createModalCandidate: harness.createModalCandidate,
+        createRoot: harness.createRoot,
+        document: harness.document,
+        hydrateRoot() {
+          throw new Error('unexpected hydration');
+        },
+        request,
+      });
+      await mounted.runScenario({
+        scenario,
+        cell: request.cell,
+        hydrate: false,
+        synthesizeHover: false,
+      });
+      const observation = (await mounted.cleanup()).observation;
+      const listener = observation.trace
+        .at(-1)
+        .snapshot.resources.listenerLifecycles.find(({ type }) => type === 'keydown');
+
+      assert.equal(
+        observation.cleanup.includes('focus-loop-listener-released'),
+        false,
+        `${modalListenerLocation} must remain outside the panel ownership boundary`,
+      );
+      assert.equal(listener.releaseCount, 1);
+      assert.equal(
+        listener.uses.some(({ purpose }) => purpose === 'focus-loop'),
+        true,
+      );
+    });
+  }
 });
 
 test('a matching listener acquired only during cleanup cannot satisfy focus-loop release', async () => {
@@ -2334,6 +2576,7 @@ test('a matching listener acquired only during cleanup cannot satisfy focus-loop
   );
   const request = requestFor(scenario);
   const harness = candidateOwnedBrowserHarness(scenario, {
+    installModalListener: false,
     listenerDuringCleanup: 'persistent',
   });
   const mounted = await mountModalFixtureClient({
@@ -2359,7 +2602,7 @@ test('a matching listener acquired only during cleanup cannot satisfy focus-loop
       owner,
       type,
     })),
-    [{ owner: 'modal-fixture-root', type: 'keydown' }],
+    [{ owner: 'modal-panel', type: 'keydown' }],
   );
   assert.equal(observation.cleanup.includes('focus-loop-listener-released'), false);
 });
@@ -2371,6 +2614,7 @@ test('a transient listener acquired and released during cleanup cannot satisfy f
   );
   const request = requestFor(scenario);
   const harness = candidateOwnedBrowserHarness(scenario, {
+    installModalListener: false,
     listenerDuringCleanup: 'transient',
   });
   const mounted = await mountModalFixtureClient({
@@ -2484,7 +2728,7 @@ test('cleanup facts bind release proof to observed identities without treating a
   assert.equal(observation.cleanup.includes('focus-loop-listener-released'), true);
 });
 
-test('operation attribution keeps a close dismiss trampoline separate from focus restoration', async () => {
+test('scenario operations do not relabel no-op listeners as expected cleanup purposes', async () => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
   const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
     scenarioId.endsWith('.declared-initial-focus.v1'),
@@ -2519,17 +2763,16 @@ test('operation attribution keeps a close dismiss trampoline separate from focus
         owner === 'modal-panel' &&
         type === 'click',
     )
-    .map(({ acquiredOperation, purpose }) => ({ acquiredOperation, purpose }));
+    .map(({ acquiredOperation, purpose, uses }) => ({ acquiredOperation, purpose, uses }));
 
   assert.deepEqual(relevantLifecycles, [
-    { acquiredOperation: 'open', purpose: 'focus-restore' },
-    { acquiredOperation: 'close', purpose: 'dismiss' },
-    { acquiredOperation: 'open', purpose: 'focus-restore' },
+    { acquiredOperation: 'open', purpose: 'other', uses: [] },
+    { acquiredOperation: 'close', purpose: 'other', uses: [] },
+    { acquiredOperation: 'open', purpose: 'other', uses: [] },
   ]);
-  assert.equal(observation.cleanup.includes('initial-focus-guard-released'), true);
 });
 
-test('cleanup listener probes bind purpose independently of the event type', async (t) => {
+test('cleanup listener probes reject arbitrary no-op event types without a demonstrated use', async (t) => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
   const cases = [
     {
@@ -2552,7 +2795,7 @@ test('cleanup listener probes bind purpose independently of the event type', asy
     },
   ];
   for (const { scenarioSuffix, listenerType, fact, purpose } of cases) {
-    await t.test(`${listenerType} is recorded as ${purpose}`, async () => {
+    await t.test(`${listenerType} does not imply ${purpose}`, async () => {
       const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
         scenarioId.endsWith(scenarioSuffix),
       );
@@ -2576,11 +2819,13 @@ test('cleanup listener probes bind purpose independently of the event type', asy
       });
       const observation = (await mounted.cleanup()).observation;
 
-      assert.equal(observation.cleanup.includes(fact), true);
+      assert.equal(observation.cleanup.includes(fact), false);
       assert.equal(
         observation.trace
           .at(-1)
-          .snapshot.resources.listenerLifecycles.every((entry) => entry.purpose === purpose),
+          .snapshot.resources.listenerLifecycles.every(
+            (entry) => entry.purpose === 'other' && entry.uses.length === 0,
+          ),
         true,
       );
     });

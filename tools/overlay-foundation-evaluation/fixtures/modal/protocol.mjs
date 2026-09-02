@@ -16,6 +16,7 @@ const RESOURCE_PURPOSES = Object.freeze([
   'pointer',
   'other',
 ]);
+const LISTENER_EFFECTS = Object.freeze(['default-prevented', 'focus-moved', 'modal-closed']);
 const REQUEST_KEYS = Object.freeze(['schemaVersion', 'scenario', 'cell']);
 const EXECUTION_SCENARIO_KEYS = Object.freeze([
   'schemaVersion',
@@ -178,6 +179,43 @@ function containsVendorFact(value) {
   );
 }
 
+function validateListenerUses(uses, path, errors) {
+  if (!Array.isArray(uses)) {
+    errors.push(`${path} must be an array`);
+    return;
+  }
+  uses.forEach((use, index) => {
+    const usePath = `${path}[${index}]`;
+    if (!isPlainRecord(use)) {
+      errors.push(`${usePath} must be a plain record`);
+      return;
+    }
+    rejectUnknownKeys(
+      use,
+      ['effects', 'operation', 'phase', 'purpose', 'target', 'type'],
+      usePath,
+      errors,
+    );
+    if (!Array.isArray(use.effects) || use.effects.length === 0) {
+      errors.push(`${usePath}.effects must be a non-empty array`);
+    } else {
+      for (const effect of use.effects) {
+        if (!LISTENER_EFFECTS.includes(effect)) {
+          errors.push(`${usePath}.effects contains an invalid effect`);
+        }
+      }
+    }
+    if (!RESOURCE_PURPOSES.includes(use.purpose) || use.purpose === 'other') {
+      errors.push(`${usePath}.purpose must be a demonstrated listener purpose`);
+    }
+    for (const key of ['operation', 'phase', 'target', 'type']) {
+      if (typeof use[key] !== 'string' || use[key].length === 0) {
+        errors.push(`${usePath}.${key} must be a non-empty string`);
+      }
+    }
+  });
+}
+
 function validateSnapshot(snapshot, path, errors) {
   if (!isPlainRecord(snapshot)) {
     errors.push(`${path} must be a plain record`);
@@ -260,7 +298,17 @@ function validateSnapshot(snapshot, path, errors) {
             }
             rejectUnknownKeys(
               entry,
-              ['acquiredOperation', 'acquiredPhase', 'id', 'owner', 'purpose', 'target', 'type'],
+              [
+                'acquiredOperation',
+                'acquiredPhase',
+                'boundary',
+                'id',
+                'owner',
+                'purpose',
+                'target',
+                'type',
+                'uses',
+              ],
               entryPath,
               errors,
             );
@@ -273,11 +321,19 @@ function validateSnapshot(snapshot, path, errors) {
             if (!RESOURCE_PURPOSES.includes(entry.purpose)) {
               errors.push(`${entryPath}.purpose is invalid`);
             }
-            for (const key of ['acquiredOperation', 'acquiredPhase', 'owner', 'target', 'type']) {
+            for (const key of [
+              'acquiredOperation',
+              'acquiredPhase',
+              'boundary',
+              'owner',
+              'target',
+              'type',
+            ]) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
             }
+            validateListenerUses(entry.uses, `${entryPath}.uses`, errors);
           });
         }
       }
@@ -297,6 +353,7 @@ function validateSnapshot(snapshot, path, errors) {
               [
                 'acquiredPhase',
                 'acquiredOperation',
+                'boundary',
                 'id',
                 'owner',
                 'purpose',
@@ -305,6 +362,7 @@ function validateSnapshot(snapshot, path, errors) {
                 'releasedPhase',
                 'target',
                 'type',
+                'uses',
               ],
               entryPath,
               errors,
@@ -318,11 +376,19 @@ function validateSnapshot(snapshot, path, errors) {
             if (!RESOURCE_PURPOSES.includes(entry.purpose)) {
               errors.push(`${entryPath}.purpose is invalid`);
             }
-            for (const key of ['acquiredOperation', 'acquiredPhase', 'owner', 'target', 'type']) {
+            for (const key of [
+              'acquiredOperation',
+              'acquiredPhase',
+              'boundary',
+              'owner',
+              'target',
+              'type',
+            ]) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
             }
+            validateListenerUses(entry.uses, `${entryPath}.uses`, errors);
             if (!Number.isSafeInteger(entry.releaseCount) || entry.releaseCount < 0) {
               errors.push(`${entryPath}.releaseCount must be a non-negative safe integer`);
             }

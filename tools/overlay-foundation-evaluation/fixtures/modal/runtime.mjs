@@ -68,6 +68,34 @@ export function installModalResourceTracker(scope = globalThis) {
       (target?.hasAttribute?.('data-modal-fixture-root') ? 'modal-fixture-root' : 'event-target')
     );
   };
+  const connectedModalCount = () =>
+    [...(scope.document?.querySelectorAll?.('[data-modal-panel]') ?? [])].filter(
+      (panel) => panel.isConnected !== false,
+    ).length;
+  const listenerEffectSnapshot = (event) => ({
+    defaultPrevented: event?.defaultPrevented === true,
+    focus: scope.document?.activeElement,
+    modalCount: connectedModalCount(),
+  });
+  const listenerPurpose = (event, effects) => {
+    const type = event?.type;
+    if (type === 'keydown' && event?.key === 'Tab') {
+      return effects.some((effect) => ['default-prevented', 'focus-moved'].includes(effect))
+        ? 'focus-loop'
+        : undefined;
+    }
+    if (type === 'keydown' && event?.key === 'Escape') {
+      return effects.length > 0 ? 'dismiss' : undefined;
+    }
+    if (
+      resourceContext.operation === 'point' &&
+      /^(?:click|contextmenu|mouse|pointer)/u.test(type ?? '')
+    ) {
+      return effects.length > 0 ? 'pointer' : undefined;
+    }
+    if (effects.includes('focus-moved')) return 'focus-restore';
+    return undefined;
+  };
   if (typeof originalAdd === 'function' && typeof originalRemove === 'function') {
     const removeTrackedListener = (entry, { native = false, detachAbort = true } = {}) => {
       const index = listeners.indexOf(entry);
@@ -106,10 +134,15 @@ export function installModalResourceTracker(scope = globalThis) {
       }
       const signal = typeof options === 'object' && options !== null ? options.signal : undefined;
       if (signal?.aborted === true) return originalAdd.call(this, type, listener, options);
-      const ownerTarget = this?.closest?.('[data-modal-panel]') ?? this;
+      const boundaryTarget = this?.closest?.('[data-modal-panel]');
+      const ownerTarget = boundaryTarget ?? this;
       const identity = Object.freeze({
         acquiredOperation: resourceContext.operation,
         acquiredPhase: resourceContext.phase,
+        boundary:
+          boundaryTarget === null || boundaryTarget === undefined
+            ? 'outside-modal-boundary'
+            : targetName(boundaryTarget),
         id: ++nextListenerId,
         owner: targetName(ownerTarget),
         purpose: resourceContext.purpose,
@@ -122,16 +155,41 @@ export function installModalResourceTracker(scope = globalThis) {
         listener,
         capture: captured,
         signal,
-        registeredListener: listener,
+        registeredListener: undefined,
         releaseCount: 0,
+        uses: [],
       };
-      if (typeof options === 'object' && options?.once === true) {
-        entry.registeredListener = function trackedOnce(event) {
+      entry.registeredListener = function trackedListener(event) {
+        if (typeof options === 'object' && options?.once === true) {
           removeTrackedListener(entry, { native: false });
+        }
+        const before = listenerEffectSnapshot(event);
+        try {
           if (typeof listener === 'function') return listener.call(this, event);
           return listener.handleEvent.call(listener, event);
-        };
-      }
+        } finally {
+          const after = listenerEffectSnapshot(event);
+          const effects = [];
+          if (!before.defaultPrevented && after.defaultPrevented) {
+            effects.push('default-prevented');
+          }
+          if (before.focus !== after.focus) effects.push('focus-moved');
+          if (after.modalCount < before.modalCount) effects.push('modal-closed');
+          const purpose = listenerPurpose(event, effects);
+          if (purpose !== undefined) {
+            entry.uses.push(
+              Object.freeze({
+                effects: Object.freeze(effects),
+                operation: resourceContext.operation,
+                phase: resourceContext.phase,
+                purpose,
+                target: targetName(event?.target ?? this),
+                type: event?.type ?? entry.identity.type,
+              }),
+            );
+          }
+        }
+      };
       const result = originalAdd.call(this, type, entry.registeredListener, options);
       listeners.push(entry);
       listenerLifecycles.push(entry);
@@ -304,7 +362,10 @@ export function installModalResourceTracker(scope = globalThis) {
         ({ identity }) => !persistentListenerIds.has(identity.id),
       );
       const listenerRecord = (entry) => {
-        return { ...entry.identity };
+        return {
+          ...entry.identity,
+          uses: entry.uses.map((use) => ({ ...use, effects: [...use.effects] })),
+        };
       };
       return {
         listeners: candidateListeners.length,
@@ -2094,40 +2155,13 @@ function resourceCountReleased(trace, target) {
 }
 
 function listenerOwnedByModal(entry) {
-  return /modal/iu.test(entry.owner) || ['document', 'window'].includes(entry.owner);
+  return entry.boundary !== 'outside-modal-boundary' && entry.owner === entry.boundary;
 }
 
 function listenerOfPurpose(purpose) {
-  return (entry) => entry.purpose === purpose && listenerOwnedByModal(entry);
-}
-
-function measuredListenerPurpose(scenario, operation) {
-  if (
-    operation?.operation === 'close' ||
-    (operation?.operation === 'press' && /dismiss|escape/iu.test(operation.target))
-  ) {
-    return 'dismiss';
-  }
-  if (operation?.operation === 'point') return 'pointer';
-  if (['destroy', 'setDirection', 'setMotionPreference'].includes(operation?.operation)) {
-    return 'other';
-  }
-  const purposeByTarget = {
-    'destructive-focus-guard': 'focus-restore',
-    'focus-loop-listener': 'focus-loop',
-    'focus-recovery-listener': 'focus-restore',
-    'initial-focus-guard': 'focus-restore',
-    'pointer-sequence-guard': 'pointer',
-    'restoration-guard': 'focus-restore',
-    'validation-focus-guard': 'focus-restore',
-  };
-  const purposes = new Set(
-    scenario.probes
-      .filter(({ category, phase }) => category === 'cleanup' && phase === 'after-cleanup')
-      .map(({ target }) => purposeByTarget[target])
-      .filter((purpose) => purpose !== undefined),
-  );
-  return purposes.size === 1 ? [...purposes][0] : 'other';
+  return (entry) =>
+    listenerOwnedByModal(entry) &&
+    entry.uses.some((use) => use.purpose === purpose && use.phase === 'operation');
 }
 
 function allMeasuredResourcesReleased(snapshot) {
@@ -2646,7 +2680,7 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
               operation: operation.operation,
               owner: operation.target,
               phase: 'operation',
-              purpose: measuredListenerPurpose(request.scenario, operation),
+              purpose: 'other',
             },
             executeOperation,
           )
@@ -2983,7 +3017,7 @@ export async function mountModalFixtureClient({
                 operation: 'teardown',
                 owner: 'fixture-cleanup',
                 phase: 'cleanup',
-                purpose: measuredListenerPurpose(request.scenario),
+                purpose: 'other',
               },
               performCleanup,
             )
