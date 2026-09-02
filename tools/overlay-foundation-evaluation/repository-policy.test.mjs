@@ -146,11 +146,11 @@ test('tracks the four exact modal candidate records without selection metadata',
       'utf8',
     ),
   );
-  assert.deepEqual(Object.keys(manifest), [
-    'schemaVersion',
-    'lyraRevision',
-    'toolchain',
+  assert.deepEqual(Object.keys(manifest).sort(), [
     'candidates',
+    'lyraRevision',
+    'schemaVersion',
+    'toolchain',
   ]);
   assert.equal(manifest.schemaVersion, 1);
   assert.match(manifest.lyraRevision, /^[a-f0-9]{40}$/u);
