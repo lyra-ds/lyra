@@ -103,6 +103,7 @@ function behaviorBrowserHarness(
     pageScrollChanges = false,
     portalLeak = false,
     prematureScrollClaimRelease = false,
+    reacquireScrollClaimForSameOwner = false,
     resourceSnapshot,
     semanticContradiction = false,
     semanticEventContradiction = false,
@@ -192,8 +193,13 @@ function behaviorBrowserHarness(
   let pendingControlledClose = false;
   let pointerStartedOutside = false;
   let destroyed = false;
-  const scrollClaimOwners = new Set();
+  const scrollClaims = new Map();
+  let nextScrollClaimId = 0;
   const scrollClaimOwner = (target) => (misattributeScrollClaims ? `unowned-${target}` : target);
+  const acquireScrollClaim = (target) => {
+    const owner = scrollClaimOwner(target);
+    scrollClaims.set(owner, ++nextScrollClaimId);
+  };
 
   const focus = (element) => {
     activeElement = element;
@@ -230,13 +236,20 @@ function behaviorBrowserHarness(
     if (ignoreOpen) return;
     if (/child|second/iu.test(target)) {
       nestedOpen = true;
-      if (trackScrollClaims) scrollClaimOwners.add(scrollClaimOwner(target));
+      if (trackScrollClaims) {
+        acquireScrollClaim(target);
+        if (reacquireScrollClaimForSameOwner) {
+          const firstOwner = scrollClaimOwner('first-modal');
+          scrollClaims.delete(firstOwner);
+          acquireScrollClaim('first-modal');
+        }
+      }
       focus(childTarget);
       events.push({ target: 'child-modal', type: 'opened' });
       return;
     }
     open = true;
-    if (trackScrollClaims) scrollClaimOwners.add(scrollClaimOwner(target));
+    if (trackScrollClaims) acquireScrollClaim(target);
     body.style.overflow = 'hidden';
     background.inert = true;
     background.setAttribute('inert', '');
@@ -252,8 +265,8 @@ function behaviorBrowserHarness(
     if (/child|second/iu.test(target)) {
       nestedOpen = false;
       if (trackScrollClaims) {
-        if (prematureScrollClaimRelease) scrollClaimOwners.clear();
-        else scrollClaimOwners.delete(scrollClaimOwner(target));
+        if (prematureScrollClaimRelease) scrollClaims.clear();
+        else scrollClaims.delete(scrollClaimOwner(target));
       }
       if (prematureScrollClaimRelease) body.style.overflow = '';
       focus(safeTarget);
@@ -262,7 +275,7 @@ function behaviorBrowserHarness(
     }
     open = false;
     nestedOpen = false;
-    if (trackScrollClaims) scrollClaimOwners.clear();
+    if (trackScrollClaims) scrollClaims.clear();
     if (!stuckScrollLock) body.style.overflow = '';
     layoutLeft = layoutShiftOnFinalClose;
     background.inert = false;
@@ -343,7 +356,7 @@ function behaviorBrowserHarness(
           } else if (operation === 'destroy') {
             open = false;
             nestedOpen = false;
-            scrollClaimOwners.clear();
+            scrollClaims.clear();
             body.style.overflow = '';
             focus(opener);
             events.push({ target, type: 'destroyed-once' });
@@ -408,8 +421,8 @@ function behaviorBrowserHarness(
                 ...(resourceSnapshot === undefined ? {} : structuredClone(resourceSnapshot())),
                 ...(trackScrollClaims
                   ? {
-                      claims: [...scrollClaimOwners].map((owner, index) => ({
-                        id: index + 1,
+                      claims: [...scrollClaims].map(([owner, id]) => ({
+                        id,
                         kind: 'scroll-lock',
                         owner,
                       })),
@@ -550,13 +563,17 @@ function candidateOwnedBrowserHarness(
   scenario,
   {
     ariaModal = 'true',
+    acquirePortalOnDestroy = false,
     emptyCandidate = false,
     ignoreOpenFocus = false,
     leakListener = false,
+    listenerDuringCleanup = 'none',
     leakPortal = false,
     leakTimer = false,
+    modalListenerType = 'keydown',
     semanticContradiction = false,
     semanticEventContradiction = false,
+    timerDuringCleanup = false,
   } = {},
 ) {
   let nextTimerHandle = 0;
@@ -858,7 +875,7 @@ function candidateOwnedBrowserHarness(
       background.setAttribute('inert', '');
       background.setAttribute('aria-hidden', 'true');
       modalListener ??= focusLoop;
-      panel.addEventListener('keydown', modalListener);
+      panel.addEventListener(modalListenerType, modalListener);
       modalTimer ??= scope.setInterval(() => {}, 1_000);
       scrollClaim ??= tracker.acquireClaim({ kind: 'scroll-lock', owner: 'modal-panel' });
       if (!ignoreOpenFocus) safeTarget.focus();
@@ -868,7 +885,7 @@ function candidateOwnedBrowserHarness(
     };
     const releaseModal = () => {
       if (!leakListener && modalListener !== undefined) {
-        panel.removeEventListener('keydown', modalListener);
+        panel.removeEventListener(modalListenerType, modalListener);
         modalListener = undefined;
       }
       if (!leakTimer && modalTimer !== undefined) {
@@ -910,6 +927,9 @@ function candidateOwnedBrowserHarness(
             live.textContent = `${title.textContent} dialog closed`;
           } else if (operation.operation === 'destroy') {
             releaseModal();
+            if (acquirePortalOnDestroy && operation.target === 'exit-phase-modal') {
+              panel.isConnected = true;
+            }
             events.push({ target: operation.target, type: 'destroyed-once' });
             live.textContent = 'Disposable workspace dialog removed';
           }
@@ -981,6 +1001,17 @@ function candidateOwnedBrowserHarness(
       },
       unmount() {
         for (const cleanup of effectCleanups.splice(0).reverse()) cleanup();
+        if (listenerDuringCleanup !== 'none') {
+          const cleanupListener = () => {};
+          root.addEventListener('keydown', cleanupListener);
+          if (listenerDuringCleanup === 'transient') {
+            root.removeEventListener('keydown', cleanupListener);
+          }
+        }
+        if (timerDuringCleanup) {
+          const cleanupTimer = scope.setTimeout(() => {}, 0);
+          scope.clearTimeout(cleanupTimer);
+        }
         rootHasChildren = false;
         rootMarkup = '';
       },
@@ -1232,7 +1263,7 @@ test('tracks actual browser listeners and timers without claimed release markers
       owner,
       type,
     })),
-    [{ classification: 'focus', owner: 'event-target', type: 'keydown' }],
+    [{ classification: 'focus-loop', owner: 'event-target', type: 'keydown' }],
   );
   target.removeEventListener('keydown', listener);
   scope.clearTimeout(timeout);
@@ -1344,8 +1375,10 @@ test('resource probes are factual in every browser scenario that asserts cleanup
   assert.deepEqual(cleanup.trace[0].snapshot.resources, {
     claims: [],
     listenerEntries: [],
+    listenerLifecycles: [],
     listeners: 3,
     timerEntries: [],
+    timerLifecycles: [],
     timers: 2,
   });
   for (const scenario of MODAL_SCENARIOS) {
@@ -1642,6 +1675,49 @@ test('rejects the concrete 1,2,0,0 scroll mutation instead of accepting its maxi
   assert.equal(immutableScenario.capture.includes('resources'), true);
 });
 
+test('rejects release and reacquisition hidden behind the same scroll-claim owner', async () => {
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.scroll-lock-reference-count.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, {
+    reacquireScrollClaimForSameOwner: true,
+    trackScrollClaims: true,
+  });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  const probe = scenario.probes.find(
+    ({ property, target }) => target === 'page-scroll-lock' && property === 'maximum-claim-count',
+  );
+  const fact = observation.trace
+    .flatMap(({ snapshot }) => snapshot.probes ?? [])
+    .find(({ id }) => id === probe.id).fact;
+
+  assert.deepEqual(
+    observation.trace
+      .slice(1, 5)
+      .map(({ snapshot }) => snapshot.resources.claims.map(({ id, owner }) => ({ id, owner }))),
+    [
+      [{ id: 1, owner: 'first-modal' }],
+      [
+        { id: 2, owner: 'second-modal' },
+        { id: 3, owner: 'first-modal' },
+      ],
+      [{ id: 3, owner: 'first-modal' }],
+      [],
+    ],
+  );
+  assert.deepEqual(fact, {
+    target: 'page-scroll-lock',
+    name: 'maximum-claim-count',
+    value: 'unobserved',
+  });
+});
+
 test('captures a factual snapshot after every completed browser operation', async () => {
   const scenario = structuredClone(MODAL_SCENARIOS[0]);
   scenario.operations = [
@@ -1905,8 +1981,48 @@ test('returns cleanup evidence only after root unmount and actual resource relea
   assert.deepEqual(cleanup.snapshot.resources, {
     claims: [],
     listenerEntries: [],
+    listenerLifecycles: [
+      {
+        acquiredPhase: 'operation',
+        classification: 'focus-loop',
+        id: 7,
+        owner: 'modal-panel',
+        releaseCount: 1,
+        releasedPhase: 'operation',
+        target: 'modal-panel',
+        type: 'keydown',
+      },
+      {
+        acquiredPhase: 'operation',
+        classification: 'focus-loop',
+        id: 8,
+        owner: 'modal-panel',
+        releaseCount: 1,
+        releasedPhase: 'operation',
+        target: 'modal-panel',
+        type: 'keydown',
+      },
+    ],
     listeners: 0,
     timerEntries: [],
+    timerLifecycles: [
+      {
+        acquiredPhase: 'operation',
+        id: 1,
+        kind: 'interval',
+        owner: 'open-phase-modal',
+        releaseCount: 1,
+        releasedPhase: 'operation',
+      },
+      {
+        acquiredPhase: 'operation',
+        id: 2,
+        kind: 'interval',
+        owner: 'exit-phase-modal',
+        releaseCount: 1,
+        releasedPhase: 'operation',
+      },
+    ],
     timers: 0,
   });
   assert.deepEqual(
@@ -2055,9 +2171,237 @@ test('a leaked candidate-owned focus-loop listener cannot emit released cleanup 
         owner,
         type,
       })),
-    [{ classification: 'focus', owner: 'modal-panel', type: 'keydown' }],
+    [{ classification: 'focus-loop', owner: 'modal-panel', type: 'keydown' }],
   );
   assert.equal(immutableScenario.capture.includes('resources'), true);
+});
+
+test('a matching listener acquired only during cleanup cannot satisfy focus-loop release', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.focus-wrap-dynamic.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = candidateOwnedBrowserHarness(scenario, {
+    listenerDuringCleanup: 'persistent',
+  });
+  const mounted = await mountModalFixtureClient({
+    React: harness.React,
+    createModalCandidate: harness.createModalCandidate,
+    createRoot: harness.createRoot,
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const observation = (await mounted.cleanup()).observation;
+
+  assert.deepEqual(
+    observation.trace.at(-1).snapshot.resources.listenerEntries.map(({ owner, type }) => ({
+      owner,
+      type,
+    })),
+    [{ owner: 'modal-fixture-root', type: 'keydown' }],
+  );
+  assert.equal(observation.cleanup.includes('focus-loop-listener-released'), false);
+});
+
+test('a transient listener acquired and released during cleanup cannot satisfy focus-loop release', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.focus-wrap-dynamic.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = candidateOwnedBrowserHarness(scenario, {
+    listenerDuringCleanup: 'transient',
+  });
+  const mounted = await mountModalFixtureClient({
+    React: harness.React,
+    createModalCandidate: harness.createModalCandidate,
+    createRoot: harness.createRoot,
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const observation = (await mounted.cleanup()).observation;
+
+  assert.deepEqual(observation.trace.at(-1).snapshot.resources.listenerEntries, []);
+  assert.equal(observation.cleanup.includes('focus-loop-listener-released'), false);
+});
+
+test('cleanup listener probes require the measured event purpose they name', async (t) => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const cases = [
+    {
+      scenarioSuffix: '.focus-wrap-dynamic.v1',
+      listenerType: 'focusin',
+      forbiddenFact: 'focus-loop-listener-released',
+    },
+    {
+      scenarioSuffix: '.focused-node-removal.v1',
+      listenerType: 'keydown',
+      forbiddenFact: 'focus-recovery-listener-released',
+    },
+    {
+      scenarioSuffix: '.pointer-origin-dismiss.v1',
+      listenerType: 'click',
+      forbiddenFact: 'pointer-sequence-guard-released',
+    },
+  ];
+  for (const { scenarioSuffix, listenerType, forbiddenFact } of cases) {
+    await t.test(`${listenerType} cannot prove ${forbiddenFact}`, async () => {
+      const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+        scenarioId.endsWith(scenarioSuffix),
+      );
+      const request = requestFor(scenario);
+      const harness = candidateOwnedBrowserHarness(scenario, { modalListenerType: listenerType });
+      const mounted = await mountModalFixtureClient({
+        React: harness.React,
+        createModalCandidate: harness.createModalCandidate,
+        createRoot: harness.createRoot,
+        document: harness.document,
+        hydrateRoot() {
+          throw new Error('unexpected hydration');
+        },
+        request,
+      });
+      await mounted.runScenario({
+        scenario,
+        cell: request.cell,
+        hydrate: false,
+        synthesizeHover: false,
+      });
+      const observation = (await mounted.cleanup()).observation;
+
+      assert.equal(observation.cleanup.includes(forbiddenFact), false);
+    });
+  }
+});
+
+test('cleanup timer evidence rejects cleanup-only acquisition and records factual ownership', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.unmount-cleanup.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = candidateOwnedBrowserHarness(scenario, { timerDuringCleanup: true });
+  const mounted = await mountModalFixtureClient({
+    React: harness.React,
+    createModalCandidate: harness.createModalCandidate,
+    createRoot: harness.createRoot,
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const observation = (await mounted.cleanup()).observation;
+
+  assert.equal(observation.cleanup.includes('timers-released-once'), false);
+  assert.deepEqual(
+    observation.trace
+      .at(-1)
+      .snapshot.resources.timerLifecycles.map(
+        ({ acquiredPhase, kind, owner, releaseCount, releasedPhase }) => ({
+          acquiredPhase,
+          kind,
+          owner,
+          releaseCount,
+          releasedPhase,
+        }),
+      ),
+    [
+      {
+        acquiredPhase: 'operation',
+        kind: 'interval',
+        owner: 'open-phase-modal',
+        releaseCount: 1,
+        releasedPhase: 'operation',
+      },
+      {
+        acquiredPhase: 'operation',
+        kind: 'interval',
+        owner: 'exit-phase-modal',
+        releaseCount: 1,
+        releasedPhase: 'operation',
+      },
+      {
+        acquiredPhase: 'cleanup',
+        kind: 'timeout',
+        owner: 'fixture-cleanup',
+        releaseCount: 1,
+        releasedPhase: 'cleanup',
+      },
+    ],
+  );
+});
+
+test('cleanup count evidence rejects a portal acquired in the destroy phase', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.unmount-cleanup.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = candidateOwnedBrowserHarness(scenario, { acquirePortalOnDestroy: true });
+  const mounted = await mountModalFixtureClient({
+    React: harness.React,
+    createModalCandidate: harness.createModalCandidate,
+    createRoot: harness.createRoot,
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const observation = (await mounted.cleanup()).observation;
+
+  assert.deepEqual(
+    observation.trace.map(({ operation, phase, snapshot }) => ({
+      count: snapshot.states.find(
+        ({ name, target }) => target === 'modal-portals' && name === 'remaining-count',
+      )?.value,
+      operation: operation?.operation,
+      phase,
+    })),
+    [
+      { count: 0, operation: undefined, phase: 'before-operations' },
+      { count: 0, operation: 'destroy', phase: 'after-operation' },
+      { count: 1, operation: 'open', phase: 'after-operation' },
+      { count: 0, operation: 'destroy', phase: 'after-operation' },
+      { count: 1, operation: 'open', phase: 'after-operation' },
+      { count: 0, operation: 'close', phase: 'after-operation' },
+      { count: 1, operation: 'destroy', phase: 'after-operation' },
+      { count: 0, operation: undefined, phase: 'after-cleanup' },
+    ],
+  );
+  assert.equal(observation.cleanup.includes('portal-released-once'), false);
 });
 
 test('residual inert on the real fixture root survives cleanup and fails the evaluator', async () => {
@@ -2251,6 +2595,6 @@ test('portal, listener, and timer leaks change the post-cleanup factual trace', 
         owner,
         type,
       })),
-    [{ classification: 'focus', owner: 'modal-panel', type: 'keydown' }],
+    [{ classification: 'focus-loop', owner: 'modal-panel', type: 'keydown' }],
   );
 });

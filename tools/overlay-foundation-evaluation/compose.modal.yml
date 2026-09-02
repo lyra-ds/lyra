@@ -32,6 +32,10 @@ services:
         test "$(git -C /work/repository rev-parse HEAD)" = "$OVERLAY_EVALUATION_REVISION"
         cd /work/repository
         corepack pnpm@11.13.1 install --frozen-lockfile
+        OVERLAY_MODAL_REACT_BROWSER_TEST=1 \
+          OVERLAY_BROWSER_CACHE_ROOT=/work/react-browser-cache \
+          node --test \
+          tools/overlay-foundation-evaluation/fixtures/modal/runtime.react-browser.test.mjs
         corepack pnpm@11.13.1 overlay:evaluate:modal \
           --manifest /input/candidates.json \
           --repository /work/repository \

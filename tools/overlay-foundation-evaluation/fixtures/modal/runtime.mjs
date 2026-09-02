@@ -28,11 +28,15 @@ export function installModalResourceTracker(scope = globalThis) {
   const originalSetInterval = scope.setInterval;
   const originalClearInterval = scope.clearInterval;
   const listeners = [];
+  const listenerLifecycles = [];
+  const persistentListenerIds = new Set();
   const timers = new Map();
+  const timerLifecycles = [];
   const claims = new Map();
   let nextClaimId = 0;
   let nextListenerId = 0;
   let nextTimerId = 0;
+  let resourceContext = Object.freeze({ owner: 'unattributed', phase: 'setup' });
   const capture = (options) => (typeof options === 'boolean' ? options : options?.capture === true);
   const targetName = (target) => {
     if (target === scope) return 'window';
@@ -44,15 +48,23 @@ export function installModalResourceTracker(scope = globalThis) {
     );
   };
   const listenerClassification = (type) =>
-    /^(?:blur|focus|focusin|focusout|keydown|keyup)$/u.test(type)
-      ? 'focus'
-      : /^(?:click|contextmenu|mousedown|mouseup|pointercancel|pointerdown|pointerup)$/u.test(type)
-        ? 'pointer'
-        : 'other';
+    /^(?:keydown|keyup)$/u.test(type)
+      ? 'focus-loop'
+      : /^(?:blur|focus|focusin|focusout)$/u.test(type)
+        ? 'focus-restore'
+        : /^(?:click|contextmenu|mousedown|mouseup)$/u.test(type)
+          ? 'dismiss'
+          : /^(?:pointercancel|pointerdown|pointerup)$/u.test(type)
+            ? 'pointer'
+            : 'other';
   if (typeof originalAdd === 'function' && typeof originalRemove === 'function') {
     const removeTrackedListener = (entry, { native = false, detachAbort = true } = {}) => {
       const index = listeners.indexOf(entry);
-      if (index !== -1) listeners.splice(index, 1);
+      if (index !== -1) {
+        listeners.splice(index, 1);
+        entry.releaseCount += 1;
+        entry.releasedPhase = resourceContext.phase;
+      }
       if (native) {
         originalRemove.call(entry.target, entry.type, entry.registeredListener, entry.capture);
       }
@@ -85,6 +97,8 @@ export function installModalResourceTracker(scope = globalThis) {
         capture: captured,
         signal,
         registeredListener: listener,
+        acquiredPhase: resourceContext.phase,
+        releaseCount: 0,
       };
       if (typeof options === 'object' && options?.once === true) {
         entry.registeredListener = function trackedOnce(event) {
@@ -95,6 +109,7 @@ export function installModalResourceTracker(scope = globalThis) {
       }
       const result = originalAdd.call(this, type, entry.registeredListener, options);
       listeners.push(entry);
+      listenerLifecycles.push(entry);
       if (signal !== undefined && typeof signal.addEventListener === 'function') {
         entry.abortHandler = () =>
           removeTrackedListener(entry, { native: false, detachAbort: false });
@@ -115,36 +130,109 @@ export function installModalResourceTracker(scope = globalThis) {
       return undefined;
     };
   }
+  const releaseTimer = (handle) => {
+    const timer = timers.get(handle);
+    if (timer === undefined) return false;
+    timers.delete(handle);
+    timer.releaseCount += 1;
+    timer.releasedPhase = resourceContext.phase;
+    return true;
+  };
   if (typeof originalSetTimeout === 'function' && typeof originalClearTimeout === 'function') {
     scope.setTimeout = (callback, delay, ...args) => {
       let handle;
       const wrapped = (...callbackArgs) => {
-        timers.delete(handle);
+        releaseTimer(handle);
         if (typeof callback === 'function') return callback(...callbackArgs);
         return undefined;
       };
       handle = originalSetTimeout.call(scope, wrapped, delay, ...args);
-      timers.set(handle, { id: ++nextTimerId, kind: 'timeout' });
+      const timer = {
+        acquiredPhase: resourceContext.phase,
+        id: ++nextTimerId,
+        kind: 'timeout',
+        owner: resourceContext.owner,
+        releaseCount: 0,
+      };
+      timers.set(handle, timer);
+      timerLifecycles.push(timer);
       return handle;
     };
     scope.clearTimeout = (handle) => {
-      timers.delete(handle);
+      releaseTimer(handle);
       return originalClearTimeout.call(scope, handle);
     };
   }
   if (typeof originalSetInterval === 'function' && typeof originalClearInterval === 'function') {
     scope.setInterval = (callback, delay, ...args) => {
       const handle = originalSetInterval.call(scope, callback, delay, ...args);
-      timers.set(handle, { id: ++nextTimerId, kind: 'interval' });
+      const timer = {
+        acquiredPhase: resourceContext.phase,
+        id: ++nextTimerId,
+        kind: 'interval',
+        owner: resourceContext.owner,
+        releaseCount: 0,
+      };
+      timers.set(handle, timer);
+      timerLifecycles.push(timer);
       return handle;
     };
     scope.clearInterval = (handle) => {
-      timers.delete(handle);
+      releaseTimer(handle);
       return originalClearInterval.call(scope, handle);
     };
   }
   let restored = false;
   const tracker = Object.freeze({
+    capturePersistentListeners({ owner, target }, operation) {
+      if (
+        typeof owner !== 'string' ||
+        owner.length === 0 ||
+        target === null ||
+        target === undefined ||
+        typeof operation !== 'function'
+      ) {
+        throw new TypeError('persistent listener owner, target, and operation are required');
+      }
+      const existingIds = new Set(listeners.map(({ id }) => id));
+      const result = operation();
+      for (const entry of listeners) {
+        if (!existingIds.has(entry.id)) {
+          entry.persistentOwner = owner;
+          entry.persistentRoot = target;
+          persistentListenerIds.add(entry.id);
+        }
+      }
+      return result;
+    },
+    runInPhase(context, operation) {
+      if (
+        !isPlainRecord(context) ||
+        typeof context.owner !== 'string' ||
+        context.owner.length === 0 ||
+        typeof context.phase !== 'string' ||
+        context.phase.length === 0 ||
+        typeof operation !== 'function'
+      ) {
+        throw new TypeError('modal resource phase, owner, and operation are required');
+      }
+      const previousContext = resourceContext;
+      resourceContext = Object.freeze({ owner: context.owner, phase: context.phase });
+      let result;
+      try {
+        result = operation();
+      } catch (error) {
+        resourceContext = previousContext;
+        throw error;
+      }
+      if (result !== null && typeof result === 'object' && typeof result.then === 'function') {
+        return Promise.resolve(result).finally(() => {
+          resourceContext = previousContext;
+        });
+      }
+      resourceContext = previousContext;
+      return result;
+    },
     acquireClaim({ kind, owner }) {
       if (
         typeof kind !== 'string' ||
@@ -165,11 +253,9 @@ export function installModalResourceTracker(scope = globalThis) {
         },
       });
     },
-    snapshot: () => ({
-      listeners: listeners.length,
-      timers: timers.size,
-      claims: [...claims.values()].map((claim) => ({ ...claim })),
-      listenerEntries: listeners.map((entry) => {
+    snapshot: () => {
+      const candidateListeners = listeners.filter(({ id }) => !persistentListenerIds.has(id));
+      const listenerRecord = (entry) => {
         const ownerTarget = entry.target?.closest?.('[data-modal-panel]') ?? entry.target;
         return {
           classification: listenerClassification(entry.type),
@@ -178,9 +264,30 @@ export function installModalResourceTracker(scope = globalThis) {
           target: targetName(entry.target),
           type: entry.type,
         };
-      }),
-      timerEntries: [...timers.values()].map((timer) => ({ ...timer })),
-    }),
+      };
+      return {
+        listeners: candidateListeners.length,
+        persistentListeners: listeners.length - candidateListeners.length,
+        timers: timers.size,
+        claims: [...claims.values()].map((claim) => ({ ...claim })),
+        listenerEntries: candidateListeners.map(listenerRecord),
+        listenerLifecycles: listenerLifecycles
+          .filter(({ id }) => !persistentListenerIds.has(id))
+          .map((entry) => ({
+            acquiredPhase: entry.acquiredPhase,
+            ...listenerRecord(entry),
+            releaseCount: entry.releaseCount,
+            ...(entry.releasedPhase === undefined ? {} : { releasedPhase: entry.releasedPhase }),
+          })),
+        timerEntries: [...timers.values()].map(({ acquiredPhase, id, kind, owner }) => ({
+          acquiredPhase,
+          id,
+          kind,
+          owner,
+        })),
+        timerLifecycles: timerLifecycles.map((timer) => ({ ...timer })),
+      };
+    },
     restore() {
       if (restored) return false;
       if (targetPrototype !== undefined && typeof originalAdd === 'function') {
@@ -1304,14 +1411,22 @@ function observedScrollClaimCount(snapshot) {
   return Number.isSafeInteger(count) && count >= 0 ? count : undefined;
 }
 
-function observedScrollClaimOwners(snapshot) {
+function observedScrollClaims(snapshot) {
   const claims = snapshot?.resources?.claims;
   if (!Array.isArray(claims)) return undefined;
-  const owners = claims.filter(({ kind }) => kind === 'scroll-lock').map(({ owner }) => owner);
-  return owners.every((owner) => typeof owner === 'string') &&
-    new Set(owners).size === owners.length
-    ? owners
+  const scrollClaims = claims.filter(({ kind }) => kind === 'scroll-lock');
+  return scrollClaims.every(
+    ({ id, owner }) =>
+      Number.isSafeInteger(id) && id > 0 && typeof owner === 'string' && owner.length > 0,
+  ) &&
+    new Set(scrollClaims.map(({ id }) => id)).size === scrollClaims.length &&
+    new Set(scrollClaims.map(({ owner }) => owner)).size === scrollClaims.length
+    ? scrollClaims.map(({ id, owner }) => ({ id, owner }))
     : undefined;
+}
+
+function observedScrollClaimOwners(snapshot) {
+  return observedScrollClaims(snapshot)?.map(({ owner }) => owner);
 }
 
 function scrollClaimsMatchLock(snapshot) {
@@ -1322,32 +1437,38 @@ function scrollClaimsMatchLock(snapshot) {
 
 function validScrollClaimSequence(probe, scenario, trace) {
   const baseline = trace[0]?.snapshot;
-  let previousOwners = observedScrollClaimOwners(baseline);
+  let previousClaims = observedScrollClaims(baseline);
   if (
-    previousOwners === undefined ||
-    previousOwners.length !== 0 ||
+    previousClaims === undefined ||
+    previousClaims.length !== 0 ||
     !scrollClaimsMatchLock(baseline)
   ) {
     return false;
   }
   for (const index of probe.operationIndexes ?? []) {
     const snapshot = operationSnapshot(trace, index);
-    const currentOwners = observedScrollClaimOwners(snapshot);
+    const currentClaims = observedScrollClaims(snapshot);
     const operation = scenario.operations[index];
-    if (currentOwners === undefined || !scrollClaimsMatchLock(snapshot)) return false;
-    const added = currentOwners.filter((owner) => !previousOwners.includes(owner));
-    const removed = previousOwners.filter((owner) => !currentOwners.includes(owner));
+    if (currentClaims === undefined || !scrollClaimsMatchLock(snapshot)) return false;
+    const previousById = new Map(previousClaims.map((claim) => [claim.id, claim]));
+    const currentById = new Map(currentClaims.map((claim) => [claim.id, claim]));
+    const retainedClaimsStable = currentClaims.every(
+      (claim) => previousById.get(claim.id)?.owner === claim.owner || !previousById.has(claim.id),
+    );
+    const added = currentClaims.filter(({ id }) => !previousById.has(id));
+    const removed = previousClaims.filter(({ id }) => !currentById.has(id));
     if (
+      !retainedClaimsStable ||
       (operation?.operation === 'open' &&
-        (added.length !== 1 || added[0] !== operation.target || removed.length !== 0)) ||
+        (added.length !== 1 || added[0].owner !== operation.target || removed.length !== 0)) ||
       (operation?.operation === 'close' &&
-        (added.length !== 0 || removed.length !== 1 || removed[0] !== operation.target)) ||
+        (added.length !== 0 || removed.length !== 1 || removed[0].owner !== operation.target)) ||
       (!['open', 'close'].includes(operation?.operation) &&
         (added.length !== 0 || removed.length !== 0))
     ) {
       return false;
     }
-    previousOwners = currentOwners;
+    previousClaims = currentClaims;
   }
   return true;
 }
@@ -1855,26 +1976,59 @@ function resourceEntriesReleased(trace, key, matches) {
       .filter(matches)
       .map(({ id }) => id),
   );
+  const finalSnapshot = trace.at(-1)?.snapshot;
+  if (seen.size === 0 || resourceEntries(finalSnapshot, key).some(matches)) return false;
+  const lifecycleKey =
+    key === 'listenerEntries'
+      ? 'listenerLifecycles'
+      : key === 'timerEntries'
+        ? 'timerLifecycles'
+        : undefined;
+  if (lifecycleKey === undefined) return true;
+  const matchingLifecycles = resourceEntries(finalSnapshot, lifecycleKey).filter(matches);
   return (
-    seen.size > 0 &&
-    resourceEntries(trace.at(-1)?.snapshot, key).every(
-      (entry) => !seen.has(entry.id) || !matches(entry),
+    matchingLifecycles.length > 0 &&
+    matchingLifecycles.every(
+      ({ acquiredPhase, releaseCount, releasedPhase }) =>
+        acquiredPhase !== 'cleanup' && releaseCount === 1 && typeof releasedPhase === 'string',
     )
   );
 }
 
 function resourceCountReleased(trace, target) {
-  const before = trace.slice(0, -1).map(({ snapshot }) => measuredResourceCount(snapshot, target));
-  return (
-    before.some((count) => count > 0) && measuredResourceCount(trace.at(-1)?.snapshot, target) === 0
-  );
+  const observations = trace.map((entry) => ({
+    count: measuredResourceCount(entry.snapshot, target),
+    operation: entry.operation?.operation,
+    phase: entry.phase,
+  }));
+  if (observations.some(({ count }) => count === undefined)) return false;
+  let acquired = observations[0].count;
+  let released = 0;
+  for (let index = 1; index < observations.length; index += 1) {
+    const current = observations[index];
+    const delta = current.count - observations[index - 1].count;
+    if (delta > 0) {
+      if (current.phase !== 'after-operation' || current.operation !== 'open') return false;
+      acquired += delta;
+    } else if (delta < 0) {
+      if (
+        current.phase !== 'after-cleanup' &&
+        (current.phase !== 'after-operation' || !['close', 'destroy'].includes(current.operation))
+      ) {
+        return false;
+      }
+      released -= delta;
+    }
+  }
+  return acquired > 0 && observations.at(-1).count === 0 && released === acquired;
 }
 
-function focusListener(entry) {
-  return (
-    entry.classification === 'focus' &&
-    (/modal/iu.test(entry.owner) || ['document', 'window'].includes(entry.owner))
-  );
+function listenerOwnedByModal(entry) {
+  return /modal/iu.test(entry.owner) || ['document', 'window'].includes(entry.owner);
+}
+
+function listenerOfPurpose(purpose) {
+  return (entry) => entry.classification === purpose && listenerOwnedByModal(entry);
 }
 
 function allMeasuredResourcesReleased(snapshot) {
@@ -1923,15 +2077,15 @@ function cleanupProbeFact(probe, document, snapshot, action, trace) {
   } else if (probe.target === 'background-accessibility-branch' && probe.property === 'restored') {
     if (backgroundRestored) return 'background-accessibility-branch-restored';
   } else if (probe.target === 'focus-loop-listener' && probe.property === 'released') {
-    if (resourceEntriesReleased(trace, 'listenerEntries', focusListener)) {
+    if (resourceEntriesReleased(trace, 'listenerEntries', listenerOfPurpose('focus-loop'))) {
       return 'focus-loop-listener-released';
     }
   } else if (probe.target === 'focus-recovery-listener' && probe.property === 'released') {
-    if (resourceEntriesReleased(trace, 'listenerEntries', focusListener)) {
+    if (resourceEntriesReleased(trace, 'listenerEntries', listenerOfPurpose('focus-restore'))) {
       return 'focus-recovery-listener-released';
     }
   } else if (probe.target === 'restoration-guard' && probe.property === 'released') {
-    if (resourceEntriesReleased(trace, 'listenerEntries', focusListener)) {
+    if (resourceEntriesReleased(trace, 'listenerEntries', listenerOfPurpose('focus-restore'))) {
       return 'restoration-guard-released';
     }
   } else if (probe.target === 'pointer-sequence-guard' && probe.property === 'released') {
@@ -1954,7 +2108,7 @@ function cleanupProbeFact(probe, document, snapshot, action, trace) {
       rootUnmounted &&
       guards.length === 0 &&
       (resourceCountReleased(trace, 'modal-guards') ||
-        resourceEntriesReleased(trace, 'listenerEntries', focusListener))
+        resourceEntriesReleased(trace, 'listenerEntries', listenerOfPurpose('focus-restore')))
     ) {
       if (probe.target === 'initial-focus-guard') return 'initial-focus-guard-released';
       if (probe.target === 'validation-focus-guard') return 'validation-focus-guard-released';
@@ -2051,7 +2205,10 @@ function cleanupProbeFact(probe, document, snapshot, action, trace) {
       return 'page-scroll-resumed';
     }
   } else if (probe.property === 'released-once') {
-    if (probe.target === 'listeners' && resourceCountReleased(trace, 'modal-listeners')) {
+    if (
+      probe.target === 'listeners' &&
+      resourceEntriesReleased(trace, 'listenerEntries', () => true)
+    ) {
       return 'listeners-released-once';
     }
     if (probe.target === 'inert' && resourceCountReleased(trace, 'background-inert-claim')) {
@@ -2060,7 +2217,7 @@ function cleanupProbeFact(probe, document, snapshot, action, trace) {
     if (probe.target === 'scroll' && resourceCountReleased(trace, 'page-scroll-claim')) {
       return 'scroll-released-once';
     }
-    if (probe.target === 'timers' && resourceCountReleased(trace, 'modal-timers')) {
+    if (probe.target === 'timers' && resourceEntriesReleased(trace, 'timerEntries', () => true)) {
       return 'timers-released-once';
     }
     if (probe.target === 'guards' && resourceCountReleased(trace, 'modal-guards')) {
@@ -2276,9 +2433,15 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
             listenerEntries: Array.isArray(resourceSnapshot.listenerEntries)
               ? structuredClone(resourceSnapshot.listenerEntries)
               : [],
+            listenerLifecycles: Array.isArray(resourceSnapshot.listenerLifecycles)
+              ? structuredClone(resourceSnapshot.listenerLifecycles)
+              : [],
             listeners: resourceSnapshot.listeners,
             timerEntries: Array.isArray(resourceSnapshot.timerEntries)
               ? structuredClone(resourceSnapshot.timerEntries)
+              : [],
+            timerLifecycles: Array.isArray(resourceSnapshot.timerLifecycles)
+              ? structuredClone(resourceSnapshot.timerLifecycles)
               : [],
             timers: resourceSnapshot.timers,
           },
@@ -2372,11 +2535,20 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
   };
   trace.push({ phase: 'before-operations', snapshot: captureSnapshot('before-operations') });
   for (const [operationIndex, operation] of request.scenario.operations.entries()) {
-    const action = await driveBrowserOperation({
-      document,
-      operation,
-      synthesizeHover: input.synthesizeHover,
-    });
+    const resourceTracker = document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__;
+    const executeOperation = () =>
+      driveBrowserOperation({
+        document,
+        operation,
+        synthesizeHover: input.synthesizeHover,
+      });
+    const action =
+      typeof resourceTracker?.runInPhase === 'function'
+        ? await resourceTracker.runInPhase(
+            { owner: operation.target, phase: 'operation' },
+            executeOperation,
+          )
+        : await executeOperation();
     actions.push(action);
     trace.push({
       phase: 'after-operation',
@@ -2538,10 +2710,25 @@ export async function mountModalFixtureClient({
     hydrationConsoleRestored = true;
   };
   let root;
-  if (renderMode === 'hydrateRoot') root = hydrateRoot(container, element);
-  else {
-    root = createRoot(container);
-    root.render(element);
+  const createReactRoot = () =>
+    renderMode === 'hydrateRoot' ? hydrateRoot(container, element) : createRoot(container);
+  root =
+    typeof resourceTracker?.capturePersistentListeners === 'function'
+      ? resourceTracker.capturePersistentListeners(
+          { owner: 'react-delegated-root', target: container },
+          createReactRoot,
+        )
+      : createReactRoot();
+  if (renderMode !== 'hydrateRoot') {
+    const render = () => root.render(element);
+    if (typeof resourceTracker?.capturePersistentListeners === 'function') {
+      resourceTracker.capturePersistentListeners(
+        { owner: 'react-delegated-root', target: container },
+        render,
+      );
+    } else {
+      render();
+    }
   }
   let cleaned = false;
   let cleanupOutput;
@@ -2654,16 +2841,26 @@ export async function mountModalFixtureClient({
       }
       restoreHydrationConsole();
       const fixture = await ready.promise;
-      let result;
-      if (typeof fixture.cleanup === 'function') result = cleanupResult(await fixture.cleanup());
-      else if (fixture.isDestroyed?.() === true) result = { status: 'already-destroyed' };
-      else if (fixture.destroy?.() === true) result = { status: 'destroyed' };
-      else throw new Error('modal fixture cleanup result is uncertain');
-      if (typeof root?.unmount !== 'function') {
-        throw new Error('modal fixture root cleanup is unavailable');
-      }
-      root.unmount();
-      await settleBrowserWork();
+      const performCleanup = async () => {
+        let result;
+        if (typeof fixture.cleanup === 'function') result = cleanupResult(await fixture.cleanup());
+        else if (fixture.isDestroyed?.() === true) result = { status: 'already-destroyed' };
+        else if (fixture.destroy?.() === true) result = { status: 'destroyed' };
+        else throw new Error('modal fixture cleanup result is uncertain');
+        if (typeof root?.unmount !== 'function') {
+          throw new Error('modal fixture root cleanup is unavailable');
+        }
+        root.unmount();
+        await settleBrowserWork();
+        return result;
+      };
+      const result =
+        typeof resourceTracker?.runInPhase === 'function'
+          ? await resourceTracker.runInPhase(
+              { owner: 'fixture-cleanup', phase: 'cleanup' },
+              performCleanup,
+            )
+          : await performCleanup();
       const rootUnmounted = container.hasChildNodes() === false;
       if (!rootUnmounted) throw new Error('modal fixture root cleanup is uncertain');
       const observation =

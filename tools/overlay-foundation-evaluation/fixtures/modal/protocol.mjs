@@ -197,7 +197,15 @@ function validateSnapshot(snapshot, path, errors) {
     } else {
       rejectUnknownKeys(
         snapshot.resources,
-        ['claims', 'listenerEntries', 'listeners', 'timerEntries', 'timers'],
+        [
+          'claims',
+          'listenerEntries',
+          'listenerLifecycles',
+          'listeners',
+          'timerEntries',
+          'timerLifecycles',
+          'timers',
+        ],
         `${path}.resources`,
         errors,
       );
@@ -255,13 +263,73 @@ function validateSnapshot(snapshot, path, errors) {
               errors.push(`${entryPath}.id must be unique`);
             }
             ids.add(entry.id);
-            if (!['focus', 'pointer', 'other'].includes(entry.classification)) {
+            if (
+              !['dismiss', 'focus-loop', 'focus-restore', 'pointer', 'other'].includes(
+                entry.classification,
+              )
+            ) {
               errors.push(`${entryPath}.classification is invalid`);
             }
             for (const key of ['owner', 'target', 'type']) {
               if (typeof entry[key] !== 'string' || entry[key].length === 0) {
                 errors.push(`${entryPath}.${key} must be a non-empty string`);
               }
+            }
+          });
+        }
+      }
+      if (snapshot.resources.listenerLifecycles !== undefined) {
+        if (!Array.isArray(snapshot.resources.listenerLifecycles)) {
+          errors.push(`${path}.resources.listenerLifecycles must be an array`);
+        } else {
+          const ids = new Set();
+          snapshot.resources.listenerLifecycles.forEach((entry, index) => {
+            const entryPath = `${path}.resources.listenerLifecycles[${index}]`;
+            if (!isPlainRecord(entry)) {
+              errors.push(`${entryPath} must be a plain record`);
+              return;
+            }
+            rejectUnknownKeys(
+              entry,
+              [
+                'acquiredPhase',
+                'classification',
+                'id',
+                'owner',
+                'releaseCount',
+                'releasedPhase',
+                'target',
+                'type',
+              ],
+              entryPath,
+              errors,
+            );
+            if (!Number.isSafeInteger(entry.id) || entry.id < 1) {
+              errors.push(`${entryPath}.id must be a positive safe integer`);
+            } else if (ids.has(entry.id)) {
+              errors.push(`${entryPath}.id must be unique`);
+            }
+            ids.add(entry.id);
+            if (
+              !['dismiss', 'focus-loop', 'focus-restore', 'pointer', 'other'].includes(
+                entry.classification,
+              )
+            ) {
+              errors.push(`${entryPath}.classification is invalid`);
+            }
+            for (const key of ['acquiredPhase', 'owner', 'target', 'type']) {
+              if (typeof entry[key] !== 'string' || entry[key].length === 0) {
+                errors.push(`${entryPath}.${key} must be a non-empty string`);
+              }
+            }
+            if (!Number.isSafeInteger(entry.releaseCount) || entry.releaseCount < 0) {
+              errors.push(`${entryPath}.releaseCount must be a non-negative safe integer`);
+            }
+            if (
+              entry.releasedPhase !== undefined &&
+              (typeof entry.releasedPhase !== 'string' || entry.releasedPhase.length === 0)
+            ) {
+              errors.push(`${entryPath}.releasedPhase must be a non-empty string when present`);
             }
           });
         }
@@ -277,7 +345,7 @@ function validateSnapshot(snapshot, path, errors) {
               errors.push(`${entryPath} must be a plain record`);
               return;
             }
-            rejectUnknownKeys(entry, ['id', 'kind'], entryPath, errors);
+            rejectUnknownKeys(entry, ['acquiredPhase', 'id', 'kind', 'owner'], entryPath, errors);
             if (!Number.isSafeInteger(entry.id) || entry.id < 1) {
               errors.push(`${entryPath}.id must be a positive safe integer`);
             } else if (ids.has(entry.id)) {
@@ -286,6 +354,54 @@ function validateSnapshot(snapshot, path, errors) {
             ids.add(entry.id);
             if (!['interval', 'timeout'].includes(entry.kind)) {
               errors.push(`${entryPath}.kind is invalid`);
+            }
+            for (const key of ['acquiredPhase', 'owner']) {
+              if (typeof entry[key] !== 'string' || entry[key].length === 0) {
+                errors.push(`${entryPath}.${key} must be a non-empty string`);
+              }
+            }
+          });
+        }
+      }
+      if (snapshot.resources.timerLifecycles !== undefined) {
+        if (!Array.isArray(snapshot.resources.timerLifecycles)) {
+          errors.push(`${path}.resources.timerLifecycles must be an array`);
+        } else {
+          const ids = new Set();
+          snapshot.resources.timerLifecycles.forEach((entry, index) => {
+            const entryPath = `${path}.resources.timerLifecycles[${index}]`;
+            if (!isPlainRecord(entry)) {
+              errors.push(`${entryPath} must be a plain record`);
+              return;
+            }
+            rejectUnknownKeys(
+              entry,
+              ['acquiredPhase', 'id', 'kind', 'owner', 'releaseCount', 'releasedPhase'],
+              entryPath,
+              errors,
+            );
+            if (!Number.isSafeInteger(entry.id) || entry.id < 1) {
+              errors.push(`${entryPath}.id must be a positive safe integer`);
+            } else if (ids.has(entry.id)) {
+              errors.push(`${entryPath}.id must be unique`);
+            }
+            ids.add(entry.id);
+            if (!['interval', 'timeout'].includes(entry.kind)) {
+              errors.push(`${entryPath}.kind is invalid`);
+            }
+            for (const key of ['acquiredPhase', 'owner']) {
+              if (typeof entry[key] !== 'string' || entry[key].length === 0) {
+                errors.push(`${entryPath}.${key} must be a non-empty string`);
+              }
+            }
+            if (!Number.isSafeInteger(entry.releaseCount) || entry.releaseCount < 0) {
+              errors.push(`${entryPath}.releaseCount must be a non-negative safe integer`);
+            }
+            if (
+              entry.releasedPhase !== undefined &&
+              (typeof entry.releasedPhase !== 'string' || entry.releasedPhase.length === 0)
+            ) {
+              errors.push(`${entryPath}.releasedPhase must be a non-empty string when present`);
             }
           });
         }
