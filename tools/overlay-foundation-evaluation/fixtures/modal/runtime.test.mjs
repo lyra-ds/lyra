@@ -68,6 +68,9 @@ function fakeElement(attributes = {}, options = {}) {
     setAttribute(name, value) {
       values.set(name, String(value));
     },
+    removeAttribute(name) {
+      values.delete(name);
+    },
     ...(options.onFocus === undefined
       ? {}
       : {
@@ -85,20 +88,30 @@ function fakeElement(attributes = {}, options = {}) {
 function behaviorBrowserHarness(
   scenario,
   {
+    accessibleName = 'Behavior workspace',
+    ariaModal = 'true',
+    descriptionId = 'behavior-description',
     ignoreOpen = false,
     ignoreOpenFocus = false,
     ignorePointerClose = false,
+    layoutShiftOnFinalClose = 0,
     missingControl,
     missingControlledCommit = false,
     missingHydrationInput = false,
     noWrap = false,
+    pageScrollChanges = false,
     portalLeak = false,
     resourceSnapshot,
+    semanticContradiction = false,
+    semanticEventContradiction = false,
+    stuckScrollLock = false,
+    titleId = 'behavior-title',
   } = {},
 ) {
   const actions = [];
   const events = [];
   const body = fakeElement({ 'data-modal-id': 'document-body' });
+  body.style = { overflow: '' };
   const opener = fakeElement({
     'data-fixture-control': 'opener',
     'data-modal-id': 'modal-opener',
@@ -113,7 +126,24 @@ function behaviorBrowserHarness(
   const disabledTarget = fakeElement({ 'data-modal-id': 'disabled-tab-target' });
   const removedTarget = fakeElement({ 'data-modal-id': 'removed-tab-target' });
   const childTarget = fakeElement({ 'data-modal-id': 'child-modal-safe-target' });
-  const pageScrollTarget = fakeElement({ 'data-modal-id': 'page-scroll-surface' });
+  let layoutLeft = 0;
+  let scrollY = 0;
+  const pageScrollTarget = fakeElement(
+    { 'data-modal-id': 'page-scroll-surface' },
+    {
+      onEvent(event) {
+        if (event.type === 'pointerup' && pageScrollChanges) scrollY += 12;
+      },
+    },
+  );
+  pageScrollTarget.getBoundingClientRect = () => ({
+    bottom: 100,
+    height: 100,
+    left: layoutLeft,
+    right: layoutLeft + 100,
+    top: 0,
+    width: 100,
+  });
   const preventedOutsideTarget = fakeElement(
     { 'data-modal-id': 'outside-prevented-default' },
     {
@@ -123,19 +153,24 @@ function behaviorBrowserHarness(
       },
     },
   );
-  const title = fakeElement({ id: 'behavior-title' }, { textContent: 'Behavior workspace' });
-  const description = fakeElement(
-    { id: 'behavior-description' },
-    { textContent: 'Behavior description' },
-  );
+  const background = fakeElement({ 'data-modal-id': 'background' });
+  const title = fakeElement({ id: titleId }, { textContent: accessibleName });
+  const description = fakeElement({ id: descriptionId }, { textContent: 'Behavior description' });
   const panel = fakeElement({
     role: 'dialog',
     'data-modal-id': 'modal-panel',
     'data-modal-panel': '',
     'data-modal-portal': '',
-    'aria-labelledby': 'behavior-title',
-    'aria-describedby': 'behavior-description',
-    'aria-modal': 'true',
+    'aria-labelledby': titleId,
+    'aria-describedby': descriptionId,
+    'aria-modal': ariaModal,
+  });
+  const contradictoryPanel = fakeElement({
+    role: 'dialog',
+    'data-modal-id': 'modal-panel',
+    'aria-labelledby': titleId,
+    'aria-describedby': descriptionId,
+    'aria-modal': ariaModal === 'true' ? 'false' : 'true',
   });
   const childPanel = fakeElement({
     role: 'dialog',
@@ -191,9 +226,16 @@ function behaviorBrowserHarness(
       return;
     }
     open = true;
+    body.style.overflow = 'hidden';
+    background.inert = true;
+    background.setAttribute('inert', '');
+    background.setAttribute('aria-hidden', 'true');
     if (!ignoreOpenFocus) focus(safeTarget);
     events.push({ target: 'modal-panel', type: 'opened' });
-    live.textContent = 'Behavior workspace dialog opened';
+    if (semanticEventContradiction) {
+      events.push({ target: 'modal-panel', type: 'closed' });
+    }
+    live.textContent = `${accessibleName} dialog opened`;
   };
   const closeDialog = (type = 'closed', target = 'modal-panel') => {
     if (/child|second/iu.test(target)) {
@@ -204,9 +246,14 @@ function behaviorBrowserHarness(
     }
     open = false;
     nestedOpen = false;
+    if (!stuckScrollLock) body.style.overflow = '';
+    layoutLeft = layoutShiftOnFinalClose;
+    background.inert = false;
+    background.removeAttribute('inert');
+    background.removeAttribute('aria-hidden');
     focus(opener);
     events.push({ target: 'modal-panel', type });
-    live.textContent = 'Behavior workspace dialog closed';
+    live.textContent = `${accessibleName} dialog closed`;
   };
   safeTarget.dispatchEvent = (event) => {
     actions.push({ type: event.type, target: 'modal-safe-target', key: event.key });
@@ -279,8 +326,10 @@ function behaviorBrowserHarness(
           } else if (operation === 'destroy') {
             open = false;
             nestedOpen = false;
+            body.style.overflow = '';
             focus(opener);
             events.push({ target, type: 'destroyed-once' });
+            live.textContent = 'Disposable workspace dialog removed';
           }
           complete(control);
           if (event?.type === 'keydown' && target === 'tab-from-last-target' && noWrap) {
@@ -320,6 +369,12 @@ function behaviorBrowserHarness(
     },
     documentElement: { dataset: {}, dir: '' },
     defaultView: {
+      get scrollX() {
+        return 0;
+      },
+      get scrollY() {
+        return scrollY;
+      },
       ...(resourceSnapshot === undefined
         ? {}
         : {
@@ -340,7 +395,7 @@ function behaviorBrowserHarness(
       },
     },
     getElementById(id) {
-      return { 'behavior-title': title, 'behavior-description': description }[id] ?? null;
+      return { [titleId]: title, [descriptionId]: description }[id] ?? null;
     },
     querySelector(selector) {
       const operation = /data-modal-operation="([^"]+)"/u.exec(selector)?.[1];
@@ -352,6 +407,7 @@ function behaviorBrowserHarness(
       if (selector === '[data-fixture-control="opener"]') return opener;
       if (selector === '[data-fixture-part="backdrop"]') return backdrop;
       if (selector === '[data-modal-panel]') return nestedOpen ? childPanel : open ? panel : null;
+      if (selector === '[data-modal-id="background"]') return background;
       if (selector === '[data-modal-id="child-modal-safe-target"]') return childTarget;
       if (selector === '[data-modal-id="outside-prevented-default"]') {
         return preventedOutsideTarget;
@@ -374,10 +430,15 @@ function behaviorBrowserHarness(
         return [...(open ? [panel] : []), ...(nestedOpen ? [childPanel] : [])];
       }
       if (selector === '[role="dialog"], [role="alertdialog"]') {
-        return [...(open ? [panel] : []), ...(nestedOpen ? [childPanel] : [])];
+        return [
+          ...(open ? [panel] : []),
+          ...(open && semanticContradiction ? [contradictoryPanel] : []),
+          ...(nestedOpen ? [childPanel] : []),
+        ];
       }
       if (selector === '[data-modal-id]') {
         return [
+          background,
           opener,
           safeTarget,
           firstTarget,
@@ -393,6 +454,7 @@ function behaviorBrowserHarness(
           preventedOutsideTarget,
           backdrop,
           ...(open || portalLeak ? [panel] : []),
+          ...(open && semanticContradiction ? [contradictoryPanel] : []),
           ...(nestedOpen ? [childPanel] : []),
         ];
       }
@@ -409,6 +471,9 @@ function behaviorBrowserHarness(
       destroyed = true;
       open = portalLeak;
       nestedOpen = false;
+      background.inert = false;
+      background.removeAttribute('inert');
+      background.removeAttribute('aria-hidden');
       return { status: 'destroyed' };
     },
     destroy() {
@@ -549,7 +614,11 @@ test('derives SSR semantics from actual rendered markup without reading expected
       cleanup: ['no-browser-resource-claims'],
     },
   );
-  assert.deepEqual(observation.trace, [
+  const traceWithoutProbes = observation.trace.map(({ snapshot, ...entry }) => {
+    const { probes, ...facts } = snapshot;
+    return { ...entry, snapshot: facts };
+  });
+  assert.deepEqual(traceWithoutProbes, [
     {
       phase: 'server-render',
       snapshot: {
@@ -562,10 +631,36 @@ test('derives SSR semantics from actual rendered markup without reading expected
       },
     },
   ]);
+  assert.equal(observation.trace[0].snapshot.probes.length, request.scenario.probes.length);
   assert.deepEqual(observation.diagnostics, {
     cleanupObserved: true,
     executionCompleted: true,
   });
+});
+
+test('derives SSR browser-global and resource facts from the actual execution environment', async () => {
+  const { observeModalSsrMarkup } = await import('./runtime.mjs');
+  const request = structuredClone(validRequest);
+  request.scenario = modalExecutionScenario(
+    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.ssr-open-semantics.v1')),
+  );
+  request.cell.id = 'ssr';
+  const previousDocument = globalThis.document;
+  try {
+    globalThis.document = { activeElement: {} };
+    const observation = observeModalSsrMarkup({
+      request,
+      html: '<section role="dialog" data-modal-id="server-rendered-modal" aria-labelledby="server-modal-title"><h2 id="server-modal-title">Server workspace</h2></section>',
+    });
+    assert.deepEqual(
+      observation.states.find(({ target }) => target === 'browser-globals'),
+      { target: 'browser-globals', name: 'accessed', value: true },
+    );
+    assert.equal(observation.cleanup.includes('no-browser-resource-claims'), false);
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else globalThis.document = previousDocument;
+  }
 });
 
 test('tracks actual browser listeners and timers without claimed release markers', () => {
@@ -574,12 +669,41 @@ test('tracks actual browser listeners and timers without claimed release markers
   class FakeEventTarget {
     listeners = [];
     addEventListener(type, listener, options) {
+      if (options?.signal?.aborted === true) return;
       this.listeners.push({ type, listener, options });
+      if (options?.signal !== undefined) {
+        options.signal.listeners.push({
+          type: 'abort',
+          listener: () => {
+            this.listeners = this.listeners.filter(
+              (entry) => entry.type !== type || entry.listener !== listener,
+            );
+          },
+          options: { once: true },
+        });
+      }
     }
     removeEventListener(type, listener) {
       this.listeners = this.listeners.filter(
         (entry) => entry.type !== type || entry.listener !== listener,
       );
+    }
+    dispatchEvent(event) {
+      const matching = this.listeners.filter(({ type }) => type === event.type);
+      for (const entry of matching) {
+        if (typeof entry.listener === 'function') entry.listener.call(this, event);
+        else entry.listener.handleEvent(event);
+        if (entry.options?.once === true) {
+          this.listeners = this.listeners.filter((candidate) => candidate !== entry);
+        }
+      }
+    }
+  }
+  class FakeAbortSignal extends FakeEventTarget {
+    aborted = false;
+    abort() {
+      this.aborted = true;
+      this.dispatchEvent({ type: 'abort' });
     }
   }
   const scope = {
@@ -611,6 +735,17 @@ test('tracks actual browser listeners and timers without claimed release markers
   target.removeEventListener('keydown', listener);
   scope.clearTimeout(timeout);
   scope.clearInterval(interval);
+  assert.deepEqual(tracker.snapshot(), { listeners: 0, timers: 0 });
+
+  target.addEventListener('focusin', listener, { once: true });
+  assert.deepEqual(tracker.snapshot(), { listeners: 1, timers: 0 });
+  target.dispatchEvent({ type: 'focusin' });
+  assert.deepEqual(tracker.snapshot(), { listeners: 0, timers: 0 });
+
+  const signal = new FakeAbortSignal();
+  target.addEventListener('pointerdown', listener, { signal });
+  assert.deepEqual(tracker.snapshot(), { listeners: 1, timers: 0 });
+  signal.abort();
   assert.deepEqual(tracker.snapshot(), { listeners: 0, timers: 0 });
   tracker.restore();
 });
@@ -743,6 +878,7 @@ test('captures hydration stability from the server tree before hydrateRoot and f
     MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.hydration-stability.v1')),
   );
   scenario.operations = [{ operation: 'open', target: 'server-rendered-modal' }];
+  delete scenario.probes;
   const request = requestFor(scenario);
   request.cell.id = 'hydration';
   const harness = behaviorBrowserHarness(scenario);
@@ -779,8 +915,105 @@ test('captures hydration stability from the server tree before hydrateRoot and f
     generatedIdentifiersStable: true,
     inputValuesAfter: ['Workspace draft'],
     inputValuesBefore: ['Workspace draft'],
+    modalIdentityStable: false,
+    preHydrationFocus: 'document-body',
+    recoveryPerformed: false,
     warningCount: 0,
   });
+});
+
+test('binds hydration probes to the measured first client tree instead of a success default', async () => {
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.hydration-stability.v1'),
+  );
+  const request = requestFor(scenario);
+  request.cell.id = 'hydration';
+  const harness = behaviorBrowserHarness(scenario);
+  harness.setRootHasChildren(true);
+  const mounted = await (
+    await import('./runtime.mjs')
+  ).mountModalFixtureClient({
+    React: {
+      createElement(_type, props) {
+        return { props };
+      },
+    },
+    createModalCandidate: async () => ({ ModalFixture() {} }),
+    createRoot() {
+      throw new Error('unexpected createRoot');
+    },
+    document: harness.document,
+    hydrateRoot(_target, element) {
+      harness.setHydrationMarkup('<input id="changed-input" value="changed">');
+      element.props.onReady(harness.fixture);
+      return { unmount: () => harness.setRootHasChildren(false) };
+    },
+    request,
+  });
+  const observation = await mounted.runScenario({
+    scenario: request.scenario,
+    cell: request.cell,
+    hydrate: true,
+    synthesizeHover: false,
+  });
+  const operationZero = observation.trace.find(
+    ({ operationIndex, phase }) => phase === 'after-operation' && operationIndex === 0,
+  );
+  const fact = (target, property) => {
+    const probe = scenario.probes.find(
+      (entry) =>
+        entry.category === 'states' && entry.target === target && entry.property === property,
+    );
+    return operationZero.snapshot.probes.find(({ id }) => id === probe.id).fact;
+  };
+  assert.deepEqual(fact('first-tree', 'identical'), {
+    target: 'first-tree',
+    name: 'identical',
+    value: false,
+  });
+  assert.deepEqual(fact('hydration-recovery', 'performed'), {
+    target: 'hydration-recovery',
+    name: 'performed',
+    value: true,
+  });
+  await mounted.cleanup();
+});
+
+test('derives layout, scroll-position, and scroll-resume probes from browser measurements', async () => {
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.scroll-lock-reference-count.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, {
+    layoutShiftOnFinalClose: 8,
+    pageScrollChanges: true,
+    stuckScrollLock: true,
+  });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  const probeFact = (target, property) => {
+    const probe = scenario.probes.find(
+      (entry) => entry.target === target && entry.property === property,
+    );
+    return observation.trace
+      .flatMap(({ snapshot }) => snapshot.probes ?? [])
+      .find(({ id }) => id === probe.id).fact;
+  };
+  assert.deepEqual(probeFact('page-layout', 'shift'), {
+    target: 'page-layout',
+    name: 'shift',
+    value: 8,
+  });
+  assert.deepEqual(probeFact('page-scroll-position', 'changed'), {
+    target: 'page-scroll-position',
+    name: 'changed',
+    value: true,
+  });
+  assert.notEqual(probeFact('page-scroll', 'resumed'), 'page-scroll-resumed');
 });
 
 test('captures a factual snapshot after every completed browser operation', async () => {
@@ -790,6 +1023,7 @@ test('captures a factual snapshot after every completed browser operation', asyn
     { operation: 'close', target: 'modal-panel' },
     { operation: 'open', target: 'modal-opener' },
   ];
+  delete scenario.probes;
   const request = requestFor(scenario);
   const harness = behaviorBrowserHarness(scenario);
   const observation = await executeModalBrowserScenario({
@@ -825,6 +1059,7 @@ test('fails closed when a neutral control is missing and does not execute later 
     { operation: 'close', target: 'modal-panel' },
     { operation: 'open', target: 'modal-opener' },
   ];
+  delete scenario.probes;
   const request = requestFor(scenario);
   const harness = behaviorBrowserHarness(scenario, { missingControl: 'close:modal-panel' });
   const observation = await executeModalBrowserScenario({
@@ -850,6 +1085,7 @@ test('fails closed when the real hydrated interaction target is missing', async 
     MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.hydration-stability.v1')),
   );
   scenario.operations = [{ operation: 'press', target: 'hydrated-input' }];
+  delete scenario.probes;
   const request = requestFor(scenario);
   const harness = behaviorBrowserHarness(scenario, { missingHydrationInput: true });
   const observation = await executeModalBrowserScenario({
@@ -873,6 +1109,7 @@ test('disconnects the real scenario opener without deleting the generic fixture 
     { operation: 'open', target: 'connected-opener' },
     { operation: 'updateContent', target: 'disconnect-opener' },
   ];
+  delete scenario.probes;
   const request = requestFor(scenario);
   const harness = behaviorBrowserHarness(scenario);
   const observation = await executeModalBrowserScenario({
@@ -892,6 +1129,7 @@ test('never removes the document body when candidate focus did not enter the mod
     { operation: 'open', target: 'modal-opener' },
     { operation: 'updateContent', target: 'remove-focused-target' },
   ];
+  delete scenario.probes;
   const request = requestFor(scenario);
   const harness = behaviorBrowserHarness(scenario, { ignoreOpenFocus: true });
   const observation = await executeModalBrowserScenario({
@@ -993,6 +1231,7 @@ test('semantic, wrap, pointer-origin, and controlled-commit faults change factua
   for (const { name, operations, fault } of cases) {
     const scenario = structuredClone(MODAL_SCENARIOS[0]);
     scenario.operations = operations;
+    delete scenario.probes;
     if (operations.some(({ target }) => target === 'controlled-modal')) {
       scenario.initial.state.controlled = true;
     }
@@ -1011,11 +1250,13 @@ test('returns cleanup evidence only after root unmount and actual resource relea
   const scenario = structuredClone(
     MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.unmount-cleanup.v1')),
   );
-  scenario.operations = [{ operation: 'open', target: 'open-phase-modal' }];
   const request = requestFor(scenario);
   const resources = { listeners: 2, timers: 1 };
   const harness = behaviorBrowserHarness(scenario, {
+    accessibleName: 'Disposable workspace',
+    descriptionId: 'modal-description',
     resourceSnapshot: () => resources,
+    titleId: 'modal-title',
   });
   const mounted = await (
     await import('./runtime.mjs')
@@ -1055,13 +1296,91 @@ test('returns cleanup evidence only after root unmount and actual resource relea
   const cleanup = result.observation.trace.at(-1);
   assert.equal(cleanup.phase, 'after-cleanup');
   assert.deepEqual(cleanup.snapshot.resources, { listeners: 0, timers: 0 });
+  assert.deepEqual(
+    result.observation.states.filter(({ name }) => name === 'remaining-count'),
+    [
+      { target: 'modal-listeners', name: 'remaining-count', value: 0 },
+      { target: 'background-inert-claim', name: 'remaining-count', value: 0 },
+      { target: 'page-scroll-claim', name: 'remaining-count', value: 0 },
+      { target: 'modal-timers', name: 'remaining-count', value: 0 },
+      { target: 'modal-guards', name: 'remaining-count', value: 0 },
+      { target: 'modal-portals', name: 'remaining-count', value: 0 },
+    ],
+  );
+  assert.deepEqual(result.observation.cleanup, [
+    'listeners-released-once',
+    'inert-released-once',
+    'scroll-released-once',
+    'timers-released-once',
+    'guards-released-once',
+    'portal-released-once',
+  ]);
+  const { evaluateModalScenario } = await import('../../runner/modal.mjs');
   assert.equal(
-    cleanup.snapshot.states.some(
-      ({ target, name, value }) =>
-        target === 'modal-listeners' && name === 'remaining-count' && value === 0,
-    ),
+    evaluateModalScenario({
+      cellId: request.cell.id,
+      scenario,
+      observations: [{ reactVersion: request.cell.reactVersion, observation: result.observation }],
+    }),
     true,
   );
+});
+
+test('feeds actual fake-candidate execution and cleanup into the production runner verdict', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const { evaluateModalScenario } = await import('../../runner/modal.mjs');
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.semantics-isolation.v1'),
+  );
+  const execute = async (options = {}) => {
+    const request = requestFor(scenario);
+    const harness = behaviorBrowserHarness(scenario, {
+      accessibleName: 'Workspace details',
+      descriptionId: 'modal-description',
+      titleId: 'modal-title',
+      ...options,
+    });
+    const mounted = await mountModalFixtureClient({
+      React: {
+        createElement(_type, props) {
+          return { props };
+        },
+      },
+      createModalCandidate: async () => ({ ModalFixture() {} }),
+      createRoot: () => ({
+        render(element) {
+          harness.setRootHasChildren(true);
+          element.props.onReady(harness.fixture);
+        },
+        unmount() {
+          harness.setRootHasChildren(false);
+        },
+      }),
+      document: harness.document,
+      hydrateRoot() {
+        throw new Error('unexpected hydration');
+      },
+      request,
+    });
+    await mounted.runScenario({
+      scenario: request.scenario,
+      cell: request.cell,
+      hydrate: false,
+      synthesizeHover: false,
+    });
+    const observation = (await mounted.cleanup()).observation;
+    return evaluateModalScenario({
+      cellId: 'chromium',
+      scenario,
+      observations: [{ reactVersion: '19.2.8', observation }],
+    });
+  };
+
+  assert.equal(await execute(), true);
+  assert.equal(await execute({ ariaModal: 'false' }), false);
+  assert.equal(await execute({ ignoreOpenFocus: true }), false);
+  assert.equal(await execute({ semanticContradiction: true }), false);
+  assert.equal(await execute({ semanticEventContradiction: true }), false);
 });
 
 test('portal, listener, and timer leaks change the post-cleanup factual trace', async () => {
@@ -1069,7 +1388,6 @@ test('portal, listener, and timer leaks change the post-cleanup factual trace', 
     const scenario = structuredClone(
       MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.unmount-cleanup.v1')),
     );
-    scenario.operations = [{ operation: 'open', target: 'open-phase-modal' }];
     const request = requestFor(scenario);
     const resources = { listeners: 2, timers: 1 };
     const harness = behaviorBrowserHarness(scenario, {
@@ -1115,10 +1433,18 @@ test('portal, listener, and timer leaks change the post-cleanup factual trace', 
   const released = await execute({ leak: false });
   const leaked = await execute({ leak: true });
   assert.notDeepEqual(leaked.trace.at(-1), released.trace.at(-1));
-  assert.equal(released.cleanup.includes('modal-portals-removed'), true);
-  assert.equal(released.cleanup.includes('modal-listeners-released'), true);
-  assert.equal(released.cleanup.includes('modal-timers-released'), true);
-  assert.equal(leaked.cleanup.includes('modal-portals-remaining'), true);
-  assert.equal(leaked.cleanup.includes('modal-listeners-remaining'), true);
-  assert.equal(leaked.cleanup.includes('modal-timers-remaining'), true);
+  for (const fact of ['portal-released-once', 'listeners-released-once', 'timers-released-once']) {
+    assert.equal(released.cleanup.includes(fact), true);
+    assert.equal(leaked.cleanup.includes(fact), false);
+  }
+  assert.deepEqual(
+    leaked.states
+      .filter(({ target }) => ['modal-portals', 'modal-listeners', 'modal-timers'].includes(target))
+      .map(({ target, value }) => [target, value]),
+    [
+      ['modal-listeners', 2],
+      ['modal-timers', 1],
+      ['modal-portals', 1],
+    ],
+  );
 });

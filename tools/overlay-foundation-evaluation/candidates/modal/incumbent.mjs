@@ -23,13 +23,13 @@ export async function createModalCandidate({
       onReady,
       diagnostics: { packageName: PACKAGE_NAME, privateProps: PRIVATE_PROPS },
     });
+    const onPrimaryOpenChange = (nextOpen) => {
+      if (nextOpen === false && nestedOpen) onNestedOpenChange(false);
+      return onOpenChange(nextOpen);
+    };
     const operationControl = (control, nested = false) => {
       const operation = control.props['data-modal-operation'];
-      const target = control.props['data-modal-control'];
-      if (
-        !['open', 'close'].includes(operation) ||
-        (operation === 'open' && /child|second/iu.test(target))
-      ) {
+      if (!['open', 'close'].includes(operation)) {
         return element(React, 'button', control);
       }
       const onInput = control.props.onClick;
@@ -39,7 +39,7 @@ export async function createModalCandidate({
           ...control.props,
           onClick(event) {
             if (onInput?.(event) !== false) {
-              (nested ? onNestedOpenChange : onOpenChange)(operation === 'open');
+              (nested ? onNestedOpenChange : onPrimaryOpenChange)(operation === 'open');
             }
           },
         },
@@ -66,7 +66,7 @@ export async function createModalCandidate({
         {
           ...parts.panel.props,
           open,
-          onClose: () => onOpenChange(false),
+          onClose: () => onPrimaryOpenChange(false),
           title: element(React, 'span', parts.title),
         },
         element(React, 'p', parts.description),
@@ -75,8 +75,13 @@ export async function createModalCandidate({
         element(React, 'button', parts.destructiveAction),
         parts.hydrationInput === undefined ? null : element(React, 'input', parts.hydrationInput),
         ...parts.supportingActions.map((action) => element(React, 'button', action)),
-        ...primaryContentControls.map((control) => operationControl(control)),
-        element(React, 'button', parts.nestedTrigger),
+        ...primaryContentControls.map((control) =>
+          operationControl(control, /child|second/iu.test(control.props['data-modal-control'])),
+        ),
+        element(React, 'button', {
+          ...parts.nestedTrigger,
+          props: { ...parts.nestedTrigger.props, onClick: () => onNestedOpenChange(true) },
+        }),
         element(React, 'button', parts.close),
       ),
       nestedOpen
@@ -85,12 +90,16 @@ export async function createModalCandidate({
             {
               open: nestedOpen,
               onClose: () => onNestedOpenChange(false),
-              title: React.createElement('span', null, 'Child workspace'),
-              'data-modal-id': 'child-modal',
+              title: React.createElement('span', null, parts.nestedView.title),
+              'data-modal-id': parts.nestedView.panelId,
               'data-modal-panel': '',
               'data-modal-portal': '',
             },
-            React.createElement('button', { 'data-modal-id': 'child-modal-safe-target' }, 'Close'),
+            React.createElement(
+              'button',
+              { 'data-modal-id': parts.nestedView.safeTargetId },
+              'Close',
+            ),
             ...nestedContentControls.map((control) => operationControl(control, true)),
           )
         : null,

@@ -7,6 +7,8 @@ import { test } from 'node:test';
 
 import { MODAL_SCENARIOS, MODAL_WAVE_CELLS, modalScenariosForCell } from '../contracts/modal.mjs';
 import { writeAttempt } from '../evidence/results.mjs';
+import { modalExecutionScenario } from '../fixtures/modal/protocol.mjs';
+import { observeModalSsrMarkup } from '../fixtures/modal/runtime.mjs';
 
 const modulePath = new URL('./modal.mjs', import.meta.url);
 const revision = '1'.repeat(40);
@@ -80,110 +82,27 @@ function closedCandidateObservation(scenario) {
   };
 }
 
-function literalSsrObservation() {
-  const snapshot = {
-    roles: [{ role: 'dialog', name: 'Server workspace' }],
-    relationships: [
-      { source: 'server-rendered-modal', name: 'labelled-by', target: 'server-modal-title' },
-    ],
-    states: [
-      { target: 'server-rendered-modal', name: 'semantically-available', value: true },
-      { target: 'browser-globals', name: 'accessed', value: false },
-    ],
-    focus: { target: 'server-document-focus-unchanged' },
-    events: [{ target: 'server-rendered-modal', type: 'rendered-open' }],
-    announcements: [{ message: 'Server workspace dialog is available' }],
-  };
-  return {
-    ...structuredClone(snapshot),
-    cleanup: ['no-browser-resource-claims'],
-    trace: [{ phase: 'server-render', snapshot: structuredClone(snapshot) }],
-    diagnostics: { cleanupObserved: true, executionCompleted: true },
-  };
-}
-
-function factualBehaviorObservation(overrides = {}) {
-  const snapshot = {
-    roles: [{ role: 'dialog', name: 'Behavior workspace' }],
-    relationships: [{ source: 'modal-panel', name: 'labelled-by', target: 'behavior-title' }],
-    states: [{ target: 'modal-panel', name: 'aria-modal', value: true }],
-    focus: { target: 'modal-safe-target' },
-    events: [{ target: 'modal-panel', type: 'opened' }],
-    announcements: [{ message: 'Behavior workspace dialog opened' }],
-  };
-  return {
-    ...structuredClone(snapshot),
-    cleanup: [
-      'fixture-destroyed',
-      'root-unmounted',
-      'modal-portals-removed',
-      'modal-listeners-released',
-      'modal-timers-released',
-    ],
-    trace: [
-      {
-        phase: 'before-operations',
-        snapshot: {
-          roles: [],
-          relationships: [],
-          states: [],
-          focus: { target: 'document-body' },
-          events: [],
-          announcements: [],
-        },
+function renderedSsrObservation(
+  scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.ssr-open-semantics.v1'),
+  ),
+) {
+  return observeModalSsrMarkup({
+    request: {
+      schemaVersion: 1,
+      scenario: modalExecutionScenario(scenario),
+      cell: {
+        id: 'ssr',
+        reactVersion: '19.2.8',
+        direction: 'ltr',
+        colorScheme: 'light',
+        forcedColors: false,
+        reducedMotion: false,
+        coarsePointer: false,
       },
-      {
-        phase: 'after-operation',
-        operationIndex: 0,
-        operation: { operation: 'open', target: 'modal-opener' },
-        snapshot: structuredClone(snapshot),
-      },
-      {
-        phase: 'after-cleanup',
-        snapshot: {
-          ...structuredClone(snapshot),
-          roles: [],
-          resources: { listeners: 0, timers: 0 },
-        },
-      },
-    ],
-    diagnostics: {
-      cleanupObserved: true,
-      executionCompleted: true,
-      actions: [
-        {
-          operation: 'open',
-          target: 'modal-opener',
-          controlFound: true,
-          dispatched: true,
-          completed: true,
-        },
-      ],
     },
-    ...structuredClone(overrides),
-  };
-}
-
-function factualBehaviorScenario() {
-  const scenario = structuredClone(MODAL_SCENARIOS[0]);
-  scenario.operations = [{ operation: 'open', target: 'modal-opener' }];
-  scenario.expected = {
-    roles: [{ role: 'dialog', name: 'Behavior workspace' }],
-    relationships: [{ source: 'modal-panel', name: 'labelled-by', target: 'behavior-title' }],
-    states: [{ target: 'modal-panel', name: 'aria-modal', value: true }],
-    focus: { target: 'modal-safe-target' },
-    events: [{ target: 'modal-panel', type: 'opened' }],
-    announcements: [{ message: 'Behavior workspace dialog opened' }],
-    cleanup: [
-      'fixture-destroyed',
-      'root-unmounted',
-      'modal-portals-removed',
-      'modal-listeners-released',
-      'modal-timers-released',
-    ],
-  };
-  scenario.capture = [...scenario.capture, 'resources'];
-  return scenario;
+    html: '<section role="dialog" data-modal-id="server-rendered-modal" aria-labelledby="server-modal-title"><h2 id="server-modal-title">Server workspace</h2></section>',
+  });
 }
 
 async function seedCoreAttempt(
@@ -432,124 +351,71 @@ test('uses the same literal assertion for every candidate identity', async (t) =
   );
 });
 
-test('compares an independent observation against the supplied literal expected record', async (t) => {
-  const setup = await fixture(t, ['incumbent']);
-  const changedExpected = factualBehaviorScenario();
-  changedExpected.expected.focus.target = 'deliberately-wrong-focus-target';
-  const deps = dependencies(setup, {
-    dependencies: {
-      cellPolicies: {
-        chromium: {
-          mode: 'browser',
-          engine: 'chromium',
-          reactVersions: ['19.2.8'],
-          context: {},
-        },
+test('keys the exact trace mode to the scenario cell instead of trace contents', async () => {
+  const { evaluateModalScenario } = await import(modulePath);
+  const scenario = modalScenariosForCell('ssr')[0];
+  const serverObservation = observeModalSsrMarkup({
+    request: {
+      schemaVersion: 1,
+      scenario: modalExecutionScenario(scenario),
+      cell: {
+        id: 'ssr',
+        reactVersion: '19.2.8',
+        direction: 'ltr',
+        colorScheme: 'light',
+        forcedColors: false,
+        reducedMotion: false,
+        coarsePointer: false,
       },
-      scenariosForCell: () => [changedExpected],
     },
-    runModalCell: async () => [
-      { reactVersion: '19.2.8', observation: factualBehaviorObservation() },
-    ],
+    html: '<section role="dialog" data-modal-id="server-rendered-modal" aria-labelledby="server-modal-title"><h2 id="server-modal-title">Server workspace</h2></section>',
   });
-  const summary = await run(setup, deps);
-  assert.deepEqual(summary.candidates[0].counts, { PASS: 0, FAIL: 1, unavailable: 0 });
-});
+  assert.equal(
+    evaluateModalScenario({
+      cellId: 'ssr',
+      scenario,
+      observations: [{ reactVersion: '19.2.8', observation: serverObservation }],
+    }),
+    true,
+  );
+  assert.equal(
+    evaluateModalScenario({
+      cellId: 'hydration',
+      scenario,
+      observations: [{ reactVersion: '19.2.8', observation: serverObservation }],
+    }),
+    false,
+  );
 
-test('runner verdict requires a completed factual trace and changes for candidate faults', async (t) => {
-  const fault = (name, mutate) => {
-    const observation = factualBehaviorObservation();
-    mutate(observation);
-    assert.notDeepEqual(observation.trace, factualBehaviorObservation().trace);
-    return { name, observation };
-  };
-  const wrongLiteralTrace = factualBehaviorObservation();
-  wrongLiteralTrace.trace[1].operation.target = 'different-neutral-opener';
-  const faultObservations = [
-    fault('semantics', (observation) => {
-      observation.roles = [];
-      observation.trace[1].snapshot.roles = [];
-    }),
-    fault('focus wrap', (observation) => {
-      observation.focus = { target: 'last-eligible-target' };
-      observation.trace[1].snapshot.focus = { target: 'last-eligible-target' };
-    }),
-    fault('pointer origin', (observation) => {
-      observation.events = [];
-      observation.trace[1].snapshot.events = [];
-    }),
-    fault('portal cleanup', (observation) => {
-      observation.cleanup = observation.cleanup.map((entry) =>
-        entry === 'modal-portals-removed' ? 'modal-portals-remaining' : entry,
-      );
-      observation.trace.at(-1).snapshot.states.push({
-        target: 'modal-portal',
-        name: 'orphaned',
-        value: true,
-      });
-    }),
-    fault('listener cleanup', (observation) => {
-      observation.cleanup = observation.cleanup.map((entry) =>
-        entry === 'modal-listeners-released' ? 'modal-listeners-remaining' : entry,
-      );
-      observation.trace.at(-1).snapshot.resources.listeners = 1;
-    }),
-    fault('timer cleanup', (observation) => {
-      observation.cleanup = observation.cleanup.map((entry) =>
-        entry === 'modal-timers-released' ? 'modal-timers-remaining' : entry,
-      );
-      observation.trace.at(-1).snapshot.resources.timers = 1;
-    }),
-    { name: 'literal operation', observation: wrongLiteralTrace },
-    fault('controlled commit', (observation) => {
-      observation.diagnostics = {
-        cleanupObserved: true,
-        executionCompleted: false,
-        actions: [
-          {
-            operation: 'open',
-            target: 'modal-opener',
-            controlFound: false,
-            dispatched: false,
-            completed: false,
-          },
-        ],
-      };
-      observation.trace[1].snapshot.states.push({
-        target: 'controlled-modal',
-        name: 'still-open',
-        value: true,
-      });
-    }),
+  const browserObservation = structuredClone(serverObservation);
+  const snapshot = structuredClone(browserObservation.trace[0].snapshot);
+  browserObservation.trace = [
+    { phase: 'before-operations', snapshot: structuredClone(snapshot) },
+    {
+      phase: 'after-operation',
+      operationIndex: 0,
+      operation: structuredClone(scenario.operations[0]),
+      snapshot: structuredClone(snapshot),
+    },
+    { phase: 'after-cleanup', snapshot: structuredClone(snapshot) },
   ];
-  const cases = [
-    { name: 'correct', observation: factualBehaviorObservation() },
-    ...faultObservations,
+  browserObservation.diagnostics.actions = [
+    {
+      operation: 'open',
+      target: 'server-rendered-modal',
+      controlFound: true,
+      dispatched: true,
+      completed: true,
+    },
   ];
-  for (const [index, { name, observation }] of cases.entries()) {
-    const setup = await fixture(t, ['incumbent']);
-    const scenario = factualBehaviorScenario();
-    const deps = dependencies(setup, {
-      dependencies: {
-        cellPolicies: {
-          chromium: {
-            mode: 'browser',
-            engine: 'chromium',
-            reactVersions: ['19.2.8'],
-            context: {},
-          },
-        },
-        scenariosForCell: () => [scenario],
-      },
-      runModalCell: async () => [{ reactVersion: '19.2.8', observation }],
-    });
-    const summary = await run(setup, deps);
-    assert.deepEqual(
-      summary.candidates[0].counts,
-      index === 0 ? { PASS: 1, FAIL: 0, unavailable: 0 } : { PASS: 0, FAIL: 1, unavailable: 0 },
-      `${name} verdict`,
-    );
-  }
+  assert.equal(
+    evaluateModalScenario({
+      cellId: 'ssr',
+      scenario,
+      observations: [{ reactVersion: '19.2.8', observation: browserObservation }],
+    }),
+    false,
+  );
 });
 
 test('treats an unknown observation or classification as run-fatal', async (t) => {
@@ -592,8 +458,8 @@ test('treats an unknown observation or classification as run-fatal', async (t) =
   );
 
   const malformedAction = await fixture(t, ['incumbent']);
-  const scenario = factualBehaviorScenario();
-  const observation = factualBehaviorObservation();
+  const scenario = MODAL_SCENARIOS[0];
+  const observation = closedCandidateObservation(scenario);
   observation.diagnostics.actions[0].completed = 'claimed';
   await assert.rejects(
     run(
@@ -751,7 +617,7 @@ test('resume reuses exact core attempt 1 and writes attempt 2 while attempt 1 re
       ...common,
       calls: firstCalls,
       runModalCell() {
-        const observation = literalSsrObservation();
+        const observation = renderedSsrObservation(scenario);
         observation.focus = { target: 'wrong-neutral-focus' };
         return [
           {
@@ -768,7 +634,9 @@ test('resume reuses exact core attempt 1 and writes attempt 2 while attempt 1 re
   const deps = dependencies(setup, {
     ...common,
     calls: resumeCalls,
-    runModalCell: async () => [{ reactVersion: '19.2.8', observation: literalSsrObservation() }],
+    runModalCell: async () => [
+      { reactVersion: '19.2.8', observation: renderedSsrObservation(scenario) },
+    ],
     dependencies: {
       ...common.dependencies,
       async runCorePreflight() {

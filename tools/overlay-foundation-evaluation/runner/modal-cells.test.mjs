@@ -69,7 +69,7 @@ function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
   const title = fakeElement({ id: 'browser-title' }, { textContent: 'Observed browser fixture' });
   const panel = fakeElement({
     role: 'dialog',
-    'data-modal-id': 'browser-panel',
+    'data-modal-id': 'modal-panel',
     'aria-labelledby': 'browser-title',
     'aria-modal': 'true',
   });
@@ -92,12 +92,12 @@ function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
       if (operation === 'open') {
         open = true;
         activeElement = focusTarget;
-        events.push({ target: 'browser-panel', type: 'opened' });
+        events.push({ target: 'modal-panel', type: 'opened' });
         live.textContent = 'Browser fixture active';
       } else if (operation === 'close') {
         open = false;
         activeElement = opener;
-        events.push({ target: 'browser-panel', type: 'closed' });
+        events.push({ target: 'modal-panel', type: 'closed' });
         live.textContent = 'Browser fixture closed';
       }
       const count = Number(control.getAttribute('data-modal-completion-count') ?? '0');

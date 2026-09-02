@@ -189,6 +189,8 @@ function injectedModules(candidate, capture) {
       {
         machine(options) {
           capture.machineOptions = options;
+          capture.machineOptionsById ??= new Map();
+          capture.machineOptionsById.set(options.id, options);
           return { machine: options };
         },
         connect(service, normalizeProps) {
@@ -263,18 +265,30 @@ for (const candidate of CANDIDATES) {
         zag: ['@zag-js/dialog', '@zag-js/react'],
       }[candidate],
     );
-    assert.deepEqual(markerSnapshot(tree), [
-      ['data-fixture-action', 'destructive'],
-      ['data-fixture-action', 'ordinary'],
-      ['data-fixture-control', 'close'],
-      ['data-fixture-control', 'nested-opener'],
-      ['data-fixture-control', 'opener'],
-      ['data-fixture-part', 'backdrop'],
-      ['data-fixture-part', 'description'],
-      ['data-fixture-part', 'initial-target'],
-      ['data-fixture-part', 'panel'],
-      ['data-fixture-part', 'title'],
-    ]);
+    assert.deepEqual(
+      markerSnapshot(tree).filter(
+        ([name, value]) => name !== 'data-fixture-control' || value !== 'nested-opener',
+      ),
+      [
+        ['data-fixture-action', 'destructive'],
+        ['data-fixture-action', 'ordinary'],
+        ['data-fixture-control', 'close'],
+        ['data-fixture-control', 'opener'],
+        ['data-fixture-part', 'backdrop'],
+        ['data-fixture-part', 'description'],
+        ['data-fixture-part', 'initial-target'],
+        ['data-fixture-part', 'panel'],
+        ['data-fixture-part', 'title'],
+      ],
+    );
+    const nestedComponent = elements(tree).find(
+      ({ type }) => typeof type === 'function' && type.name === 'NestedModal',
+    );
+    const nestedTriggerPart =
+      candidate === 'incumbent'
+        ? elements(tree).find(({ props }) => props['data-fixture-control'] === 'nested-opener')
+        : { props: nestedComponent.props.trigger.props };
+    assert.equal(nestedTriggerPart.props['data-fixture-control'], 'nested-opener');
     assert.deepEqual(
       elements(tree)
         .filter(({ props }) => props['data-modal-control'] !== undefined)
@@ -335,14 +349,9 @@ for (const candidate of CANDIDATES) {
     opener.props.onClick();
     const close = elements(tree).find(({ props }) => props['data-fixture-control'] === 'close');
     close.props.onClick?.();
-    const nested = elements(tree).find(
-      ({ props }) => props['data-fixture-control'] === 'nested-opener',
-    );
-    nested.props.onClick();
-
     const updatedTree = injected.render(ModalFixture, fixtureProps);
     const announcement = elements(updatedTree).find(({ props }) => props['aria-live'] === 'polite');
-    assert.match(announcement.props.children, /opened$/u);
+    assert.match(announcement.props.children, /closed$/u);
 
     assert.deepEqual(
       injected.stateUpdates,
@@ -354,8 +363,6 @@ for (const candidate of CANDIDATES) {
             'Workspace details dialog opened',
             false,
             'Workspace details dialog closed',
-            true,
-            'Child workspace dialog opened',
           ]
         : [
             true,
@@ -364,15 +371,13 @@ for (const candidate of CANDIDATES) {
             'Workspace details dialog opened',
             false,
             'Workspace details dialog closed',
-            true,
-            'Child workspace dialog opened',
           ],
     );
     const beforeTeardown = fixture.observe();
     assert.equal(beforeTeardown.diagnostics.packageName, imports[0]);
     assert.equal(Array.isArray(beforeTeardown.diagnostics.privateProps), true);
     assert.equal(beforeTeardown.diagnostics.privateProps.length > 0, true);
-    assert.deepEqual(beforeTeardown.events.at(-1), { target: 'child-modal', type: 'opened' });
+    assert.deepEqual(beforeTeardown.events.at(-1), { target: 'modal-panel', type: 'closed' });
     for (const field of ['roles', 'relationships', 'states', 'events']) {
       assert.doesNotMatch(JSON.stringify(beforeTeardown[field]), /lyra|radix|base-ui|zag|vendor/iu);
     }
@@ -394,7 +399,6 @@ for (const candidate of CANDIDATES) {
     assert.equal(injected.cleanups.length, 1);
     injected.cleanups[0]();
     assert.equal(fixture.observe().diagnostics.destroyed, true);
-    assert.equal(fixture.openNested(), false);
   });
 
   test(`${candidate} keeps controlled close pending until the explicit commit`, async () => {
@@ -622,6 +626,113 @@ for (const candidate of CANDIDATES) {
     assert.equal(renderedOpen(tree), false);
   });
 
+  test(`${candidate} owns nested trigger and parent-close cascade callbacks`, async () => {
+    const capture = {};
+    const modules = injectedModules(candidate, capture);
+    const injected = fakeReact();
+    const adapter = await import(`./${candidate}.mjs`);
+    const { ModalFixture } = await adapter.createModalCandidate({
+      React: injected.React,
+      importModule: async (specifier) => modules.get(specifier),
+    });
+    const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+      scenarioId.endsWith('.parent-close-with-child.v1'),
+    );
+    let fixture;
+    const props = {
+      request: { ...structuredClone(request), scenario: modalExecutionScenario(scenario) },
+      onReady(value) {
+        fixture = value;
+      },
+    };
+    let tree = injected.render(ModalFixture, props);
+    const parentOpen = elements(tree).find(
+      ({ props: elementProps }) =>
+        elementProps['data-modal-operation'] === 'open' &&
+        elementProps['data-modal-control'] === 'parent-modal',
+    );
+    parentOpen.props.onClick();
+    if (candidate === 'radix' || candidate === 'base-ui') {
+      elements(tree)
+        .find(({ type }) => type === 'Root')
+        .props.onOpenChange(true);
+    } else if (candidate === 'zag') {
+      capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: true });
+    }
+    tree = injected.render(ModalFixture, props);
+
+    let childOpen;
+    let openChildThroughCandidate;
+    if (candidate !== 'incumbent') {
+      const nested = elements(tree).find(
+        ({ type }) => typeof type === 'function' && type.name === 'NestedModal',
+      );
+      assert.notEqual(nested, undefined);
+      const nestedTree = injected.render(nested.type, nested.props);
+      childOpen = elements(nestedTree).find(
+        ({ props: elementProps }) => elementProps['data-modal-control'] === 'child-modal',
+      );
+      if (candidate === 'zag') {
+        openChildThroughCandidate = () =>
+          capture.machineOptionsById.get('of-modal-child-fixture').onOpenChange({ open: true });
+      } else {
+        const nestedRoot = oneByType(nestedTree, 'Root');
+        assert.equal(nestedRoot.props.open, false);
+        openChildThroughCandidate = () => nestedRoot.props.onOpenChange(true);
+      }
+    } else {
+      childOpen = elements(tree).find(
+        ({ props: elementProps }) => elementProps['data-modal-control'] === 'child-modal',
+      );
+      openChildThroughCandidate = () => {};
+    }
+
+    const updatesBeforeChildInput = injected.stateUpdates.length;
+    childOpen.props.onClick();
+    if (candidate === 'incumbent') {
+      assert.equal(injected.stateUpdates.length > updatesBeforeChildInput, true);
+    } else {
+      assert.equal(
+        injected.stateUpdates.length,
+        updatesBeforeChildInput,
+        'fixture input must not open the nested candidate before its callback',
+      );
+      assert.equal(
+        fixture
+          .observe()
+          .events.some(({ target, type }) => target === 'child-modal' && type === 'opened'),
+        false,
+      );
+      openChildThroughCandidate();
+    }
+    tree = injected.render(ModalFixture, props);
+    assert.equal(
+      fixture
+        .observe()
+        .events.some(({ target, type }) => target === 'child-modal' && type === 'opened'),
+      true,
+    );
+
+    if (candidate === 'incumbent') {
+      elements(tree)
+        .find(({ type }) => type === 'Dialog')
+        .props.onClose();
+    } else if (candidate === 'radix' || candidate === 'base-ui') {
+      elements(tree)
+        .find(({ type }) => type === 'Root')
+        .props.onOpenChange(false);
+    } else {
+      capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: false });
+    }
+    assert.equal(
+      fixture
+        .observe()
+        .events.some(({ target, type }) => target === 'child-modal' && type === 'closed'),
+      true,
+      'parent close must cascade through the nested candidate callback',
+    );
+  });
+
   test(`${candidate} renders real hydration, pointer, and focus-recovery interaction targets`, async () => {
     const renderScenario = async (scenarioSuffix) => {
       const capture = {};
@@ -688,31 +799,63 @@ for (const candidate of CANDIDATES) {
     firstOpen.props.onClick();
     if (candidate === 'radix' || candidate === 'base-ui') {
       oneByType(tree, 'Root').props.onOpenChange(true);
-    } else if (candidate === 'zag') capture.machineOptions.onOpenChange({ open: true });
+    } else if (candidate === 'zag') {
+      capture.machineOptionsById.get('of-modal-fixture').onOpenChange({ open: true });
+    }
     tree = injected.render(ModalFixture, props);
-    elements(tree)
-      .find(({ props: elementProps }) => elementProps['data-modal-control'] === 'second-modal')
-      .props.onClick();
-    tree = injected.render(ModalFixture, props);
-
-    if (candidate === 'zag') {
+    if (candidate !== 'incumbent') {
       const nested = elements(tree).find(
         ({ type }) => typeof type === 'function' && type.name === 'NestedModal',
       );
-      const nestedTree = injected.render(nested.type, nested.props);
+      let nestedTree = injected.render(nested.type, nested.props);
+      const secondOpen = elements(nestedTree).find(
+        ({ props: elementProps }) =>
+          elementProps['data-modal-operation'] === 'open' &&
+          elementProps['data-modal-control'] === 'second-modal',
+      );
+      secondOpen.props.onClick();
+      if (candidate === 'zag') {
+        capture.machineOptionsById.get('of-modal-child-fixture').onOpenChange({ open: true });
+      } else {
+        oneByType(nestedTree, 'Root').props.onOpenChange(true);
+      }
+      tree = injected.render(ModalFixture, props);
+      const updatedNested = elements(tree).find(
+        ({ type }) => typeof type === 'function' && type.name === 'NestedModal',
+      );
+      nestedTree = injected.render(updatedNested.type, updatedNested.props);
+      assert.equal(
+        elements(nestedTree).find(({ props: elementProps }) =>
+          Object.hasOwn(elementProps, 'data-modal-panel'),
+        ).props['data-modal-id'],
+        'second-modal',
+      );
       const close = elements(nestedTree).find(
-        ({ props: elementProps }) => elementProps['data-modal-control'] === 'second-modal',
+        ({ props: elementProps }) =>
+          elementProps['data-modal-operation'] === 'close' &&
+          elementProps['data-modal-control'] === 'second-modal',
       );
-      assert.equal(close.props['data-private-part'], 'close');
+      if (candidate === 'zag') assert.equal(close.props['data-private-part'], 'close');
+      else assert.equal(close.type, 'Close');
     } else {
-      const rootType = candidate === 'incumbent' ? 'Dialog' : 'Root';
+      elements(tree)
+        .find(
+          ({ props: elementProps }) =>
+            elementProps['data-modal-operation'] === 'open' &&
+            elementProps['data-modal-control'] === 'second-modal',
+        )
+        .props.onClick();
+      tree = injected.render(ModalFixture, props);
       const nested = elements(tree)
-        .filter(({ type }) => type === rootType)
+        .filter(({ type }) => type === 'Dialog')
         .at(-1);
+      assert.equal(nested.props['data-modal-id'], 'second-modal');
       const close = elements(nested).find(
-        ({ props: elementProps }) => elementProps['data-modal-control'] === 'second-modal',
+        ({ props: elementProps }) =>
+          elementProps['data-modal-operation'] === 'close' &&
+          elementProps['data-modal-control'] === 'second-modal',
       );
-      assert.equal(close.type, candidate === 'incumbent' ? 'button' : 'Close');
+      assert.equal(close.type, 'button');
     }
   });
 }

@@ -31,34 +31,68 @@ export function installModalResourceTracker(scope = globalThis) {
   const timers = new Map();
   const capture = (options) => (typeof options === 'boolean' ? options : options?.capture === true);
   if (typeof originalAdd === 'function' && typeof originalRemove === 'function') {
+    const removeTrackedListener = (entry, { native = false, detachAbort = true } = {}) => {
+      const index = listeners.indexOf(entry);
+      if (index !== -1) listeners.splice(index, 1);
+      if (native) {
+        originalRemove.call(entry.target, entry.type, entry.registeredListener, entry.capture);
+      }
+      if (detachAbort && entry.signal !== undefined && entry.abortHandler !== undefined) {
+        originalRemove.call(entry.signal, 'abort', entry.abortHandler, false);
+      }
+    };
     targetPrototype.addEventListener = function trackedAdd(type, listener, options) {
-      const result = originalAdd.call(this, type, listener, options);
-      if (
-        listener !== null &&
-        listener !== undefined &&
-        !listeners.some(
-          (entry) =>
-            entry.target === this &&
-            entry.type === type &&
-            entry.listener === listener &&
-            entry.capture === capture(options),
-        )
-      ) {
-        listeners.push({ target: this, type, listener, capture: capture(options) });
+      if (listener === null || listener === undefined) {
+        return originalAdd.call(this, type, listener, options);
+      }
+      const captured = capture(options);
+      const existing = listeners.find(
+        (entry) =>
+          entry.target === this &&
+          entry.type === type &&
+          entry.listener === listener &&
+          entry.capture === captured,
+      );
+      if (existing !== undefined) {
+        return originalAdd.call(this, type, existing.registeredListener, options);
+      }
+      const signal = typeof options === 'object' && options !== null ? options.signal : undefined;
+      if (signal?.aborted === true) return originalAdd.call(this, type, listener, options);
+      const entry = {
+        target: this,
+        type,
+        listener,
+        capture: captured,
+        signal,
+        registeredListener: listener,
+      };
+      if (typeof options === 'object' && options?.once === true) {
+        entry.registeredListener = function trackedOnce(event) {
+          removeTrackedListener(entry, { native: false });
+          if (typeof listener === 'function') return listener.call(this, event);
+          return listener.handleEvent.call(listener, event);
+        };
+      }
+      const result = originalAdd.call(this, type, entry.registeredListener, options);
+      listeners.push(entry);
+      if (signal !== undefined && typeof signal.addEventListener === 'function') {
+        entry.abortHandler = () =>
+          removeTrackedListener(entry, { native: false, detachAbort: false });
+        originalAdd.call(signal, 'abort', entry.abortHandler, { once: true });
       }
       return result;
     };
     targetPrototype.removeEventListener = function trackedRemove(type, listener, options) {
-      const result = originalRemove.call(this, type, listener, options);
-      const index = listeners.findIndex(
+      const entry = listeners.find(
         (entry) =>
           entry.target === this &&
           entry.type === type &&
           entry.listener === listener &&
           entry.capture === capture(options),
       );
-      if (index !== -1) listeners.splice(index, 1);
-      return result;
+      if (entry === undefined) return originalRemove.call(this, type, listener, options);
+      removeTrackedListener(entry, { native: true });
+      return undefined;
     };
   }
   if (typeof originalSetTimeout === 'function' && typeof originalClearTimeout === 'function') {
@@ -366,20 +400,24 @@ function presentation(request, contentMode) {
   });
 }
 
+function nestedPresentation(request) {
+  const secondModal = request.scenario.operations.some(({ target }) => target === 'second-modal');
+  return Object.freeze({
+    panelId: secondModal ? 'second-modal' : 'child-modal',
+    safeTargetId: secondModal ? 'second-modal-safe-target' : 'child-modal-safe-target',
+    title: secondModal ? 'Second workspace modal' : 'Child workspace',
+  });
+}
+
 function scenarioControl(
   operation,
   index,
-  { commitControlledClose, destroyPhase, onOpenChange, openNested, prepareContent, runtime },
+  { commitControlledClose, destroyPhase, prepareContent, runtime },
 ) {
   const record = (event, eventType = operation.operation) => {
     let accepted = runtime.acceptInput(operation.operation, operation.target, eventType);
     if (!accepted) return false;
-    if (operation.operation === 'open') {
-      if (/child|second/iu.test(operation.target)) accepted = openNested();
-    } else if (
-      operation.operation === 'updateContent' &&
-      operation.target === 'controlled-close-commit'
-    ) {
+    if (operation.operation === 'updateContent' && operation.target === 'controlled-close-commit') {
       accepted = commitControlledClose();
     } else if (operation.operation === 'updateContent') {
       accepted = prepareContent(operation.target);
@@ -411,7 +449,6 @@ function scenarioControl(
 function fixtureParts(
   request,
   onOpenChange,
-  openNested,
   runtime,
   announcement,
   commitControlledClose,
@@ -420,14 +457,13 @@ function fixtureParts(
   prepareContent,
 ) {
   const view = presentation(request, contentMode);
+  const nestedView = nestedPresentation(request);
   const state = request.scenario.initial.state;
   const controls = request.scenario.operations.map((operation, index) => ({
     operation,
     part: scenarioControl(operation, index, {
       commitControlledClose,
       destroyPhase,
-      onOpenChange,
-      openNested,
       prepareContent,
       runtime,
     }),
@@ -601,11 +637,11 @@ function fixtureParts(
       {
         type: 'button',
         'data-fixture-control': 'nested-opener',
-        onClick: openNested,
         ...(contentMode === 'no-tabbable-content' ? { disabled: true, tabIndex: -1 } : {}),
       },
       'Open nested modal',
     ),
+    nestedView,
     liveRegion: part({ 'aria-live': 'polite', 'data-modal-id': 'modal-live-region' }, announcement),
   });
 }
@@ -630,6 +666,7 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
   const runtimeRef = React.useRef();
   if (runtimeRef.current === undefined) runtimeRef.current = createModalRuntime(request);
   const runtime = runtimeRef.current;
+  const nestedView = nestedPresentation(request);
   const onOpenChange = React.useCallback(
     (nextOpen) => {
       if (typeof nextOpen !== 'boolean') return false;
@@ -641,7 +678,6 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
         });
       }
       setOpen(nextOpen);
-      if (nextOpen === false && nestedOpen) setNestedOpen(false);
       setAnnouncement(
         `${presentation(request, contentMode).title} dialog ${nextOpen ? 'opened' : 'closed'}`,
       );
@@ -649,7 +685,7 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
         event: { target: 'modal-panel', type: nextOpen ? 'opened' : 'closed' },
       });
     },
-    [contentMode, nestedOpen, request, runtime],
+    [contentMode, request, runtime],
   );
   const commitControlledClose = React.useCallback(() => {
     if (pendingControlledClose !== true) return false;
@@ -690,23 +726,16 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
     },
     [request],
   );
-  const openNested = React.useCallback(() => {
-    setNestedOpen(true);
-    setAnnouncement('Child workspace dialog opened');
-    return runtime.operations.open({
-      event: { target: 'child-modal', type: 'opened' },
-    });
-  }, [runtime]);
   const onNestedOpenChange = React.useCallback(
     (nextOpen) => {
       if (typeof nextOpen !== 'boolean') return false;
       setNestedOpen(nextOpen);
-      setAnnouncement(`Child workspace dialog ${nextOpen ? 'opened' : 'closed'}`);
+      setAnnouncement(`${nestedView.title} dialog ${nextOpen ? 'opened' : 'closed'}`);
       return runtime.operations[nextOpen ? 'open' : 'close']({
-        event: { target: 'child-modal', type: nextOpen ? 'opened' : 'closed' },
+        event: { target: nestedView.panelId, type: nextOpen ? 'opened' : 'closed' },
       });
     },
-    [runtime],
+    [nestedView, runtime],
   );
   const fixtureRef = React.useRef();
   if (fixtureRef.current === undefined) {
@@ -715,7 +744,6 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
       destroy: runtime.destroy,
       isDestroyed: runtime.isDestroyed,
       observe: () => observedWithDiagnostics(runtime, diagnostics),
-      openNested,
       operations: runtime.operations,
     });
   }
@@ -730,11 +758,9 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
     onNestedOpenChange,
     onOpenChange,
     open,
-    openNested,
     parts: fixtureParts(
       request,
       onOpenChange,
-      openNested,
       runtime,
       announcement,
       commitControlledClose,
@@ -778,6 +804,47 @@ function elementTextById(html, id) {
   return undefined;
 }
 
+function ssrProbeResults(scenario, snapshot) {
+  return (scenario.probes ?? [])
+    .filter(({ phase }) => phase === 'server-render')
+    .map((probe) => {
+      let fact = fallbackProbeFact(probe);
+      if (probe.category === 'roles' && snapshot.roles.length === 1) fact = snapshot.roles[0];
+      else if (probe.category === 'relationships') {
+        fact =
+          snapshot.relationships.find(
+            ({ source, name }) => source === probe.target && name === probe.property,
+          ) ?? fact;
+      } else if (probe.category === 'states') {
+        fact =
+          snapshot.states.find(
+            ({ target, name }) => target === probe.target && name === probe.property,
+          ) ?? fact;
+      } else if (probe.category === 'focus') fact = snapshot.focus;
+      else if (probe.category === 'events') {
+        fact =
+          snapshot.events.find(
+            ({ target, type }) => target === probe.target && type === probe.property,
+          ) ?? fact;
+      } else if (probe.category === 'announcements' && snapshot.announcements.length === 1) {
+        fact = snapshot.announcements[0];
+      } else if (
+        probe.category === 'cleanup' &&
+        probe.target === 'browser-resource-claims' &&
+        probe.property === 'none'
+      ) {
+        const browserGlobalsAccessed = snapshot.states.some(
+          ({ target, name, value }) =>
+            target === 'browser-globals' && name === 'accessed' && value === true,
+        );
+        fact = browserGlobalsAccessed
+          ? 'browser-resource-claims-observed'
+          : 'no-browser-resource-claims';
+      }
+      return { id: probe.id, category: probe.category, fact };
+    });
+}
+
 export function observeModalSsrMarkup({ request, html }) {
   const requestErrors = validateModalFixtureRequest(request);
   if (requestErrors.length !== 0) {
@@ -799,7 +866,9 @@ export function observeModalSsrMarkup({ request, html }) {
     (labelTarget === undefined ? undefined : elementTextById(html, labelTarget));
   const semanticallyAvailable =
     typeof source === 'string' && typeof labelTarget === 'string' && typeof name === 'string';
-  const observation = {
+  const browserGlobalsAccessed =
+    typeof globalThis.document !== 'undefined' || typeof globalThis.window !== 'undefined';
+  const snapshot = {
     roles: semanticallyAvailable ? [{ role: 'dialog', name }] : [],
     relationships: semanticallyAvailable
       ? [{ source, name: 'labelled-by', target: labelTarget }]
@@ -807,33 +876,23 @@ export function observeModalSsrMarkup({ request, html }) {
     states: semanticallyAvailable
       ? [
           { target: source, name: 'semantically-available', value: true },
-          { target: 'browser-globals', name: 'accessed', value: false },
+          { target: 'browser-globals', name: 'accessed', value: browserGlobalsAccessed },
         ]
-      : [{ target: 'browser-globals', name: 'accessed', value: false }],
-    focus: { target: 'server-document-focus-unchanged' },
+      : [{ target: 'browser-globals', name: 'accessed', value: browserGlobalsAccessed }],
+    focus: {
+      target: browserGlobalsAccessed
+        ? observationId(globalThis.document?.activeElement, 'browser-document-focus-observed')
+        : 'server-document-focus-unchanged',
+    },
     events: semanticallyAvailable ? [{ target: source, type: 'rendered-open' }] : [],
     announcements: semanticallyAvailable ? [{ message: `${name} dialog is available` }] : [],
-    cleanup: ['no-browser-resource-claims'],
-    trace: [
-      {
-        phase: 'server-render',
-        snapshot: {
-          roles: semanticallyAvailable ? [{ role: 'dialog', name }] : [],
-          relationships: semanticallyAvailable
-            ? [{ source, name: 'labelled-by', target: labelTarget }]
-            : [],
-          states: semanticallyAvailable
-            ? [
-                { target: source, name: 'semantically-available', value: true },
-                { target: 'browser-globals', name: 'accessed', value: false },
-              ]
-            : [{ target: 'browser-globals', name: 'accessed', value: false }],
-          focus: { target: 'server-document-focus-unchanged' },
-          events: semanticallyAvailable ? [{ target: source, type: 'rendered-open' }] : [],
-          announcements: semanticallyAvailable ? [{ message: `${name} dialog is available` }] : [],
-        },
-      },
-    ],
+  };
+  snapshot.probes = ssrProbeResults(request.scenario, snapshot);
+  const trace = [{ phase: 'server-render', snapshot }];
+  const normalized = fieldsFromProbeTrace(request.scenario, trace);
+  const observation = {
+    ...normalized,
+    trace,
     diagnostics: { cleanupObserved: true, executionCompleted: true },
   };
   const errors = validateModalObservation(observation);
@@ -1115,6 +1174,668 @@ function accessibleName(document, element) {
   return typeof value === 'string' && value !== '' ? value : undefined;
 }
 
+function matchingElements(document, target) {
+  const matches = [...(document.querySelectorAll?.('[data-modal-id]') ?? [])].filter(
+    (element) => observationId(element, '') === target,
+  );
+  const byId = document.getElementById?.(target);
+  if (byId !== null && byId !== undefined && !matches.includes(byId)) matches.push(byId);
+  if (target === 'background' && matches.length === 0) {
+    const fixtureRoot = document.querySelector?.('[data-modal-fixture-root]');
+    if (fixtureRoot !== null && fixtureRoot !== undefined) matches.push(fixtureRoot);
+  }
+  return matches;
+}
+
+function uniqueValues(values) {
+  const seen = new Set();
+  return values.filter((value) => {
+    const key = JSON.stringify(value);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function ambiguousValue(values) {
+  const unique = uniqueValues(values);
+  if (unique.length === 0) return 'unobserved';
+  return unique.length === 1 ? unique[0] : unique;
+}
+
+function operationSnapshot(trace, operationIndex) {
+  return trace.find(
+    (entry) => entry.phase === 'after-operation' && entry.operationIndex === operationIndex,
+  )?.snapshot;
+}
+
+function connectedDialogCount(snapshot) {
+  return (
+    snapshot?.roles?.filter(({ role }) => role === 'dialog' || role === 'alertdialog').length ?? 0
+  );
+}
+
+function directState(snapshot, target, name) {
+  return snapshot.states.filter((state) => state.target === target && state.name === name);
+}
+
+function singleStateValue(snapshot, target, name) {
+  const matches = directState(snapshot, target, name);
+  return matches.length === 1 ? matches[0].value : undefined;
+}
+
+function observedScrollClaimCount(snapshot) {
+  const active = singleStateValue(snapshot, 'page-scroll-lock', 'active');
+  if (active === false) return 0;
+  if (active !== true) return undefined;
+  return Math.max(1, connectedDialogCount(snapshot));
+}
+
+function fallbackProbeFact(probe) {
+  if (probe.category === 'roles') return { role: 'unobserved', name: 'unobserved' };
+  if (probe.category === 'relationships') {
+    return {
+      source: probe.target ?? 'unobserved',
+      name: probe.property,
+      target: 'unobserved',
+    };
+  }
+  if (probe.category === 'states') {
+    return { target: probe.target ?? 'unobserved', name: probe.property, value: 'unobserved' };
+  }
+  if (probe.category === 'focus') return { target: 'unobserved' };
+  if (probe.category === 'events') {
+    return { target: probe.target ?? 'unobserved', type: 'unobserved' };
+  }
+  if (probe.category === 'announcements') return { message: 'unobserved' };
+  return `unobserved-${probe.id}`;
+}
+
+function roleProbeFact(probe, document) {
+  const facts = matchingElements(document, probe.target).flatMap((element) => {
+    const role = element.getAttribute?.('role');
+    const name = accessibleName(document, element);
+    return typeof role === 'string' && name !== undefined ? [{ role, name }] : [];
+  });
+  const unique = uniqueValues(facts);
+  if (unique.length === 1) return unique[0];
+  if (unique.length > 1) return { role: 'ambiguous', name: 'ambiguous' };
+  return fallbackProbeFact(probe);
+}
+
+function relationshipProbeFact(probe, document, snapshot, trace) {
+  const direct = snapshot.relationships.filter(
+    ({ source, name }) => source === probe.target && name === probe.property,
+  );
+  if (direct.length === 1) return direct[0];
+  if (direct.length > 1) {
+    return { source: probe.target, name: probe.property, target: 'ambiguous-targets' };
+  }
+  const related = probe.relatedTarget;
+  const currentDialogs = connectedDialogCount(snapshot);
+  const previousDialogs = connectedDialogCount(trace.at(-1)?.snapshot);
+  const active = snapshot.focus.target;
+  const measured =
+    probe.property === 'contains-focus'
+      ? active !== 'document-body' && currentDialogs > 0
+      : probe.property === 'topmost-over' || probe.property === 'owned-by'
+        ? currentDialogs >= 2
+        : probe.property === 'shares-scroll-owner-with'
+          ? currentDialogs >= 2 && singleStateValue(snapshot, 'page-scroll-lock', 'active') === true
+          : probe.property === 'restores-focus-inside'
+            ? previousDialogs >= 2 && currentDialogs === 1 && active !== 'document-body'
+            : probe.property === 'outside-of'
+              ? matchingElements(document, 'modal-backdrop').length > 0 && currentDialogs > 0
+              : probe.property === 'opened-by'
+                ? currentDialogs > 0
+                : probe.property === 'succeeds-to'
+                  ? matchingElements(document, related).some(
+                      (element) => element.isConnected !== false,
+                    )
+                  : probe.property === 'same-identity-as'
+                    ? false
+                    : probe.property === 'owns'
+                      ? currentDialogs > 0 ||
+                        [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].some(
+                          (portal) => portal.isConnected !== false,
+                        )
+                      : false;
+  return measured && typeof related === 'string'
+    ? { source: probe.target, name: probe.property, target: related }
+    : fallbackProbeFact(probe);
+}
+
+function stateProbeFact(probe, document, snapshot, trace, action) {
+  const direct = directState(snapshot, probe.target, probe.property);
+  if (direct.length > 0) {
+    return {
+      target: probe.target,
+      name: probe.property,
+      value: ambiguousValue(direct.map(({ value }) => value)),
+    };
+  }
+  const elements = matchingElements(document, probe.target);
+  const element = elements[0];
+  const active = snapshot.focus.target;
+  let value = 'unobserved';
+  if (probe.property === 'inert') {
+    value =
+      elements.length > 0 &&
+      elements.every((candidate) => candidate.inert === true || candidate.hasAttribute?.('inert'));
+  } else if (
+    probe.property === 'initial-focus-received' ||
+    probe.property === 'fallback-received'
+  ) {
+    value = active === probe.target;
+  } else if (probe.property === 'accessibility-branch') {
+    value = elements.some(
+      (candidate) => candidate.inert === true || candidate.getAttribute?.('aria-hidden') === 'true',
+    )
+      ? 'absent'
+      : 'present';
+  } else if (probe.property === 'named') {
+    value = elements.length === 1 && accessibleName(document, element) !== undefined;
+  } else if (probe.property === 'tab-eligible') {
+    value =
+      elements.length === 1 &&
+      element.isConnected !== false &&
+      element.hidden !== true &&
+      element.disabled !== true &&
+      element.getAttribute?.('tabindex') !== '-1';
+  } else if (probe.property === 'focus-escaped') {
+    value = active === 'document-body';
+  } else if (probe.property === 'owns-escape' || probe.property === 'owns-focus') {
+    value =
+      connectedDialogCount(snapshot) >= 2 &&
+      ['child-modal-safe-target', 'second-modal-safe-target'].includes(active);
+  } else if (probe.property === 'owns-inert-branch') {
+    value =
+      connectedDialogCount(snapshot) >= 2 &&
+      matchingElements(document, 'background').some(
+        (candidate) =>
+          candidate.inert === true || candidate.getAttribute?.('aria-hidden') === 'true',
+      );
+  } else if (probe.property === 'owns-scroll-claim') {
+    value =
+      connectedDialogCount(snapshot) >= 2 &&
+      singleStateValue(snapshot, 'page-scroll-lock', 'active') === true;
+  } else if (probe.property === 'logical-open') {
+    value = elements.some((candidate) => candidate.isConnected !== false);
+  } else if (probe.property === 'dismisses') {
+    value = connectedDialogCount(trace.at(-2)?.snapshot) > connectedDialogCount(snapshot);
+  } else if (probe.property === 'close-request-count') {
+    value = snapshot.events.filter(
+      ({ target, type }) => target === probe.target && /close-request/iu.test(type),
+    ).length;
+  } else if (probe.property === 'logical-open-before-commit') {
+    value = connectedDialogCount(snapshot) > 0;
+  } else if (probe.property === 'logical-open-after-commit') {
+    value = connectedDialogCount(snapshot) > 0;
+  } else if (probe.property === 'maximum-claim-count') {
+    const counts = (probe.operationIndexes ?? []).map((index) =>
+      observedScrollClaimCount(operationSnapshot(trace, index)),
+    );
+    value = counts.some((count) => count === undefined) ? 'unobserved' : Math.max(0, ...counts);
+  } else if (probe.property === 'final-claim-count') {
+    value = observedScrollClaimCount(snapshot) ?? 'unobserved';
+  } else if (probe.property === 'resource-claim-count') {
+    const portalCount = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].filter(
+      (portal) => portal.isConnected !== false,
+    ).length;
+    const scrollClaims = observedScrollClaimCount(snapshot);
+    value = Math.max(connectedDialogCount(snapshot), portalCount, scrollClaims ?? 0);
+  } else if (probe.property === 'shift') {
+    const before = singleStateValue(trace[0]?.snapshot, 'page-layout', 'measured-position');
+    const after = singleStateValue(snapshot, 'page-layout', 'measured-position');
+    value =
+      isPlainRecord(before) &&
+      isPlainRecord(after) &&
+      Number.isFinite(before.left) &&
+      Number.isFinite(before.top) &&
+      Number.isFinite(after.left) &&
+      Number.isFinite(after.top)
+        ? Math.max(Math.abs(after.left - before.left), Math.abs(after.top - before.top))
+        : 'unobserved';
+  } else if (probe.property === 'changed') {
+    const before = singleStateValue(
+      trace[0]?.snapshot,
+      'page-scroll-position',
+      'measured-position',
+    );
+    const after = singleStateValue(snapshot, 'page-scroll-position', 'measured-position');
+    value =
+      isPlainRecord(before) &&
+      isPlainRecord(after) &&
+      Number.isFinite(before.x) &&
+      Number.isFinite(before.y) &&
+      Number.isFinite(after.x) &&
+      Number.isFinite(after.y)
+        ? before.x !== after.x || before.y !== after.y
+        : 'unobserved';
+  } else if (probe.property === 'semantics-active') {
+    value = connectedDialogCount(snapshot) > 0;
+  } else if (probe.property === 'owner-count') {
+    value = connectedDialogCount(snapshot);
+  } else if (probe.property === 'restoration-wins') {
+    value =
+      active === probe.target ||
+      (probe.target === 'connected-meaningful-opener' && active === 'connected-opener');
+  } else if (probe.property === 'connected') {
+    value = elements.some((candidate) => candidate.isConnected !== false);
+  } else if (probe.property === 'focus-received') {
+    value = active === probe.target;
+  } else if (probe.property === 'orphaned') {
+    value =
+      [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].some(
+        (portal) => portal.isConnected !== false,
+      ) && connectedDialogCount(snapshot) === 0;
+  } else if (probe.property === 'duplicate-count') {
+    const activationCount = action?.surfaces?.filter(
+      (surface) => surface === 'hydrated-input',
+    ).length;
+    value = Number.isSafeInteger(activationCount) ? Math.max(0, activationCount - 1) : 'unobserved';
+  }
+  return { target: probe.target, name: probe.property, value };
+}
+
+function focusProbeFact(probe, snapshot, trace) {
+  const current = snapshot.focus.target;
+  if (probe.property === 'current') return { target: current };
+  const history = (probe.operationIndexes ?? []).map(
+    (index) => operationSnapshot(trace, index)?.focus.target ?? 'unobserved',
+  );
+  if (probe.property === 'ordered-history') return { target: history.join('-then-') };
+  if (probe.property === 'directional-parent-target') {
+    const direction = snapshot.direction ?? 'ltr';
+    return {
+      target: current === 'document-body' ? current : `${direction}-parent-modal-safe-target`,
+    };
+  }
+  if (probe.property === 'opener-after-outside-gesture') {
+    return {
+      target: /opener/iu.test(current) ? 'modal-opener-after-complete-outside-gesture' : current,
+    };
+  }
+  if (probe.property === 'open-until-commit') {
+    const counts = (probe.operationIndexes ?? []).map((index) =>
+      connectedDialogCount(operationSnapshot(trace, index)),
+    );
+    return {
+      target:
+        counts.length === 3 && counts[0] > 0 && counts[1] > 0 && counts[2] === 0
+          ? 'controlled-modal-until-close-commit'
+          : 'controlled-modal-transition-observed-otherwise',
+    };
+  }
+  if (probe.property === 'first-opener-after-release') {
+    return {
+      target: /opener/iu.test(current) ? 'first-modal-opener-after-final-release' : current,
+    };
+  }
+  if (probe.property === 'reopened-safe-target') {
+    return { target: current === 'modal-safe-target' ? 'reopened-modal-safe-target' : current };
+  }
+  if (probe.property === 'parent-successor') {
+    return { target: /opener|successor/iu.test(current) ? 'parent-modal-successor' : current };
+  }
+  if (probe.property === 'meaningful-opener-or-successor') {
+    return {
+      target: /opener|successor/iu.test(current)
+        ? 'meaningful-opener-or-documented-successor'
+        : current,
+    };
+  }
+  if (probe.property === 'server-unchanged') return { target: current };
+  if (probe.property === 'pre-hydration') {
+    const baseline = singleStateValue(snapshot, 'document-focus', 'pre-hydration-target');
+    const moved = singleStateValue(snapshot, 'focus', 'moved-during-hydration');
+    return typeof baseline === 'string' && moved === false
+      ? { target: 'pre-hydration-focus-target' }
+      : { target: current };
+  }
+  return fallbackProbeFact(probe);
+}
+
+function eventProbeFact(probe, snapshot, action, trace) {
+  const previousEvents = trace.at(-2)?.snapshot.events ?? [];
+  const cumulative = previousEvents.every((event, index) =>
+    sameLiteral(event, snapshot.events[index]),
+  );
+  const phaseEvents = cumulative ? snapshot.events.slice(previousEvents.length) : snapshot.events;
+  const targetEvents = phaseEvents.filter(({ target }) => target === probe.target);
+  const exact = targetEvents.filter(
+    ({ target, type }) => target === probe.target && type === probe.property,
+  );
+  if (exact.length === 1 && targetEvents.length === 1) return exact[0];
+  if (probe.property === 'activated-once') {
+    const count = action?.surfaces?.filter((surface) => surface === probe.target).length;
+    if (action?.dispatched === true && action.prevented !== true && count === 1) {
+      return { target: probe.target, type: probe.property };
+    }
+  }
+  if (probe.property.startsWith('directional-')) {
+    const type = probe.property.slice('directional-'.length);
+    const source = phaseEvents.find(
+      (event) => event.target === probe.target && event.type === type,
+    );
+    if (source !== undefined) {
+      const direction = snapshot.direction ?? 'ltr';
+      return {
+        target:
+          probe.target === 'parent-modal-safe-target'
+            ? `${direction}-parent-modal-safe-target`
+            : `${direction}-${probe.target}`,
+        type,
+      };
+    }
+    const previousDialogs = connectedDialogCount(trace.at(-2)?.snapshot);
+    const currentDialogs = connectedDialogCount(snapshot);
+    const direction = snapshot.direction ?? 'ltr';
+    if (
+      type === 'escape-owned' &&
+      action?.operation === 'press' &&
+      /escape/iu.test(action.target) &&
+      previousDialogs >= 2 &&
+      currentDialogs === 1
+    ) {
+      return { target: `${direction}-child-modal`, type };
+    }
+    if (
+      type === 'focus-restored' &&
+      previousDialogs >= 2 &&
+      currentDialogs === 1 &&
+      ['modal-safe-target', 'parent-modal-safe-target'].includes(snapshot.focus.target)
+    ) {
+      return { target: `${direction}-parent-modal-safe-target`, type };
+    }
+  }
+  const previousSnapshot = trace.at(-2)?.snapshot;
+  const previousDialogs = connectedDialogCount(previousSnapshot);
+  const currentDialogs = connectedDialogCount(snapshot);
+  if (
+    probe.property === 'initial-focus-skipped' &&
+    snapshot.focus.target !== probe.target &&
+    currentDialogs > 0
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'forward-tab-wrapped' &&
+    action?.operation === 'press' &&
+    action.target === 'tab-from-last-target' &&
+    action.surfaces?.includes('last-eligible-target') &&
+    ['first-eligible-target', 'first-eligible-target-after-wrap'].includes(snapshot.focus.target)
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'reverse-tab-wrapped' &&
+    action?.operation === 'press' &&
+    /shift-tab-from-first-target/iu.test(action.target) &&
+    action.surfaces?.includes('first-eligible-target') &&
+    snapshot.focus.target === 'last-eligible-target'
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'dynamic-targets-recomputed' &&
+    action?.operation === 'updateContent' &&
+    action.target === 'hide-disable-remove-tab-targets' &&
+    action.mutations?.length === 3 &&
+    action.mutations.every(({ changed }) => changed === true)
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'outside-origin-close-requested-once' &&
+    action?.operation === 'point' &&
+    action.target === 'outside-down-up' &&
+    action.prevented !== true &&
+    sameLiteral(action.events, ['pointerdown', 'pointerup']) &&
+    previousDialogs === 1 &&
+    currentDialogs === 0
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (probe.property === 'incomplete-pointer-sequences-ignored') {
+    const counts = (probe.operationIndexes ?? []).map((index) =>
+      connectedDialogCount(operationSnapshot(trace, index)),
+    );
+    if (counts.length > 0 && counts.every((count) => count === 1)) {
+      return { target: probe.target, type: probe.property };
+    }
+  }
+  if (
+    probe.property === 'close-requested-once' &&
+    phaseEvents.filter(
+      ({ target, type }) => target === probe.target && /^close-requested(?:-once)?$/u.test(type),
+    ).length === 1 &&
+    currentDialogs > 0
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'controlled-close-committed' &&
+    action?.target === 'controlled-close-commit' &&
+    previousDialogs === 1 &&
+    currentDialogs === 0
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'claim-acquired-per-modal' &&
+    previousDialogs === 1 &&
+    currentDialogs === 2 &&
+    singleStateValue(snapshot, 'page-scroll-lock', 'active') === true
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'final-claim-released' &&
+    previousDialogs === 1 &&
+    currentDialogs === 0 &&
+    singleStateValue(snapshot, 'page-scroll-lock', 'active') === false
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'scroll-resumed' &&
+    action?.operation === 'point' &&
+    action.target === 'page-scroll-surface' &&
+    action.dispatched === true &&
+    action.prevented !== true &&
+    singleStateValue(snapshot, 'page-scroll-lock', 'active') === false
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'close-committed' &&
+    action?.operation === 'close' &&
+    previousDialogs === 1 &&
+    currentDialogs === 0
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'single-owner-created' &&
+    action?.operation === 'open' &&
+    previousDialogs === 0 &&
+    currentDialogs === 1
+  ) {
+    return { target: probe.target, type: probe.property };
+  }
+  if (
+    probe.property === 'closed-or-transferred-before-parent-close' ||
+    probe.property === 'closed-by-single-explicit-operation'
+  ) {
+    const childCloseIndex = phaseEvents.findIndex(
+      ({ target, type }) => target === 'child-modal' && type === 'closed',
+    );
+    const parentCloseIndex = phaseEvents.findIndex(
+      ({ target, type }) => ['modal-panel', 'parent-modal'].includes(target) && type === 'closed',
+    );
+    if (
+      action?.operation === 'close' &&
+      action.target === 'parent-modal' &&
+      previousDialogs >= 2 &&
+      currentDialogs === 0 &&
+      childCloseIndex !== -1 &&
+      parentCloseIndex > childCloseIndex
+    ) {
+      return { target: probe.target, type: probe.property };
+    }
+  }
+  const active = snapshot.focus.target;
+  const focusAliases = {
+    'connected-meaningful-opener': ['connected-opener'],
+    'parent-modal-safe-target': ['modal-safe-target', 'parent-modal-safe-target'],
+  };
+  const focusOutcome =
+    /focus-applied|focus-recovered|focus-restored/iu.test(probe.property) &&
+    (active === probe.target || focusAliases[probe.target]?.includes(active) === true);
+  if (focusOutcome) return { target: probe.target, type: probe.property };
+  return fallbackProbeFact(probe);
+}
+
+function announcementProbeFact(probe, snapshot) {
+  const messages = uniqueValues(snapshot.announcements.map(({ message }) => message));
+  return messages.length === 1 ? { message: messages[0] } : fallbackProbeFact(probe);
+}
+
+function cleanupLabel(probe) {
+  return probe.property.startsWith('no-')
+    ? `${probe.property}-${probe.target}`
+    : `${probe.target}-${probe.property}`;
+}
+
+function cleanupProbeFact(probe, document, snapshot, action, trace) {
+  const label = cleanupLabel(probe);
+  const countTargets = {
+    guards: 'modal-guards',
+    inert: 'background-inert-claim',
+    listeners: 'modal-listeners',
+    portal: 'modal-portals',
+    scroll: 'page-scroll-claim',
+    timers: 'modal-timers',
+  };
+  const portals = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].filter(
+    (portal) => portal.isConnected !== false,
+  );
+  const guards = [
+    ...(document.querySelectorAll?.(
+      '[data-modal-focus-guard], [data-focus-guard], [data-modal-guard]',
+    ) ?? []),
+  ].filter((guard) => guard.isConnected !== false);
+  const fixtureRoot = document.querySelector?.('[data-modal-fixture-root]');
+  const rootUnmounted = fixtureRoot?.hasChildNodes?.() === false;
+  let satisfied = false;
+  if (probe.target === 'background' && probe.property === 'interactive') {
+    const elements = matchingElements(document, 'background');
+    satisfied =
+      elements.length > 0 &&
+      elements.every(
+        (element) => element.inert !== true && element.getAttribute?.('aria-hidden') !== 'true',
+      );
+  } else if (probe.target === 'background-accessibility-branch' && probe.property === 'restored') {
+    const elements = matchingElements(document, 'background');
+    satisfied =
+      elements.length > 0 &&
+      elements.every(
+        (element) => element.inert !== true && element.getAttribute?.('aria-hidden') !== 'true',
+      );
+  } else if (probe.property === 'released-once' && countTargets[probe.target] !== undefined) {
+    satisfied = directState(snapshot, countTargets[probe.target], 'remaining-count').some(
+      ({ value }) => value === 0,
+    );
+  } else if (probe.property === 'retained') {
+    if (probe.target === 'single-event-owner') {
+      satisfied =
+        action?.dispatched === true &&
+        action.prevented !== true &&
+        action.surfaces?.filter((surface) => surface === 'hydrated-input').length === 1;
+    } else if (probe.target === 'single-modal-owner') {
+      satisfied = connectedDialogCount(snapshot) === 1;
+    } else if (probe.target === 'parent-scroll-claim') {
+      satisfied =
+        connectedDialogCount(snapshot) === 1 &&
+        singleStateValue(snapshot, 'page-scroll-lock', 'active') === true;
+    } else {
+      satisfied = connectedDialogCount(snapshot) > 0;
+    }
+  } else if (probe.property === 'no-orphan') {
+    satisfied = portals.length === 0;
+  } else if (probe.property === 'removed') {
+    satisfied = portals.length === 0;
+  } else if (probe.property === 'released') {
+    if (probe.target === 'child-scroll-claim') {
+      const previous = trace.at(-2)?.snapshot;
+      satisfied =
+        connectedDialogCount(previous) >= 2 &&
+        connectedDialogCount(snapshot) === 1 &&
+        singleStateValue(snapshot, 'page-scroll-lock', 'active') === true;
+    } else if (probe.target === 'page-scroll-lock') {
+      satisfied =
+        connectedDialogCount(snapshot) === 0 &&
+        singleStateValue(snapshot, 'page-scroll-lock', 'active') === false;
+    } else {
+      satisfied =
+        rootUnmounted &&
+        portals.length === 0 &&
+        guards.length === 0 &&
+        singleStateValue(snapshot, 'page-scroll-lock', 'active') === false;
+    }
+  } else if (probe.property === 'resumed') {
+    satisfied =
+      probe.target === 'page-scroll' &&
+      singleStateValue(snapshot, 'page-scroll-lock', 'active') === false &&
+      action?.operation === 'point' &&
+      action.target === 'page-scroll-surface' &&
+      action.dispatched === true &&
+      action.prevented !== true;
+  }
+  return satisfied ? label : `${probe.target}-not-${probe.property}`;
+}
+
+function observeProbeResults({
+  action,
+  document,
+  phase,
+  operationIndex,
+  scenario,
+  snapshot,
+  trace,
+}) {
+  const currentTrace = [
+    ...trace,
+    {
+      phase,
+      ...(phase === 'after-operation' ? { operationIndex } : {}),
+      snapshot,
+    },
+  ];
+  return (scenario.probes ?? [])
+    .filter(
+      (probe) =>
+        probe.phase === phase &&
+        (phase !== 'after-operation' || probe.operationIndex === operationIndex),
+    )
+    .map((probe) => {
+      let fact;
+      if (probe.category === 'roles') fact = roleProbeFact(probe, document);
+      else if (probe.category === 'relationships') {
+        fact = relationshipProbeFact(probe, document, snapshot, currentTrace.slice(0, -1));
+      } else if (probe.category === 'states') {
+        fact = stateProbeFact(probe, document, snapshot, currentTrace, action);
+      } else if (probe.category === 'focus') {
+        fact = focusProbeFact(probe, snapshot, currentTrace);
+      } else if (probe.category === 'events') {
+        fact = eventProbeFact(probe, snapshot, action, currentTrace);
+      } else if (probe.category === 'announcements') fact = announcementProbeFact(probe, snapshot);
+      else fact = cleanupProbeFact(probe, document, snapshot, action, currentTrace);
+      return { id: probe.id, category: probe.category, fact };
+    });
+}
+
 function observeBrowserSnapshot({ document, fixture, captureResources }) {
   const dialogs = [...(document.querySelectorAll?.('[role="dialog"], [role="alertdialog"]') ?? [])];
   const roles = dialogs.flatMap((dialog) => {
@@ -1171,6 +1892,34 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
       value: dialogs.length === 0 && portal.isConnected !== false,
     });
   }
+  const pageScrollSurface = document.querySelector?.('[data-modal-id="page-scroll-surface"]');
+  const pageLayout = pageScrollSurface?.getBoundingClientRect?.();
+  if (Number.isFinite(pageLayout?.left) && Number.isFinite(pageLayout?.top)) {
+    states.push({
+      target: 'page-layout',
+      name: 'measured-position',
+      value: { left: pageLayout.left, top: pageLayout.top },
+    });
+  }
+  const scrollX = document.defaultView?.scrollX;
+  const scrollY = document.defaultView?.scrollY;
+  if (Number.isFinite(scrollX) && Number.isFinite(scrollY)) {
+    states.push({
+      target: 'page-scroll-position',
+      name: 'measured-position',
+      value: { x: scrollX, y: scrollY },
+    });
+  }
+  const scrollLockActive = [document.body, document.documentElement].some(
+    (element) =>
+      element?.style?.overflow === 'hidden' ||
+      element?.getAttribute?.('data-modal-scroll-lock') === 'true',
+  );
+  states.push({
+    target: 'page-scroll-lock',
+    name: 'active',
+    value: scrollLockActive,
+  });
   const resourceSnapshot = captureResources
     ? document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__?.snapshot?.()
     : undefined;
@@ -1185,9 +1934,42 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
       value: resourceSnapshot.listeners,
     });
     states.push({
+      target: 'background-inert-claim',
+      name: 'remaining-count',
+      value: observedElements.filter(
+        (element) =>
+          element.isConnected !== false &&
+          (element.inert === true || element.hasAttribute?.('inert')),
+      ).length,
+    });
+    const scrollClaimCount = [document.body, document.documentElement].filter(
+      (element) =>
+        element?.style?.overflow === 'hidden' ||
+        element?.getAttribute?.('data-modal-scroll-lock') === 'true',
+    ).length;
+    states.push({
+      target: 'page-scroll-claim',
+      name: 'remaining-count',
+      value: scrollClaimCount,
+    });
+    states.push({
       target: 'modal-timers',
       name: 'remaining-count',
       value: resourceSnapshot.timers,
+    });
+    states.push({
+      target: 'modal-guards',
+      name: 'remaining-count',
+      value: [
+        ...(document.querySelectorAll?.(
+          '[data-modal-focus-guard], [data-focus-guard], [data-modal-guard]',
+        ) ?? []),
+      ].filter((element) => element.isConnected !== false).length,
+    });
+    states.push({
+      target: 'modal-portals',
+      name: 'remaining-count',
+      value: portals.filter((portal) => portal.isConnected !== false).length,
     });
   }
   const active = document.activeElement;
@@ -1229,19 +2011,45 @@ function uniqueRecords(records) {
   });
 }
 
-function observationFromTrace({ cleanup, diagnostics, trace }) {
+function fieldsFromProbeTrace(scenario, trace) {
+  const results = trace.flatMap(({ snapshot }) => snapshot.probes ?? []);
+  const facts = Object.fromEntries(
+    ['roles', 'relationships', 'states', 'events', 'announcements', 'cleanup'].map((category) => [
+      category,
+      [],
+    ]),
+  );
+  let focus = { target: 'unobserved' };
+  for (const probe of scenario.probes) {
+    const matches = results.filter(
+      (result) => result.id === probe.id && result.category === probe.category,
+    );
+    const fact = matches.length === 1 ? matches[0].fact : fallbackProbeFact(probe);
+    if (probe.category === 'focus') focus = structuredClone(fact);
+    else facts[probe.category].push(structuredClone(fact));
+  }
+  return { ...facts, focus };
+}
+
+function observationFromTrace({ cleanup, diagnostics, scenario, trace }) {
   const operationEntries = trace.filter(({ phase }) => phase !== 'after-cleanup');
   const finalEntry = operationEntries.at(-1) ?? trace.at(-1);
+  const normalized =
+    Array.isArray(scenario?.probes) && scenario.probes.length > 0
+      ? fieldsFromProbeTrace(scenario, trace)
+      : {
+          roles: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.roles)),
+          relationships: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.relationships)),
+          states: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.states)),
+          focus: structuredClone(finalEntry?.snapshot.focus ?? { target: 'modal-fixture-root' }),
+          events: structuredClone(finalEntry?.snapshot.events ?? []),
+          announcements: uniqueRecords(
+            operationEntries.flatMap(({ snapshot }) => snapshot.announcements),
+          ),
+          cleanup: structuredClone(cleanup),
+        };
   const observation = {
-    roles: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.roles)),
-    relationships: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.relationships)),
-    states: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.states)),
-    focus: structuredClone(finalEntry?.snapshot.focus ?? { target: 'modal-fixture-root' }),
-    events: structuredClone(finalEntry?.snapshot.events ?? []),
-    announcements: uniqueRecords(
-      operationEntries.flatMap(({ snapshot }) => snapshot.announcements),
-    ),
-    cleanup: structuredClone(cleanup),
+    ...normalized,
     trace: structuredClone(trace),
     diagnostics: structuredClone(diagnostics),
   };
@@ -1263,12 +2071,21 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
   const preExecutionFocus = observationId(document.activeElement, 'modal-fixture-root');
   const captureResources = request.scenario.capture.includes('resources');
   const actions = [];
-  const trace = [
-    {
-      phase: 'before-operations',
-      snapshot: observeBrowserSnapshot({ document, fixture, captureResources }),
-    },
-  ];
+  const trace = [];
+  const captureSnapshot = (phase, operationIndex, action) => {
+    const snapshot = observeBrowserSnapshot({ document, fixture, captureResources });
+    const probes = observeProbeResults({
+      document,
+      action,
+      phase,
+      operationIndex,
+      scenario: request.scenario,
+      snapshot,
+      trace,
+    });
+    return { ...snapshot, ...(probes.length === 0 ? {} : { probes }) };
+  };
+  trace.push({ phase: 'before-operations', snapshot: captureSnapshot('before-operations') });
   for (const [operationIndex, operation] of request.scenario.operations.entries()) {
     const action = await driveBrowserOperation({
       document,
@@ -1280,12 +2097,13 @@ export async function executeModalBrowserScenario({ document, fixture, input, re
       phase: 'after-operation',
       operationIndex,
       operation: structuredClone(operation),
-      snapshot: observeBrowserSnapshot({ document, fixture, captureResources }),
+      snapshot: captureSnapshot('after-operation', operationIndex, action),
     });
     if (!action.completed) break;
   }
   return observationFromTrace({
     cleanup: [],
+    scenario: request.scenario,
     trace,
     diagnostics: {
       executor: 'shared-browser-driver',
@@ -1309,9 +2127,21 @@ function finalizeBrowserObservation({
   fixture,
   fixtureStatus,
   rootUnmounted,
+  scenario,
 }) {
   const captureResources = execution.diagnostics.captureResources === true;
-  const cleanupSnapshot = observeBrowserSnapshot({ document, fixture, captureResources });
+  const rawCleanupSnapshot = observeBrowserSnapshot({ document, fixture, captureResources });
+  const cleanupProbes = observeProbeResults({
+    document,
+    phase: 'after-cleanup',
+    scenario,
+    snapshot: rawCleanupSnapshot,
+    trace: execution.trace,
+  });
+  const cleanupSnapshot = {
+    ...rawCleanupSnapshot,
+    ...(cleanupProbes.length === 0 ? {} : { probes: cleanupProbes }),
+  };
   const portalCount = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].filter(
     (portal) => portal.isConnected !== false,
   ).length;
@@ -1331,6 +2161,7 @@ function finalizeBrowserObservation({
   const trace = [...execution.trace, { phase: 'after-cleanup', snapshot: cleanupSnapshot }];
   return observationFromTrace({
     cleanup,
+    scenario,
     trace,
     diagnostics: {
       ...execution.diagnostics,
@@ -1343,6 +2174,11 @@ function finalizeBrowserObservation({
 
 function captureHydrationTree(container, document) {
   return {
+    dialogs: [
+      ...(container.querySelectorAll?.(
+        '[data-modal-panel], [role="dialog"], [role="alertdialog"]',
+      ) ?? []),
+    ],
     focus: observationId(document.activeElement, 'modal-fixture-root'),
     identifiers: [...(container.querySelectorAll?.('[id]') ?? [])].map((element) =>
       element.getAttribute?.('id'),
@@ -1355,6 +2191,7 @@ function captureHydrationTree(container, document) {
 }
 
 function hydrationDiagnostics(before, after, warningCount) {
+  const recoveryPerformed = before.markup !== after.markup || warningCount > 0;
   return {
     controlledStateStable: sameLiteral(before.inputValues, after.inputValues),
     firstTreeIdentical: before.markup === after.markup,
@@ -1362,6 +2199,12 @@ function hydrationDiagnostics(before, after, warningCount) {
     generatedIdentifiersStable: sameLiteral(before.identifiers, after.identifiers),
     inputValuesAfter: structuredClone(after.inputValues),
     inputValuesBefore: structuredClone(before.inputValues),
+    modalIdentityStable:
+      before.dialogs.length > 0 &&
+      before.dialogs.length === after.dialogs.length &&
+      before.dialogs.every((dialog, index) => dialog === after.dialogs[index]),
+    preHydrationFocus: before.focus,
+    recoveryPerformed,
     warningCount,
   };
 }
@@ -1435,7 +2278,14 @@ export async function mountModalFixtureClient({
           hydrationWarnings.length,
         );
         const trace = structuredClone(execution.trace);
-        trace[0].snapshot.states.push(
+        const hydrationEntryIndex = trace.findIndex(
+          ({ operationIndex, phase }) => phase === 'after-operation' && operationIndex === 0,
+        );
+        if (hydrationEntryIndex === -1) {
+          throw new Error('modal hydration execution did not capture operation zero');
+        }
+        const hydrationSnapshot = trace[hydrationEntryIndex].snapshot;
+        hydrationSnapshot.states.push(
           { target: 'first-tree', name: 'identical', value: hydration.firstTreeIdentical },
           {
             target: 'generated-identifiers',
@@ -1455,7 +2305,7 @@ export async function mountModalFixtureClient({
           {
             target: 'hydration-recovery',
             name: 'performed',
-            value: !hydration.firstTreeIdentical,
+            value: hydration.recoveryPerformed,
           },
           {
             target: 'hydrated-input',
@@ -1463,9 +2313,36 @@ export async function mountModalFixtureClient({
             value: !hydration.controlledStateStable,
           },
           { target: 'focus', name: 'moved-during-hydration', value: hydration.focusMoved },
+          {
+            target: 'document-focus',
+            name: 'pre-hydration-target',
+            value: hydration.preHydrationFocus,
+          },
         );
+        if (hydration.modalIdentityStable) {
+          hydrationSnapshot.relationships.push({
+            source: 'hydrated-modal',
+            name: 'same-identity-as',
+            target: 'server-rendered-modal',
+          });
+        }
+        for (const [traceIndex, entry] of trace.entries()) {
+          if (entry.phase !== 'after-operation') continue;
+          delete entry.snapshot.probes;
+          const probes = observeProbeResults({
+            action: execution.diagnostics.actions[entry.operationIndex],
+            document,
+            phase: entry.phase,
+            operationIndex: entry.operationIndex,
+            scenario: request.scenario,
+            snapshot: entry.snapshot,
+            trace: trace.slice(0, traceIndex),
+          });
+          if (probes.length > 0) entry.snapshot.probes = probes;
+        }
         execution = observationFromTrace({
           cleanup: execution.cleanup,
+          scenario: request.scenario,
           trace,
           diagnostics: {
             ...execution.diagnostics,
@@ -1513,6 +2390,7 @@ export async function mountModalFixtureClient({
               fixture,
               fixtureStatus: result.status,
               rootUnmounted,
+              scenario: request.scenario,
             });
       resourceTracker?.restore?.();
       cleaned = true;

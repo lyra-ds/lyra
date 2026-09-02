@@ -232,6 +232,59 @@ test('explicitly enumerates each scenario ordered operations and normative expec
   }
 });
 
+test('binds every literal assertion to one closed candidate-neutral phase probe', () => {
+  const allowedKeys = new Set([
+    'category',
+    'id',
+    'operationIndex',
+    'operationIndexes',
+    'phase',
+    'property',
+    'relatedTarget',
+    'target',
+  ]);
+  for (const scenario of MODAL_SCENARIOS) {
+    assert.equal(Array.isArray(scenario.probes), true, scenario.scenarioId);
+    const expectedCounts = {
+      roles: scenario.expected.roles.length,
+      relationships: scenario.expected.relationships.length,
+      states: scenario.expected.states.length,
+      focus: 1,
+      events: scenario.expected.events.length,
+      announcements: scenario.expected.announcements.length,
+      cleanup: scenario.expected.cleanup.length,
+    };
+    const actualCounts = Object.fromEntries(Object.keys(expectedCounts).map((key) => [key, 0]));
+    const ids = new Set();
+    for (const probe of scenario.probes) {
+      assert.deepEqual(
+        Object.keys(probe).filter((key) => !allowedKeys.has(key)),
+        [],
+        `${scenario.scenarioId}/${probe.id} has an outcome-bearing field`,
+      );
+      assert.equal(ids.has(probe.id), false, `${scenario.scenarioId}/${probe.id}`);
+      ids.add(probe.id);
+      assert.equal(Object.hasOwn(actualCounts, probe.category), true);
+      actualCounts[probe.category] += 1;
+      assert.equal(
+        ['after-operation', 'after-cleanup', 'server-render'].includes(probe.phase),
+        true,
+      );
+      if (probe.phase === 'after-operation') {
+        assert.equal(Number.isSafeInteger(probe.operationIndex), true);
+        assert.equal(probe.operationIndex >= 0, true);
+        assert.equal(probe.operationIndex < scenario.operations.length, true);
+      } else {
+        assert.equal(Object.hasOwn(probe, 'operationIndex'), false);
+      }
+      assert.equal(typeof probe.property, 'string');
+      assert.equal(probe.property.length > 0, true);
+    }
+    assert.deepEqual(actualCounts, expectedCounts, scenario.scenarioId);
+    assert.equal(Object.isFrozen(scenario.probes), true);
+  }
+});
+
 test('runs nested topmost ownership and restoration in both LTR and RTL', () => {
   const scenario = MODAL_SCENARIOS.find(
     ({ scenarioId }) => scenarioId === 'of-modal.nested-topmost.v1',

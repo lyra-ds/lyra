@@ -18,6 +18,7 @@ const EXECUTION_SCENARIO_KEYS = Object.freeze([
   'components',
   'initial',
   'operations',
+  'probes',
   'requiredCells',
   'capture',
 ]);
@@ -48,6 +49,7 @@ const SNAPSHOT_KEYS = Object.freeze([
   'focus',
   'events',
   'announcements',
+  'probes',
   'resources',
 ]);
 
@@ -85,7 +87,11 @@ const SHAPE_ONLY_EXPECTED = Object.freeze({
 export function modalExecutionScenario(scenario) {
   if (!isPlainRecord(scenario)) throw new Error('modal execution scenario must be a plain record');
   return Object.freeze(
-    Object.fromEntries(EXECUTION_SCENARIO_KEYS.map((key) => [key, structuredClone(scenario[key])])),
+    Object.fromEntries(
+      EXECUTION_SCENARIO_KEYS.flatMap((key) =>
+        scenario[key] === undefined ? [] : [[key, structuredClone(scenario[key])]],
+      ),
+    ),
   );
 }
 
@@ -197,6 +203,40 @@ function validateSnapshot(snapshot, path, errors) {
       }
     }
   }
+  if (snapshot.probes !== undefined) {
+    if (!Array.isArray(snapshot.probes)) {
+      errors.push(`${path}.probes must be an array`);
+    } else {
+      const ids = new Set();
+      snapshot.probes.forEach((probe, index) => {
+        const probePath = `${path}.probes[${index}]`;
+        if (!isPlainRecord(probe)) {
+          errors.push(`${probePath} must be a plain record`);
+          return;
+        }
+        rejectUnknownKeys(probe, ['category', 'fact', 'id'], probePath, errors);
+        if (typeof probe.id !== 'string' || probe.id.length === 0) {
+          errors.push(`${probePath}.id must be a non-empty string`);
+        }
+        if (ids.has(probe.id)) errors.push(`${probePath}.id must be unique in its phase`);
+        ids.add(probe.id);
+        if (
+          ![
+            'roles',
+            'relationships',
+            'states',
+            'focus',
+            'events',
+            'announcements',
+            'cleanup',
+          ].includes(probe.category)
+        ) {
+          errors.push(`${probePath}.category is invalid`);
+        }
+        if (!isJsonValue(probe.fact)) errors.push(`${probePath}.fact must contain JSON values`);
+      });
+    }
+  }
 }
 
 function validateTrace(trace, errors) {
@@ -236,6 +276,39 @@ function validateTrace(trace, errors) {
       errors.push(`${path} may identify an operation only after an operation`);
     }
     validateSnapshot(entry.snapshot, `${path}.snapshot`, errors);
+  }
+  const serverEntries = trace.filter(({ phase }) => phase === 'server-render');
+  if (serverEntries.length > 0) {
+    if (trace.length !== 1 || serverEntries.length !== 1 || trace[0]?.phase !== 'server-render') {
+      errors.push('modal observation server-render trace must contain exactly one entry only');
+    }
+    return;
+  }
+  const beforeIndexes = trace.flatMap(({ phase }, index) =>
+    phase === 'before-operations' ? [index] : [],
+  );
+  const cleanupIndexes = trace.flatMap(({ phase }, index) =>
+    phase === 'after-cleanup' ? [index] : [],
+  );
+  if (beforeIndexes.length !== 1 || beforeIndexes[0] !== 0) {
+    errors.push('modal observation browser trace must start with one before-operations entry');
+  }
+  if (
+    cleanupIndexes.length > 1 ||
+    (cleanupIndexes.length === 1 && cleanupIndexes[0] !== trace.length - 1)
+  ) {
+    errors.push('modal observation browser cleanup trace must be the final entry');
+  }
+  const operationEntries = trace.filter(({ phase }) => phase === 'after-operation');
+  for (const [index, entry] of operationEntries.entries()) {
+    if (entry.operationIndex !== index) {
+      errors.push('modal observation browser operation indexes must be contiguous from zero');
+      break;
+    }
+  }
+  const allowedLength = 1 + operationEntries.length + cleanupIndexes.length;
+  if (trace.length !== allowedLength) {
+    errors.push('modal observation browser trace contains an invalid phase mixture');
   }
 }
 

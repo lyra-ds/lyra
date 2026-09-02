@@ -32,6 +32,17 @@ const validObservation = {
   cleanup: ['background-interactive'],
   trace: [
     {
+      phase: 'before-operations',
+      snapshot: {
+        roles: [],
+        relationships: [],
+        states: [],
+        focus: { target: 'modal-opener' },
+        events: [],
+        announcements: [],
+      },
+    },
+    {
       phase: 'after-operation',
       operationIndex: 0,
       operation: { operation: 'open', target: 'modal-opener' },
@@ -42,6 +53,17 @@ const validObservation = {
         focus: { target: 'modal-safe-target' },
         events: [{ target: 'modal-panel', type: 'opened' }],
         announcements: [{ message: 'Workspace details dialog opened' }],
+      },
+    },
+    {
+      phase: 'after-cleanup',
+      snapshot: {
+        roles: [],
+        relationships: [],
+        states: [],
+        focus: { target: 'modal-opener' },
+        events: [{ target: 'modal-panel', type: 'opened' }],
+        announcements: [],
       },
     },
   ],
@@ -65,6 +87,35 @@ const validObservation = {
 test('accepts one complete neutral request and observation', () => {
   assert.deepEqual(validateModalFixtureRequest(validRequest), []);
   assert.deepEqual(validateModalObservation(validObservation), []);
+});
+
+test('rejects every mixed SSR/browser trace topology', () => {
+  const mixed = structuredClone(validObservation);
+  mixed.trace.splice(1, 0, {
+    phase: 'server-render',
+    snapshot: structuredClone(mixed.trace[0].snapshot),
+  });
+  assert.match(
+    validateModalObservation(mixed).join('\n'),
+    /server-render.*only|trace.*mode|exactly one/iu,
+  );
+
+  const serverWithCleanup = structuredClone(validObservation);
+  serverWithCleanup.trace = [
+    {
+      phase: 'server-render',
+      snapshot: structuredClone(validObservation.trace[1].snapshot),
+    },
+    {
+      phase: 'after-cleanup',
+      snapshot: structuredClone(validObservation.trace[2].snapshot),
+    },
+  ];
+  delete serverWithCleanup.diagnostics.actions;
+  assert.match(
+    validateModalObservation(serverWithCleanup).join('\n'),
+    /server-render.*only|trace.*mode|exactly one/iu,
+  );
 });
 
 for (const key of ['candidateId', 'vendorSelector', 'implementation']) {

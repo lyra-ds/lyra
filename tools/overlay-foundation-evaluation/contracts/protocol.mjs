@@ -356,6 +356,87 @@ function validateOperations(value, errors) {
   });
 }
 
+function validateProbes(value, operationCount, errors) {
+  if (value === undefined) return;
+  if (!Array.isArray(value) || value.length === 0) {
+    errors.push('scenario.probes must be a non-empty array');
+    return;
+  }
+  const ids = new Set();
+  value.forEach((probe, index) => {
+    const path = `scenario.probes[${index}]`;
+    if (!isPlainRecord(probe)) {
+      errors.push(`${path} must be a plain record`);
+      return;
+    }
+    rejectUnknownKeys(
+      probe,
+      [
+        'category',
+        'id',
+        'operationIndex',
+        'operationIndexes',
+        'phase',
+        'property',
+        'relatedTarget',
+        'target',
+      ],
+      path,
+      errors,
+    );
+    for (const key of ['id', 'property']) {
+      if (typeof probe[key] !== 'string' || probe[key].length === 0) {
+        errors.push(`${path}.${key} must be a non-empty string`);
+      }
+      requireCandidateNeutralIdentifier(probe[key], `${path}.${key}`, errors);
+    }
+    if (ids.has(probe.id)) errors.push(`${path}.id must be unique`);
+    ids.add(probe.id);
+    requireMember(
+      probe.category,
+      ['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup'],
+      `${path}.category`,
+      errors,
+    );
+    requireMember(
+      probe.phase,
+      ['after-operation', 'after-cleanup', 'server-render'],
+      `${path}.phase`,
+      errors,
+    );
+    if (probe.phase === 'after-operation') {
+      if (
+        !Number.isSafeInteger(probe.operationIndex) ||
+        probe.operationIndex < 0 ||
+        probe.operationIndex >= operationCount
+      ) {
+        errors.push(`${path}.operationIndex must identify a scenario operation`);
+      }
+    } else if (probe.operationIndex !== undefined) {
+      errors.push(`${path}.operationIndex is supported only after an operation`);
+    }
+    if (probe.operationIndexes !== undefined) {
+      if (
+        !Array.isArray(probe.operationIndexes) ||
+        probe.operationIndexes.length === 0 ||
+        probe.operationIndexes.some(
+          (entry) => !Number.isSafeInteger(entry) || entry < 0 || entry >= operationCount,
+        ) ||
+        new Set(probe.operationIndexes).size !== probe.operationIndexes.length
+      ) {
+        errors.push(`${path}.operationIndexes must identify unique scenario operations`);
+      }
+    }
+    for (const key of ['target', 'relatedTarget']) {
+      if (probe[key] === undefined) continue;
+      if (typeof probe[key] !== 'string' || probe[key].length === 0) {
+        errors.push(`${path}.${key} must be a non-empty string`);
+      }
+      requireCandidateNeutralIdentifier(probe[key], `${path}.${key}`, errors);
+    }
+  });
+}
+
 function validateExpected(value, errors) {
   if (!isPlainRecord(value)) {
     errors.push('scenario.expected must be a plain record');
@@ -473,6 +554,7 @@ export function validateScenario(value) {
       'components',
       'initial',
       'operations',
+      'probes',
       'expected',
       'requiredCells',
       'capture',
@@ -503,6 +585,11 @@ export function validateScenario(value) {
   requireCandidateNeutralIdentifierArray(value.components, 'scenario.components', errors);
   validateInitial(value.initial, errors);
   validateOperations(value.operations, errors);
+  validateProbes(
+    value.probes,
+    Array.isArray(value.operations) ? value.operations.length : 0,
+    errors,
+  );
   validateExpected(value.expected, errors);
   requireUniqueStrings(value.requiredCells, 'scenario.requiredCells', errors);
   requireCandidateNeutralIdentifierArray(value.requiredCells, 'scenario.requiredCells', errors);

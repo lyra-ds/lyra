@@ -571,7 +571,65 @@ function observedRecord(observations) {
   };
 }
 
-function compareObservations(scenario, observations) {
+function expectedProbeFacts(scenario) {
+  const indexes = Object.fromEntries(
+    ['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup'].map(
+      (category) => [category, 0],
+    ),
+  );
+  return new Map(
+    scenario.probes.map((probe) => {
+      const index = indexes[probe.category]++;
+      const fact =
+        probe.category === 'focus'
+          ? scenario.expected.focus
+          : scenario.expected[probe.category][index];
+      return [probe.id, fact];
+    }),
+  );
+}
+
+function traceEntryForProbe(trace, probe) {
+  return trace.find(
+    (entry) =>
+      entry.phase === probe.phase &&
+      (probe.phase !== 'after-operation' || entry.operationIndex === probe.operationIndex),
+  );
+}
+
+function exactProbeEvidence(scenario, observation) {
+  if (!Array.isArray(scenario.probes) || scenario.probes.length === 0) return false;
+  const expectedFacts = expectedProbeFacts(scenario);
+  const expectedByEntry = new Map();
+  for (const probe of scenario.probes) {
+    const entry = traceEntryForProbe(observation.trace, probe);
+    if (entry === undefined) return false;
+    const key = `${probe.phase}:${probe.operationIndex ?? ''}`;
+    const ids = expectedByEntry.get(key) ?? [];
+    ids.push(probe.id);
+    expectedByEntry.set(key, ids);
+    const matches = (entry.snapshot.probes ?? []).filter(
+      (result) => result.id === probe.id && result.category === probe.category,
+    );
+    if (matches.length !== 1 || !isDeepStrictEqual(matches[0].fact, expectedFacts.get(probe.id))) {
+      return false;
+    }
+  }
+  for (const entry of observation.trace) {
+    const key = `${entry.phase}:${entry.operationIndex ?? ''}`;
+    const expectedIds = expectedByEntry.get(key) ?? [];
+    const actual = entry.snapshot.probes ?? [];
+    if (
+      actual.length !== expectedIds.length ||
+      actual.some((result) => !expectedIds.includes(result.id))
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function evaluateModalScenario({ cellId, scenario, observations }) {
   if (!Array.isArray(observations) || observations.length === 0) {
     throw new ModalRunFatalError('modal observation set must be a non-empty array', {
       code: 'observation-invalid',
@@ -591,14 +649,25 @@ function compareObservations(scenario, observations) {
       });
     }
     const observation = entry.observation;
-    const serverRender = observation.trace.some(({ phase }) => phase === 'server-render');
     if (
       observation.diagnostics.executionCompleted !== true ||
       observation.diagnostics.cleanupObserved !== true
     ) {
       return false;
     }
-    if (!serverRender) {
+    const ssrCell = cellId === 'ssr';
+    if (!scenario.requiredCells.includes(cellId)) return false;
+    if (ssrCell) {
+      if (
+        observation.trace.length !== 1 ||
+        observation.trace[0]?.phase !== 'server-render' ||
+        (observation.diagnostics.actions !== undefined &&
+          (!Array.isArray(observation.diagnostics.actions) ||
+            observation.diagnostics.actions.length !== 0))
+      ) {
+        return false;
+      }
+    } else {
       const actions = observation.diagnostics.actions;
       const operationTrace = observation.trace.filter(({ phase }) => phase === 'after-operation');
       if (
@@ -626,16 +695,11 @@ function compareObservations(scenario, observations) {
         return false;
       }
     }
+    if (!exactProbeEvidence(scenario, observation)) return false;
   }
   return observations.every(({ observation }) => {
     const actual = normalizedFields(observation);
-    return (
-      ['roles', 'relationships', 'states', 'events', 'announcements', 'cleanup'].every((key) =>
-        scenario.expected[key].every((expected) =>
-          actual[key].some((observed) => isDeepStrictEqual(observed, expected)),
-        ),
-      ) && isDeepStrictEqual(actual.focus, scenario.expected.focus)
-    );
+    return isDeepStrictEqual(actual, scenario.expected);
   });
 }
 
@@ -910,7 +974,7 @@ export async function runModalWave(
                 policy,
                 scenario,
               });
-              const passed = compareObservations(scenario, observations);
+              const passed = evaluateModalScenario({ cellId, scenario, observations });
               drafts.push({
                 candidate,
                 scenario,

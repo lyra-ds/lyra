@@ -26,7 +26,47 @@ function freezeJson(value) {
   return Object.freeze(value);
 }
 
-function modalScenario({ id, operations, expected, cells, state = {}, captureResources = false }) {
+const PROBE_CATEGORIES = Object.freeze([
+  'roles',
+  'relationships',
+  'states',
+  'focus',
+  'events',
+  'announcements',
+  'cleanup',
+]);
+
+function afterOperation(operationIndex, target, property, extra = {}) {
+  return { phase: 'after-operation', operationIndex, target, property, ...extra };
+}
+
+function afterCleanup(target, property, extra = {}) {
+  return { phase: 'after-cleanup', target, property, ...extra };
+}
+
+function serverRender(target, property, extra = {}) {
+  return { phase: 'server-render', target, property, ...extra };
+}
+
+function modalProbes(groups) {
+  return PROBE_CATEGORIES.flatMap((category) =>
+    groups[category].map((probe, index) => ({
+      id: `${category}-${index + 1}`,
+      category,
+      ...probe,
+    })),
+  );
+}
+
+function modalScenario({
+  id,
+  operations,
+  probes,
+  expected,
+  cells,
+  state = {},
+  captureResources = false,
+}) {
   return freezeJson({
     schemaVersion: 1,
     revision: 1,
@@ -38,6 +78,7 @@ function modalScenario({ id, operations, expected, cells, state = {}, captureRes
       state,
     },
     operations,
+    probes: modalProbes(probes),
     expected,
     requiredCells: cells,
     capture: [
@@ -55,6 +96,25 @@ export const MODAL_SCENARIOS = Object.freeze([
     id: 'semantics-isolation',
     state: { open: false, colorMode: 'light', forcedColors: false },
     operations: [{ operation: 'open', target: 'modal-opener' }],
+    probes: {
+      roles: [afterOperation(0, 'modal-panel', 'accessible-role')],
+      relationships: [
+        afterOperation(0, 'modal-panel', 'labelled-by'),
+        afterOperation(0, 'modal-panel', 'described-by'),
+      ],
+      states: [
+        afterOperation(0, 'modal-panel', 'aria-modal'),
+        afterOperation(0, 'background', 'inert'),
+        afterOperation(0, 'background', 'accessibility-branch'),
+      ],
+      focus: [afterOperation(0, 'document-focus', 'current')],
+      events: [afterOperation(0, 'modal-panel', 'opened')],
+      announcements: [afterOperation(0, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('background', 'interactive'),
+        afterCleanup('background-accessibility-branch', 'restored'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Workspace details' }],
       relationships: [
@@ -83,6 +143,30 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'declare-invalid-initial-focus' },
       { operation: 'open', target: 'modal-opener' },
     ],
+    probes: {
+      roles: [afterOperation(4, 'modal-panel', 'accessible-role')],
+      relationships: [afterOperation(4, 'modal-panel', 'labelled-by')],
+      states: [
+        afterOperation(1, 'safe-declared-target', 'initial-focus-received'),
+        afterOperation(4, 'invalid-declared-target', 'initial-focus-received'),
+        afterOperation(4, 'safe-fallback-target', 'fallback-received'),
+      ],
+      focus: [
+        afterOperation(4, 'document-focus', 'ordered-history', {
+          operationIndexes: [1, 4],
+        }),
+      ],
+      events: [
+        afterOperation(1, 'safe-declared-target', 'initial-focus-applied'),
+        afterOperation(4, 'invalid-declared-target', 'initial-focus-skipped'),
+        afterOperation(4, 'safe-fallback-target', 'initial-focus-applied'),
+      ],
+      announcements: [afterOperation(4, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('initial-focus-guard', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Create workspace' }],
       relationships: [{ source: 'modal-panel', name: 'labelled-by', target: 'modal-title' }],
@@ -112,6 +196,26 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'focusable-summary-fallback-case' },
       { operation: 'open', target: 'modal-opener' },
     ],
+    probes: {
+      roles: [afterOperation(4, 'modal-panel', 'accessible-role')],
+      relationships: [afterOperation(1, 'first-invalid-enabled-field', 'described-by')],
+      states: [
+        afterOperation(1, 'first-invalid-enabled-field', 'invalid'),
+        afterOperation(1, 'first-invalid-enabled-field', 'initial-focus-received'),
+        afterOperation(1, 'disabled-invalid-field', 'initial-focus-received'),
+        afterOperation(4, 'focusable-validation-summary', 'initial-focus-received'),
+      ],
+      focus: [afterOperation(4, 'document-focus', 'current')],
+      events: [
+        afterOperation(1, 'first-invalid-enabled-field', 'validation-initial-focus-applied'),
+        afterOperation(4, 'focusable-validation-summary', 'validation-initial-focus-applied'),
+      ],
+      announcements: [afterOperation(4, 'modal-live-region', 'validation-text')],
+      cleanup: [
+        afterCleanup('validation-focus-guard', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Correct workspace details' }],
       relationships: [
@@ -140,6 +244,22 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'destructive-confirmation' },
       { operation: 'open', target: 'modal-opener' },
     ],
+    probes: {
+      roles: [afterOperation(1, 'modal-panel', 'accessible-role')],
+      relationships: [afterOperation(1, 'modal-panel', 'described-by')],
+      states: [
+        afterOperation(1, 'least-destructive-action', 'initial-focus-received'),
+        afterOperation(1, 'destructive-action', 'initial-focus-received'),
+        afterOperation(1, 'declared-action', 'initial-focus-received'),
+      ],
+      focus: [afterOperation(1, 'document-focus', 'current')],
+      events: [afterOperation(1, 'least-destructive-action', 'initial-focus-applied')],
+      announcements: [afterOperation(1, 'modal-live-region', 'confirmation-text')],
+      cleanup: [
+        afterCleanup('destructive-focus-guard', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'alertdialog', name: 'Delete workspace' }],
       relationships: [
@@ -164,6 +284,21 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'no-tabbable-content' },
       { operation: 'open', target: 'modal-opener' },
     ],
+    probes: {
+      roles: [afterOperation(1, 'modal-panel', 'accessible-role')],
+      relationships: [afterOperation(1, 'modal-panel', 'labelled-by')],
+      states: [
+        afterOperation(1, 'modal-panel', 'tabindex'),
+        afterOperation(1, 'modal-panel', 'named'),
+      ],
+      focus: [afterOperation(1, 'document-focus', 'current')],
+      events: [afterOperation(1, 'modal-panel', 'panel-fallback-focus-applied')],
+      announcements: [afterOperation(1, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('panel-fallback-focus', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Processing workspace' }],
       relationships: [{ source: 'modal-panel', name: 'labelled-by', target: 'modal-title' }],
@@ -188,6 +323,30 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'hide-disable-remove-tab-targets' },
       { operation: 'press', target: 'tab-from-first-target' },
     ],
+    probes: {
+      roles: [afterOperation(4, 'modal-panel', 'accessible-role')],
+      relationships: [
+        afterOperation(4, 'modal-panel', 'contains-focus', {
+          relatedTarget: 'eligible-tab-targets',
+        }),
+      ],
+      states: [
+        afterOperation(3, 'hidden-tab-target', 'tab-eligible'),
+        afterOperation(3, 'disabled-tab-target', 'tab-eligible'),
+        afterOperation(3, 'removed-tab-target', 'tab-eligible'),
+      ],
+      focus: [afterOperation(4, 'document-focus', 'current')],
+      events: [
+        afterOperation(1, 'first-eligible-target', 'forward-tab-wrapped'),
+        afterOperation(2, 'last-eligible-target', 'reverse-tab-wrapped'),
+        afterOperation(3, 'eligible-tab-targets', 'dynamic-targets-recomputed'),
+      ],
+      announcements: [afterOperation(0, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('focus-loop-listener', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Workspace commands' }],
       relationships: [
@@ -218,6 +377,32 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'remove-focused-target' },
       { operation: 'updateContent', target: 'remove-nearest-safe-target' },
     ],
+    probes: {
+      roles: [afterOperation(3, 'modal-panel', 'accessible-role')],
+      relationships: [
+        afterOperation(3, 'modal-panel', 'contains-focus', {
+          relatedTarget: 'safe-focus-targets',
+        }),
+      ],
+      states: [
+        afterOperation(3, 'background', 'focus-escaped'),
+        afterOperation(3, 'modal-panel', 'tabindex'),
+      ],
+      focus: [
+        afterOperation(3, 'document-focus', 'ordered-history', {
+          operationIndexes: [2, 3],
+        }),
+      ],
+      events: [
+        afterOperation(2, 'nearest-safe-target', 'focus-recovered'),
+        afterOperation(3, 'modal-panel', 'panel-fallback-focus-applied'),
+      ],
+      announcements: [afterOperation(3, 'modal-live-region', 'active-text')],
+      cleanup: [
+        afterCleanup('focus-recovery-listener', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Workspace members' }],
       relationships: [
@@ -251,6 +436,39 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'open', target: 'child-modal' },
       { operation: 'press', target: 'escape-key' },
     ],
+    probes: {
+      roles: [
+        afterOperation(7, 'parent-modal', 'accessible-role'),
+        afterOperation(7, 'child-modal', 'accessible-role'),
+      ],
+      relationships: [
+        afterOperation(7, 'child-modal', 'topmost-over', { relatedTarget: 'parent-modal' }),
+        afterOperation(8, 'child-modal', 'restores-focus-inside', {
+          relatedTarget: 'parent-modal',
+        }),
+      ],
+      states: [
+        afterOperation(7, 'child-modal', 'owns-escape'),
+        afterOperation(7, 'child-modal', 'owns-focus'),
+        afterOperation(7, 'child-modal', 'owns-inert-branch'),
+        afterOperation(7, 'child-modal', 'owns-scroll-claim'),
+        afterOperation(8, 'parent-modal', 'logical-open'),
+      ],
+      focus: [afterOperation(8, 'document-focus', 'directional-parent-target')],
+      events: [
+        afterOperation(3, 'child-modal', 'directional-escape-owned'),
+        afterOperation(3, 'child-modal', 'directional-closed'),
+        afterOperation(3, 'parent-modal-safe-target', 'directional-focus-restored'),
+        afterOperation(8, 'child-modal', 'directional-escape-owned'),
+        afterOperation(8, 'child-modal', 'directional-closed'),
+        afterOperation(8, 'parent-modal-safe-target', 'directional-focus-restored'),
+      ],
+      announcements: [afterOperation(7, 'modal-live-region', 'nested-text')],
+      cleanup: [
+        afterOperation(8, 'child-scroll-claim', 'released'),
+        afterOperation(8, 'parent-scroll-claim', 'retained'),
+      ],
+    },
     expected: {
       roles: [
         { role: 'dialog', name: 'Parent workspace' },
@@ -294,6 +512,32 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'point', target: 'child-interaction' },
       { operation: 'point', target: 'outside-prevented-default' },
     ],
+    probes: {
+      roles: [afterOperation(7, 'modal-panel', 'accessible-role')],
+      relationships: [
+        afterOperation(7, 'outside-surface', 'outside-of', { relatedTarget: 'modal-panel' }),
+      ],
+      states: [
+        afterOperation(1, 'complete-outside-down-up', 'dismisses'),
+        afterOperation(3, 'outside-drag-inside', 'dismisses'),
+        afterOperation(4, 'outside-cancel', 'dismisses'),
+        afterOperation(5, 'outside-context-menu', 'dismisses'),
+        afterOperation(6, 'child-interaction', 'dismisses'),
+        afterOperation(7, 'outside-prevented-default', 'dismisses'),
+      ],
+      focus: [afterOperation(1, 'document-focus', 'opener-after-outside-gesture')],
+      events: [
+        afterOperation(1, 'modal-panel', 'outside-origin-close-requested-once'),
+        afterOperation(7, 'modal-panel', 'incomplete-pointer-sequences-ignored', {
+          operationIndexes: [3, 4, 5, 6, 7],
+        }),
+      ],
+      announcements: [afterOperation(1, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('pointer-sequence-guard', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Workspace options' }],
       relationships: [{ source: 'outside-surface', name: 'outside-of', target: 'modal-panel' }],
@@ -323,6 +567,29 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'press', target: 'dismiss-control' },
       { operation: 'updateContent', target: 'controlled-close-commit' },
     ],
+    probes: {
+      roles: [afterOperation(1, 'controlled-modal', 'accessible-role')],
+      relationships: [afterOperation(1, 'dismiss-control', 'controls')],
+      states: [
+        afterOperation(1, 'controlled-modal', 'close-request-count'),
+        afterOperation(1, 'controlled-modal', 'logical-open-before-commit'),
+        afterOperation(2, 'controlled-modal', 'logical-open-after-commit'),
+      ],
+      focus: [
+        afterOperation(2, 'document-focus', 'open-until-commit', {
+          operationIndexes: [0, 1, 2],
+        }),
+      ],
+      events: [
+        afterOperation(1, 'controlled-modal', 'close-requested-once'),
+        afterOperation(2, 'controlled-modal', 'controlled-close-committed'),
+      ],
+      announcements: [afterOperation(2, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('controlled-layer-resources', 'released'),
+        afterCleanup('background', 'interactive'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Controlled workspace' }],
       relationships: [{ source: 'dismiss-control', name: 'controls', target: 'controlled-modal' }],
@@ -351,6 +618,36 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'close', target: 'first-modal' },
       { operation: 'point', target: 'page-scroll-surface' },
     ],
+    probes: {
+      roles: [
+        afterOperation(1, 'first-modal', 'accessible-role'),
+        afterOperation(1, 'second-modal', 'accessible-role'),
+      ],
+      relationships: [
+        afterOperation(1, 'second-modal', 'shares-scroll-owner-with', {
+          relatedTarget: 'first-modal',
+        }),
+      ],
+      states: [
+        afterOperation(3, 'page-scroll-lock', 'maximum-claim-count', {
+          operationIndexes: [0, 1, 2, 3],
+        }),
+        afterOperation(3, 'page-scroll-lock', 'final-claim-count'),
+        afterOperation(3, 'page-layout', 'shift'),
+        afterOperation(4, 'page-scroll-position', 'changed'),
+      ],
+      focus: [afterOperation(3, 'document-focus', 'first-opener-after-release')],
+      events: [
+        afterOperation(1, 'page-scroll-lock', 'claim-acquired-per-modal'),
+        afterOperation(3, 'page-scroll-lock', 'final-claim-released'),
+        afterOperation(4, 'page-scroll-surface', 'scroll-resumed'),
+      ],
+      announcements: [afterOperation(3, 'modal-live-region', 'all-closed-text')],
+      cleanup: [
+        afterOperation(4, 'page-scroll-lock', 'released'),
+        afterOperation(4, 'page-scroll', 'resumed'),
+      ],
+    },
     expected: {
       roles: [
         { role: 'dialog', name: 'First workspace modal' },
@@ -385,6 +682,29 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'close', target: 'modal-panel' },
       { operation: 'open', target: 'modal-opener' },
     ],
+    probes: {
+      roles: [afterOperation(3, 'reopened-modal', 'accessible-role')],
+      relationships: [
+        afterOperation(3, 'reopened-modal', 'owns', {
+          relatedTarget: 'single-resource-owner',
+        }),
+      ],
+      states: [
+        afterOperation(2, 'committed-closed-modal', 'semantics-active'),
+        afterOperation(2, 'committed-closed-modal', 'resource-claim-count'),
+        afterOperation(3, 'reopened-modal', 'owner-count'),
+      ],
+      focus: [afterOperation(3, 'document-focus', 'reopened-safe-target')],
+      events: [
+        afterOperation(2, 'modal-panel', 'close-committed'),
+        afterOperation(3, 'reopened-modal', 'single-owner-created'),
+      ],
+      announcements: [afterOperation(3, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('committed-close-semantics', 'released'),
+        afterCleanup('committed-close-resources', 'released'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Reopened workspace' }],
       relationships: [{ source: 'reopened-modal', name: 'owns', target: 'single-resource-owner' }],
@@ -413,6 +733,33 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'disconnect-opener' },
       { operation: 'close', target: 'modal-panel' },
     ],
+    probes: {
+      roles: [afterOperation(2, 'modal-panel', 'accessible-role')],
+      relationships: [
+        afterOperation(2, 'modal-panel', 'opened-by', {
+          relatedTarget: 'meaningful-opener',
+        }),
+        afterOperation(4, 'disconnected-opener', 'succeeds-to', {
+          relatedTarget: 'documented-successor',
+        }),
+      ],
+      states: [
+        afterOperation(1, 'connected-meaningful-opener', 'restoration-wins'),
+        afterOperation(3, 'disconnected-opener', 'connected'),
+        afterOperation(4, 'documented-successor', 'restoration-wins'),
+        afterOperation(4, 'document-body', 'focus-received'),
+      ],
+      focus: [afterOperation(4, 'document-focus', 'current')],
+      events: [
+        afterOperation(1, 'connected-meaningful-opener', 'focus-restored'),
+        afterOperation(4, 'documented-successor', 'focus-restored'),
+      ],
+      announcements: [afterOperation(4, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('restoration-guard', 'released'),
+        afterCleanup('modal-portal', 'removed'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Workspace settings' }],
       relationships: [
@@ -443,6 +790,31 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'open', target: 'child-modal' },
       { operation: 'close', target: 'parent-modal' },
     ],
+    probes: {
+      roles: [
+        afterOperation(1, 'parent-modal', 'accessible-role'),
+        afterOperation(1, 'child-modal', 'accessible-role'),
+      ],
+      relationships: [
+        afterOperation(1, 'child-modal', 'owned-by', { relatedTarget: 'parent-modal' }),
+      ],
+      states: [
+        afterOperation(2, 'parent-modal', 'logical-open'),
+        afterOperation(2, 'child-modal', 'logical-open'),
+        afterOperation(2, 'child-portal', 'orphaned'),
+      ],
+      focus: [afterOperation(2, 'document-focus', 'parent-successor')],
+      events: [
+        afterOperation(2, 'child-modal', 'closed-or-transferred-before-parent-close'),
+        afterOperation(2, 'parent-modal', 'closed-by-single-explicit-operation'),
+      ],
+      announcements: [afterOperation(2, 'modal-live-region', 'parent-and-child-closed-text')],
+      cleanup: [
+        afterCleanup('child-ownership', 'released'),
+        afterCleanup('parent-ownership', 'released'),
+        afterCleanup('portal', 'no-orphan'),
+      ],
+    },
     expected: {
       roles: [
         { role: 'dialog', name: 'Parent workspace' },
@@ -476,6 +848,33 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'close', target: 'exit-phase-modal' },
       { operation: 'destroy', target: 'exit-phase-modal' },
     ],
+    probes: {
+      roles: [afterOperation(3, 'modal-panel', 'accessible-role')],
+      relationships: [afterOperation(3, 'modal-owner', 'owns', { relatedTarget: 'modal-portal' })],
+      states: [
+        afterCleanup('modal-listeners', 'remaining-count'),
+        afterCleanup('background-inert-claim', 'remaining-count'),
+        afterCleanup('page-scroll-claim', 'remaining-count'),
+        afterCleanup('modal-timers', 'remaining-count'),
+        afterCleanup('modal-guards', 'remaining-count'),
+        afterCleanup('modal-portals', 'remaining-count'),
+      ],
+      focus: [afterCleanup('document-focus', 'meaningful-opener-or-successor')],
+      events: [
+        afterOperation(0, 'entry-phase-modal', 'destroyed-once'),
+        afterOperation(2, 'open-phase-modal', 'destroyed-once'),
+        afterOperation(5, 'exit-phase-modal', 'destroyed-once'),
+      ],
+      announcements: [afterOperation(5, 'modal-live-region', 'text')],
+      cleanup: [
+        afterCleanup('listeners', 'released-once'),
+        afterCleanup('inert', 'released-once'),
+        afterCleanup('scroll', 'released-once'),
+        afterCleanup('timers', 'released-once'),
+        afterCleanup('guards', 'released-once'),
+        afterCleanup('portal', 'released-once'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Disposable workspace' }],
       relationships: [{ source: 'modal-owner', name: 'owns', target: 'modal-portal' }],
@@ -509,6 +908,18 @@ export const MODAL_SCENARIOS = Object.freeze([
     id: 'ssr-open-semantics',
     state: { open: true, environment: 'server' },
     operations: [{ operation: 'open', target: 'server-rendered-modal' }],
+    probes: {
+      roles: [serverRender('server-rendered-modal', 'accessible-role')],
+      relationships: [serverRender('server-rendered-modal', 'labelled-by')],
+      states: [
+        serverRender('server-rendered-modal', 'semantically-available'),
+        serverRender('browser-globals', 'accessed'),
+      ],
+      focus: [serverRender('document-focus', 'server-unchanged')],
+      events: [serverRender('server-rendered-modal', 'rendered-open')],
+      announcements: [serverRender('server-rendered-modal', 'availability-text')],
+      cleanup: [serverRender('browser-resource-claims', 'none')],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Server workspace' }],
       relationships: [
@@ -533,6 +944,31 @@ export const MODAL_SCENARIOS = Object.freeze([
       { operation: 'updateContent', target: 'hydrate-first-tree' },
       { operation: 'press', target: 'hydrated-input' },
     ],
+    probes: {
+      roles: [afterOperation(2, 'hydrated-modal', 'accessible-role')],
+      relationships: [
+        afterOperation(0, 'hydrated-modal', 'same-identity-as', {
+          relatedTarget: 'server-rendered-modal',
+        }),
+      ],
+      states: [
+        afterOperation(0, 'first-tree', 'identical'),
+        afterOperation(0, 'generated-identifiers', 'stable'),
+        afterOperation(0, 'controlled-state', 'stable'),
+        afterOperation(0, 'hydration-warning', 'emitted'),
+        afterOperation(0, 'hydration-recovery', 'performed'),
+        afterOperation(0, 'hydrated-input', 'value-lost'),
+        afterOperation(2, 'hydrated-event', 'duplicate-count'),
+        afterOperation(0, 'focus', 'moved-during-hydration'),
+      ],
+      focus: [afterOperation(0, 'document-focus', 'pre-hydration')],
+      events: [afterOperation(2, 'hydrated-input', 'activated-once')],
+      announcements: [afterOperation(2, 'modal-live-region', 'hydration-text')],
+      cleanup: [
+        afterOperation(2, 'single-event-owner', 'retained'),
+        afterOperation(2, 'single-modal-owner', 'retained'),
+      ],
+    },
     expected: {
       roles: [{ role: 'dialog', name: 'Hydrated workspace' }],
       relationships: [
@@ -578,6 +1014,7 @@ function validateExactScenarioRecord(scenario, expected, path, errors) {
     'components',
     'initial',
     'operations',
+    'probes',
     'requiredCells',
     'capture',
   ]) {
