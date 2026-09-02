@@ -1,4 +1,4 @@
-import { lstat, readFile, writeFile } from 'node:fs/promises';
+import { lstat, readFile, realpath, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -200,7 +200,7 @@ export async function main(options = {}) {
 
 if (
   process.argv[1] !== undefined &&
-  pathToFileURL(resolve(process.argv[1])).href === import.meta.url
+  pathToFileURL(await realpath(resolve(process.argv[1]))).href === import.meta.url
 ) {
   process.exitCode = await main();
 }

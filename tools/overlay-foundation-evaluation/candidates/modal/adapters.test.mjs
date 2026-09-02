@@ -35,7 +35,8 @@ const request = Object.freeze({
 
 function fakeReact() {
   const cleanups = [];
-  const hooks = [];
+  const hookStores = new Map();
+  let hooks = [];
   const stateUpdates = [];
   let cursor = 0;
   function changed(previous, next) {
@@ -83,18 +84,19 @@ function fakeReact() {
       return hooks[index];
     },
     useState(initialValue) {
+      const componentHooks = hooks;
       const index = cursor++;
-      if (hooks[index] === undefined) {
-        hooks[index] = {
+      if (componentHooks[index] === undefined) {
+        componentHooks[index] = {
           value: typeof initialValue === 'function' ? initialValue() : initialValue,
         };
       }
       return [
-        hooks[index].value,
+        componentHooks[index].value,
         (nextValue) => {
-          hooks[index].value =
-            typeof nextValue === 'function' ? nextValue(hooks[index].value) : nextValue;
-          stateUpdates.push(hooks[index].value);
+          componentHooks[index].value =
+            typeof nextValue === 'function' ? nextValue(componentHooks[index].value) : nextValue;
+          stateUpdates.push(componentHooks[index].value);
         },
       ];
     },
@@ -103,6 +105,8 @@ function fakeReact() {
     cleanups,
     React,
     render(Component, props) {
+      if (!hookStores.has(Component)) hookStores.set(Component, []);
+      hooks = hookStores.get(Component);
       cursor = 0;
       return Component(props);
     },
@@ -138,6 +142,24 @@ function oneByType(root, type) {
   assert.equal(matches.length, 1, `expected exactly one ${type} element`);
   return matches[0];
 }
+
+test('fake React preserves hook state independently for each rendered component', () => {
+  const injected = fakeReact();
+  function Parent() {
+    const [value, setValue] = injected.React.useState('parent');
+    return { setValue, value };
+  }
+  function Child() {
+    injected.React.useEffect(() => undefined, []);
+    return null;
+  }
+
+  const parent = injected.render(Parent);
+  parent.setValue('updated-parent');
+  injected.render(Child);
+
+  assert.equal(injected.render(Parent).value, 'updated-parent');
+});
 
 function markerSnapshot(root) {
   return elements(root)
@@ -993,3 +1015,30 @@ for (const candidate of CANDIDATES) {
     }
   });
 }
+
+test('incumbent keeps every entry control routed to the primary modal', async () => {
+  const injected = fakeReact();
+  const adapter = await import('./incumbent.mjs');
+  const { ModalFixture } = await adapter.createModalCandidate({
+    React: injected.React,
+    importModule: async () => primitiveModule(['Dialog']),
+  });
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.declared-initial-focus.v1'),
+  );
+  const props = {
+    request: { ...structuredClone(request), scenario: modalExecutionScenario(scenario) },
+    onReady() {},
+  };
+
+  let tree = injected.render(ModalFixture, props);
+  const openPrimary = elements(tree).find(
+    ({ props: elementProps }) =>
+      elementProps['data-modal-operation'] === 'open' &&
+      elementProps['data-modal-control'] === 'modal-opener',
+  );
+  openPrimary.props.onClick();
+  tree = injected.render(ModalFixture, props);
+
+  assert.equal(oneByType(tree, 'Dialog').props.open, true);
+});

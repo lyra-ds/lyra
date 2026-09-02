@@ -71,8 +71,9 @@ checkout is never mounted writable. With the five external paths bound to the
 same clean revision, run:
 
 ```sh
+node_root="$(mise where node@24.18.0)"
 env UID="$(id -u)" GID="$(id -g)" \
-  OVERLAY_NODE_ROOT=/home/francisross/.local/share/mise/installs/node/24.18.0 \
+  OVERLAY_NODE_ROOT="$node_root" \
   OVERLAY_INPUT_ROOT="$manifest_tmp" \
   OVERLAY_EVIDENCE_ROOT="$evidence_tmp" \
   OVERLAY_OWNED_WORK_ROOT="$work_tmp" \

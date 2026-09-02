@@ -70,7 +70,7 @@ export async function createModalCandidate({ React, importModule = importCandida
     return React.createElement(
       React.Fragment,
       null,
-      ...parts.entryControls.map(operationControl),
+      ...parts.entryControls.map((control) => operationControl(control)),
       ...parts.externalTargets.map((target) => element(React, 'button', target)),
       element(React, 'span', parts.liveRegion),
       element(React, 'button', parts.trigger),

@@ -186,3 +186,110 @@ test('accepts neutral prose containing non-identity substrings', () => {
   observation.announcements[0].message = 'The radix sort is complete.';
   assert.deepEqual(validateModalObservation(observation), []);
 });
+
+test('rejects duplicate resource ids and invalid resource purposes', () => {
+  const resourceEntry = {
+    id: 1,
+    acquiredOperation: 'open',
+    acquiredPhase: 'operation',
+    boundary: 'modal-panel',
+    owner: 'modal-panel',
+    purpose: 'focus-loop',
+    target: 'document',
+    type: 'keydown',
+    uses: [],
+  };
+  const duplicate = structuredClone(validObservation);
+  duplicate.trace[0].snapshot.resources = {
+    listeners: 2,
+    timers: 0,
+    claims: [],
+    listenerEntries: [resourceEntry, { ...resourceEntry }],
+    listenerLifecycles: [],
+    timerEntries: [],
+    timerLifecycles: [],
+  };
+  assert.match(
+    validateModalObservation(duplicate).join('\n'),
+    /listenerEntries\[1\]\.id must be unique/u,
+  );
+
+  const invalidPurpose = structuredClone(duplicate);
+  invalidPurpose.trace[0].snapshot.resources.listenerEntries = [
+    { ...resourceEntry, purpose: 'vendor-specific-purpose' },
+  ];
+  assert.match(
+    validateModalObservation(invalidPurpose).join('\n'),
+    /listenerEntries\[0\]\.purpose is invalid/u,
+  );
+
+  const invalidClaimId = structuredClone(duplicate);
+  invalidClaimId.trace[0].snapshot.resources.listenerEntries = [];
+  invalidClaimId.trace[0].snapshot.resources.claims = [
+    { id: 0, kind: 'scroll-lock', owner: 'modal-panel' },
+  ];
+  assert.match(
+    validateModalObservation(invalidClaimId).join('\n'),
+    /claims\[0\]\.id must be a positive safe integer/u,
+  );
+
+  const invalidTimerKind = structuredClone(invalidClaimId);
+  invalidTimerKind.trace[0].snapshot.resources.claims = [];
+  invalidTimerKind.trace[0].snapshot.resources.timerEntries = [
+    {
+      id: 1,
+      acquiredOperation: 'open',
+      acquiredPhase: 'operation',
+      kind: 'animation-frame',
+      owner: 'modal-panel',
+      purpose: 'focus-loop',
+      target: 'window',
+    },
+  ];
+  assert.match(
+    validateModalObservation(invalidTimerKind).join('\n'),
+    /timerEntries\[0\]\.kind is invalid/u,
+  );
+
+  const invalidLifecycle = structuredClone(invalidTimerKind);
+  invalidLifecycle.trace[0].snapshot.resources.timerEntries = [];
+  invalidLifecycle.trace[0].snapshot.resources.listenerLifecycles = [
+    { ...resourceEntry, releaseCount: -1 },
+  ];
+  assert.match(
+    validateModalObservation(invalidLifecycle).join('\n'),
+    /listenerLifecycles\[0\]\.releaseCount must be a non-negative safe integer/u,
+  );
+
+  const invalidUse = structuredClone(invalidLifecycle);
+  invalidUse.trace[0].snapshot.resources.listenerLifecycles = [];
+  invalidUse.trace[0].snapshot.resources.listenerEntries = [
+    {
+      ...resourceEntry,
+      uses: [
+        {
+          effects: ['vendor-effect'],
+          operation: 'open',
+          phase: 'operation',
+          purpose: 'focus-loop',
+          target: 'document',
+          type: 'keydown',
+        },
+      ],
+    },
+  ];
+  assert.match(
+    validateModalObservation(invalidUse).join('\n'),
+    /listenerEntries\[0\]\.uses\[0\]\.effects contains an invalid effect/u,
+  );
+});
+
+test('rejects non-JSON probe facts', () => {
+  const observation = structuredClone(validObservation);
+  observation.trace[0].snapshot.probes = [{ id: 'focus-1', category: 'focus', fact: undefined }];
+
+  assert.match(
+    validateModalObservation(observation).join('\n'),
+    /probes\[0\]\.fact must contain JSON values/u,
+  );
+});

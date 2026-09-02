@@ -101,9 +101,16 @@ export const MODAL_CELL_POLICIES = Object.freeze({
   }),
 });
 
-if (Object.keys(MODAL_CELL_POLICIES).some((cell, index) => cell !== MODAL_WAVE_CELLS[index])) {
-  throw new Error('modal cell policies must match the immutable modal wave order');
+export function assertModalCellPolicies(policyCells, waveCells) {
+  if (
+    policyCells.length !== waveCells.length ||
+    policyCells.some((cell, index) => cell !== waveCells[index])
+  ) {
+    throw new Error('modal cell policies must match the immutable modal wave order');
+  }
 }
+
+assertModalCellPolicies(Object.keys(MODAL_CELL_POLICIES), MODAL_WAVE_CELLS);
 
 function contentType(path) {
   return (
@@ -133,8 +140,8 @@ function injectInitialMarkup(html, initialMarkup) {
 }
 
 async function defaultStartServer({ fixture, initialMarkup }) {
-  const clientHtmlPath = resolve(fixture.clientHtmlPath);
-  const root = await realpath(dirname(clientHtmlPath));
+  const clientHtmlPath = await realpath(resolve(fixture.clientHtmlPath));
+  const root = dirname(clientHtmlPath);
   const server = createServer(async (request, response) => {
     try {
       const url = new URL(request.url ?? '/', 'http://127.0.0.1');
@@ -183,6 +190,13 @@ async function installFixtureRequest(request) {
 async function executeBrowserScenario({ scenario, cell, hydrate, axe, synthesizeHover }) {
   document.documentElement.dir = cell.direction;
   const bridge = globalThis.__LYRA_MODAL_FIXTURE__;
+  if (bridge?.readyStatus === 'failed') {
+    const details =
+      typeof bridge.mountError === 'string' && bridge.mountError.length > 0
+        ? `: ${bridge.mountError}`
+        : '';
+    throw new Error(`modal fixture mount failed${details}`);
+  }
   if (bridge === undefined || typeof bridge.runScenario !== 'function') {
     throw new Error('modal fixture bridge is unavailable');
   }
@@ -339,11 +353,13 @@ async function runBrowserVersion(
     if (typeof page.waitForFunction !== 'function') {
       throw new Error('Playwright page cannot await modal fixture initialization');
     }
-    await page.waitForFunction(
-      () =>
-        typeof globalThis.__LYRA_MODAL_FIXTURE__?.runScenario === 'function' &&
-        ['ready', 'failed'].includes(globalThis.__LYRA_MODAL_FIXTURE__.readyStatus),
-    );
+    await page.waitForFunction(() => {
+      const bridge = globalThis.__LYRA_MODAL_FIXTURE__;
+      return (
+        bridge?.readyStatus === 'failed' ||
+        (bridge?.readyStatus === 'ready' && typeof bridge.runScenario === 'function')
+      );
+    });
     const execution = await page.evaluate(executeBrowserScenario, {
       scenario: request.scenario,
       cell: request.cell,

@@ -258,7 +258,7 @@ test('pins an immutable least-privilege Compose service and exact local command'
   const command = Array.isArray(service.command) ? service.command.join('\n') : service.command;
   for (const required of [
     'mkdir -p /tmp/corepack-shims',
-    'export PATH="/opt/node/bin:/tmp/corepack-shims:$PATH"',
+    'export PATH="/opt/node/bin:/tmp/corepack-shims:$$PATH"',
     'corepack enable --install-directory /tmp/corepack-shims',
     'git clone --no-hardlinks /input/repository.bundle /work/repository',
     'git -C /work/repository checkout --detach "$OVERLAY_EVALUATION_REVISION"',

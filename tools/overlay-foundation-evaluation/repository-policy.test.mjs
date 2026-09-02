@@ -92,6 +92,7 @@ const threatModelClauses = [
   'If this boundary changes, a Linux-native namespace/openat2 design MUST be adopted before external candidates are executed.',
 ];
 const execFilePromise = promisify(execFile);
+const repositoryGitConfig = ['-c', `safe.directory=${repositoryRoot}`];
 
 async function documentedPnpmCommand(scriptName) {
   const readme = await readFile(
@@ -145,13 +146,22 @@ test('keeps dependencies, lockfile, packages, workflows, and the V1 ledger immut
 
   await execFilePromise(
     'git',
-    ['diff', '--exit-code', 'HEAD', '--', ...Object.keys(immutableCheckoutObjects)],
+    [
+      ...repositoryGitConfig,
+      'diff',
+      '--exit-code',
+      'HEAD',
+      '--',
+      ...Object.keys(immutableCheckoutObjects),
+    ],
     { cwd: repositoryRoot },
   );
   for (const [path, expectedObject] of Object.entries(immutableCheckoutObjects)) {
-    const { stdout } = await execFilePromise('git', ['rev-parse', `HEAD:${path}`], {
-      cwd: repositoryRoot,
-    });
+    const { stdout } = await execFilePromise(
+      'git',
+      [...repositoryGitConfig, 'rev-parse', `HEAD:${path}`],
+      { cwd: repositoryRoot },
+    );
     assert.equal(stdout.trim(), expectedObject, `${path} must match its checkout snapshot`);
   }
 

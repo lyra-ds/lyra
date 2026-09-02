@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -215,6 +215,7 @@ function fakePlaywright({
   delayBridge = false,
   delayReadiness = false,
   failPrimary = false,
+  mountError,
   serializeCallbacks = false,
 } = {}) {
   const calls = [];
@@ -247,7 +248,13 @@ function fakePlaywright({
                 },
                 async goto(url) {
                   calls.push(['goto', url]);
-                  if (!delayBridge) {
+                  if (mountError !== undefined) {
+                    bridge = {
+                      readyStatus: 'failed',
+                      mountError,
+                      cleanup: async () => ({ status: 'destroyed' }),
+                    };
+                  } else if (!delayBridge) {
                     const actual = await sharedBridge(request);
                     bridge = {
                       ...actual,
@@ -363,6 +370,7 @@ function executingPlaywright({
   renderMode = 'createRoot',
   cleanupStatus = 'destroyed',
   observation,
+  onGoto,
 } = {}) {
   const calls = [];
   let request;
@@ -388,6 +396,7 @@ function executingPlaywright({
                   },
                   async goto(url) {
                     calls.push(['goto', url]);
+                    await onGoto?.(url);
                     const actual = await sharedBridge(request, {
                       cleanupStatus,
                       observation,
@@ -462,6 +471,18 @@ test('maps every modal cell once without owning decision-evidence cells', async 
     'consumer-commonjs',
   ])
     assert.equal(MODAL_CELL_POLICIES[forbidden], undefined);
+});
+
+test('rejects a modal wave cell that has no execution policy', async () => {
+  const { assertModalCellPolicies, MODAL_CELL_POLICIES } = await loadCells();
+  assert.throws(
+    () =>
+      assertModalCellPolicies(Object.keys(MODAL_CELL_POLICIES), [
+        ...MODAL_WAVE_CELLS,
+        'future-cell-without-policy',
+      ]),
+    /modal cell policies must match the immutable modal wave order/u,
+  );
 });
 
 test('pins exact modal browser, React, SSR, accessibility, and input policies', async () => {
@@ -661,6 +682,46 @@ test('hydrates actual server markup and passes the literal scenario and cell mod
   );
 });
 
+test('injects hydration markup when the client build root is reached through a symlink', async (t) => {
+  const { runModalCell } = await loadCells();
+  const root = await mkdtemp(join(tmpdir(), 'lyra-modal-cell-symlink-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const actualRoot = join(root, 'actual');
+  const linkedRoot = join(root, 'linked');
+  await mkdir(actualRoot);
+  await symlink(actualRoot, linkedRoot, 'dir');
+  await writeFile(join(actualRoot, 'index.html'), '<main data-modal-fixture-root></main>');
+  const fixture = await ssrFixture(t);
+  const linkedFixture = {
+    ...fixture,
+    clientHtmlPath: join(linkedRoot, 'index.html'),
+  };
+  const servedHtml = [];
+  const fake = executingPlaywright({
+    renderMode: 'hydrateRoot',
+    async onGoto(url) {
+      servedHtml.push(await (await fetch(url)).text());
+    },
+  });
+  const scenario = modalScenariosForCell('hydration')[0];
+
+  await runModalCell({
+    cellId: 'hydration',
+    fixtures: new Map([
+      ['18.3.1', linkedFixture],
+      ['19.2.8', linkedFixture],
+    ]),
+    playwright: fake.playwright,
+    scenario,
+  });
+
+  assert.equal(servedHtml.length, 2);
+  assert.equal(
+    servedHtml.every((html) => html.includes('Hydrated workspace')),
+    true,
+  );
+});
+
 test('runs axe in light and dark cells and never requests synthesized hover for coarse pointer', async () => {
   const { runModalCell } = await loadCells();
   for (const cellId of ['axe-light', 'axe-dark', 'coarse-pointer']) {
@@ -789,6 +850,28 @@ test('waits for the candidate fixture readiness signal before browser execution'
     },
   );
   assert.equal(observations[0].observation.diagnostics.executionCompleted, true);
+});
+
+test('surfaces a candidate mount error without waiting for bridge timeout', async () => {
+  const { runModalCell } = await loadCells();
+  const scenario = modalScenariosForCell('chromium')[0];
+  const fake = fakePlaywright({ mountError: 'synthetic adapter mount failure' });
+
+  await assert.rejects(
+    runModalCell(
+      {
+        cellId: 'chromium',
+        fixtures: new Map([['19.2.8', { clientHtmlPath: '/owned/index.html' }]]),
+        playwright: fake.playwright,
+        scenario,
+      },
+      {
+        startServer: async () => ({ url: 'http://127.0.0.1:43123/', close: async () => {} }),
+      },
+    ),
+    /synthetic adapter mount failure/u,
+  );
+  assert.equal(fake.calls.includes('wait:fixture-bridge'), true);
 });
 
 test('tags a malformed default browser observation as structurally run-fatal', async () => {

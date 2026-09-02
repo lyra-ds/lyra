@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
 import { createModalManifest, main, writeModalManifest } from './create-modal-manifest.mjs';
 import { validateCandidateManifest } from '../runner/manifest.mjs';
 
 const revision = '1'.repeat(40);
+const execFilePromise = promisify(execFile);
 const incumbentArtifacts = [
   ['@lyra-ds/styles', '0.5.0', '2'.repeat(64)],
   ['@lyra-ds/react', '0.5.0', '3'.repeat(64)],
@@ -108,7 +112,7 @@ test('produces a manifest accepted by the core validator and rejects a tampered 
   );
 });
 
-test('writes one canonical manifest exclusively and reuses no mutable characterization fields', async (t) => {
+test('writes one canonical manifest exclusively', async (t) => {
   const setup = await fixture(t);
   await writeFile(setup.incumbentPath, `${JSON.stringify(incumbentCharacterization())}\n`);
 
@@ -144,6 +148,41 @@ test('rejects a BOM-prefixed incumbent characterization before writing output', 
     /incumbent characterization must not contain a BOM/u,
   );
   await assert.rejects(readFile(setup.outputPath), { code: 'ENOENT' });
+});
+
+test('rejects malformed incumbent JSON before writing output', async (t) => {
+  const setup = await fixture(t);
+  await writeFile(setup.incumbentPath, '{"schemaVersion":1');
+
+  await assert.rejects(
+    writeModalManifest({
+      outputPath: setup.outputPath,
+      lyraRevision: revision,
+      incumbentPath: setup.incumbentPath,
+    }),
+    /incumbent characterization must be valid JSON/u,
+  );
+  await assert.rejects(readFile(setup.outputPath), { code: 'ENOENT' });
+});
+
+test('runs the manifest CLI when invoked through a symlink', async (t) => {
+  const setup = await fixture(t);
+  const scriptLink = join(tmpdir(), `create-modal-manifest-${process.pid}-${Date.now()}.mjs`);
+  t.after(() => rm(scriptLink, { force: true }));
+  await symlink(fileURLToPath(new URL('./create-modal-manifest.mjs', import.meta.url)), scriptLink);
+  await writeFile(setup.incumbentPath, `${JSON.stringify(incumbentCharacterization())}\n`);
+
+  await execFilePromise(process.execPath, [
+    scriptLink,
+    '--revision',
+    revision,
+    '--incumbent',
+    setup.incumbentPath,
+    '--output',
+    setup.outputPath,
+  ]);
+
+  assert.equal(JSON.parse(await readFile(setup.outputPath, 'utf8')).lyraRevision, revision);
 });
 
 for (const [name, argv] of [
