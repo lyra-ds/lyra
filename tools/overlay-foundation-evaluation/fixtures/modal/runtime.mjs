@@ -1,5 +1,9 @@
 import { isPlainRecord } from '../../contracts/protocol.mjs';
-import { validateModalFixtureRequest, validateModalObservation } from './protocol.mjs';
+import {
+  modalExecutionScenario,
+  validateModalFixtureRequest,
+  validateModalObservation,
+} from './protocol.mjs';
 
 const OPERATION_NAMES = Object.freeze([
   'open',
@@ -113,14 +117,18 @@ export function installModalResourceTracker(scope = globalThis) {
 }
 
 function emptyObservation({ destroyed, events, resources }) {
-  return {
+  const snapshot = {
     roles: [],
     relationships: [],
     states: [],
     focus: { target: 'modal-fixture-root' },
     events: structuredClone(events),
     announcements: [],
+  };
+  return {
+    ...snapshot,
     cleanup: [...resources].sort(),
+    trace: [{ phase: 'before-operations', snapshot: structuredClone(snapshot) }],
     diagnostics: { destroyed },
   };
 }
@@ -153,16 +161,14 @@ function validAction(action) {
   return true;
 }
 
-function createOperations({ commit, destroy, isDestroyed, resources }) {
+function createOperations({ commit, isDestroyed, resources }) {
   const perform = (action) => {
     if (isDestroyed() || !validAction(action)) return false;
     if (action.resource !== undefined) resources.add(action.resource);
     commit(action.event);
     return true;
   };
-  return Object.fromEntries(
-    OPERATION_NAMES.map((name) => [name, name === 'destroy' ? destroy : perform]),
-  );
+  return Object.fromEntries(OPERATION_NAMES.map((name) => [name, perform]));
 }
 
 export function createModalRuntime(request) {
@@ -188,11 +194,14 @@ export function createModalRuntime(request) {
     if (destroy() !== true) throw new Error('modal fixture cleanup result is uncertain');
     return Object.freeze({ status: 'destroyed' });
   };
+  const acceptInput = (operation, target, eventType) =>
+    !destroyed && OPERATION_NAMES.includes(operation) && validEvent({ target, type: eventType });
   return Object.freeze({
+    acceptInput,
     cleanup,
     isDestroyed: () => destroyed,
     operations: Object.freeze(
-      createOperations({ commit, destroy, isDestroyed: () => destroyed, resources }),
+      createOperations({ commit, isDestroyed: () => destroyed, resources }),
     ),
     observe: () => structuredClone(emptyObservation({ destroyed, events, resources })),
     request: Object.freeze(immutableRequest),
@@ -204,7 +213,38 @@ function part(props, children) {
   return Object.freeze({ children, props: Object.freeze(props) });
 }
 
-function presentation(request) {
+function presentation(request, contentMode) {
+  const state = request.scenario.initial.state;
+  if (contentMode === 'destructive-confirmation') {
+    return Object.freeze({
+      description: 'Deleting this workspace cannot be undone.',
+      descriptionId: 'destructive-warning',
+      panelId: 'modal-panel',
+      title: 'Delete workspace',
+      titleId: 'modal-title',
+    });
+  }
+  if (contentMode === 'no-tabbable-content') {
+    return Object.freeze({
+      description: 'Workspace processing is in progress.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Processing workspace',
+      titleId: 'modal-title',
+    });
+  }
+  if (
+    contentMode === 'enabled-invalid-field-case' ||
+    contentMode === 'focusable-summary-fallback-case'
+  ) {
+    return Object.freeze({
+      description: 'Correct the workspace validation errors.',
+      descriptionId: 'field-error',
+      panelId: 'modal-panel',
+      title: 'Correct workspace details',
+      titleId: 'modal-title',
+    });
+  }
   if (request.scenario.scenarioId.endsWith('.ssr-open-semantics.v1')) {
     return Object.freeze({
       description: 'Server workspace is ready.',
@@ -223,6 +263,100 @@ function presentation(request) {
       titleId: 'hydrated-modal-title',
     });
   }
+  if (state.controlled === true) {
+    return Object.freeze({
+      description: 'Controlled workspace is ready.',
+      descriptionId: 'modal-description',
+      panelId: 'controlled-modal',
+      title: 'Controlled workspace',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.declaredTarget !== undefined) {
+    return Object.freeze({
+      description: 'Create a workspace.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Create workspace',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.dynamicTargets === true) {
+    return Object.freeze({
+      description: 'Choose a workspace command.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Workspace commands',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.focusedNodeRemovable === true) {
+    return Object.freeze({
+      description: 'Manage workspace members.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Workspace members',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.nested === true) {
+    return Object.freeze({
+      description: 'Parent workspace is ready.',
+      descriptionId: 'modal-description',
+      panelId: 'parent-modal',
+      title: 'Parent workspace',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.pointerMode === 'coarse') {
+    return Object.freeze({
+      description: 'Choose a workspace option.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Workspace options',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.openerConnected === true) {
+    return Object.freeze({
+      description: 'Change workspace settings.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Workspace settings',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.pageScrollPosition === 'preserved') {
+    return Object.freeze({
+      description: 'First workspace modal is ready.',
+      descriptionId: 'modal-description',
+      panelId: 'first-modal',
+      title: 'First workspace modal',
+      titleId: 'modal-title',
+    });
+  }
+  if (
+    request.scenario.operations.some(
+      ({ operation, target }) => operation === 'destroy' && target === 'entry-phase-modal',
+    )
+  ) {
+    return Object.freeze({
+      description: 'Disposable workspace is ready.',
+      descriptionId: 'modal-description',
+      panelId: 'modal-panel',
+      title: 'Disposable workspace',
+      titleId: 'modal-title',
+    });
+  }
+  if (state.motionPreference === 'reduced-motion') {
+    return Object.freeze({
+      description: 'Reopened workspace is ready.',
+      descriptionId: 'modal-description',
+      panelId: 'reopened-modal',
+      title: 'Reopened workspace',
+      titleId: 'modal-title',
+    });
+  }
   return Object.freeze({
     description: 'Review the workspace details before continuing.',
     descriptionId: 'modal-description',
@@ -235,24 +369,27 @@ function presentation(request) {
 function scenarioControl(
   operation,
   index,
-  { commitControlledClose, onOpenChange, openNested, runtime },
+  { commitControlledClose, destroyPhase, onOpenChange, openNested, prepareContent, runtime },
 ) {
-  const record = (eventType = operation.operation) => {
-    if (operation.operation === 'destroy') return runtime.destroy();
-    const accepted = runtime.operations[operation.operation]({
-      event: { target: operation.target, type: eventType },
-    });
+  const record = (event, eventType = operation.operation) => {
+    let accepted = runtime.acceptInput(operation.operation, operation.target, eventType);
     if (!accepted) return false;
     if (operation.operation === 'open') {
-      if (/child|second/iu.test(operation.target)) openNested();
-      else onOpenChange(true);
-    } else if (operation.operation === 'close') onOpenChange(false);
-    else if (
+      if (/child|second/iu.test(operation.target)) accepted = openNested();
+    } else if (
       operation.operation === 'updateContent' &&
       operation.target === 'controlled-close-commit'
     ) {
-      commitControlledClose();
+      accepted = commitControlledClose();
+    } else if (operation.operation === 'updateContent') {
+      accepted = prepareContent(operation.target);
+    } else if (operation.operation === 'destroy') {
+      accepted = destroyPhase(operation.target);
     }
+    if (!accepted) return false;
+    const control = event?.currentTarget;
+    const previous = Number(control?.getAttribute?.('data-modal-completion-count') ?? '0');
+    control?.setAttribute?.('data-modal-completion-count', String(previous + 1));
     return true;
   };
   const props = {
@@ -260,13 +397,14 @@ function scenarioControl(
     'data-modal-control': operation.target,
     'data-modal-operation': operation.operation,
     'data-modal-id': operation.target,
+    'data-modal-completion-count': '0',
     key: `${operation.operation}-${operation.target}-${index}`,
   };
-  if (operation.operation === 'press') props.onKeyDown = () => record('keydown');
+  if (operation.operation === 'press') props.onKeyDown = (event) => record(event, 'keydown');
   else if (operation.operation === 'point') {
-    props.onPointerDown = () => record('pointerdown');
-    props.onContextMenu = () => record('contextmenu');
-  } else props.onClick = () => record();
+    props.onPointerDown = (event) => record(event, 'pointerdown');
+    props.onContextMenu = (event) => record(event, 'contextmenu');
+  } else props.onClick = (event) => record(event);
   return part(props, `${operation.operation} ${operation.target}`);
 }
 
@@ -277,20 +415,85 @@ function fixtureParts(
   runtime,
   announcement,
   commitControlledClose,
+  contentMode,
+  destroyPhase,
+  prepareContent,
 ) {
-  const view = presentation(request);
+  const view = presentation(request, contentMode);
+  const state = request.scenario.initial.state;
   const controls = request.scenario.operations.map((operation, index) => ({
     operation,
     part: scenarioControl(operation, index, {
       commitControlledClose,
+      destroyPhase,
       onOpenChange,
       openNested,
+      prepareContent,
       runtime,
     }),
   }));
   const belongsInContent = ({ operation, target }) =>
     ['close', 'point', 'press'].includes(operation) ||
     (operation === 'open' && /child|second/iu.test(target));
+  const supportingActions = [];
+  if (
+    contentMode === 'enabled-invalid-field-case' ||
+    contentMode === 'focusable-summary-fallback-case'
+  ) {
+    supportingActions.push(
+      part(
+        {
+          type: 'button',
+          disabled: true,
+          'aria-invalid': 'true',
+          'data-modal-id': 'disabled-invalid-field',
+        },
+        'Disabled invalid field',
+      ),
+    );
+  }
+  if (state.dynamicTargets === true) {
+    supportingActions.push(
+      part({ type: 'button', 'data-modal-id': 'last-eligible-target' }, 'Last eligible target'),
+      part({ type: 'button', 'data-modal-id': 'hidden-tab-target' }, 'Hidden target'),
+      part({ type: 'button', 'data-modal-id': 'disabled-tab-target' }, 'Disabled target'),
+      part({ type: 'button', 'data-modal-id': 'removed-tab-target' }, 'Removed target'),
+    );
+  }
+  if (state.focusedNodeRemovable === true) {
+    supportingActions.push(
+      part({ type: 'button', 'data-modal-id': 'middle-focus-target' }, 'Middle focus target'),
+      part({ type: 'button', 'data-modal-id': 'nearest-safe-target' }, 'Nearest safe target'),
+    );
+  }
+  if (state.pointerMode === 'coarse') {
+    supportingActions.push(
+      part({ type: 'button', 'data-modal-id': 'child-modal-safe-target' }, 'Child interaction'),
+    );
+  }
+  const externalTargets = [];
+  if (state.openerConnected === true) {
+    externalTargets.push(
+      part({ type: 'button', 'data-modal-id': 'documented-successor' }, 'Workspace successor'),
+    );
+  }
+  if (state.pageScrollPosition === 'preserved') {
+    externalTargets.push(
+      part({ 'data-modal-id': 'page-scroll-surface' }, 'Scrollable page surface'),
+    );
+  }
+  if (state.pointerMode === 'coarse') {
+    externalTargets.push(
+      part(
+        {
+          type: 'button',
+          'data-modal-id': 'outside-prevented-default',
+          onPointerDown: (event) => event.preventDefault(),
+        },
+        'Prevented outside interaction',
+      ),
+    );
+  }
   return Object.freeze({
     entryControls: Object.freeze(
       controls.filter(({ operation }) => !belongsInContent(operation)).map(({ part }) => part),
@@ -298,6 +501,18 @@ function fixtureParts(
     contentControls: Object.freeze(
       controls.filter(({ operation }) => belongsInContent(operation)).map(({ part }) => part),
     ),
+    externalTargets: Object.freeze(externalTargets),
+    hydrationInput:
+      typeof state.inputValue === 'string'
+        ? part(
+            {
+              'data-modal-id': 'hydrated-input',
+              defaultValue: state.inputValue,
+            },
+            undefined,
+          )
+        : undefined,
+    supportingActions: Object.freeze(supportingActions),
     trigger: part(
       { type: 'button', 'data-fixture-control': 'opener', onClick: () => onOpenChange(true) },
       'Open modal',
@@ -308,6 +523,8 @@ function fixtureParts(
       'data-modal-id': view.panelId,
       'data-modal-panel': '',
       'data-modal-portal': '',
+      ...(contentMode === 'no-tabbable-content' ? { tabIndex: -1 } : {}),
+      ...(contentMode === 'destructive-confirmation' ? { role: 'alertdialog' } : {}),
     }),
     title: part({ 'data-fixture-part': 'title', id: view.titleId }, view.title),
     description: part(
@@ -318,21 +535,75 @@ function fixtureParts(
       {
         type: 'button',
         'data-fixture-part': 'initial-target',
-        'data-modal-id': 'modal-safe-target',
+        'data-modal-id':
+          contentMode === 'declare-safe-initial-focus'
+            ? 'safe-declared-target'
+            : contentMode === 'declare-invalid-initial-focus'
+              ? 'invalid-declared-target'
+              : state.dynamicTargets === true
+                ? 'first-eligible-target'
+                : 'modal-safe-target',
+        ...(contentMode === 'declare-safe-initial-focus' ? { autoFocus: true } : {}),
+        ...(contentMode === 'declare-invalid-initial-focus'
+          ? { disabled: true, tabIndex: -1 }
+          : {}),
+        ...(contentMode === 'no-tabbable-content' ? { disabled: true, tabIndex: -1 } : {}),
       },
       'Safe initial target',
     ),
-    ordinaryAction: part({ type: 'button', 'data-fixture-action': 'ordinary' }, 'Save workspace'),
+    ordinaryAction: part(
+      {
+        type: 'button',
+        'data-fixture-action': 'ordinary',
+        ...(contentMode === 'no-tabbable-content' ? { disabled: true } : {}),
+        ...(contentMode === 'destructive-confirmation' ? { autoFocus: true } : {}),
+        ...(contentMode === 'destructive-confirmation'
+          ? { 'data-modal-id': 'least-destructive-action' }
+          : {}),
+        ...(contentMode === 'enabled-invalid-field-case'
+          ? {
+              'aria-describedby': 'field-error',
+              'aria-invalid': 'true',
+              autoFocus: true,
+              'data-modal-id': 'first-invalid-enabled-field',
+            }
+          : {}),
+        ...(contentMode === 'focusable-summary-fallback-case'
+          ? { autoFocus: true, 'data-modal-id': 'focusable-validation-summary' }
+          : {}),
+        ...(contentMode === 'declare-invalid-initial-focus'
+          ? { autoFocus: true, 'data-modal-id': 'safe-fallback-target' }
+          : {}),
+      },
+      contentMode === 'destructive-confirmation' ? 'Cancel' : 'Save workspace',
+    ),
     destructiveAction: part(
-      { type: 'button', 'data-fixture-action': 'destructive' },
+      {
+        type: 'button',
+        'data-fixture-action': 'destructive',
+        ...(contentMode === 'no-tabbable-content' ? { disabled: true } : {}),
+        ...(contentMode === 'destructive-confirmation'
+          ? { 'data-modal-id': 'destructive-action' }
+          : {}),
+      },
       'Delete workspace',
     ),
     close: part(
-      { type: 'button', 'data-fixture-control': 'close', onClick: () => onOpenChange(false) },
+      {
+        type: 'button',
+        'data-fixture-control': 'close',
+        onClick: () => onOpenChange(false),
+        ...(contentMode === 'no-tabbable-content' ? { disabled: true, tabIndex: -1 } : {}),
+      },
       'Close modal',
     ),
     nestedTrigger: part(
-      { type: 'button', 'data-fixture-control': 'nested-opener', onClick: openNested },
+      {
+        type: 'button',
+        'data-fixture-control': 'nested-opener',
+        onClick: openNested,
+        ...(contentMode === 'no-tabbable-content' ? { disabled: true, tabIndex: -1 } : {}),
+      },
       'Open nested modal',
     ),
     liveRegion: part({ 'aria-live': 'polite', 'data-modal-id': 'modal-live-region' }, announcement),
@@ -350,6 +621,7 @@ function observedWithDiagnostics(runtime, diagnostics) {
 export function useModalFixtureRuntime({ React, request, diagnostics, onReady }) {
   const [open, setOpen] = React.useState(() => request.scenario.initial.state.open === true);
   const [nestedOpen, setNestedOpen] = React.useState(false);
+  const [contentMode, setContentMode] = React.useState('default');
   const [announcement, setAnnouncement] = React.useState(() => {
     const view = presentation(request);
     return `${view.title} dialog ${request.scenario.initial.state.open === true ? 'available' : 'ready'}`;
@@ -363,29 +635,61 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
       if (typeof nextOpen !== 'boolean') return false;
       if (nextOpen === false && request.scenario.initial.state.controlled === true) {
         setPendingControlledClose(true);
-        setAnnouncement(`${presentation(request).title} dialog close requested`);
+        setAnnouncement(`${presentation(request, contentMode).title} dialog close requested`);
         return runtime.operations.close({
           event: { target: 'controlled-modal', type: 'close-requested' },
         });
       }
       setOpen(nextOpen);
       if (nextOpen === false && nestedOpen) setNestedOpen(false);
-      setAnnouncement(`${presentation(request).title} dialog ${nextOpen ? 'opened' : 'closed'}`);
+      setAnnouncement(
+        `${presentation(request, contentMode).title} dialog ${nextOpen ? 'opened' : 'closed'}`,
+      );
       return runtime.operations[nextOpen ? 'open' : 'close']({
         event: { target: 'modal-panel', type: nextOpen ? 'opened' : 'closed' },
       });
     },
-    [nestedOpen, request, runtime],
+    [contentMode, nestedOpen, request, runtime],
   );
   const commitControlledClose = React.useCallback(() => {
     if (pendingControlledClose !== true) return false;
     setOpen(false);
     setPendingControlledClose(false);
-    setAnnouncement(`${presentation(request).title} dialog closed`);
+    setAnnouncement(`${presentation(request, contentMode).title} dialog closed`);
     return runtime.operations.updateContent({
       event: { target: 'controlled-modal', type: 'controlled-close-committed' },
     });
-  }, [pendingControlledClose, request, runtime]);
+  }, [contentMode, pendingControlledClose, request, runtime]);
+  const prepareContent = React.useCallback(
+    (target) => {
+      if (
+        !request.scenario.operations.some(
+          (operation) => operation.operation === 'updateContent' && operation.target === target,
+        )
+      ) {
+        return false;
+      }
+      setContentMode(target);
+      return true;
+    },
+    [request],
+  );
+  const destroyPhase = React.useCallback(
+    (target) => {
+      if (
+        !request.scenario.operations.some(
+          (operation) => operation.operation === 'destroy' && operation.target === target,
+        )
+      ) {
+        return false;
+      }
+      setNestedOpen(false);
+      setOpen(false);
+      setAnnouncement('Disposable workspace dialog removed');
+      return runtime.operations.destroy({ event: { target, type: 'destroyed-once' } });
+    },
+    [request],
+  );
   const openNested = React.useCallback(() => {
     setNestedOpen(true);
     setAnnouncement('Child workspace dialog opened');
@@ -434,6 +738,9 @@ export function useModalFixtureRuntime({ React, request, diagnostics, onReady })
       runtime,
       announcement,
       commitControlledClose,
+      contentMode,
+      destroyPhase,
+      prepareContent,
     ),
   });
 }
@@ -507,7 +814,27 @@ export function observeModalSsrMarkup({ request, html }) {
     events: semanticallyAvailable ? [{ target: source, type: 'rendered-open' }] : [],
     announcements: semanticallyAvailable ? [{ message: `${name} dialog is available` }] : [],
     cleanup: ['no-browser-resource-claims'],
-    diagnostics: {},
+    trace: [
+      {
+        phase: 'server-render',
+        snapshot: {
+          roles: semanticallyAvailable ? [{ role: 'dialog', name }] : [],
+          relationships: semanticallyAvailable
+            ? [{ source, name: 'labelled-by', target: labelTarget }]
+            : [],
+          states: semanticallyAvailable
+            ? [
+                { target: source, name: 'semantically-available', value: true },
+                { target: 'browser-globals', name: 'accessed', value: false },
+              ]
+            : [{ target: 'browser-globals', name: 'accessed', value: false }],
+          focus: { target: 'server-document-focus-unchanged' },
+          events: semanticallyAvailable ? [{ target: source, type: 'rendered-open' }] : [],
+          announcements: semanticallyAvailable ? [{ message: `${name} dialog is available` }] : [],
+        },
+      },
+    ],
+    diagnostics: { cleanupObserved: true, executionCompleted: true },
   };
   const errors = validateModalObservation(observation);
   if (errors.length !== 0) {
@@ -518,22 +845,6 @@ export function observeModalSsrMarkup({ request, html }) {
 
 function sameLiteral(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
-}
-
-function executableScenario(scenario) {
-  return Object.fromEntries(
-    [
-      'schemaVersion',
-      'revision',
-      'contractId',
-      'scenarioId',
-      'components',
-      'initial',
-      'operations',
-      'requiredCells',
-      'capture',
-    ].map((key) => [key, scenario[key]]),
-  );
 }
 
 function cleanupResult(value) {
@@ -572,12 +883,17 @@ function browserEvent(document, type, init = {}) {
 }
 
 function dispatch(document, element, type, init) {
-  if (element === null || element === undefined || typeof element.dispatchEvent !== 'function') {
+  if (
+    element === null ||
+    element === undefined ||
+    element.isConnected === false ||
+    typeof element.dispatchEvent !== 'function'
+  ) {
     return { dispatched: false, prevented: false };
   }
   const event = browserEvent(document, type, init);
-  const dispatched = element.dispatchEvent(event);
-  return { dispatched, prevented: event.defaultPrevented === true };
+  element.dispatchEvent(event);
+  return { dispatched: true, prevented: event.defaultPrevented === true };
 }
 
 function click(element) {
@@ -602,16 +918,32 @@ function focusElement(element) {
   return true;
 }
 
+function connectedPanelCount(document) {
+  return [...(document.querySelectorAll?.('[data-modal-panel]') ?? [])].filter(
+    (panel) => panel.isConnected !== false,
+  ).length;
+}
+
 function mutateContent(document, target) {
   const mutations = [];
   const record = (name, changed) => mutations.push({ name, changed });
   if (target === 'disconnect-opener') {
     record(
       'opener-disconnected',
-      removeElement(document.querySelector?.('[data-fixture-control="opener"]')),
+      removeElement(
+        document.querySelector?.(
+          '[data-modal-operation="open"][data-modal-control="connected-opener"]',
+        ),
+      ),
     );
   } else if (target === 'remove-focused-target') {
-    record('focused-target-removed', removeElement(document.activeElement));
+    const focused = document.activeElement;
+    record(
+      'focused-target-removed',
+      focused === document.body || focused === document.documentElement
+        ? false
+        : removeElement(focused),
+    );
   } else if (target === 'remove-nearest-safe-target') {
     record(
       'nearest-safe-target-removed',
@@ -626,35 +958,6 @@ function mutateContent(document, target) {
     record('hidden-tab-target-hidden', hidden !== null && hidden !== undefined);
     record('disabled-tab-target-disabled', disabled !== null && disabled !== undefined);
     record('removed-tab-target-removed', removeElement(removed));
-  } else if (target === 'enabled-invalid-field-case') {
-    const field = document.querySelector?.('[data-modal-control="enabled-invalid-field-case"]');
-    field?.setAttribute?.('aria-invalid', 'true');
-    record('invalid-field-enabled', field !== null && field !== undefined);
-  } else if (target === 'focusable-summary-fallback-case') {
-    record(
-      'validation-summary-focused',
-      focusElement(
-        document.querySelector?.('[data-modal-control="focusable-summary-fallback-case"]'),
-      ),
-    );
-  } else if (target === 'declare-safe-initial-focus') {
-    record(
-      'declared-safe-target-focused',
-      focusElement(document.querySelector?.('[data-modal-control="declare-safe-initial-focus"]')),
-    );
-  } else if (target === 'declare-invalid-initial-focus') {
-    const control = document.querySelector?.(
-      '[data-modal-control="declare-invalid-initial-focus"]',
-    );
-    if (control !== null && control !== undefined) control.disabled = true;
-    record('declared-target-disabled', control !== null && control !== undefined);
-  } else if (target === 'no-tabbable-content') {
-    const panel = document.querySelector?.('[data-modal-panel]');
-    for (const element of panel?.querySelectorAll?.('button, input, [tabindex]') ?? []) {
-      element.disabled = true;
-      element.setAttribute?.('tabindex', '-1');
-    }
-    record('tabbables-disabled', panel !== null && panel !== undefined);
   } else if (target === 'hydrate-first-tree') {
     const root = document.querySelector?.('[data-modal-fixture-root]');
     record('hydration-tree-inspected', root !== null && root !== undefined);
@@ -662,7 +965,7 @@ function mutateContent(document, target) {
   return mutations;
 }
 
-function driveBrowserOperation({ document, fixture, operation, synthesizeHover }) {
+async function driveBrowserOperation({ document, operation, synthesizeHover }) {
   const control = document.querySelector?.(
     `[data-modal-operation="${operation.operation}"][data-modal-control="${operation.target}"]`,
   );
@@ -674,13 +977,21 @@ function driveBrowserOperation({ document, fixture, operation, synthesizeHover }
     surfaces: [],
     dispatched: false,
     prevented: false,
+    completed: false,
   };
+  if (!action.controlFound || control.isConnected === false) {
+    action.failure = 'control-missing';
+    return action;
+  }
+  const panelCountBefore = connectedPanelCount(document);
+  const completionBefore = Number(control.getAttribute?.('data-modal-completion-count') ?? '0');
   const commit = (type, element = control, init) => {
     const result = dispatch(document, element, type, init);
     action.events.push(type);
     action.surfaces.push(observationId(element, 'missing-browser-surface'));
     action.dispatched ||= result.dispatched;
     action.prevented ||= result.prevented;
+    if (!result.dispatched && action.failure === undefined) action.failure = 'surface-missing';
   };
   if (operation.operation === 'setDirection') {
     document.documentElement.dir = operation.target;
@@ -691,8 +1002,20 @@ function driveBrowserOperation({ document, fixture, operation, synthesizeHover }
     }
     Object.assign(action, click(control));
   } else if (operation.operation === 'press') {
-    if (/focus-target|tab-from/iu.test(operation.target)) focusElement(control);
-    commit('keydown', control, {
+    let pressSurface = control;
+    if (operation.target === 'tab-from-last-target') {
+      pressSurface = document.querySelector?.('[data-modal-id="last-eligible-target"]');
+    } else if (/shift-tab-from-first-target|tab-from-first-target/iu.test(operation.target)) {
+      pressSurface = document.querySelector?.('[data-modal-id="first-eligible-target"]');
+    } else if (operation.target === 'middle-focus-target') {
+      pressSurface = document.querySelector?.('[data-modal-id="middle-focus-target"]');
+    } else if (/escape-key|dismiss-control/iu.test(operation.target)) {
+      pressSurface = document.activeElement;
+    } else if (operation.target === 'hydrated-input') {
+      pressSurface = document.querySelector?.('[data-modal-id="hydrated-input"]');
+    }
+    if (/focus-target|tab-from/iu.test(operation.target)) focusElement(pressSurface);
+    commit('keydown', pressSurface, {
       key: /escape|dismiss/iu.test(operation.target)
         ? 'Escape'
         : /input/iu.test(operation.target)
@@ -703,9 +1026,11 @@ function driveBrowserOperation({ document, fixture, operation, synthesizeHover }
   } else if (operation.operation === 'point') {
     const origin = /child-interaction/iu.test(operation.target)
       ? document.querySelector?.('[data-modal-id="child-modal-safe-target"]')
-      : /page-scroll/iu.test(operation.target)
-        ? (document.querySelector?.('[data-modal-id="page-scroll-surface"]') ?? document.body)
-        : document.querySelector?.('[data-fixture-part="backdrop"]');
+      : operation.target === 'outside-prevented-default'
+        ? document.querySelector?.('[data-modal-id="outside-prevented-default"]')
+        : /page-scroll/iu.test(operation.target)
+          ? document.querySelector?.('[data-modal-id="page-scroll-surface"]')
+          : document.querySelector?.('[data-fixture-part="backdrop"]');
     if (/context-menu/iu.test(operation.target)) {
       commit('contextmenu', origin);
     } else {
@@ -718,12 +1043,48 @@ function driveBrowserOperation({ document, fixture, operation, synthesizeHover }
     }
   } else if (operation.operation === 'destroy') {
     Object.assign(action, click(control));
-    if (fixture.isDestroyed?.() !== true) fixture.destroy?.();
   } else if (operation.operation === 'updateContent') {
     Object.assign(action, click(control));
     action.mutations = mutateContent(document, operation.target);
   } else {
     Object.assign(action, click(control));
+  }
+  await settleBrowserWork();
+  const panelCountAfter = connectedPanelCount(document);
+  const directMutationTargets = new Set([
+    'disconnect-opener',
+    'remove-focused-target',
+    'remove-nearest-safe-target',
+    'hide-disable-remove-tab-targets',
+    'hydrate-first-tree',
+  ]);
+  const mutationsCompleted =
+    !directMutationTargets.has(operation.target) ||
+    (action.mutations?.length > 0 && action.mutations.every(({ changed }) => changed === true));
+  const completionAfter = Number(control.getAttribute?.('data-modal-completion-count') ?? '0');
+  const handlerCompleted =
+    operation.operation === 'point' || operation.operation === 'press'
+      ? action.dispatched
+      : completionAfter > completionBefore;
+  const transitionCompleted =
+    operation.operation === 'open'
+      ? panelCountAfter > panelCountBefore ||
+        (operation.target === 'server-rendered-modal' && panelCountAfter > 0)
+      : operation.operation === 'close' || operation.target === 'controlled-close-commit'
+        ? panelCountAfter < panelCountBefore
+        : true;
+  action.completed =
+    action.failure === undefined &&
+    action.dispatched &&
+    handlerCompleted &&
+    mutationsCompleted &&
+    transitionCompleted;
+  if (!action.completed && action.failure === undefined) {
+    action.failure = !mutationsCompleted
+      ? 'mutation-not-completed'
+      : !transitionCompleted
+        ? 'transition-not-completed'
+        : 'operation-not-completed';
   }
   return action;
 }
@@ -754,7 +1115,7 @@ function accessibleName(document, element) {
   return typeof value === 'string' && value !== '' ? value : undefined;
 }
 
-function observeBrowserDocument({ document, fixture, diagnostics }) {
+function observeBrowserSnapshot({ document, fixture, captureResources }) {
   const dialogs = [...(document.querySelectorAll?.('[role="dialog"], [role="alertdialog"]') ?? [])];
   const roles = dialogs.flatMap((dialog) => {
     const role = dialog.getAttribute?.('role');
@@ -797,6 +1158,10 @@ function observeBrowserDocument({ document, fixture, diagnostics }) {
     }
     if (element.disabled === true) states.push({ target, name: 'disabled', value: true });
     if (element.hidden === true) states.push({ target, name: 'hidden', value: true });
+    const tabIndex = element.getAttribute?.('tabindex');
+    if (typeof tabIndex === 'string' && /^-?\d+$/u.test(tabIndex)) {
+      states.push({ target, name: 'tabindex', value: Number(tabIndex) });
+    }
   }
   const portals = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])];
   for (const portal of portals) {
@@ -806,7 +1171,9 @@ function observeBrowserDocument({ document, fixture, diagnostics }) {
       value: dialogs.length === 0 && portal.isConnected !== false,
     });
   }
-  const resourceSnapshot = document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__?.snapshot?.();
+  const resourceSnapshot = captureResources
+    ? document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__?.snapshot?.()
+    : undefined;
   if (
     isPlainRecord(resourceSnapshot) &&
     Number.isInteger(resourceSnapshot.listeners) &&
@@ -831,7 +1198,7 @@ function observeBrowserDocument({ document, fixture, diagnostics }) {
     cleanup: [],
     diagnostics: {},
   };
-  const observation = {
+  return {
     roles,
     relationships,
     states,
@@ -841,11 +1208,42 @@ function observeBrowserDocument({ document, fixture, diagnostics }) {
       .map((element) => element.textContent?.trim())
       .filter((message) => typeof message === 'string' && message !== '')
       .map((message) => ({ message })),
-    cleanup: structuredClone(runtimeObservation.cleanup ?? []),
-    diagnostics: {
-      ...structuredClone(runtimeObservation.diagnostics ?? {}),
-      ...structuredClone(diagnostics),
-    },
+    ...(resourceSnapshot === undefined
+      ? {}
+      : {
+          resources: {
+            listeners: resourceSnapshot.listeners,
+            timers: resourceSnapshot.timers,
+          },
+        }),
+  };
+}
+
+function uniqueRecords(records) {
+  const seen = new Set();
+  return records.filter((record) => {
+    const key = JSON.stringify(record);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function observationFromTrace({ cleanup, diagnostics, trace }) {
+  const operationEntries = trace.filter(({ phase }) => phase !== 'after-cleanup');
+  const finalEntry = operationEntries.at(-1) ?? trace.at(-1);
+  const observation = {
+    roles: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.roles)),
+    relationships: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.relationships)),
+    states: uniqueRecords(trace.flatMap(({ snapshot }) => snapshot.states)),
+    focus: structuredClone(finalEntry?.snapshot.focus ?? { target: 'modal-fixture-root' }),
+    events: structuredClone(finalEntry?.snapshot.events ?? []),
+    announcements: uniqueRecords(
+      operationEntries.flatMap(({ snapshot }) => snapshot.announcements),
+    ),
+    cleanup: structuredClone(cleanup),
+    trace: structuredClone(trace),
+    diagnostics: structuredClone(diagnostics),
   };
   const errors = validateModalObservation(observation);
   if (errors.length !== 0) {
@@ -856,37 +1254,116 @@ function observeBrowserDocument({ document, fixture, diagnostics }) {
 
 export async function executeModalBrowserScenario({ document, fixture, input, request }) {
   if (
-    !sameLiteral(executableScenario(input.scenario), executableScenario(request.scenario)) ||
+    !sameLiteral(modalExecutionScenario(input.scenario), request.scenario) ||
     !sameLiteral(input.cell, request.cell)
   ) {
     throw new Error('modal browser scenario does not match its literal fixture request');
   }
   document.documentElement.dir = request.cell.direction;
   const preExecutionFocus = observationId(document.activeElement, 'modal-fixture-root');
+  const captureResources = request.scenario.capture.includes('resources');
   const actions = [];
-  for (const operation of request.scenario.operations) {
-    actions.push(
-      driveBrowserOperation({
-        document,
-        fixture,
-        operation,
-        synthesizeHover: input.synthesizeHover,
-      }),
-    );
-    await settleBrowserWork();
+  const trace = [
+    {
+      phase: 'before-operations',
+      snapshot: observeBrowserSnapshot({ document, fixture, captureResources }),
+    },
+  ];
+  for (const [operationIndex, operation] of request.scenario.operations.entries()) {
+    const action = await driveBrowserOperation({
+      document,
+      operation,
+      synthesizeHover: input.synthesizeHover,
+    });
+    actions.push(action);
+    trace.push({
+      phase: 'after-operation',
+      operationIndex,
+      operation: structuredClone(operation),
+      snapshot: observeBrowserSnapshot({ document, fixture, captureResources }),
+    });
+    if (!action.completed) break;
   }
-  return observeBrowserDocument({
-    document,
-    fixture,
+  return observationFromTrace({
+    cleanup: [],
+    trace,
     diagnostics: {
       executor: 'shared-browser-driver',
       operations: structuredClone(request.scenario.operations),
       actions,
+      executionCompleted:
+        actions.length === request.scenario.operations.length &&
+        actions.every(({ completed }) => completed === true),
+      cleanupObserved: false,
+      captureResources,
       hydrate: input.hydrate === true,
       preExecutionFocus,
       postExecutionFocus: observationId(document.activeElement, 'modal-fixture-root'),
     },
   });
+}
+
+function finalizeBrowserObservation({
+  document,
+  execution,
+  fixture,
+  fixtureStatus,
+  rootUnmounted,
+}) {
+  const captureResources = execution.diagnostics.captureResources === true;
+  const cleanupSnapshot = observeBrowserSnapshot({ document, fixture, captureResources });
+  const portalCount = [...(document.querySelectorAll?.('[data-modal-portal]') ?? [])].filter(
+    (portal) => portal.isConnected !== false,
+  ).length;
+  const cleanup = [
+    'fixture-destroyed',
+    ...(rootUnmounted ? ['root-unmounted'] : ['root-still-mounted']),
+    ...(portalCount === 0 ? ['modal-portals-removed'] : ['modal-portals-remaining']),
+  ];
+  if (captureResources) {
+    cleanup.push(
+      cleanupSnapshot.resources?.listeners === 0
+        ? 'modal-listeners-released'
+        : 'modal-listeners-remaining',
+      cleanupSnapshot.resources?.timers === 0 ? 'modal-timers-released' : 'modal-timers-remaining',
+    );
+  }
+  const trace = [...execution.trace, { phase: 'after-cleanup', snapshot: cleanupSnapshot }];
+  return observationFromTrace({
+    cleanup,
+    trace,
+    diagnostics: {
+      ...execution.diagnostics,
+      cleanupObserved: true,
+      fixtureStatus,
+      rootUnmounted,
+    },
+  });
+}
+
+function captureHydrationTree(container, document) {
+  return {
+    focus: observationId(document.activeElement, 'modal-fixture-root'),
+    identifiers: [...(container.querySelectorAll?.('[id]') ?? [])].map((element) =>
+      element.getAttribute?.('id'),
+    ),
+    inputValues: [...(container.querySelectorAll?.('input, textarea, select') ?? [])].map(
+      (element) => element.value,
+    ),
+    markup: typeof container.innerHTML === 'string' ? container.innerHTML : '',
+  };
+}
+
+function hydrationDiagnostics(before, after, warningCount) {
+  return {
+    controlledStateStable: sameLiteral(before.inputValues, after.inputValues),
+    firstTreeIdentical: before.markup === after.markup,
+    focusMoved: before.focus !== after.focus,
+    generatedIdentifiersStable: sameLiteral(before.identifiers, after.identifiers),
+    inputValuesAfter: structuredClone(after.inputValues),
+    inputValuesBefore: structuredClone(before.inputValues),
+    warningCount,
+  };
 }
 
 export async function mountModalFixtureClient({
@@ -913,6 +1390,25 @@ export async function mountModalFixtureClient({
   });
   const renderMode = container.hasChildNodes() ? 'hydrateRoot' : 'createRoot';
   const resourceTracker = document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__;
+  const hydrationBefore =
+    renderMode === 'hydrateRoot' ? captureHydrationTree(container, document) : undefined;
+  const hydrationWarnings = [];
+  const browserConsole = document.defaultView?.console;
+  const originalConsoleError = browserConsole?.error;
+  let hydrationConsoleRestored = false;
+  if (renderMode === 'hydrateRoot' && typeof originalConsoleError === 'function') {
+    browserConsole.error = (...args) => {
+      hydrationWarnings.push(args.map(String).join(' '));
+      return originalConsoleError.apply(browserConsole, args);
+    };
+  }
+  const restoreHydrationConsole = () => {
+    if (hydrationConsoleRestored) return;
+    if (renderMode === 'hydrateRoot' && typeof originalConsoleError === 'function') {
+      browserConsole.error = originalConsoleError;
+    }
+    hydrationConsoleRestored = true;
+  };
   let root;
   if (renderMode === 'hydrateRoot') root = hydrateRoot(container, element);
   else {
@@ -920,13 +1416,64 @@ export async function mountModalFixtureClient({
     root.render(element);
   }
   let cleaned = false;
+  let cleanupOutput;
+  let execution;
   return Object.freeze({
     ready: ready.promise,
     renderMode,
     request: structuredClone(request),
     async runScenario(input) {
       const fixture = await ready.promise;
-      return executeModalBrowserScenario({ document, fixture, input, request });
+      const hydrationAfter =
+        hydrationBefore === undefined ? undefined : captureHydrationTree(container, document);
+      if (hydrationAfter !== undefined) restoreHydrationConsole();
+      execution = await executeModalBrowserScenario({ document, fixture, input, request });
+      if (hydrationAfter !== undefined) {
+        const hydration = hydrationDiagnostics(
+          hydrationBefore,
+          hydrationAfter,
+          hydrationWarnings.length,
+        );
+        const trace = structuredClone(execution.trace);
+        trace[0].snapshot.states.push(
+          { target: 'first-tree', name: 'identical', value: hydration.firstTreeIdentical },
+          {
+            target: 'generated-identifiers',
+            name: 'stable',
+            value: hydration.generatedIdentifiersStable,
+          },
+          {
+            target: 'controlled-state',
+            name: 'stable',
+            value: hydration.controlledStateStable,
+          },
+          {
+            target: 'hydration-warning',
+            name: 'emitted',
+            value: hydration.warningCount > 0,
+          },
+          {
+            target: 'hydration-recovery',
+            name: 'performed',
+            value: !hydration.firstTreeIdentical,
+          },
+          {
+            target: 'hydrated-input',
+            name: 'value-lost',
+            value: !hydration.controlledStateStable,
+          },
+          { target: 'focus', name: 'moved-during-hydration', value: hydration.focusMoved },
+        );
+        execution = observationFromTrace({
+          cleanup: execution.cleanup,
+          trace,
+          diagnostics: {
+            ...execution.diagnostics,
+            hydration,
+          },
+        });
+      }
+      return execution;
     },
     async runAxe() {
       if (axe === undefined || typeof axe.run !== 'function') {
@@ -935,17 +1482,45 @@ export async function mountModalFixtureClient({
       return axe.run(document);
     },
     async cleanup() {
-      if (cleaned) return Object.freeze({ status: 'already-destroyed' });
+      if (cleaned) {
+        return Object.freeze({
+          status: 'already-destroyed',
+          ...(cleanupOutput?.observation === undefined
+            ? {}
+            : { observation: cleanupOutput.observation }),
+        });
+      }
+      restoreHydrationConsole();
       const fixture = await ready.promise;
       let result;
       if (typeof fixture.cleanup === 'function') result = cleanupResult(await fixture.cleanup());
       else if (fixture.isDestroyed?.() === true) result = { status: 'already-destroyed' };
       else if (fixture.destroy?.() === true) result = { status: 'destroyed' };
       else throw new Error('modal fixture cleanup result is uncertain');
-      root?.unmount?.();
+      if (typeof root?.unmount !== 'function') {
+        throw new Error('modal fixture root cleanup is unavailable');
+      }
+      root.unmount();
+      await settleBrowserWork();
+      const rootUnmounted = container.hasChildNodes() === false;
+      if (!rootUnmounted) throw new Error('modal fixture root cleanup is uncertain');
+      const observation =
+        execution === undefined
+          ? undefined
+          : finalizeBrowserObservation({
+              document,
+              execution,
+              fixture,
+              fixtureStatus: result.status,
+              rootUnmounted,
+            });
       resourceTracker?.restore?.();
       cleaned = true;
-      return cleanupResult(result);
+      cleanupOutput = Object.freeze({
+        status: result.status,
+        ...(observation === undefined ? {} : { observation }),
+      });
+      return cleanupOutput;
     },
   });
 }

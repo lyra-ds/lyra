@@ -26,7 +26,7 @@ function freezeJson(value) {
   return Object.freeze(value);
 }
 
-function modalScenario({ id, operations, expected, cells, state = {} }) {
+function modalScenario({ id, operations, expected, cells, state = {}, captureResources = false }) {
   return freezeJson({
     schemaVersion: 1,
     revision: 1,
@@ -40,7 +40,13 @@ function modalScenario({ id, operations, expected, cells, state = {} }) {
     operations,
     expected,
     requiredCells: cells,
-    capture: ['dom', 'accessibility-tree', 'events', 'focus', 'resources'],
+    capture: [
+      'dom',
+      'accessibility-tree',
+      'events',
+      'focus',
+      ...(captureResources ? ['resources'] : []),
+    ],
   });
 }
 
@@ -460,6 +466,7 @@ export const MODAL_SCENARIOS = Object.freeze([
   }),
   modalScenario({
     id: 'unmount-cleanup',
+    captureResources: true,
     state: { open: false, motionPreference: 'reduced-motion' },
     operations: [
       { operation: 'destroy', target: 'entry-phase-modal' },

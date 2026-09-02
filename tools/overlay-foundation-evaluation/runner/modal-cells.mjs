@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { MODAL_WAVE_CELLS } from '../contracts/modal.mjs';
 import { isPlainRecord } from '../contracts/protocol.mjs';
 import {
+  modalExecutionScenario,
   validateModalFixtureRequest,
   validateModalObservation,
 } from '../fixtures/modal/protocol.mjs';
@@ -225,6 +226,9 @@ async function cleanupBrowserFixture() {
   ) {
     throw new Error('modal fixture cleanup result is uncertain');
   }
+  if (result.observation !== undefined && !isPlainRecord(result.observation)) {
+    throw new Error('modal fixture cleanup observation is invalid');
+  }
   return result;
 }
 
@@ -244,7 +248,7 @@ function browserCell(policy, reactVersion, cellId) {
 function modalFixtureRequest(policy, reactVersion, cellId, scenario) {
   const request = {
     schemaVersion: 1,
-    scenario,
+    scenario: modalExecutionScenario(scenario),
     cell: browserCell(policy, reactVersion, cellId),
   };
   const errors = validateModalFixtureRequest(request);
@@ -278,13 +282,21 @@ async function runBrowserVersion(
   let context;
   let page;
   let observation;
+  let cleanupOutput;
+  let axeViolations;
   let primaryError;
   const cleanupErrors = [];
   try {
     const request = modalFixtureRequest(policy, reactVersion, cellId, scenario);
     const ssr =
       policy.hydrate === true
-        ? await executeSsr({ cellId, fixture, reactVersion, request, scenario })
+        ? await executeSsr({
+            cellId,
+            fixture,
+            reactVersion,
+            request,
+            scenario: request.scenario,
+          })
         : undefined;
     if (
       ssr !== undefined &&
@@ -320,7 +332,7 @@ async function runBrowserVersion(
     await page.addInitScript(installFixtureRequest, request);
     await page.goto(server.url);
     const execution = await page.evaluate(executeBrowserScenario, {
-      scenario,
+      scenario: request.scenario,
       cell: request.cell,
       hydrate: policy.hydrate === true,
       axe: policy.axe === true,
@@ -345,28 +357,23 @@ async function runBrowserVersion(
           scope: 'candidate',
         });
       }
-      observation = {
-        ...execution.observation,
-        diagnostics: {
-          ...execution.observation?.diagnostics,
-          axeViolations: execution.axeViolations,
-        },
-      };
+      axeViolations = execution.axeViolations;
     } else {
-      observation = execution;
-    }
-    const observationErrors = validateModalObservation(observation);
-    if (observationErrors.length !== 0) {
-      throw withBoundary(
-        new Error(`modal browser observation is invalid: ${observationErrors.join('; ')}`),
-        { classification: 'policy', scope: 'run' },
-      );
+      const observationErrors = validateModalObservation(execution);
+      if (observationErrors.length !== 0) {
+        throw withBoundary(
+          new Error(`modal browser observation is invalid: ${observationErrors.join('; ')}`),
+          { classification: 'policy', scope: 'run' },
+        );
+      }
     }
   } catch (error) {
     primaryError = withBoundary(error, { classification: 'infrastructure', scope: 'candidate' });
   } finally {
     for (const close of [
-      () => (page === undefined ? undefined : page.evaluate(cleanupBrowserFixture)),
+      async () => {
+        if (page !== undefined) cleanupOutput = await page.evaluate(cleanupBrowserFixture);
+      },
       () => page?.close(),
       () => context?.close(),
       () => browser?.close(),
@@ -387,6 +394,26 @@ async function runBrowserVersion(
     throw withBoundary(error, { classification: 'policy', scope: 'run' });
   }
   if (primaryError !== undefined) throw primaryError;
+  if (!isPlainRecord(cleanupOutput?.observation)) {
+    throw withBoundary(new Error('modal cleanup did not return a post-cleanup observation'), {
+      classification: 'policy',
+      scope: 'run',
+    });
+  }
+  observation = cleanupOutput.observation;
+  if (axeViolations !== undefined) {
+    observation = {
+      ...observation,
+      diagnostics: { ...observation.diagnostics, axeViolations },
+    };
+  }
+  const observationErrors = validateModalObservation(observation);
+  if (observationErrors.length !== 0) {
+    throw withBoundary(
+      new Error(`modal browser observation is invalid: ${observationErrors.join('; ')}`),
+      { classification: 'policy', scope: 'run' },
+    );
+  }
   return observation;
 }
 
@@ -416,7 +443,13 @@ export async function runModalCell(
     const request = modalFixtureRequest(policy, reactVersion, cellId, scenario);
     let observation;
     if (policy.mode === 'ssr') {
-      const result = await executeSsr({ cellId, fixture, reactVersion, request, scenario });
+      const result = await executeSsr({
+        cellId,
+        fixture,
+        reactVersion,
+        request,
+        scenario: request.scenario,
+      });
       if (
         !isPlainRecord(result) ||
         typeof result.html !== 'string' ||

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { MODAL_SCENARIOS } from '../../contracts/modal.mjs';
+import { modalExecutionScenario } from './protocol.mjs';
 import {
   createModalRuntime,
   executeModalBrowserScenario,
@@ -10,7 +11,7 @@ import {
 
 const validRequest = {
   schemaVersion: 1,
-  scenario: MODAL_SCENARIOS[0],
+  scenario: modalExecutionScenario(MODAL_SCENARIOS[0]),
   cell: {
     id: 'chromium',
     reactVersion: '19.2.8',
@@ -25,7 +26,7 @@ const validRequest = {
 function requestFor(scenario) {
   return {
     ...structuredClone(validRequest),
-    scenario,
+    scenario: modalExecutionScenario(scenario),
     cell: {
       ...validRequest.cell,
       id: scenario.requiredCells[0],
@@ -81,75 +82,250 @@ function fakeElement(attributes = {}, options = {}) {
   };
 }
 
-function actualBrowserHarness(
+function behaviorBrowserHarness(
   scenario,
   {
-    ariaModal = true,
-    dialog = true,
-    focusTarget = 'observed-safe-target',
-    name = 'Observed workspace',
-    events = [{ target: 'observed-panel', type: 'opened' }],
-    liveMessage = 'Observed workspace opened',
-    portal = true,
+    ignoreOpen = false,
+    ignoreOpenFocus = false,
+    ignorePointerClose = false,
+    missingControl,
+    missingControlledCommit = false,
+    missingHydrationInput = false,
+    noWrap = false,
+    portalLeak = false,
     resourceSnapshot,
-    resources = ['background-inert-active'],
   } = {},
 ) {
   const actions = [];
-  const title = fakeElement({ id: 'observed-title' }, { textContent: name });
-  const description = fakeElement(
-    { id: 'observed-description' },
-    { textContent: 'Observed description' },
-  );
-  const panel = fakeElement(
-    {
-      role: 'dialog',
-      'data-modal-id': 'observed-panel',
-      'aria-labelledby': 'observed-title',
-      'aria-describedby': 'observed-description',
-      ...(ariaModal ? { 'aria-modal': 'true' } : {}),
-    },
-    { isConnected: dialog },
-  );
-  let activeElement = fakeElement({ 'data-modal-id': focusTarget });
-  const opener = fakeElement({ 'data-fixture-control': 'opener' });
-  const backdrop = fakeElement({
-    'data-fixture-part': 'backdrop',
-    'data-modal-id': 'modal-backdrop',
+  const events = [];
+  const body = fakeElement({ 'data-modal-id': 'document-body' });
+  const opener = fakeElement({
+    'data-fixture-control': 'opener',
+    'data-modal-id': 'modal-opener',
   });
-  const childControl = fakeElement({ 'data-modal-id': 'child-modal-safe-target' });
-  const fixtureRoot = fakeElement({ 'data-modal-fixture-root': '' });
-  const live = fakeElement({ 'aria-live': 'polite' }, { textContent: liveMessage });
-  const portalElement = fakeElement(
-    { 'data-modal-id': 'observed-portal', 'data-modal-portal': '' },
-    { isConnected: portal },
+  const safeTarget = fakeElement({ 'data-modal-id': 'modal-safe-target' });
+  const firstTarget = fakeElement({ 'data-modal-id': 'first-eligible-target-after-wrap' });
+  const firstEligibleTarget = fakeElement({ 'data-modal-id': 'first-eligible-target' });
+  const lastEligibleTarget = fakeElement({ 'data-modal-id': 'last-eligible-target' });
+  const middleTarget = fakeElement({ 'data-modal-id': 'middle-focus-target' });
+  const nearestTarget = fakeElement({ 'data-modal-id': 'nearest-safe-target' });
+  const hiddenTarget = fakeElement({ 'data-modal-id': 'hidden-tab-target' });
+  const disabledTarget = fakeElement({ 'data-modal-id': 'disabled-tab-target' });
+  const removedTarget = fakeElement({ 'data-modal-id': 'removed-tab-target' });
+  const childTarget = fakeElement({ 'data-modal-id': 'child-modal-safe-target' });
+  const pageScrollTarget = fakeElement({ 'data-modal-id': 'page-scroll-surface' });
+  const preventedOutsideTarget = fakeElement(
+    { 'data-modal-id': 'outside-prevented-default' },
+    {
+      actions,
+      onEvent(event) {
+        if (event.type === 'pointerdown') event.preventDefault();
+      },
+    },
   );
+  const title = fakeElement({ id: 'behavior-title' }, { textContent: 'Behavior workspace' });
+  const description = fakeElement(
+    { id: 'behavior-description' },
+    { textContent: 'Behavior description' },
+  );
+  const panel = fakeElement({
+    role: 'dialog',
+    'data-modal-id': 'modal-panel',
+    'data-modal-panel': '',
+    'data-modal-portal': '',
+    'aria-labelledby': 'behavior-title',
+    'aria-describedby': 'behavior-description',
+    'aria-modal': 'true',
+  });
+  const childPanel = fakeElement({
+    role: 'dialog',
+    'aria-label': 'Child workspace',
+    'data-modal-id': 'child-modal',
+    'data-modal-panel': '',
+    'data-modal-portal': '',
+    'aria-modal': 'true',
+  });
+  const live = fakeElement({ 'aria-live': 'polite' });
+  let activeElement = body;
+  let open = false;
+  let nestedOpen = false;
+  let pendingControlledClose = false;
+  let pointerStartedOutside = false;
+  let destroyed = false;
+
+  const focus = (element) => {
+    activeElement = element;
+  };
+  safeTarget.focus = () => focus(safeTarget);
+  firstTarget.focus = () => focus(firstTarget);
+  firstEligibleTarget.focus = () => focus(firstEligibleTarget);
+  lastEligibleTarget.focus = () => focus(lastEligibleTarget);
+  middleTarget.focus = () => focus(middleTarget);
+  opener.focus = () => focus(opener);
+  lastEligibleTarget.dispatchEvent = (event) => {
+    actions.push({ type: event.type, target: 'last-eligible-target', key: event.key });
+    if (event.type === 'keydown' && !noWrap) {
+      focus(firstTarget);
+      events.push({ target: 'first-eligible-target', type: 'forward-tab-wrapped' });
+    }
+    return event.defaultPrevented !== true;
+  };
+  firstEligibleTarget.dispatchEvent = (event) => {
+    actions.push({ type: event.type, target: 'first-eligible-target', key: event.key });
+    if (event.type === 'keydown' && event.shiftKey === true && !noWrap) {
+      focus(lastEligibleTarget);
+      events.push({ target: 'last-eligible-target', type: 'reverse-tab-wrapped' });
+    }
+    return event.defaultPrevented !== true;
+  };
+  const complete = (control) => {
+    const previous = Number(control.getAttribute('data-modal-completion-count') ?? '0');
+    control.setAttribute('data-modal-completion-count', String(previous + 1));
+  };
+  const openDialog = (target) => {
+    if (ignoreOpen) return;
+    if (/child|second/iu.test(target)) {
+      nestedOpen = true;
+      focus(childTarget);
+      events.push({ target: 'child-modal', type: 'opened' });
+      return;
+    }
+    open = true;
+    if (!ignoreOpenFocus) focus(safeTarget);
+    events.push({ target: 'modal-panel', type: 'opened' });
+    live.textContent = 'Behavior workspace dialog opened';
+  };
+  const closeDialog = (type = 'closed', target = 'modal-panel') => {
+    if (/child|second/iu.test(target)) {
+      nestedOpen = false;
+      focus(safeTarget);
+      events.push({ target: 'child-modal', type });
+      return;
+    }
+    open = false;
+    nestedOpen = false;
+    focus(opener);
+    events.push({ target: 'modal-panel', type });
+    live.textContent = 'Behavior workspace dialog closed';
+  };
+  safeTarget.dispatchEvent = (event) => {
+    actions.push({ type: event.type, target: 'modal-safe-target', key: event.key });
+    if (event.type === 'keydown' && event.key === 'Escape') {
+      if (nestedOpen) closeDialog('closed', 'child-modal');
+      else if (scenario.initial.state.controlled === true) {
+        pendingControlledClose = true;
+        events.push({ target: 'controlled-modal', type: 'close-requested-once' });
+      } else closeDialog();
+    }
+    return event.defaultPrevented !== true;
+  };
+  childTarget.dispatchEvent = (event) => {
+    actions.push({ type: event.type, target: 'child-modal-safe-target', key: event.key });
+    if (event.type === 'keydown' && event.key === 'Escape') {
+      closeDialog('closed', 'child-modal');
+    }
+    return event.defaultPrevented !== true;
+  };
+
+  const backdrop = fakeElement(
+    { 'data-fixture-part': 'backdrop', 'data-modal-id': 'modal-backdrop' },
+    {
+      actions,
+      onEvent(event) {
+        if (event.type === 'pointerdown') pointerStartedOutside = true;
+        if (event.type === 'pointercancel') pointerStartedOutside = false;
+        if (event.type === 'pointerup' && pointerStartedOutside) {
+          pointerStartedOutside = false;
+          if (!ignorePointerClose) closeDialog('outside-origin-close-requested-once');
+        }
+      },
+    },
+  );
+  panel.dispatchEvent = (event) => {
+    actions.push({ type: event.type, target: 'modal-panel', key: event.key });
+    if (event.type === 'pointerup') pointerStartedOutside = false;
+    return event.defaultPrevented !== true;
+  };
+
   const controls = new Map();
   for (const { operation, target } of scenario.operations) {
+    if (`${operation}:${target}` === missingControl) continue;
     let control;
     control = fakeElement(
-      { 'data-modal-control': target, 'data-modal-operation': operation, 'data-modal-id': target },
+      {
+        'data-modal-control': target,
+        'data-modal-operation': operation,
+        'data-modal-id': target,
+        'data-modal-completion-count': '0',
+      },
       {
         actions,
-        ...(/declare-safe|summary-fallback/iu.test(target)
-          ? { onFocus: () => (activeElement = control) }
-          : {}),
+        onEvent(event) {
+          if (operation === 'open') openDialog(target);
+          else if (operation === 'close') closeDialog('closed', target);
+          else if (operation === 'press' && target === 'tab-from-last-target' && !noWrap) {
+            focus(firstTarget);
+            events.push({ target: 'first-eligible-target', type: 'forward-tab-wrapped' });
+          } else if (operation === 'press' && target === 'dismiss-control') {
+            pendingControlledClose = true;
+            events.push({ target: 'controlled-modal', type: 'close-requested-once' });
+          } else if (operation === 'updateContent' && target === 'controlled-close-commit') {
+            if (pendingControlledClose && !missingControlledCommit) {
+              pendingControlledClose = false;
+              closeDialog('controlled-close-committed');
+            } else {
+              return;
+            }
+          } else if (operation === 'destroy') {
+            open = false;
+            nestedOpen = false;
+            focus(opener);
+            events.push({ target, type: 'destroyed-once' });
+          }
+          complete(control);
+          if (event?.type === 'keydown' && target === 'tab-from-last-target' && noWrap) {
+            focus(control);
+          }
+        },
       },
     );
     controls.set(`${operation}:${target}`, control);
   }
-  controls.set('panel:modal-panel', panel);
+
+  let rootHasChildren = false;
+  let rootMarkup = '<input id="hydrated-input" value="Workspace draft">';
+  const hydrationInput = fakeElement(
+    { id: 'hydrated-input', 'data-modal-id': 'hydrated-input' },
+    { value: 'Workspace draft' },
+  );
+  const fixtureRoot = {
+    hasChildNodes: () => rootHasChildren,
+    get innerHTML() {
+      return rootMarkup;
+    },
+    set innerHTML(value) {
+      rootMarkup = value;
+    },
+    querySelectorAll(selector) {
+      if (selector === '[id]' || selector === 'input, textarea, select') {
+        return rootHasChildren ? [hydrationInput] : [];
+      }
+      return [];
+    },
+  };
   const document = {
+    body,
     get activeElement() {
       return activeElement;
     },
-    documentElement: { dir: '' },
+    documentElement: { dataset: {}, dir: '' },
     defaultView: {
       ...(resourceSnapshot === undefined
         ? {}
         : {
             __LYRA_MODAL_RESOURCE_TRACKER__: {
-              snapshot: () => structuredClone(resourceSnapshot),
+              restore: () => true,
+              snapshot: () => structuredClone(resourceSnapshot()),
             },
           }),
       Event: class {
@@ -164,7 +340,7 @@ function actualBrowserHarness(
       },
     },
     getElementById(id) {
-      return { 'observed-title': title, 'observed-description': description }[id] ?? null;
+      return { 'behavior-title': title, 'behavior-description': description }[id] ?? null;
     },
     querySelector(selector) {
       const operation = /data-modal-operation="([^"]+)"/u.exec(selector)?.[1];
@@ -172,50 +348,98 @@ function actualBrowserHarness(
       if (operation !== undefined && target !== undefined) {
         return controls.get(`${operation}:${target}`) ?? null;
       }
-      if (target !== undefined) {
-        return [...controls.entries()].find(([key]) => key.endsWith(`:${target}`))?.[1] ?? null;
-      }
-      if (selector === '[data-modal-panel]') return dialog ? panel : null;
+      if (selector === '[data-modal-fixture-root]') return fixtureRoot;
       if (selector === '[data-fixture-control="opener"]') return opener;
       if (selector === '[data-fixture-part="backdrop"]') return backdrop;
-      if (selector === '[data-modal-id="child-modal-safe-target"]') return childControl;
-      if (selector === '[data-modal-fixture-root]') return fixtureRoot;
+      if (selector === '[data-modal-panel]') return nestedOpen ? childPanel : open ? panel : null;
+      if (selector === '[data-modal-id="child-modal-safe-target"]') return childTarget;
+      if (selector === '[data-modal-id="outside-prevented-default"]') {
+        return preventedOutsideTarget;
+      }
+      if (selector === '[data-modal-id="hydrated-input"]') {
+        return missingHydrationInput ? null : hydrationInput;
+      }
+      if (selector === '[data-modal-id="first-eligible-target"]') return firstEligibleTarget;
+      if (selector === '[data-modal-id="last-eligible-target"]') return lastEligibleTarget;
+      if (selector === '[data-modal-id="middle-focus-target"]') return middleTarget;
+      if (selector === '[data-modal-id="nearest-safe-target"]') return nearestTarget;
+      if (selector === '[data-modal-id="page-scroll-surface"]') return pageScrollTarget;
+      if (selector === '[data-modal-id="hidden-tab-target"]') return hiddenTarget;
+      if (selector === '[data-modal-id="disabled-tab-target"]') return disabledTarget;
+      if (selector === '[data-modal-id="removed-tab-target"]') return removedTarget;
       return null;
     },
     querySelectorAll(selector) {
-      if (selector === '[role="dialog"], [role="alertdialog"]') return dialog ? [panel] : [];
-      if (selector === '[data-modal-id]') {
-        return [...(dialog ? [panel] : []), ...(portal ? [portalElement] : [])];
+      if (selector === '[data-modal-panel]') {
+        return [...(open ? [panel] : []), ...(nestedOpen ? [childPanel] : [])];
       }
-      if (selector === '[aria-live]') return liveMessage === '' ? [] : [live];
-      if (selector === '[data-modal-portal]') return portal ? [portalElement] : [];
+      if (selector === '[role="dialog"], [role="alertdialog"]') {
+        return [...(open ? [panel] : []), ...(nestedOpen ? [childPanel] : [])];
+      }
+      if (selector === '[data-modal-id]') {
+        return [
+          opener,
+          safeTarget,
+          firstTarget,
+          firstEligibleTarget,
+          lastEligibleTarget,
+          middleTarget,
+          nearestTarget,
+          hiddenTarget,
+          disabledTarget,
+          removedTarget,
+          childTarget,
+          pageScrollTarget,
+          preventedOutsideTarget,
+          backdrop,
+          ...(open || portalLeak ? [panel] : []),
+          ...(nestedOpen ? [childPanel] : []),
+        ];
+      }
+      if (selector === '[aria-live]') return live.textContent === '' ? [] : [live];
+      if (selector === '[data-modal-portal]') {
+        return [...(open || portalLeak ? [panel] : []), ...(nestedOpen ? [childPanel] : [])];
+      }
       return [];
     },
   };
-  const runtime = createModalRuntime(requestFor(scenario));
   const fixture = {
-    ...runtime,
-    observe() {
-      return { ...runtime.observe(), events: structuredClone(events), cleanup: [...resources] };
+    cleanup() {
+      if (destroyed) return { status: 'already-destroyed' };
+      destroyed = true;
+      open = portalLeak;
+      nestedOpen = false;
+      return { status: 'destroyed' };
+    },
+    destroy() {
+      if (destroyed) return false;
+      destroyed = true;
+      return true;
+    },
+    isDestroyed: () => destroyed,
+    observe: () => ({
+      roles: [],
+      relationships: [],
+      states: [],
+      focus: { target: 'modal-fixture-root' },
+      events: structuredClone(events),
+      announcements: [],
+      cleanup: [],
+      diagnostics: {},
+    }),
+  };
+  return {
+    actions,
+    controls,
+    document,
+    fixture,
+    setRootHasChildren(value) {
+      rootHasChildren = value;
+    },
+    setHydrationMarkup(value) {
+      rootMarkup = value;
     },
   };
-  return { actions, document, fixture };
-}
-
-async function runSharedScenario(scenario, inputScenario = scenario, options = {}) {
-  const request = requestFor(scenario);
-  const harness = actualBrowserHarness(scenario, options);
-  return executeModalBrowserScenario({
-    document: harness.document,
-    fixture: harness.fixture,
-    input: {
-      scenario: inputScenario,
-      cell: request.cell,
-      hydrate: scenario.scenarioId.endsWith('.hydration-stability.v1'),
-      synthesizeHover: false,
-    },
-    request,
-  });
 }
 
 test('runtime exposes only the eight Lyra-owned fixture operations', () => {
@@ -297,26 +521,50 @@ test('rejects a vendor fact in an accepted normative event', () => {
 test('derives SSR semantics from actual rendered markup without reading expected records', async () => {
   const { observeModalSsrMarkup } = await import('./runtime.mjs');
   const request = structuredClone(validRequest);
-  request.scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
-    scenarioId.endsWith('.ssr-open-semantics.v1'),
+  request.scenario = modalExecutionScenario(
+    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.ssr-open-semantics.v1')),
   );
   request.cell.id = 'ssr';
   const markup =
     '<section role="dialog" data-modal-observation-id="server-rendered-modal" aria-labelledby="server-modal-title"><h2 id="server-modal-title">Server workspace</h2></section>';
-  assert.deepEqual(observeModalSsrMarkup({ request, html: markup }), {
-    roles: [{ role: 'dialog', name: 'Server workspace' }],
-    relationships: [
-      { source: 'server-rendered-modal', name: 'labelled-by', target: 'server-modal-title' },
-    ],
-    states: [
-      { target: 'server-rendered-modal', name: 'semantically-available', value: true },
-      { target: 'browser-globals', name: 'accessed', value: false },
-    ],
-    focus: { target: 'server-document-focus-unchanged' },
-    events: [{ target: 'server-rendered-modal', type: 'rendered-open' }],
-    announcements: [{ message: 'Server workspace dialog is available' }],
-    cleanup: ['no-browser-resource-claims'],
-    diagnostics: {},
+  const observation = observeModalSsrMarkup({ request, html: markup });
+  assert.deepEqual(
+    Object.fromEntries(
+      ['roles', 'relationships', 'states', 'focus', 'events', 'announcements', 'cleanup'].map(
+        (key) => [key, observation[key]],
+      ),
+    ),
+    {
+      roles: [{ role: 'dialog', name: 'Server workspace' }],
+      relationships: [
+        { source: 'server-rendered-modal', name: 'labelled-by', target: 'server-modal-title' },
+      ],
+      states: [
+        { target: 'server-rendered-modal', name: 'semantically-available', value: true },
+        { target: 'browser-globals', name: 'accessed', value: false },
+      ],
+      focus: { target: 'server-document-focus-unchanged' },
+      events: [{ target: 'server-rendered-modal', type: 'rendered-open' }],
+      announcements: [{ message: 'Server workspace dialog is available' }],
+      cleanup: ['no-browser-resource-claims'],
+    },
+  );
+  assert.deepEqual(observation.trace, [
+    {
+      phase: 'server-render',
+      snapshot: {
+        roles: observation.roles,
+        relationships: observation.relationships,
+        states: observation.states,
+        focus: observation.focus,
+        events: observation.events,
+        announcements: observation.announcements,
+      },
+    },
+  ]);
+  assert.deepEqual(observation.diagnostics, {
+    cleanupObserved: true,
+    executionCompleted: true,
   });
 });
 
@@ -367,246 +615,75 @@ test('tracks actual browser listeners and timers without claimed release markers
   tracker.restore();
 });
 
-test('the shared driver dispatches every immutable modal scenario through real controls', async (t) => {
+test('the shared driver completes every immutable operation through behavior-bound controls', async (t) => {
   assert.equal(MODAL_SCENARIOS.length, 17);
   for (const scenario of MODAL_SCENARIOS) {
     await t.test(scenario.scenarioId, async () => {
-      const observation = await runSharedScenario(scenario, scenario, {
-        name: `Observed ${scenario.scenarioId}`,
+      const request = requestFor(scenario);
+      const harness = behaviorBrowserHarness(scenario, {
+        resourceSnapshot: scenario.capture.includes('resources')
+          ? () => ({ listeners: 0, timers: 0 })
+          : undefined,
       });
-      assert.equal(observation.diagnostics.executor, 'shared-browser-driver');
-      assert.deepEqual(observation.diagnostics.operations, scenario.operations);
+      const observation = await executeModalBrowserScenario({
+        document: harness.document,
+        fixture: harness.fixture,
+        input: {
+          scenario,
+          cell: request.cell,
+          hydrate: scenario.scenarioId.endsWith('.hydration-stability.v1'),
+          synthesizeHover: false,
+        },
+        request,
+      });
+      assert.equal(observation.diagnostics.executionCompleted, true);
       assert.deepEqual(
         observation.diagnostics.actions.map(({ operation, target }) => ({ operation, target })),
         scenario.operations,
       );
-      assert.deepEqual(observation.roles, [
-        { role: 'dialog', name: `Observed ${scenario.scenarioId}` },
-      ]);
+      assert.equal(
+        observation.diagnostics.actions.every(({ completed }) => completed === true),
+        true,
+      );
+      assert.equal(observation.trace.length, scenario.operations.length + 1);
     });
   }
 });
 
-test('shared observations do not change when only expected records change', async () => {
-  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
-    scenarioId.endsWith('.validation-initial-focus.v1'),
+test('resource probes are factual and appear only in scenarios that request them', async () => {
+  const execute = async (scenario) => {
+    const request = requestFor(scenario);
+    const harness = behaviorBrowserHarness(scenario, {
+      resourceSnapshot: () => ({ listeners: 3, timers: 2 }),
+    });
+    return executeModalBrowserScenario({
+      document: harness.document,
+      fixture: harness.fixture,
+      input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+      request,
+    });
+  };
+  const ordinary = await execute(MODAL_SCENARIOS[0]);
+  const cleanup = await execute(
+    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.unmount-cleanup.v1')),
   );
-  const changedExpected = structuredClone(scenario);
-  changedExpected.expected.focus.target = 'deliberately-wrong-focus-target';
-  changedExpected.expected.states[0].value = false;
-  const baseline = await runSharedScenario(scenario);
-  const changed = await runSharedScenario(scenario, changedExpected);
-  assert.deepEqual(changed, baseline);
-  assert.deepEqual(changed.roles, [{ role: 'dialog', name: 'Observed workspace' }]);
-  assert.deepEqual(changed.focus, { target: 'focusable-summary-fallback-case' });
+  assert.equal(
+    ordinary.trace.some(({ snapshot }) => snapshot.resources !== undefined),
+    false,
+  );
+  assert.deepEqual(cleanup.trace[0].snapshot.resources, { listeners: 3, timers: 2 });
 });
 
-test('the browser observer changes evidence when rendered behavior is faulty', async () => {
-  const scenario = MODAL_SCENARIOS[0];
-  const baseline = await runSharedScenario(scenario);
-  const missingSemantics = await runSharedScenario(scenario, scenario, {
-    ariaModal: false,
-    name: '',
-  });
-  const wrongFocus = await runSharedScenario(scenario, scenario, {
-    focusTarget: 'wrong-focus-target',
-  });
-  const noDialog = await runSharedScenario(scenario, scenario, {
-    dialog: false,
-    events: [],
-  });
-  const cleanupLeak = await runSharedScenario(scenario, scenario, {
-    portal: true,
-    resources: ['listener-leak', 'portal-leak'],
-  });
-  assert.deepEqual(baseline.roles, [{ role: 'dialog', name: 'Observed workspace' }]);
-  assert.equal(
-    baseline.states.some(
-      ({ target, name, value }) =>
-        target === 'observed-panel' && name === 'aria-modal' && value === true,
-    ),
-    true,
-  );
-  assert.deepEqual(missingSemantics.roles, []);
-  assert.equal(
-    missingSemantics.states.some(({ name, value }) => name === 'aria-modal' && value === false),
-    true,
-  );
-  assert.deepEqual(wrongFocus.focus, { target: 'wrong-focus-target' });
-  assert.deepEqual(noDialog.roles, []);
-  assert.deepEqual(noDialog.events, []);
-  assert.deepEqual(cleanupLeak.cleanup, ['listener-leak', 'portal-leak']);
-});
-
-test('browser observations include actual listener and timer resource counts', async () => {
-  const observation = await runSharedScenario(MODAL_SCENARIOS[0], undefined, {
-    resourceSnapshot: { listeners: 3, timers: 2 },
-  });
-  assert.equal(
-    observation.states.some(
-      ({ target, name, value }) =>
-        target === 'modal-listeners' && name === 'remaining-count' && value === 3,
-    ),
-    true,
-  );
-  assert.equal(
-    observation.states.some(
-      ({ target, name, value }) =>
-        target === 'modal-timers' && name === 'remaining-count' && value === 2,
-    ),
-    true,
-  );
-});
-
-test('pointer, focus-wrap, controlled-commit, and portal faults remain visible', async () => {
-  const bySuffix = (suffix) =>
-    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith(`.${suffix}.v1`));
-  const pointerClosed = await runSharedScenario(bySuffix('pointer-origin-dismiss'), undefined, {
-    dialog: false,
-    events: [{ target: 'observed-panel', type: 'outside-close-requested' }],
-  });
-  const pointerFault = await runSharedScenario(bySuffix('pointer-origin-dismiss'), undefined, {
-    dialog: true,
-    events: [],
-  });
-  assert.deepEqual(pointerClosed.roles, []);
-  assert.deepEqual(pointerClosed.events, [
-    { target: 'observed-panel', type: 'outside-close-requested' },
-  ]);
-  assert.deepEqual(pointerFault.roles, [{ role: 'dialog', name: 'Observed workspace' }]);
-  assert.deepEqual(pointerFault.events, []);
-
-  const wrapped = await runSharedScenario(bySuffix('focus-wrap-dynamic'), undefined, {
-    focusTarget: 'first-focus-target',
-  });
-  const noWrap = await runSharedScenario(bySuffix('focus-wrap-dynamic'), undefined, {
-    focusTarget: 'last-focus-target',
-  });
-  assert.deepEqual(wrapped.focus, { target: 'first-focus-target' });
-  assert.deepEqual(noWrap.focus, { target: 'last-focus-target' });
-
-  const committed = await runSharedScenario(bySuffix('controlled-close-commit'), undefined, {
-    dialog: false,
-  });
-  const missingCommit = await runSharedScenario(bySuffix('controlled-close-commit'), undefined, {
-    dialog: true,
-  });
-  assert.deepEqual(committed.roles, []);
-  assert.deepEqual(missingCommit.roles, [{ role: 'dialog', name: 'Observed workspace' }]);
-
-  const orphan = await runSharedScenario(bySuffix('parent-close-with-child'), undefined, {
-    dialog: false,
-    portal: true,
-  });
-  assert.equal(
-    orphan.states.some(({ name, value }) => name === 'orphaned' && value === true),
-    true,
-  );
-});
-
-test('the driver performs nuanced pointer, direction, hydration, and cleanup phases', async () => {
-  const bySuffix = (suffix) =>
-    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith(`.${suffix}.v1`));
-  const nested = await runSharedScenario(bySuffix('nested-topmost'));
-  assert.deepEqual(
-    nested.diagnostics.actions
-      .filter(({ operation }) => operation === 'setDirection')
-      .map(({ target }) => target),
-    ['ltr', 'rtl'],
-  );
-  const validation = await runSharedScenario(bySuffix('validation-initial-focus'));
-  assert.deepEqual(
-    validation.diagnostics.actions
-      .flatMap(({ mutations = [] }) => mutations)
-      .filter(({ name }) => ['invalid-field-enabled', 'validation-summary-focused'].includes(name)),
-    [
-      { name: 'invalid-field-enabled', changed: true },
-      { name: 'validation-summary-focused', changed: true },
-    ],
-  );
-  assert.deepEqual(validation.focus, { target: 'focusable-summary-fallback-case' });
-  const pointer = await runSharedScenario(bySuffix('pointer-origin-dismiss'));
-  assert.deepEqual(
-    pointer.diagnostics.actions
-      .filter(({ operation }) => operation === 'point')
-      .map(({ target, events, surfaces }) => [target, events, surfaces]),
-    [
-      ['outside-down-up', ['pointerdown', 'pointerup'], ['modal-backdrop', 'modal-backdrop']],
-      ['outside-drag-inside', ['pointerdown', 'pointerup'], ['modal-backdrop', 'observed-panel']],
-      ['outside-cancel', ['pointerdown', 'pointercancel'], ['modal-backdrop', 'modal-backdrop']],
-      ['outside-context-menu', ['contextmenu'], ['modal-backdrop']],
-      [
-        'child-interaction',
-        ['pointerdown', 'pointerup'],
-        ['child-modal-safe-target', 'child-modal-safe-target'],
-      ],
-      [
-        'outside-prevented-default',
-        ['pointerdown', 'pointerup'],
-        ['modal-backdrop', 'modal-backdrop'],
-      ],
-    ],
-  );
-  const controlled = await runSharedScenario(bySuffix('controlled-close-commit'));
-  assert.deepEqual(
-    controlled.diagnostics.actions.map(({ target }) => target),
-    ['controlled-modal', 'dismiss-control', 'controlled-close-commit'],
-  );
-  const successor = await runSharedScenario(bySuffix('opener-restoration-successor'));
-  const disconnect = successor.diagnostics.actions.find(
-    ({ operation, target }) => operation === 'updateContent' && target === 'disconnect-opener',
-  );
-  assert.deepEqual(disconnect.mutations, [{ name: 'opener-disconnected', changed: true }]);
-  const focusedRemoval = await runSharedScenario(bySuffix('focused-node-removal'));
-  assert.equal(
-    focusedRemoval.diagnostics.actions
-      .flatMap(({ mutations = [] }) => mutations)
-      .some(({ name, changed }) => name === 'focused-target-removed' && changed === true),
-    true,
-  );
-  const hydration = await runSharedScenario(bySuffix('hydration-stability'));
-  assert.equal(hydration.diagnostics.hydrate, true);
-  assert.equal(
-    hydration.diagnostics.actions
-      .flatMap(({ mutations = [] }) => mutations)
-      .some(({ name, changed }) => name === 'hydration-tree-inspected' && changed === true),
-    true,
-  );
-  const cleanup = await runSharedScenario(bySuffix('unmount-cleanup'));
-  assert.deepEqual(
-    cleanup.diagnostics.actions
-      .filter(({ operation }) => operation === 'destroy')
-      .map(({ target }) => target),
-    ['entry-phase-modal', 'open-phase-modal', 'exit-phase-modal'],
-  );
-});
-
-test('client mount selects hydrateRoot for server markup and exposes executable cell context', async () => {
+test('client hydration keeps factual execution and cleanup traces around the real root lifecycle', async () => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
-  const request = structuredClone(validRequest);
-  request.scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
     scenarioId.endsWith('.hydration-stability.v1'),
   );
-  request.cell = {
-    ...request.cell,
-    id: 'hydration',
-    direction: 'rtl',
-    colorScheme: 'dark',
-    forcedColors: true,
-    reducedMotion: true,
-    coarsePointer: true,
-  };
+  const request = requestFor(scenario);
+  request.cell.id = 'hydration';
+  const harness = behaviorBrowserHarness(scenario);
+  harness.setRootHasChildren(true);
   const calls = [];
-  const harness = actualBrowserHarness(request.scenario, { name: 'Mounted hydration' });
-  const fixture = harness.fixture;
-  const container = { hasChildNodes: () => true };
-  const fixtureDocument = {
-    ...harness.document,
-    querySelector(selector) {
-      if (selector === '[data-modal-fixture-root]') return container;
-      return harness.document.querySelector(selector);
-    },
-  };
   const bridge = await mountModalFixtureClient({
     React: {
       createElement(_type, props) {
@@ -619,32 +696,34 @@ test('client mount selects hydrateRoot for server markup and exposes executable 
         return { violations: [] };
       },
     },
-    async createModalCandidate() {
-      return { ModalFixture() {} };
-    },
+    createModalCandidate: async () => ({ ModalFixture() {} }),
     createRoot() {
       throw new Error('createRoot must not run for server markup');
     },
-    document: fixtureDocument,
+    document: harness.document,
     hydrateRoot(target, element) {
       calls.push(['hydrateRoot', target]);
-      element.props.onReady(fixture);
-      return { unmount: () => calls.push(['unmount']) };
+      element.props.onReady(harness.fixture);
+      return {
+        unmount() {
+          calls.push(['unmount']);
+          harness.setRootHasChildren(false);
+        },
+      };
     },
     request,
   });
   assert.equal(bridge.renderMode, 'hydrateRoot');
-  assert.deepEqual(bridge.request, request);
-  const observation = await bridge.runScenario({
-    scenario: request.scenario,
+  const beforeCleanup = await bridge.runScenario({
+    scenario,
     cell: request.cell,
     hydrate: true,
     synthesizeHover: false,
   });
-  assert.deepEqual(observation.roles, [{ role: 'dialog', name: 'Mounted hydration' }]);
-  assert.deepEqual(observation.focus, { target: 'observed-safe-target' });
-  assert.equal(observation.diagnostics.hydrate, true);
+  assert.equal(beforeCleanup.diagnostics.hydrate, true);
   await bridge.runAxe();
+  const afterCleanup = await bridge.cleanup();
+  assert.equal(afterCleanup.observation.trace.at(-1).phase, 'after-cleanup');
   assert.equal(
     calls.some(([name]) => name === 'hydrateRoot'),
     true,
@@ -653,5 +732,393 @@ test('client mount selects hydrateRoot for server markup and exposes executable 
     calls.some(([name]) => name === 'axe'),
     true,
   );
-  assert.deepEqual(await bridge.cleanup(), { status: 'destroyed' });
+  assert.equal(
+    calls.some(([name]) => name === 'unmount'),
+    true,
+  );
+});
+
+test('captures hydration stability from the server tree before hydrateRoot and first client tree', async () => {
+  const scenario = structuredClone(
+    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.hydration-stability.v1')),
+  );
+  scenario.operations = [{ operation: 'open', target: 'server-rendered-modal' }];
+  const request = requestFor(scenario);
+  request.cell.id = 'hydration';
+  const harness = behaviorBrowserHarness(scenario);
+  harness.setRootHasChildren(true);
+  const mounted = await (
+    await import('./runtime.mjs')
+  ).mountModalFixtureClient({
+    React: {
+      createElement(_type, props) {
+        return { props };
+      },
+    },
+    createModalCandidate: async () => ({ ModalFixture() {} }),
+    createRoot() {
+      throw new Error('unexpected createRoot');
+    },
+    document: harness.document,
+    hydrateRoot(_target, element) {
+      element.props.onReady(harness.fixture);
+      return { unmount: () => harness.setRootHasChildren(false) };
+    },
+    request,
+  });
+  const observation = await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: true,
+    synthesizeHover: false,
+  });
+  assert.deepEqual(observation.diagnostics.hydration, {
+    controlledStateStable: true,
+    firstTreeIdentical: true,
+    focusMoved: false,
+    generatedIdentifiersStable: true,
+    inputValuesAfter: ['Workspace draft'],
+    inputValuesBefore: ['Workspace draft'],
+    warningCount: 0,
+  });
+});
+
+test('captures a factual snapshot after every completed browser operation', async () => {
+  const scenario = structuredClone(MODAL_SCENARIOS[0]);
+  scenario.operations = [
+    { operation: 'open', target: 'modal-opener' },
+    { operation: 'close', target: 'modal-panel' },
+    { operation: 'open', target: 'modal-opener' },
+  ];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario);
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.equal(observation.diagnostics.executionCompleted, true);
+  assert.deepEqual(
+    observation.trace.map(({ phase, operation }) => [phase, operation?.operation ?? null]),
+    [
+      ['before-operations', null],
+      ['after-operation', 'open'],
+      ['after-operation', 'close'],
+      ['after-operation', 'open'],
+    ],
+  );
+  assert.deepEqual(
+    observation.trace.map(({ snapshot }) => snapshot.focus.target),
+    ['document-body', 'modal-safe-target', 'modal-opener', 'modal-safe-target'],
+  );
+  assert.deepEqual(observation.trace[1].snapshot.roles, [
+    { role: 'dialog', name: 'Behavior workspace' },
+  ]);
+  assert.deepEqual(observation.trace[2].snapshot.roles, []);
+});
+
+test('fails closed when a neutral control is missing and does not execute later operations', async () => {
+  const scenario = structuredClone(MODAL_SCENARIOS[0]);
+  scenario.operations = [
+    { operation: 'open', target: 'modal-opener' },
+    { operation: 'close', target: 'modal-panel' },
+    { operation: 'open', target: 'modal-opener' },
+  ];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, { missingControl: 'close:modal-panel' });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.equal(observation.diagnostics.executionCompleted, false);
+  assert.deepEqual(
+    observation.diagnostics.actions.map(({ operation, completed }) => [operation, completed]),
+    [
+      ['open', true],
+      ['close', false],
+    ],
+  );
+  assert.equal(observation.diagnostics.actions[1].failure, 'control-missing');
+  assert.equal(harness.actions.filter(({ type }) => type === 'click').length, 1);
+});
+
+test('fails closed when the real hydrated interaction target is missing', async () => {
+  const scenario = structuredClone(
+    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.hydration-stability.v1')),
+  );
+  scenario.operations = [{ operation: 'press', target: 'hydrated-input' }];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, { missingHydrationInput: true });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: true, synthesizeHover: false },
+    request,
+  });
+  assert.equal(observation.diagnostics.executionCompleted, false);
+  assert.equal(observation.diagnostics.actions[0].dispatched, false);
+  assert.equal(observation.diagnostics.actions[0].failure, 'surface-missing');
+});
+
+test('disconnects the real scenario opener without deleting the generic fixture opener', async () => {
+  const scenario = structuredClone(
+    MODAL_SCENARIOS.find(({ scenarioId }) =>
+      scenarioId.endsWith('.opener-restoration-successor.v1'),
+    ),
+  );
+  scenario.operations = [
+    { operation: 'open', target: 'connected-opener' },
+    { operation: 'updateContent', target: 'disconnect-opener' },
+  ];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario);
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.equal(observation.diagnostics.executionCompleted, true);
+  assert.equal(harness.controls.get('open:connected-opener').isConnected, false);
+  assert.equal(harness.document.querySelector('[data-fixture-control="opener"]').isConnected, true);
+});
+
+test('never removes the document body when candidate focus did not enter the modal', async () => {
+  const scenario = structuredClone(MODAL_SCENARIOS[0]);
+  scenario.operations = [
+    { operation: 'open', target: 'modal-opener' },
+    { operation: 'updateContent', target: 'remove-focused-target' },
+  ];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, { ignoreOpenFocus: true });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.equal(harness.document.body.isConnected, true);
+  assert.equal(observation.diagnostics.executionCompleted, false);
+  assert.equal(observation.diagnostics.actions[1].failure, 'mutation-not-completed');
+});
+
+test('captures every pointer-origin variant against its real interaction surface', async () => {
+  const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
+    scenarioId.endsWith('.pointer-origin-dismiss.v1'),
+  );
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario);
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.equal(observation.diagnostics.executionCompleted, true);
+  assert.deepEqual(
+    observation.trace.slice(1).map(({ snapshot }) => snapshot.roles.length > 0),
+    [true, false, true, true, true, true, true, true],
+  );
+  assert.equal(observation.diagnostics.actions.at(-1).prevented, true);
+  assert.equal(
+    observation.diagnostics.actions.at(-1).surfaces.includes('outside-prevented-default'),
+    true,
+  );
+});
+
+test('phase destroy does not disable later operations while fixture teardown remains terminal', () => {
+  const runtime = createModalRuntime(validRequest);
+  assert.equal(
+    runtime.operations.destroy({
+      event: { target: 'entry-phase-modal', type: 'destroyed-once' },
+    }),
+    true,
+  );
+  assert.equal(runtime.isDestroyed(), false);
+  assert.equal(
+    runtime.operations.open({ event: { target: 'open-phase-modal', type: 'opened' } }),
+    true,
+  );
+  assert.equal(runtime.destroy(), true);
+  assert.equal(runtime.isDestroyed(), true);
+  assert.equal(runtime.operations.open({ event: { target: 'late-modal', type: 'opened' } }), false);
+});
+
+test('semantic, wrap, pointer-origin, and controlled-commit faults change factual traces', async () => {
+  const execute = async (scenario, options) => {
+    const request = requestFor(scenario);
+    const harness = behaviorBrowserHarness(scenario, options);
+    return executeModalBrowserScenario({
+      document: harness.document,
+      fixture: harness.fixture,
+      input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+      request,
+    });
+  };
+  const cases = [
+    {
+      name: 'semantic open',
+      operations: [{ operation: 'open', target: 'modal-opener' }],
+      fault: { ignoreOpen: true },
+    },
+    {
+      name: 'focus wrap',
+      operations: [
+        { operation: 'open', target: 'modal-opener' },
+        { operation: 'press', target: 'tab-from-last-target' },
+      ],
+      fault: { noWrap: true },
+    },
+    {
+      name: 'pointer origin',
+      operations: [
+        { operation: 'open', target: 'modal-opener' },
+        { operation: 'point', target: 'outside-down-up' },
+      ],
+      fault: { ignorePointerClose: true },
+    },
+    {
+      name: 'controlled commit',
+      operations: [
+        { operation: 'open', target: 'controlled-modal' },
+        { operation: 'press', target: 'dismiss-control' },
+        { operation: 'updateContent', target: 'controlled-close-commit' },
+      ],
+      fault: { missingControlledCommit: true },
+    },
+  ];
+  for (const { name, operations, fault } of cases) {
+    const scenario = structuredClone(MODAL_SCENARIOS[0]);
+    scenario.operations = operations;
+    if (operations.some(({ target }) => target === 'controlled-modal')) {
+      scenario.initial.state.controlled = true;
+    }
+    const correct = await execute(scenario);
+    const faulty = await execute(scenario, fault);
+    assert.notDeepEqual(faulty.trace, correct.trace, `${name} fault must change trace`);
+    if (name === 'semantic open') {
+      assert.equal(correct.diagnostics.executionCompleted, true);
+      assert.equal(faulty.diagnostics.executionCompleted, false);
+      assert.equal(faulty.diagnostics.actions[0].failure, 'transition-not-completed');
+    }
+  }
+});
+
+test('returns cleanup evidence only after root unmount and actual resource release', async () => {
+  const scenario = structuredClone(
+    MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.unmount-cleanup.v1')),
+  );
+  scenario.operations = [{ operation: 'open', target: 'open-phase-modal' }];
+  const request = requestFor(scenario);
+  const resources = { listeners: 2, timers: 1 };
+  const harness = behaviorBrowserHarness(scenario, {
+    resourceSnapshot: () => resources,
+  });
+  const mounted = await (
+    await import('./runtime.mjs')
+  ).mountModalFixtureClient({
+    React: {
+      createElement(_type, props) {
+        return { props };
+      },
+    },
+    createModalCandidate: async () => ({ ModalFixture() {} }),
+    createRoot: () => ({
+      render(element) {
+        harness.setRootHasChildren(true);
+        element.props.onReady(harness.fixture);
+      },
+      unmount() {
+        harness.setRootHasChildren(false);
+        resources.listeners = 0;
+        resources.timers = 0;
+      },
+    }),
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+  await mounted.runScenario({
+    scenario,
+    cell: request.cell,
+    hydrate: false,
+    synthesizeHover: false,
+  });
+  const result = await mounted.cleanup();
+  assert.equal(result.status, 'destroyed');
+  assert.equal(result.observation.diagnostics.cleanupObserved, true);
+  const cleanup = result.observation.trace.at(-1);
+  assert.equal(cleanup.phase, 'after-cleanup');
+  assert.deepEqual(cleanup.snapshot.resources, { listeners: 0, timers: 0 });
+  assert.equal(
+    cleanup.snapshot.states.some(
+      ({ target, name, value }) =>
+        target === 'modal-listeners' && name === 'remaining-count' && value === 0,
+    ),
+    true,
+  );
+});
+
+test('portal, listener, and timer leaks change the post-cleanup factual trace', async () => {
+  const execute = async ({ leak }) => {
+    const scenario = structuredClone(
+      MODAL_SCENARIOS.find(({ scenarioId }) => scenarioId.endsWith('.unmount-cleanup.v1')),
+    );
+    scenario.operations = [{ operation: 'open', target: 'open-phase-modal' }];
+    const request = requestFor(scenario);
+    const resources = { listeners: 2, timers: 1 };
+    const harness = behaviorBrowserHarness(scenario, {
+      portalLeak: leak,
+      resourceSnapshot: () => resources,
+    });
+    const mounted = await (
+      await import('./runtime.mjs')
+    ).mountModalFixtureClient({
+      React: {
+        createElement(_type, props) {
+          return { props };
+        },
+      },
+      createModalCandidate: async () => ({ ModalFixture() {} }),
+      createRoot: () => ({
+        render(element) {
+          harness.setRootHasChildren(true);
+          element.props.onReady(harness.fixture);
+        },
+        unmount() {
+          harness.setRootHasChildren(false);
+          if (!leak) {
+            resources.listeners = 0;
+            resources.timers = 0;
+          }
+        },
+      }),
+      document: harness.document,
+      hydrateRoot() {
+        throw new Error('unexpected hydration');
+      },
+      request,
+    });
+    await mounted.runScenario({
+      scenario,
+      cell: request.cell,
+      hydrate: false,
+      synthesizeHover: false,
+    });
+    return (await mounted.cleanup()).observation;
+  };
+  const released = await execute({ leak: false });
+  const leaked = await execute({ leak: true });
+  assert.notDeepEqual(leaked.trace.at(-1), released.trace.at(-1));
+  assert.equal(released.cleanup.includes('modal-portals-removed'), true);
+  assert.equal(released.cleanup.includes('modal-listeners-released'), true);
+  assert.equal(released.cleanup.includes('modal-timers-released'), true);
+  assert.equal(leaked.cleanup.includes('modal-portals-remaining'), true);
+  assert.equal(leaked.cleanup.includes('modal-listeners-remaining'), true);
+  assert.equal(leaked.cleanup.includes('modal-timers-remaining'), true);
 });

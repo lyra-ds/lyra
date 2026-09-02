@@ -2,11 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { MODAL_SCENARIOS } from '../../contracts/modal.mjs';
-import { validateModalFixtureRequest, validateModalObservation } from './protocol.mjs';
+import {
+  modalExecutionScenario,
+  validateModalFixtureRequest,
+  validateModalObservation,
+} from './protocol.mjs';
 
 const validRequest = {
   schemaVersion: 1,
-  scenario: MODAL_SCENARIOS[0],
+  scenario: modalExecutionScenario(MODAL_SCENARIOS[0]),
   cell: {
     id: 'chromium',
     reactVersion: '19.2.8',
@@ -26,7 +30,36 @@ const validObservation = {
   events: [{ target: 'modal-panel', type: 'opened' }],
   announcements: [{ message: 'Workspace details dialog opened' }],
   cleanup: ['background-interactive'],
-  diagnostics: { vendor: 'radix', selector: '[data-radix-dialog-content]' },
+  trace: [
+    {
+      phase: 'after-operation',
+      operationIndex: 0,
+      operation: { operation: 'open', target: 'modal-opener' },
+      snapshot: {
+        roles: [{ role: 'dialog', name: 'Workspace details' }],
+        relationships: [{ source: 'modal-panel', name: 'labelled-by', target: 'modal-title' }],
+        states: [{ target: 'modal-panel', name: 'aria-modal', value: true }],
+        focus: { target: 'modal-safe-target' },
+        events: [{ target: 'modal-panel', type: 'opened' }],
+        announcements: [{ message: 'Workspace details dialog opened' }],
+      },
+    },
+  ],
+  diagnostics: {
+    vendor: 'radix',
+    selector: '[data-radix-dialog-content]',
+    cleanupObserved: true,
+    executionCompleted: true,
+    actions: [
+      {
+        operation: 'open',
+        target: 'modal-opener',
+        controlFound: true,
+        dispatched: true,
+        completed: true,
+      },
+    ],
+  },
 };
 
 test('accepts one complete neutral request and observation', () => {

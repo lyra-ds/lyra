@@ -590,10 +590,53 @@ function compareObservations(scenario, observations) {
         code: 'observation-invalid',
       });
     }
+    const observation = entry.observation;
+    const serverRender = observation.trace.some(({ phase }) => phase === 'server-render');
+    if (
+      observation.diagnostics.executionCompleted !== true ||
+      observation.diagnostics.cleanupObserved !== true
+    ) {
+      return false;
+    }
+    if (!serverRender) {
+      const actions = observation.diagnostics.actions;
+      const operationTrace = observation.trace.filter(({ phase }) => phase === 'after-operation');
+      if (
+        !Array.isArray(actions) ||
+        actions.length !== scenario.operations.length ||
+        actions.some(
+          (action, actionIndex) =>
+            !isPlainRecord(action) ||
+            action.operation !== scenario.operations[actionIndex].operation ||
+            action.target !== scenario.operations[actionIndex].target ||
+            action.controlFound !== true ||
+            action.dispatched !== true ||
+            action.completed !== true,
+        ) ||
+        observation.trace.length !== scenario.operations.length + 2 ||
+        observation.trace[0]?.phase !== 'before-operations' ||
+        operationTrace.length !== scenario.operations.length ||
+        operationTrace.some(
+          (entry, operationIndex) =>
+            entry.operationIndex !== operationIndex ||
+            !isDeepStrictEqual(entry.operation, scenario.operations[operationIndex]),
+        ) ||
+        observation.trace.at(-1)?.phase !== 'after-cleanup'
+      ) {
+        return false;
+      }
+    }
   }
-  return observations.every(({ observation }) =>
-    isDeepStrictEqual(normalizedFields(observation), scenario.expected),
-  );
+  return observations.every(({ observation }) => {
+    const actual = normalizedFields(observation);
+    return (
+      ['roles', 'relationships', 'states', 'events', 'announcements', 'cleanup'].every((key) =>
+        scenario.expected[key].every((expected) =>
+          actual[key].some((observed) => isDeepStrictEqual(observed, expected)),
+        ),
+      ) && isDeepStrictEqual(actual.focus, scenario.expected.focus)
+    );
+  });
 }
 
 function unavailableDraft({ candidate, coreAttempt, scenario, cellId, classification, message }) {

@@ -34,8 +34,11 @@ function fakeElement(attributes = {}, { textContent = '' } = {}) {
     inert: false,
     isConnected: true,
     textContent,
-    click() {},
+    click() {
+      this.dispatchEvent(new Event('click'));
+    },
     dispatchEvent(event) {
+      this.onEvent?.(event);
       return event.defaultPrevented !== true;
     },
     getAttribute(name) {
@@ -44,11 +47,25 @@ function fakeElement(attributes = {}, { textContent = '' } = {}) {
     hasAttribute(name) {
       return values.has(name);
     },
+    setAttribute(name, value) {
+      values.set(name, String(value));
+    },
   };
 }
 
 function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
-  const container = { hasChildNodes: () => hydrate };
+  let rootHasChildren = hydrate;
+  let open = false;
+  let activeElement;
+  const container = { hasChildNodes: () => rootHasChildren };
+  const body = fakeElement({ 'data-modal-id': 'document-body' });
+  const opener = fakeElement({
+    'data-fixture-control': 'opener',
+    'data-modal-id': 'modal-opener',
+  });
+  const focusTarget = fakeElement({ 'data-modal-id': 'browser-focus-target' });
+  const childTarget = fakeElement({ 'data-modal-id': 'child-modal-safe-target' });
+  const hydrationInput = fakeElement({ 'data-modal-id': 'hydrated-input' });
   const title = fakeElement({ id: 'browser-title' }, { textContent: 'Observed browser fixture' });
   const panel = fakeElement({
     role: 'dialog',
@@ -56,32 +73,84 @@ function neutralBrowserDocument(scenario, { hydrate = false } = {}) {
     'aria-labelledby': 'browser-title',
     'aria-modal': 'true',
   });
-  const activeElement = fakeElement({ 'data-modal-id': 'browser-focus-target' });
-  const live = fakeElement({ 'aria-live': 'polite' }, { textContent: 'Browser fixture active' });
-  const portal = fakeElement({ 'data-modal-id': 'browser-portal', 'data-modal-portal': '' });
-  const controls = new Map(
-    scenario.operations.map(({ operation, target }) => [
-      `${operation}:${target}`,
-      fakeElement({ 'data-modal-operation': operation, 'data-modal-control': target }),
-    ]),
-  );
-  return {
-    activeElement,
-    documentElement: { dir: '' },
+  const live = fakeElement({ 'aria-live': 'polite' });
+  const backdrop = fakeElement({
+    'data-fixture-part': 'backdrop',
+    'data-modal-id': 'modal-backdrop',
+  });
+  activeElement = body;
+  const events = [];
+  const controls = new Map();
+  for (const { operation, target } of scenario.operations) {
+    const control = fakeElement({
+      'data-modal-operation': operation,
+      'data-modal-control': target,
+      'data-modal-id': target,
+      'data-modal-completion-count': '0',
+    });
+    control.onEvent = () => {
+      if (operation === 'open') {
+        open = true;
+        activeElement = focusTarget;
+        events.push({ target: 'browser-panel', type: 'opened' });
+        live.textContent = 'Browser fixture active';
+      } else if (operation === 'close') {
+        open = false;
+        activeElement = opener;
+        events.push({ target: 'browser-panel', type: 'closed' });
+        live.textContent = 'Browser fixture closed';
+      }
+      const count = Number(control.getAttribute('data-modal-completion-count') ?? '0');
+      control.setAttribute('data-modal-completion-count', String(count + 1));
+    };
+    controls.set(`${operation}:${target}`, control);
+  }
+  const document = {
+    body,
+    get activeElement() {
+      return activeElement;
+    },
+    documentElement: { dataset: {}, dir: '' },
     defaultView: { Event },
     getElementById: (id) => (id === 'browser-title' ? title : null),
     querySelector(selector) {
       if (selector === '[data-modal-fixture-root]') return container;
       const operation = /data-modal-operation="([^"]+)"/u.exec(selector)?.[1];
       const target = /data-modal-control="([^"]+)"/u.exec(selector)?.[1];
-      return controls.get(`${operation}:${target}`) ?? null;
+      if (operation !== undefined && target !== undefined) {
+        return controls.get(`${operation}:${target}`) ?? null;
+      }
+      if (selector === '[data-fixture-control="opener"]') return opener;
+      if (selector === '[data-fixture-part="backdrop"]') return backdrop;
+      if (selector === '[data-modal-panel]') return open ? panel : null;
+      if (selector === '[data-modal-id="child-modal-safe-target"]') return childTarget;
+      if (selector === '[data-modal-id="hydrated-input"]') return hydrationInput;
+      return null;
     },
     querySelectorAll(selector) {
-      if (selector === '[role="dialog"], [role="alertdialog"]') return [panel];
-      if (selector === '[data-modal-id]') return [panel, portal];
-      if (selector === '[aria-live]') return [live];
-      if (selector === '[data-modal-portal]') return [portal];
+      if (selector === '[data-modal-panel]') return open ? [panel] : [];
+      if (selector === '[role="dialog"], [role="alertdialog"]') return open ? [panel] : [];
+      if (selector === '[data-modal-id]') {
+        return [
+          opener,
+          focusTarget,
+          childTarget,
+          hydrationInput,
+          backdrop,
+          ...(open ? [panel] : []),
+        ];
+      }
+      if (selector === '[aria-live]') return live.textContent === '' ? [] : [live];
+      if (selector === '[data-modal-portal]') return open ? [panel] : [];
       return [];
+    },
+  };
+  return {
+    document,
+    events,
+    setRootHasChildren(value) {
+      rootHasChildren = value;
+      if (!value) open = false;
     },
   };
 }
@@ -90,11 +159,19 @@ async function sharedBridge(
   request,
   { cleanupStatus = 'destroyed', observation, renderMode } = {},
 ) {
-  const fixture = createModalRuntime(request);
   const hydrate =
     (renderMode ?? (request.cell.id === 'hydration' ? 'hydrateRoot' : 'createRoot')) ===
     'hydrateRoot';
-  const document = neutralBrowserDocument(request.scenario, { hydrate });
+  const harness = neutralBrowserDocument(request.scenario, { hydrate });
+  const document = harness.document;
+  const runtime = createModalRuntime(request);
+  const fixture = {
+    ...runtime,
+    observe() {
+      const observation = runtime.observe();
+      return { ...observation, events: structuredClone(harness.events) };
+    },
+  };
   const mounted = await mountModalFixtureClient({
     React: {
       createElement(_type, props) {
@@ -105,23 +182,31 @@ async function sharedBridge(
     createModalCandidate: async () => ({ ModalFixture() {} }),
     createRoot: () => ({
       render(element) {
+        harness.setRootHasChildren(true);
         element.props.onReady(fixture);
       },
-      unmount() {},
+      unmount() {
+        harness.setRootHasChildren(false);
+      },
     }),
     document,
     hydrateRoot(_container, element) {
       element.props.onReady(fixture);
-      return { unmount() {} };
+      return { unmount: () => harness.setRootHasChildren(false) };
     },
     request,
   });
   if (observation === undefined && cleanupStatus === 'destroyed') return mounted;
   return {
     ...mounted,
-    runScenario: (input) =>
-      observation === undefined ? mounted.runScenario(input) : structuredClone(observation),
-    cleanup: () => (cleanupStatus === 'destroyed' ? mounted.cleanup() : { status: cleanupStatus }),
+    async runScenario(input) {
+      const actual = await mounted.runScenario(input);
+      return observation === undefined ? actual : structuredClone(observation);
+    },
+    async cleanup() {
+      const actual = await mounted.cleanup();
+      return cleanupStatus === 'destroyed' ? actual : { ...actual, status: cleanupStatus };
+    },
   };
 }
 
@@ -159,7 +244,7 @@ function fakePlaywright({ failPrimary = false } = {}) {
                   else calls.push(['evaluate', input.cell.id, input.scenario.scenarioId]);
                   const previousDocument = globalThis.document;
                   const previousBridge = globalThis.__LYRA_MODAL_FIXTURE__;
-                  globalThis.document = neutralBrowserDocument(request.scenario);
+                  globalThis.document = neutralBrowserDocument(request.scenario).document;
                   globalThis.__LYRA_MODAL_FIXTURE__ = bridge;
                   try {
                     if (failPrimary && input !== undefined) {
@@ -501,7 +586,12 @@ test('hydrates actual server markup and passes the literal scenario and cell mod
   assert.equal(
     fake.calls
       .filter(([name]) => name === 'run-scenario')
-      .every(([, input]) => input.hydrate === true && input.cell.id === 'hydration'),
+      .every(
+        ([, input]) =>
+          input.hydrate === true &&
+          input.cell.id === 'hydration' &&
+          !Object.hasOwn(input.scenario, 'expected'),
+      ),
     true,
   );
   assert.deepEqual(
@@ -564,6 +654,25 @@ test('treats an unverified fixture cleanup result as run-fatal but accepts alrea
       await operation;
     }
   }
+});
+
+test('returns the browser observation produced after fixture and root cleanup', async () => {
+  const { runModalCell } = await loadCells();
+  const scenario = modalScenariosForCell('chromium')[0];
+  const fake = fakePlaywright();
+  const observations = await runModalCell(
+    {
+      cellId: 'chromium',
+      fixtures: new Map([['19.2.8', { clientHtmlPath: '/owned/index.html' }]]),
+      playwright: fake.playwright,
+      scenario,
+    },
+    {
+      startServer: async () => ({ url: 'http://127.0.0.1:43123/', close: async () => {} }),
+    },
+  );
+  assert.equal(observations[0].observation.diagnostics.cleanupObserved, true);
+  assert.equal(observations[0].observation.trace.at(-1).phase, 'after-cleanup');
 });
 
 test('tags a malformed default browser observation as structurally run-fatal', async () => {

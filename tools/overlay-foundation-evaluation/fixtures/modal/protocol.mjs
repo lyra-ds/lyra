@@ -10,6 +10,17 @@ const REACT_VERSIONS = Object.freeze(['18.3.1', '19.2.8']);
 const DIRECTIONS = Object.freeze(['ltr', 'rtl']);
 const COLOR_SCHEMES = Object.freeze(['light', 'dark']);
 const REQUEST_KEYS = Object.freeze(['schemaVersion', 'scenario', 'cell']);
+const EXECUTION_SCENARIO_KEYS = Object.freeze([
+  'schemaVersion',
+  'revision',
+  'contractId',
+  'scenarioId',
+  'components',
+  'initial',
+  'operations',
+  'requiredCells',
+  'capture',
+]);
 const CELL_KEYS = Object.freeze([
   'id',
   'reactVersion',
@@ -27,7 +38,17 @@ const OBSERVATION_KEYS = Object.freeze([
   'events',
   'announcements',
   'cleanup',
+  'trace',
   'diagnostics',
+]);
+const SNAPSHOT_KEYS = Object.freeze([
+  'roles',
+  'relationships',
+  'states',
+  'focus',
+  'events',
+  'announcements',
+  'resources',
 ]);
 
 function validateCell(cell, errors) {
@@ -51,14 +72,43 @@ function validateCell(cell, errors) {
   }
 }
 
+const SHAPE_ONLY_EXPECTED = Object.freeze({
+  roles: Object.freeze([]),
+  relationships: Object.freeze([]),
+  states: Object.freeze([]),
+  focus: Object.freeze({ target: 'modal-fixture-root' }),
+  events: Object.freeze([]),
+  announcements: Object.freeze([]),
+  cleanup: Object.freeze([]),
+});
+
+export function modalExecutionScenario(scenario) {
+  if (!isPlainRecord(scenario)) throw new Error('modal execution scenario must be a plain record');
+  return Object.freeze(
+    Object.fromEntries(EXECUTION_SCENARIO_KEYS.map((key) => [key, structuredClone(scenario[key])])),
+  );
+}
+
+function validateExecutionScenario(value, errors) {
+  if (!isPlainRecord(value)) {
+    errors.push('fixture request.scenario must be a plain record');
+    return;
+  }
+  rejectUnknownKeys(value, EXECUTION_SCENARIO_KEYS, 'fixture request.scenario', errors);
+  const shape = { ...value, expected: SHAPE_ONLY_EXPECTED };
+  for (const error of validateScenario(shape)) {
+    if (!error.startsWith('scenario.expected')) {
+      errors.push(error.replace(/^scenario/u, 'fixture request.scenario'));
+    }
+  }
+}
+
 export function validateModalFixtureRequest(value) {
   const errors = [];
   if (!isPlainRecord(value)) return ['fixture request must be a plain record'];
   rejectUnknownKeys(value, REQUEST_KEYS, 'fixture request', errors);
   requireExactInteger(value.schemaVersion, 1, 'fixture request.schemaVersion', errors);
-  for (const error of validateScenario(value.scenario)) {
-    errors.push(error.replace(/^scenario/u, 'fixture request.scenario'));
-  }
+  validateExecutionScenario(value.scenario, errors);
   validateCell(value.cell, errors);
   return errors;
 }
@@ -115,6 +165,131 @@ function containsVendorFact(value) {
   );
 }
 
+function validateSnapshot(snapshot, path, errors) {
+  if (!isPlainRecord(snapshot)) {
+    errors.push(`${path} must be a plain record`);
+    return;
+  }
+  rejectUnknownKeys(snapshot, SNAPSHOT_KEYS, path, errors);
+  const wrapped = {
+    roles: snapshot.roles,
+    relationships: snapshot.relationships,
+    states: snapshot.states,
+    focus: snapshot.focus,
+    events: snapshot.events,
+    announcements: snapshot.announcements,
+    cleanup: [],
+  };
+  for (const error of validateScenario(expectedScenario(wrapped))) {
+    if (error.startsWith('scenario.expected')) {
+      errors.push(error.replace(/^scenario\.expected/u, path));
+    }
+  }
+  if (snapshot.resources !== undefined) {
+    if (!isPlainRecord(snapshot.resources)) {
+      errors.push(`${path}.resources must be a plain record`);
+    } else {
+      rejectUnknownKeys(snapshot.resources, ['listeners', 'timers'], `${path}.resources`, errors);
+      for (const key of ['listeners', 'timers']) {
+        if (!Number.isSafeInteger(snapshot.resources[key]) || snapshot.resources[key] < 0) {
+          errors.push(`${path}.resources.${key} must be a non-negative safe integer`);
+        }
+      }
+    }
+  }
+}
+
+function validateTrace(trace, errors) {
+  if (!Array.isArray(trace) || trace.length === 0) {
+    errors.push('modal observation.trace must be a non-empty array');
+    return;
+  }
+  for (const [index, entry] of trace.entries()) {
+    const path = `modal observation.trace[${index}]`;
+    if (!isPlainRecord(entry)) {
+      errors.push(`${path} must be a plain record`);
+      continue;
+    }
+    rejectUnknownKeys(entry, ['phase', 'operationIndex', 'operation', 'snapshot'], path, errors);
+    if (
+      !['before-operations', 'after-operation', 'after-cleanup', 'server-render'].includes(
+        entry.phase,
+      )
+    ) {
+      errors.push(`${path}.phase is invalid`);
+    }
+    if (entry.phase === 'after-operation') {
+      if (!Number.isSafeInteger(entry.operationIndex) || entry.operationIndex < 0) {
+        errors.push(`${path}.operationIndex must be a non-negative safe integer`);
+      }
+      if (!isPlainRecord(entry.operation)) {
+        errors.push(`${path}.operation must be a plain record`);
+      } else {
+        rejectUnknownKeys(entry.operation, ['operation', 'target'], `${path}.operation`, errors);
+        for (const key of ['operation', 'target']) {
+          if (typeof entry.operation[key] !== 'string' || entry.operation[key].length === 0) {
+            errors.push(`${path}.operation.${key} must be a non-empty string`);
+          }
+        }
+      }
+    } else if (entry.operationIndex !== undefined || entry.operation !== undefined) {
+      errors.push(`${path} may identify an operation only after an operation`);
+    }
+    validateSnapshot(entry.snapshot, `${path}.snapshot`, errors);
+  }
+}
+
+function validateExecutionDiagnostics(diagnostics, trace, errors) {
+  if (!isPlainRecord(diagnostics) || !Array.isArray(trace)) return;
+  const evidenceTrace = trace.some(({ phase }) =>
+    ['after-operation', 'after-cleanup', 'server-render'].includes(phase),
+  );
+  if (!evidenceTrace) return;
+  for (const key of ['executionCompleted', 'cleanupObserved']) {
+    if (typeof diagnostics[key] !== 'boolean') {
+      errors.push(`modal observation.diagnostics.${key} must be a boolean`);
+    }
+  }
+  const operationCount = trace.filter(({ phase }) => phase === 'after-operation').length;
+  if (operationCount === 0) return;
+  if (!Array.isArray(diagnostics.actions)) {
+    errors.push('modal observation.diagnostics.actions must be an array');
+    return;
+  }
+  if (diagnostics.actions.length !== operationCount) {
+    errors.push('modal observation.diagnostics.actions must match the executed trace length');
+  }
+  for (const [index, action] of diagnostics.actions.entries()) {
+    const path = `modal observation.diagnostics.actions[${index}]`;
+    if (!isPlainRecord(action)) {
+      errors.push(`${path} must be a plain record`);
+      continue;
+    }
+    for (const key of ['operation', 'target']) {
+      if (typeof action[key] !== 'string' || action[key].length === 0) {
+        errors.push(`${path}.${key} must be a non-empty string`);
+      }
+    }
+    for (const key of ['controlFound', 'dispatched', 'completed']) {
+      if (typeof action[key] !== 'boolean') errors.push(`${path}.${key} must be a boolean`);
+    }
+    if (action.prevented !== undefined && typeof action.prevented !== 'boolean') {
+      errors.push(`${path}.prevented must be a boolean`);
+    }
+    if (action.failure !== undefined && typeof action.failure !== 'string') {
+      errors.push(`${path}.failure must be a string`);
+    }
+    for (const key of ['events', 'surfaces']) {
+      if (
+        action[key] !== undefined &&
+        (!Array.isArray(action[key]) || action[key].some((entry) => typeof entry !== 'string'))
+      ) {
+        errors.push(`${path}.${key} must be an array of strings`);
+      }
+    }
+  }
+}
+
 export function validateModalObservation(value) {
   const errors = [];
   if (!isPlainRecord(value)) return ['modal observation must be a plain record'];
@@ -125,12 +300,20 @@ export function validateModalObservation(value) {
     }
   }
   const normative = Object.fromEntries(
-    OBSERVATION_KEYS.filter((key) => key !== 'diagnostics').map((key) => [key, value[key]]),
+    OBSERVATION_KEYS.filter((key) => key !== 'diagnostics' && key !== 'trace').map((key) => [
+      key,
+      value[key],
+    ]),
   );
   if (containsVendorFact(normative)) {
     errors.push('modal observation normative fields must not contain candidate or vendor coupling');
   }
   if (!isJsonValue(value.diagnostics))
     errors.push('modal observation.diagnostics must contain JSON values');
+  validateTrace(value.trace, errors);
+  validateExecutionDiagnostics(value.diagnostics, value.trace, errors);
+  if (containsVendorFact(value.trace)) {
+    errors.push('modal observation trace must not contain candidate or vendor coupling');
+  }
   return errors;
 }
