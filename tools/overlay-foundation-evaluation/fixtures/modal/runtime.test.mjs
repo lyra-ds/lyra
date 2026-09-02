@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { MODAL_SCENARIOS } from '../../contracts/modal.mjs';
 import { modalExecutionScenario } from './protocol.mjs';
+import { isDeepStrictEqual as isBrowserDeepStrictEqual } from './runtime.react-browser-node-util.mjs';
 import {
   createModalRuntime,
   executeModalBrowserScenario,
@@ -22,6 +23,21 @@ const validRequest = {
     coarsePointer: false,
   },
 };
+
+test('browser deep equality compares JSON records independently of insertion order', () => {
+  assert.equal(
+    isBrowserDeepStrictEqual(
+      { cell: { direction: 'ltr', id: 'chromium' }, operations: ['open', 'close'] },
+      { operations: ['open', 'close'], cell: { id: 'chromium', direction: 'ltr' } },
+    ),
+    true,
+  );
+  assert.equal(
+    isBrowserDeepStrictEqual({ operations: ['open'] }, { operations: ['close'] }),
+    false,
+  );
+  assert.equal(isBrowserDeepStrictEqual(['open', 'close'], ['close', 'open']), false);
+});
 
 function requestFor(scenario) {
   return {
@@ -91,6 +107,7 @@ function behaviorBrowserHarness(
     accessibleName = 'Behavior workspace',
     ariaModal = 'true',
     descriptionId = 'behavior-description',
+    titleId = 'behavior-title',
     ignoreOpen = false,
     ignoreOpenFocus = false,
     ignorePointerClose = false,
@@ -104,13 +121,16 @@ function behaviorBrowserHarness(
     portalLeak = false,
     prematureScrollClaimRelease = false,
     reacquireScrollClaimForSameOwner = false,
+    renderedDescriptionId = descriptionId,
+    renderedTitleId = titleId,
+    relationshipDescriptionId = renderedDescriptionId,
+    relationshipTitleId = renderedTitleId,
     resourceSnapshot,
     semanticContradiction = false,
     semanticEventContradiction = false,
     stuckScrollLock = false,
     trackGuards = false,
     trackScrollClaims = false,
-    titleId = 'behavior-title',
   } = {},
 ) {
   const actions = [];
@@ -160,22 +180,28 @@ function behaviorBrowserHarness(
     },
   );
   const background = fakeElement({ 'data-modal-id': 'background' });
-  const title = fakeElement({ id: titleId }, { textContent: accessibleName });
-  const description = fakeElement({ id: descriptionId }, { textContent: 'Behavior description' });
+  const title = fakeElement(
+    { id: renderedTitleId, 'data-modal-id': titleId },
+    { textContent: accessibleName },
+  );
+  const description = fakeElement(
+    { id: renderedDescriptionId, 'data-modal-id': descriptionId },
+    { textContent: 'Behavior description' },
+  );
   const panel = fakeElement({
     role: 'dialog',
     'data-modal-id': 'modal-panel',
     'data-modal-panel': '',
     'data-modal-portal': '',
-    'aria-labelledby': titleId,
-    'aria-describedby': descriptionId,
+    'aria-labelledby': relationshipTitleId,
+    'aria-describedby': relationshipDescriptionId,
     'aria-modal': ariaModal,
   });
   const contradictoryPanel = fakeElement({
     role: 'dialog',
     'data-modal-id': 'modal-panel',
-    'aria-labelledby': titleId,
-    'aria-describedby': descriptionId,
+    'aria-labelledby': relationshipTitleId,
+    'aria-describedby': relationshipDescriptionId,
     'aria-modal': ariaModal === 'true' ? 'false' : 'true',
   });
   const childPanel = fakeElement({
@@ -443,7 +469,7 @@ function behaviorBrowserHarness(
       },
     },
     getElementById(id) {
-      return { [titleId]: title, [descriptionId]: description }[id] ?? null;
+      return { [renderedTitleId]: title, [renderedDescriptionId]: description }[id] ?? null;
     },
     querySelector(selector) {
       const operation = /data-modal-operation="([^"]+)"/u.exec(selector)?.[1];
@@ -841,6 +867,10 @@ function candidateOwnedBrowserHarness(
       { 'aria-owns': 'modal-portal', 'data-modal-id': 'modal-owner' },
       { connected: false },
     );
+    const portal = new BrowserElement(
+      { id: 'modal-portal', 'data-modal-id': 'modal-portal' },
+      { connected: false },
+    );
     const guard = new BrowserElement({ 'data-modal-focus-guard': '' }, { connected: false });
     const panel = new BrowserElement(
       {
@@ -868,6 +898,7 @@ function candidateOwnedBrowserHarness(
       if (emptyCandidate) return;
       panel.isConnected = true;
       owner.isConnected = true;
+      portal.isConnected = true;
       guard.isConnected = true;
       if (semanticContradiction) contradictoryPanel.isConnected = true;
       body.style.overflow = 'hidden';
@@ -899,6 +930,7 @@ function candidateOwnedBrowserHarness(
         contradictoryPanel.isConnected = false;
       }
       owner.isConnected = false;
+      portal.isConnected = leakPortal;
       guard.isConnected = false;
       body.style.overflow = '';
       background.inert = false;
@@ -980,6 +1012,7 @@ function candidateOwnedBrowserHarness(
           safeTarget,
           live,
           owner,
+          portal,
           guard,
         ]) {
           element.isConnected = false;
@@ -1351,6 +1384,27 @@ test('the shared driver completes every immutable operation through behavior-bou
   }
 });
 
+test('normalizes candidate-generated ARIA references to neutral fixture targets', async () => {
+  const scenario = MODAL_SCENARIOS[0];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario, {
+    descriptionId: 'modal-description',
+    relationshipDescriptionId: 'radix-_r_2_',
+    relationshipTitleId: 'radix-_r_1_',
+    titleId: 'modal-title',
+  });
+  const observation = await executeModalBrowserScenario({
+    document: harness.document,
+    fixture: harness.fixture,
+    input: { scenario, cell: request.cell, hydrate: false, synthesizeHover: false },
+    request,
+  });
+  assert.deepEqual(observation.relationships, [
+    { source: 'modal-panel', name: 'labelled-by', target: 'unresolved-reference' },
+    { source: 'modal-panel', name: 'described-by', target: 'unresolved-reference' },
+  ]);
+});
+
 test('resource probes are factual in every browser scenario that asserts cleanup', async () => {
   const execute = async (scenario) => {
     const request = requestFor(scenario);
@@ -1452,6 +1506,47 @@ test('client hydration keeps factual execution and cleanup traces around the rea
     calls.some(([name]) => name === 'unmount'),
     true,
   );
+});
+
+test('surfaces an uncaught candidate render error and still unmounts before readiness', async () => {
+  const { mountModalFixtureClient } = await import('./runtime.mjs');
+  const scenario = MODAL_SCENARIOS[0];
+  const request = requestFor(scenario);
+  const harness = behaviorBrowserHarness(scenario);
+  const renderError = new Error('candidate render failed before readiness');
+  let rootOptions;
+  let unmounts = 0;
+  const mounted = await mountModalFixtureClient({
+    React: {
+      createElement(_type, props) {
+        return { props };
+      },
+    },
+    createModalCandidate: async () => ({ ModalFixture() {} }),
+    createRoot(_container, options) {
+      rootOptions = options;
+      return {
+        render() {
+          options?.onUncaughtError?.(renderError);
+        },
+        unmount() {
+          unmounts += 1;
+          harness.setRootHasChildren(false);
+        },
+      };
+    },
+    document: harness.document,
+    hydrateRoot() {
+      throw new Error('unexpected hydration');
+    },
+    request,
+  });
+
+  assert.equal(typeof rootOptions?.onUncaughtError, 'function');
+  assert.equal(mounted.readyStatus, 'failed');
+  await assert.rejects(mounted.ready, /candidate render failed before readiness/u);
+  assert.deepEqual(await mounted.cleanup(), { status: 'destroyed' });
+  assert.equal(unmounts, 1);
 });
 
 test('captures hydration stability from the server tree before hydrateRoot and first client tree', async () => {

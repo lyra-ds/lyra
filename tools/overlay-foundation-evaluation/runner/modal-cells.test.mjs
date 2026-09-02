@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { runInThisContext } from 'node:vm';
 
 import { MODAL_WAVE_CELLS, modalScenariosForCell } from '../contracts/modal.mjs';
 import {
@@ -210,7 +211,12 @@ async function sharedBridge(
   };
 }
 
-function fakePlaywright({ failPrimary = false } = {}) {
+function fakePlaywright({
+  delayBridge = false,
+  delayReadiness = false,
+  failPrimary = false,
+  serializeCallbacks = false,
+} = {}) {
   const calls = [];
   const engine = (name) => ({
     async launch() {
@@ -223,12 +229,16 @@ function fakePlaywright({ failPrimary = false } = {}) {
               calls.push(`page:${name}`);
               let request;
               let bridge;
+              let bridgeReady = false;
               return {
                 async addInitScript(callback, input) {
                   calls.push(['init-request', input.cell.id, input.scenario.scenarioId]);
                   const previous = globalThis.__LYRA_MODAL_FIXTURE_REQUEST__;
                   try {
-                    callback(input);
+                    const browserCallback = serializeCallbacks
+                      ? runInThisContext(`(${callback.toString()})`)
+                      : callback;
+                    browserCallback(input);
                     request = structuredClone(globalThis.__LYRA_MODAL_FIXTURE_REQUEST__);
                   } finally {
                     if (previous === undefined) delete globalThis.__LYRA_MODAL_FIXTURE_REQUEST__;
@@ -237,7 +247,44 @@ function fakePlaywright({ failPrimary = false } = {}) {
                 },
                 async goto(url) {
                   calls.push(['goto', url]);
-                  bridge = await sharedBridge(request);
+                  if (!delayBridge) {
+                    const actual = await sharedBridge(request);
+                    bridge = {
+                      ...actual,
+                      get readyStatus() {
+                        return bridgeReady ? 'ready' : 'pending';
+                      },
+                    };
+                    bridgeReady = !delayReadiness;
+                  }
+                },
+                async waitForFunction(callback) {
+                  calls.push('wait:fixture-bridge');
+                  if (bridge === undefined) {
+                    const actual = await sharedBridge(request);
+                    bridge = {
+                      ...actual,
+                      get readyStatus() {
+                        return bridgeReady ? 'ready' : 'pending';
+                      },
+                    };
+                    bridgeReady = !delayReadiness;
+                  }
+                  const previousBridge = globalThis.__LYRA_MODAL_FIXTURE__;
+                  globalThis.__LYRA_MODAL_FIXTURE__ = bridge;
+                  try {
+                    const browserCallback = serializeCallbacks
+                      ? runInThisContext(`(${callback.toString()})`)
+                      : callback;
+                    if (delayReadiness && browserCallback()) {
+                      throw new Error('runner accepted a pending fixture bridge');
+                    }
+                    bridgeReady = true;
+                    if (!browserCallback()) throw new Error('fixture bridge was not ready');
+                  } finally {
+                    if (previousBridge === undefined) delete globalThis.__LYRA_MODAL_FIXTURE__;
+                    else globalThis.__LYRA_MODAL_FIXTURE__ = previousBridge;
+                  }
                 },
                 async evaluate(callback, input) {
                   if (input === undefined) calls.push('cleanup:fixture');
@@ -250,7 +297,10 @@ function fakePlaywright({ failPrimary = false } = {}) {
                     if (failPrimary && input !== undefined) {
                       throw new Error('synthetic browser failure');
                     }
-                    return await callback(input);
+                    const browserCallback = serializeCallbacks
+                      ? runInThisContext(`(${callback.toString()})`)
+                      : callback;
+                    return await browserCallback(input);
                   } finally {
                     if (previousDocument === undefined) delete globalThis.document;
                     else globalThis.document = previousDocument;
@@ -345,6 +395,7 @@ function executingPlaywright({
                     });
                     bridge = {
                       ...actual,
+                      readyStatus: 'ready',
                       async runScenario(input) {
                         calls.push(['run-scenario', structuredClone(input)]);
                         return actual.runScenario(input);
@@ -358,6 +409,16 @@ function executingPlaywright({
                         return actual.cleanup();
                       },
                     };
+                  },
+                  async waitForFunction(callback) {
+                    const previousBridge = globalThis.__LYRA_MODAL_FIXTURE__;
+                    globalThis.__LYRA_MODAL_FIXTURE__ = bridge;
+                    try {
+                      if (!callback()) throw new Error('fixture bridge was not ready');
+                    } finally {
+                      if (previousBridge === undefined) delete globalThis.__LYRA_MODAL_FIXTURE__;
+                      else globalThis.__LYRA_MODAL_FIXTURE__ = previousBridge;
+                    }
                   },
                   async evaluate(callback, input) {
                     const previousDocument = globalThis.document;
@@ -673,6 +734,61 @@ test('returns the browser observation produced after fixture and root cleanup', 
   );
   assert.equal(observations[0].observation.diagnostics.cleanupObserved, true);
   assert.equal(observations[0].observation.trace.at(-1).phase, 'after-cleanup');
+});
+
+test('browser callbacks execute without access to Node module closures', async () => {
+  const { runModalCell } = await loadCells();
+  const scenario = modalScenariosForCell('chromium')[0];
+  const fake = fakePlaywright({ serializeCallbacks: true });
+  const observations = await runModalCell(
+    {
+      cellId: 'chromium',
+      fixtures: new Map([['19.2.8', { clientHtmlPath: '/owned/index.html' }]]),
+      playwright: fake.playwright,
+      scenario,
+    },
+    {
+      startServer: async () => ({ url: 'http://127.0.0.1:43123/', close: async () => {} }),
+    },
+  );
+  assert.equal(observations[0].observation.diagnostics.cleanupObserved, true);
+});
+
+test('waits for asynchronous candidate module initialization before browser execution', async () => {
+  const { runModalCell } = await loadCells();
+  const scenario = modalScenariosForCell('chromium')[0];
+  const fake = fakePlaywright({ delayBridge: true });
+  const observations = await runModalCell(
+    {
+      cellId: 'chromium',
+      fixtures: new Map([['19.2.8', { clientHtmlPath: '/owned/index.html' }]]),
+      playwright: fake.playwright,
+      scenario,
+    },
+    {
+      startServer: async () => ({ url: 'http://127.0.0.1:43123/', close: async () => {} }),
+    },
+  );
+  assert.equal(fake.calls.includes('wait:fixture-bridge'), true);
+  assert.equal(observations[0].observation.diagnostics.executionCompleted, true);
+});
+
+test('waits for the candidate fixture readiness signal before browser execution', async () => {
+  const { runModalCell } = await loadCells();
+  const scenario = modalScenariosForCell('chromium')[0];
+  const fake = fakePlaywright({ delayReadiness: true });
+  const observations = await runModalCell(
+    {
+      cellId: 'chromium',
+      fixtures: new Map([['19.2.8', { clientHtmlPath: '/owned/index.html' }]]),
+      playwright: fake.playwright,
+      scenario,
+    },
+    {
+      startServer: async () => ({ url: 'http://127.0.0.1:43123/', close: async () => {} }),
+    },
+  );
+  assert.equal(observations[0].observation.diagnostics.executionCompleted, true);
 });
 
 test('tags a malformed default browser observation as structurally run-fatal', async () => {

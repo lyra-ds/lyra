@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, rename, rm, stat, symlink, writeFile } from '
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { test } from 'node:test';
+import { pathToFileURL } from 'node:url';
 
 const modulePath = new URL('./modal-fixture.mjs', import.meta.url);
 
@@ -65,6 +66,8 @@ async function createSources(root) {
     [adapterEntry]: 'export const adapter = "synthetic";\n',
     [join(fixtureSourceRoot, 'protocol.mjs')]: 'export const protocol = 1;\n',
     [join(fixtureSourceRoot, 'runtime.mjs')]: 'export const runtime = 1;\n',
+    [join(fixtureSourceRoot, 'runtime.react-browser-node-util.mjs')]:
+      'export const isDeepStrictEqual = () => true;\n',
     [join(fixtureSourceRoot, 'entry-client.mjs')]: 'export const client = 1;\n',
     [join(fixtureSourceRoot, 'entry-server.mjs')]: 'export const server = 1;\n',
     [join(fixtureSourceRoot, 'index.html')]: '<main id="modal-fixture-root"></main>\n',
@@ -181,8 +184,8 @@ test('copies each allowed source once with hashes and returns verified contained
     react: '19.2.8',
     'react-dom': '19.2.8',
   });
-  assert.equal(reads.size, 6);
-  assert.deepEqual([...reads.values()], [1, 1, 1, 1, 1, 1]);
+  assert.equal(reads.size, 7);
+  assert.deepEqual([...reads.values()], [1, 1, 1, 1, 1, 1, 1]);
   assert.deepEqual(Object.keys(result.sourceHashes).sort(), [
     'adapter',
     'entryClient',
@@ -190,6 +193,7 @@ test('copies each allowed source once with hashes and returns verified contained
     'indexHtml',
     'protocol',
     'runtime',
+    'runtimeBrowserNodeUtil',
   ]);
   for (const source of Object.values(result.sourceHashes)) {
     assert.equal(relative(setup.runRoot, source.path).startsWith('..'), false);
@@ -258,6 +262,70 @@ test('copies each allowed source once with hashes and returns verified contained
     setup.calls.map(({ options }) => options.cwd),
     [setup.fixtureRoot, setup.fixtureRoot],
   );
+});
+
+test('builds the client against a contained browser-safe deep equality shim', async (t) => {
+  const prepareModalFixture = await loadPrepareModalFixture();
+  const setup = await createFixtureSetup(t);
+  const result = await prepareModalFixture(input(setup), {
+    installCandidate: setup.installCandidate,
+  });
+  const expectedShim = join(
+    setup.fixtureRoot,
+    'fixtures',
+    'modal',
+    'runtime.react-browser-node-util.mjs',
+  );
+
+  assert.equal(result.sourceHashes.runtimeBrowserNodeUtil.path, expectedShim);
+  const previousTarget = process.env.LYRA_MODAL_BUILD_TARGET;
+  process.env.LYRA_MODAL_BUILD_TARGET = 'client';
+  let config;
+  try {
+    config = (
+      await import(
+        `${pathToFileURL(join(setup.fixtureRoot, 'modal-fixture', 'vite.config.mjs'))}?test`
+      )
+    ).default;
+  } finally {
+    if (previousTarget === undefined) delete process.env.LYRA_MODAL_BUILD_TARGET;
+    else process.env.LYRA_MODAL_BUILD_TARGET = previousTarget;
+  }
+  assert.equal(config.resolve.alias['node:util'], expectedShim);
+});
+
+test('adapts inspected incumbent workspace packs to the isolated fixture installer', async (t) => {
+  const prepareModalFixture = await loadPrepareModalFixture();
+  const setup = await createFixtureSetup(t, { candidateId: 'incumbent' });
+  setup.sources.adapterEntry = join(dirname(setup.sources.adapterEntry), 'incumbent.mjs');
+  await writeFile(setup.sources.adapterEntry, 'export const adapter = "incumbent";\n');
+  const artifact = {
+    bytes: 123,
+    license: 'MIT',
+    lifecycleScripts: [],
+    name: '@lyra-ds/react',
+    path: join(setup.root, 'evidence', 'lyra-react.tgz'),
+    sha256: 'a'.repeat(64),
+    version: '0.5.0',
+  };
+  setup.artifacts.splice(0, setup.artifacts.length, artifact);
+
+  await prepareModalFixture(input(setup), { installCandidate: setup.installCandidate });
+
+  assert.deepEqual(setup.installInput.artifacts, [
+    {
+      ...artifact,
+      packageName: '@lyra-ds/react',
+      packageVersion: '0.5.0',
+      record: {
+        source: 'workspace-pack',
+        name: '@lyra-ds/react',
+        version: '0.5.0',
+        sha256: 'a'.repeat(64),
+        license: 'MIT',
+      },
+    },
+  ]);
 });
 
 test('rejects an edited repository Vite pin before installation or builds', async (t) => {

@@ -11,6 +11,12 @@ const PRIVATE_PROPS = Object.freeze([
   'getCloseTriggerProps',
 ]);
 
+async function importCandidateModule(specifier) {
+  if (specifier === PACKAGE_NAMES[0]) return import('@zag-js/dialog');
+  if (specifier === PACKAGE_NAMES[1]) return import('@zag-js/react');
+  throw new Error('unexpected Zag package import');
+}
+
 function element(React, type, privateProps, part, ...children) {
   const props = { ...privateProps, ...part.props };
   for (const [name, handler] of Object.entries(privateProps)) {
@@ -26,21 +32,16 @@ function element(React, type, privateProps, part, ...children) {
   return React.createElement(type, props, ...(children.length === 0 ? [part.children] : children));
 }
 
-export async function createModalCandidate({
-  React,
-  importModule = (specifier) => import(specifier),
-}) {
+export async function createModalCandidate({ React, importModule = importCandidateModule }) {
   const dialog = await importModule(PACKAGE_NAMES[0]);
   const { normalizeProps, useMachine } = await importModule(PACKAGE_NAMES[1]);
   function NestedModal({ closeControls, open, openControls, onOpenChange, trigger, view }) {
     useModalResourceClaim({ React, active: open, kind: 'scroll-lock', owner: view.panelId });
-    const service = useMachine(
-      dialog.machine({
-        id: 'of-modal-child-fixture',
-        open,
-        onOpenChange: ({ open: next }) => onOpenChange(next),
-      }),
-    );
+    const service = useMachine(dialog.machine, {
+      id: 'of-modal-child-fixture',
+      open,
+      onOpenChange: ({ open: next }) => onOpenChange(next),
+    });
     const api = dialog.connect(service, normalizeProps);
     return React.createElement(
       React.Fragment,
@@ -86,16 +87,14 @@ export async function createModalCandidate({
       kind: 'scroll-lock',
       owner: parts.panel.props['data-modal-id'],
     });
-    const service = useMachine(
-      dialog.machine({
-        id: 'of-modal-fixture',
-        open,
-        onOpenChange: ({ open: nextOpen }) => {
-          if (nextOpen === false && nestedOpen) onNestedOpenChange(false);
-          return onOpenChange(nextOpen);
-        },
-      }),
-    );
+    const service = useMachine(dialog.machine, {
+      id: 'of-modal-fixture',
+      open,
+      onOpenChange: ({ open: nextOpen }) => {
+        if (nextOpen === false && nestedOpen) onNestedOpenChange(false);
+        return onOpenChange(nextOpen);
+      },
+    });
     const api = dialog.connect(service, normalizeProps);
     const operationControl = (control) => {
       const operation = control.props['data-modal-operation'];

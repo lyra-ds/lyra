@@ -1,11 +1,24 @@
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
+import { pathToFileURL } from 'node:url';
+
+import { build } from 'vite';
 
 import { CONTRACT_IDS } from '../../contracts/protocol.mjs';
 import { MODAL_SCENARIOS } from '../../contracts/modal.mjs';
 import { modalExecutionScenario } from '../../fixtures/modal/protocol.mjs';
 
 const CANDIDATES = Object.freeze(['incumbent', 'radix', 'base-ui', 'zag']);
+const PACKAGE_NAMES = Object.freeze([
+  '@lyra-ds/react/dialog',
+  '@radix-ui/react-dialog',
+  '@base-ui-components/react/dialog',
+  '@zag-js/dialog',
+  '@zag-js/react',
+]);
 const request = Object.freeze({
   schemaVersion: 1,
   scenario: modalExecutionScenario(MODAL_SCENARIOS[0]),
@@ -183,16 +196,12 @@ function injectedModules(candidate, capture) {
     ]);
   }
   const partProps = (part) => ({ 'data-private-part': part });
+  const zagMachine = { id: 'zag-dialog-machine' };
   return new Map([
     [
       '@zag-js/dialog',
       {
-        machine(options) {
-          capture.machineOptions = options;
-          capture.machineOptionsById ??= new Map();
-          capture.machineOptionsById.set(options.id, options);
-          return { machine: options };
-        },
+        machine: zagMachine,
         connect(service, normalizeProps) {
           capture.connected = { normalizeProps, service };
           return {
@@ -211,14 +220,78 @@ function injectedModules(candidate, capture) {
       '@zag-js/react',
       {
         normalizeProps: { normalized: true },
-        useMachine(machine) {
+        useMachine(machine, options) {
           capture.machine = machine;
-          return { service: machine };
+          capture.machineOptions = options;
+          capture.machineOptionsById ??= new Map();
+          capture.machineOptionsById.set(options.id, options);
+          return { service: machine, options };
         },
       },
     ],
   ]);
 }
+
+test('candidate package imports execute from a browser-targeted isolated bundle', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'lyra-modal-adapter-bundle-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const adapterRoot = join(root, 'candidates', 'modal');
+  const fixtureRoot = join(root, 'fixtures', 'modal');
+  await mkdir(adapterRoot, { recursive: true });
+  await mkdir(fixtureRoot, { recursive: true });
+  await writeFile(
+    join(fixtureRoot, 'runtime.mjs'),
+    'export const useModalFixtureRuntime = () => {};\nexport const useModalResourceClaim = () => {};\n',
+  );
+  const packageModule = join(root, 'candidate-package.mjs');
+  await writeFile(
+    packageModule,
+    [
+      'export const Dialog = {};',
+      'export const Root = {};',
+      'export const Portal = {};',
+      'export const Overlay = {};',
+      'export const Content = {};',
+      'export const Title = {};',
+      'export const Description = {};',
+      'export const Close = {};',
+      'export const Trigger = {};',
+      'export const machine = () => ({});',
+      'export const connect = () => ({});',
+      'export const normalizeProps = {};',
+      'export const useMachine = () => ({});',
+    ].join('\n'),
+  );
+
+  for (const candidate of CANDIDATES) {
+    const adapterPath = join(adapterRoot, `${candidate}.mjs`);
+    await writeFile(adapterPath, await readFile(new URL(`./${candidate}.mjs`, import.meta.url)));
+    const entryPath = join(root, `${candidate}-entry.mjs`);
+    await writeFile(
+      entryPath,
+      `import { createModalCandidate } from './candidates/modal/${candidate}.mjs';\n` +
+        'const result = await createModalCandidate({ React: {} });\n' +
+        "if (typeof result.ModalFixture !== 'function') throw new Error('candidate did not load');\n" +
+        'export const loaded = true;\n',
+    );
+    const outputRoot = join(root, `dist-${candidate}`);
+    await build({
+      configFile: false,
+      logLevel: 'silent',
+      resolve: {
+        alias: Object.fromEntries(PACKAGE_NAMES.map((name) => [name, packageModule])),
+      },
+      build: {
+        emptyOutDir: true,
+        outDir: outputRoot,
+        target: 'esnext',
+        lib: { entry: entryPath, fileName: 'candidate', formats: ['es'] },
+      },
+    });
+    const loaded = await import(`${pathToFileURL(join(outputRoot, 'candidate.mjs'))}?${candidate}`);
+    assert.equal(loaded.loaded, true, `${candidate} bundle must resolve its installed packages`);
+  }
+});
 
 for (const candidate of CANDIDATES) {
   test(`${candidate} exposes one private OF-MODAL entry without loading a vendor`, async () => {
@@ -317,6 +390,16 @@ for (const candidate of CANDIDATES) {
       false,
     );
     const panel = elements(tree).find(({ props }) => props['data-fixture-part'] === 'panel');
+    assert.deepEqual(
+      elements(tree)
+        .filter(({ props }) => ['description', 'title'].includes(props['data-fixture-part']))
+        .map(({ props }) => [props['data-fixture-part'], props['data-modal-id']])
+        .sort(([left]) => (left === 'description' ? -1 : 1)),
+      [
+        ['description', 'modal-description'],
+        ['title', 'modal-title'],
+      ],
+    );
     for (const semanticProp of [
       'role',
       'aria-modal',

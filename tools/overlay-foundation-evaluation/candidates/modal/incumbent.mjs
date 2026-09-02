@@ -3,6 +3,11 @@ import { useModalFixtureRuntime, useModalResourceClaim } from '../../fixtures/mo
 const PACKAGE_NAME = '@lyra-ds/react/dialog';
 const PRIVATE_PROPS = Object.freeze(['onClose']);
 
+async function importCandidateModule(specifier) {
+  if (specifier !== PACKAGE_NAME) throw new Error('unexpected incumbent package import');
+  return import('@lyra-ds/react/dialog');
+}
+
 function element(React, type, part, ...children) {
   return React.createElement(
     type,
@@ -11,10 +16,7 @@ function element(React, type, part, ...children) {
   );
 }
 
-export async function createModalCandidate({
-  React,
-  importModule = (specifier) => import(specifier),
-}) {
+export async function createModalCandidate({ React, importModule = importCandidateModule }) {
   const { Dialog } = await importModule(PACKAGE_NAME);
   function ModalFixture({ request, onReady }) {
     const { nestedOpen, onNestedOpenChange, onOpenChange, open, parts } = useModalFixtureRuntime({

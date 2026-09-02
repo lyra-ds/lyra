@@ -213,6 +213,11 @@ async function executeBrowserScenario({ scenario, cell, hydrate, axe, synthesize
 }
 
 async function cleanupBrowserFixture() {
+  const plainRecord = (value) => {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  };
   const bridge = globalThis.__LYRA_MODAL_FIXTURE__;
   if (bridge === undefined || typeof bridge.cleanup !== 'function') {
     throw new Error('modal fixture cleanup bridge is unavailable');
@@ -226,7 +231,7 @@ async function cleanupBrowserFixture() {
   ) {
     throw new Error('modal fixture cleanup result is uncertain');
   }
-  if (result.observation !== undefined && !isPlainRecord(result.observation)) {
+  if (result.observation !== undefined && !plainRecord(result.observation)) {
     throw new Error('modal fixture cleanup observation is invalid');
   }
   return result;
@@ -331,6 +336,14 @@ async function runBrowserVersion(
     }
     await page.addInitScript(installFixtureRequest, request);
     await page.goto(server.url);
+    if (typeof page.waitForFunction !== 'function') {
+      throw new Error('Playwright page cannot await modal fixture initialization');
+    }
+    await page.waitForFunction(
+      () =>
+        typeof globalThis.__LYRA_MODAL_FIXTURE__?.runScenario === 'function' &&
+        ['ready', 'failed'].includes(globalThis.__LYRA_MODAL_FIXTURE__.readyStatus),
+    );
     const execution = await page.evaluate(executeBrowserScenario, {
       scenario: request.scenario,
       cell: request.cell,

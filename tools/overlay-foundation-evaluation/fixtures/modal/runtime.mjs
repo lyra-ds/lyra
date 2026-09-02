@@ -732,9 +732,16 @@ function fixtureParts(
       ...(contentMode === 'no-tabbable-content' ? { tabIndex: -1 } : {}),
       ...(contentMode === 'destructive-confirmation' ? { role: 'alertdialog' } : {}),
     }),
-    title: part({ 'data-fixture-part': 'title', id: view.titleId }, view.title),
+    title: part(
+      { 'data-fixture-part': 'title', 'data-modal-id': view.titleId, id: view.titleId },
+      view.title,
+    ),
     description: part(
-      { 'data-fixture-part': 'description', id: view.descriptionId },
+      {
+        'data-fixture-part': 'description',
+        'data-modal-id': view.descriptionId,
+        id: view.descriptionId,
+      },
       view.description,
     ),
     initialTarget: part(
@@ -1333,6 +1340,16 @@ function observationId(element, fallback) {
     element?.getAttribute?.('id') ??
     fallback
   );
+}
+
+function relationshipTarget(document, value) {
+  return value
+    .trim()
+    .split(/\s+/u)
+    .map((identifier) =>
+      observationId(document.getElementById?.(identifier), 'unresolved-reference'),
+    )
+    .join(' ');
 }
 
 function accessibleName(document, element) {
@@ -2290,7 +2307,11 @@ function observeBrowserSnapshot({ document, fixture, captureResources }) {
     ]) {
       const value = element.getAttribute?.(attribute);
       if (typeof value === 'string' && value !== '') {
-        relationships.push({ source: target, name, target: value });
+        relationships.push({
+          source: target,
+          name,
+          target: relationshipTarget(document, value),
+        });
       }
     }
     const role = element.getAttribute?.('role');
@@ -2684,9 +2705,21 @@ export async function mountModalFixtureClient({
     throw new Error('modal fixture root is missing');
   const { ModalFixture } = await createModalCandidate({ React });
   const ready = Promise.withResolvers();
+  let readyStatus = 'pending';
+  void ready.promise.catch(() => {});
+  const resolveReady = (fixture) => {
+    if (readyStatus !== 'pending') return;
+    readyStatus = 'ready';
+    ready.resolve(fixture);
+  };
+  const rejectReady = (error) => {
+    if (readyStatus !== 'pending') return;
+    readyStatus = 'failed';
+    ready.reject(error instanceof Error ? error : new Error(String(error)));
+  };
   const element = React.createElement(ModalFixture, {
     request,
-    onReady: (fixture) => ready.resolve(fixture),
+    onReady: resolveReady,
   });
   const renderMode = container.hasChildNodes() ? 'hydrateRoot' : 'createRoot';
   const resourceTracker = document.defaultView?.__LYRA_MODAL_RESOURCE_TRACKER__;
@@ -2710,8 +2743,11 @@ export async function mountModalFixtureClient({
     hydrationConsoleRestored = true;
   };
   let root;
+  const rootOptions = { onUncaughtError: rejectReady };
   const createReactRoot = () =>
-    renderMode === 'hydrateRoot' ? hydrateRoot(container, element) : createRoot(container);
+    renderMode === 'hydrateRoot'
+      ? hydrateRoot(container, element, rootOptions)
+      : createRoot(container, rootOptions);
   root =
     typeof resourceTracker?.capturePersistentListeners === 'function'
       ? resourceTracker.capturePersistentListeners(
@@ -2735,6 +2771,9 @@ export async function mountModalFixtureClient({
   let execution;
   return Object.freeze({
     ready: ready.promise,
+    get readyStatus() {
+      return readyStatus;
+    },
     renderMode,
     request: structuredClone(request),
     async runScenario(input) {
@@ -2840,11 +2879,13 @@ export async function mountModalFixtureClient({
         });
       }
       restoreHydrationConsole();
-      const fixture = await ready.promise;
+      const fixture = readyStatus === 'ready' ? await ready.promise : undefined;
       const performCleanup = async () => {
         let result;
-        if (typeof fixture.cleanup === 'function') result = cleanupResult(await fixture.cleanup());
-        else if (fixture.isDestroyed?.() === true) result = { status: 'already-destroyed' };
+        if (fixture === undefined) result = { status: 'destroyed' };
+        else if (typeof fixture.cleanup === 'function') {
+          result = cleanupResult(await fixture.cleanup());
+        } else if (fixture.isDestroyed?.() === true) result = { status: 'already-destroyed' };
         else if (fixture.destroy?.() === true) result = { status: 'destroyed' };
         else throw new Error('modal fixture cleanup result is uncertain');
         if (typeof root?.unmount !== 'function') {

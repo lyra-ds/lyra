@@ -145,6 +145,9 @@ export default {
   resolve: {
     alias: {
       'axe-core': ${JSON.stringify(join(repositoryRoot, 'node_modules', 'axe-core', 'axe.js'))},
+      'node:util': ${JSON.stringify(
+        join(fixtureRoot, 'fixtures', 'modal', 'runtime.react-browser-node-util.mjs'),
+      )},
       '../../contracts/modal.mjs': ${JSON.stringify(join(contractRoot, 'modal.mjs'))},
       '../../contracts/protocol.mjs': ${JSON.stringify(join(contractRoot, 'protocol.mjs'))}
     }
@@ -195,6 +198,22 @@ async function defaultRemoveModalRoot(paths) {
   for (const path of [...paths].reverse()) await rm(path, { recursive: true, force: true });
 }
 
+function fixtureInstallerArtifacts(candidate, artifacts) {
+  if (candidate?.id !== 'incumbent') return artifacts;
+  return artifacts.map((artifact) => ({
+    ...artifact,
+    packageName: artifact.name,
+    packageVersion: artifact.version,
+    record: {
+      source: 'workspace-pack',
+      name: artifact.name,
+      version: artifact.version,
+      sha256: artifact.sha256,
+      license: artifact.license,
+    },
+  }));
+}
+
 export async function prepareModalFixture(
   {
     candidate,
@@ -239,7 +258,7 @@ export async function prepareModalFixture(
   try {
     const installation = await installCandidate({
       candidate,
-      artifacts,
+      artifacts: fixtureInstallerArtifacts(candidate, artifacts),
       fixtureDependencies: { react: reactVersion, 'react-dom': reactVersion },
       runRoot: resolvedRunRoot,
       repositoryRoot: resolvedRepositoryRoot,
@@ -288,6 +307,11 @@ export async function prepareModalFixture(
         'runtime',
         join(repositoryFixtureRoot, 'runtime.mjs'),
         join(fixtureSources, 'modal', 'runtime.mjs'),
+      ],
+      [
+        'runtimeBrowserNodeUtil',
+        join(repositoryFixtureRoot, 'runtime.react-browser-node-util.mjs'),
+        join(fixtureSources, 'modal', 'runtime.react-browser-node-util.mjs'),
       ],
       [
         'entryClient',

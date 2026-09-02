@@ -3,14 +3,16 @@ import { useModalFixtureRuntime, useModalResourceClaim } from '../../fixtures/mo
 const PACKAGE_NAME = '@base-ui-components/react/dialog';
 const PRIVATE_PROPS = Object.freeze(['onOpenChange']);
 
+async function importCandidateModule(specifier) {
+  if (specifier !== PACKAGE_NAME) throw new Error('unexpected Base UI package import');
+  return import('@base-ui-components/react/dialog');
+}
+
 function element(React, type, part) {
   return React.createElement(type, part.props, part.children);
 }
 
-export async function createModalCandidate({
-  React,
-  importModule = (specifier) => import(specifier),
-}) {
+export async function createModalCandidate({ React, importModule = importCandidateModule }) {
   const { Dialog } = await importModule(PACKAGE_NAME);
   function NestedModal({ closeControls, open, openControls, onOpenChange, trigger, view }) {
     useModalResourceClaim({ React, active: open, kind: 'scroll-lock', owner: view.panelId });

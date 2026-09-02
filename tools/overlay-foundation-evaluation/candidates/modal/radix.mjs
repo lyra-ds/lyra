@@ -3,14 +3,16 @@ import { useModalFixtureRuntime, useModalResourceClaim } from '../../fixtures/mo
 const PACKAGE_NAME = '@radix-ui/react-dialog';
 const PRIVATE_PROPS = Object.freeze(['onOpenChange']);
 
+async function importCandidateModule(specifier) {
+  if (specifier !== PACKAGE_NAME) throw new Error('unexpected Radix package import');
+  return import('@radix-ui/react-dialog');
+}
+
 function element(React, type, part) {
   return React.createElement(type, part.props, part.children);
 }
 
-export async function createModalCandidate({
-  React,
-  importModule = (specifier) => import(specifier),
-}) {
+export async function createModalCandidate({ React, importModule = importCandidateModule }) {
   const { Root, Portal, Overlay, Content, Title, Description, Close, Trigger } =
     await importModule(PACKAGE_NAME);
   function NestedModal({ closeControls, open, openControls, onOpenChange, trigger, view }) {
