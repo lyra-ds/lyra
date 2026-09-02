@@ -28,6 +28,8 @@ tools/blade-api/api.json
 .batuta/worktrees/
 
 # Generated / non-source files
+# Modal evaluation manifest — copied byte-for-byte from the immutable evaluated input.
+tools/overlay-foundation-evaluation/candidates.json
 pnpm-lock.yaml
 CHANGELOG.md
 .changeset/*.md
