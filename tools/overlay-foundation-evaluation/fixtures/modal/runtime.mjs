@@ -2051,8 +2051,6 @@ function resourceEntriesReleased(trace, key, matches) {
   if (lifecycleKey === undefined) return true;
   const matchingLifecycles = resourceEntries(finalSnapshot, lifecycleKey).filter(matches);
   return (
-    matchingLifecycles.length === seen.size &&
-    matchingLifecycles.every(({ id }) => seen.has(id)) &&
     matchingLifecycles.every(
       ({ acquiredOperation, acquiredPhase, releaseCount, releasedOperation, releasedPhase }) =>
         acquiredPhase === 'operation' &&
@@ -2060,6 +2058,9 @@ function resourceEntriesReleased(trace, key, matches) {
         releaseCount === 1 &&
         ((releasedPhase === 'operation' && RESOURCE_RELEASE_OPERATIONS.has(releasedOperation)) ||
           (releasedPhase === 'cleanup' && releasedOperation === 'teardown')),
+    ) &&
+    [...seen].every(
+      (id) => matchingLifecycles.filter((lifecycle) => lifecycle.id === id).length === 1,
     )
   );
 }

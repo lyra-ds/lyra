@@ -2438,7 +2438,7 @@ test('cleanup facts reject listener identities first acquired during close, dest
   }
 });
 
-test('cleanup facts require every matching lifecycle identity to have been observed active', async () => {
+test('cleanup facts bind release proof to observed identities without treating allowed transient work as a leak', async () => {
   const { mountModalFixtureClient } = await import('./runtime.mjs');
   const scenario = MODAL_SCENARIOS.find(({ scenarioId }) =>
     scenarioId.endsWith('.focus-wrap-dynamic.v1'),
@@ -2481,7 +2481,7 @@ test('cleanup facts require every matching lifecycle identity to have been obser
     ),
     true,
   );
-  assert.equal(observation.cleanup.includes('focus-loop-listener-released'), false);
+  assert.equal(observation.cleanup.includes('focus-loop-listener-released'), true);
 });
 
 test('cleanup listener probes bind purpose independently of the event type', async (t) => {
