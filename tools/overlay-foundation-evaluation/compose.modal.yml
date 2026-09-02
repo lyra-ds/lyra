@@ -25,6 +25,7 @@ services:
       - /bin/sh
       - -euxc
       - |
+        mkdir -p /tmp/corepack-shims
         export PATH="/opt/node/bin:/tmp/corepack-shims:$PATH"
         corepack enable --install-directory /tmp/corepack-shims
         git clone --no-hardlinks /input/repository.bundle /work/repository

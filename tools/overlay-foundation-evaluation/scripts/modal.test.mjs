@@ -257,6 +257,7 @@ test('pins an immutable least-privilege Compose service and exact local command'
   assert.match(mounts['/work'].source, /OWNED.*WORK|WORK.*OWNED/u);
   const command = Array.isArray(service.command) ? service.command.join('\n') : service.command;
   for (const required of [
+    'mkdir -p /tmp/corepack-shims',
     'export PATH="/opt/node/bin:/tmp/corepack-shims:$PATH"',
     'corepack enable --install-directory /tmp/corepack-shims',
     'git clone --no-hardlinks /input/repository.bundle /work/repository',
@@ -274,6 +275,11 @@ test('pins an immutable least-privilege Compose service and exact local command'
   ]) {
     assert.match(command, new RegExp(required.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
   }
+  assert.equal(
+    command.indexOf('mkdir -p /tmp/corepack-shims') <
+      command.indexOf('corepack enable --install-directory /tmp/corepack-shims'),
+    true,
+  );
   assert.doesNotMatch(
     command,
     /playwright\s+install|install-deps|npm\s+(?:publish|pack)|https?:\/\//iu,
