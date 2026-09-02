@@ -1,0 +1,101 @@
+{
+  "candidates": [
+    {
+      "adapter": "candidates/incumbent.mjs",
+      "artifacts": [
+        {
+          "name": "@lyra-ds/styles",
+          "sha256": "8a36f14faee20a4ad285a0ffecb4311a96148c9dbb197c363fd0e18670fa45d0",
+          "source": "workspace-pack",
+          "version": "0.5.0"
+        },
+        {
+          "name": "@lyra-ds/react",
+          "sha256": "5985f48a358acec6574c49d66df4ce05f27919918da8dccb9935fc1c8adb05a9",
+          "source": "workspace-pack",
+          "version": "0.5.0"
+        },
+        {
+          "name": "@lyra-ds/alpine",
+          "sha256": "aa1072ba61420b0b6ebfda1d5998493fadf168e32dba62c00825f274788a9e78",
+          "source": "workspace-pack",
+          "version": "0.6.0"
+        }
+      ],
+      "contracts": [
+        "OF-MODAL"
+      ],
+      "id": "incumbent",
+      "revision": "8b4d61b129006efe4281e342dcaccc7b2aa473ee"
+    },
+    {
+      "adapter": "candidates/radix.mjs",
+      "artifacts": [
+        {
+          "license": "MIT",
+          "name": "@radix-ui/react-dialog",
+          "repositoryUrl": "https://github.com/radix-ui/primitives",
+          "sha256": "fa3f7e8612eecfc7b889266c0a5f640463de7d534cd54c3aac6c644b6a8294d2",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.1.23.tgz",
+          "version": "1.1.23"
+        }
+      ],
+      "contracts": [
+        "OF-MODAL"
+      ],
+      "id": "radix"
+    },
+    {
+      "adapter": "candidates/base-ui.mjs",
+      "artifacts": [
+        {
+          "license": "MIT",
+          "name": "@base-ui-components/react",
+          "repositoryUrl": "https://github.com/mui/base-ui",
+          "sha256": "fd48911d202eb7ae13e7d56888fff503f3e9037c5e4e7991536429fafd7d9931",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@base-ui-components/react/-/react-1.0.0-rc.0.tgz",
+          "version": "1.0.0-rc.0"
+        }
+      ],
+      "contracts": [
+        "OF-MODAL"
+      ],
+      "id": "base-ui"
+    },
+    {
+      "adapter": "candidates/zag.mjs",
+      "artifacts": [
+        {
+          "license": "MIT",
+          "name": "@zag-js/dialog",
+          "repositoryUrl": "https://github.com/chakra-ui/zag",
+          "sha256": "637e7e8d214deddd0edc6cf183eb70480b9f862862024129e5e793225b5fc517",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@zag-js/dialog/-/dialog-1.43.3.tgz",
+          "version": "1.43.3"
+        },
+        {
+          "license": "MIT",
+          "name": "@zag-js/react",
+          "repositoryUrl": "https://github.com/chakra-ui/zag",
+          "sha256": "cf435e6fe4857d04aa2037e33dadaf9ec283c3159a95dca3c81023883e7f3f5c",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@zag-js/react/-/react-1.43.3.tgz",
+          "version": "1.43.3"
+        }
+      ],
+      "contracts": [
+        "OF-MODAL"
+      ],
+      "id": "zag"
+    }
+  ],
+  "lyraRevision": "8b4d61b129006efe4281e342dcaccc7b2aa473ee",
+  "schemaVersion": 1,
+  "toolchain": {
+    "node": "24.18.0",
+    "pnpm": "11.13.1"
+  }
+}
