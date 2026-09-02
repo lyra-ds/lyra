@@ -26,7 +26,7 @@
         "OF-MODAL"
       ],
       "id": "incumbent",
-      "revision": "8b4d61b129006efe4281e342dcaccc7b2aa473ee"
+      "revision": "93fe4c60d7946304179c3d2678f55a0bccad195f"
     },
     {
       "adapter": "candidates/radix.mjs",
@@ -92,7 +92,7 @@
       "id": "zag"
     }
   ],
-  "lyraRevision": "8b4d61b129006efe4281e342dcaccc7b2aa473ee",
+  "lyraRevision": "93fe4c60d7946304179c3d2678f55a0bccad195f",
   "schemaVersion": 1,
   "toolchain": {
     "node": "24.18.0",
