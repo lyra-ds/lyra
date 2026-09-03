@@ -16,6 +16,13 @@ export const incumbentDescriptor = Object.freeze({
   publicPackages: Object.freeze(['@lyra-ds/styles', '@lyra-ds/react', '@lyra-ds/alpine']),
 });
 
+export const adapterDescriptor = Object.freeze({
+  candidateId: 'incumbent',
+  supportedContractIds: Object.freeze(['OF-MODAL']),
+});
+
+export const modalAdapterPath = 'candidates/modal/incumbent.mjs';
+
 function stdout(result) {
   const output = isPlainRecord(result) && Object.hasOwn(result, 'stdout') ? result.stdout : result;
   if (typeof output === 'string') return output;

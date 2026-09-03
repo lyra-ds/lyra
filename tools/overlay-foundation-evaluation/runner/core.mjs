@@ -300,7 +300,7 @@ function descriptorExport(candidate, module) {
   return undefined;
 }
 
-async function loadAdapter(candidate, index, repositoryRoot) {
+export async function loadValidatedAdapter(candidate, index, repositoryRoot) {
   const path = await resolveAdapterPath(candidate, index, repositoryRoot);
   const module = await import(pathToFileURL(path).href);
   const descriptor = descriptorExport(candidate, module);
@@ -790,7 +790,7 @@ export async function runCorePreflight(
   for (const [index, candidate] of manifest.candidates.entries()) {
     operations.event(`load-adapter:${candidate.id}`);
     try {
-      adapters.set(candidate.id, { adapter: await loadAdapter(candidate, index, root) });
+      adapters.set(candidate.id, { adapter: await loadValidatedAdapter(candidate, index, root) });
     } catch (error) {
       adapters.set(candidate.id, {
         failure: snapshotFailure(candidate, adapterError(error)),

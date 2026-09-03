@@ -16,7 +16,7 @@ import { test } from 'node:test';
 import { writeAttempt } from '../evidence/results.mjs';
 import { sha256 } from './artifacts.mjs';
 import { cleanupOwnedRunRoot, createOwnedRunRoot } from './isolation.mjs';
-import { runCorePreflight } from './core.mjs';
+import { loadValidatedAdapter, runCorePreflight } from './core.mjs';
 
 const revision = 'b'.repeat(40);
 const alternateRevision = 'c'.repeat(40);
@@ -202,6 +202,30 @@ async function createFixture(t, mutateAdapter = () => {}) {
     trackedFile,
   };
 }
+
+test('rejects an adapter symlink whose real path escapes the candidates directory', async (t) => {
+  const fixture = await createFixture(t);
+  const outside = join(fixture.root, 'outside-adapter.mjs');
+  await writeFile(
+    outside,
+    `export const adapterDescriptor = ${JSON.stringify({
+      candidateId: 'zag',
+      supportedContractIds: ['OF-MODAL'],
+    })};\n`,
+  );
+  await rm(
+    join(fixture.repositoryRoot, 'tools', 'overlay-foundation-evaluation', 'candidates', 'zag.mjs'),
+  );
+  await symlink(
+    outside,
+    join(fixture.repositoryRoot, 'tools', 'overlay-foundation-evaluation', 'candidates', 'zag.mjs'),
+  );
+
+  await assert.rejects(
+    loadValidatedAdapter(fixture.manifest.candidates[3], 3, fixture.repositoryRoot),
+    /zag.*resolve beneath.*candidates/u,
+  );
+});
 
 test('creates core fixtures when TMPDIR is unset', async (t) => {
   const originalTmpdir = process.env.TMPDIR;
