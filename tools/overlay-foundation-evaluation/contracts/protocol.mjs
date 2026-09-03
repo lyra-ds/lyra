@@ -26,6 +26,12 @@ export const FIXTURE_OPERATIONS = Object.freeze([
   'setMotionPreference',
   'updateContent',
   'destroy',
+  'focus',
+  'blur',
+  'hover',
+  'advanceTime',
+  'resize',
+  'scroll',
 ]);
 
 export function isPlainRecord(value) {
@@ -80,6 +86,11 @@ const EXACT_COUPLED_IDENTITIES = new Set([
   '@zag-js/dialog',
   'vendor',
 ]);
+const COUPLED_PACKAGE_PREFIXES = Object.freeze([
+  '@radix-ui/',
+  '@base-ui-components/',
+  '@zag-js/',
+]);
 const IDENTIFIER_COUPLING_TOKENS = new Set(['incumbent', 'lyra', 'radix', 'zag', 'vendor']);
 const CONTROL_KEY_TOKENS = new Set([
   'attr',
@@ -111,7 +122,11 @@ function identifierTokens(value) {
 }
 
 function isExactCoupledIdentity(value) {
-  return EXACT_COUPLED_IDENTITIES.has(value.trim().toLowerCase());
+  const normalized = value.trim().toLowerCase();
+  return (
+    EXACT_COUPLED_IDENTITIES.has(normalized) ||
+    COUPLED_PACKAGE_PREFIXES.some((prefix) => normalized.startsWith(prefix))
+  );
 }
 
 function hasCoupledIdentifierToken(value) {
@@ -346,13 +361,27 @@ function validateOperations(value, errors) {
       errors.push(`${path} must be a plain record`);
       return;
     }
-    rejectUnknownKeys(operation, ['operation', 'target'], path, errors);
+    const isTimingOperation = operation.operation === 'advanceTime';
+    rejectUnknownKeys(
+      operation,
+      isTimingOperation ? ['operation', 'target', 'milliseconds'] : ['operation', 'target'],
+      path,
+      errors,
+    );
     requireMember(operation.operation, FIXTURE_OPERATIONS, `${path}.operation`, errors);
     requireCandidateNeutralIdentifier(operation.operation, `${path}.operation`, errors);
     if (typeof operation.target !== 'string' || operation.target.length === 0) {
       errors.push(`${path}.target must be a non-empty string`);
     }
     requireCandidateNeutralIdentifier(operation.target, `${path}.target`, errors);
+    if (isTimingOperation) {
+      if (operation.target !== 'browser-clock') {
+        errors.push(`${path}.target must equal browser-clock for advanceTime`);
+      }
+      if (!Number.isSafeInteger(operation.milliseconds) || operation.milliseconds < 0) {
+        errors.push(`${path}.milliseconds must be a non-negative safe integer`);
+      }
+    }
   });
 }
 

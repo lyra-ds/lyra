@@ -63,7 +63,36 @@ test('exports the shared immutable protocol vocabularies', () => {
     'setMotionPreference',
     'updateContent',
     'destroy',
+    'focus',
+    'blur',
+    'hover',
+    'advanceTime',
+    'resize',
+    'scroll',
   ]);
+});
+
+test('accepts only the closed browser-clock timing operation shape', () => {
+  const scenario = structuredClone(validScenario);
+  scenario.operations = [{ operation: 'advanceTime', target: 'browser-clock', milliseconds: 0 }];
+  assert.deepEqual(validateScenario(scenario), []);
+});
+
+for (const milliseconds of [-1, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
+  test(`rejects an invalid timing delay ${milliseconds}`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.operations = [{ operation: 'advanceTime', target: 'browser-clock', milliseconds }];
+    assert.match(validateScenario(scenario).join('\n'), /milliseconds/u);
+  });
+}
+
+test('rejects timing fields on ordinary operations and non-clock timing targets', () => {
+  const ordinary = structuredClone(validScenario);
+  ordinary.operations[0].milliseconds = 1;
+  assert.match(validateScenario(ordinary).join('\n'), /unsupported key/u);
+  const timing = structuredClone(validScenario);
+  timing.operations = [{ operation: 'advanceTime', target: 'page-clock', milliseconds: 1 }];
+  assert.match(validateScenario(timing).join('\n'), /browser-clock/u);
 });
 
 test('accepts a complete candidate-neutral scenario', () => {
@@ -311,6 +340,14 @@ for (const key of ['candidateIndex', 'candidateVariant', 'vendorMode']) {
 
 for (const identity of ['radix', 'base-ui', 'zag', 'incumbent']) {
   test(`rejects exact candidate identity ${identity} in generic state`, () => {
+    const scenario = structuredClone(validScenario);
+    scenario.initial.state.library = identity;
+    assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);
+  });
+}
+
+for (const identity of ['@radix-ui/react-popover', '@base-ui-components/react/menu', '@zag-js/tooltip']) {
+  test(`rejects additional candidate package identity ${identity} in normative state`, () => {
     const scenario = structuredClone(validScenario);
     scenario.initial.state.library = identity;
     assert.match(validateScenario(scenario).join('\n'), /candidate or vendor coupling/u);

@@ -98,7 +98,15 @@ test('rejects a missing candidate, duplicate contract, credentialed URL, and upp
   assert.match(errors, /lowercase SHA-256/u);
 });
 
-test('rejects a descriptor with the wrong ID or a different contract set', () => {
+test('permits a descriptor to declare behavioral contracts beyond the manifest subset', () => {
+  const candidate = validManifest.candidates[1];
+  assert.deepEqual(validateAdapterDescriptor(candidate, {
+    candidateId: 'radix',
+    supportedContractIds: ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP'],
+  }), []);
+});
+
+test('rejects a descriptor with the wrong ID or that omits a manifest contract', () => {
   const candidate = validManifest.candidates[1];
   const errors = validateAdapterDescriptor(candidate, {
     candidateId: 'zag',
