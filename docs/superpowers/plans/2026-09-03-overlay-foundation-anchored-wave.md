@@ -110,7 +110,9 @@ implementing the anchored, menu, and tooltip requirements in
 - `scripts/wave2-automation.mjs` owns the host-side characterization, manifest,
   Git bundle, container invocation, and retained-output report so the operator
   runs one command rather than assembling environment variables manually.
-- `compose.wave2.yml` runs the diagnostic in the existing pinned browser image.
+- `scripts/registry-proxy.mjs` enforces the registry-only egress boundary for
+  the evaluation container. `compose.wave2.yml` runs that proxy and the
+  diagnostic in the existing pinned browser image on separate networks.
 
 ---
 
@@ -322,6 +324,14 @@ rtk git commit -m "feat: pin anchored evaluation artifacts"
   literal required cells, and artifact capture. No expected value is derived
   from an adapter observation.
 
+Coverage labels in the tables are documentation shorthand only. Scenario
+records never store those labels: `browsers` expands to the three literal IDs
+`chromium`, `firefox`, and `webkit`; `React 18/19` expands to `react-18` and
+`react-19`; and `axe light/dark` expands to `axe-light` and `axe-dark`. Every
+other coverage label is already the exact `BEHAVIORAL_WAVE_CELLS` ID. Tests
+assert the fully expanded `requiredCells` arrays, including all three browser
+engine attempts wherever a table says `browsers`.
+
 The immutable `OF-ANCHORED` inventory is:
 
 Component mapping is exact: popup relationship, nested pointer, Escape, and
@@ -468,9 +478,14 @@ vendor-diagnostic boundary. Run them green before moving code.
 - [ ] **Step 2: Write Wave 2 protocol REDs**
 
 Accept only `{ schemaVersion, scenario, cell }` requests for the three Wave 2
-contracts. Reject candidate fields, expected values sent to the browser,
-unknown cell flags, invalid timing values, non-JSON diagnostics, vendor facts
-outside diagnostics, and missing cleanup/resource lifecycle evidence.
+contracts, where `scenario` is an execution-only projection containing exactly
+`scenarioId`, `operations`, and `probes`. `cell` remains the validated
+runner-selected cell record. The runner retains the source scenario's
+`expected`, `requiredCells`, artifact-capture declarations, and component
+mapping; none of those fields enters a browser-bound request. Reject candidate
+fields, expected/coverage/artifact values sent to the browser, unknown cell
+flags, invalid timing values, non-JSON diagnostics, vendor facts outside
+diagnostics, and missing cleanup/resource lifecycle evidence.
 
 - [ ] **Step 3: Write operation-lifecycle REDs**
 
@@ -626,6 +641,10 @@ React 18.3.1/19.2.8 pairs; `--ignore-workspace`, `--ignore-scripts`, and offline
 frozen second install; exact artifact `file:` entries; contract-specific
 adapter selection; regular-file single reads; `wx` copies; post-copy hashes;
 client/SSR output hashes; and confinement beneath the owned run root.
+Assert the source-copy manifest is closed under local imports: every relative
+import in every copied module resolves to a copied regular file beneath
+`runRoot`, and every bare package import resolves beneath the isolated
+fixture's `node_modules`. Node built-ins are the only resolution exemption.
 
 - [ ] **Step 3: Run RED**
 
@@ -637,11 +656,15 @@ rtk mise exec node@24.18.0 -- node --test \
 
 - [ ] **Step 4: Implement verified source snapshot and builds**
 
-Copy only the chosen private adapter plus Wave 2 protocol, runtime, client
-entry, server entry, and HTML. The build define contains only canonical JSON
-for the validated request and contract ID; candidate identity never enters a
-scenario expectation. Build client and SSR with repository Vite 8.2.1 against
-the fixture root.
+Copy only the chosen private adapter plus the explicit transitive source-copy
+manifest: `fixtures/shared/protocol.mjs`,
+`fixtures/shared/resource-tracker.mjs`, Wave 2 protocol, runtime, client entry,
+server entry, and HTML. Validate the manifest before copying and resolve every
+local and bare import again from the copied tree before building; no import may
+fall back to the repository checkout or escape `runRoot`. The build define
+contains only canonical JSON for the validated execution-only request and
+contract ID; candidate identity never enters a scenario expectation. Build
+client and SSR with repository Vite 8.2.1 against the fixture root.
 
 - [ ] **Step 5: Prove isolation failures**
 
@@ -679,6 +702,8 @@ rtk git commit -m "feat: prepare isolated anchored fixtures"
 - Create: `tools/overlay-foundation-evaluation/runner/wave2.test.mjs`
 - Create: `tools/overlay-foundation-evaluation/scripts/wave2.mjs`
 - Create: `tools/overlay-foundation-evaluation/scripts/wave2.test.mjs`
+- Create: `tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs`
+- Create: `tools/overlay-foundation-evaluation/scripts/registry-proxy.test.mjs`
 - Create: `tools/overlay-foundation-evaluation/compose.wave2.yml`
 
 **Interfaces:**
@@ -693,6 +718,10 @@ fetchImpl, runCommand })`.
   called before fixture navigation; only `advanceTime` invokes
   `page.clock.runFor(milliseconds)`. Candidate timers therefore use the same
   controlled browser clock without a fixture-owned timing shortcut.
+- The evaluation service has a private IPC namespace with a dedicated 2 GiB
+  shared-memory allocation. It joins only an `internal: true` Docker network
+  and reaches the exact `registry.npmjs.org:443` allowlist through the
+  repository-owned CONNECT proxy; it has no direct/default-network route.
 
 - [ ] **Step 1: Write exact cell policy REDs**
 
@@ -722,8 +751,14 @@ validation; no decision-evidence results; and summary forbidden keys.
 Reject relative, missing, duplicate, and unknown arguments; dirty or wrong
 revision repository; BOM/malformed manifest; missing four behavioral contracts;
 and conflicting evidence. Importing the CLI must not import Playwright. Compose
-must pin the exact image digest, run with `init: true`, `ipc: host`, UID/GID,
-read-only Node/input mounts, one owned work mount, and no browser install.
+must pin the exact image digest, run with `init: true`, omit host IPC, allocate
+2 GiB shared memory, use UID/GID, read-only Node/input mounts, one owned work
+mount, and no browser install. Assert its rendered configuration attaches the
+evaluation service only to the internal network, never the implicit `default`
+network; the proxy alone also joins a bridge egress network. Integration probes
+must prove direct registry access from the evaluation network fails with proxy
+variables removed, allowlisted registry HTTPS succeeds through the proxy, and
+all non-allowlisted CONNECT targets are rejected.
 
 - [ ] **Step 5: Run RED**
 
@@ -743,7 +778,7 @@ literal scenario, validate the normalized observation, compare it only with
 the scenario's expected record, write immutable evidence, verify artifacts and
 repository state after cleanup, then continue or fail according to scope.
 
-- [ ] **Step 7: Implement the pinned compose service**
+- [ ] **Step 7: Implement the pinned compose services**
 
 Clone an immutable repository bundle into the owned container work root,
 checkout the manifest revision detached, install with pnpm 11.13.1, and invoke:
@@ -755,14 +790,33 @@ corepack pnpm@11.13.1 overlay:evaluate:wave2 \
   --evidence /evidence
 ```
 
-No host checkout is writable in the container. Network access is limited to
-the same package/artifact acquisition performed by core preflight.
+No host checkout is writable in either container. The evaluation service omits
+`ipc: host`, uses its default private IPC namespace with `shm_size: 2gb`, and
+joins only `wave2-internal`, declared `internal: true`. Set `HTTP_PROXY`,
+`HTTPS_PROXY`, and `NODE_USE_ENV_PROXY=1` for root install, artifact fetch,
+candidate install, and audit traffic; `NO_PROXY` contains only loopback and the
+fixture server.
+
+The registry proxy clones the same verified bundle into private temporary
+storage, checks out the same revision, and runs
+`tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs`. It joins both
+`wave2-internal` and the explicit `registry-egress` bridge, accepts only HTTPS
+`CONNECT registry.npmjs.org:443`, rejects credentials, alternate ports,
+non-CONNECT methods, and every other host, and emits a closed request-count
+summary. A redirect to another authority therefore fails on its subsequent
+CONNECT instead of widening the allowlist. Any required authority outside the
+exact allowlist fails closed and requires plan review; automation never widens
+it. The evaluation service cannot join `registry-egress` or Docker's implicit
+`default` network. Compose configuration tests and live preflight probes
+enforce that topology before any candidate code runs.
 
 - [ ] **Step 8: Mutation proofs and GREEN**
 
 Skip WebKit, skip one contract, make attempt 2 effective, branch an assertion
-on candidate ID, bypass the controlled clock, and unpin the image as separate
-mutations. Every named test must fail. Restore and run all Task 7 tests green.
+on candidate ID, bypass the controlled clock, unpin the image, restore host IPC,
+attach the evaluator to the egress/default network, and widen the proxy
+allowlist as separate mutations. Every named test must fail. Restore and run all
+Task 7 tests green.
 
 - [ ] **Step 9: Commit execution**
 
@@ -773,6 +827,8 @@ rtk git add tools/overlay-foundation-evaluation/runner/wave2-cells.mjs \
   tools/overlay-foundation-evaluation/runner/wave2.test.mjs \
   tools/overlay-foundation-evaluation/scripts/wave2.mjs \
   tools/overlay-foundation-evaluation/scripts/wave2.test.mjs \
+  tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs \
+  tools/overlay-foundation-evaluation/scripts/registry-proxy.test.mjs \
   tools/overlay-foundation-evaluation/compose.wave2.yml
 rtk git commit -m "feat: run anchored interaction evaluation"
 ```
@@ -809,7 +865,7 @@ Assert exact scripts:
 
 ```json
 {
-  "overlay:evaluate:wave2:test": "node --test tools/overlay-foundation-evaluation/contracts/anchored.test.mjs tools/overlay-foundation-evaluation/contracts/menu.test.mjs tools/overlay-foundation-evaluation/contracts/tooltip.test.mjs tools/overlay-foundation-evaluation/contracts/wave2.test.mjs tools/overlay-foundation-evaluation/fixtures/shared/*.test.mjs tools/overlay-foundation-evaluation/fixtures/wave2/*.test.mjs tools/overlay-foundation-evaluation/candidates/anchored/*.test.mjs tools/overlay-foundation-evaluation/candidates/menu/*.test.mjs tools/overlay-foundation-evaluation/candidates/tooltip/*.test.mjs tools/overlay-foundation-evaluation/runner/wave2*.test.mjs tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.test.mjs tools/overlay-foundation-evaluation/scripts/wave2.test.mjs tools/overlay-foundation-evaluation/scripts/wave2-automation.test.mjs",
+  "overlay:evaluate:wave2:test": "node --test tools/overlay-foundation-evaluation/contracts/anchored.test.mjs tools/overlay-foundation-evaluation/contracts/menu.test.mjs tools/overlay-foundation-evaluation/contracts/tooltip.test.mjs tools/overlay-foundation-evaluation/contracts/wave2.test.mjs tools/overlay-foundation-evaluation/fixtures/shared/*.test.mjs tools/overlay-foundation-evaluation/fixtures/wave2/*.test.mjs tools/overlay-foundation-evaluation/candidates/anchored/*.test.mjs tools/overlay-foundation-evaluation/candidates/menu/*.test.mjs tools/overlay-foundation-evaluation/candidates/tooltip/*.test.mjs tools/overlay-foundation-evaluation/runner/wave2*.test.mjs tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.test.mjs tools/overlay-foundation-evaluation/scripts/registry-proxy.test.mjs tools/overlay-foundation-evaluation/scripts/wave2.test.mjs tools/overlay-foundation-evaluation/scripts/wave2-automation.test.mjs",
   "overlay:evaluate:behavioral:manifest": "node tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.mjs",
   "overlay:evaluate:wave2": "node tools/overlay-foundation-evaluation/scripts/wave2.mjs",
   "overlay:evaluate:wave2:auto": "node tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs"
@@ -829,17 +885,21 @@ start Docker in unit tests.
 `wave2-automation.mjs` resolves the exact Node installation, creates
 mode-`0700` `input`, `work`, and `evidence` descendants, characterizes the
 incumbent, writes and validates the manifest, creates and verifies the Git
-bundle, supplies the compose environment, runs the service, reads the factual
-summary, removes only the verified owned `work` descendant, and prints the
-preserved manifest/bundle/evidence paths and hashes. Any incomplete step exits
-non-zero without deleting evidence.
+bundle, supplies the compose environment, creates a unique Compose project,
+runs the proxy preflight followed by the evaluation service, reads both closed
+summaries, tears down only that project's containers and networks, removes only
+the verified owned `work` descendant, and prints the preserved
+manifest/bundle/evidence paths and hashes. Any incomplete step exits non-zero
+without deleting evidence.
 
 The driver uses the clean full HEAD for characterization, manifest, and bundle;
-verifies the bundle's advertised HEAD; invokes only the pinned compose service;
-and returns a closed JSON report with revision, manifest SHA-256, bundle
-SHA-256, evidence root, result counts, and preserved paths. Unit tests inject
-commands and prove exact order, arguments, environment, failure propagation,
-non-overwrite, and work-only cleanup.
+verifies the bundle's advertised HEAD; invokes only the pinned proxy and
+evaluation services; and returns a closed JSON report with revision, manifest
+SHA-256, bundle SHA-256, evidence root, result counts, proxy request counts, and
+preserved paths. Unit tests inject commands and prove exact order, arguments,
+proxy environment, unique project identity, topology preflight, failure
+propagation, non-overwrite, exact-project teardown, and work-only filesystem
+cleanup.
 
 Document the three contracts, scenario counts (11 anchored, 14 menu, 13
 tooltip), exact 15 cells, exact ten artifacts, the one-command automated run,
