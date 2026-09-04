@@ -2,7 +2,7 @@ import { realpath } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { MODAL_EXTERNAL_ARTIFACTS } from '../candidates/catalog.mjs';
+import { BEHAVIORAL_EXTERNAL_ARTIFACTS } from '../candidates/catalog.mjs';
 import {
   EXPECTED_TOOLCHAIN,
   parseManifestArguments,
@@ -10,7 +10,9 @@ import {
   writeCandidateManifest,
 } from './manifest-common.mjs';
 
-export function createModalManifest({ lyraRevision, incumbentCharacterization }) {
+const BEHAVIORAL_CONTRACTS = Object.freeze(['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP']);
+
+export function createBehavioralManifest({ lyraRevision, incumbentCharacterization }) {
   const incumbentArtifacts = requireMatchingIncumbent(lyraRevision, incumbentCharacterization);
   return {
     schemaVersion: 1,
@@ -20,33 +22,36 @@ export function createModalManifest({ lyraRevision, incumbentCharacterization })
       {
         id: 'incumbent',
         adapter: 'candidates/incumbent.mjs',
-        contracts: ['OF-MODAL'],
+        contracts: [...BEHAVIORAL_CONTRACTS],
         revision: lyraRevision,
         artifacts: incumbentArtifacts,
       },
       ...['radix', 'base-ui', 'zag'].map((id) => ({
         id,
         adapter: `candidates/${id}.mjs`,
-        contracts: ['OF-MODAL'],
-        artifacts: structuredClone(MODAL_EXTERNAL_ARTIFACTS[id]),
+        contracts: [...BEHAVIORAL_CONTRACTS],
+        artifacts: structuredClone(BEHAVIORAL_EXTERNAL_ARTIFACTS[id]),
       })),
     ],
   };
 }
 
-export async function writeModalManifest({ outputPath, lyraRevision, incumbentPath }) {
+export async function writeBehavioralManifest({ outputPath, lyraRevision, incumbentPath }) {
   return writeCandidateManifest({
     outputPath,
     lyraRevision,
     incumbentPath,
-    createManifest: createModalManifest,
+    createManifest: createBehavioralManifest,
   });
 }
 
 export async function main(options = {}) {
   try {
-    await writeModalManifest(
-      parseManifestArguments(options.argv ?? process.argv.slice(2), 'create-modal-manifest.mjs'),
+    await writeBehavioralManifest(
+      parseManifestArguments(
+        options.argv ?? process.argv.slice(2),
+        'create-behavioral-manifest.mjs',
+      ),
     );
     return 0;
   } catch (error) {
