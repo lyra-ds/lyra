@@ -90,6 +90,7 @@ export async function createMenuCandidate({
     family: 'menu',
     packageNames: [PACKAGE_NAME, '@zag-js/react'],
     CandidateOwner,
+    limitations: ['successor-focus-target-unavailable'],
   });
   return Object.freeze({ MenuFixture });
 }

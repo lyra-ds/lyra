@@ -24,6 +24,7 @@ export async function createAnchoredCandidate({
       id: owner.id + '-machine',
       ids: { trigger: m.trigger.props.id, content: owner.domId },
       open: owner.open,
+      ...(m.successor ? { finalFocusEl: m.successor } : {}),
       onOpenChange: (details) => m.onOpenChange(details.open),
       dir: state.direction,
       positioning: {

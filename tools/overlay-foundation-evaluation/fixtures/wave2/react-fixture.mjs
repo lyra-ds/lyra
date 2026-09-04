@@ -1,7 +1,14 @@
-import { markerProps, targetElement, visible, rect, placementFacts } from './measurements.mjs';
+import {
+  createIdentityMeasurements,
+  markerProps,
+  targetElement,
+  visible,
+  rect,
+  placementFacts,
+} from './measurements.mjs';
 
 const COMMANDS = Object.freeze([
-  { id: 'alpha', label: 'Alpha' },
+  { id: 'alpha', label: 'Álpha' },
   { id: 'label', type: 'label', label: 'Group' },
   { id: 'beta', label: 'Beta', disabled: true },
   { id: 'separator', type: 'separator' },
@@ -61,6 +68,7 @@ export function createReactFixture({
   measureAccessibility,
   instrumentation,
   readPrivate,
+  limitations = [],
 }) {
   const h = React.createElement;
   function Fixture({ request, onReady, renderTarget }) {
@@ -100,6 +108,10 @@ export function createReactFixture({
       }));
       reference.current = {
         owners,
+        identities: createIdentityMeasurements(),
+        ssrMenu: ['server-render-menu-closed', 'server-render-menu-open'].includes(
+          renderTarget ?? ops[0]?.target,
+        ),
         direction: request.cell.direction,
         placement: 'bottom-start',
         text: 'Workspace details',
@@ -133,6 +145,20 @@ export function createReactFixture({
     };
     const refresh = () => {
       for (const owner of state.owners) owner.identify?.(document);
+      for (const owner of state.owners) {
+        const content = targetElement(document, owner.id);
+        if (content?.id) state.identities.bind(owner.id, content.id);
+        else {
+          const trigger = targetElement(document, owner.trigger);
+          const attribute = family === 'tooltip' ? 'aria-describedby' : 'aria-controls';
+          const references = (trigger?.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+          const ownedReferences =
+            family === 'tooltip'
+              ? references.filter((id) => id !== 'existing-help' && !document?.getElementById?.(id))
+              : references;
+          if (ownedReferences.length === 1) state.identities.bind(owner.id, ownedReferences[0]);
+        }
+      }
     };
     const find = (target) => {
       refresh();
@@ -204,6 +230,7 @@ export function createReactFixture({
         state.theme = 'dark';
         state.brand = 'ocean';
       } else if (target === 'portal-host-secondary') state.host = 'secondary';
+      else if (target === 'menu-disabled-boundary-rows') state.boundaryRows = true;
       else if (target === 'cancel-selection-default') state.cancelSelection = true;
       else if (target === 'consumer-description-existing-help') state.description = true;
       else if (target.startsWith('remove-trigger')) {
@@ -221,6 +248,7 @@ export function createReactFixture({
         }
         state.removalAnnouncements = state.announcements.length;
       } else if (target === 'restore-trigger') {
+        state.successor = undefined;
         const owner = state.owners[0];
         owner.triggerMounted = true;
         owner.mounted = true;
@@ -396,6 +424,12 @@ export function createReactFixture({
           document && focusNode === document.body
             ? 'document-body'
             : (focusNode?.getAttribute?.('data-overlay-id') ?? 'unobserved');
+        const normalizeReference = (id, name) =>
+          state.identities.normalize(
+            id,
+            name !== 'aria-controls' &&
+              (id === 'existing-help' || Boolean(document?.getElementById?.(id))),
+          );
         const states = [];
         const relationships = [];
         const add = (target, name, value) => states.push({ target, name, value: value ?? null });
@@ -446,7 +480,8 @@ export function createReactFixture({
             const summary = element?.querySelector?.('summary');
             return Boolean(summary?.tagName === 'SUMMARY' && summary.tabIndex >= 0);
           }
-          if (name === 'id' || name === 'stable-id') return element?.id ?? null;
+          if (name === 'id' || name === 'stable-id')
+            return element?.id ? state.identities.normalize(element.id) : null;
           if (name === 'connected' || name === 'description-exists')
             return Boolean(element?.isConnected);
           if (name === 'current' && target === 'document-focus') return focusTarget;
@@ -459,8 +494,20 @@ export function createReactFixture({
           if (name === 'invocation-count') return state.counts[target] ?? 0;
           if (name === 'aria-expanded' || name === 'aria-disabled')
             return attr(name) == null ? null : attr(name) === 'true';
-          if (['aria-controls', 'aria-haspopup'].includes(name)) return attr(name);
-          if (name === 'aria-describedby') return (attr(name) ?? '').split(/\s+/).filter(Boolean);
+          if (name === 'aria-haspopup') return attr(name);
+          if (name === 'aria-controls')
+            return (
+              attr(name)
+                ?.split(/\s+/)
+                .filter(Boolean)
+                .map((id) => state.identities.normalize(id))
+                .join(' ') ?? null
+            );
+          if (name === 'aria-describedby')
+            return (attr(name) ?? '')
+              .split(/\s+/)
+              .filter(Boolean)
+              .map((id) => normalizeReference(id, name));
           if (name.endsWith('-present') && name.startsWith('aria-'))
             return element?.hasAttribute?.(name.slice(0, -8)) ?? false;
           if (name === 'semantic-trigger-count')
@@ -580,8 +627,6 @@ export function createReactFixture({
           if (name === 'submenu-trigger-count') return descendants('[aria-haspopup="menu"]').length;
           if (name === 'nested-menu-count') return descendants('[role="menu"]').length;
           if (name === 'checked-state-count') return descendants('[aria-checked]').length;
-          if (name === 'owner-count' && target === 'coordinator')
-            return state.owners.filter((o) => o.mounted).length;
           if (name === 'active-count') {
             if (['observers', 'observer', 'placement-observers'].includes(target))
               return metrics?.observerCount ?? null;
@@ -621,13 +666,21 @@ export function createReactFixture({
           const node = find(owner.trigger);
           for (const name of ['aria-controls', 'aria-describedby', 'aria-labelledby'])
             for (const id of (node?.getAttribute?.(name) ?? '').split(/\s+/).filter(Boolean))
-              relationships.push({ source: owner.trigger, name, target: id });
+              relationships.push({
+                source: owner.trigger,
+                name,
+                target: normalizeReference(id, name),
+              });
           const related = node?.getAttribute?.('aria-controls');
           if (related)
             relationships.push({
               source: owner.trigger,
               name: 'semantic-relationship',
-              target: related,
+              target: related
+                .split(/\s+/)
+                .filter(Boolean)
+                .map((id) => normalizeReference(id, 'aria-controls'))
+                .join(' '),
             });
         }
         const cleanup = [];
@@ -646,6 +699,8 @@ export function createReactFixture({
           announcements: [...state.announcements],
           cleanup,
           diagnostics: {
+            limitations,
+            identities: state.identities.diagnostics(),
             packageNames,
             ...(readPrivate ? { privateMeasurements: privateFacts } : {}),
           },
@@ -708,6 +763,8 @@ export function createReactFixture({
         environment,
         ReactDOM,
         children,
+        successor:
+          owner === state.owners[0] && state.successor ? () => find(state.successor) : undefined,
         trigger: {
           props: {
             ...markerProps(owner.trigger, 'trigger'),
@@ -740,7 +797,16 @@ export function createReactFixture({
           },
           children: 'Workspace command',
         },
-        items: COMMANDS.map((item) => ({
+        items: (state.boundaryRows
+          ? [
+              { id: 'disabled-first', label: 'Unavailable first', disabled: true },
+              ...COMMANDS,
+              { id: 'disabled-last', label: 'Unavailable last', disabled: true },
+            ]
+          : state.ssrMenu
+            ? COMMANDS.filter((item) => item.id !== 'alpine')
+            : COMMANDS
+        ).map((item) => ({
           ...item,
           onSelect: live((event) => select(owner, item.id, event)),
         })),

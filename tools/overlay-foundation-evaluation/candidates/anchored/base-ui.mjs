@@ -25,6 +25,7 @@ export async function createAnchoredCandidate({
       : null;
     const contentProps = {
       ...m.content.props,
+      ...(m.successor ? { finalFocus: m.successor } : {}),
       'data-overlay-portal': '',
       'aria-label': 'Workspace',
     };

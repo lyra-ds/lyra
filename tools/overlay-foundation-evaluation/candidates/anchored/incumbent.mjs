@@ -60,6 +60,7 @@ export async function createAnchoredCandidate({
     family: 'anchored',
     packageNames: [PACKAGE_NAME],
     CandidateOwner,
+    limitations: ['successor-focus-target-unavailable'],
   });
   return Object.freeze({ AnchoredFixture });
 }

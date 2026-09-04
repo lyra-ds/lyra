@@ -3,8 +3,23 @@ adapterSuite('tooltip');
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { load, elements } from '../wave2-test-support.mjs';
+import { load, elements, candidateIds } from '../wave2-test-support.mjs';
 import { installWave2ResourceTracker } from '../../fixtures/wave2/runtime.mjs';
+
+for (const candidate of candidateIds)
+  test(`review regression: ${candidate} tooltip coordinator ownership is not inferred from fixture mounts`, async () => {
+    const loaded = await load(candidate, 'tooltip');
+    loaded.props.request.scenario.probes = [
+      { category: 'states', target: 'coordinator', property: 'owner-count' },
+    ];
+    assert.equal(loaded.fixture.observe().states[0].value, null);
+    await loaded.fixture.operations.destroy({ target: 'tooltip' });
+    loaded.render();
+    assert.equal(loaded.fixture.observe().states[0].value, null);
+    await loaded.fixture.operations.updateContent({ target: 'mount-fresh-tooltip' });
+    loaded.render();
+    assert.equal(loaded.fixture.observe().states[0].value, null);
+  });
 
 test('zag tooltip teardown releases actual candidate timers and leaves no stale callback', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });

@@ -192,3 +192,34 @@ export function installMeasurementInstrumentation(scope, tracker) {
     },
   };
 }
+
+// First observed identity is fixed for the fixture lifetime; DOM IDs are never changed.
+export function createIdentityMeasurements() {
+  const targets = new Map();
+  const claims = new Map();
+  const unresolved = new Map();
+  return {
+    bind(target, raw) {
+      if (!raw) return;
+      const record = targets.get(target) ?? { target, first: raw };
+      record.current = raw;
+      targets.set(target, record);
+      if (!claims.has(raw)) claims.set(raw, new Set());
+      claims.get(raw).add(target);
+    },
+    normalize(raw, consumer = false) {
+      if (!raw) return raw;
+      const owners = claims.get(raw);
+      if (owners?.size === 1) {
+        const target = [...owners][0];
+        if (targets.get(target).first === raw) return `${target}-id`;
+      }
+      if (!owners && consumer) return raw;
+      if (!unresolved.has(raw)) unresolved.set(raw, `unresolved-id-${unresolved.size + 1}`);
+      return unresolved.get(raw);
+    },
+    diagnostics() {
+      return [...targets.values()].map((record) => ({ ...record }));
+    },
+  };
+}

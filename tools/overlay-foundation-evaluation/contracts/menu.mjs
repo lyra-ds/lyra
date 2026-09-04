@@ -8,6 +8,7 @@ export const MENU_SCENARIOS = Object.freeze([
     components: ['Dropdown'],
     cells: ['chromium', 'firefox', 'webkit', 'react-18', 'react-19', 'keyboard-focus'],
     operations: [
+      { operation: 'updateContent', target: 'menu-disabled-boundary-rows' },
       {
         operation: 'focus',
         target: 'trigger',
@@ -70,18 +71,18 @@ export const MENU_SCENARIOS = Object.freeze([
       },
     ],
     checks: [
-      [1, 'menu', 'open', true],
-      [1, 'document-focus', 'current', 'alpha'],
-      [4, 'menu', 'open', true],
-      [4, 'document-focus', 'current', 'alpha'],
-      [7, 'menu', 'open', true],
-      [7, 'document-focus', 'current', 'alpha'],
-      [10, 'menu', 'open', true],
-      [10, 'document-focus', 'current', 'bravo'],
-      [13, 'menu', 'reachable', true],
-      [14, 'document-focus', 'current', 'disabled-first'],
+      [2, 'menu', 'open', true],
+      [2, 'document-focus', 'current', 'alpha'],
+      [5, 'menu', 'open', true],
+      [5, 'document-focus', 'current', 'alpha'],
+      [8, 'menu', 'open', true],
+      [8, 'document-focus', 'current', 'alpha'],
+      [11, 'menu', 'open', true],
+      [11, 'document-focus', 'current', 'bravo'],
+      [14, 'menu', 'reachable', true],
+      [15, 'document-focus', 'current', 'disabled-first'],
     ],
-    focus: [14, 'disabled-first'],
+    focus: [15, 'disabled-first'],
     initial: {
       items: [
         { id: 'disabled-first', text: 'Unavailable first', kind: 'command', disabled: true },
@@ -120,7 +121,7 @@ export const MENU_SCENARIOS = Object.freeze([
       locale: 'en',
       open: false,
     },
-    roles: [[14, 'menu', 'menu', 'Workspace']],
+    roles: [[15, 'menu', 'menu', 'Workspace']],
   }),
   defineScenario('menu', {
     id: 'arrow-wrap-roving-focus',

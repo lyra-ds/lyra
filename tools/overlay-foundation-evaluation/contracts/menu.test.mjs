@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { MENU_SCENARIOS, menuScenariosForCell, validateMenuCoverage } from './menu.mjs';
 import { checkCatalog } from './scenario-catalog.test-support.mjs';
 
@@ -134,4 +135,23 @@ test('menu: trigger entry skips disabled endpoints rather than merely selecting 
       .map((entry) => entry.value),
     ['alpha', 'alpha', 'alpha', 'bravo', 'disabled-first'],
   );
+});
+
+test('review regression: menu boundary input is supplied before entry with checkpoints preserved', () => {
+  const s = scenario('trigger-entry-keys');
+  assert.deepEqual(s.operations[0], {
+    operation: 'updateContent',
+    target: 'menu-disabled-boundary-rows',
+  });
+  assert.deepEqual(s.operations[1], { operation: 'focus', target: 'trigger' });
+  for (const [index, focused] of [
+    [2, 'alpha'],
+    [5, 'alpha'],
+    [8, 'alpha'],
+    [11, 'bravo'],
+    [15, 'disabled-first'],
+  ])
+    assert.equal(at(s, index, 'document-focus', 'current'), focused);
+  assert.equal(at(s, 14, 'menu', 'reachable'), true);
+  assert.ok(s.probes.filter((p) => p.category === 'roles').every((p) => p.operationIndex === 15));
 });

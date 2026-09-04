@@ -4,6 +4,40 @@ adapterSuite('menu');
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { candidateIds, load, elements } from '../wave2-test-support.mjs';
+import { MENU_SCENARIOS } from '../../contracts/menu.mjs';
+
+for (const candidate of candidateIds)
+  test(`review regression: ${candidate} menu uses declared accented and disabled boundary inputs`, async () => {
+    const loaded = await load(candidate, 'menu');
+    const input = () =>
+      elements(loaded.tree).find((node) => node.type?.name === 'CandidateOwner').props.model.items;
+    assert.equal(input().find((item) => item.id === 'alpha').label, 'Álpha');
+    assert.equal(
+      input().some((item) => item.id === 'disabled-first'),
+      false,
+    );
+    await loaded.fixture.operations.updateContent({
+      operation: 'updateContent',
+      target: 'menu-disabled-boundary-rows',
+    });
+    loaded.render();
+    const supplied = input().map((item) => ({
+      id: item.id,
+      ...(item.label === undefined ? {} : { text: item.label }),
+      kind: item.type ?? 'command',
+      ...(item.disabled ? { disabled: true } : {}),
+    }));
+    assert.deepEqual(supplied, MENU_SCENARIOS[0].initial.state.items);
+    if (candidate === 'incumbent') {
+      const dropdown = elements(loaded.ownerTrees()[0]).find((node) => node.type === 'Dropdown');
+      assert.equal(dropdown.props.items[0].id, 'disabled-first');
+      assert.equal(dropdown.props.items.at(-1).id, 'disabled-last');
+      assert.equal(
+        dropdown.props.items.some((item) => Object.hasOwn(item, 'disabled')),
+        false,
+      );
+    }
+  });
 
 for (const candidate of candidateIds)
   test(`${candidate} menu exposes only the current command label separator model`, async () => {
@@ -111,4 +145,45 @@ test('menu role measurements preserve item multiplicity and structural roles', a
       ['menuitem', 'separator', 'presentation'],
     ],
   );
+});
+
+test('review regression: SSR menu controls provide three commands while hydration keeps four', async () => {
+  const { fakeReact, modulesFor } = await import('../wave2-test-support.mjs');
+  for (const candidate of candidateIds)
+    for (const renderTarget of [
+      'server-render-menu-closed',
+      'server-render-menu-open',
+      'server-render-menu-open-active-alpha',
+    ]) {
+      const renderer = fakeReact();
+      const modules = modulesFor(candidate, 'menu', {});
+      const { createMenuCandidate } = await import(`./${candidate}.mjs`);
+      const { MenuFixture } = await createMenuCandidate({
+        React: renderer.React,
+        environment: {},
+        importModule: async (name) => modules.get(name),
+      });
+      const tree = renderer.render(MenuFixture, {
+        request: {
+          cell: { direction: 'ltr' },
+          scenario: {
+            operations: [{ operation: 'updateContent', target: renderTarget }],
+            probes: [],
+          },
+        },
+        renderTarget,
+        onReady() {},
+      });
+      const items = elements(tree).find((n) => n.type?.name === 'CandidateOwner').props.model.items;
+      assert.deepEqual(
+        items.filter((item) => !item.type).map((item) => item.id),
+        renderTarget.endsWith('active-alpha')
+          ? ['alpha', 'beta', 'alpine', 'bravo']
+          : ['alpha', 'beta', 'bravo'],
+      );
+      assert.deepEqual(
+        items.filter((item) => item.type).map((item) => item.type),
+        ['label', 'separator'],
+      );
+    }
 });
