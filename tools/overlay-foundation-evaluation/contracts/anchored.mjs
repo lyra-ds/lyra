@@ -1,5 +1,8 @@
 import { defineScenario, scenariosForCell, validateCatalog } from './scenario-catalog.mjs';
 
+// Component mapping is normative applicability. The private anchored fixture uses
+// representative Popover semantics; this does not certify composed WorkspaceSwitcher
+// behavior. Dropdown is exercised by OF-MENU; composition belongs to OF-COMPOSED.
 // Each check is [operation index (or phase), target, property, literal expected value].
 export const ANCHORED_SCENARIOS = Object.freeze([
   defineScenario('anchored', {
@@ -38,43 +41,23 @@ export const ANCHORED_SCENARIOS = Object.freeze([
       [0, 'trigger', 'tab-stop-count', 1],
       [0, 'trigger', 'aria-expanded', false],
       [0, 'trigger', 'aria-controls', 'popup-id'],
-      [
-        0,
-        'trigger',
-        'aria-haspopup-by-component',
-        { Popover: 'dialog', Dropdown: 'menu', WorkspaceSwitcher: 'listbox' },
-      ],
+      [0, 'trigger', 'aria-haspopup', 'dialog'],
       [1, 'trigger', 'semantic-trigger-count', 1],
       [1, 'trigger', 'tab-stop-count', 1],
       [1, 'trigger', 'aria-expanded', true],
       [1, 'trigger', 'aria-controls', 'popup-id'],
-      [
-        1,
-        'trigger',
-        'aria-haspopup-by-component',
-        { Popover: 'dialog', Dropdown: 'menu', WorkspaceSwitcher: 'listbox' },
-      ],
+      [1, 'trigger', 'aria-haspopup', 'dialog'],
       [1, 'popup', 'id', 'popup-id'],
       [2, 'trigger', 'semantic-trigger-count', 1],
       [2, 'trigger', 'tab-stop-count', 1],
       [2, 'trigger', 'aria-expanded', false],
       [2, 'trigger', 'aria-controls', 'popup-id'],
-      [
-        2,
-        'trigger',
-        'aria-haspopup-by-component',
-        { Popover: 'dialog', Dropdown: 'menu', WorkspaceSwitcher: 'listbox' },
-      ],
+      [2, 'trigger', 'aria-haspopup', 'dialog'],
       [3, 'trigger', 'semantic-trigger-count', 1],
       [3, 'trigger', 'tab-stop-count', 1],
       [3, 'trigger', 'aria-expanded', true],
       [3, 'trigger', 'aria-controls', 'popup-id'],
-      [
-        3,
-        'trigger',
-        'aria-haspopup-by-component',
-        { Popover: 'dialog', Dropdown: 'menu', WorkspaceSwitcher: 'listbox' },
-      ],
+      [3, 'trigger', 'aria-haspopup', 'dialog'],
       [3, 'popup', 'id', 'popup-id'],
     ],
     focus: [3, 'trigger'],

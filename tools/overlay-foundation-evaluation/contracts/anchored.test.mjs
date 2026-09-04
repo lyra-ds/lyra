@@ -162,11 +162,8 @@ test('anchored: popup trigger invariants hold closed and open across reopening',
   for (const index of [0, 1, 2, 3]) {
     assert.equal(at(s, index, 'trigger', 'semantic-trigger-count'), 1);
     assert.equal(at(s, index, 'trigger', 'tab-stop-count'), 1);
-    assert.deepEqual(at(s, index, 'trigger', 'aria-haspopup-by-component'), {
-      Popover: 'dialog',
-      Dropdown: 'menu',
-      WorkspaceSwitcher: 'listbox',
-    });
+    assert.equal(at(s, index, 'trigger', 'aria-haspopup'), 'dialog');
+    assert.deepEqual(s.components, ['Popover', 'Dropdown', 'WorkspaceSwitcher']);
     assert.equal(at(s, index, 'trigger', 'aria-expanded'), index % 2 === 1);
     assert.equal(at(s, index, 'trigger', 'aria-controls'), 'popup-id');
   }
