@@ -147,3 +147,27 @@ test('anchored: logical direction exercises both alignments and horizontal sides
     ['left', 'right', 'left', 'center', 'center', 'right', 'left', 'right', 'center', 'center'],
   );
 });
+
+test('anchored: popup trigger invariants hold closed and open across reopening', () => {
+  const s = scenario('popup-trigger-relationships');
+  assert.deepEqual(
+    s.operations.map(({ operation, target }) => [operation, target]),
+    [
+      ['focus', 'trigger'],
+      ['open', 'trigger'],
+      ['close', 'popup'],
+      ['open', 'trigger'],
+    ],
+  );
+  for (const index of [0, 1, 2, 3]) {
+    assert.equal(at(s, index, 'trigger', 'semantic-trigger-count'), 1);
+    assert.equal(at(s, index, 'trigger', 'tab-stop-count'), 1);
+    assert.deepEqual(at(s, index, 'trigger', 'aria-haspopup-by-component'), {
+      Popover: 'dialog',
+      Dropdown: 'menu',
+      WorkspaceSwitcher: 'listbox',
+    });
+    assert.equal(at(s, index, 'trigger', 'aria-expanded'), index % 2 === 1);
+    assert.equal(at(s, index, 'trigger', 'aria-controls'), 'popup-id');
+  }
+});

@@ -114,3 +114,31 @@ test('tooltip: removal suppresses the pending 500 ms callback; final destroy mak
   timing(destroyed, 11, 499, 'tooltip', 'open', false);
   timing(destroyed, 12, 1, 'tooltip', 'open', true);
 });
+
+test('tooltip: Escape directly dismisses both hover-opened and focus-opened topmost content', () => {
+  const s = scenario('escape-no-focus-move');
+  assert.deepEqual(
+    s.operations.slice(0, 5).map(({ operation, target }) => [operation, target]),
+    [
+      ['focus', 'trigger-a'],
+      ['hover', 'trigger-b'],
+      ['press', 'escape-key'],
+      ['press', 'escape-key'],
+      ['blur', 'trigger-a'],
+    ],
+  );
+  assert.equal(at(s, 1, 'tooltip-a', 'open'), true);
+  assert.equal(at(s, 1, 'tooltip-b', 'open'), true);
+  assert.equal(at(s, 2, 'tooltip-b', 'open'), false);
+  assert.equal(at(s, 2, 'tooltip-a', 'open'), true);
+  assert.equal(at(s, 3, 'tooltip-a', 'open'), false);
+  for (const index of [2, 3]) {
+    assert.equal(at(s, index, 'document-focus', 'current'), 'trigger-a');
+    assert.equal(at(s, index, 'document-focus', 'move-count-since-operation'), 0);
+    assert.equal(at(s, index, 'trigger-a', 'activation-count'), 0);
+    assert.equal(at(s, index, 'trigger-b', 'activation-count'), 0);
+  }
+  assert.equal(at(s, 10, 'tooltip-b', 'open'), false);
+  assert.equal(at(s, 10, 'document-focus', 'current'), 'outside-control');
+  assert.equal(at(s, 10, 'trigger-b', 'activation-count'), 0);
+});
