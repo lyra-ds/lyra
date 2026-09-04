@@ -260,6 +260,53 @@ export async function load(candidate, family, { candidateEffect, ...options } = 
   };
 }
 export function adapterSuite(family) {
+  if (['anchored', 'menu'].includes(family)) {
+    for (const relation of family === 'menu'
+      ? ['aria-controls', 'aria-labelledby']
+      : ['aria-controls']) {
+      test(`review round2: radix ${family} generated ${relation} resolves to the rendered element`, async () => {
+        const loaded = await load('radix', family);
+        elements(loaded.ownerTrees()[0])
+          .find((node) => node.type === 'Root')
+          .props.onOpenChange(true);
+        loaded.render();
+        const nodes = elements(loaded.ownerTrees()[0]);
+        const triggerProps = nodes.find((node) => node.type === 'Trigger').props;
+        const contentProps = nodes.find((node) => node.type === 'Content').props;
+        // Exact pinned index.mjs spread order: Popover 1.1.23 lines 92/246-248;
+        // DropdownMenu 2.1.24 lines 68-75/109-112. Neither writes consumer IDs
+        // back into context, so the generated references must survive prop spreads.
+        const context = {
+          triggerId: 'generated-trigger',
+          contentId: 'generated-content',
+          open: true,
+        };
+        const trigger = {
+          ...(family === 'menu' ? { id: context.triggerId } : {}),
+          'aria-controls': context.open ? context.contentId : undefined,
+          ...triggerProps,
+        };
+        const content = {
+          id: context.contentId,
+          ...(family === 'menu' ? { 'aria-labelledby': context.triggerId } : {}),
+          ...contentProps,
+        };
+        const byId = new Map([trigger, content].map((node) => [node.id, node]));
+        const source = relation === 'aria-controls' ? trigger : content;
+        const target = relation === 'aria-controls' ? content : trigger;
+        assert.equal(
+          byId.get(source[relation]),
+          target,
+          `${relation} must resolve to its actual rendered target`,
+        );
+        assert.equal(trigger['data-overlay-id'], 'trigger');
+        assert.equal(content['data-overlay-id'], family === 'menu' ? 'menu' : 'popup');
+        assert.equal(content['aria-label'], 'Workspace');
+        assert.equal(typeof trigger.onClick, 'function');
+        assert.equal(content.style.width, 200);
+      });
+    }
+  }
   test(`${family} every catalog sequence translates through the neutral driver without oracle input`, async () => {
     const module = await import(`../contracts/${family}.mjs`);
     for (const scenario of module[`${family.toUpperCase()}_SCENARIOS`]) {

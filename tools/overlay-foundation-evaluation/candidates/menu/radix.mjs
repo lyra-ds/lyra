@@ -20,11 +20,13 @@ export async function createMenuCandidate({
   function CandidateOwner({ model: m }) {
     const { owner, state } = m;
     const placement = physicalPlacement(state.placement, state.direction).split('-');
+    const { id: _triggerId, ...triggerInput } = m.trigger.props;
     const trigger = owner.triggerMounted
-      ? h(parts.Trigger, { ...m.trigger.props }, m.trigger.children)
+      ? h(parts.Trigger, { ...triggerInput }, m.trigger.children)
       : null;
+    const { id: _contentId, ...contentInput } = m.content.props;
     const contentProps = {
-      ...m.content.props,
+      ...contentInput,
       'data-overlay-portal': '',
       'aria-label': 'Workspace',
     };

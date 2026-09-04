@@ -23,8 +23,9 @@ export async function createAnchoredCandidate({
     const trigger = owner.triggerMounted
       ? h(parts.Trigger, { ...m.trigger.props }, m.trigger.children)
       : null;
+    const { id: _contentId, ...contentInput } = m.content.props;
     const contentProps = {
-      ...m.content.props,
+      ...contentInput,
       'data-overlay-portal': '',
       'aria-label': 'Workspace',
     };
