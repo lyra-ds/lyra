@@ -35,20 +35,13 @@ function resourceSnapshot(tracker) {
   const { persistentListeners: _persistent, ...resources } = tracker.snapshot();
   return resources;
 }
-function probeFact(probe, snapshot, cleanup, document) {
+function probeFact(probe, snapshot, cleanup, document, fixture) {
   const matches = [...(document?.querySelectorAll?.('[data-overlay-id]') ?? [])].filter(
     (element) =>
       element.isConnected !== false && element.getAttribute('data-overlay-id') === probe.target,
   );
   const element = matches.length === 1 ? matches[0] : undefined;
   const text = element?.textContent?.trim();
-  const labelledBy = element
-    ?.getAttribute?.('aria-labelledby')
-    ?.split(/\s+/u)
-    .map((id) => document.getElementById?.(id)?.textContent?.trim())
-    .filter(Boolean)
-    .join(' ');
-  const name = labelledBy || element?.getAttribute?.('aria-label') || text || 'unobserved';
   switch (probe.category) {
     case 'states':
       return structuredClone(
@@ -58,8 +51,22 @@ function probeFact(probe, snapshot, cleanup, document) {
       );
     case 'focus':
       return structuredClone(snapshot.focus);
-    case 'roles':
-      return { role: element?.getAttribute?.('role') ?? 'unobserved', name };
+    case 'roles': {
+      // Accessible names and implicit roles require real accessibility computation.
+      // The mounted fixture supplies a measurement for this exact neutral target.
+      const measurement = fixture.measureRole?.(probe.target);
+      if (measurement === undefined) return { role: 'unobserved', name: 'unobserved' };
+      if (
+        !isPlainRecord(measurement) ||
+        Object.keys(measurement).some((key) => !['role', 'name'].includes(key)) ||
+        typeof measurement.role !== 'string' ||
+        typeof measurement.name !== 'string'
+      )
+        throw new Error('target-bound role measurement must contain only role and name strings');
+      // The shared closed observation schema requires nonempty role/name strings.
+      // Its existing failure sentinel preserves absent names without inventing one.
+      return { role: measurement.role || 'unobserved', name: measurement.name || 'unobserved' };
+    }
     case 'relationships':
       return structuredClone(
         snapshot.relationships.find(
@@ -143,7 +150,7 @@ export function createWave2Runtime(request) {
       .map((probe) => ({
         id: probe.id,
         category: probe.category,
-        fact: probeFact(probe, snapshot, cleanup, document),
+        fact: probeFact(probe, snapshot, cleanup, document, fixture),
       }));
     if (probes.length) snapshot.probes = probes;
     trace.push({
@@ -186,23 +193,39 @@ export function createWave2Runtime(request) {
   };
   const context = () => {
     const generation = epoch;
-    const active = () => !ending && !destroyed && generation === epoch;
+    const ownerGenerations = new Map(ownerEpochs);
+    const active = (owner) =>
+      !ending &&
+      !destroyed &&
+      (owner === undefined
+        ? generation === epoch
+        : (ownerGenerations.get(owner) ?? 0) === (ownerEpochs.get(owner) ?? 0));
+    let guardedActive;
     return Object.freeze({
       guard(callback, { owner } = {}) {
         if (typeof callback !== 'function') throw new TypeError('guard requires a callback');
         const ownerGeneration = ownerEpochs.get(owner) ?? 0;
-        return (...args) =>
+        const callbackActive = () =>
           !ending &&
           !destroyed &&
-          (owner === undefined ? active() : ownerGeneration === (ownerEpochs.get(owner) ?? 0))
-            ? callback(...args)
-            : false;
+          (owner === undefined ? active() : ownerGeneration === (ownerEpochs.get(owner) ?? 0));
+        return (...args) => {
+          if (!callbackActive()) return false;
+          const previous = guardedActive;
+          guardedActive = callbackActive;
+          try {
+            return callback(...args);
+          } finally {
+            guardedActive = previous;
+          }
+        };
       },
       invalidate(owner) {
         ownerEpochs.set(owner, (ownerEpochs.get(owner) ?? 0) + 1);
       },
-      commit({ prevented = false, event, apply }) {
-        if (!active() || prevented) return false;
+      commit({ prevented = false, event, apply, owner }) {
+        const canCommit = owner === undefined ? (guardedActive ?? active)() : active(owner);
+        if (!canCommit || prevented) return false;
         if (typeof prevented !== 'boolean' || typeof apply !== 'function')
           throw new TypeError('commit requires an apply callback and boolean prevention');
         const snapshot = read().snapshot;

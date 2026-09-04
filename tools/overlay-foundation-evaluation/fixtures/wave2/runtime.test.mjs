@@ -235,7 +235,7 @@ test('Wave2 executes every catalog operation including repeated scoped destructi
   }
 });
 
-test('Wave2 reads target-bound roles and announcements from the real document', async () => {
+test('Wave2 uses measured roles and matches recorded announcements to the target document', async () => {
   const h = harness([op('resize')]);
   await h.runtime.destroy();
   const tooltip = {
@@ -253,6 +253,8 @@ test('Wave2 reads target-bound roles and announcements from the real document', 
       return [tooltip];
     },
   };
+  h.fixture.measureRole = (target) =>
+    target === 'tooltip' ? { role: 'tooltip', name: 'Actual details' } : undefined;
   const originalObserve = h.fixture.observe;
   h.fixture.observe = () => ({
     ...originalObserve(),
@@ -357,5 +359,171 @@ test('Wave2 fixture snapshots cannot supply coordinator-owned probes or resource
     assert.throws(() => h.runtime.observe(), /coordinator-owned/);
     h.fixture.observe = observe;
     await h.runtime.destroy();
+  }
+});
+
+test('review regression: owner-scoped guarded commits survive another owner destroy', async () => {
+  const h = harness([op('open', 'trigger-b'), op('destroy', 'popup-a'), op('destroy', 'popup-b')]);
+  let callback;
+  let commits = 0;
+  h.fixture.operations.open = (_operation, context) => {
+    callback = context.guard(
+      () =>
+        context.commit({
+          event: { target: 'popup-b', type: 'opened' },
+          apply() {
+            commits++;
+          },
+        }),
+      { owner: 'popup-b' },
+    );
+  };
+  await h.runtime.runOperation(op('open', 'trigger-b'));
+  await h.runtime.runOperation(op('destroy', 'popup-a'));
+  assert.equal(callback(), true);
+  assert.equal(commits, 1);
+  await h.runtime.runOperation(op('destroy', 'popup-b'));
+  assert.equal(callback(), false);
+  assert.equal(commits, 1);
+  assert.deepEqual(h.runtime.observe().events, [{ target: 'popup-b', type: 'opened' }]);
+  await h.runtime.destroy();
+  assert.equal(callback(), false);
+});
+
+async function measuredRoleHarness({ target, element, measurement }) {
+  const h = harness([op('resize')]);
+  await h.runtime.destroy();
+  const calls = [];
+  h.fixture.measureRole = (actualTarget) => {
+    calls.push(actualTarget);
+    return measurement;
+  };
+  const probes = [
+    {
+      id: 'role',
+      category: 'roles',
+      phase: 'after-operation',
+      operationIndex: 0,
+      target,
+      property: 'accessible-role',
+    },
+  ];
+  const runtime = createWave2Runtime({
+    schemaVersion: 1,
+    scenario: { scenarioId: 'of-menu.roles.v1', operations: [op('resize')], probes },
+    cell,
+  });
+  runtime.beginScenario({
+    fixture: h.fixture,
+    tracker: h.tracker,
+    document: { querySelectorAll: () => [element] },
+  });
+  await runtime.runOperation(op('resize'));
+  return { runtime, calls };
+}
+
+test('review regression: unnamed menu content is never fabricated as its accessible name', async () => {
+  const { runtime, calls } = await measuredRoleHarness({
+    target: 'menu',
+    element: {
+      isConnected: true,
+      textContent: 'Workspace',
+      getAttribute: (key) => ({ 'data-overlay-id': 'menu', role: 'menu' })[key] ?? null,
+    },
+    measurement: { role: 'menu', name: '' },
+  });
+  assert.deepEqual(runtime.observe().roles, [{ role: 'menu', name: 'unobserved' }]);
+  assert.deepEqual(calls, ['menu']);
+  await runtime.destroy();
+});
+
+test('review regression: target-bound measurements retain implicit native roles', async () => {
+  const { runtime, calls } = await measuredRoleHarness({
+    target: 'trigger',
+    element: {
+      isConnected: true,
+      tagName: 'BUTTON',
+      textContent: 'Workspace',
+      getAttribute: (key) => (key === 'data-overlay-id' ? 'trigger' : null),
+    },
+    measurement: { role: 'button', name: 'Workspace' },
+  });
+  assert.deepEqual(runtime.observe().roles, [{ role: 'button', name: 'Workspace' }]);
+  assert.deepEqual(calls, ['trigger']);
+  await runtime.destroy();
+});
+
+test('review owner lifetime remains explicit across asynchronous continuations', async () => {
+  for (const destroyOwner of [false, true]) {
+    const h = harness([
+      op('open', 'trigger-b'),
+      op('destroy', 'popup-a'),
+      op('destroy', 'popup-b'),
+    ]);
+    let callback;
+    let resume;
+    let applied = false;
+    const pending = new Promise((resolve) => {
+      resume = resolve;
+    });
+    h.fixture.operations.open = (_operation, context) => {
+      callback = context.guard(
+        async () => {
+          await pending;
+          return context.commit({
+            owner: 'popup-b',
+            event: { target: 'popup-b', type: 'opened' },
+            apply() {
+              applied = true;
+            },
+          });
+        },
+        { owner: 'popup-b' },
+      );
+    };
+    await h.runtime.runOperation(op('open', 'trigger-b'));
+    await h.runtime.runOperation(op('destroy', 'popup-a'));
+    const result = callback();
+    if (destroyOwner) await h.runtime.runOperation(op('destroy', 'popup-b'));
+    resume();
+    assert.equal(await result, !destroyOwner);
+    assert.equal(applied, !destroyOwner);
+    await h.runtime.destroy();
+  }
+});
+
+test('review guarded commits do not lend their owner scope to later unguarded commits', async () => {
+  const h = harness([op('open'), op('destroy', 'popup-a')]);
+  let callback, commit;
+  h.fixture.operations.open = (_operation, context) => {
+    commit = () => context.commit({ event: { target: 'popup-b', type: 'opened' }, apply() {} });
+    callback = context.guard(commit, { owner: 'popup-b' });
+  };
+  await h.runtime.runOperation(op('open'));
+  await h.runtime.runOperation(op('destroy', 'popup-a'));
+  assert.equal(callback(), true);
+  assert.equal(commit(), false);
+  await h.runtime.destroy();
+});
+
+test('review role measurements fail closed without a reader and reject extra or vendor fields', async () => {
+  const element = {
+    isConnected: true,
+    textContent: 'Workspace',
+    getAttribute: (key) =>
+      ({ 'data-overlay-id': 'menu', role: 'menu', 'aria-label': 'Workspace' })[key] ?? null,
+  };
+  const missing = await measuredRoleHarness({ target: 'menu', element, measurement: undefined });
+  assert.deepEqual(missing.runtime.observe().roles, [{ role: 'unobserved', name: 'unobserved' }]);
+  await missing.runtime.destroy();
+  for (const measurement of [
+    { role: 'menu', name: 'Workspace', expected: true },
+    { role: 'menu', name: 'radix' },
+    { role: 'menu', name: () => 'Workspace' },
+  ]) {
+    await assert.rejects(
+      measuredRoleHarness({ target: 'menu', element, measurement }),
+      /measurement|vendor|candidate/,
+    );
   }
 });
