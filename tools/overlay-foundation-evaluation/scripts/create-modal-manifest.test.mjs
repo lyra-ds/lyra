@@ -208,8 +208,8 @@ test('runs the manifest CLI when invoked through a symlink', async (t) => {
 });
 
 for (const [name, argv] of [
-  ['unknown argument', ['--unknown', revision]],
-  ['duplicate revision', ['--revision', revision, '--revision', revision]],
+  ['unknown argument', ['--revision', revision, '--unknown', 'unused', '--output', 'unused']],
+  ['duplicate revision', ['--revision', revision, '--revision', revision, '--output', 'unused']],
 ]) {
   test(`rejects ${name} before reading or writing a manifest`, async () => {
     const errors = [];
