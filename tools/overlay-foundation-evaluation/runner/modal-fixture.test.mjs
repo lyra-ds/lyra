@@ -66,6 +66,11 @@ async function createSources(root) {
   );
   const files = {
     [adapterEntry]: 'export const adapter = "synthetic";\n',
+    [join(fixtureSourceRoot, '..', 'shared', 'protocol.mjs')]: 'export const sharedProtocol = 1;\n',
+    [join(fixtureSourceRoot, '..', 'shared', 'resource-tracker.mjs')]:
+      'export const sharedResourceTracker = 1;\n',
+    [join(fixtureSourceRoot, '..', '..', 'contracts', 'cells.mjs')]:
+      'export const BEHAVIORAL_WAVE_CELLS = [];\n',
     [join(fixtureSourceRoot, 'protocol.mjs')]: 'export const protocol = 1;\n',
     [join(fixtureSourceRoot, 'runtime.mjs')]: 'export const runtime = 1;\n',
     [join(fixtureSourceRoot, 'runtime.react-browser-node-util.mjs')]:
@@ -74,7 +79,10 @@ async function createSources(root) {
     [join(fixtureSourceRoot, 'entry-server.mjs')]: 'export const server = 1;\n',
     [join(fixtureSourceRoot, 'index.html')]: '<main id="modal-fixture-root"></main>\n',
   };
-  for (const [path, bytes] of Object.entries(files)) await writeFile(path, bytes);
+  for (const [path, bytes] of Object.entries(files)) {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, bytes);
+  }
   return { adapterEntry, files, fixtureSourceRoot, repositoryRoot };
 }
 
@@ -186,16 +194,19 @@ test('copies each allowed source once with hashes and returns verified contained
     react: '19.2.8',
     'react-dom': '19.2.8',
   });
-  assert.equal(reads.size, 7);
-  assert.deepEqual([...reads.values()], [1, 1, 1, 1, 1, 1, 1]);
+  assert.equal(reads.size, 10);
+  assert.deepEqual([...reads.values()], Array(10).fill(1));
   assert.deepEqual(Object.keys(result.sourceHashes).sort(), [
     'adapter',
+    'cells',
     'entryClient',
     'entryServer',
     'indexHtml',
     'protocol',
     'runtime',
     'runtimeBrowserNodeUtil',
+    'sharedProtocol',
+    'sharedResourceTracker',
   ]);
   for (const source of Object.values(result.sourceHashes)) {
     assert.equal(relative(setup.runRoot, source.path).startsWith('..'), false);
@@ -216,6 +227,7 @@ test('copies each allowed source once with hashes and returns verified contained
       join(setup.fixtureRoot, 'modal-fixture'),
       join(setup.fixtureRoot, 'candidates'),
       join(setup.fixtureRoot, 'fixtures'),
+      join(setup.fixtureRoot, 'contracts'),
       join(setup.fixtureRoot, 'index.html'),
     ],
     runRoot: setup.runRoot,
@@ -560,4 +572,37 @@ test('aggregates primary and cleanup failures in that order', async (t) => {
   }
   assert.ok(caught instanceof AggregateError);
   assert.deepEqual(caught.errors, [primary, cleanup]);
+});
+
+test('copied shared imports and cells resolve inside the isolated source tree', async (t) => {
+  const setup = await createFixtureSetup(t);
+  const actualRoot = new URL('../fixtures/', import.meta.url);
+  for (const file of [
+    'modal/protocol.mjs',
+    'modal/runtime.mjs',
+    'shared/protocol.mjs',
+    'shared/resource-tracker.mjs',
+  ]) {
+    const bytes = await readFile(new URL(file, actualRoot));
+    const destination = join(setup.sources.fixtureSourceRoot, '..', file);
+    await mkdir(dirname(destination), { recursive: true });
+    await writeFile(destination, bytes);
+  }
+  await writeFile(
+    join(setup.sources.fixtureSourceRoot, '..', '..', 'contracts', 'cells.mjs'),
+    await readFile(new URL('../contracts/cells.mjs', import.meta.url)),
+  );
+  const prepare = await loadPrepareModalFixture();
+  const result = await prepare(input(setup), { installCandidate: setup.installCandidate });
+  for (const key of ['protocol', 'runtime', 'sharedProtocol', 'sharedResourceTracker']) {
+    const source = result.sourceHashes[key];
+    const text = await readFile(source.path, 'utf8');
+    for (const match of text.matchAll(/from ['"]([^'"]+)['"]/gu)) {
+      const specifier = match[1];
+      if (!specifier.includes('/shared/') && !specifier.endsWith('/cells.mjs')) continue;
+      const path = join(dirname(source.path), specifier);
+      assert.equal(relative(setup.fixtureRoot, path).startsWith('..'), false);
+      assert.equal((await stat(path)).isFile(), true, path);
+    }
+  }
 });

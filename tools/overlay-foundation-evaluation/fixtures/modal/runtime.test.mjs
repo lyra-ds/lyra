@@ -3193,3 +3193,140 @@ test('portal, listener, and timer leaks change the post-cleanup factual trace', 
     [{ owner: 'modal-panel', purpose: 'other', type: 'keydown' }],
   );
 });
+
+test('characterization: tracker naming, lifecycle keys, claims and restoration are exact', () => {
+  class Target {
+    addEventListener() {}
+    removeEventListener() {}
+  }
+  let handle = 0;
+  const callbacks = new Map();
+  const scope = {
+    EventTarget: Target,
+    document: {},
+    setTimeout(fn) {
+      callbacks.set(++handle, fn);
+      return handle;
+    },
+    clearTimeout(id) {
+      callbacks.delete(id);
+    },
+    setInterval(fn) {
+      callbacks.set(++handle, fn);
+      return handle;
+    },
+    clearInterval(id) {
+      callbacks.delete(id);
+    },
+  };
+  const original = { ...scope };
+  const tracker = installModalResourceTracker(scope);
+  assert.equal(installModalResourceTracker(scope), tracker);
+  assert.equal(
+    Object.getOwnPropertyDescriptor(scope, '__LYRA_MODAL_RESOURCE_TRACKER__').enumerable,
+    false,
+  );
+  const targets = [
+    scope,
+    scope.document,
+    ...[
+      { 'data-modal-id': 'neutral-panel', id: 'fallback' },
+      { id: 'fallback' },
+      { 'data-modal-fixture-root': '' },
+      {},
+    ].map((attrs) =>
+      Object.assign(new Target(), {
+        getAttribute: (key) => attrs[key] ?? null,
+        hasAttribute: (key) => key in attrs,
+      }),
+    ),
+  ];
+  Target.prototype.addEventListener.call(scope, 'click', () => {});
+  Target.prototype.addEventListener.call(scope.document, 'click', () => {});
+  for (const target of targets.slice(2)) target.addEventListener('click', () => {});
+  assert.deepEqual(
+    tracker.snapshot().listenerEntries.map((e) => e.target),
+    ['window', 'document', 'neutral-panel', 'fallback', 'modal-fixture-root', 'event-target'],
+  );
+  const timer = tracker.runInPhase(
+    { operation: 'open', owner: 'modal-panel', phase: 'operation', purpose: 'dismiss' },
+    () => scope.setTimeout(() => {}, 10),
+  );
+  const acquired = tracker.snapshot().timerEntries[0];
+  assert.deepEqual(acquired, {
+    acquiredOperation: 'open',
+    acquiredPhase: 'operation',
+    id: 1,
+    kind: 'timeout',
+    owner: 'modal-panel',
+    purpose: 'dismiss',
+    target: 'window',
+  });
+  tracker.runInPhase(
+    { operation: 'destroy', owner: 'modal-panel', phase: 'cleanup', purpose: 'other' },
+    () => scope.clearTimeout(timer),
+  );
+  assert.deepEqual(tracker.snapshot().timerLifecycles[0], {
+    ...acquired,
+    releaseCount: 1,
+    releasedOperation: 'destroy',
+    releasedPhase: 'cleanup',
+  });
+  assert.deepEqual(Object.keys(tracker.snapshot().listenerEntries[0]), [
+    'acquiredOperation',
+    'acquiredPhase',
+    'boundary',
+    'id',
+    'owner',
+    'purpose',
+    'target',
+    'type',
+    'uses',
+  ]);
+  assert.deepEqual(Object.keys(tracker.snapshot().listenerLifecycles[0]), [
+    'acquiredOperation',
+    'acquiredPhase',
+    'boundary',
+    'id',
+    'owner',
+    'purpose',
+    'target',
+    'type',
+    'uses',
+    'releaseCount',
+  ]);
+  const claim = tracker.acquireClaim({ kind: 'scroll-lock', owner: 'modal-panel' });
+  assert.deepEqual(tracker.snapshot().claims, [
+    { id: 1, kind: 'scroll-lock', owner: 'modal-panel' },
+  ]);
+  assert.equal(claim.release(), true);
+  assert.equal(claim.release(), false);
+  assert.equal(tracker.restore(), true);
+  assert.equal(tracker.restore(), false);
+  assert.equal(scope.setTimeout, original.setTimeout);
+  // Restoration removes instrumentation; it does not manufacture candidate cleanup.
+  assert.equal(tracker.snapshot().listeners, 6);
+});
+
+test('characterization: runtime destroy return values and terminal event boundary are stable', () => {
+  const runtime = createModalRuntime(validRequest);
+  assert.deepEqual(Object.keys(runtime), [
+    'acceptInput',
+    'cleanup',
+    'isDestroyed',
+    'operations',
+    'observe',
+    'request',
+    'destroy',
+  ]);
+  assert.equal(runtime.destroy(), true);
+  assert.equal(runtime.destroy(), false);
+  assert.equal(runtime.acceptInput('open', 'modal-panel', 'opened'), false);
+  assert.equal(
+    runtime.operations.open({ event: { target: 'modal-panel', type: 'opened' } }),
+    false,
+  );
+  assert.deepEqual(runtime.cleanup(), { status: 'already-destroyed' });
+  assert.equal(runtime.observe().diagnostics.destroyed, true);
+  assert.deepEqual(createModalRuntime(validRequest).cleanup(), { status: 'destroyed' });
+});

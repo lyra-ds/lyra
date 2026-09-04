@@ -314,11 +314,14 @@ export async function prepareModalFixture(
     createdPaths.push(modalRoot);
     const candidateSources = join(fixtureRoot, 'candidates');
     const fixtureSources = join(fixtureRoot, 'fixtures');
+    const contractSources = join(fixtureRoot, 'contracts');
     const indexPath = join(fixtureRoot, 'index.html');
     await mkdir(candidateSources, { mode: 0o700 });
     createdPaths.push(candidateSources);
     await mkdir(fixtureSources, { mode: 0o700 });
     createdPaths.push(fixtureSources);
+    await mkdir(contractSources, { mode: 0o700 });
+    createdPaths.push(contractSources);
     const repositoryFixtureRoot = join(
       resolvedRepositoryRoot,
       'tools',
@@ -354,6 +357,21 @@ export async function prepareModalFixture(
         join(fixtureSources, 'modal', 'entry-server.mjs'),
       ],
       ['indexHtml', join(repositoryFixtureRoot, 'index.html'), indexPath],
+      [
+        'sharedProtocol',
+        join(repositoryFixtureRoot, '..', 'shared', 'protocol.mjs'),
+        join(fixtureSources, 'shared', 'protocol.mjs'),
+      ],
+      [
+        'sharedResourceTracker',
+        join(repositoryFixtureRoot, '..', 'shared', 'resource-tracker.mjs'),
+        join(fixtureSources, 'shared', 'resource-tracker.mjs'),
+      ],
+      [
+        'cells',
+        join(repositoryFixtureRoot, '..', '..', 'contracts', 'cells.mjs'),
+        join(contractSources, 'cells.mjs'),
+      ],
     ];
     const sourceHashes = {};
     for (const [name, source, destination] of specifications) {
