@@ -43,7 +43,11 @@
     "evidence:file-upload:automation": "node tools/file-upload-evidence/scripts/automation.mjs",
     "evidence:file-upload:ingest": "node tools/file-upload-evidence/scripts/ingest.mjs",
     "changeset": "changeset",
-    "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish"
+    "release": "pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && changeset publish",
+    "overlay:evaluate:wave2:test": "node --test tools/overlay-foundation-evaluation/contracts/anchored.test.mjs tools/overlay-foundation-evaluation/contracts/menu.test.mjs tools/overlay-foundation-evaluation/contracts/tooltip.test.mjs tools/overlay-foundation-evaluation/contracts/wave2.test.mjs tools/overlay-foundation-evaluation/fixtures/shared/*.test.mjs tools/overlay-foundation-evaluation/fixtures/wave2/*.test.mjs tools/overlay-foundation-evaluation/candidates/anchored/*.test.mjs tools/overlay-foundation-evaluation/candidates/menu/*.test.mjs tools/overlay-foundation-evaluation/candidates/tooltip/*.test.mjs tools/overlay-foundation-evaluation/runner/wave2*.test.mjs tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.test.mjs tools/overlay-foundation-evaluation/scripts/registry-proxy.test.mjs tools/overlay-foundation-evaluation/scripts/wave2.test.mjs tools/overlay-foundation-evaluation/scripts/wave2-automation.test.mjs",
+    "overlay:evaluate:behavioral:manifest": "node tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.mjs",
+    "overlay:evaluate:wave2": "node tools/overlay-foundation-evaluation/scripts/wave2.mjs",
+    "overlay:evaluate:wave2:auto": "node tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

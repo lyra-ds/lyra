@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 
-import { MODAL_EXTERNAL_ARTIFACTS } from './candidates/catalog.mjs';
+import { BEHAVIORAL_EXTERNAL_ARTIFACTS } from './candidates/catalog.mjs';
 import { MODAL_WAVE_CELLS } from './contracts/modal.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -54,6 +54,15 @@ const modalScripts = Object.freeze({
   'overlay:evaluate:modal:manifest':
     'node tools/overlay-foundation-evaluation/scripts/create-modal-manifest.mjs',
   'overlay:evaluate:modal': 'node tools/overlay-foundation-evaluation/scripts/modal.mjs',
+});
+const wave2Scripts = Object.freeze({
+  'overlay:evaluate:wave2:test':
+    'node --test tools/overlay-foundation-evaluation/contracts/anchored.test.mjs tools/overlay-foundation-evaluation/contracts/menu.test.mjs tools/overlay-foundation-evaluation/contracts/tooltip.test.mjs tools/overlay-foundation-evaluation/contracts/wave2.test.mjs tools/overlay-foundation-evaluation/fixtures/shared/*.test.mjs tools/overlay-foundation-evaluation/fixtures/wave2/*.test.mjs tools/overlay-foundation-evaluation/candidates/anchored/*.test.mjs tools/overlay-foundation-evaluation/candidates/menu/*.test.mjs tools/overlay-foundation-evaluation/candidates/tooltip/*.test.mjs tools/overlay-foundation-evaluation/runner/wave2*.test.mjs tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.test.mjs tools/overlay-foundation-evaluation/scripts/registry-proxy.test.mjs tools/overlay-foundation-evaluation/scripts/wave2.test.mjs tools/overlay-foundation-evaluation/scripts/wave2-automation.test.mjs',
+  'overlay:evaluate:behavioral:manifest':
+    'node tools/overlay-foundation-evaluation/scripts/create-behavioral-manifest.mjs',
+  'overlay:evaluate:wave2': 'node tools/overlay-foundation-evaluation/scripts/wave2.mjs',
+  'overlay:evaluate:wave2:auto':
+    'node tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs',
 });
 const incumbentArtifacts = Object.freeze([
   Object.freeze({ source: 'workspace-pack', name: '@lyra-ds/styles', version: '0.5.0' }),
@@ -128,11 +137,15 @@ test('wires core and modal commands without putting the live diagnostic in ordin
     rootPackage.scripts['overlay:evaluate:incumbent'],
     'node tools/overlay-foundation-evaluation/scripts/incumbent.mjs',
   );
-  for (const [name, command] of Object.entries(modalScripts)) {
+  for (const [name, command] of Object.entries({ ...modalScripts, ...wave2Scripts })) {
     assert.equal(rootPackage.scripts[name], command);
   }
   assert.match(rootPackage.scripts.test, /pnpm overlay:evaluate:core:test/u);
-  assert.doesNotMatch(rootPackage.scripts.test, /pnpm overlay:evaluate:modal(?:\s|$)/u);
+  assert.doesNotMatch(
+    rootPackage.scripts.test,
+    /pnpm overlay:evaluate:(?:modal|wave2)(?::auto)?(?:\s|$)/u,
+  );
+  assert.doesNotMatch(rootPackage.scripts.test, /docker|wave2(?:-automation)?\.mjs/u);
 });
 
 test('keeps dependencies, lockfile, packages, workflows, and the V1 ledger immutable', async () => {
@@ -222,7 +235,7 @@ test(
   },
 );
 
-test('tracks the four exact modal candidate records without selection metadata', async () => {
+test('tracks the four exact behavioral candidate records without selection metadata', async () => {
   const manifest = JSON.parse(
     await readFile(
       resolve(repositoryRoot, 'tools/overlay-foundation-evaluation/candidates.json'),
@@ -252,7 +265,7 @@ test('tracks the four exact modal candidate records without selection metadata',
     {
       id: 'incumbent',
       adapter: 'candidates/incumbent.mjs',
-      contracts: ['OF-MODAL'],
+      contracts: ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP'],
       revision: manifest.lyraRevision,
       artifacts: incumbentArtifacts,
     },
@@ -263,8 +276,8 @@ test('tracks the four exact modal candidate records without selection metadata',
     assert.deepEqual(candidate, {
       id: candidate.id,
       adapter: `candidates/${candidate.id}.mjs`,
-      contracts: ['OF-MODAL'],
-      artifacts: structuredClone(MODAL_EXTERNAL_ARTIFACTS[candidate.id]),
+      contracts: ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP'],
+      artifacts: structuredClone(BEHAVIORAL_EXTERNAL_ARTIFACTS[candidate.id]),
     });
   }
 
@@ -278,7 +291,7 @@ test('tracks the four exact modal candidate records without selection metadata',
   }
 });
 
-test('documents the modal-only local diagnostic boundary', async () => {
+test('documents the cumulative local diagnostic boundary', async () => {
   const documents = await Promise.all(
     [
       'tools/overlay-foundation-evaluation/README.md',
@@ -290,12 +303,19 @@ test('documents the modal-only local diagnostic boundary', async () => {
   for (const cell of decisionEvidenceCells) {
     assert.match(combined, new RegExp(`\\b${cell}\\b`, 'u'));
   }
-  for (const artifacts of Object.values(MODAL_EXTERNAL_ARTIFACTS)) {
+  for (const artifacts of Object.values(BEHAVIORAL_EXTERNAL_ARTIFACTS)) {
     for (const artifact of artifacts) {
       for (const fact of Object.values(artifact)) assert.ok(combined.includes(String(fact)));
     }
   }
   for (const required of [
+    'OF-ANCHORED',
+    'OF-MENU',
+    'OF-TOOLTIP',
+    '11 anchored',
+    '14 menu',
+    '13 tooltip',
+    'overlay:evaluate:wave2:auto',
     'pre-manifest revision',
     'external manifest',
     'external evidence',
