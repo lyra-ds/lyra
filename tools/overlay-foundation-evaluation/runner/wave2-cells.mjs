@@ -133,6 +133,23 @@ function initializePage({ request, ssr }) {
         }),
       true,
     );
+  for (const type of ['keydown', 'keypress', 'beforeinput', 'input', 'keyup'])
+    document.addEventListener(
+      type,
+      (event) => {
+        if (event.key !== 'á' && event.data !== 'á') return;
+        globalThis.__LYRA_WAVE2_NATIVE_EVENTS__.push({
+          type: event.type,
+          trusted: event.isTrusted,
+          key: event.key ?? null,
+          code: event.code ?? null,
+          keyCode: event.keyCode ?? null,
+          data: event.data ?? null,
+          target: event.target?.getAttribute?.('data-overlay-id') ?? null,
+        });
+      },
+      true,
+    );
 }
 function readNativeEvents() {
   return globalThis.__LYRA_WAVE2_NATIVE_EVENTS__ ?? [];
@@ -348,7 +365,84 @@ export function createWave2NativeInput({ page, context, policy }) {
       if (method === 'press') {
         if (typeof args.key !== 'string' || !args.key || args.key.length > 30)
           throw fatal('invalid native key');
-        await page.keyboard.press(args.key);
+        if (args.key === 'á') {
+          if (createRequire(import.meta.url)('playwright/package.json').version !== '1.62.1')
+            throw fatal('native Unicode bridge requires exact Playwright 1.62.1');
+          let session;
+          if (policy.engine === 'chromium') {
+            cdp ??= await context.newCDPSession(page);
+            session = cdp;
+          } else if (['firefox', 'webkit'].includes(policy.engine)) {
+            const implementation = page._connection?.toImpl?.(page);
+            session =
+              policy.engine === 'firefox'
+                ? implementation?.delegate?._session
+                : implementation?.delegate?._pageProxySession;
+          }
+          if (typeof session?.send !== 'function')
+            throw fatal('pinned native Unicode engine capability unavailable');
+          const firefox = policy.engine === 'firefox';
+          const methodName = firefox ? 'Page.dispatchKeyEvent' : 'Input.dispatchKeyEvent';
+          // Exact 1.62.1 RawKeyboard payloads for the catalog's accented KeyA.
+          const down = firefox
+            ? {
+                type: 'keydown',
+                keyCode: 65,
+                code: 'KeyA',
+                key: 'á',
+                repeat: false,
+                location: 0,
+                text: 'á',
+              }
+            : {
+                type: 'keyDown',
+                modifiers: 0,
+                windowsVirtualKeyCode: 65,
+                code: 'KeyA',
+                key: 'á',
+                text: 'á',
+                unmodifiedText: 'á',
+                autoRepeat: false,
+                isKeypad: false,
+                ...(policy.engine === 'chromium' ? { location: 0, commands: [] } : {}),
+              };
+          const up = firefox
+            ? { type: 'keyup', key: 'á', keyCode: 65, code: 'KeyA', location: 0, repeat: false }
+            : {
+                type: 'keyUp',
+                modifiers: 0,
+                key: 'á',
+                windowsVirtualKeyCode: 65,
+                code: 'KeyA',
+                isKeypad: false,
+                ...(policy.engine === 'chromium' ? { location: 0 } : {}),
+              };
+          const before = await page.evaluate(readNativeEvents);
+          let primary;
+          try {
+            await session.send(methodName, down);
+          } catch (error) {
+            primary = error;
+          }
+          try {
+            await session.send(methodName, up);
+          } catch (error) {
+            if (primary)
+              throw new AggregateError([primary, error], 'native Unicode down and release failed');
+            throw error;
+          }
+          if (primary) throw primary;
+          const events = (await page.evaluate(readNativeEvents)).slice(before.length);
+          if (
+            !['keydown', 'keyup'].every((type) =>
+              events.some(
+                (event) => event.type === type && event.trusted === true && event.key === 'á',
+              ),
+            )
+          )
+            throw fatal('native Unicode key did not produce trusted keydown and keyup');
+          receipts.push({ method, args, events });
+        } else await page.keyboard.press(args.key);
       } else if (method === 'activate') {
         const p = await point(args.target);
         if (policy.synthesizeHover === false) await page.touchscreen.tap(p.x, p.y);
@@ -519,6 +613,60 @@ export async function preflightWave2BrowserInputs({ playwright }) {
       const nativeTab = await page.evaluate(
         () => document.activeElement?.getAttribute('data-overlay-id') === 'next',
       );
+      await page.evaluate(() => {
+        const editable = document.createElement('input');
+        editable.setAttribute('data-overlay-id', 'unicode-editable');
+        const menu = document.createElement('button');
+        menu.setAttribute('data-overlay-id', 'unicode-menu');
+        globalThis.__LYRA_WAVE2_UNICODE_HANDLED__ = [];
+        menu.addEventListener('keydown', (event) => {
+          globalThis.__LYRA_WAVE2_UNICODE_HANDLED__.push(event.key);
+          event.preventDefault();
+        });
+        document.querySelector('main').append(editable, menu);
+        editable.focus();
+      });
+      await input.invoke({}, 'press', { key: 'á' });
+      await page.evaluate(() => document.querySelector('[data-overlay-id="unicode-menu"]').focus());
+      await input.invoke({}, 'press', { key: 'á' });
+      const unicode = await page.evaluate(() => ({
+        text: document.querySelector('[data-overlay-id="unicode-editable"]').value,
+        handled: globalThis.__LYRA_WAVE2_UNICODE_HANDLED__,
+        events: globalThis.__LYRA_WAVE2_NATIVE_EVENTS__.filter((event) =>
+          event.target?.startsWith('unicode-'),
+        ),
+      }));
+      if (
+        unicode.text !== 'á' ||
+        JSON.stringify(unicode.handled) !== '["á"]' ||
+        !['unicode-editable', 'unicode-menu'].every(
+          (target) =>
+            JSON.stringify(
+              unicode.events
+                .filter(
+                  (event) => event.target === target && ['keydown', 'keyup'].includes(event.type),
+                )
+                .map((event) => [event.type, event.trusted, event.key]),
+            ) ===
+            JSON.stringify([
+              ['keydown', true, 'á'],
+              ['keyup', true, 'á'],
+            ]),
+        ) ||
+        !unicode.events.some(
+          (event) =>
+            event.target === 'unicode-editable' &&
+            event.type === 'input' &&
+            event.trusted &&
+            event.data === 'á',
+        ) ||
+        unicode.events.some(
+          (event) =>
+            event.target === 'unicode-menu' &&
+            ['keypress', 'beforeinput', 'input'].includes(event.type),
+        )
+      )
+        throw fatal('native Unicode browser preflight failed');
       await input.invoke({}, 'visualViewport', { width: 480 });
       const clock = await page.evaluate(readClock),
         events = await page.evaluate(readNativeEvents),
@@ -555,6 +703,7 @@ export async function preflightWave2BrowserInputs({ playwright }) {
         engine,
         nativeTab,
         trustedCancellation,
+        unicode,
         clock,
         visualViewportWidth,
         events,

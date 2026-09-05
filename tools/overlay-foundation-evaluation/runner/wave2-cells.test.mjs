@@ -466,7 +466,12 @@ test(
     assert.ok(
       result.engines.every(
         (e) =>
-          e.trustedCancellation && e.nativeTab && e.clock === 0 && e.visualViewportWidth === 480,
+          e.trustedCancellation &&
+          e.nativeTab &&
+          e.clock === 0 &&
+          e.visualViewportWidth === 480 &&
+          e.unicode.text === 'á' &&
+          JSON.stringify(e.unicode.handled) === '["á"]',
       ),
     );
   },
@@ -604,5 +609,109 @@ test('navigation bootstrap is safe before the document element exists', async ()
     if (original) Object.defineProperty(globalThis, 'document', original);
     else delete globalThis.document;
     delete globalThis.__LYRA_WAVE2_NATIVE_EVENTS__;
+  }
+});
+
+for (const engine of ['chromium', 'firefox', 'webkit']) {
+  test(
+    'native catalog Unicode key uses pinned ' + engine + ' key protocols and actual receipts',
+    async () => {
+      const { createWave2NativeInput } = await import(moduleURL);
+      const calls = [],
+        events = [];
+      let detached = false;
+      const session = {
+        send: async (method, args) => {
+          calls.push({ method, args });
+          events.push({
+            type: args.type.toLowerCase(),
+            trusted: true,
+            key: args.key,
+            code: args.code,
+            keyCode: 65,
+          });
+        },
+        detach: async () => {
+          detached = true;
+        },
+      };
+      const page = {
+        _connection: {
+          toImpl: () => ({ delegate: { _session: session, _pageProxySession: session } }),
+        },
+        keyboard: {
+          press: async () => {
+            throw new Error('Unicode must not use US keyboard layout');
+          },
+        },
+        evaluate: async () => structuredClone(events),
+      };
+      const input = createWave2NativeInput({
+        page,
+        context: { newCDPSession: async () => session },
+        policy: { engine },
+      });
+      await input.invoke({}, 'press', { key: 'á' });
+      assert.deepEqual(
+        calls.map((c) => c.args.type),
+        engine === 'firefox' ? ['keydown', 'keyup'] : ['keyDown', 'keyUp'],
+      );
+      assert.ok(
+        calls.every(
+          (c) =>
+            c.method ===
+            (engine === 'firefox' ? 'Page.dispatchKeyEvent' : 'Input.dispatchKeyEvent'),
+        ),
+      );
+      assert.ok(
+        calls.every(
+          (c) =>
+            c.args.key === 'á' &&
+            c.args.code === 'KeyA' &&
+            (c.args.keyCode ?? c.args.windowsVirtualKeyCode) === 65,
+        ),
+      );
+      assert.equal(calls[0].args.text, 'á');
+      assert.deepEqual(input.diagnostics()[0].events, events);
+      await input.close();
+      assert.equal(detached, engine === 'chromium');
+    },
+  );
+}
+
+test('native Unicode boundary preserves down and up failures, detaches and rejects unavailable or untrusted capabilities', async () => {
+  const { createWave2NativeInput } = await import(moduleURL);
+  for (const failure of ['down', 'up', 'both', 'untrusted', 'missing']) {
+    const calls = [];
+    let detached = false;
+    const session = {
+      send: async (_method, args) => {
+        calls.push(args.type);
+        if (
+          (args.type === 'keyDown' && failure === 'down') ||
+          (args.type === 'keyUp' && failure === 'up') ||
+          failure === 'both'
+        )
+          throw new Error(args.type + ' failed');
+      },
+      detach: async () => {
+        detached = true;
+      },
+    };
+    const input = createWave2NativeInput({
+      page: { evaluate: async () => [] },
+      context: { newCDPSession: async () => (failure === 'missing' ? {} : session) },
+      policy: { engine: 'chromium' },
+    });
+    await assert.rejects(input.invoke({}, 'press', { key: 'á' }), (error) => {
+      if (failure === 'both')
+        assert.match(String(error.errors?.map((e) => e.message)), /keyDown failed.*keyUp failed/);
+      return true;
+    });
+    assert.ok(input.getError());
+    if (failure !== 'missing') assert.deepEqual(calls, ['keyDown', 'keyUp']);
+    if (failure === 'missing') await assert.rejects(input.close());
+    else await input.close();
+    assert.equal(detached, failure !== 'missing');
   }
 });

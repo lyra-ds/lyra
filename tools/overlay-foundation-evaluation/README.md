@@ -203,6 +203,13 @@ The viewport control resizes the real layout and visual viewport together; it
 does not certify independent pinch zoom, virtual keyboards or viewport offsets.
 Native partial touch/cancel uses exact Playwright 1.62.1 private Firefox/WebKit
 protocols with version/capability/receipt guards, and public Chromium CDP.
+The catalog's accented `á` key uses those same pinned native key protocols;
+Playwright's US keyboard map cannot press it and text insertion alone omits
+candidate key handlers. Before candidates run, every engine must prove trusted
+`á` keydown/keyup, real editable text, and a menu-style `preventDefault` handler
+at clock zero. Raw key/code/keyCode/text event diagnostics are retained. This
+closed bridge preserves the catalog input and requires revalidation when the
+pinned Playwright version changes.
 Chromium axe runs verified axe 4.13.0 in an isolated world over the same DOM;
 its timers do not advance the candidate clock. SSR executes in a fresh owned
 Node child and verifies disposal for every invocation; hydration checks preserve
