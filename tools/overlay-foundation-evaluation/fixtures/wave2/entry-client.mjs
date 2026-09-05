@@ -24,7 +24,7 @@ const driverKeys = {
   hover: ['target'],
   point: ['target', 'phase', 'pointerType', 'button', 'drag'],
   viewport: ['width', 'height'],
-  visualViewport: ['offsetLeft'],
+  visualViewport: ['width'],
   motion: ['reducedMotion'],
   lifecycle: ['target'],
 };

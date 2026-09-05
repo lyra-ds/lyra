@@ -55,7 +55,22 @@ checkCatalog(
 function scenario(id) {
   return ANCHORED_SCENARIOS.find((s) => s.scenarioId === 'of-anchored.' + id + '.v1');
 }
+// Assertions name consumer-control ordinals; a declared frame is the checkpoint.
+const actions = (s) =>
+  s.operations.filter((o) => !(o.operation === 'advanceTime' && o.milliseconds === 16));
+function checkpoint(s, ordinal) {
+  let seen = -1;
+  for (const [index, operation] of s.operations.entries()) {
+    if (operation.operation === 'advanceTime' && operation.milliseconds === 16) continue;
+    if (++seen === ordinal)
+      return s.operations[index + 1]?.operation === 'advanceTime' &&
+        s.operations[index + 1]?.milliseconds === 16
+        ? index + 1
+        : index;
+  }
+}
 function at(s, index, target, property) {
+  index = checkpoint(s, index);
   const probe = s.probes.find(
     (p) => p.operationIndex === index && p.target === target && p.property === property,
   );
@@ -72,7 +87,9 @@ test('anchored: mutation expected-from-observation cannot replace literal placem
   for (const index of [1, 2, 3, 4])
     assert.equal(at(s, index, 'popup', 'visual-viewport-contained'), true);
   assert.deepEqual(
-    s.operations.slice(2, 5).map((o) => [o.operation, o.target]),
+    actions(s)
+      .slice(2, 5)
+      .map((o) => [o.operation, o.target]),
     [
       ['resize', 'trigger-bottom-edge'],
       ['resize', 'trigger-right-edge'],
@@ -88,12 +105,14 @@ test('anchored: mutation expected-from-observation cannot replace literal placem
 test('anchored: each resize and ancestor scroll updates with unchanged focus and no semantic event', () => {
   const s = scenario('live-placement-updates');
   assert.deepEqual(
-    s.operations.slice(3, 8).map((o) => o.target),
+    actions(s)
+      .slice(3, 8)
+      .map((o) => o.target),
     [
       'trigger-width-160',
       'content-width-280',
       'viewport-width-640',
-      'visual-viewport-offset-40',
+      'visual-viewport-width-480',
       'ancestor-y-80',
     ],
   );
@@ -102,14 +121,16 @@ test('anchored: each resize and ancestor scroll updates with unchanged focus and
     assert.equal(at(s, index, 'document-focus', 'current'), 'trigger');
     assert.equal(at(s, index, 'semantic-events', 'count-since-operation'), 0);
   }
-  assert.equal(s.operations[8].operation, 'close');
+  assert.equal(actions(s)[8].operation, 'close');
   for (const index of [9, 10])
     assert.equal(at(s, index, 'placement', 'measurement-count-since-operation'), 0);
 });
 test('anchored: pointer dismissal has explicit independent down/up, drag, cancel and context-menu operations', () => {
   const s = scenario('nested-child-pointer-origin');
   assert.deepEqual(
-    s.operations.slice(2).map((o) => o.target),
+    actions(s)
+      .slice(2)
+      .map((o) => o.target),
     [
       'child-down',
       'child-up',
@@ -120,8 +141,8 @@ test('anchored: pointer dismissal has explicit independent down/up, drag, cancel
       'outside-down',
       'outside-drag',
       'outside-up',
-      'outside-down',
-      'outside-pointer-cancel',
+      'touch-outside-down',
+      'touch-outside-pointer-cancel',
       'outside-up',
       'outside-context-menu-down',
       'outside-context-menu-up',
@@ -135,7 +156,9 @@ test('anchored: pointer dismissal has explicit independent down/up, drag, cancel
 test('anchored: logical direction exercises both alignments and horizontal sides in LTR and RTL', () => {
   const s = scenario('logical-direction');
   assert.deepEqual(
-    s.operations.filter((o) => o.operation === 'setDirection').map((o) => o.target),
+    actions(s)
+      .filter((o) => o.operation === 'setDirection')
+      .map((o) => o.target),
     ['ltr', 'rtl'],
   );
   assert.deepEqual(
@@ -151,7 +174,7 @@ test('anchored: logical direction exercises both alignments and horizontal sides
 test('anchored: popup trigger invariants hold closed and open across reopening', () => {
   const s = scenario('popup-trigger-relationships');
   assert.deepEqual(
-    s.operations.map(({ operation, target }) => [operation, target]),
+    actions(s).map(({ operation, target }) => [operation, target]),
     [
       ['focus', 'trigger'],
       ['open', 'trigger'],

@@ -55,7 +55,7 @@ function canonicalize(value) {
   return value;
 }
 
-function manifestSha256(manifest) {
+export function manifestSha256(manifest) {
   return createHash('sha256')
     .update(JSON.stringify(canonicalize(manifest)))
     .digest('hex');
@@ -282,12 +282,12 @@ const defaultDependencies = Object.freeze({
   writeAttempt,
 });
 
-function absolutePath(value, name) {
+export function absolutePath(value, name) {
   if (typeof value !== 'string' || !isAbsolute(value)) throw new Error(`${name} must be absolute`);
   return resolve(value);
 }
 
-function commandText(result) {
+export function commandText(result) {
   const value = isPlainRecord(result) && Object.hasOwn(result, 'stdout') ? result.stdout : result;
   if (typeof value === 'string') return value;
   if (ArrayBuffer.isView(value)) {
@@ -300,7 +300,7 @@ function commandText(result) {
   throw new Error('repository command must return stdout bytes or a string');
 }
 
-async function requireCleanRepository(repositoryRoot, runCommand) {
+export async function requireCleanRepository(repositoryRoot, runCommand) {
   try {
     const status = commandText(
       await runCommand('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
@@ -315,7 +315,7 @@ async function requireCleanRepository(repositoryRoot, runCommand) {
   }
 }
 
-function decodeJson(bytes, label) {
+export function decodeJson(bytes, label) {
   const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   if (text.startsWith('\uFEFF')) throw new Error(`${label} must not contain a BOM`);
   try {
@@ -325,7 +325,7 @@ function decodeJson(bytes, label) {
   }
 }
 
-async function readAttemptFile(path, label) {
+export async function readAttemptFile(path, label) {
   const info = await lstat(path);
   if (!info.isFile() || info.isSymbolicLink() || (await realpath(path)) !== resolve(path)) {
     throw new Error(`${label} must be a canonical regular file`);
@@ -336,7 +336,7 @@ async function readAttemptFile(path, label) {
   return attempt;
 }
 
-async function readCoreAttempt({ candidate, coreCandidate, coreRunId, evidenceRoot }) {
+export async function readCoreAttempt({ candidate, coreCandidate, coreRunId, evidenceRoot }) {
   const path = join(
     evidenceRoot,
     'attempts',
@@ -364,7 +364,7 @@ async function readCoreAttempt({ candidate, coreCandidate, coreRunId, evidenceRo
   return attempt;
 }
 
-async function loadCoreSummary({ evidenceRoot, manifest }) {
+export async function loadCoreSummary({ evidenceRoot, manifest }) {
   const { coreRunId } = runIdentifiers(manifest);
   const preflightRoot = join(evidenceRoot, 'attempts', coreRunId, 'preflight');
   let candidateEntries;
@@ -493,7 +493,7 @@ function evidenceHashes(attempt) {
   return hashes;
 }
 
-async function verifyCoreEvidence(attempt, evidenceRoot, operations) {
+export async function verifyCoreEvidence(attempt, evidenceRoot, operations) {
   const hashes = evidenceHashes(attempt);
   for (const [relativePath, record] of hashes) {
     await operations.verifyRegularFile({
@@ -743,7 +743,7 @@ function everyScenarioDraft({
   return drafts;
 }
 
-function knownBoundary(error) {
+export function knownBoundary(error) {
   return (
     error !== null &&
     (typeof error === 'object' || typeof error === 'function') &&
@@ -752,7 +752,7 @@ function knownBoundary(error) {
   );
 }
 
-function hasBoundaryMetadata(error) {
+export function hasBoundaryMetadata(error) {
   return (
     error !== null &&
     (typeof error === 'object' || typeof error === 'function') &&

@@ -37,7 +37,22 @@ checkCatalog('menu', MENU_SCENARIOS, menuScenariosForCell, validateMenuCoverage,
 function scenario(id) {
   return MENU_SCENARIOS.find((s) => s.scenarioId === 'of-menu.' + id + '.v1');
 }
+// Assertions name consumer-control ordinals; a declared frame is the checkpoint.
+const actions = (s) =>
+  s.operations.filter((o) => !(o.operation === 'advanceTime' && o.milliseconds === 16));
+function checkpoint(s, ordinal) {
+  let seen = -1;
+  for (const [index, operation] of s.operations.entries()) {
+    if (operation.operation === 'advanceTime' && operation.milliseconds === 16) continue;
+    if (++seen === ordinal)
+      return s.operations[index + 1]?.operation === 'advanceTime' &&
+        s.operations[index + 1]?.milliseconds === 16
+        ? index + 1
+        : index;
+  }
+}
 function at(s, index, target, property) {
+  index = checkpoint(s, index);
   const probe = s.probes.find(
     (p) => p.operationIndex === index && p.target === target && p.property === property,
   );
@@ -73,12 +88,12 @@ test('menu: typeahead holds at 499 and resets at exactly 500 independently of ma
     ['repeated-character-cycle', 6, 7, 'b'],
   ]) {
     const s = scenario(id);
-    assert.deepEqual(s.operations[before], {
+    assert.deepEqual(actions(s)[before], {
       operation: 'advanceTime',
       target: 'browser-clock',
       milliseconds: 499,
     });
-    assert.deepEqual(s.operations[boundary], {
+    assert.deepEqual(actions(s)[boundary], {
       operation: 'advanceTime',
       target: 'browser-clock',
       milliseconds: 1,
@@ -91,8 +106,8 @@ test('menu: typeahead holds at 499 and resets at exactly 500 independently of ma
   assert.equal(at(s, 4, 'document-focus', 'current'), 'bravo');
   assert.equal(at(s, 8, 'document-focus', 'current'), 'alpha');
   assert.equal(at(s, 10, 'document-focus', 'current'), 'beta');
-  assert.equal(s.operations[8].target, 'character-á');
-  assert.equal(s.operations[10].target, 'character-B');
+  assert.equal(actions(s)[8].target, 'character-á');
+  assert.equal(actions(s)[10].target, 'character-B');
 });
 test('menu: all commands including disabled participate in two full roving wraps', () => {
   const s = scenario('arrow-wrap-roving-focus');
@@ -109,7 +124,9 @@ test('menu: all commands including disabled participate in two full roving wraps
 test('menu: disabled discovery tests Enter Space and pointer, cancellation preserves previous selection', () => {
   const s = scenario('disabled-discovery-no-activation');
   assert.deepEqual(
-    s.operations.slice(3).map((o) => o.target),
+    actions(s)
+      .slice(3)
+      .map((o) => o.target),
     ['enter-key', 'space-key', 'beta-down', 'beta-up'],
   );
   for (const index of [3, 4, 6]) {
@@ -119,7 +136,7 @@ test('menu: disabled discovery tests Enter Space and pointer, cancellation prese
     assert.equal(at(s, index, 'menu', 'open'), true);
   }
   const cancel = scenario('cancelable-selection');
-  assert.equal(cancel.operations[6].target, 'end-key');
+  assert.equal(actions(cancel)[6].target, 'end-key');
   assert.equal(at(cancel, 7, 'menu', 'selection'), 'alpha');
   assert.equal(at(cancel, 7, 'selection-handler', 'invocation-count'), 2);
   assert.equal(at(cancel, 7, 'menu', 'open'), true);
@@ -139,11 +156,11 @@ test('menu: trigger entry skips disabled endpoints rather than merely selecting 
 
 test('review regression: menu boundary input is supplied before entry with checkpoints preserved', () => {
   const s = scenario('trigger-entry-keys');
-  assert.deepEqual(s.operations[0], {
+  assert.deepEqual(actions(s)[0], {
     operation: 'updateContent',
     target: 'menu-disabled-boundary-rows',
   });
-  assert.deepEqual(s.operations[1], { operation: 'focus', target: 'trigger' });
+  assert.deepEqual(actions(s)[1], { operation: 'focus', target: 'trigger' });
   for (const [index, focused] of [
     [2, 'alpha'],
     [5, 'alpha'],
@@ -153,5 +170,9 @@ test('review regression: menu boundary input is supplied before entry with check
   ])
     assert.equal(at(s, index, 'document-focus', 'current'), focused);
   assert.equal(at(s, 14, 'menu', 'reachable'), true);
-  assert.ok(s.probes.filter((p) => p.category === 'roles').every((p) => p.operationIndex === 15));
+  assert.ok(
+    s.probes
+      .filter((p) => p.category === 'roles')
+      .every((p) => p.operationIndex === checkpoint(s, 15)),
+  );
 });

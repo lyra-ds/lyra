@@ -290,8 +290,8 @@ export function createReactFixture({
         state.geometry.contentHeight = Number(match[1]);
       else if ((match = /^viewport-width-(\d+)$/.exec(target)))
         await input('viewport', { width: Number(match[1]), height: environment.innerHeight });
-      else if ((match = /^visual-viewport-offset-(\d+)$/.exec(target)))
-        await input('visualViewport', { offsetLeft: Number(match[1]) });
+      else if ((match = /^visual-viewport-width-(\d+)$/.exec(target)))
+        await input('visualViewport', { width: Number(match[1]) });
       else throw new Error(`unknown fixture resize: ${target}`);
       flush(bump);
     }

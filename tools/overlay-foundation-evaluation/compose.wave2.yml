@@ -1,0 +1,86 @@
+services:
+  wave2:
+    image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    init: true
+    shm_size: 2gb
+    user: '${UID:?Set UID with id -u}:${GID:?Set GID with id -g}'
+    networks: [wave2-internal]
+    depends_on: [registry-proxy]
+    environment:
+      OVERLAY_EVALUATION_REVISION: '${OVERLAY_EVALUATION_REVISION:?set OVERLAY_EVALUATION_REVISION}'
+      OVERLAY_WAVE2_CONTAINER: '1'
+      HTTP_PROXY: http://registry-proxy:3128
+      HTTPS_PROXY: http://registry-proxy:3128
+      NODE_USE_ENV_PROXY: '1'
+      NO_PROXY: 127.0.0.1,localhost
+    volumes:
+      - type: bind
+        source: '${OVERLAY_NODE_ROOT:?set OVERLAY_NODE_ROOT}'
+        target: /opt/node
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_INPUT_ROOT:?set OVERLAY_INPUT_ROOT}'
+        target: /input
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_EVIDENCE_ROOT:?set OVERLAY_EVIDENCE_ROOT}'
+        target: /evidence
+      - type: bind
+        source: '${OVERLAY_OWNED_WORK_ROOT:?set OVERLAY_OWNED_WORK_ROOT}'
+        target: /work
+    command:
+      - /bin/sh
+      - -euxc
+      - |
+        mkdir -p /work/corepack-shims /work/cache /work/data /work/config /work/pnpm
+        export PATH="/opt/node/bin:/work/corepack-shims:$$PATH"
+        export COREPACK_HOME=/work/cache/corepack
+        export XDG_CACHE_HOME=/work/cache
+        export XDG_DATA_HOME=/work/data
+        export XDG_CONFIG_HOME=/work/config
+        export PNPM_HOME=/work/pnpm
+        test "$$(node --version)" = v24.18.0
+        test "$$(corepack --version)" = 0.35.0
+        corepack enable --install-directory /work/corepack-shims
+        git clone --no-hardlinks /input/repository.bundle /work/repository
+        git -C /work/repository checkout --detach "$$OVERLAY_EVALUATION_REVISION"
+        test "$$(git -C /work/repository rev-parse HEAD)" = "$$OVERLAY_EVALUATION_REVISION"
+        cd /work/repository
+        node tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs --preflight
+        corepack pnpm@11.13.1 install --frozen-lockfile
+        corepack pnpm@11.13.1 overlay:evaluate:wave2 \
+          --manifest /input/candidates.json \
+          --repository /work/repository \
+          --evidence /evidence
+  registry-proxy:
+    image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    init: true
+    user: '${UID:?Set UID with id -u}:${GID:?Set GID with id -g}'
+    networks: [wave2-internal, registry-egress]
+    environment:
+      OVERLAY_EVALUATION_REVISION: '${OVERLAY_EVALUATION_REVISION:?set OVERLAY_EVALUATION_REVISION}'
+    volumes:
+      - type: bind
+        source: '${OVERLAY_NODE_ROOT:?set OVERLAY_NODE_ROOT}'
+        target: /opt/node
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_INPUT_ROOT:?set OVERLAY_INPUT_ROOT}'
+        target: /input
+        read_only: true
+    command:
+      - /bin/sh
+      - -euxc
+      - |
+        export PATH="/opt/node/bin:$$PATH"
+        test "$$(node --version)" = v24.18.0
+        owned="$$(mktemp -d /tmp/lyra-wave2-proxy-XXXXXX)"
+        git clone --no-hardlinks /input/repository.bundle "$$owned/repository"
+        git -C "$$owned/repository" checkout --detach "$$OVERLAY_EVALUATION_REVISION"
+        test "$$(git -C "$$owned/repository" rev-parse HEAD)" = "$$OVERLAY_EVALUATION_REVISION"
+        exec node "$$owned/repository/tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs"
+networks:
+  wave2-internal:
+    internal: true
+  registry-egress:
+    driver: bridge
