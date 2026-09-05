@@ -217,6 +217,66 @@ export async function inspectAttemptCoverage({ evidence, revision, summary, fs =
   assert.equal(counts.scenarioAttempts, 656);
   return { counts, attempts };
 }
+export async function stopProjectContainers({ project, run }) {
+  const list = async (filter) =>
+    (
+      await run('docker', ['ps', '--all', '--quiet', '--no-trunc', '--filter', filter], {
+        cleanup: true,
+      })
+    ).trim();
+  const captured = (await list('label=com.docker.compose.project=' + project))
+    .split('\n')
+    .filter(Boolean);
+  for (const id of captured) {
+    assert.match(id, /^[a-f0-9]{64}$/u, 'captured container ID');
+    const exists = async () => {
+      const found = await list('id=' + id);
+      assert.ok(found === '' || found === id, 'container lookup identity');
+      return found !== '';
+    };
+    let info;
+    try {
+      [info] = JSON.parse(await run('docker', ['inspect', id], { cleanup: true }));
+    } catch (error) {
+      if (await exists()) throw error;
+      continue;
+    }
+    assert.equal(info.Id, id);
+    assert.equal(
+      info.Config.Labels['com.docker.compose.project'],
+      project,
+      'container owner mismatch',
+    );
+    assert.ok(
+      ['wave2', 'registry-proxy'].includes(info.Config.Labels['com.docker.compose.service']),
+      'owned service mismatch',
+    );
+    if (info.State.Running) {
+      try {
+        await run('docker', ['stop', '--timeout', '30', id], { cleanup: true });
+      } catch (error) {
+        if (await exists()) throw error;
+        continue;
+      }
+    }
+    if (await exists()) {
+      let stopped;
+      try {
+        [stopped] = JSON.parse(await run('docker', ['inspect', id], { cleanup: true }));
+      } catch (error) {
+        if (await exists()) throw error;
+        continue;
+      }
+      assert.equal(stopped.Id, id);
+      assert.equal(stopped.State.Running, false, 'owned container did not stop');
+      try {
+        await run('docker', ['rm', id], { cleanup: true });
+      } catch (error) {
+        if (await exists()) throw error;
+      }
+    }
+  }
+}
 function trailingJson(stdout) {
   const text = stdout.trim();
   for (
@@ -544,6 +604,7 @@ export async function runWave2Automation({
   const cleanupErrors = [];
   if (composeStarted) {
     try {
+      await stopProjectContainers({ project, run: logged });
       await dc(['down', '--timeout', '30'], { cleanup: true });
       const containers = await logged(
         'docker',
@@ -561,24 +622,25 @@ export async function runWave2Automation({
       cleanupErrors.push(error);
     }
   }
-  try {
-    await verify(output);
-    await verify(work);
-    assert.equal(
-      await fs.readFile(join(work, '.owner'), 'utf8'),
-      project,
-      'work owner token changed',
-    );
-    await fs.rm(work, { recursive: true });
+  if (cleanupErrors.length === 0)
     try {
-      await fs.lstat(work);
-      throw new Error('work cleanup incomplete');
+      await verify(output);
+      await verify(work);
+      assert.equal(
+        await fs.readFile(join(work, '.owner'), 'utf8'),
+        project,
+        'work owner token changed',
+      );
+      await fs.rm(work, { recursive: true });
+      try {
+        await fs.lstat(work);
+        throw new Error('work cleanup incomplete');
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
     } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
+      cleanupErrors.push(error);
     }
-  } catch (error) {
-    cleanupErrors.push(error);
-  }
   await verify(output);
   if (primary || cleanupErrors.length) {
     const errors = [primary, ...cleanupErrors].filter(Boolean);

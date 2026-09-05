@@ -118,8 +118,10 @@ every automation command's start, stdout, stderr and exit code.
 Execution counts distinguish completed tuples/underlying observations, core
 unavailability, preparation failures and execution failures. An incomplete step
 writes `failure.json`, returns nonzero and preserves available evidence. Teardown
-addresses only the fresh Compose project and captured helper; only the verified
-owned `work` descendant is removed. Input, evidence and logs remain external.
+addresses only the fresh Compose project and captured helper. Captured project
+containers are owner-verified and fully stopped before networks are removed.
+Uncertain Docker teardown preserves work; only after verified teardown is the
+identity-verified owned `work` descendant removed. Input, evidence and logs remain external.
 
 Before the first cumulative manifest is tracked, its final four-contract policy
 assertion is intentionally RED against the old modal manifest. Other focused

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { test } from 'node:test';
 import {
   runWave2Automation,
@@ -20,7 +21,7 @@ test('automation accepts exactly one absolute new output argument', () => {
     assert.throws(() => parseAutomationArguments(argv), /usage|absolute/);
 });
 test('automation rejects existing and symlinked output before commands', async (t) => {
-  const root = await fs.mkdtemp('/private/tmp/wave2-auto-test-');
+  const root = await fs.mkdtemp(join(tmpdir(), 'wave2-auto-test-'));
   t.after(() => fs.rm(root, { recursive: true }));
   await fs.symlink(root, join(root, 'link'));
   for (const path of [root, join(root, 'link'), join(root, 'link', 'new')]) {
@@ -38,7 +39,7 @@ test('automation rejects existing and symlinked output before commands', async (
   }
 });
 test('automation rejects dirty repositories before Docker or output creation', async (t) => {
-  const root = await fs.mkdtemp('/private/tmp/wave2-auto-test-');
+  const root = await fs.mkdtemp(join(tmpdir(), 'wave2-auto-test-'));
   t.after(() => fs.rm(root, { recursive: true }));
   const calls = [];
   await assert.rejects(
@@ -99,7 +100,7 @@ const successfulSummary = () => ({
   })),
 });
 async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
-  const root = await fs.mkdtemp('/private/tmp/wave2-auto-test-');
+  const root = await fs.mkdtemp(join(tmpdir(), 'wave2-auto-test-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const output = join(root, 'output'),
     calls = [];
@@ -482,4 +483,128 @@ test('filesystem replacement blocks work removal without deleting another direct
   await assert.rejects(f.run(), /identity changed/);
   assert.equal(replacements, 1);
   assert.equal(await fs.readFile(join(f.output, 'work/unrelated'), 'utf8'), 'keep');
+});
+
+test('uncertain Docker teardown retains owned work intact', async (t) => {
+  let removals = 0;
+  const f = await fixture(
+    t,
+    async ({ args }) => {
+      if (args[5] === 'down') throw new Error('uncertain teardown');
+    },
+    {
+      rm: async (...args) => {
+        removals++;
+        return fs.rm(...args);
+      },
+    },
+  );
+  await assert.rejects(f.run(), /uncertain teardown/);
+  assert.equal(removals, 0);
+  await fs.stat(join(f.output, 'work/.owner'));
+});
+
+test('owned delayed one-off shutdown is awaited before removal', async () => {
+  const { stopProjectContainers } = await import('./wave2-automation.mjs');
+  const calls = [],
+    project = 'lyra-wave2-test';
+  let running = true,
+    removed = false;
+  await stopProjectContainers({
+    project,
+    run: async (cmd, args) => {
+      calls.push(args);
+      if (args[0] === 'ps') return removed ? '' : helper;
+      if (args[0] === 'inspect')
+        return JSON.stringify([
+          {
+            Id: helper,
+            Config: {
+              Labels: {
+                'com.docker.compose.project': project,
+                'com.docker.compose.service': 'wave2',
+              },
+            },
+            State: { Running: running },
+          },
+        ]);
+      if (args[0] === 'stop') {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        running = false;
+        return helper;
+      }
+      if (args[0] === 'rm') {
+        assert.equal(running, false);
+        removed = true;
+        return helper;
+      }
+      throw new Error('unexpected command');
+    },
+  });
+  assert.equal(removed, true);
+  assert.ok(calls.findIndex((a) => a[0] === 'stop') < calls.findIndex((a) => a[0] === 'rm'));
+});
+test('owned teardown rejects mismatched owner and tolerates only verified vanished IDs', async () => {
+  const { stopProjectContainers } = await import('./wave2-automation.mjs');
+  let stopped = false;
+  await assert.rejects(
+    stopProjectContainers({
+      project: 'lyra-wave2-test',
+      run: async (cmd, args) => {
+        if (args[0] === 'ps') return helper;
+        if (args[0] === 'inspect')
+          return JSON.stringify([
+            {
+              Id: helper,
+              Config: {
+                Labels: {
+                  'com.docker.compose.project': 'unrelated',
+                  'com.docker.compose.service': 'wave2',
+                },
+              },
+              State: { Running: true },
+            },
+          ]);
+        stopped = true;
+      },
+    }),
+  );
+  assert.equal(stopped, false);
+  let queried = 0;
+  await stopProjectContainers({
+    project: 'lyra-wave2-test',
+    run: async (cmd, args) => {
+      if (args[0] === 'ps') return queried++ === 0 ? helper : '';
+      if (args[0] === 'inspect') throw new Error('already removed');
+      throw new Error('must not mutate vanished container');
+    },
+  });
+});
+test('auto-removed one-off may vanish between final lookup and inspection', async () => {
+  const { stopProjectContainers } = await import('./wave2-automation.mjs');
+  let inspections = 0,
+    lists = 0;
+  await stopProjectContainers({
+    project: 'lyra-wave2-test',
+    run: async (cmd, args) => {
+      if (args[0] === 'ps') return lists++ < 2 ? helper : '';
+      if (args[0] === 'inspect') {
+        if (inspections++ > 0) throw new Error('already removed');
+        return JSON.stringify([
+          {
+            Id: helper,
+            Config: {
+              Labels: {
+                'com.docker.compose.project': 'lyra-wave2-test',
+                'com.docker.compose.service': 'wave2',
+              },
+            },
+            State: { Running: true },
+          },
+        ]);
+      }
+      if (args[0] === 'stop') return helper;
+      throw new Error('must not remove vanished container');
+    },
+  });
 });
