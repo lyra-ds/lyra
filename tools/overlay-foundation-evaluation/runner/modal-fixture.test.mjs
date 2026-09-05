@@ -606,3 +606,89 @@ test('copied shared imports and cells resolve inside the isolated source tree', 
     }
   }
 });
+
+test('characterization: preserves source read order, target environment and cleanup order', async (t) => {
+  const setup = await createFixtureSetup(t);
+  const prepare = await loadPrepareModalFixture();
+  const reads = [];
+  const result = await prepare(input(setup), {
+    installCandidate: setup.installCandidate,
+    async readSourceHandle(handle, path) {
+      reads.push(path);
+      return handle.readFile();
+    },
+  });
+  assert.deepEqual(Object.keys(result.sourceHashes), [
+    'adapter',
+    'protocol',
+    'runtime',
+    'runtimeBrowserNodeUtil',
+    'entryClient',
+    'entryServer',
+    'indexHtml',
+    'sharedProtocol',
+    'sharedResourceTracker',
+    'cells',
+  ]);
+  assert.deepEqual(
+    reads,
+    Object.keys(setup.sources.files).length && [
+      setup.sources.adapterEntry,
+      ...[
+        'protocol.mjs',
+        'runtime.mjs',
+        'runtime.react-browser-node-util.mjs',
+        'entry-client.mjs',
+        'entry-server.mjs',
+        'index.html',
+        '../shared/protocol.mjs',
+        '../shared/resource-tracker.mjs',
+        '../../contracts/cells.mjs',
+      ].map((p) => join(setup.sources.fixtureSourceRoot, p)),
+    ],
+  );
+  assert.deepEqual(
+    setup.calls.map((c) => c.options.env.LYRA_MODAL_BUILD_TARGET),
+    ['client', 'ssr'],
+  );
+  assert.deepEqual(
+    setup.calls.map((c) =>
+      Object.keys(c.options.env).filter((k) => !Object.hasOwn(process.env, k)),
+    ),
+    [['LYRA_MODAL_BUILD_TARGET'], ['LYRA_MODAL_BUILD_TARGET']],
+  );
+  const second = await createFixtureSetup(t, {
+    async runCommand() {
+      throw new Error('primary');
+    },
+  });
+  let cleanupPaths;
+  await assert.rejects(
+    prepare(input(second), {
+      installCandidate: second.installCandidate,
+      async removeModalRoot(paths) {
+        cleanupPaths = paths;
+      },
+    }),
+    /primary/,
+  );
+  assert.deepEqual(
+    cleanupPaths.map((p) => relative(second.fixtureRoot, p)),
+    ['modal-fixture', 'candidates', 'fixtures', 'contracts', 'index.html'],
+  );
+});
+
+test('characterization: adapter validation precedes React and installation failures', async (t) => {
+  const setup = await createFixtureSetup(t);
+  await assert.rejects(
+    (await loadPrepareModalFixture())(
+      input(setup, { adapterEntry: join(setup.root, 'missing.mjs'), reactVersion: '^19.2.8' }),
+      {
+        installCandidate() {
+          throw new Error('installer must not run');
+        },
+      },
+    ),
+    /selected private candidate adapter/,
+  );
+});
