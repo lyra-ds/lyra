@@ -239,13 +239,23 @@ export async function mountWave2FixtureClient({
     let cleaned = false;
     const cleanup = async () => {
       if (cleaned) return { status: 'already-destroyed' };
+      const errors = [];
+      let result;
       try {
-        const result = await runtime.destroy();
+        result = await runtime.destroy();
         cleaned = true;
-        return result;
-      } finally {
-        instrumentation.restore();
+      } catch (error) {
+        errors.push(error);
       }
+      try {
+        instrumentation.restore();
+      } catch (error) {
+        errors.push(error);
+      }
+      if (errors.length > 1)
+        throw new AggregateError(errors, 'Wave2 runtime and instrumentation cleanup failed');
+      if (errors.length === 1) throw errors[0];
+      return result;
     };
     return Object.freeze({
       readyStatus: 'ready',

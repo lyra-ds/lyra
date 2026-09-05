@@ -1297,3 +1297,58 @@ test('rejects client output changes during the SSR build', async (t) => {
     /output.*changed/,
   );
 });
+
+for (const failure of ['both', 'runtime', 'instrumentation']) {
+  test(`review regression: terminal cleanup preserves ${failure} failure identity and order`, async () => {
+    const { mountWave2FixtureClient } = await import('../fixtures/wave2/entry-client.mjs');
+    const primary = new Error('runtime destroy');
+    const secondary = new Error('instrumentation restore');
+    const calls = [];
+    let fail = true;
+    const request = { scenario: { operations: [{ operation: 'open', target: 'trigger' }] } };
+    const mounted = await mountWave2FixtureClient({
+      request,
+      contractId: 'OF-ANCHORED',
+      scope: { document: { querySelector: () => ({ innerHTML: '' }) } },
+      React: { createElement: (type, props) => ({ type, props }) },
+      ReactDOM: { flushSync: (fn) => fn() },
+      createRoot: () => ({
+        render(element) {
+          element.props.onReady({});
+        },
+      }),
+      installTracker: () => ({ restore() {} }),
+      installInstrumentation: () => ({
+        restore() {
+          calls.push('instrumentation');
+          if (fail && failure !== 'runtime') throw secondary;
+        },
+      }),
+      createRuntime: () => ({
+        beginScenario() {},
+        async destroy() {
+          calls.push('runtime');
+          if (fail && failure !== 'instrumentation') throw primary;
+          return { status: 'destroyed' };
+        },
+      }),
+      loadAdapter: async () => ({
+        createAnchoredCandidate: async () => ({ AnchoredFixture() {} }),
+      }),
+    });
+    await assert.rejects(mounted.cleanup(), (error) => {
+      if (failure === 'both') {
+        assert.ok(error instanceof AggregateError);
+        assert.deepEqual(error.errors, [primary, secondary]);
+      } else assert.equal(error, failure === 'runtime' ? primary : secondary);
+      return true;
+    });
+    assert.deepEqual(calls, ['runtime', 'instrumentation']);
+    fail = false;
+    if (failure !== 'instrumentation')
+      assert.deepEqual(await mounted.destroy(), { status: 'destroyed' });
+    const count = calls.length;
+    assert.deepEqual(await mounted.cleanup(), { status: 'already-destroyed' });
+    assert.equal(calls.length, count);
+  });
+}
