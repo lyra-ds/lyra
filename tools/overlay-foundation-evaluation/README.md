@@ -153,7 +153,18 @@ adopted before external candidates are executed.
 ## Anchored interaction wave
 
 `pnpm overlay:evaluate:wave2:test` runs unit tests with injected Docker and
-filesystem boundaries; ordinary tests never start Docker or the live diagnostic.
+filesystem boundaries and small owned host-process shutdown probes; ordinary tests
+never start Docker or the live diagnostic. Each trusted host command runs in a
+fresh detached POSIX process group. Cancellation and command errors terminate
+that captured group with TERM, then bounded KILL if needed; normal exits also
+require leader close and proof of no live inherited descendants before work can
+be removed. Linux orphan zombies have exited and are not reported as live work.
+Commands deliberately escaping into a new session are outside this trusted-command
+contract. Unreadable ownership or uncertain shutdown retains work and failure
+facts. Helper containers require full ID, owner, image, never-started state and
+mount verification before copying and again before removal; uncertain helpers
+are retained with their captured ID. Command log writes revalidate the owned
+output and log directory identities after each external await.
 `pnpm overlay:evaluate:behavioral:manifest --revision <full-sha> --incumbent <path> --output <path>`
 creates the cumulative four-contract manifest.
 `pnpm overlay:evaluate:wave2 --manifest <absolute-path> --repository <absolute-path> --evidence <absolute-path>`

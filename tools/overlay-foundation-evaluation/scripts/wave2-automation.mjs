@@ -1,20 +1,18 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import * as filesystem from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { promisify } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { canonicalJson, validateAttempt } from '../evidence/results.mjs';
 import { createBehavioralManifest } from './create-behavioral-manifest.mjs';
 import { WAVE_2_CONTRACT_IDS, WAVE_2_SCENARIOS } from '../contracts/wave2.mjs';
+import { runOwnedCommand } from './wave2-command.mjs';
 
 export const BROWSER_IMAGE =
   'mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e';
 export const NODE_IMAGE =
   'node:24.18.0-bookworm@sha256:5711a0d445a1af54af9589066c646df387d1831a608226f4cd694fc59e745059';
-const command = promisify(execFile);
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const keys = (value, expected) =>
   assert.deepEqual(Object.keys(value).sort(), [...expected].sort(), 'closed summary/config keys');
@@ -366,7 +364,7 @@ function trailingJson(stdout) {
 export async function runWave2Automation({
   argv = process.argv.slice(2),
   repositoryRoot = resolve(import.meta.dirname, '../../..'),
-  runCommand = (cmd, args, options) => command(cmd, args, { ...options, maxBuffer: 100_000_000 }),
+  runCommand = runOwnedCommand,
   fs = filesystem,
   platform = process.platform,
   arch = process.arch,
@@ -388,8 +386,15 @@ export async function runWave2Automation({
   const repository = await fs.realpath(repositoryRoot);
   if (inside(repository, output) || inside(output, repository))
     throw new Error('output must be outside checkout');
-  const raw = (cmd, args, options = {}) =>
-    runCommand(cmd, args, { cwd: repository, env: environment, ...options });
+  let commandDisposalUncertain = false;
+  const raw = async (cmd, args, options = {}) => {
+    try {
+      return await runCommand(cmd, args, { cwd: repository, env: environment, signal, ...options });
+    } catch (error) {
+      if (error.disposalVerified === false) commandDisposalUncertain = true;
+      throw error;
+    }
+  };
   const clean = async (revision) => {
     if (outputText(await raw('git', ['status', '--porcelain=v1', '--untracked-files=all'])) !== '')
       throw new Error('automation requires a clean worktree');
@@ -429,40 +434,52 @@ export async function runWave2Automation({
     report,
     composeEnv;
   const records = [];
-  const logged = async (cmd, args, { cleanup = false, ...options } = {}) => {
+  const helperOwnership = { id: null, verified: false, removed: false };
+  const writeLog = async (path, data) => {
+    await verify(output);
+    await verify(logs);
+    await fs.writeFile(path, data, { flag: 'wx', mode: 0o600 });
+  };
+  const logged = async (cmd, args, { cleanup = false, captureResult, ...options } = {}) => {
     await verify(output);
     await verify(logs);
     const index = String(++sequence).padStart(3, '0');
-    await fs.writeFile(
+    await writeLog(
       join(logs, index + '.started.json'),
       JSON.stringify({ command: cmd, args }) + '\n',
-      { flag: 'wx', mode: 0o600 },
     );
     let result, error;
     try {
       result = await raw(cmd, args, {
         env: composeEnv ?? environment,
         ...options,
-        ...(!cleanup && signal ? { signal } : {}),
+        signal: cleanup ? undefined : signal,
       });
     } catch (e) {
       error = e;
       result = e;
     }
+    captureResult?.(outputText(result));
     const record = {
       command: cmd,
       args,
       exitCode: error ? (Number.isInteger(error.code) ? error.code : 1) : 0,
       stdout: join(logs, index + '.stdout'),
       stderr: join(logs, index + '.stderr'),
+      ...(result?.processProof
+        ? { processProof: result.processProof, disposalVerified: result.disposalVerified }
+        : {}),
     };
-    await fs.writeFile(record.stdout, outputText(result), { flag: 'wx', mode: 0o600 });
-    await fs.writeFile(record.stderr, String(result?.stderr ?? ''), { flag: 'wx', mode: 0o600 });
-    records.push(record);
-    await fs.writeFile(join(logs, index + '.json'), JSON.stringify(record, null, 2) + '\n', {
-      flag: 'wx',
-      mode: 0o600,
-    });
+    try {
+      await writeLog(record.stdout, outputText(result));
+      await writeLog(record.stderr, String(result?.stderr ?? ''));
+      records.push(record);
+      await writeLog(join(logs, index + '.json'), JSON.stringify(record, null, 2) + '\n');
+    } catch (logError) {
+      if (error)
+        throw new AggregateError([error, logError], error.message + '; ' + logError.message);
+      throw logError;
+    }
     if (error) throw error;
     return outputText(result);
   };
@@ -502,16 +519,19 @@ export async function runWave2Automation({
     assert.equal((await logged('pnpm', ['--version'])).trim(), '11.13.1');
     await fs.mkdir(node, { mode: 0o700 });
     await fs.mkdir(join(node, 'bin'), { mode: 0o700 });
-    let helper;
+    let helper, helperError;
     try {
       if (platform === 'darwin') {
         helper = (
-          await logged('docker', [
-            'create',
-            '--label',
-            `org.lyra.wave2.owner=${project}`,
-            NODE_IMAGE,
-          ])
+          await logged(
+            'docker',
+            ['create', '--label', `org.lyra.wave2.owner=${project}`, NODE_IMAGE],
+            {
+              captureResult: (value) => {
+                helperOwnership.id = value.trim();
+              },
+            },
+          )
         ).trim();
         assert.match(helper, /^[a-f0-9]{64}$/u, 'captured helper ID');
         const [info] = JSON.parse(await logged('docker', ['inspect', helper]));
@@ -520,15 +540,34 @@ export async function runWave2Automation({
         assert.equal(info.Config.Image, NODE_IMAGE);
         assert.equal(info.State.Status, 'created');
         assert.deepEqual(info.Mounts, []);
+        helperOwnership.verified = true;
         await logged('docker', ['cp', helper + ':/usr/local/bin/node', join(node, 'bin/node')]);
       } else if (platform === 'linux') {
         const binary = await fs.realpath(process.execPath);
         await fs.copyFile(binary, join(node, 'bin/node'));
       } else throw new Error('automation supports Darwin and Linux only');
+    } catch (error) {
+      helperError = error;
+      throw error;
     } finally {
-      if (helper) {
-        assert.match(helper, /^[a-f0-9]{64}$/u);
-        await logged('docker', ['rm', helper], { cleanup: true });
+      if (helperOwnership.verified) {
+        try {
+          const [info] = JSON.parse(await logged('docker', ['inspect', helper], { cleanup: true }));
+          assert.equal(info.Id, helper);
+          assert.equal(info.Config.Labels['org.lyra.wave2.owner'], project);
+          assert.equal(info.Config.Image, NODE_IMAGE);
+          assert.equal(info.State.Status, 'created');
+          assert.deepEqual(info.Mounts, []);
+          await logged('docker', ['rm', helper], { cleanup: true });
+          helperOwnership.removed = true;
+        } catch (cleanupError) {
+          if (helperError)
+            throw new AggregateError(
+              [helperError, cleanupError],
+              helperError.message + '; ' + cleanupError.message,
+            );
+          throw cleanupError;
+        }
       }
     }
     await fs.chmod(join(node, 'bin/node'), 0o700);
@@ -697,6 +736,12 @@ export async function runWave2Automation({
       cleanupErrors.push(error);
     }
   }
+  if (helperOwnership.id && !helperOwnership.removed)
+    cleanupErrors.push(
+      new Error(`helper ownership or cleanup uncertain; retained helper ID ${helperOwnership.id}`),
+    );
+  if (commandDisposalUncertain)
+    cleanupErrors.push(new Error('host command disposal uncertain; retaining work'));
   if (cleanupErrors.length === 0)
     try {
       await verify(output);
@@ -726,6 +771,7 @@ export async function runWave2Automation({
           schemaVersion: 1,
           revision,
           project,
+          helper: helperOwnership,
           errors: errors.map((e) => e.stack ?? String(e)),
           commands: records,
         },

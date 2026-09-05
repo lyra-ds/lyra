@@ -3,6 +3,7 @@ import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
+import { runOwnedCommand } from './wave2-command.mjs';
 import {
   runWave2Automation,
   parseAutomationArguments,
@@ -353,7 +354,7 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
   return {
     output,
     calls,
-    run: () =>
+    run: (overrides = {}) =>
       runWave2Automation({
         argv: ['--output', output],
         runCommand: fake,
@@ -363,6 +364,7 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
         uid: 501,
         gid: 20,
         environment: { PATH: process.env.PATH, HOME: process.env.HOME },
+        ...overrides,
       }),
   };
 }
@@ -415,6 +417,103 @@ test('injected automation orders exact tools, live preflight, closed summaries a
     1,
   );
 });
+
+test('uncertain final host command disposal retains work and primary failure evidence', async (t) => {
+  let statusCalls = 0;
+  const f = await fixture(t, async ({ cmd, args }) => {
+    if (cmd === 'git' && args[0] === 'status' && ++statusCalls > 1)
+      throw Object.assign(new Error('host descendant shutdown unproven'), {
+        disposalVerified: false,
+      });
+  });
+  await assert.rejects(f.run(), /host descendant shutdown unproven/);
+  await fs.stat(join(f.output, 'work/.owner'));
+  const failure = JSON.parse(await fs.readFile(join(f.output, 'failure.json'), 'utf8'));
+  assert.match(failure.errors[0], /host descendant shutdown unproven/);
+  assert.ok(failure.errors.some((e) => e.includes('host command disposal uncertain')));
+});
+
+test('real delayed host child finishes before automation removes its work', async (t) => {
+  const controller = new AbortController();
+  const f = await fixture(t, async ({ cmd, args, options, output }) => {
+    if (cmd !== 'pnpm' || args[0] !== 'overlay:evaluate:incumbent') return;
+    const ready = join(output, 'ready'),
+      proof = join(output, 'shutdown-proof');
+    const source = `const fs=require('node:fs');process.on('SIGTERM',()=>setTimeout(()=>{fs.writeFileSync(process.argv[2],String(fs.existsSync(process.argv[3])));process.exit(0)},300));fs.writeFileSync(process.argv[1],'ready');setInterval(()=>{},1000)`;
+    const pending = runOwnedCommand(
+      process.execPath,
+      ['-e', source, ready, proof, join(output, 'work/.owner')],
+      options,
+    );
+    for (let i = 0; i < 200; i++) {
+      try {
+        await fs.stat(ready);
+        break;
+      } catch {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+    }
+    controller.abort();
+    return pending;
+  });
+  await assert.rejects(f.run({ signal: controller.signal }), /host command aborted/);
+  assert.equal(await fs.readFile(join(f.output, 'shutdown-proof'), 'utf8'), 'true');
+  await assert.rejects(fs.stat(join(f.output, 'work')), { code: 'ENOENT' });
+  const failure = JSON.parse(await fs.readFile(join(f.output, 'failure.json'), 'utf8'));
+  const record = failure.commands.find((c) => c.args[0] === 'overlay:evaluate:incumbent');
+  assert.equal(record.disposalVerified, true);
+  assert.equal(record.processProof.leaderClosed, true);
+});
+
+test('helper copy failure remains primary when verified cleanup also fails', async (t) => {
+  const f = await fixture(t, async ({ cmd, args }) => {
+    if (cmd === 'docker' && args[0] === 'cp') throw new Error('primary copy failure');
+    if (cmd === 'docker' && args[0] === 'rm') throw new Error('secondary helper cleanup failure');
+  });
+  await assert.rejects(f.run(), (error) => {
+    assert.match(error.errors[0].errors[0].message, /primary copy failure/);
+    assert.match(error.errors[0].errors[1].message, /secondary helper cleanup failure/);
+    return true;
+  });
+  await fs.stat(join(f.output, 'work/.owner'));
+});
+
+for (const field of ['Id', 'owner', 'image', 'state', 'mounts', 'cleanup-owner'])
+  test('helper destructive cleanup rejects ' + field + ' mismatch', async (t) => {
+    let inspections = 0;
+    const f = await fixture(t, async ({ cmd, args, calls }) => {
+      if (cmd !== 'docker' || args[0] !== 'inspect' || args[1] !== helper) return;
+      inspections++;
+      if (field === 'cleanup-owner' && inspections === 1) return;
+      const info = {
+        Id: helper,
+        Config: {
+          Image: NODE_IMAGE,
+          Labels: {
+            'org.lyra.wave2.owner': calls.find((c) => c.args[0] === 'create').args[2].split('=')[1],
+          },
+        },
+        State: { Status: 'created' },
+        Mounts: [],
+      };
+      if (field === 'Id') info.Id = 'f'.repeat(64);
+      if (field === 'owner' || field === 'cleanup-owner')
+        info.Config.Labels['org.lyra.wave2.owner'] = 'unrelated';
+      if (field === 'image') info.Config.Image = 'other';
+      if (field === 'state') info.State.Status = 'running';
+      if (field === 'mounts') info.Mounts = [{ Destination: '/unrelated' }];
+      return { stdout: JSON.stringify([info]) };
+    });
+    await assert.rejects(f.run(), /automation failed/);
+    assert.equal(
+      f.calls.some((c) => c.cmd === 'docker' && c.args[0] === 'rm'),
+      false,
+    );
+    await fs.stat(join(f.output, 'work/.owner'));
+    const failure = JSON.parse(await fs.readFile(join(f.output, 'failure.json'), 'utf8'));
+    assert.equal(failure.helper.id, helper);
+    assert.equal(failure.helper.removed, false);
+  });
 test('fresh invocations have distinct Compose ownership', async (t) => {
   const first = await fixture(t),
     second = await fixture(t);
@@ -481,7 +580,16 @@ for (const stage of [
     await assert.rejects(fs.stat(join(f.output, 'report.json')), { code: 'ENOENT' });
     if (!['helper-copy', 'helper-identity', 'helper-cleanup', 'bundle-head'].includes(stage))
       assert.ok(f.calls.some((c) => c.args[5] === 'down'));
-    if (stage === 'helper-copy' || stage === 'helper-identity')
+    if (stage === 'helper-identity') {
+      assert.equal(
+        f.calls.some((c) => c.cmd === 'docker' && c.args[0] === 'rm' && c.args[1] === helper),
+        false,
+      );
+      const failure = JSON.parse(await fs.readFile(join(f.output, 'failure.json'), 'utf8'));
+      assert.deepEqual(failure.helper, { id: helper, verified: false, removed: false });
+      await fs.stat(join(f.output, 'work/.owner'));
+    }
+    if (stage === 'helper-copy')
       assert.ok(
         f.calls.some((c) => c.cmd === 'docker' && c.args[0] === 'rm' && c.args[1] === helper),
       );
@@ -723,4 +831,21 @@ test('owned cgroup resource evidence rejects missing, malformed, foreign and OOM
     () => validateResourceLog(log.replaceAll('"oomKills":0', '"oomKills":1')),
     /OOM|resource/,
   );
+});
+
+test('post-command log replacement cannot redirect stdout stderr or exit writes', async (t) => {
+  let target;
+  const f = await fixture(t, async ({ cmd, args, output }) => {
+    if (cmd === 'pnpm' && args[0] === '--version') {
+      target = join(output, 'unrelated');
+      await fs.mkdir(target);
+      await fs.writeFile(join(target, 'keep'), 'original');
+      await fs.rename(join(output, 'logs'), join(output, 'original-logs'));
+      await fs.symlink(target, join(output, 'logs'));
+      return { stdout: '11.13.1\n', stderr: 'must not escape' };
+    }
+  });
+  await assert.rejects(f.run(), /directory|identity|symlink/);
+  assert.deepEqual(await fs.readdir(target), ['keep']);
+  assert.equal(await fs.readFile(join(target, 'keep'), 'utf8'), 'original');
 });
