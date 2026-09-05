@@ -289,6 +289,10 @@ test('compose pins image private IPC owned mounts and registry-only rendered top
   assert.match(shell, /rm -rf -- "\$\$owned"/);
   assert.match(shell, /trap .*EXIT/);
   assert.match(shell, /--repository "\$\$repository"/);
+  assert.match(shell, /readEvaluatorResources/);
+  assert.match(shell, /resources before/);
+  assert.match(shell, /resources after/);
+  assert.match(shell, /proof\.oomKills/);
   assert.match(shell, /export pnpm_config_store_dir=\/work\/pnpm\/store/);
   assert.doesNotMatch(shell, /safe\.directory|chown|\/work\/repository/);
 });

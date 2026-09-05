@@ -52,13 +52,17 @@ services:
           test "$$(stat -c '%d:%i:%u' "$$owned")" = "$$owned_identity" &&
           rm -rf -- "$$owned"
         }
-        trap 'status=$$?; cleanup_checkout || exit 1; exit "$$status"' EXIT
+        resources() {
+          node --input-type=module -e 'import { readEvaluatorResources } from "./tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs"; const proof=await readEvaluatorResources(); console.error("LYRA_WAVE2_RESOURCES "+JSON.stringify({phase:process.argv[1],proof})); if(proof.oomKills!==0)process.exitCode=1;' "$$1"
+        }
+        trap 'status=$$?; resources after || status=1; cleanup_checkout || status=1; exit "$$status"' EXIT
         trap 'exit 1' HUP INT TERM
         repository="$$owned/repository"
         git clone --no-hardlinks /input/repository.bundle "$$repository"
         git -C "$$repository" checkout --detach "$$OVERLAY_EVALUATION_REVISION"
         test "$$(git -C "$$repository" rev-parse HEAD)" = "$$OVERLAY_EVALUATION_REVISION"
         cd "$$repository"
+        resources before
         node tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs --preflight
         test "$$(corepack pnpm@11.13.1 store path)" = /work/pnpm/store/v11
         corepack pnpm@11.13.1 install --frozen-lockfile --store-dir /work/pnpm/store

@@ -217,7 +217,12 @@ export async function inspectAttemptCoverage({ evidence, revision, summary, fs =
   assert.equal(counts.scenarioAttempts, 656);
   return { counts, attempts };
 }
-export async function stopProjectContainers({ project, run }) {
+export async function stopProjectContainers({
+  project,
+  run,
+  removalTimeoutMs = 30_000,
+  pollIntervalMs = 100,
+}) {
   const list = async (filter) =>
     (
       await run('docker', ['ps', '--all', '--quiet', '--no-trunc', '--filter', filter], {
@@ -259,6 +264,15 @@ export async function stopProjectContainers({ project, run }) {
         continue;
       }
     }
+    if (info.HostConfig?.AutoRemove) {
+      const deadline = Date.now() + removalTimeoutMs;
+      while (await exists()) {
+        if (Date.now() >= deadline)
+          throw new Error('owned AutoRemove container disappearance timed out');
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      }
+      continue;
+    }
     if (await exists()) {
       let stopped;
       try {
@@ -276,6 +290,65 @@ export async function stopProjectContainers({ project, run }) {
       }
     }
   }
+}
+function parseResourceProof(proof) {
+  keys(proof, ['schemaVersion', 'procSelfCgroup', 'memoryEventsPath', 'memoryEvents', 'oomKills']);
+  assert.equal(proof.schemaVersion, 1);
+  assert.equal(
+    proof.procSelfCgroup,
+    '0::/\n',
+    'resource proof requires exact current cgroup namespace',
+  );
+  assert.equal(proof.memoryEventsPath, '/sys/fs/cgroup/memory.events');
+  const entries = proof.memoryEvents
+    .trim()
+    .split('\n')
+    .map((line) => {
+      const match = /^([a-z_]+) ([0-9]+)$/u.exec(line);
+      assert.ok(match, 'malformed memory.events');
+      return [match[1], Number(match[2])];
+    });
+  assert.equal(
+    new Set(entries.map(([key]) => key)).size,
+    entries.length,
+    'duplicate resource counter',
+  );
+  const counters = Object.fromEntries(entries);
+  assert.ok(Number.isSafeInteger(counters.oom_kill), 'missing OOM counter');
+  assert.equal(proof.oomKills, counters.oom_kill, 'resource proof counter mismatch');
+  return proof;
+}
+export async function readEvaluatorResources({ fs = filesystem } = {}) {
+  const procSelfCgroup = await fs.readFile('/proc/self/cgroup', 'utf8');
+  assert.equal(procSelfCgroup, '0::/\n', 'resource proof requires exact current cgroup namespace');
+  const memoryEventsPath = '/sys/fs/cgroup/memory.events',
+    memoryEvents = await fs.readFile(memoryEventsPath, 'utf8');
+  const match = /^oom_kill ([0-9]+)$/mu.exec(memoryEvents);
+  return parseResourceProof({
+    schemaVersion: 1,
+    procSelfCgroup,
+    memoryEventsPath,
+    memoryEvents,
+    oomKills: match ? Number(match[1]) : undefined,
+  });
+}
+export function validateResourceLog(stderr) {
+  const records = stderr
+    .split('\n')
+    .filter((line) => line.startsWith('LYRA_WAVE2_RESOURCES '))
+    .map((line) => JSON.parse(line.slice('LYRA_WAVE2_RESOURCES '.length)));
+  assert.equal(records.length, 2, 'before/after resource proof required');
+  assert.deepEqual(
+    records.map((r) => r.phase),
+    ['before', 'after'],
+    'resource proof phases',
+  );
+  for (const record of records) {
+    keys(record, ['phase', 'proof']);
+    parseResourceProof(record.proof);
+    assert.equal(record.proof.oomKills, 0, 'evaluator OOM kill is a harness failure');
+  }
+  return records;
 }
 function trailingJson(stdout) {
   const text = stdout.trim();
@@ -556,6 +629,7 @@ export async function runWave2Automation({
       assert.equal(info.Internal, key === 'wave2-internal');
     }
     const evaluationOutput = await dc(['run', '--rm', '--no-deps', '--pull', 'never', 'wave2']);
+    const resources = validateResourceLog(await fs.readFile(records.at(-1).stderr, 'utf8'));
     const preflight = {
       schemaVersion: 1,
       directRegistryBlocked: true,
@@ -594,6 +668,7 @@ export async function runWave2Automation({
       project,
       results: summary,
       executionCounts: coverage.counts,
+      resources,
       attemptChecksumsSha256: sha256(canonicalJson(coverage.attempts)),
       proxy: proxySummary,
       preserved: { manifest: manifestPath, bundle, incumbent, node, logs, evidence, checksums },

@@ -307,6 +307,22 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
             );
           }
       return {
+        stderr: ['before', 'after']
+          .map(
+            (phase) =>
+              'LYRA_WAVE2_RESOURCES ' +
+              JSON.stringify({
+                phase,
+                proof: {
+                  schemaVersion: 1,
+                  procSelfCgroup: '0::/\n',
+                  memoryEventsPath: '/sys/fs/cgroup/memory.events',
+                  memoryEvents: 'oom_kill 0\n',
+                  oomKills: 0,
+                },
+              }),
+          )
+          .join('\n'),
         stdout:
           JSON.stringify({
             schemaVersion: 1,
@@ -607,4 +623,104 @@ test('auto-removed one-off may vanish between final lookup and inspection', asyn
       throw new Error('must not remove vanished container');
     },
   });
+});
+test('AutoRemove shutdown waits for asynchronous deletion and fails closed on timeout', async () => {
+  const { stopProjectContainers } = await import('./wave2-automation.mjs');
+  for (const disappears of [true, false]) {
+    let stopped = false,
+      polls = 0,
+      removed = false;
+    const run = () =>
+      stopProjectContainers({
+        project: 'lyra-wave2-test',
+        removalTimeoutMs: 20,
+        pollIntervalMs: 1,
+        run: async (cmd, args) => {
+          if (args[0] === 'ps') {
+            if (stopped && disappears && ++polls >= 3) return '';
+            return helper;
+          }
+          if (args[0] === 'inspect')
+            return JSON.stringify([
+              {
+                Id: helper,
+                Config: {
+                  Labels: {
+                    'com.docker.compose.project': 'lyra-wave2-test',
+                    'com.docker.compose.service': 'wave2',
+                  },
+                },
+                State: { Running: !stopped },
+                HostConfig: { AutoRemove: true },
+              },
+            ]);
+          if (args[0] === 'stop') {
+            stopped = true;
+            return helper;
+          }
+          if (args[0] === 'rm') {
+            removed = true;
+            throw new Error('must never compete with AutoRemove');
+          }
+        },
+      });
+    if (disappears) await run();
+    else await assert.rejects(run(), /disappearance/);
+    assert.equal(removed, false);
+  }
+});
+test('owned cgroup resource evidence rejects missing, malformed, foreign and OOM facts', async () => {
+  const { readEvaluatorResources, validateResourceLog } = await import('./wave2-automation.mjs');
+  const proof = await readEvaluatorResources({
+    fs: {
+      readFile: async (path) =>
+        path === '/proc/self/cgroup'
+          ? '0::/\n'
+          : 'low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n',
+    },
+  });
+  assert.equal(proof.oomKills, 0);
+  const log = ['before', 'after']
+    .map((phase) => 'LYRA_WAVE2_RESOURCES ' + JSON.stringify({ phase, proof }))
+    .join('\n');
+  assert.equal(validateResourceLog(log).length, 2);
+  for (const raw of ['oom_kill nope\n', 'oom 0\n', 'oom_kill 0\noom_kill 1\n'])
+    await assert.rejects(
+      readEvaluatorResources({
+        fs: { readFile: async (path) => (path === '/proc/self/cgroup' ? '0::/\n' : raw) },
+      }),
+    );
+  await assert.rejects(
+    readEvaluatorResources({
+      fs: {
+        readFile: async () => {
+          throw new Error('missing cgroup');
+        },
+      },
+    }),
+    /missing cgroup/,
+  );
+  await assert.rejects(
+    readEvaluatorResources({ fs: { readFile: async () => '0::/foreign\n' } }),
+    /current cgroup/,
+  );
+  assert.throws(() => validateResourceLog(''), /resource proof/);
+  const killedProof = { ...proof, memoryEvents: 'oom_kill 1\n', oomKills: 1 };
+  assert.throws(
+    () =>
+      validateResourceLog(
+        ['before', 'after']
+          .map(
+            (phase) =>
+              'LYRA_WAVE2_RESOURCES ' +
+              JSON.stringify({ phase, proof: phase === 'before' ? proof : killedProof }),
+          )
+          .join('\n'),
+      ),
+    /evaluator OOM kill/,
+  );
+  assert.throws(
+    () => validateResourceLog(log.replaceAll('"oomKills":0', '"oomKills":1')),
+    /OOM|resource/,
+  );
 });

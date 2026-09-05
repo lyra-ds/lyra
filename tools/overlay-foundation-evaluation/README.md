@@ -109,7 +109,11 @@ The evaluator has only the internal network; its proxy additionally has egress
 and permits only literal `registry.npmjs.org:443` CONNECT. Actual direct-denial,
 HTTPS success, and seven denied authorities are checked before candidate work.
 Native input, clock, viewport and axe capabilities are preflighted before
-candidate execution.
+candidate execution. Before installation and again at exit, the evaluator reads
+its actual unified Linux cgroup and preserves raw `memory.events` in command
+stderr. Missing, malformed or unreadable resource evidence and any observed OOM
+kill fail the automation, even if a candidate-local record classified a killed
+build as packaging failure. The successful report includes both resource proofs.
 
 `report.json` retains the closed factual result and proxy counters, manifest and
 bundle SHA-256 values, copied Node hash, and all preserved paths. `logs/` retains
@@ -120,6 +124,8 @@ unavailability, preparation failures and execution failures. An incomplete step
 writes `failure.json`, returns nonzero and preserves available evidence. Teardown
 addresses only the fresh Compose project and captured helper. Captured project
 containers are owner-verified and fully stopped before networks are removed.
+AutoRemove containers receive a bounded wait for exact-ID disappearance; the
+host never races Docker with a competing removal.
 Uncertain Docker teardown preserves work; only after verified teardown is the
 identity-verified owned `work` descendant removed. Input, evidence and logs remain external.
 
@@ -179,3 +185,14 @@ the explicit SSR → focus → hydrate first-tree order.
 Unavailable private coordinator, layer, or timer-purpose facts remain lack of
 evidence. Candidate failures do not justify inventing specific product bugs,
 unsupported menu variants, recommendations or production authorization.
+
+The first full Wave 2 diagnostic is currently blocked by local Docker memory
+capacity. The unchanged incumbent React build was OOM-killed in the approximately
+8GiB Docker VM; oneCPU and supported thread-pool limits did not resolve it. The
+largest sampled build-process RSS was 5,278,968KiB and the evaluator cgroup peak
+was 5,646,962,688 bytes before failure. These are observed lower bounds, not a
+proven completion-memory requirement. Failed external evidence remains retained;
+no cumulative manifest has been tracked from those runs, and full final gates
+remain pending. This is an environment failure, not incumbent behavioral
+nonconformance. Resource changes must be resolved before a new clean-revision
+full run can supply trackable manifest bytes.
