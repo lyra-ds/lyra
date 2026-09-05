@@ -73,7 +73,11 @@ failures are factual diagnostic output.
 
 The browser command uses only the digest-pinned image
 `mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e`.
-The checkout is cloned from the read-only bundle inside the container. Run the
+The checkout is cloned from the read-only bundle into a fresh container-native
+owned directory. This avoids Docker Desktop bind-mount ownership drift observed
+after pnpm installation. The actual UID, repository owner and clean Git status
+are checked after installation. An identity-verified trap removes only the
+captured checkout directory; container teardown remains mandatory. Run the
 complete Wave 2 setup and diagnostic with one command from a clean checkout:
 
 ```sh
@@ -99,6 +103,7 @@ Automation supplies `OVERLAY_NODE_ROOT`, `OVERLAY_INPUT_ROOT`,
 `OVERLAY_EVIDENCE_ROOT`, `OVERLAY_OWNED_WORK_ROOT`, and
 `OVERLAY_EVALUATION_REVISION`, together with the actual UID/GID. Corepack, pnpm,
 XDG caches and temporary host builds live under owned work outside the checkout;
+the root-install pnpm store is explicitly `/work/pnpm/store`;
 HOME is unchanged. A unique Compose project isolates evaluator networking.
 The evaluator has only the internal network; its proxy additionally has egress
 and permits only literal `registry.npmjs.org:443` CONNECT. Actual direct-denial,

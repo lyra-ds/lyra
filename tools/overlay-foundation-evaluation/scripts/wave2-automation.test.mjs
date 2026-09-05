@@ -385,6 +385,7 @@ test('injected automation orders exact tools, live preflight, closed summaries a
     assert.equal(call.options.env.HOME, process.env.HOME);
     assert.equal(call.options.env.UID, '501');
     assert.equal(call.options.env.GID, '20');
+    assert.equal(call.options.env.pnpm_config_store_dir, join(f.output, 'work/pnpm/store'));
     assert.equal(call.options.env.OVERLAY_INPUT_ROOT, join(f.output, 'input'));
     assert.equal(call.options.env.COREPACK_HOME, join(f.output, 'work/cache/corepack'));
   }

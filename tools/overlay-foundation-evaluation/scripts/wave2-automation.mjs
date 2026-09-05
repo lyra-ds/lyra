@@ -356,6 +356,7 @@ export async function runWave2Automation({
       XDG_DATA_HOME: join(work, 'data'),
       XDG_CONFIG_HOME: join(work, 'config'),
       PNPM_HOME: join(work, 'pnpm'),
+      pnpm_config_store_dir: join(work, 'pnpm/store'),
       TMPDIR: join(work, 'tmp'),
       UID: String(uid),
       GID: String(gid),

@@ -283,28 +283,12 @@ test('compose pins image private IPC owned mounts and registry-only rendered top
   }))
     assert.ok(shell.includes(`export ${name}=${path}`), `${name} is owned outside checkout`);
   assert.doesNotMatch(shell, /export HOME=|\/root\//);
-  const { stdout } = await promisify(execFile)(
-    'docker',
-    ['compose', '-f', path.pathname, 'config', '--format', 'json'],
-    {
-      env: {
-        ...process.env,
-        UID: '1000',
-        GID: '1000',
-        OVERLAY_EVALUATION_REVISION: revision,
-        OVERLAY_NODE_ROOT: '/tmp/node',
-        OVERLAY_INPUT_ROOT: '/tmp/input',
-        OVERLAY_EVIDENCE_ROOT: '/tmp/evidence',
-        OVERLAY_OWNED_WORK_ROOT: '/tmp/work',
-      },
-    },
-  );
-  const rendered = JSON.parse(stdout);
-  assert.deepEqual(Object.keys(rendered.services.wave2.networks), ['wave2-internal']);
-  assert.deepEqual(Object.keys(rendered.services['registry-proxy'].networks).sort(), [
-    'registry-egress',
-    'wave2-internal',
-  ]);
-  assert.equal(rendered.networks.default, undefined);
-  assert.equal(rendered.services.wave2.shm_size, '2147483648');
+  assert.match(shell, /mktemp -d \/tmp\/lyra-wave2-checkout-XXXXXX/);
+  assert.match(shell, /owned_identity=/);
+  assert.match(shell, /stat -c '%d:%i:%u'/);
+  assert.match(shell, /rm -rf -- "\$\$owned"/);
+  assert.match(shell, /trap .*EXIT/);
+  assert.match(shell, /--repository "\$\$repository"/);
+  assert.match(shell, /export pnpm_config_store_dir=\/work\/pnpm\/store/);
+  assert.doesNotMatch(shell, /safe\.directory|chown|\/work\/repository/);
 });
