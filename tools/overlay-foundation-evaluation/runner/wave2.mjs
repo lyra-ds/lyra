@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { lstat, mkdir, open, readdir, readFile, realpath } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { promisify, isDeepStrictEqual as equal } from 'node:util';
 import { WAVE_2_SCENARIOS } from '../contracts/wave2.mjs';
 import { BEHAVIORAL_WAVE_CELLS } from '../contracts/cells.mjs';
@@ -19,6 +19,7 @@ import {
   preflightWave2BrowserInputs,
 } from './wave2-cells.mjs';
 import { runRegistryPreflight } from '../scripts/registry-proxy.mjs';
+import { isPlainRecord } from '../contracts/protocol.mjs';
 import {
   manifestSha256,
   readAttemptFile,
@@ -90,19 +91,224 @@ async function fixtureEvidence(fixture) {
     installation: retained,
   };
 }
-function validateRetained(observed) {
-  for (const fixture of observed?.fixtures ?? []) {
+const SOURCE_KEYS = [
+  'adapter',
+  'protocol',
+  'runtime',
+  'entryClient',
+  'entryServer',
+  'indexHtml',
+  'sharedProtocol',
+  'sharedResourceTracker',
+  'cells',
+  'contractProtocol',
+  'reactFixture',
+  'measurements',
+  'axeMetadata',
+  'axe',
+];
+const keysEqual = (value, keys) =>
+  isPlainRecord(value) && equal(Object.keys(value).sort(), [...keys].sort());
+const digest = (value) => typeof value === 'string' && /^[a-f0-9]{64}$/u.test(value);
+const canonicalPath = (value) =>
+  typeof value === 'string' && isAbsolute(value) && resolve(value) === value;
+function hashRecord(value, content = false) {
+  return (
+    keysEqual(value, content ? ['path', 'sha256', 'content'] : ['path', 'sha256']) &&
+    canonicalPath(value.path) &&
+    digest(value.sha256)
+  );
+}
+function validateRetained(fixtures, versions) {
+  if (
+    !Array.isArray(fixtures) ||
+    !equal(
+      fixtures.map((f) => f?.reactVersion),
+      versions,
+    )
+  )
+    throw fatal('retained fixture versions must equal execution context');
+  for (const fixture of fixtures) {
+    if (
+      !keysEqual(fixture, [
+        'reactVersion',
+        'sourceHashes',
+        'buildConfig',
+        'buildOutputs',
+        'toolEvidence',
+        'installation',
+      ]) ||
+      !keysEqual(fixture.installation, INSTALLATION_KEYS) ||
+      !keysEqual(fixture.sourceHashes, SOURCE_KEYS) ||
+      Object.values(fixture.sourceHashes).some((v) => !hashRecord(v)) ||
+      new Set(Object.values(fixture.sourceHashes).map((v) => v.path)).size !== SOURCE_KEYS.length ||
+      !hashRecord(fixture.buildConfig, true) ||
+      !isPlainRecord(fixture.buildOutputs) ||
+      !Object.keys(fixture.buildOutputs).length ||
+      Object.entries(fixture.buildOutputs).some(
+        ([path, hash]) => !canonicalPath(path) || !digest(hash),
+      )
+    )
+      throw fatal('retained fixture provenance schema is incomplete or malformed');
+    const outputRoot = dirname(fixture.buildConfig.path);
+    for (const path of [
+      'dist-client/index.html',
+      'dist-client/assets/entry-client.js',
+      'dist-ssr/entry-server.mjs',
+    ])
+      if (!digest(fixture.buildOutputs[join(outputRoot, path)]))
+        throw fatal('retained build outputs omit required client or SSR entry');
+    const axe = fixture.toolEvidence?.axe;
+    if (
+      !keysEqual(fixture.toolEvidence, ['axe']) ||
+      !keysEqual(axe, ['name', 'version', 'license', 'path', 'sha256']) ||
+      axe.name !== 'axe-core' ||
+      axe.version !== '4.13.0' ||
+      axe.license !== 'MPL-2.0' ||
+      axe.path !== fixture.sourceHashes.axe.path ||
+      axe.sha256 !== fixture.sourceHashes.axe.sha256
+    )
+      throw fatal('retained pinned axe provenance is inconsistent');
     for (const key of INSTALLATION_KEYS) {
       const value = fixture.installation?.[key];
-      if (typeof value?.content !== 'string' || sha256(value.content) !== value.sha256)
+      if (
+        !keysEqual(value, ['content', 'sha256']) ||
+        !digest(value.sha256) ||
+        typeof value.content !== 'string' ||
+        sha256(value.content) !== value.sha256
+      )
         throw fatal('retained fixture evidence checksum mismatch');
     }
+    const manifest = decodeJson(
+      Buffer.from(fixture.installation.fixtureManifest.content),
+      'retained fixture manifest',
+    );
+    if (
+      manifest.private !== true ||
+      manifest.packageManager !== 'pnpm@11.13.1' ||
+      manifest.dependencies?.react !== fixture.reactVersion ||
+      manifest.dependencies?.['react-dom'] !== fixture.reactVersion
+    )
+      throw fatal('retained fixture manifest React/toolchain version mismatch');
     if (
       typeof fixture.buildConfig?.content !== 'string' ||
       sha256(fixture.buildConfig.content) !== fixture.buildConfig.sha256
     )
       throw fatal('retained build configuration checksum mismatch');
   }
+}
+function validatePreflight(value) {
+  if (
+    !keysEqual(value, ['network', 'native']) ||
+    !equal(value.network, {
+      schemaVersion: 1,
+      directRegistryBlocked: true,
+      registryHttpsSucceeded: true,
+      nonAllowlistedTargetsRejected: 7,
+    }) ||
+    value.native?.schemaVersion !== 1 ||
+    value.native.playwrightVersion !== '1.62.1' ||
+    !Array.isArray(value.native.engines) ||
+    !equal(
+      value.native.engines.map((e) => e.engine),
+      ['chromium', 'firefox', 'webkit'],
+    ) ||
+    value.native.engines.some(
+      (e) =>
+        e.nativeTab !== true ||
+        e.trustedCancellation !== true ||
+        e.clock !== 0 ||
+        e.visualViewportWidth !== 480 ||
+        !Array.isArray(e.events),
+    )
+  )
+    throw fatal('retained preflight context is missing or malformed');
+}
+function validateAttemptContext(attempt, scenario, cellId, coreAttempt) {
+  const observed = attempt.observed,
+    versions = WAVE_2_CELL_POLICIES[cellId].reactVersions;
+  if (coreAttempt.result !== 'PASS') {
+    if (
+      attempt.result !== 'unavailable' ||
+      attempt.classification !== coreAttempt.classification ||
+      !keysEqual(observed, ['message', 'preflightResult', 'preflightStage']) ||
+      observed.message !== coreAttempt.observed.message ||
+      observed.preflightResult !== 'FAIL' ||
+      observed.preflightStage !== coreAttempt.stage
+    )
+      throw fatal('scenario context conflicts with failed core attempt 1');
+    return;
+  }
+  validatePreflight(observed?.preflight);
+  if (Object.hasOwn(observed, 'failure')) {
+    const failure = observed.failure;
+    if (
+      !keysEqual(observed, ['message', 'failure', 'fixtures', 'preflight']) ||
+      typeof observed.message !== 'string' ||
+      !observed.message.length ||
+      !isPlainRecord(failure) ||
+      !['prepare', 'execute'].includes(failure.stage) ||
+      !keysEqual(failure, [
+        'scope',
+        'classification',
+        'stage',
+        ...(failure.stage === 'prepare' ? ['reactVersion'] : []),
+        ...(Object.hasOwn(failure, 'ssrDiagnostics') ? ['ssrDiagnostics'] : []),
+      ]) ||
+      failure.scope !== 'candidate' ||
+      !['product', 'infrastructure'].includes(failure.classification) ||
+      attempt.classification !== failure.classification ||
+      attempt.result !== (failure.classification === 'product' ? 'FAIL' : 'unavailable')
+    )
+      throw fatal('candidate failure context/result is inconsistent');
+    const index = versions.indexOf(failure.reactVersion);
+    if (failure.stage === 'prepare' && index < 0)
+      throw fatal('preparation failure React version mismatch');
+    if (Object.hasOwn(failure, 'ssrDiagnostics')) {
+      const diagnostics = failure.ssrDiagnostics;
+      const fields = {
+        roles: [],
+        relationships: [],
+        states: [],
+        focus: { target: 'server-focus-unchanged' },
+        events: [],
+        announcements: [],
+      };
+      if (
+        !keysEqual(diagnostics, ['resources', 'ssrProcess']) ||
+        !keysEqual(diagnostics.ssrProcess, ['pid', 'disposed']) ||
+        !Number.isSafeInteger(diagnostics.ssrProcess.pid) ||
+        diagnostics.ssrProcess.pid < 1 ||
+        diagnostics.ssrProcess.disposed !== true ||
+        validateWave2Observation({
+          ...fields,
+          cleanup: [],
+          diagnostics: { executionCompleted: false, cleanupObserved: false },
+          trace: [
+            {
+              phase: 'server-render',
+              snapshot: { ...fields, direction: 'ltr', resources: diagnostics.resources },
+            },
+          ],
+        }).length
+      )
+        throw fatal('retained SSR resource/disposal diagnostics malformed');
+    }
+    validateRetained(
+      observed.fixtures,
+      failure.stage === 'prepare' ? versions.slice(0, index) : versions,
+    );
+    return;
+  }
+  if (!keysEqual(observed, ['observations', 'fixtures', 'preflight']))
+    throw fatal('completed execution context is missing observations/provenance');
+  validateRetained(observed.fixtures, versions);
+  const passes = evaluateWave2Scenario({ cellId, scenario, observations: observed.observations });
+  if (
+    attempt.result !== (passes ? 'PASS' : 'FAIL') ||
+    attempt.classification !== (passes ? undefined : 'product')
+  )
+    throw fatal('recorded result conflicts with scenario observations');
 }
 function assertManifest(manifest) {
   if (
@@ -181,7 +387,7 @@ async function attemptsFor({ evidenceRoot, runId, candidateId, scenario, cellId,
       !equal(attempt.artifactPaths, coreAttempt.artifactPaths)
     )
       throw fatal('attempt identity conflicts with manifest or core attempt 1');
-    validateRetained(attempt.observed);
+    validateAttemptContext(attempt, scenario, cellId, coreAttempt);
     result.push(attempt);
   }
   if (!result.length) throw fatal('attempt cell must not be empty');
@@ -454,6 +660,8 @@ async function executeWave2(
             owned = [],
             fixtures = new Map();
           let result, classification, observed, primary, candidateError;
+          let stage = 'prepare',
+            preparingVersion;
           try {
             if (coreAttempt.result === 'FAIL') {
               result = 'unavailable';
@@ -465,6 +673,7 @@ async function executeWave2(
               };
             } else {
               for (const reactVersion of policy.reactVersions) {
+                preparingVersion = reactVersion;
                 const ownership = await ops.createOwnedRunRoot({
                   tmpdir: temporary,
                   runId:
@@ -495,6 +704,7 @@ async function executeWave2(
                 );
                 await fixtureEvidence(fixtures.get(reactVersion));
               }
+              stage = 'execute';
               const observations = await ops.runWave2Cell({
                 candidate,
                 cellId,
@@ -517,7 +727,17 @@ async function executeWave2(
             ) {
               result = error.classification === 'product' ? 'FAIL' : 'unavailable';
               classification = error.classification;
-              observed = { message: error.message };
+              observed = {
+                message: error.message,
+                preflight,
+                failure: {
+                  scope: 'candidate',
+                  classification: error.classification,
+                  stage,
+                  ...(stage === 'prepare' ? { reactVersion: preparingVersion } : {}),
+                  ...(error.ssrDiagnostics ? { ssrDiagnostics: error.ssrDiagnostics } : {}),
+                },
+              };
               candidateError = error;
             } else primary = fatal(error);
           } finally {
@@ -529,7 +749,7 @@ async function executeWave2(
               } catch (error) {
                 errors.push(error);
               }
-            if (observed && retained.length) {
+            if (observed && coreAttempt.result === 'PASS') {
               observed.fixtures = retained;
               observed.preflight = preflight;
             }
@@ -584,6 +804,7 @@ async function executeWave2(
               observed,
               artifactPaths: coreAttempt.artifactPaths,
             };
+            validateAttemptContext(attempt, scenario, cellId, coreAttempt);
             await ops.writeAttempt({ evidenceRoot: evidence, attempt });
             const effective = summarizeAttempts([...prior, attempt]);
             summary.counts[effective.effectiveResult]++;

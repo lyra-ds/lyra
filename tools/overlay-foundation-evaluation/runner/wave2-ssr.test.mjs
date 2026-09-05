@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
+import { setTimeout as delay } from 'node:timers/promises';
+import { EventEmitter } from 'node:events';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
@@ -166,4 +168,158 @@ test('actual Node browser-global dereference remains a candidate render failure 
       error.scope === 'candidate' &&
       error.classification === 'product',
   );
+});
+
+test('SSR executions use fresh instrumentation and dispose pending timers before returning', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'wave2-ssr-isolation-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const ssrPath = join(root, 'server.mjs'),
+    timerPath = join(root, 'timer-fired');
+  const { request } = setup('OF-MENU');
+  await writeFile(
+    ssrPath,
+    `import {writeFileSync} from 'node:fs';
+const request=${JSON.stringify(request)};
+globalThis.__SSR_CALLS__=(globalThis.__SSR_CALLS__??0)+1;
+export function renderWave2Fixture({renderTarget}) {
+  setTimeout(()=>writeFileSync(${JSON.stringify(timerPath)},'fired'),500);
+  const html='<button data-overlay-id="trigger">'+process.pid+':'+globalThis.__SSR_CALLS__+'</button>';
+  return {html,repeatHtml:html,requestJSON:JSON.stringify(request),contractId:'OF-MENU',renderTarget,facts:{'browser-globals:accessed':false}};
+}`,
+  );
+  const { executeWave2Ssr } = await import(moduleURL);
+  const originalTimeout = globalThis.setTimeout,
+    originalTracker = globalThis.__LYRA_OVERLAY_RESOURCE_TRACKER__;
+  const first = await executeWave2Ssr({ fixture: { ssrPath }, request });
+  const second = await executeWave2Ssr({ fixture: { ssrPath }, request });
+  for (const result of [first, second]) {
+    assert.equal(result.observation.trace[0].snapshot.resources.timers, 2);
+    assert.match(result.observation.diagnostics.rawRenders[0].html, /:1<\/button>/);
+    assert.equal(result.observation.diagnostics.ssrProcess.disposed, true);
+  }
+  assert.notEqual(
+    first.observation.diagnostics.ssrProcess.pid,
+    second.observation.diagnostics.ssrProcess.pid,
+  );
+  assert.equal(globalThis.setTimeout, originalTimeout);
+  assert.equal(globalThis.__LYRA_OVERLAY_RESOURCE_TRACKER__, originalTracker);
+  assert.equal(globalThis.__SSR_CALLS__, undefined);
+  await delay(600);
+  await assert.rejects(readFile(timerPath), { code: 'ENOENT' });
+});
+
+test('SSR worker protocol and disposal failures stay run-fatal and preserve primary errors', async () => {
+  const { executeWave2Ssr } = await import(moduleURL),
+    { request } = setup('OF-MENU');
+  for (const mode of [
+    'invalid',
+    'duplicate-after-error',
+    'disconnect',
+    'timeout',
+    'large',
+    'invalid-result',
+    'invalid-error',
+    'output',
+    'output-then-error',
+    'kill-error',
+    'no-close',
+    'send-error',
+  ]) {
+    const child = new EventEmitter();
+    child.pid = 98765;
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    const kills = [];
+    child.kill = (signal) => {
+      kills.push(signal);
+      if (mode === 'kill-error' && signal === 'SIGTERM') throw new Error('cleanup kill failed');
+      if (mode !== 'no-close') queueMicrotask(() => child.emit('close', null, signal));
+      return true;
+    };
+    child.send = (input, callback) =>
+      queueMicrotask(() => {
+        assert.equal(input.type, 'execute');
+        if (mode === 'send-error') return callback(new Error('send failed'));
+        callback();
+        const error = {
+          schemaVersion: 1,
+          type: 'error',
+          pid: child.pid,
+          error: {
+            name: 'ReferenceError',
+            message: 'candidate render failed',
+            scope: 'candidate',
+            classification: 'product',
+            ssrDiagnostics: { resources: resources() },
+          },
+        };
+        if (mode === 'timeout') return;
+        if (mode === 'disconnect') return child.emit('disconnect');
+        if (mode === 'output') return child.stderr.emit('data', Buffer.alloc(65537));
+        if (mode === 'output-then-error') child.stderr.emit('data', Buffer.alloc(65537));
+        if (mode === 'invalid') return child.emit('message', { unknown: true });
+        if (mode === 'large')
+          return child.emit('message', { ...error, extra: 'a'.repeat(16 * 1024 * 1024) });
+        if (mode === 'invalid-result')
+          return child.emit('message', {
+            schemaVersion: 1,
+            type: 'result',
+            pid: child.pid,
+            result: {},
+          });
+        if (mode === 'invalid-error')
+          return child.emit('message', { ...error, error: { message: 'missing scope' } });
+        child.emit('message', error);
+        if (mode === 'duplicate-after-error') child.emit('message', error);
+      });
+    await assert.rejects(
+      executeWave2Ssr(
+        { fixture: { ssrPath: '/absolute/server.mjs' }, request },
+        {
+          forkWorker: (url, args, options) => {
+            assert.equal(options.execPath, process.execPath);
+            assert.deepEqual(options.execArgv, []);
+            assert.match(url.pathname, /wave2-ssr-worker.mjs$/);
+            return child;
+          },
+          timeoutMs: 5,
+          terminationMs: 5,
+        },
+      ),
+      (error) => {
+        assert.equal(error.scope, 'run', mode);
+        if (['kill-error', 'no-close'].includes(mode)) {
+          assert.equal(error.errors[0] instanceof ReferenceError, true);
+          assert.equal(error.errors[0].ssrDiagnostics.resources.timers, 0);
+        }
+        return true;
+      },
+    );
+    assert.equal(
+      kills.at(-1),
+      ['kill-error', 'no-close'].includes(mode) ? 'SIGKILL' : 'SIGTERM',
+      mode,
+    );
+  }
+});
+
+test('SSR render failure retains live timer evidence while owned child disposal prevents later callbacks', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'wave2-ssr-error-timer-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const ssrPath = join(root, 'server.mjs'),
+    timerPath = join(root, 'timer-fired');
+  await writeFile(
+    ssrPath,
+    `import {writeFileSync} from 'node:fs';setTimeout(()=>writeFileSync(${JSON.stringify(timerPath)},'fired'),500);throw new ReferenceError('actual import failure');`,
+  );
+  const { executeWave2Ssr } = await import(moduleURL),
+    { request } = setup('OF-MENU');
+  await assert.rejects(executeWave2Ssr({ fixture: { ssrPath }, request }), (error) => {
+    assert.equal(error.scope, 'candidate');
+    assert.equal(error instanceof ReferenceError, true);
+    assert.equal(error.ssrDiagnostics.resources.timers, 1);
+    return true;
+  });
+  await delay(600);
+  await assert.rejects(readFile(timerPath), { code: 'ENOENT' });
 });
