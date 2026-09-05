@@ -296,3 +296,25 @@ test('compose pins image private IPC owned mounts and registry-only rendered top
   assert.match(shell, /export pnpm_config_store_dir=\/work\/pnpm\/store/);
   assert.doesNotMatch(shell, /safe\.directory|chown|\/work\/repository/);
 });
+
+test('production resource command imports the full graph with both phase values', async () => {
+  const config = parseYaml(
+    await readFile(new URL('../compose.wave2.yml', import.meta.url), 'utf8'),
+  );
+  const body = config.services.wave2.command.at(-1).match(/resources\(\) \{([\s\S]*?)\n\s*\}/)[1];
+  // Only filesystem resource reads are injected. Execute the actual shell/Node
+  // invocation and full import graph, including every imported CLI main guard.
+  const command = ('resources() {' + body + '\n}\nresources before\nresources after')
+    .replaceAll('$$', '$')
+    .replace(
+      'await readEvaluatorResources()',
+      `await readEvaluatorResources({fs:{readFile:async path=>path==="/proc/self/cgroup"?"0::/\\n":"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\\n"}})`,
+    );
+  const result = await promisify(execFile)('/bin/sh', ['-ec', command], {
+    cwd: join(import.meta.dirname, '../../..'),
+    env: { ...process.env, PATH: join(process.execPath, '..') + ':' + process.env.PATH },
+  });
+  const { validateResourceLog } = await import('./wave2-automation.mjs');
+  validateResourceLog(result.stderr);
+  assert.equal(result.stdout, '');
+});

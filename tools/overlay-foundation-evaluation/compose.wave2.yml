@@ -53,7 +53,7 @@ services:
           rm -rf -- "$$owned"
         }
         resources() {
-          node --input-type=module -e 'import { readEvaluatorResources } from "./tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs"; const proof=await readEvaluatorResources(); console.error("LYRA_WAVE2_RESOURCES "+JSON.stringify({phase:process.argv[1],proof})); if(proof.oomKills!==0)process.exitCode=1;' "$$1"
+          OVERLAY_RESOURCE_PHASE="$$1" node --input-type=module -e 'import { readEvaluatorResources } from "./tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs"; const proof=await readEvaluatorResources(); console.error("LYRA_WAVE2_RESOURCES "+JSON.stringify({phase:process.env.OVERLAY_RESOURCE_PHASE,proof})); if(proof.oomKills!==0)process.exitCode=1;'
         }
         trap 'status=$$?; resources after || status=1; cleanup_checkout || status=1; exit "$$status"' EXIT
         trap 'exit 1' HUP INT TERM
