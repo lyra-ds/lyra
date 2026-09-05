@@ -66,6 +66,21 @@ tracked `candidates.json` is copied only from the manifest bytes already used by
 the container. The bundle, manifest, and evidence remain preserved; only the
 verified owned work directory is disposable.
 
+The driver verifies the clean revision and bundle HEAD before characterization.
+Both preparation and evaluation then use the same pinned Linux service, with
+closed private phases `characterize` and `evaluate` (the default). They share
+one checkout/install/network/resource/cleanup implementation; each invocation
+gets a fresh native checkout and uses the same owned caches and registry proxy.
+The first phase does not require or create a placeholder manifest. It retains
+the three actual Linux incumbent archives and standard characterization metadata;
+the host verifies ownership, exact bytes and hashes before copying them into
+read-only retained input and generating the manifest. The evaluation phase
+independently characterizes the same revision and keeps the exact hash checks.
+Both phases require their own before/after resource and live network proofs.
+Darwin and Linux packing was observed to differ only in the gzip OS header byte,
+so a host-generated archive hash cannot bind Linux-packed bytes. Archives are
+never rewritten or normalized to hide that difference.
+
 Attempt 1 remains the effective result forever. A retry is a separate immutable
 attempt and cannot replace it. Repository, policy, ownership, evidence,
 unknown-classification, and cleanup failures are run-fatal; candidate product
@@ -102,7 +117,7 @@ downloaded. The copied toolchain is mounted read-only at `/opt/node`.
 Automation supplies `OVERLAY_NODE_ROOT`, `OVERLAY_INPUT_ROOT`,
 `OVERLAY_EVIDENCE_ROOT`, `OVERLAY_OWNED_WORK_ROOT`, and
 `OVERLAY_EVALUATION_REVISION`, together with the actual UID/GID. Corepack, pnpm,
-XDG caches and temporary host builds live under owned work outside the checkout;
+XDG caches and container preparation outputs live under owned work outside the checkout;
 the root-install pnpm store is explicitly `/work/pnpm/store`;
 HOME is unchanged. A unique Compose project isolates evaluator networking.
 The evaluator has only the internal network; its proxy additionally has egress
@@ -197,13 +212,11 @@ Unavailable private coordinator, layer, or timer-purpose facts remain lack of
 evidence. Candidate failures do not justify inventing specific product bugs,
 unsupported menu variants, recommendations or production authorization.
 
-The first full Wave 2 diagnostic is currently blocked by local Docker memory
-capacity. The unchanged incumbent React build was OOM-killed in the approximately
-8GiB Docker VM; oneCPU and supported thread-pool limits did not resolve it. The
-largest sampled build-process RSS was 5,278,968KiB and the evaluator cgroup peak
-was 5,646,962,688 bytes before failure. These are observed lower bounds, not a
-proven completion-memory requirement. Failed external evidence remains retained;
-no cumulative manifest has been tracked from those runs, and full final gates
-remain pending. This is an environment failure, not incumbent behavioral
-nonconformance. Resource changes must be resolved before a new clean-revision
-full run can supply trackable manifest bytes.
+Early Wave 2 runs OOM-killed the unchanged incumbent React build in an
+approximately 8GiB Docker VM; oneCPU and supported thread-pool limits did not
+resolve it. A later measured build in 12GiB Colima completed with zero OOM kills
+and a 7,683,014,656-byte cgroup peak. Subsequent archive comparison isolated the
+Darwin/Linux gzip header difference addressed by Linux characterization above.
+Failed external evidence remains retained and cannot supply tracked manifest
+bytes. Successful preparation alone is not behavioral evidence: a complete
+successful harness run and all final gates are still required.

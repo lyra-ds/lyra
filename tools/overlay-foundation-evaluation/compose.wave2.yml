@@ -9,6 +9,7 @@ services:
     environment:
       OVERLAY_EVALUATION_REVISION: '${OVERLAY_EVALUATION_REVISION:?set OVERLAY_EVALUATION_REVISION}'
       OVERLAY_WAVE2_CONTAINER: '1'
+      OVERLAY_WAVE2_PHASE: evaluate
       HTTP_PROXY: http://registry-proxy:3128
       HTTPS_PROXY: http://registry-proxy:3128
       NODE_USE_ENV_PROXY: '1'
@@ -32,6 +33,10 @@ services:
       - /bin/sh
       - -euxc
       - |
+        case "$${OVERLAY_WAVE2_PHASE:-evaluate}" in
+          characterize|evaluate) ;;
+          *) echo 'invalid private Wave2 phase' >&2; exit 1 ;;
+        esac
         mkdir -p /work/corepack-shims /work/cache /work/data /work/config /work/pnpm
         export PATH="/opt/node/bin:/work/corepack-shims:$$PATH"
         export COREPACK_HOME=/work/cache/corepack
@@ -69,10 +74,15 @@ services:
         test "$$(stat -c '%u' "$$repository")" = "$$(id -u)"
         test "$$(stat -c '%u' "$$repository/.git")" = "$$(id -u)"
         test -z "$$(git status --porcelain=v1 --untracked-files=all)"
-        corepack pnpm@11.13.1 overlay:evaluate:wave2 \
-          --manifest /input/candidates.json \
-          --repository "$$repository" \
-          --evidence /evidence
+        if test "$${OVERLAY_WAVE2_PHASE:-evaluate}" = characterize; then
+          node tools/overlay-foundation-evaluation/scripts/characterize-linux.mjs \
+            --repository "$$repository" --output /work/characterization
+        else
+          corepack pnpm@11.13.1 overlay:evaluate:wave2 \
+            --manifest /input/candidates.json \
+            --repository "$$repository" \
+            --evidence /evidence
+        fi
   registry-proxy:
     image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
     init: true

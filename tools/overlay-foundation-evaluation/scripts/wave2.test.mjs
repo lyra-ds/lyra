@@ -265,6 +265,7 @@ test('compose pins image private IPC owned mounts and registry-only rendered top
   assert.equal(service.environment.NODE_USE_ENV_PROXY, '1');
   assert.equal(service.environment.HTTPS_PROXY, 'http://registry-proxy:3128');
   assert.equal(service.environment.NO_PROXY, '127.0.0.1,localhost');
+  assert.equal(service.environment.OVERLAY_WAVE2_PHASE, 'evaluate');
   const shell = service.command.join('\n');
   assert.doesNotMatch(shell, /playwright\s+install|ipc.*host/);
   assert.ok(
@@ -295,6 +296,32 @@ test('compose pins image private IPC owned mounts and registry-only rendered top
   assert.match(shell, /proof\.oomKills/);
   assert.match(shell, /export pnpm_config_store_dir=\/work\/pnpm\/store/);
   assert.doesNotMatch(shell, /safe\.directory|chown|\/work\/repository/);
+  assert.match(shell, /characterize-linux\.mjs/);
+  assert.equal(
+    (shell.match(/pnpm@11\.13\.1 install/g) ?? []).length,
+    1,
+    'both phases reuse one install block',
+  );
+});
+
+test('private Compose phase rejects unknown values before any preparation', async () => {
+  const config = parseYaml(
+    await readFile(new URL('../compose.wave2.yml', import.meta.url), 'utf8'),
+  );
+  const guard = config.services.wave2.command
+    .at(-1)
+    .match(/case[\s\S]*?esac/)[0]
+    .replaceAll('$$', '$');
+  for (const phase of ['characterize', 'evaluate'])
+    await promisify(execFile)('/bin/sh', ['-ec', guard], {
+      env: { ...process.env, OVERLAY_WAVE2_PHASE: phase },
+    });
+  await assert.rejects(
+    promisify(execFile)('/bin/sh', ['-ec', guard], {
+      env: { ...process.env, OVERLAY_WAVE2_PHASE: 'unexpected' },
+    }),
+    /invalid private Wave2 phase/,
+  );
 });
 
 test('production resource command imports the full graph with both phase values', async () => {

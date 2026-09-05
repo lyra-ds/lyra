@@ -151,6 +151,7 @@ export function validateCompose(
   assert.equal(env.NO_PROXY, '127.0.0.1,localhost');
   assert.equal(env.NODE_USE_ENV_PROXY, '1');
   assert.equal(env.OVERLAY_WAVE2_CONTAINER, '1');
+  assert.equal(env.OVERLAY_WAVE2_PHASE, 'evaluate');
   return config;
 }
 export async function inspectAttemptCoverage({ evidence, revision, summary, fs = filesystem }) {
@@ -604,32 +605,6 @@ export async function runWave2Automation({
     const incumbent = join(input, 'incumbent.json'),
       manifestPath = join(input, 'candidates.json'),
       bundle = join(input, 'repository.bundle');
-    await logged('pnpm', ['overlay:evaluate:incumbent', '--output', incumbent]);
-    await logged('pnpm', [
-      'overlay:evaluate:behavioral:manifest',
-      '--revision',
-      revision,
-      '--incumbent',
-      incumbent,
-      '--output',
-      manifestPath,
-    ]);
-    await logged('pnpm', ['overlay:evaluate:check', '--manifest', manifestPath]);
-    await verify(input);
-    for (const path of [incumbent, manifestPath]) {
-      const stat = await fs.lstat(path);
-      assert.ok(stat.isFile() && !stat.isSymbolicLink(), 'input must be regular');
-      assert.equal(await fs.realpath(path), path);
-    }
-    const manifestBytes = await fs.readFile(manifestPath),
-      manifest = JSON.parse(manifestBytes);
-    assert.deepEqual(
-      manifest,
-      createBehavioralManifest({
-        lyraRevision: revision,
-        incumbentCharacterization: JSON.parse(await fs.readFile(incumbent, 'utf8')),
-      }),
-    );
     await clean(revision);
     await logged('git', ['bundle', 'create', bundle, 'HEAD']);
     await logged('git', ['bundle', 'verify', bundle]);
@@ -638,8 +613,8 @@ export async function runWave2Automation({
       revision + ' HEAD',
       'bundle advertised HEAD',
     );
-    const manifestSha256 = sha256(manifestBytes),
-      bundleSha256 = sha256(await fs.readFile(bundle));
+    await verify(input);
+    const bundleSha256 = sha256(await fs.readFile(bundle));
     const config = validateCompose(JSON.parse(await dc(['config', '--format', 'json'])), {
       project,
       input,
@@ -667,24 +642,134 @@ export async function runWave2Automation({
       assert.equal(info.Labels['com.docker.compose.project'], project);
       assert.equal(info.Internal, key === 'wave2-internal');
     }
-    const evaluationOutput = await dc(['run', '--rm', '--no-deps', '--pull', 'never', 'wave2']);
-    const resources = validateResourceLog(await fs.readFile(records.at(-1).stderr, 'utf8'));
     const preflight = {
       schemaVersion: 1,
       directRegistryBlocked: true,
       registryHttpsSucceeded: true,
       nonAllowlistedTargetsRejected: 7,
     };
-    assert.ok(
-      evaluationOutput.split('\n').some((line) => {
-        try {
-          return JSON.stringify(JSON.parse(line)) === JSON.stringify(preflight);
-        } catch {
-          return false;
-        }
-      }),
-      'live registry preflight proof missing',
+    const requirePreflight = (stdout) =>
+      assert.ok(
+        stdout.split('\n').some((line) => {
+          try {
+            return JSON.stringify(JSON.parse(line)) === JSON.stringify(preflight);
+          } catch {
+            return false;
+          }
+        }),
+        'live registry preflight proof missing',
+      );
+    const characterizationOutput = await dc([
+      'run',
+      '--rm',
+      '--no-deps',
+      '--pull',
+      'never',
+      '--env',
+      'OVERLAY_WAVE2_PHASE=characterize',
+      'wave2',
+    ]);
+    const characterizationResources = validateResourceLog(
+      await fs.readFile(records.at(-1).stderr, 'utf8'),
     );
+    requirePreflight(characterizationOutput);
+    await verify(work);
+    const characterizationRoot = join(work, 'characterization');
+    assert.equal(await fs.realpath(characterizationRoot), characterizationRoot);
+    const characterizationStat = await fs.lstat(characterizationRoot);
+    assert.ok(
+      characterizationStat.isDirectory() &&
+        !characterizationStat.isSymbolicLink() &&
+        characterizationStat.uid === process.getuid(),
+      'owned Linux characterization required',
+    );
+    await capture(characterizationRoot);
+    assert.deepEqual((await fs.readdir(characterizationRoot)).sort(), [
+      '0.tgz',
+      '1.tgz',
+      '2.tgz',
+      'incumbent.json',
+    ]);
+    const readCharacterizationFile = async (name) => {
+      await verify(work);
+      await verify(characterizationRoot);
+      const path = join(characterizationRoot, name),
+        before = await fs.lstat(path);
+      assert.ok(
+        before.isFile() && !before.isSymbolicLink() && before.uid === process.getuid(),
+        'characterization file must be owned regular',
+      );
+      assert.equal(await fs.realpath(path), path);
+      const bytes = await fs.readFile(path),
+        after = await fs.lstat(path);
+      assert.deepEqual(
+        [after.dev, after.ino, after.uid, after.size],
+        [before.dev, before.ino, before.uid, before.size],
+        'characterization file identity changed',
+      );
+      await verify(work);
+      await verify(characterizationRoot);
+      return bytes;
+    };
+    const incumbentBytes = await readCharacterizationFile('incumbent.json');
+    const characterization = JSON.parse(incumbentBytes);
+    keys(characterization, ['schemaVersion', 'candidateId', 'revision', 'artifacts']);
+    assert.equal(characterization.schemaVersion, 1);
+    assert.equal(characterization.candidateId, 'incumbent');
+    assert.equal(characterization.revision, revision);
+    assert.deepEqual(
+      characterization.artifacts.map((a) => [a.name, a.version]),
+      [
+        ['@lyra-ds/styles', '0.5.0'],
+        ['@lyra-ds/react', '0.5.0'],
+        ['@lyra-ds/alpine', '0.6.0'],
+      ],
+    );
+    const incumbentArchives = [];
+    for (const [index, artifact] of characterization.artifacts.entries()) {
+      keys(artifact, ['name', 'version', 'bytes', 'sha256', 'license', 'lifecycleScripts']);
+      const bytes = await readCharacterizationFile(index + '.tgz');
+      assert.equal(bytes.length, artifact.bytes, 'characterized archive size');
+      assert.equal(sha256(bytes), artifact.sha256, 'characterized archive hash');
+      assert.equal(artifact.license, 'MIT');
+      assert.deepEqual(artifact.lifecycleScripts, []);
+      await verify(input);
+      const retained = join(input, 'incumbent-' + index + '.tgz');
+      await fs.writeFile(retained, bytes, { flag: 'wx', mode: 0o600 });
+      incumbentArchives.push(retained);
+    }
+    await verify(input);
+    await fs.writeFile(incumbent, incumbentBytes, { flag: 'wx', mode: 0o600 });
+    await clean(revision);
+    await logged('pnpm', [
+      'overlay:evaluate:behavioral:manifest',
+      '--revision',
+      revision,
+      '--incumbent',
+      incumbent,
+      '--output',
+      manifestPath,
+    ]);
+    await logged('pnpm', ['overlay:evaluate:check', '--manifest', manifestPath]);
+    await verify(input);
+    for (const path of [incumbent, manifestPath]) {
+      const stat = await fs.lstat(path);
+      assert.ok(stat.isFile() && !stat.isSymbolicLink(), 'input must be regular');
+      assert.equal(await fs.realpath(path), path);
+    }
+    const manifestBytes = await fs.readFile(manifestPath),
+      manifest = JSON.parse(manifestBytes);
+    assert.deepEqual(
+      manifest,
+      createBehavioralManifest({
+        lyraRevision: revision,
+        incumbentCharacterization: JSON.parse(await fs.readFile(incumbent, 'utf8')),
+      }),
+    );
+    const manifestSha256 = sha256(manifestBytes);
+    const evaluationOutput = await dc(['run', '--rm', '--no-deps', '--pull', 'never', 'wave2']);
+    const resources = validateResourceLog(await fs.readFile(records.at(-1).stderr, 'utf8'));
+    requirePreflight(evaluationOutput);
     const summary = validateWaveSummary(trailingJson(evaluationOutput), revision);
     await verify(evidence);
     const coverage = await inspectAttemptCoverage({ evidence, revision, summary, fs });
@@ -697,6 +782,22 @@ export async function runWave2Automation({
     await clean(revision);
     assert.equal(sha256(await fs.readFile(manifestPath)), manifestSha256, 'manifest changed');
     assert.equal(sha256(await fs.readFile(bundle)), bundleSha256, 'bundle changed');
+    await verify(input);
+    assert.equal(
+      sha256(await fs.readFile(incumbent)),
+      sha256(incumbentBytes),
+      'incumbent metadata changed',
+    );
+    for (const [index, path] of incumbentArchives.entries()) {
+      const stat = await fs.lstat(path);
+      assert.ok(stat.isFile() && !stat.isSymbolicLink(), 'incumbent archive changed');
+      assert.equal(await fs.realpath(path), path, 'incumbent archive changed');
+      assert.equal(
+        sha256(await fs.readFile(path)),
+        characterization.artifacts[index].sha256,
+        'incumbent archive changed',
+      );
+    }
     report = {
       schemaVersion: 1,
       revision,
@@ -708,9 +809,19 @@ export async function runWave2Automation({
       results: summary,
       executionCounts: coverage.counts,
       resources,
+      characterizationResources,
       attemptChecksumsSha256: sha256(canonicalJson(coverage.attempts)),
       proxy: proxySummary,
-      preserved: { manifest: manifestPath, bundle, incumbent, node, logs, evidence, checksums },
+      preserved: {
+        manifest: manifestPath,
+        bundle,
+        incumbent,
+        incumbentArchives,
+        node,
+        logs,
+        evidence,
+        checksums,
+      },
     };
   } catch (error) {
     primary = error;

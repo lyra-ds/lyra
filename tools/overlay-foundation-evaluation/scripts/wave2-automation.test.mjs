@@ -137,20 +137,11 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
       };
     if (cmd === 'pnpm') {
       if (args[0] === '--version') return { stdout: '11.13.1\n' };
-      if (args[0] === 'overlay:evaluate:incumbent')
-        await fs.writeFile(
-          args[2],
-          JSON.stringify({
-            schemaVersion: 1,
-            candidateId: 'incumbent',
-            revision,
-            artifacts: [
-              ['@lyra-ds/styles', '0.5.0'],
-              ['@lyra-ds/react', '0.5.0'],
-              ['@lyra-ds/alpine', '0.6.0'],
-            ].map(([name, version]) => ({ name, version, sha256: 'd'.repeat(64) })),
-          }),
-        );
+      assert.notEqual(
+        args[0],
+        'overlay:evaluate:incumbent',
+        'initial characterization must run in pinned Linux',
+      );
       if (args[0] === 'overlay:evaluate:behavioral:manifest')
         await fs.writeFile(
           args[6],
@@ -243,6 +234,7 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
                 NO_PROXY: '127.0.0.1,localhost',
                 NODE_USE_ENV_PROXY: '1',
                 OVERLAY_WAVE2_CONTAINER: '1',
+                OVERLAY_WAVE2_PHASE: 'evaluate',
               }
             : {}),
         },
@@ -274,39 +266,67 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
     }
     if (sub[0] === 'ps') return { stdout: proxyId };
     if (sub[0] === 'run') {
-      for (const candidateId of ['incumbent', 'radix', 'base-ui', 'zag'])
-        for (const scenario of WAVE_2_SCENARIOS)
-          for (const cellId of scenario.requiredCells) {
-            const path = join(
-              output,
-              'evidence/attempts',
-              'wave2-' + revision.slice(0, 12),
-              'scenario',
-              candidateId,
-              scenario.contractId,
-              scenario.scenarioId,
-              cellId,
-            );
-            await fs.mkdir(path, { recursive: true });
-            await fs.writeFile(
-              join(path, 'attempt-1.json'),
-              canonicalJson({
-                schemaVersion: 1,
-                recordType: 'scenario',
-                runId: 'wave2-' + revision.slice(0, 12),
+      const characterizing = sub.includes('OVERLAY_WAVE2_PHASE=characterize');
+      if (characterizing) {
+        await fs.stat(join(output, 'input/repository.bundle'));
+        await assert.rejects(fs.stat(join(output, 'input/candidates.json')), { code: 'ENOENT' });
+        const directory = join(output, 'work/characterization');
+        await fs.mkdir(directory);
+        const artifacts = [];
+        for (const [i, [name, version]] of [
+          ['@lyra-ds/styles', '0.5.0'],
+          ['@lyra-ds/react', '0.5.0'],
+          ['@lyra-ds/alpine', '0.6.0'],
+        ].entries()) {
+          const bytes = Buffer.from('linux packed ' + name);
+          await fs.writeFile(join(directory, i + '.tgz'), bytes);
+          artifacts.push({
+            name,
+            version,
+            sha256: digest(bytes),
+            bytes: bytes.length,
+            license: 'MIT',
+            lifecycleScripts: [],
+          });
+        }
+        await fs.writeFile(
+          join(directory, 'incumbent.json'),
+          JSON.stringify({ schemaVersion: 1, candidateId: 'incumbent', revision, artifacts }),
+        );
+      } else
+        for (const candidateId of ['incumbent', 'radix', 'base-ui', 'zag'])
+          for (const scenario of WAVE_2_SCENARIOS)
+            for (const cellId of scenario.requiredCells) {
+              const path = join(
+                output,
+                'evidence/attempts',
+                'wave2-' + revision.slice(0, 12),
+                'scenario',
                 candidateId,
-                contractId: scenario.contractId,
-                scenarioId: scenario.scenarioId,
+                scenario.contractId,
+                scenario.scenarioId,
                 cellId,
-                attemptNumber: 1,
-                result: 'FAIL',
-                classification: 'product',
-                expected: scenario.expected,
-                observed: { observations: [{}] },
-                artifactPaths: [],
-              }),
-            );
-          }
+              );
+              await fs.mkdir(path, { recursive: true });
+              await fs.writeFile(
+                join(path, 'attempt-1.json'),
+                canonicalJson({
+                  schemaVersion: 1,
+                  recordType: 'scenario',
+                  runId: 'wave2-' + revision.slice(0, 12),
+                  candidateId,
+                  contractId: scenario.contractId,
+                  scenarioId: scenario.scenarioId,
+                  cellId,
+                  attemptNumber: 1,
+                  result: 'FAIL',
+                  classification: 'product',
+                  expected: scenario.expected,
+                  observed: { observations: [{}] },
+                  artifactPaths: [],
+                }),
+              );
+            }
       return {
         stderr: ['before', 'after']
           .map(
@@ -332,7 +352,7 @@ async function fixture(t, mutate = () => {}, filesystemOverrides = {}) {
             nonAllowlistedTargetsRejected: 7,
           }) +
           '\n' +
-          JSON.stringify(successfulSummary(), null, 2) +
+          JSON.stringify(characterizing ? { characterized: true } : successfulSummary(), null, 2) +
           '\n',
       };
     }
@@ -375,17 +395,16 @@ test('injected automation orders exact tools, live preflight, closed summaries a
   assert.equal(result.revision, revision);
   assert.equal(result.manifestSha256, digest(await fs.readFile(result.preserved.manifest)));
   assert.equal(result.bundleSha256, digest('bundle'));
+  assert.equal(result.characterizationResources.length, 2);
+  const characterized = JSON.parse(await fs.readFile(result.preserved.incumbent, 'utf8'));
+  for (const [index, path] of result.preserved.incumbentArchives.entries())
+    assert.equal(digest(await fs.readFile(path)), characterized.artifacts[index].sha256);
   await assert.rejects(fs.lstat(join(f.output, 'work')), { code: 'ENOENT' });
   for (const path of [f.output, join(f.output, 'input'), join(f.output, 'evidence')])
     assert.equal((await fs.stat(path)).mode & 0o777, 0o700);
   assert.deepEqual(
     f.calls.filter((c) => c.cmd === 'pnpm').map((c) => c.args[0]),
-    [
-      '--version',
-      'overlay:evaluate:incumbent',
-      'overlay:evaluate:behavioral:manifest',
-      'overlay:evaluate:check',
-    ],
+    ['--version', 'overlay:evaluate:behavioral:manifest', 'overlay:evaluate:check'],
   );
   const docker = f.calls.filter((c) => c.cmd === 'docker');
   assert.deepEqual(docker.find((c) => c.args[0] === 'rm').args, ['rm', helper]);
@@ -398,7 +417,7 @@ test('injected automation orders exact tools, live preflight, closed summaries a
   assert.match(compose[0].args[2], /^lyra-wave2-[a-f0-9]{32}$/);
   assert.deepEqual(
     compose.map((c) => c.args[5]),
-    ['config', 'up', 'ps', 'run', 'stop', 'logs', 'down'],
+    ['config', 'up', 'ps', 'run', 'run', 'stop', 'logs', 'down'],
   );
   for (const call of compose) {
     assert.equal(call.options.env.HOME, process.env.HOME);
@@ -416,6 +435,43 @@ test('injected automation orders exact tools, live preflight, closed summaries a
     JSON.parse(await fs.readFile(join(f.output, 'report.json'), 'utf8')).schemaVersion,
     1,
   );
+});
+
+for (const phase of ['characterize', 'evaluate'])
+  test('resource failure blocks ' + phase + ' phase', async (t) => {
+    const f = await fixture(t, async ({ cmd, args }) => {
+      if (
+        cmd === 'docker' &&
+        args[5] === 'run' &&
+        args.includes('OVERLAY_WAVE2_PHASE=characterize') === (phase === 'characterize')
+      )
+        return { stdout: '', stderr: '' };
+    });
+    await assert.rejects(f.run(), /resource proof/);
+    assert.equal(
+      f.calls.filter((c) => c.args[5] === 'run').length,
+      phase === 'characterize' ? 1 : 2,
+    );
+  });
+test('host rejects changed characterized archives before manifest creation', async (t) => {
+  const f = await fixture(t, () => {}, {
+    readFile: async (path, ...options) =>
+      String(path).endsWith('/characterization/0.tgz')
+        ? Buffer.from('corrupt')
+        : fs.readFile(path, ...options),
+  });
+  await assert.rejects(f.run(), /archive size|archive hash/);
+  assert.equal(
+    f.calls.some((c) => c.args[0] === 'overlay:evaluate:behavioral:manifest'),
+    false,
+  );
+});
+test('retained characterization archives stay immutable through evaluation', async (t) => {
+  const f = await fixture(t, async ({ cmd, args, output }) => {
+    if (cmd === 'docker' && args[5] === 'run' && !args.includes('OVERLAY_WAVE2_PHASE=characterize'))
+      await fs.writeFile(join(output, 'input/incumbent-0.tgz'), 'changed');
+  });
+  await assert.rejects(f.run(), /incumbent archive changed/);
 });
 
 test('uncertain final host command disposal retains work and primary failure evidence', async (t) => {
@@ -436,7 +492,7 @@ test('uncertain final host command disposal retains work and primary failure evi
 test('real delayed host child finishes before automation removes its work', async (t) => {
   const controller = new AbortController();
   const f = await fixture(t, async ({ cmd, args, options, output }) => {
-    if (cmd !== 'pnpm' || args[0] !== 'overlay:evaluate:incumbent') return;
+    if (cmd !== 'docker' || !args.includes('OVERLAY_WAVE2_PHASE=characterize')) return;
     const ready = join(output, 'ready'),
       proof = join(output, 'shutdown-proof');
     const source = `const fs=require('node:fs');process.on('SIGTERM',()=>setTimeout(()=>{fs.writeFileSync(process.argv[2],String(fs.existsSync(process.argv[3])));process.exit(0)},300));fs.writeFileSync(process.argv[1],'ready');setInterval(()=>{},1000)`;
@@ -460,7 +516,7 @@ test('real delayed host child finishes before automation removes its work', asyn
   assert.equal(await fs.readFile(join(f.output, 'shutdown-proof'), 'utf8'), 'true');
   await assert.rejects(fs.stat(join(f.output, 'work')), { code: 'ENOENT' });
   const failure = JSON.parse(await fs.readFile(join(f.output, 'failure.json'), 'utf8'));
-  const record = failure.commands.find((c) => c.args[0] === 'overlay:evaluate:incumbent');
+  const record = failure.commands.find((c) => c.args.includes('OVERLAY_WAVE2_PHASE=characterize'));
   assert.equal(record.disposalVerified, true);
   assert.equal(record.processProof.leaderClosed, true);
 });
