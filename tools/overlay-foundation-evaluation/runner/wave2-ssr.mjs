@@ -3,6 +3,7 @@ import { readFile, realpath } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fork } from 'node:child_process';
+import { isDeepStrictEqual } from 'node:util';
 import { createIdentityMeasurements } from '../fixtures/wave2/measurements.mjs';
 import { installWave2ResourceTracker } from '../fixtures/wave2/runtime.mjs';
 import {
@@ -128,6 +129,16 @@ function semantics(root) {
   return { all, target, id, name, role };
 }
 
+export function sameWave2ExecutionRequest(serialized, request) {
+  if (typeof serialized !== 'string') return false;
+  try {
+    const parsed = JSON.parse(serialized);
+    return validateWave2FixtureRequest(parsed).length === 0 && isDeepStrictEqual(parsed, request);
+  } catch {
+    return false;
+  }
+}
+
 export function observeWave2SsrMarkup({
   request,
   renders,
@@ -148,7 +159,7 @@ export function observeWave2SsrMarkup({
     if (
       typeof render.html !== 'string' ||
       typeof render.repeatHtml !== 'string' ||
-      render.requestJSON !== JSON.stringify(request) ||
+      !sameWave2ExecutionRequest(render.requestJSON, request) ||
       render.renderTarget !== controls[index].target ||
       render.contractId !== 'OF-' + request.scenario.scenarioId.split('.')[0].slice(3).toUpperCase()
     )
@@ -323,9 +334,9 @@ export async function executeWave2SsrInWorker({ fixture, request, renderTarget }
     primary,
     rendering = true;
   try {
-    const module = await import(
-      pathToFileURL(fixture.ssrPath).href + '?wave2=' + crypto.randomUUID()
-    );
+    // This worker is already fresh. A query would split entry-module identity
+    // from dynamic chunks importing it, creating a second React dispatcher.
+    const module = await import(pathToFileURL(fixture.ssrPath).href);
     if (typeof module.renderWave2Fixture !== 'function')
       throw fail('SSR bundle must export renderWave2Fixture');
     const controls = request.scenario.operations.filter(
@@ -499,7 +510,7 @@ export async function executeWave2Ssr(
         } else {
           if (
             validateWave2Observation(message.result?.observation).length ||
-            message.result?.bootstrap?.requestJSON !== JSON.stringify(request)
+            !sameWave2ExecutionRequest(message.result?.bootstrap?.requestJSON, request)
           )
             throw fail('invalid SSR worker result');
           response = message.result;

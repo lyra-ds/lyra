@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { test } from 'node:test';
 import { BEHAVIORAL_WAVE_CELLS } from '../contracts/cells.mjs';
 import { MODAL_CELL_POLICIES } from './modal-cells.mjs';
+import { canonicalJson } from '../evidence/results.mjs';
 import { createWave2Runtime, installWave2ResourceTracker } from '../fixtures/wave2/runtime.mjs';
 
 const moduleURL = new URL('./wave2-cells.mjs', import.meta.url);
@@ -555,7 +556,7 @@ test('declared hydration bootstraps exact SSR and preserves focus before hydrati
             bootstrap: {
               html: '<button data-overlay-id="trigger">SSR</button>',
               repeatHtml: '<button data-overlay-id="trigger">SSR</button>',
-              requestJSON: JSON.stringify(request),
+              requestJSON: canonicalJson(request),
               contractId: 'OF-ANCHORED',
               renderTarget,
               facts: { 'browser-globals:accessed': false },
@@ -713,5 +714,46 @@ test('native Unicode boundary preserves down and up failures, detaches and rejec
     if (failure === 'missing') await assert.rejects(input.close());
     else await input.close();
     assert.equal(detached, failure !== 'missing');
+  }
+});
+
+test('hydration rejects altered execution bindings before serving or launching the browser', async () => {
+  const { runWave2Cell } = await import(moduleURL);
+  const { ANCHORED_SCENARIOS } = await import('../contracts/anchored.mjs');
+  const scenario = ANCHORED_SCENARIOS.find((s) => s.scenarioId.includes('hydration-stability'));
+  for (const mutate of [
+    (r) => {
+      r.cell.direction = 'rtl';
+    },
+    (r) => {
+      r.scenario.operations.reverse();
+    },
+    (r) => {
+      r.expected = {};
+    },
+  ]) {
+    const f = fakeBrowser();
+    await assert.rejects(
+      runWave2Cell(
+        {
+          cellId: 'react-19',
+          fixtures: new Map([['19.2.8', {}]]),
+          playwright: f.playwright,
+          scenario,
+        },
+        {
+          ...f.dependencies,
+          executeSsr: async ({ request }) => {
+            const altered = structuredClone(request);
+            mutate(altered);
+            return {
+              bootstrap: { html: '<button>Neutral</button>', requestJSON: canonicalJson(altered) },
+            };
+          },
+        },
+      ),
+      (error) => error.scope === 'run' && /hydration bootstrap/.test(error.message),
+    );
+    assert.deepEqual(f.calls, []);
   }
 });

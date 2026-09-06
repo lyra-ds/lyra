@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { WAVE_2_SCENARIOS } from '../contracts/wave2.mjs';
+import { canonicalJson } from '../evidence/results.mjs';
 import { wave2FixtureRequest } from './wave2-cells.mjs';
 import { installWave2ResourceTracker } from '../fixtures/wave2/runtime.mjs';
 import { validateWave2Observation } from '../fixtures/wave2/protocol.mjs';
@@ -209,8 +210,17 @@ export function renderWave2Fixture({renderTarget}) {
 });
 
 test('SSR worker protocol and disposal failures stay run-fatal and preserve primary errors', async () => {
-  const { executeWave2Ssr } = await import(moduleURL),
+  const { executeWave2Ssr, observeWave2SsrMarkup, loadWave2HtmlParser } = await import(moduleURL),
     { request } = setup('OF-MENU');
+  const { parse } = await loadWave2HtmlParser();
+  const validObservation = observeWave2SsrMarkup({
+    request,
+    parse,
+    resources: resources(),
+    renders: request.scenario.operations.map((op) =>
+      rendered(request, 'OF-MENU', '<button data-overlay-id="trigger">Neutral</button>', op.target),
+    ),
+  });
   for (const mode of [
     'invalid',
     'duplicate-after-error',
@@ -218,6 +228,7 @@ test('SSR worker protocol and disposal failures stay run-fatal and preserve prim
     'timeout',
     'large',
     'invalid-result',
+    'invalid-request',
     'invalid-error',
     'output',
     'output-then-error',
@@ -260,6 +271,16 @@ test('SSR worker protocol and disposal failures stay run-fatal and preserve prim
         if (mode === 'invalid') return child.emit('message', { unknown: true });
         if (mode === 'large')
           return child.emit('message', { ...error, extra: 'a'.repeat(16 * 1024 * 1024) });
+        if (mode === 'invalid-request')
+          return child.emit('message', {
+            schemaVersion: 1,
+            type: 'result',
+            pid: child.pid,
+            result: {
+              observation: validObservation,
+              bootstrap: { requestJSON: JSON.stringify({ ...request, expected: {} }) },
+            },
+          });
         if (mode === 'invalid-result')
           return child.emit('message', {
             schemaVersion: 1,
@@ -322,4 +343,117 @@ test('SSR render failure retains live timer evidence while owned child disposal 
   });
   await delay(600);
   await assert.rejects(readFile(timerPath), { code: 'ENOENT' });
+});
+
+test('real Vite React hook chunks share SSR and hydration bootstrap identity in fresh workers', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'wave2-ssr-bundled-hooks-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const require = createRequire(import.meta.url);
+  const react = require.resolve('react');
+  const server = require.resolve('react-dom/server');
+  const { request } = setup('OF-ANCHORED');
+  const entry = join(root, 'entry.mjs');
+  await writeFile(join(root, 'package.json'), '{"type":"module"}');
+  await writeFile(
+    join(root, 'adapter.mjs'),
+    `import ImportedReact from ${JSON.stringify(react)};
+export function createFixture(React) {
+ return function Fixture() {
+   const injectedId=React.useId(), importedId=ImportedReact.useId();
+   return React.createElement('button', {'data-overlay-id':'trigger','data-same-react':String(React===ImportedReact),'data-injected-id':injectedId,'data-imported-id':importedId},'Hooks');
+ };
+}`,
+  );
+  await writeFile(
+    entry,
+    `import React from ${JSON.stringify(react)};
+import {renderToString} from ${JSON.stringify(server)};
+const request=${canonicalJson(request)};
+export async function renderWave2Fixture({renderTarget}) {
+ const {createFixture}=await import('./adapter.mjs');
+ const Fixture=createFixture(React);
+ const html=renderToString(React.createElement(Fixture));
+ return {html,repeatHtml:renderToString(React.createElement(Fixture)),requestJSON:JSON.stringify(request),contractId:'OF-ANCHORED',renderTarget,facts:{'browser-globals:accessed':false}};
+}`,
+  );
+  const { build } = await import('vite');
+  await build({
+    configFile: false,
+    root,
+    logLevel: 'silent',
+    ssr: { noExternal: true },
+    build: {
+      ssr: entry,
+      outDir: join(root, 'dist'),
+      rollupOptions: {
+        output: { entryFileNames: 'entry-server.mjs', chunkFileNames: 'assets/chunk-[hash].js' },
+      },
+    },
+  });
+  const { executeWave2Ssr } = await import(moduleURL);
+  const fixture = { ssrPath: join(root, 'dist/entry-server.mjs') };
+  const first = await executeWave2Ssr({ fixture, request });
+  const bootstrap = await executeWave2Ssr({ fixture, request, renderTarget: 'server-render-open' });
+  for (const result of [first, bootstrap]) {
+    assert.match(result.bootstrap.html, /data-same-react="true"/);
+    assert.match(result.bootstrap.html, /data-injected-id="[^"]+"/);
+    assert.match(result.bootstrap.html, /data-imported-id="[^"]+"/);
+    assert.equal(result.observation.diagnostics.ssrProcess.disposed, true);
+  }
+  assert.equal(bootstrap.bootstrap.renderTarget, 'server-render-open');
+  assert.notEqual(
+    first.observation.diagnostics.ssrProcess.pid,
+    bootstrap.observation.diagnostics.ssrProcess.pid,
+  );
+});
+
+test('SSR binding accepts canonical key order but rejects malformed or altered execution requests', async () => {
+  const { observeWave2SsrMarkup, loadWave2HtmlParser } = await import(moduleURL);
+  const { parse } = await loadWave2HtmlParser();
+  const { request } = setup('OF-ANCHORED');
+  const renders = request.scenario.operations.map((op) =>
+    rendered(
+      request,
+      'OF-ANCHORED',
+      '<button data-overlay-id="trigger">Neutral</button>',
+      op.target,
+    ),
+  );
+  for (const render of renders) render.requestJSON = canonicalJson(request);
+  assert.notEqual(renders[0].requestJSON, JSON.stringify(request));
+  assert.doesNotThrow(() =>
+    observeWave2SsrMarkup({ request, renders, parse, resources: resources() }),
+  );
+  for (const change of [
+    (value) => {
+      value.cell.direction = 'rtl';
+    },
+    (value) => {
+      value.scenario.operations.reverse();
+    },
+    (value) => {
+      value.expected = {};
+    },
+    (value) => {
+      delete value.cell;
+    },
+  ]) {
+    const altered = structuredClone(request);
+    change(altered);
+    const changed = structuredClone(renders);
+    changed[0].requestJSON = JSON.stringify(altered);
+    assert.throws(
+      () => observeWave2SsrMarkup({ request, renders: changed, parse, resources: resources() }),
+      (error) =>
+        error.scope === 'run' && error.classification === 'policy' && /binding/.test(error.message),
+    );
+  }
+  for (const invalid of ['{', 'null', '[]']) {
+    const changed = structuredClone(renders);
+    changed[0].requestJSON = invalid;
+    assert.throws(
+      () => observeWave2SsrMarkup({ request, renders: changed, parse, resources: resources() }),
+      /binding/,
+    );
+  }
 });

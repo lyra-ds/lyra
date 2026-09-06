@@ -212,7 +212,11 @@ closed bridge preserves the catalog input and requires revalidation when the
 pinned Playwright version changes.
 Chromium axe runs verified axe 4.13.0 in an isolated world over the same DOM;
 its timers do not advance the candidate clock. SSR executes in a fresh owned
-Node child and verifies disposal for every invocation; hydration checks preserve
+Node child and verifies disposal for every invocation. Its bundle entry keeps
+one module URL shared with dynamic chunks, so React uses one dispatcher. SSR
+and hydration bind the entire validated execution request structurally; build
+key sorting does not change request identity, and raw request JSON is retained.
+Hydration checks preserve
 the explicit SSR → focus → hydrate first-tree order.
 
 Unavailable private coordinator, layer, or timer-purpose facts remain lack of

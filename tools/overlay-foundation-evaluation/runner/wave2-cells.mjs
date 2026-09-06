@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { verifyRegularFile } from './artifacts.mjs';
+import { sameWave2ExecutionRequest } from './wave2-ssr.mjs';
 import { MODAL_CELL_POLICIES } from './modal-cells.mjs';
 import { BEHAVIORAL_WAVE_CELLS } from '../contracts/cells.mjs';
 import { isPlainRecord } from '../contracts/protocol.mjs';
@@ -769,7 +770,7 @@ export async function runWave2Cell(
         hydration &&
         (!isPlainRecord(ssr) ||
           typeof ssr.html !== 'string' ||
-          ssr.requestJSON !== JSON.stringify(request))
+          !sameWave2ExecutionRequest(ssr.requestJSON, request))
       )
         throw fatal('invalid exact hydration bootstrap');
       server = await startServer({ fixture, request, initialMarkup: ssr?.html });
