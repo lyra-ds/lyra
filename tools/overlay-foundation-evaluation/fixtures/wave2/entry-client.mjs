@@ -47,7 +47,39 @@ export async function mountWave2FixtureClient({
   if (!factories[contractId]) throw new Error('invalid Wave2 client contract');
   const tracker = installTracker(scope);
   let instrumentation, root, handle;
+  let mountFailureCleanupErrors;
+  let mountFailureResult;
   const facts = {};
+  const cleanupMountFailure = () => {
+    if (mountFailureCleanupErrors) return mountFailureCleanupErrors;
+    const errors = [];
+    try {
+      if (root) ReactDOM.flushSync(() => root.unmount());
+    } catch (error) {
+      errors.push(error);
+    }
+    try {
+      instrumentation?.restore();
+    } catch (error) {
+      errors.push(error);
+    }
+    try {
+      tracker.restore();
+    } catch (error) {
+      errors.push(error);
+    }
+    mountFailureCleanupErrors = errors;
+    return errors;
+  };
+  const mountFailure = (primary) => {
+    if (mountFailureResult) return mountFailureResult;
+    const errors = cleanupMountFailure();
+    mountFailureResult =
+      errors.length > 0
+        ? new AggregateError([primary, ...errors], 'Wave2 mount and cleanup failed')
+        : primary;
+    return mountFailureResult;
+  };
   const retainFacts = (incoming) => {
     if (incoming === undefined) return;
     for (const [key, type] of Object.entries(factTypes))
@@ -125,54 +157,64 @@ export async function mountWave2FixtureClient({
         throw new Error('hydration server tree does not match actual root');
     }
     const mount = async (hydrate) => {
-      const [factoryName, fixtureName] = factories[contractId];
-      const adapter = await loadAdapter();
-      const { [fixtureName]: Fixture } = await adapter[factoryName]({
-        React,
-        ReactDOM,
-        environment: scope,
-        driver,
-        measureAccessibility,
-        instrumentation,
-      });
-      const beforeTree = container.innerHTML;
-      let warnings = 0;
-      let resolveReady;
-      const ready = new Promise((resolve) => {
-        resolveReady = resolve;
-      });
-      const element = React.createElement(Fixture, {
-        request,
-        renderTarget: server?.renderTarget,
-        onReady(value) {
-          handle = value;
-          resolveReady();
-        },
-      });
-      const originalError = scope.console?.error;
-      if (hydrate && originalError)
-        scope.console.error = (...args) => {
-          if (/hydration|hydrat|server.rendered/i.test(args.map(String).join(' '))) warnings++;
-          originalError.apply(scope.console, args);
-        };
       try {
-        if (hydrate)
-          root = hydrateRoot(container, element, {
-            onRecoverableError() {
-              warnings++;
+        const [factoryName, fixtureName] = factories[contractId];
+        const adapter = await loadAdapter();
+        const { [fixtureName]: Fixture } = await adapter[factoryName]({
+          React,
+          ReactDOM,
+          environment: scope,
+          driver,
+          measureAccessibility,
+          instrumentation,
+        });
+        const beforeTree = container.innerHTML;
+        let warnings = 0;
+        const ready = Promise.withResolvers();
+        const element = React.createElement(Fixture, {
+          request,
+          renderTarget: server?.renderTarget,
+          onReady(value) {
+            handle = value;
+            ready.resolve();
+          },
+        });
+        const originalError = scope.console?.error;
+        if (hydrate && originalError)
+          scope.console.error = (...args) => {
+            if (/hydration|hydrat|server.rendered/i.test(args.map(String).join(' '))) warnings++;
+            originalError.apply(scope.console, args);
+          };
+        try {
+          const rootOptions = {
+            onCaughtError(error) {
+              ready.reject(error);
             },
-          });
-        else {
-          root = createRoot(container);
-          ReactDOM.flushSync(() => root.render(element));
+            onUncaughtError(error) {
+              ready.reject(error);
+            },
+          };
+          if (hydrate)
+            root = hydrateRoot(container, element, {
+              ...rootOptions,
+              onRecoverableError() {
+                warnings++;
+              },
+            });
+          else {
+            root = createRoot(container, rootOptions);
+            ReactDOM.flushSync(() => root.render(element));
+          }
+          await ready.promise;
+          if (hydrate) {
+            facts['first-tree:identical'] = beforeTree === container.innerHTML;
+            facts['hydration-warnings:count'] = warnings;
+          }
+        } finally {
+          if (hydrate && originalError) scope.console.error = originalError;
         }
-        await ready;
-        if (hydrate) {
-          facts['first-tree:identical'] = beforeTree === container.innerHTML;
-          facts['hydration-warnings:count'] = warnings;
-        }
-      } finally {
-        if (hydrate && originalError) scope.console.error = originalError;
+      } catch (primary) {
+        throw mountFailure(primary);
       }
     };
     if (!server) await mount(false);
@@ -265,25 +307,7 @@ export async function mountWave2FixtureClient({
       cleanup,
     });
   } catch (primary) {
-    const errors = [primary];
-    try {
-      if (root) ReactDOM.flushSync(() => root.unmount());
-    } catch (error) {
-      errors.push(error);
-    }
-    try {
-      instrumentation?.restore();
-    } catch (error) {
-      errors.push(error);
-    }
-    try {
-      tracker.restore();
-    } catch (error) {
-      errors.push(error);
-    }
-    throw errors.length > 1
-      ? new AggregateError(errors, 'Wave2 mount and cleanup failed')
-      : primary;
+    throw mountFailure(primary);
   }
 }
 

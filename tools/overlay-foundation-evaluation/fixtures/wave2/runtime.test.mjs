@@ -12,6 +12,202 @@ const cell = {
   coarsePointer: false,
 };
 const op = (operation, target = 'popup') => ({ operation, target });
+
+function clientMountHarness({ hydrate = false, rootError, rootErrorCallback, unmountError }) {
+  const request = {
+    schemaVersion: 1,
+    scenario: {
+      scenarioId: 'of-anchored.client-error.v1',
+      operations: hydrate
+        ? [
+            { operation: 'updateContent', target: 'server-render-open' },
+            { operation: 'updateContent', target: 'hydrate-first-tree' },
+          ]
+        : [{ operation: 'open', target: 'trigger' }],
+      probes: [],
+    },
+    cell,
+  };
+  const container = {
+    innerHTML: hydrate ? '<button>SSR</button>' : '',
+    replaceChildren() {},
+  };
+  const cleanup = [];
+  let rootOptions;
+  let fixture;
+  let reportRootError;
+  const rootStarted = Promise.withResolvers();
+  const root = {
+    render() {},
+    unmount() {
+      cleanup.push('unmount');
+      if (unmountError) throw unmountError;
+    },
+  };
+  const scope = {
+    document: {
+      querySelector: () => container,
+      querySelectorAll: () => [],
+      createElement: () => ({ innerHTML: '' }),
+    },
+    ...(hydrate
+      ? {
+          __LYRA_WAVE2_SSR__: {
+            html: container.innerHTML,
+            requestJSON: JSON.stringify(request),
+            contractId: 'OF-ANCHORED',
+            renderTarget: 'server-render-open',
+            facts: {},
+          },
+        }
+      : {}),
+  };
+  const createRoot = (_container, options) => {
+    rootOptions = options;
+    rootStarted.resolve();
+    reportRootError = () => rootErrorCallback?.(options);
+    return root;
+  };
+  const hydrateRoot = (_container, element, options) => {
+    rootOptions = options;
+    rootStarted.resolve();
+    reportRootError = () => rootErrorCallback?.(options);
+    if (!rootError) {
+      reportRootError();
+      element.props.onReady({ operations: {}, observe() {}, destroy() {} });
+    }
+    return root;
+  };
+  return {
+    cleanup,
+    hydrate,
+    request,
+    rootOptions: () => rootOptions,
+    rootStarted: rootStarted.promise,
+    reportRootError: () => reportRootError(),
+    options: {
+      request,
+      contractId: 'OF-ANCHORED',
+      scope,
+      React: { createElement: (type, props) => ({ type, props }) },
+      ReactDOM: { flushSync: (fn) => fn() },
+      createRoot,
+      hydrateRoot,
+      installTracker: () => ({
+        restore() {
+          cleanup.push('tracker');
+        },
+      }),
+      installInstrumentation: () => ({
+        restore() {
+          cleanup.push('instrumentation');
+        },
+      }),
+      createRuntime: () => ({
+        beginScenario(value) {
+          fixture = value.fixture;
+        },
+        runOperation(operation) {
+          return fixture.operations[operation.operation](operation);
+        },
+        destroy() {
+          return fixture.destroy();
+        },
+        observe: () => ({}),
+      }),
+      loadAdapter: async () => ({
+        createAnchoredCandidate: async () => ({ AnchoredFixture() {} }),
+      }),
+      axe: {},
+    },
+    hydrateFixture: () => fixture.operations.updateContent(request.scenario.operations[1]),
+  };
+}
+
+for (const [renderMode, callback] of [
+  ['create', 'onUncaughtError'],
+  ['hydrate', 'onUncaughtError'],
+  ['create', 'onCaughtError'],
+  ['hydrate', 'onCaughtError'],
+])
+  test(`Wave2 ${renderMode} mount rejects ${callback} before readiness and cleans owned resources`, async () => {
+    const renderError = new Error(`${renderMode} ${callback} before readiness`);
+    const h = clientMountHarness({
+      hydrate: renderMode === 'hydrate',
+      rootError: renderError,
+      rootErrorCallback(options) {
+        options?.[callback]?.(renderError);
+      },
+    });
+    const { mountWave2FixtureClient } = await import('./entry-client.mjs');
+    if (h.hydrate) {
+      const mounted = await mountWave2FixtureClient(h.options);
+      const hydration = h.hydrateFixture();
+      await h.rootStarted;
+      assert.equal(typeof h.rootOptions()?.[callback], 'function');
+      h.reportRootError();
+      await assert.rejects(hydration, (error) => error === renderError);
+    } else {
+      const mount = mountWave2FixtureClient(h.options);
+      await h.rootStarted;
+      assert.equal(typeof h.rootOptions()?.[callback], 'function');
+      h.reportRootError();
+      await assert.rejects(mount, (error) => error === renderError);
+    }
+    assert.deepEqual(h.cleanup, ['unmount', 'instrumentation', 'tracker']);
+  });
+
+for (const renderMode of ['create', 'hydrate'])
+  test(`Wave2 ${renderMode} mount preserves flat errors when cleanup fails`, async () => {
+    const renderError = new Error(`${renderMode} render failure`);
+    const cleanupError = new Error(`${renderMode} unmount failure`);
+    const h = clientMountHarness({
+      hydrate: renderMode === 'hydrate',
+      rootError: renderError,
+      unmountError: cleanupError,
+      rootErrorCallback(options) {
+        options?.onUncaughtError?.(renderError);
+      },
+    });
+    const { mountWave2FixtureClient } = await import('./entry-client.mjs');
+    let failure;
+    if (h.hydrate) {
+      const mounted = await mountWave2FixtureClient(h.options);
+      const hydration = h.hydrateFixture();
+      await h.rootStarted;
+      h.reportRootError();
+      failure = await hydration.catch((error) => error);
+    } else {
+      const mount = mountWave2FixtureClient(h.options);
+      await h.rootStarted;
+      h.reportRootError();
+      failure = await mount.catch((error) => error);
+    }
+    assert.ok(failure instanceof AggregateError);
+    assert.strictEqual(failure.errors[0], renderError);
+    assert.equal(failure.errors.filter((error) => error === cleanupError).length, 1);
+    assert.equal(failure.errors.length, 2);
+    assert.deepEqual(h.cleanup, ['unmount', 'instrumentation', 'tracker']);
+    assert.equal(h.cleanup.filter((step) => step === 'unmount').length, 1);
+    assert.equal(h.cleanup.filter((step) => step === 'instrumentation').length, 1);
+    assert.equal(h.cleanup.filter((step) => step === 'tracker').length, 1);
+  });
+
+test('Wave2 hydration recoverable errors retain warning handling and resolve readiness', async () => {
+  const h = clientMountHarness({
+    hydrate: true,
+    rootErrorCallback(options) {
+      options?.onRecoverableError?.(new Error('recoverable hydration warning'));
+    },
+  });
+  const { mountWave2FixtureClient } = await import('./entry-client.mjs');
+  const mounted = await mountWave2FixtureClient(h.options);
+  const hydrate = h.hydrateFixture();
+  await hydrate;
+  assert.equal(typeof h.rootOptions().onRecoverableError, 'function');
+  assert.deepEqual(h.cleanup, []);
+  await mounted.destroy();
+});
 function harness(operations, probes = []) {
   const pending = new Map();
   let next = 0;
