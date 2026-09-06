@@ -1,6 +1,6 @@
 # Routing — lyra-ds
 
-<!-- inputs: profile.md@sha256:456c5a4659bb -->
+<!-- inputs: profile.md@sha256:09a62f4cbe73 -->
 
 Reconfigured on 2026-09-06, preserving approved lane assignments and applying
 the user's GLM replacement. Legacy Trivial/Complex names map to low/high.

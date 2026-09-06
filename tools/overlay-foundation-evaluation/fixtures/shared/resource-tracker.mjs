@@ -399,7 +399,6 @@ export function installResourceTracker(
     },
     restore() {
       if (restored) return false;
-      if (scope[globalTrackerKey] !== tracker) return false;
       if (targetPrototype !== undefined && typeof originalAdd === 'function') {
         targetPrototype.addEventListener = originalAdd;
       }

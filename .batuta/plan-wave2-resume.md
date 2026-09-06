@@ -18,7 +18,20 @@ The import checks establish the integrity and revision binding of existing
 evidence. Independent local review and subsequent CI verification are recorded
 separately below.
 
-## Next checkpoint
+## Current remote checkpoint
+
+Corrections through `9b5e24c` were published to PR #219. All four Linux CI jobs
+passed in run `34049894386`; CodeRabbit accepted the four fixes and withdrew
+the modal strictness suggestion. The original five threads are resolved.
+The subsequent review raised two Batuta documentation clarifications and an
+unnecessary tracker guard; this follow-up addresses those items.
+
+On resumption, inspect checks and new review findings for the actual current PR
+HEAD, then obtain reviewer approval before considering merge. Do not repeat
+publishing or CI inspection for an older completed checkpoint merely because
+a historical section below mentions it. No merge has been authorized.
+
+## Historical readiness checkpoint
 
 Local review is approved. The detailed verdict and dispositions are in
 `runs/2026-09-06-wave2-final-review.md`. The user-selected GLM model completed
@@ -66,8 +79,9 @@ See `review-pr219.md` for dispositions, commits, and verification limits.
 Controller verification: 144 fixture/protocol/entry tests and 88 candidate
 adapter tests pass without skips. The full core suite cannot pass on this macOS
 host: its unchanged evidence traversal requires Linux `/proc/self/fd`.
-Next: publish the corrections, inspect Linux CI and remote review at the new
-HEAD, then obtain reviewer approval before considering merge. Historical
+Historical next step at the time of this local verification: publish the
+corrections and inspect Linux CI. Those actions completed at `9b5e24c` in run
+`34049894386`; use the current remote checkpoint above for further work.
 Run 10 evidence and original gate results remain bound to their exact revisions.
 
 ## Reviewed target and contract

@@ -47,3 +47,18 @@ denied. The controller completed the mutation proof using an in-memory backup
 and a finally-based byte-for-byte restore. One feedback pass corrected the
 modal wrong-family case. Tests use `TMPDIR=/private/tmp` on macOS to avoid
 pre-existing lexical-versus-canonical path assertions in other entry cases.
+
+## Subsequent review checkpoint
+
+All four Linux CI jobs passed at `9b5e24c` in run `34049894386`. CodeRabbit
+accepted the four original fixes and withdrew its modal compatibility finding.
+The original five threads are resolved. These results do not claim CI for any
+subsequent commit.
+
+The next three comments are addressed in this follow-up: historical next steps
+are labeled and the current remote checkpoint is explicit; Codex file-based
+brief guidance explicitly excludes the verified OpenCode/GLM inline path; and
+the redundant active-slot guard is removed. The supported reinstall sequence
+already uses the restored flag to keep an old restore harmless. Existing
+regression tests retain coverage of that behavior without inventing an external
+replacement of the private tracker slot.

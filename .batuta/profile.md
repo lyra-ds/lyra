@@ -76,12 +76,13 @@ output (5min+ each); the inline probe answered in seconds and the SAME content
 pasted inline into the argument completed in one clean round. The current low/research model is `opencode/glm-5.3-flash`; pass its brief
 inline as verified during the September 6 review and CI correction.
 
-Lessons from the Phase 6b lots, each with the evidence that produced it. They
-apply to every executor, not just codex.
+Lessons from the Phase 6b lots, each with the evidence that produced it.
+Apply them within their stated executor scope. OpenCode / GLM is an explicit
+exception to the file-based delivery rule below: keep its brief inline.
 
-**The work lives in the brief file, not the prompt.** The invocation that
+**Codex lot briefs use files.** For the historical Codex lots, the invocation that
 delivered Lots 1, 2, and 3 in one clean round each was literally one line:
-`Follow the instructions in .batuta/lot-NN-<slug>.md, which sits on top of the shared brief .batuta/brief-phase06b-fanout.md. Read both in full before writing anything. Work from the repo root; do not commit.` Keep the prompt minimal and the brief rich; long inline instructions are where executor-internal workflows get confused.
+`Follow the instructions in .batuta/lot-NN-<slug>.md, which sits on top of the shared brief .batuta/brief-phase06b-fanout.md. Read both in full before writing anything. Work from the repo root; do not commit.` For Codex lot delivery, keep the prompt minimal and the brief rich. This historical file-based guidance does not override the verified inline delivery required for OpenCode / GLM.
 
 **Always redirect `< /dev/null` to codex stdin** (user rule, 2026-07-26). Without
 it codex fails intermittently and **lies about why**: in Lots 4 and 5 it claimed

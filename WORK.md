@@ -40,8 +40,11 @@
       resource reconciliation declined with compatibility proof (15/15 legacy
       tests pass, four fail under the proposed strict flag). Full disposition:
       [.batuta/review-pr219.md](.batuta/review-pr219.md).
-- [ ] **Wave 2 remote checkpoint** — publish verified review corrections and
-      inspect the new Linux CI and CodeRabbit results before integration.
+- [ ] **Wave 2 remote checkpoint** — corrections through `9b5e24c` are published;
+      all four Linux CI checks passed in run `34049894386`. The initial five
+      threads are resolved. This follow-up clarifies two Batuta instructions
+      and removes an unnecessary tracker guard. Inspect checks/review for the
+      actual current HEAD before integration.
       Full local core verification is not green on macOS because its existing
       evidence traversal requires Linux `/proc/self/fd`. Reviewer approval and
       merge remain separate. Resume state:
