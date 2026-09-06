@@ -29,7 +29,7 @@
         "OF-TOOLTIP"
       ],
       "id": "incumbent",
-      "revision": "836714a146567d459da824d3076ab13b0b42362f"
+      "revision": "ce36f326c8fc4bd2907d63598066422bb6811a4c"
     },
     {
       "adapter": "candidates/radix.mjs",
@@ -158,7 +158,7 @@
       "id": "zag"
     }
   ],
-  "lyraRevision": "836714a146567d459da824d3076ab13b0b42362f",
+  "lyraRevision": "ce36f326c8fc4bd2907d63598066422bb6811a4c",
   "schemaVersion": 1,
   "toolchain": {
     "node": "24.18.0",
