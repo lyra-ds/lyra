@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFile, mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { readFile, mkdir, mkdtemp, writeFile, rm, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -469,7 +469,9 @@ export function adapterSuite(family) {
     assert.equal(loaded.fixture.measureRole('missing'), undefined);
   });
   test(`${family} imports resolve from exact synthetic isolated package entrypoints`, async (t) => {
-    const root = await mkdtemp(join(tmpdir(), `lyra-${family}-adapters-`));
+    // Vite moduleParsed ids are realpath-resolved, so the isolation root must be
+    // canonical too or containment rejects valid paths on symlinked TMPDIR hosts.
+    const root = await realpath(await mkdtemp(join(tmpdir(), `lyra-${family}-adapters-`)));
     t.after(() => rm(root, { recursive: true, force: true }));
     const sourceRoot = new URL('../', import.meta.url);
     for (const path of ['fixtures/wave2/react-fixture.mjs', 'fixtures/wave2/measurements.mjs']) {
