@@ -28,7 +28,7 @@ this review, extending the earlier import-only checks below.
 
 The user authorized the remote checkpoint and subsequent readiness after green CI.
 The initial push/update proof is `runs/2026-09-06-wave2-pr-219-update.json`.
-PR #219 is now OPEN and ready for review at
+PR #219 was verified OPEN and ready for review at
 `cb6bf30d785189203dd1f25e43f5d267cb851c38`; its exact English body matches
 `pr-219-body.md`. All four CI jobs passed in run `34044794817`.
 CodeRabbit was pending and reviewer approval was required at readback, with
@@ -43,7 +43,7 @@ and are included in this PR with the imported checkpoint.
 The user authorized marking PR #219 ready for review once CI passes. Merge
 remains a separate decision. Run `34043225940` completed: lint, typecheck, and
 build passed; test failed at two real-Vite fixture tests with Git dubious
-checkout ownership. No review threads exist; CodeRabbit skipped the draft.
+checkout ownership. At that draft checkpoint no review threads existed; CodeRabbit skipped the draft.
 The controller reproduced the same failure using
 `GIT_TEST_ASSUME_DIFFERENT_OWNER=1`. The one-file test-only correction was completed by OpenCode /
 `opencode/glm-5.3-flash` and pushed as `cb6bf30`. Controller verification passed
@@ -53,6 +53,22 @@ CI run `34044794817` passed lint, typecheck, build, and test, including the
 browser matrix and compatibility checks. The authorized ready-for-review
 transition completed and was verified; the implementation worktree is clean
 and synchronized. The evaluated evidence remains bound to its original revisions.
+
+## CodeRabbit follow-up — 2026-09-06
+
+Four corrections are locally verified: caught/uncaught render failure readiness
+and deferred hydration cleanup; fresh tracker installation after restore;
+canonical isolated bundle roots; exact declared-entry rejection assertions.
+The proposed strict modal resource flag was declined with a compatibility proof
+because the approved plan requires preserving the existing modal protocol.
+See `review-pr219.md` for dispositions, commits, and verification limits.
+
+Controller verification: 144 fixture/protocol/entry tests and 88 candidate
+adapter tests pass without skips. The full core suite cannot pass on this macOS
+host: its unchanged evidence traversal requires Linux `/proc/self/fd`.
+Next: publish the corrections, inspect Linux CI and remote review at the new
+HEAD, then obtain reviewer approval before considering merge. Historical
+Run 10 evidence and original gate results remain bound to their exact revisions.
 
 ## Reviewed target and contract
 

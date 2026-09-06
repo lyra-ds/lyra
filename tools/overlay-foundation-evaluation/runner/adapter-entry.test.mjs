@@ -72,29 +72,50 @@ test('rejects unknown, composed, missing, and mismatched contract entries', asyn
 });
 
 for (const [contractId, [exportName, directory]] of Object.entries(entries)) {
-  test(`rejects unsafe ${contractId} paths and entries`, async (t) => {
+  test(`rejects unsafe ${contractId} declared paths`, async (t) => {
+    const setup = await fixture(t);
+    const entryDirectory = join(setup.candidates, directory);
+    await mkdir(entryDirectory, { recursive: true });
+    await writeFile(join(entryDirectory, 'radix.mjs'), 'export {};\n');
+    const wrongDirectory = directory === 'modal' ? 'anchored' : 'modal';
+    await mkdir(join(setup.candidates, wrongDirectory), { recursive: true });
+    await writeFile(join(setup.candidates, wrongDirectory, 'radix.mjs'), 'export {};\n');
+    const base = { adapterPath: setup.adapterPath, contractId, repositoryRoot: setup.root };
+    const cases = [
+      ['/tmp/radix.mjs', `adapterModule.${exportName} must be relative`],
+      [`../${directory}/radix.mjs`, `adapterModule.${exportName} must be relative`],
+      [
+        `candidates/${directory}/other.mjs`,
+        `${exportName} must name the exact candidate ${directory} entry`,
+      ],
+      [
+        `candidates/${wrongDirectory}/radix.mjs`,
+        `${exportName} must name the exact candidate ${directory} entry`,
+      ],
+    ];
+    for (const [declaredPath, message] of cases) {
+      await assert.rejects(
+        resolveContractEntry({ ...base, adapterModule: { [exportName]: declaredPath } }),
+        { message },
+      );
+    }
+  });
+}
+
+for (const [contractId, [exportName, directory]] of Object.entries(entries)) {
+  test(`rejects a directory presented as the ${contractId} entry`, async (t) => {
     const setup = await fixture(t);
     const entryDirectory = join(setup.candidates, directory);
     await mkdir(entryDirectory, { recursive: true });
     await mkdir(join(entryDirectory, 'radix.mjs'));
-    const base = { adapterPath: setup.adapterPath, contractId, repositoryRoot: setup.root };
-    for (const declaredPath of [
-      '/tmp/radix.mjs',
-      `../${directory}/radix.mjs`,
-      'candidates/modal/radix.mjs',
-      `candidates/${directory}/other.mjs`,
-    ]) {
-      await assert.rejects(
-        resolveContractEntry({ ...base, adapterModule: { [exportName]: declaredPath } }),
-        /relative|exact|candidate|regular file/u,
-      );
-    }
     await assert.rejects(
       resolveContractEntry({
-        ...base,
         adapterModule: { [exportName]: `candidates/${directory}/radix.mjs` },
+        adapterPath: setup.adapterPath,
+        contractId,
+        repositoryRoot: setup.root,
       }),
-      /regular file|file/u,
+      { message: `${directory} entry must resolve to a regular file` },
     );
   });
 }

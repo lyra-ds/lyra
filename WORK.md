@@ -32,9 +32,19 @@
       `34044794817` passed at `cb6bf30`; PR #219 marked ready for review under
       user authorization. Exact HEAD/body and non-draft OPEN state verified.
       Proof: `.batuta/runs/2026-09-06-wave2-ready-proof.json`.
-- [ ] **Wave 2 remote review** — CodeRabbit pending and reviewer approval required
-      at the readiness checkpoint; zero unresolved threads. Merge remains a
-      separate decision. Batuta configuration is included in the same PR. Resume state:
+- [x] **Wave 2 CodeRabbit corrections verified (2026-09-06)** — render readiness
+      and deferred hydration cleanup (`247cc4f`, Codex/Terra plus GLM review),
+      tracker reinstall (`c2d2f7a`, GLM), canonical bundle roots (`69b8905`, GLM),
+      and exact entry rejection tests (GLM plus Codex review). Controller verified
+      144 fixture/protocol/entry tests and 88 candidate tests. Strict modal
+      resource reconciliation declined with compatibility proof (15/15 legacy
+      tests pass, four fail under the proposed strict flag). Full disposition:
+      [.batuta/review-pr219.md](.batuta/review-pr219.md).
+- [ ] **Wave 2 remote checkpoint** — publish verified review corrections and
+      inspect the new Linux CI and CodeRabbit results before integration.
+      Full local core verification is not green on macOS because its existing
+      evidence traversal requires Linux `/proc/self/fd`. Reviewer approval and
+      merge remain separate. Resume state:
       [.batuta/plan-wave2-resume.md](.batuta/plan-wave2-resume.md).
 
 - [x] **Batuta reconfiguration included with Wave 2 (2026-09-06)** — refreshed
