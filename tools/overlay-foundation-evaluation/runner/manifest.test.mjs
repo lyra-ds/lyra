@@ -100,10 +100,13 @@ test('rejects a missing candidate, duplicate contract, credentialed URL, and upp
 
 test('permits a descriptor to declare behavioral contracts beyond the manifest subset', () => {
   const candidate = validManifest.candidates[1];
-  assert.deepEqual(validateAdapterDescriptor(candidate, {
-    candidateId: 'radix',
-    supportedContractIds: ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP'],
-  }), []);
+  assert.deepEqual(
+    validateAdapterDescriptor(candidate, {
+      candidateId: 'radix',
+      supportedContractIds: ['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP'],
+    }),
+    [],
+  );
 });
 
 test('rejects a descriptor with the wrong ID or that omits a manifest contract', () => {

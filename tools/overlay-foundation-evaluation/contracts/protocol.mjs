@@ -86,11 +86,7 @@ const EXACT_COUPLED_IDENTITIES = new Set([
   '@zag-js/dialog',
   'vendor',
 ]);
-const COUPLED_PACKAGE_PREFIXES = Object.freeze([
-  '@radix-ui/',
-  '@base-ui-components/',
-  '@zag-js/',
-]);
+const COUPLED_PACKAGE_PREFIXES = Object.freeze(['@radix-ui/', '@base-ui-components/', '@zag-js/']);
 const IDENTIFIER_COUPLING_TOKENS = new Set(['incumbent', 'lyra', 'radix', 'zag', 'vendor']);
 const CONTROL_KEY_TOKENS = new Set([
   'attr',

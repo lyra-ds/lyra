@@ -4,9 +4,21 @@ import { test } from 'node:test';
 import { BEHAVIORAL_WAVE_CELLS, MODAL_WAVE_CELLS } from './cells.mjs';
 
 const CELLS = [
-  'chromium', 'firefox', 'webkit', 'react-18', 'react-19', 'ssr', 'hydration',
-  'keyboard-focus', 'axe-light', 'axe-dark', 'forced-colors', 'reduced-motion',
-  'ltr', 'rtl', 'coarse-pointer',
+  'chromium',
+  'firefox',
+  'webkit',
+  'react-18',
+  'react-19',
+  'ssr',
+  'hydration',
+  'keyboard-focus',
+  'axe-light',
+  'axe-dark',
+  'forced-colors',
+  'reduced-motion',
+  'ltr',
+  'rtl',
+  'coarse-pointer',
 ];
 
 test('exports the exact deeply frozen behavioral cells and modal compatibility alias', () => {

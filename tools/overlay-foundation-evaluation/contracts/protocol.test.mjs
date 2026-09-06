@@ -346,7 +346,11 @@ for (const identity of ['radix', 'base-ui', 'zag', 'incumbent']) {
   });
 }
 
-for (const identity of ['@radix-ui/react-popover', '@base-ui-components/react/menu', '@zag-js/tooltip']) {
+for (const identity of [
+  '@radix-ui/react-popover',
+  '@base-ui-components/react/menu',
+  '@zag-js/tooltip',
+]) {
   test(`rejects additional candidate package identity ${identity} in normative state`, () => {
     const scenario = structuredClone(validScenario);
     scenario.initial.state.library = identity;

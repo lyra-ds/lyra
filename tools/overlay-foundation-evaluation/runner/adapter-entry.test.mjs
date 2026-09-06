@@ -31,26 +31,44 @@ test('resolves only each matching contract export and strict candidate path', as
     const entry = join(entryDirectory, 'radix.mjs');
     await mkdir(entryDirectory, { recursive: true });
     await writeFile(entry, 'export {};\n');
-    assert.equal(await resolveContractEntry({
-      adapterModule: { [exportName]: `candidates/${directory}/radix.mjs` },
-      adapterPath: setup.adapterPath,
-      contractId,
-      repositoryRoot: setup.root,
-    }), entry);
+    assert.equal(
+      await resolveContractEntry({
+        adapterModule: { [exportName]: `candidates/${directory}/radix.mjs` },
+        adapterPath: setup.adapterPath,
+        contractId,
+        repositoryRoot: setup.root,
+      }),
+      entry,
+    );
   }
 });
 
 test('rejects unknown, composed, missing, and mismatched contract entries', async (t) => {
   const setup = await fixture(t);
-  await assert.rejects(resolveContractEntry({ ...options(setup), contractId: 'OF-COMPOSED' }), /contract/u);
-  await assert.rejects(resolveContractEntry({ ...options(setup), contractId: 'OF-UNKNOWN' }), /contract/u);
-  await assert.rejects(resolveContractEntry({
-    ...options(setup), contractId: 'OF-MENU', adapterModule: {},
-  }), /menuAdapterPath/u);
-  await assert.rejects(resolveContractEntry({
-    ...options(setup), contractId: 'OF-ANCHORED',
-    adapterModule: { anchoredAdapterPath: 'candidates/modal/radix.mjs' },
-  }), /anchoredAdapterPath/u);
+  await assert.rejects(
+    resolveContractEntry({ ...options(setup), contractId: 'OF-COMPOSED' }),
+    /contract/u,
+  );
+  await assert.rejects(
+    resolveContractEntry({ ...options(setup), contractId: 'OF-UNKNOWN' }),
+    /contract/u,
+  );
+  await assert.rejects(
+    resolveContractEntry({
+      ...options(setup),
+      contractId: 'OF-MENU',
+      adapterModule: {},
+    }),
+    /menuAdapterPath/u,
+  );
+  await assert.rejects(
+    resolveContractEntry({
+      ...options(setup),
+      contractId: 'OF-ANCHORED',
+      adapterModule: { anchoredAdapterPath: 'candidates/modal/radix.mjs' },
+    }),
+    /anchoredAdapterPath/u,
+  );
 });
 
 for (const [contractId, [exportName, directory]] of Object.entries(entries)) {
@@ -72,7 +90,10 @@ for (const [contractId, [exportName, directory]] of Object.entries(entries)) {
       );
     }
     await assert.rejects(
-      resolveContractEntry({ ...base, adapterModule: { [exportName]: `candidates/${directory}/radix.mjs` } }),
+      resolveContractEntry({
+        ...base,
+        adapterModule: { [exportName]: `candidates/${directory}/radix.mjs` },
+      }),
       /regular file|file/u,
     );
   });
@@ -84,7 +105,10 @@ test('rejects a main adapter path outside the direct candidates directory', asyn
   const nested = join(setup.candidates, 'nested', 'radix.mjs');
   await mkdir(join(setup.candidates, 'nested'), { recursive: true });
   await writeFile(nested, 'export {};\n');
-  await assert.rejects(resolveContractEntry({ ...options(setup), adapterPath: nested }), /direct candidate/u);
+  await assert.rejects(
+    resolveContractEntry({ ...options(setup), adapterPath: nested }),
+    /direct candidate/u,
+  );
 });
 
 function options(setup, modalAdapterPath) {

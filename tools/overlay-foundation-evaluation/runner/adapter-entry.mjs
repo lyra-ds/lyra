@@ -23,7 +23,12 @@ async function requiredRealpath(path, message) {
   }
 }
 
-export async function resolveContractEntry({ adapterModule, adapterPath, contractId, repositoryRoot }) {
+export async function resolveContractEntry({
+  adapterModule,
+  adapterPath,
+  contractId,
+  repositoryRoot,
+}) {
   const entryConfig = CONTRACT_ENTRIES[contractId];
   if (!entryConfig) throw new Error('contract requires a supported behavioral entry');
   if (typeof repositoryRoot !== 'string' || !isAbsolute(repositoryRoot)) {
@@ -55,7 +60,9 @@ export async function resolveContractEntry({ adapterModule, adapterPath, contrac
   }
   const exactDeclaredPath = `candidates/${entryConfig.directory}/${candidateId}.mjs`;
   if (declaredPath !== exactDeclaredPath) {
-    throw new Error(`${entryConfig.exportName} must name the exact candidate ${entryConfig.directory} entry`);
+    throw new Error(
+      `${entryConfig.exportName} must name the exact candidate ${entryConfig.directory} entry`,
+    );
   }
 
   const contractDirectoryReal = await requiredRealpath(
@@ -70,14 +77,19 @@ export async function resolveContractEntry({ adapterModule, adapterPath, contrac
     `${entryConfig.directory} entry does not resolve to an existing file`,
   );
   if (!isStrictDescendant(contractDirectoryReal, entryReal)) {
-    throw new Error(`${entryConfig.directory} entry must resolve strictly beneath candidates/${entryConfig.directory}`);
+    throw new Error(
+      `${entryConfig.directory} entry must resolve strictly beneath candidates/${entryConfig.directory}`,
+    );
   }
   let entryStat;
   try {
     entryStat = await stat(entryReal);
   } catch (error) {
-    throw new Error(`${entryConfig.directory} entry does not resolve to an existing regular file`, { cause: error });
+    throw new Error(`${entryConfig.directory} entry does not resolve to an existing regular file`, {
+      cause: error,
+    });
   }
-  if (!entryStat.isFile()) throw new Error(`${entryConfig.directory} entry must resolve to a regular file`);
+  if (!entryStat.isFile())
+    throw new Error(`${entryConfig.directory} entry must resolve to a regular file`);
   return entryReal;
 }
