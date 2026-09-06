@@ -4,6 +4,7 @@ import { dirname, extname, isAbsolute, relative, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
 import { verifyRegularFile } from './artifacts.mjs';
 import { sameWave2ExecutionRequest } from './wave2-ssr.mjs';
 import { MODAL_CELL_POLICIES } from './modal-cells.mjs';
@@ -756,7 +757,11 @@ export async function preflightWave2BrowserInputs({ playwright }) {
 
 export async function runWave2Cell(
   { cellId, fixtures, playwright, scenario },
-  { executeSsr: render = executeSsr, startServer = startFixtureServer } = {},
+  {
+    executeSsr: render = executeSsr,
+    startServer = startFixtureServer,
+    monotonicNow = () => performance.now(),
+  } = {},
 ) {
   const policy = WAVE_2_CELL_POLICIES[cellId];
   if (!policy || !(fixtures instanceof Map))
@@ -838,6 +843,7 @@ export async function runWave2Cell(
       for (const cleanup of [
         async () => {
           if (page) {
+            const cleanupDeadline = monotonicNow() + 5000;
             observation = await bounded(
               (async () => {
                 const wire = await page.evaluate(cleanupFixture);
@@ -849,7 +855,10 @@ export async function runWave2Cell(
                 } catch (cause) {
                   throw fatal('Wave2 observation transport is not valid JSON', cause);
                 }
-                return validateObservation(parsed);
+                const validated = validateObservation(parsed);
+                if (monotonicNow() >= cleanupDeadline)
+                  throw fatal('fixture cleanup timed out with candidate clock paused');
+                return validated;
               })(),
               'fixture cleanup',
               5000,

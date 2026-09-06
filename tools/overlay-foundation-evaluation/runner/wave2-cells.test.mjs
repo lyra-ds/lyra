@@ -877,3 +877,122 @@ for (const value of [undefined, NaN, Infinity, () => {}])
       'server.close',
     ]);
   });
+
+for (const elapsed of [4999, 5000, 5100])
+  test(
+    'cleanup monotonic deadline accounts for synchronous parse and validation at ' + elapsed + 'ms',
+    async (t) => {
+      const { runWave2Cell } = await import(moduleURL);
+      let now = 100,
+        cleanupWire;
+      const f = fakeBrowser({
+        cleanupTransport: (wire) => {
+          cleanupWire = wire;
+          return wire;
+        },
+      });
+      const parse = JSON.parse;
+      t.mock.method(JSON, 'parse', (wire, ...args) => {
+        const parsed = parse(wire, ...args);
+        if (wire === cleanupWire) now += elapsed;
+        return parsed;
+      });
+      const task = runWave2Cell(
+        {
+          cellId: 'chromium',
+          fixtures: new Map([['19.2.8', {}]]),
+          playwright: f.playwright,
+          scenario: scenario(),
+        },
+        {
+          ...f.dependencies,
+          monotonicNow: () => now,
+        },
+      );
+      if (elapsed < 5000)
+        assert.equal((await task)[0].observation.diagnostics.cleanupObserved, true);
+      else
+        await assert.rejects(
+          task,
+          (error) => error.scope === 'run' && /cleanup.*timed out/.test(error.errors?.[0]?.message),
+        );
+      assert.deepEqual(f.calls.slice(-4), [
+        'page.close',
+        'context.close',
+        'browser.close',
+        'server.close',
+      ]);
+      assert.ok(!f.calls.includes('resume'));
+    },
+  );
+
+test('synchronous cleanup overrun preserves the primary operation error before cleanup error', async () => {
+  const { runWave2Cell } = await import(moduleURL),
+    f = fakeBrowser({ failOperation: 'hover' });
+  let reads = 0;
+  await assert.rejects(
+    runWave2Cell(
+      {
+        cellId: 'chromium',
+        fixtures: new Map([['19.2.8', {}]]),
+        playwright: f.playwright,
+        scenario: scenario(),
+      },
+      { ...f.dependencies, monotonicNow: () => (reads++ === 0 ? 0 : 5100) },
+    ),
+    (error) => {
+      assert.equal(error.errors?.length, 2);
+      assert.equal(error.errors[0].message, 'operation failed');
+      assert.match(error.errors[1].message, /fixture cleanup timed out/);
+      return error.scope === 'run';
+    },
+  );
+  assert.deepEqual(f.calls.slice(-4), [
+    'page.close',
+    'context.close',
+    'browser.close',
+    'server.close',
+  ]);
+});
+
+test('asynchronous cleanup still times out and disposes resources while its promise is pending', async (t) => {
+  const { runWave2Cell } = await import(moduleURL);
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let enter, finish;
+  const entered = new Promise((resolve) => {
+    enter = resolve;
+  });
+  const f = fakeBrowser({
+    cleanupTransport: (wire) => {
+      enter();
+      return new Promise((resolve) => {
+        finish = () => resolve(wire);
+      });
+    },
+  });
+  const task = runWave2Cell(
+    {
+      cellId: 'chromium',
+      fixtures: new Map([['19.2.8', {}]]),
+      playwright: f.playwright,
+      scenario: scenario(),
+    },
+    { ...f.dependencies, monotonicNow: () => 0 },
+  );
+  const rejected = assert.rejects(
+    task,
+    (error) =>
+      error.scope === 'run' && /fixture cleanup timed out/.test(error.errors?.[0]?.message),
+  );
+  await entered;
+  t.mock.timers.tick(5000);
+  await rejected;
+  finish();
+  assert.deepEqual(f.calls.slice(-4), [
+    'page.close',
+    'context.close',
+    'browser.close',
+    'server.close',
+  ]);
+  assert.ok(!f.calls.includes('resume'));
+});
