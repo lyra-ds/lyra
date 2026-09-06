@@ -399,6 +399,7 @@ export function installResourceTracker(
     },
     restore() {
       if (restored) return false;
+      if (scope[globalTrackerKey] !== tracker) return false;
       if (targetPrototype !== undefined && typeof originalAdd === 'function') {
         targetPrototype.addEventListener = originalAdd;
       }
@@ -410,6 +411,7 @@ export function installResourceTracker(
       if (typeof originalSetInterval === 'function') scope.setInterval = originalSetInterval;
       if (typeof originalClearInterval === 'function') scope.clearInterval = originalClearInterval;
       restored = true;
+      delete scope[globalTrackerKey];
       return true;
     },
   });
