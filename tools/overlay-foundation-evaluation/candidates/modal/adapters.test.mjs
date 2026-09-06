@@ -350,7 +350,12 @@ for (const candidate of CANDIDATES) {
   test(`${candidate} exposes one private OF-MODAL entry without loading a vendor`, async () => {
     const main = await import(`../${candidate}.mjs`);
     assert.equal(main.adapterDescriptor.candidateId, candidate);
-    assert.deepEqual(main.adapterDescriptor.supportedContractIds, ['OF-MODAL']);
+    assert.deepEqual(main.adapterDescriptor.supportedContractIds, [
+      'OF-MODAL',
+      'OF-ANCHORED',
+      'OF-MENU',
+      'OF-TOOLTIP',
+    ]);
     assert.equal(main.modalAdapterPath, `candidates/modal/${candidate}.mjs`);
     if (candidate === 'incumbent') {
       assert.deepEqual(main.incumbentDescriptor.supportedContractIds, CONTRACT_IDS);

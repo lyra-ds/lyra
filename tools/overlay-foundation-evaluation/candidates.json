@@ -23,10 +23,13 @@
         }
       ],
       "contracts": [
-        "OF-MODAL"
+        "OF-MODAL",
+        "OF-ANCHORED",
+        "OF-MENU",
+        "OF-TOOLTIP"
       ],
       "id": "incumbent",
-      "revision": "e3b51148ef41da6b3b2b44718d740b96fcc35c17"
+      "revision": "ce36f326c8fc4bd2907d63598066422bb6811a4c"
     },
     {
       "adapter": "candidates/radix.mjs",
@@ -39,10 +42,40 @@
           "source": "registry",
           "tarballUrl": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.1.23.tgz",
           "version": "1.1.23"
+        },
+        {
+          "license": "MIT",
+          "name": "@radix-ui/react-popover",
+          "repositoryUrl": "https://github.com/radix-ui/primitives",
+          "sha256": "c003d54e1716f00bafc5b7ccd4f3f126ffeded2ada9ae4146c272d1cb463e639",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@radix-ui/react-popover/-/react-popover-1.1.23.tgz",
+          "version": "1.1.23"
+        },
+        {
+          "license": "MIT",
+          "name": "@radix-ui/react-dropdown-menu",
+          "repositoryUrl": "https://github.com/radix-ui/primitives",
+          "sha256": "611afe4ccb51032fa5bde4efeb247e466f21cbe6ea749eaa2fb698bed7e6d056",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@radix-ui/react-dropdown-menu/-/react-dropdown-menu-2.1.24.tgz",
+          "version": "2.1.24"
+        },
+        {
+          "license": "MIT",
+          "name": "@radix-ui/react-tooltip",
+          "repositoryUrl": "https://github.com/radix-ui/primitives",
+          "sha256": "694f4194eaa0631f12335328f614163705b591e76dcb90f1dcdbe3ba9cb455e0",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@radix-ui/react-tooltip/-/react-tooltip-1.2.16.tgz",
+          "version": "1.2.16"
         }
       ],
       "contracts": [
-        "OF-MODAL"
+        "OF-MODAL",
+        "OF-ANCHORED",
+        "OF-MENU",
+        "OF-TOOLTIP"
       ],
       "id": "radix"
     },
@@ -60,7 +93,10 @@
         }
       ],
       "contracts": [
-        "OF-MODAL"
+        "OF-MODAL",
+        "OF-ANCHORED",
+        "OF-MENU",
+        "OF-TOOLTIP"
       ],
       "id": "base-ui"
     },
@@ -78,6 +114,33 @@
         },
         {
           "license": "MIT",
+          "name": "@zag-js/popover",
+          "repositoryUrl": "https://github.com/chakra-ui/zag",
+          "sha256": "b11dc92a737efa68cfe06407049fabbd6aa87563239022f84bf5cad00b6a7b48",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@zag-js/popover/-/popover-1.43.3.tgz",
+          "version": "1.43.3"
+        },
+        {
+          "license": "MIT",
+          "name": "@zag-js/menu",
+          "repositoryUrl": "https://github.com/chakra-ui/zag",
+          "sha256": "ca13d29ed055add22c9ea31c817be9fc2003ba2e309edf18ce5ffc3838cbe432",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@zag-js/menu/-/menu-1.43.3.tgz",
+          "version": "1.43.3"
+        },
+        {
+          "license": "MIT",
+          "name": "@zag-js/tooltip",
+          "repositoryUrl": "https://github.com/chakra-ui/zag",
+          "sha256": "de95ba7649557e433362d1b11abb38e99d361234aa6336da5d5f60ce4e4e5ace",
+          "source": "registry",
+          "tarballUrl": "https://registry.npmjs.org/@zag-js/tooltip/-/tooltip-1.43.3.tgz",
+          "version": "1.43.3"
+        },
+        {
+          "license": "MIT",
           "name": "@zag-js/react",
           "repositoryUrl": "https://github.com/chakra-ui/zag",
           "sha256": "cf435e6fe4857d04aa2037e33dadaf9ec283c3159a95dca3c81023883e7f3f5c",
@@ -87,12 +150,15 @@
         }
       ],
       "contracts": [
-        "OF-MODAL"
+        "OF-MODAL",
+        "OF-ANCHORED",
+        "OF-MENU",
+        "OF-TOOLTIP"
       ],
       "id": "zag"
     }
   ],
-  "lyraRevision": "e3b51148ef41da6b3b2b44718d740b96fcc35c17",
+  "lyraRevision": "ce36f326c8fc4bd2907d63598066422bb6811a4c",
   "schemaVersion": 1,
   "toolchain": {
     "node": "24.18.0",

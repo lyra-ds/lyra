@@ -18,7 +18,7 @@ export const incumbentDescriptor = Object.freeze({
 
 export const adapterDescriptor = Object.freeze({
   candidateId: 'incumbent',
-  supportedContractIds: Object.freeze(['OF-MODAL']),
+  supportedContractIds: Object.freeze(['OF-MODAL', 'OF-ANCHORED', 'OF-MENU', 'OF-TOOLTIP']),
 });
 
 export const modalAdapterPath = 'candidates/modal/incumbent.mjs';
@@ -166,3 +166,9 @@ export async function characterizeIncumbent({
   }
   return { artifacts, candidateId: 'incumbent', revision, schemaVersion: 1 };
 }
+
+export const anchoredAdapterPath = 'candidates/anchored/incumbent.mjs';
+
+export const menuAdapterPath = 'candidates/menu/incumbent.mjs';
+
+export const tooltipAdapterPath = 'candidates/tooltip/incumbent.mjs';

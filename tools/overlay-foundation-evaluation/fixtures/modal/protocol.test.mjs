@@ -293,3 +293,76 @@ test('rejects non-JSON probe facts', () => {
     /probes\[0\]\.fact must contain JSON values/u,
   );
 });
+
+test('characterization: closed request, cell, observation, and snapshot keys remain stable', () => {
+  assert.deepEqual(Object.keys(validRequest), ['schemaVersion', 'scenario', 'cell']);
+  assert.deepEqual(Object.keys(validRequest.scenario), [
+    'schemaVersion',
+    'revision',
+    'contractId',
+    'scenarioId',
+    'components',
+    'initial',
+    'operations',
+    'probes',
+    'requiredCells',
+    'capture',
+  ]);
+  assert.deepEqual(Object.keys(validRequest.cell), [
+    'id',
+    'reactVersion',
+    'direction',
+    'colorScheme',
+    'forcedColors',
+    'reducedMotion',
+    'coarsePointer',
+  ]);
+  assert.deepEqual(Object.keys(validObservation), [
+    'roles',
+    'relationships',
+    'states',
+    'focus',
+    'events',
+    'announcements',
+    'cleanup',
+    'trace',
+    'diagnostics',
+  ]);
+  for (const key of Object.keys(validRequest.cell)) {
+    const changed = structuredClone(validRequest);
+    delete changed.cell[key];
+    assert.notDeepEqual(validateModalFixtureRequest(changed), [], key);
+  }
+  for (const key of Object.keys(validObservation)) {
+    const changed = structuredClone(validObservation);
+    delete changed[key];
+    assert.notDeepEqual(validateModalObservation(changed), [], key);
+  }
+  for (const mutate of [
+    (v) => (v.extra = true),
+    (v) => (v.trace[0].extra = true),
+    (v) => (v.trace[0].snapshot.extra = true),
+  ]) {
+    const changed = structuredClone(validObservation);
+    mutate(changed);
+    assert.match(validateModalObservation(changed).join(' '), /unsupported/);
+  }
+  const changed = structuredClone(validRequest);
+  changed.scenario.expected = {};
+  assert.match(validateModalFixtureRequest(changed).join(' '), /unsupported/);
+});
+
+test('characterization: diagnostics accept JSON vendor data but never escape to trace facts', () => {
+  for (const value of [undefined, NaN, Infinity, () => {}, new Map()]) {
+    const changed = structuredClone(validObservation);
+    changed.diagnostics.extra = value;
+    assert.match(validateModalObservation(changed).join(' '), /JSON/);
+  }
+  const changed = structuredClone(validObservation);
+  changed.trace[0].snapshot.states.push({
+    target: 'modal-panel',
+    name: 'implementation',
+    value: changed.diagnostics.vendor,
+  });
+  assert.match(validateModalObservation(changed).join(' '), /trace.*vendor/);
+});

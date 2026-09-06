@@ -59,6 +59,28 @@ test('binds one manifest to the exact incumbent characterization revision', () =
   ]);
 });
 
+test('keeps the modal manifest limited to OF-MODAL and the original external artifacts', () => {
+  const manifest = createModalManifest({
+    lyraRevision: revision,
+    incumbentCharacterization: incumbentCharacterization(),
+  });
+  assert.deepEqual(
+    manifest.candidates.map(({ contracts }) => contracts),
+    [['OF-MODAL'], ['OF-MODAL'], ['OF-MODAL'], ['OF-MODAL']],
+  );
+  assert.deepEqual(
+    manifest.candidates.slice(1).map(({ id, artifacts }) => ({
+      id,
+      packages: artifacts.map(({ name }) => name),
+    })),
+    [
+      { id: 'radix', packages: ['@radix-ui/react-dialog'] },
+      { id: 'base-ui', packages: ['@base-ui-components/react'] },
+      { id: 'zag', packages: ['@zag-js/dialog', '@zag-js/react'] },
+    ],
+  );
+});
+
 test('rejects an incumbent characterization bound to another revision', () => {
   assert.throws(
     () =>
@@ -186,8 +208,8 @@ test('runs the manifest CLI when invoked through a symlink', async (t) => {
 });
 
 for (const [name, argv] of [
-  ['unknown argument', ['--unknown', revision]],
-  ['duplicate revision', ['--revision', revision, '--revision', revision]],
+  ['unknown argument', ['--revision', revision, '--unknown', 'unused', '--output', 'unused']],
+  ['duplicate revision', ['--revision', revision, '--revision', revision, '--output', 'unused']],
 ]) {
   test(`rejects ${name} before reading or writing a manifest`, async () => {
     const errors = [];

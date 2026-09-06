@@ -1,34 +1,43 @@
-# Routing — lyra-ds (confirmed during onboarding, 2026-07-20)
+# Routing — lyra-ds
 
-Local copy of the Batuta routing table. Exact executors and models confirmed by
-the user. Note: `opencode` lives in `~/.opencode/bin` — if `command -v opencode`
-fails in a non-interactive shell, prefix
-`export PATH="$HOME/.opencode/bin:$PATH"`.
+<!-- inputs: profile.md@sha256:09a62f4cbe73 -->
 
-| Complexity | Examples                                                                    | Executor                                                      | Cost                |
-| ---------- | --------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------- |
-| Trivial    | rename, config, copy change, simple unit test                               | opencode + `opencode/kimi-k2.7-code`                          | cents (API)         |
-| Medium     | isolated feature, bugfix with clear repro                                   | codex (default model — `gpt-5.6-terra`, ChatGPT subscription) | flat (subscription) |
-| Complex    | multi-file feature/refactor that a self-contained brief fully specifies     | codex `-m gpt-5.6-terra -c model_reasoning_effort="high"`     | flat (subscription) |
-| Critical   | architecture, security-sensitive work, tasks that need conversation context | claude (this session itself)                                  | Claude subscription |
+Reconfigured on 2026-09-06, preserving approved lane assignments and applying
+the user's GLM replacement. Legacy Trivial/Complex names map to low/high.
 
-## Support lanes
+| Lane     | Domain | Executor | Model                            | Reasoning / cost   |
+| -------- | ------ | -------- | -------------------------------- | ------------------ |
+| low      | *      | opencode | `opencode/glm-5.3-flash`         | API usage          |
+| medium   | *      | codex    | `gpt-5.6-terra`                  | Subscription       |
+| high     | *      | codex    | `gpt-5.6-terra`                  | high; subscription |
+| critical | *      | self     | Current conducting session model | Host session       |
 
-| Role     | Examples                                       | Executor                                                               | Cost        |
-| -------- | ---------------------------------------------- | ---------------------------------------------------------------------- | ----------- |
-| Research | map sweep, brief context, "where does X live?" | opencode + `opencode/kimi-k2.7-code` (read-only through brief + guard) | cents (API) |
+## Support lane
 
-Note (2026-07-21): the Research lane moved from `deepseek-v4-flash-free` to the
-paid version — the free tier hung twice (the onboarding map sweep and the Lot C
-scout, both dead without output).
+| Role     | Domain | Executor | Model                    | Contract                         |
+| -------- | ------ | -------- | ------------------------ | -------------------------------- |
+| research | *      | opencode | `opencode/glm-5.3-flash` | Read-only brief and status guard |
 
-Note (2026-07-27): Research moved from `deepseek-v4-flash` to
-`kimi-k2.7-code` (the same model as the Trivial lane — one account only, with
-behavior already known in the project), confirmed in the reconfiguration
-`/batuta:init`.
+## Inventory and retained choices
+
+`batuta inventory` on 2026-09-06 reports `agy`, `claude`, `codex`,
+`cursor-agent`, and `opencode` available. GLM 5.3 Flash and Codex Terra are
+listed. Availability is discovery evidence, not proof of every provider's
+credentials. GLM execution was verified in this session.
+
+Codex and OpenCode retain the approved active assignments. `agy`, `claude`,
+and `cursor-agent` remain available alternatives without assigned lanes;
+using one requires a user routing override. Only these five executors are
+eligible for this project. Installed executors outside that list are excluded.
+
+The user replaced Kimi with `opencode/glm-5.3-flash` for low and research.
+Historical work logs retain the models actually used. `self` means the current
+conducting host, including Codex; it is not a background Claude invocation.
 
 ## Rules
 
-The rules in the plugin's global `routing.md` apply in full (classification
-announced in one line, verbal override, escalation after 2 failures, dormant
-adapters, Complex vs. Critical by the brief test).
+Apply the plugin routing rules: announce lane/domain/model, honor user overrides,
+use explicit model IDs, and escalate one lane after two failed verifications or
+an unavailable executor. Research falls back to controller discovery after two
+failures. Pass OpenCode briefs inline and redirect executor stdin from
+`/dev/null`. Resolve CLIs through PATH; do not assume an obsolete install path.

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { BEHAVIORAL_WAVE_CELLS } from './cells.mjs';
 import {
   MODAL_SCENARIOS,
   MODAL_WAVE_CELLS,
@@ -187,6 +188,7 @@ test('owns exactly the fifteen behavioral modal cells', () => {
     'rtl',
     'coarse-pointer',
   ]);
+  assert.strictEqual(MODAL_WAVE_CELLS, BEHAVIORAL_WAVE_CELLS);
   assert.throws(() => MODAL_WAVE_CELLS.push('bundle-size'), TypeError);
 });
 

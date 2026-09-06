@@ -194,11 +194,8 @@ export function validateAdapterDescriptor(candidate, descriptor) {
   if (Array.isArray(candidate.contracts) && Array.isArray(descriptor.supportedContractIds)) {
     const candidateContracts = new Set(candidate.contracts);
     const descriptorContracts = new Set(descriptor.supportedContractIds);
-    if (
-      candidateContracts.size !== descriptorContracts.size ||
-      [...candidateContracts].some((contractId) => !descriptorContracts.has(contractId))
-    ) {
-      errors.push('adapter descriptor.supportedContractIds must equal manifest contracts');
+    if ([...candidateContracts].some((contractId) => !descriptorContracts.has(contractId))) {
+      errors.push('adapter descriptor.supportedContractIds must include manifest contracts');
     }
   }
   return errors;

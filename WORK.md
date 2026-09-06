@@ -2,6 +2,60 @@
 
 ## In progress
 
+- [x] **Overlay Foundation Wave 2 — local verification and final review complete
+      (2026-09-06)** → controller `self` (Codex), independent reviewer OpenCode /
+      `opencode/glm-5.3-flash` (one invalid round, successful retry). Kimi provider
+      unavailable; Claude attempt failed before review. Tasks 1–8 complete at
+      worktree `../lyra-anchored-wave`, branch `feat/v1-overlay-anchored-wave`,
+      HEAD `cd08797`, evaluated implementation `ce36f32`. All 328 indexed files,
+      all 656 attempt hashes/canonical expected records, exact manifest, 13
+      retained final gate results, and protected scope verified. Eight review
+      criteria complete; three informational notes adjudicated, no blocking
+      findings. Full suites were not rerun. Verdict:
+      [.batuta/runs/2026-09-06-wave2-final-review.md](.batuta/runs/2026-09-06-wave2-final-review.md).
+- [x] **Wave 2 remote checkpoint (2026-09-06, user authorized)** — pushed the
+      28 reviewed implementation commits through `cd08797` and updated draft
+      PR #219 with the prepared English title/body. GitHub HEAD, title, body,
+      OPEN state, and draft status verified; implementation worktree clean and
+      synchronized. CI run `34043225940` started automatically; lint, typecheck,
+      test, and build were in progress at verification. No merge, release,
+      deployment, ready-for-review transition, or manual dispatch performed.
+      Proof: `.batuta/runs/2026-09-06-wave2-pr-219-update.json`.
+- [x] **Wave 2 CI checkout ownership fix** → OpenCode / `opencode/glm-5.3-flash`,
+      low/testing, commit `cb6bf30`, pushed. CI's two real-Vite tests failed on
+      Git dubious ownership; exact-path command-local trust now matches the
+      existing policy-test convention. Controller reproduced RED, then verified
+      56/56 tests with simulated different ownership, plus formatting/scope.
+      No production or manifest change. Trail:
+      `.batuta/runs/2026-09-06-wave2-ci-owner-fix.md`.
+- [x] **Wave 2 CI and review readiness (2026-09-06)** — all four jobs in run
+      `34044794817` passed at `cb6bf30`; PR #219 marked ready for review under
+      user authorization. Exact HEAD/body and non-draft OPEN state verified.
+      Proof: `.batuta/runs/2026-09-06-wave2-ready-proof.json`.
+- [x] **Wave 2 CodeRabbit corrections verified (2026-09-06)** — render readiness
+      and deferred hydration cleanup (`247cc4f`, Codex/Terra plus GLM review),
+      tracker reinstall (`c2d2f7a`, GLM), canonical bundle roots (`69b8905`, GLM),
+      and exact entry rejection tests (GLM plus Codex review). Controller verified
+      144 fixture/protocol/entry tests and 88 candidate tests. Strict modal
+      resource reconciliation declined with compatibility proof (15/15 legacy
+      tests pass, four fail under the proposed strict flag). Full disposition:
+      [.batuta/review-pr219.md](.batuta/review-pr219.md).
+- [ ] **Wave 2 remote checkpoint** — corrections through `9b5e24c` are published;
+      all four Linux CI checks passed in run `34049894386`. The initial five
+      threads are resolved. This follow-up clarifies two Batuta instructions
+      and removes an unnecessary tracker guard. Inspect checks/review for the
+      actual current HEAD before integration.
+      Full local core verification is not green on macOS because its existing
+      evidence traversal requires Linux `/proc/self/fd`. Reviewer approval and
+      merge remain separate. Resume state:
+      [.batuta/plan-wave2-resume.md](.batuta/plan-wave2-resume.md).
+
+- [x] **Batuta reconfiguration included with Wave 2 (2026-09-06)** — refreshed
+      stack, commands, and project map; migrated routing to low/medium/high/critical
+      with domain columns; retained approved models and GLM low/research override.
+      English documentation policy and imported handoff checkpoint accompany
+      PR #219. Superseded August transit handoff removed; history remains in Git.
+
 - [x] **Documentação multi-stack — frente B completa (PRs #176 e o das tasks
       11–12, 2026-08-12); aba Blade acesa** → maestro (claude). Tasks 1–10 do
       plano `docs/superpowers/plans/2026-08-10-docs-multi-stack-frente-b.md`:

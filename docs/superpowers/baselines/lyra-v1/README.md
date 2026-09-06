@@ -129,3 +129,18 @@ The overlay-family specification is approved. A separately approved evaluation
 design and implementation plan must compare the incumbent, Radix, Base UI, and
 the active Zag direction before any candidate dependency or production overlay
 migration is authorized.
+
+The anchored interaction wave adds a local diagnostic for `OF-ANCHORED`,
+`OF-MENU`, and `OF-TOOLTIP`: 11 anchored, 14 menu, and 13 tooltip scenarios across
+the same 15 behavioral cells. From a clean checkout, run
+`env TMPDIR=/private/tmp mise exec node@24.18.0 -- pnpm overlay:evaluate:wave2:auto --output /Volumes/Home/francisross/tmp-builds/lyra-wave2-diagnostic-unique`.
+Choose a new canonical external output directory. The command prepares the exact
+Linux toolchain automatically, validates owned container networking, and retains
+the external manifest, bundle, evidence and command logs. The manifest binds the
+clean pre-manifest revision; only evaluated bytes are tracked afterward. Attempt
+1 stays effective. A 656-record coverage total does not prove execution of tuples
+marked unavailable after core failure. This local diagnostic does not authorize
+production use, foundation selection or changes to V1 ledger statuses. See the
+[harness documentation](../../../../tools/overlay-foundation-evaluation/README.md)
+for the ten pinned artifacts, practical input/clock/SSR limitations and the eight
+later decision-evidence cells.

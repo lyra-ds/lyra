@@ -1,24 +1,9 @@
 import { isDeepStrictEqual } from 'node:util';
 
+import { MODAL_WAVE_CELLS } from './cells.mjs';
 import { validateScenario } from './protocol.mjs';
 
-export const MODAL_WAVE_CELLS = Object.freeze([
-  'chromium',
-  'firefox',
-  'webkit',
-  'react-18',
-  'react-19',
-  'ssr',
-  'hydration',
-  'keyboard-focus',
-  'axe-light',
-  'axe-dark',
-  'forced-colors',
-  'reduced-motion',
-  'ltr',
-  'rtl',
-  'coarse-pointer',
-]);
+export { MODAL_WAVE_CELLS } from './cells.mjs';
 
 function freezeJson(value) {
   if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return value;

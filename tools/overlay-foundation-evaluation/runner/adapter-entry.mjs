@@ -3,6 +3,13 @@ import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 
 import { CANDIDATE_IDS, isPlainRecord } from '../contracts/protocol.mjs';
 
+const CONTRACT_ENTRIES = Object.freeze({
+  'OF-MODAL': Object.freeze({ exportName: 'modalAdapterPath', directory: 'modal' }),
+  'OF-ANCHORED': Object.freeze({ exportName: 'anchoredAdapterPath', directory: 'anchored' }),
+  'OF-MENU': Object.freeze({ exportName: 'menuAdapterPath', directory: 'menu' }),
+  'OF-TOOLTIP': Object.freeze({ exportName: 'tooltipAdapterPath', directory: 'tooltip' }),
+});
+
 function isStrictDescendant(parent, child) {
   const childRelative = relative(parent, child);
   return childRelative !== '' && !childRelative.startsWith('..') && !isAbsolute(childRelative);
@@ -22,18 +29,20 @@ export async function resolveContractEntry({
   contractId,
   repositoryRoot,
 }) {
-  if (contractId !== 'OF-MODAL') throw new Error('modal adapter entry requires OF-MODAL');
+  const entryConfig = CONTRACT_ENTRIES[contractId];
+  if (!entryConfig) throw new Error('contract requires a supported behavioral entry');
   if (typeof repositoryRoot !== 'string' || !isAbsolute(repositoryRoot)) {
     throw new Error('repositoryRoot must be absolute');
   }
   if (typeof adapterPath !== 'string' || !isAbsolute(adapterPath)) {
     throw new Error('adapterPath must be absolute');
   }
-  if (!isPlainRecord(adapterModule) || typeof adapterModule.modalAdapterPath !== 'string') {
-    throw new Error('adapterModule.modalAdapterPath must be a relative string');
+  const declaredPath = adapterModule?.[entryConfig.exportName];
+  if (!isPlainRecord(adapterModule) || typeof declaredPath !== 'string') {
+    throw new Error(`adapterModule.${entryConfig.exportName} must be a relative string`);
   }
-  if (isAbsolute(adapterModule.modalAdapterPath)) {
-    throw new Error('adapterModule.modalAdapterPath must be relative');
+  if (isAbsolute(declaredPath) || declaredPath.startsWith('../')) {
+    throw new Error(`adapterModule.${entryConfig.exportName} must be relative`);
   }
 
   const repositoryReal = await requiredRealpath(repositoryRoot, 'repositoryRoot does not exist');
@@ -49,31 +58,38 @@ export async function resolveContractEntry({
   if (!CANDIDATE_IDS.includes(candidateId) || basename(adapterReal) !== `${candidateId}.mjs`) {
     throw new Error('adapterPath must name an exact candidate module');
   }
-  const declaredPath = `candidates/modal/${candidateId}.mjs`;
-  if (adapterModule.modalAdapterPath !== declaredPath) {
-    throw new Error('modalAdapterPath must name the exact candidate modal entry');
+  const exactDeclaredPath = `candidates/${entryConfig.directory}/${candidateId}.mjs`;
+  if (declaredPath !== exactDeclaredPath) {
+    throw new Error(
+      `${entryConfig.exportName} must name the exact candidate ${entryConfig.directory} entry`,
+    );
   }
 
-  const modalDirectoryReal = await requiredRealpath(
-    join(candidatesReal, 'modal'),
-    'candidates/modal directory does not exist',
+  const contractDirectoryReal = await requiredRealpath(
+    join(candidatesReal, entryConfig.directory),
+    `candidates/${entryConfig.directory} directory does not exist`,
   );
-  if (!isStrictDescendant(candidatesReal, modalDirectoryReal)) {
-    throw new Error('candidates/modal must resolve beneath candidates');
+  if (!isStrictDescendant(candidatesReal, contractDirectoryReal)) {
+    throw new Error(`candidates/${entryConfig.directory} must resolve beneath candidates`);
   }
   const entryReal = await requiredRealpath(
-    join(candidatesReal, 'modal', `${candidateId}.mjs`),
-    'modal entry does not resolve to an existing file',
+    join(candidatesReal, entryConfig.directory, `${candidateId}.mjs`),
+    `${entryConfig.directory} entry does not resolve to an existing file`,
   );
-  if (!isStrictDescendant(modalDirectoryReal, entryReal)) {
-    throw new Error('modal entry must resolve strictly beneath candidates/modal');
+  if (!isStrictDescendant(contractDirectoryReal, entryReal)) {
+    throw new Error(
+      `${entryConfig.directory} entry must resolve strictly beneath candidates/${entryConfig.directory}`,
+    );
   }
   let entryStat;
   try {
     entryStat = await stat(entryReal);
   } catch (error) {
-    throw new Error('modal entry does not resolve to an existing regular file', { cause: error });
+    throw new Error(`${entryConfig.directory} entry does not resolve to an existing regular file`, {
+      cause: error,
+    });
   }
-  if (!entryStat.isFile()) throw new Error('modal entry must resolve to a regular file');
+  if (!entryStat.isFile())
+    throw new Error(`${entryConfig.directory} entry must resolve to a regular file`);
   return entryReal;
 }

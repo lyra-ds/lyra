@@ -1,0 +1,117 @@
+services:
+  wave2:
+    image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    init: true
+    shm_size: 2gb
+    user: '${UID:?Set UID with id -u}:${GID:?Set GID with id -g}'
+    networks: [wave2-internal]
+    depends_on: [registry-proxy]
+    environment:
+      OVERLAY_EVALUATION_REVISION: '${OVERLAY_EVALUATION_REVISION:?set OVERLAY_EVALUATION_REVISION}'
+      OVERLAY_WAVE2_CONTAINER: '1'
+      OVERLAY_WAVE2_PHASE: evaluate
+      HTTP_PROXY: http://registry-proxy:3128
+      HTTPS_PROXY: http://registry-proxy:3128
+      NODE_USE_ENV_PROXY: '1'
+      NO_PROXY: 127.0.0.1,localhost
+    volumes:
+      - type: bind
+        source: '${OVERLAY_NODE_ROOT:?set OVERLAY_NODE_ROOT}'
+        target: /opt/node
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_INPUT_ROOT:?set OVERLAY_INPUT_ROOT}'
+        target: /input
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_EVIDENCE_ROOT:?set OVERLAY_EVIDENCE_ROOT}'
+        target: /evidence
+      - type: bind
+        source: '${OVERLAY_OWNED_WORK_ROOT:?set OVERLAY_OWNED_WORK_ROOT}'
+        target: /work
+    command:
+      - /bin/sh
+      - -euxc
+      - |
+        case "$${OVERLAY_WAVE2_PHASE:-evaluate}" in
+          characterize|evaluate) ;;
+          *) echo 'invalid private Wave2 phase' >&2; exit 1 ;;
+        esac
+        mkdir -p /work/corepack-shims /work/cache /work/data /work/config /work/pnpm
+        export PATH="/opt/node/bin:/work/corepack-shims:$$PATH"
+        export COREPACK_HOME=/work/cache/corepack
+        export XDG_CACHE_HOME=/work/cache
+        export XDG_DATA_HOME=/work/data
+        export XDG_CONFIG_HOME=/work/config
+        export PNPM_HOME=/work/pnpm
+        export pnpm_config_store_dir=/work/pnpm/store
+        test "$$(node --version)" = v24.18.0
+        test "$$(corepack --version)" = 0.35.0
+        corepack enable --install-directory /work/corepack-shims
+        owned="$$(mktemp -d /tmp/lyra-wave2-checkout-XXXXXX)"
+        owned_identity="$$(stat -c '%d:%i:%u' "$$owned")"
+        test "$$(stat -c '%u' "$$owned")" = "$$(id -u)"
+        cleanup_checkout() {
+          test ! -L "$$owned" &&
+          test "$$(realpath "$$owned")" = "$$owned" &&
+          test "$$(stat -c '%d:%i:%u' "$$owned")" = "$$owned_identity" &&
+          rm -rf -- "$$owned"
+        }
+        resources() {
+          OVERLAY_RESOURCE_PHASE="$$1" node --input-type=module -e 'import { readEvaluatorResources } from "./tools/overlay-foundation-evaluation/scripts/wave2-automation.mjs"; const proof=await readEvaluatorResources(); console.error("LYRA_WAVE2_RESOURCES "+JSON.stringify({phase:process.env.OVERLAY_RESOURCE_PHASE,proof})); if(proof.oomKills!==0)process.exitCode=1;'
+        }
+        trap 'status=$$?; resources after || status=1; cleanup_checkout || status=1; exit "$$status"' EXIT
+        trap 'exit 1' HUP INT TERM
+        repository="$$owned/repository"
+        git clone --no-hardlinks /input/repository.bundle "$$repository"
+        git -C "$$repository" checkout --detach "$$OVERLAY_EVALUATION_REVISION"
+        test "$$(git -C "$$repository" rev-parse HEAD)" = "$$OVERLAY_EVALUATION_REVISION"
+        cd "$$repository"
+        resources before
+        node tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs --preflight
+        test "$$(corepack pnpm@11.13.1 store path)" = /work/pnpm/store/v11
+        corepack pnpm@11.13.1 install --frozen-lockfile --store-dir /work/pnpm/store
+        test "$$(stat -c '%u' "$$repository")" = "$$(id -u)"
+        test "$$(stat -c '%u' "$$repository/.git")" = "$$(id -u)"
+        test -z "$$(git status --porcelain=v1 --untracked-files=all)"
+        if test "$${OVERLAY_WAVE2_PHASE:-evaluate}" = characterize; then
+          node tools/overlay-foundation-evaluation/scripts/characterize-linux.mjs \
+            --repository "$$repository" --output /work/characterization
+        else
+          corepack pnpm@11.13.1 overlay:evaluate:wave2 \
+            --manifest /input/candidates.json \
+            --repository "$$repository" \
+            --evidence /evidence
+        fi
+  registry-proxy:
+    image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    init: true
+    user: '${UID:?Set UID with id -u}:${GID:?Set GID with id -g}'
+    networks: [wave2-internal, registry-egress]
+    environment:
+      OVERLAY_EVALUATION_REVISION: '${OVERLAY_EVALUATION_REVISION:?set OVERLAY_EVALUATION_REVISION}'
+    volumes:
+      - type: bind
+        source: '${OVERLAY_NODE_ROOT:?set OVERLAY_NODE_ROOT}'
+        target: /opt/node
+        read_only: true
+      - type: bind
+        source: '${OVERLAY_INPUT_ROOT:?set OVERLAY_INPUT_ROOT}'
+        target: /input
+        read_only: true
+    command:
+      - /bin/sh
+      - -euxc
+      - |
+        export PATH="/opt/node/bin:$$PATH"
+        test "$$(node --version)" = v24.18.0
+        owned="$$(mktemp -d /tmp/lyra-wave2-proxy-XXXXXX)"
+        git clone --no-hardlinks /input/repository.bundle "$$owned/repository"
+        git -C "$$owned/repository" checkout --detach "$$OVERLAY_EVALUATION_REVISION"
+        test "$$(git -C "$$owned/repository" rev-parse HEAD)" = "$$OVERLAY_EVALUATION_REVISION"
+        exec node "$$owned/repository/tools/overlay-foundation-evaluation/scripts/registry-proxy.mjs"
+networks:
+  wave2-internal:
+    internal: true
+  registry-egress:
+    driver: bridge
