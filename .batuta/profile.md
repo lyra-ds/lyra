@@ -1,62 +1,54 @@
 # Batuta profile — lyra-ds
 
-Created on 2026-07-20 via `/batuta:init`. Complements `.claude/CLAUDE.md` —
+Created on 2026-07-20; reconfigured on 2026-09-06. Complements `.claude/CLAUDE.md` —
 what is already there (CSS-first architecture constraints, fixed stack, locked
 decisions) is NOT repeated here; briefs must point executors to the relevant
 CLAUDE.md constraints when they touch style/tokens.
 
-## Stack
+## Documentation language
 
-- pnpm 11.13.1 monorepo (workspaces + changesets), Node 24, TypeScript 5.9.3.
-- `packages/react` (React 19 dev / peer >=18, tsup build) + `packages/styles`
-  (plain CSS, no build). Convention template: the Batuta plugin's
-  `templates/react.md`, except styling here is ALWAYS `.lyra-*` classes from
-  the styles package (never new inline/module CSS in react).
+All newly written or updated project documentation must be in English,
+including Batuta profiles, plans, handoffs, work logs, briefs, and review reports.
+This user instruction (2026-09-06) supersedes earlier requirements for pt-BR
+project prose. Keep immutable evidence and original historical sources intact;
+label translated copies explicitly. Conversation language is independent of
+this documentation rule.
 
-## Methodology
+## Setup
 
-- Tests after implementation (tests-after), Vitest runner (Browser Mode for
-  component/a11y).
-- Conventional commits; feature branches with PRs to `main` (protected branch
-  — never commit directly to main).
-
+Stack: pnpm 11.13.1 monorepo; Node 24.18.0; TypeScript 5.9.3; React, Alpine.js, CSS; Next.js apps; tsdown builds.
+Methodology: tests-after; Conventional Commits; feature branches and protected-main PRs.
+Test: pnpm test
+Build: pnpm build
+Install: pnpm install --frozen-lockfile
 Execution: sequential
 Worktree: medium+
-Install: pnpm install
+Template: templates/react.md
 
-## Commands
+React styling uses `.lyra-*` classes from the styles package. Keep the existing
+CSS-first constraints. React emits ESM/CJS; Alpine emits ESM; styles have no build.
 
-- Test: `pnpm test` · Build: `pnpm build` · Lint: `pnpm lint` (prettier) ·
-  Typecheck: `pnpm typecheck` · Parity: `pnpm parity` · Smoke: `pnpm smoke`
+## Commands and verification
 
-**This list is not the gate — CI is.** It was incomplete and cost a PR with 3
-of 4 checks red after 55 commits. CI's `lint` job also runs
-`pnpm --filter @lyra-ds/styles run lint:css` (stylelint), and `build` also runs
-`pnpm --filter @lyra-ds/react exec size-limit`. Before opening a PR, run **what
-is in `.github/workflows/ci.yml`**, not what is written here:
+Use the pinned Node version in `.nvmrc` and pnpm version in `package.json`.
+Read the complete `.github/workflows/ci.yml` before choosing PR verification;
+it is authoritative. Do not substitute this command index for its steps.
 
-```bash
-# job lint
-pnpm run lint && pnpm --filter @lyra-ds/styles run lint:css \
-  && pnpm --filter @lyra-ds/react run lint
-# job typecheck
-pnpm --filter @lyra-ds/react run build && pnpm run typecheck
-# job test
-pnpm run test && pnpm run parity && node tools/icon-registry/generate.mjs --check
-# job build
-pnpm run build && node tools/docgen/generate.mjs --check \
-  && pnpm exec publint packages/styles && node tools/pack-smoke/pack-smoke.mjs \
-  && pnpm exec publint packages/react \
-  && pnpm --filter @lyra-ds/react exec attw --pack . --profile node16 \
-  && pnpm --filter @lyra-ds/react exec size-limit \
-  && node tools/dist-scan/assert-use-client.mjs packages/react/dist \
-  && node tools/dist-scan/no-cdn-scan.mjs packages/react/dist \
-  && node tools/smoke/smoke.mjs
-```
+- `pnpm lint`: formatting; CI also runs security, phase/release policy,
+  actionlint, styles lint, and React/docs/site ESLint.
+- `pnpm typecheck`: recursive checks; build React and Alpine first.
+- `pnpm test`: security, overlay core, supporting tool tests, and workspace tests.
+  CI separately runs `pnpm test:browsers`, `pnpm test:react-compat`, parity,
+  and icon-registry drift. Use the workflow's pinned Playwright container for
+  the Chromium/Firefox/WebKit matrix.
+- `pnpm build`: workspace builds; CI additionally checks bundle baselines,
+  React/Alpine/Blade documentation, Blade API snapshots, publint, attw,
+  size-limit, packed artifacts, distribution scans, and consumer smoke tests.
+- `pnpm overlay:evaluate:wave2:test`: focused Wave 2 runner/contract tests.
+  Evaluation commands and immutable manifests follow their approved plan;
+  do not run expensive diagnostics or regenerate evidence routinely.
 
-There are 17 commands. I made this mistake **twice in a row**: first I followed
-the abbreviated list above instead of the workflow; then I “fixed” it from a
-`grep` of `ci.yml`, which also hid eslint. Read the entire file.
+### Historical verification lessons
 
 Two traps those gates concealed:
 
@@ -76,14 +68,13 @@ Two traps those gates concealed:
   close, Stepper check). A feature that deliberately grows the bundle (`asChild`)
   needs its updated budget in the same commit.
 
-## Delegation — what has worked and what has cost a round
+## Delegation — historical lessons and current invocation rules
 
 **Kimi hangs on a brief passed through a temporary file (2026-08-04).** Two
 `opencode run … "Follow the instructions in $tmpfile"` invocations hung without
 output (5min+ each); the inline probe answered in seconds and the SAME content
-pasted inline into the argument completed in one clean round. In the trivial
-lane, always pass the brief INLINE in the argument — the adapter's temporary
-file recipe does not work for this model.
+pasted inline into the argument completed in one clean round. The current low/research model is `opencode/glm-5.3-flash`; pass its brief
+inline as verified during the September 6 review and CI correction.
 
 Lessons from the Phase 6b lots, each with the evidence that produced it. They
 apply to every executor, not just codex.
@@ -214,14 +205,15 @@ user archives it when desired.
   handoff by updating `handoff/`, regenerating, and reviewing the diff. Do not
   regenerate without intended `handoff/` change; the baseline holds names
   because counts miss a two-sided rename.
-- `@lyra-ds/react`: exports map == tsup entries == dist basenames; `'use client'`
-  via tsup `onSuccess` (deterministic prepend); no CSS import in shipped code;
+- `@lyra-ds/react`: exports map == tsdown entries == dist basenames; `'use client'`
+  via `scripts/use-client.mjs` after tsdown builds (deterministic prepend); no CSS import in shipped code;
   `lucide-react` is the only runtime dependency, via generated registry
   (`prettier`-ignored, drift gate `--check`).
 - Canonical JSDoc is English; conversion conventions are in
   `packages/react/CONVENTIONS.md`.
-- **pt-BR terminology (user rule, 2026-07-30):** CLAUDE.md locks code, token,
-  and API names in English and prose in pt-BR. Concept jargon rule:
+- **Historical pt-BR terminology (2026-07-30; superseded for project
+  documentation on 2026-09-06):** the former rule used English code, token,
+  and API names with pt-BR prose. The historical terminology guidance was:
   - Keep in English what a Brazilian developer **types into search and says
     aloud**: build, deploy, bundler, viewport, overflow, token, hook, rebuild.
   - Translate where pt-BR has a dominant term: folha de estilos, marca, escopo,
@@ -259,27 +251,37 @@ user archives it when desired.
 
 ## Project map
 
-(2026-07-27 sweep by the Research-lane scout — kimi-k2.7-code; details stay
-with grep and git.)
+Refreshed on 2026-09-06 against the Wave 2 branch, with a read-only
+OpenCode / `opencode/glm-5.3-flash` scout and controller path/source checks.
 
-- pnpm monorepo with three workspaces (`pnpm-workspace.yaml`): `packages/*`,
-  `apps/*`, and `tools/*`. Node 24 required.
-- `packages/styles`: pure CSS core, NO build; `styles.css` entry imports
-  `tokens/` and `components/`. `compat-shadcn.css` is opt-in subpath, never
-  entry-imported. Validated by stylelint + Browser Mode tests in `tests/`.
-- `packages/react`: thin wrappers over `.lyra-*`; one directory per component
-  plus `internal/`, with `index.ts`, `*.tsx`, browser/SSR tests and screenshots
-  where applicable. tsup → dual ESM+CJS dist entries. Only runtime dependency
-  `lucide-react`, through generated `src/icon/icon-registry.ts` (do not edit).
-- `apps/docs`: Next.js 16 + fumadocs-core/fumadocs-mdx; locale layouts via
-  next-intl, messages in `messages/{en,pt-BR}.json`, MDX in
-  `content/docs/{en,pt-BR}/`, examples under `components/examples/`; static
-  build to `out/`, including copied `llms.txt`.
-- `tools/`: parity, generated icon registry, docgen, pack-smoke, smoke, and
-  dist-scan gates. `handoff/` is read-only pixel-perfect reference.
-- `.github/workflows/ci.yml` has lint/typecheck/test/build; it is the real gate.
-  Do not touch generated/build directories, `pnpm-lock.yaml` except through pnpm,
-  `handoff/**`, screenshots, docgen output, or generated icon registry directly.
+The pnpm workspace covers `packages/*`, `apps/*`, and `tools/*`.
+`package.json` holds orchestration scripts; `.nvmrc` pins the Node toolchain.
+`packages/styles/styles.css` imports the CSS tokens and component groups.
+Its `tests/` directory contains style browser tests; styles need no build.
+`packages/react/src/` holds per-component entries, browser tests, and internals.
+`packages/react/tsdown.config.ts` maps exports to separate ESM/CJS entries.
+`packages/react/scripts/use-client.mjs` prepends the client directive after build.
+`packages/alpine/src/index.ts` registers the Alpine plugin and component modules.
+Alpine browser tests sit alongside sources; its tsdown build emits ESM.
+`apps/docs` is the Next.js documentation app with Fumadocs and localized content.
+`apps/site` is the separate Next.js landing app; both consume workspace packages.
+Each app's `next.config.ts` controls its production static export.
+`tools/overlay-foundation-evaluation/` owns contracts, candidates, fixtures,
+runners, manifests, and the modal/Wave 2 evaluation scripts.
+`tools/docgen/` generates React, Alpine, and Blade documentation artifacts.
+`tools/blade-api/` validates the imported external Blade API snapshot.
+`tools/parity/` compares CSS with the versioned handoff baseline.
+`tools/icon-registry/` generates the React icon registry; do not edit it by hand.
+`tools/pack-smoke/`, `tools/smoke/`, and `tools/react-compat/` check consumers.
+`tools/dist-scan/` and `tools/bundle-baseline/` inspect published build outputs.
+Security and phase/release policy checks live in their named `tools/` directories.
+`docs/superpowers/plans/` and `specs/` hold the approved development contracts.
+`WORK.md` and `.batuta/plan-*.md` record current coordination and resume state.
+`.planning/` and historical handoffs preserve earlier decisions and evidence.
+`.github/workflows/ci.yml` defines the complete lint/typecheck/test/build gates.
+Regenerate docgen output and the icon registry through their owning tools.
+Do not hand-edit dist, app build output, lockfiles, or immutable evaluation data.
+Change handoff/baseline files only within an explicitly scoped baseline update.
 
 ## PR automation — post-incident 0.2.0 rules (2026-08-03)
 
