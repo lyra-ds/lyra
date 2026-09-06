@@ -165,13 +165,28 @@ function readClock() {
   return Date.now();
 }
 async function executeOperation({ operation, options }) {
-  return globalThis.__LYRA_WAVE2_FIXTURE__.runOperation(operation, options);
+  await globalThis.__LYRA_WAVE2_FIXTURE__.runOperation(operation, options);
 }
 async function cleanupFixture() {
   const bridge = globalThis.__LYRA_WAVE2_FIXTURE__;
   if (!bridge) throw new Error('Wave2 cleanup bridge missing');
   await bridge.destroy();
-  return bridge.observe();
+  return JSON.stringify(bridge.observe(), (_key, value) => {
+    if (
+      ['undefined', 'function', 'symbol', 'bigint'].includes(typeof value) ||
+      (typeof value === 'number' && !Number.isFinite(value))
+    )
+      throw new Error('Wave2 observation transport requires JSON values');
+    return Object.is(value, -0) ? JSON.rawJSON('-0') : value;
+  });
+}
+export function assertWave2ObservationTransport() {
+  if (
+    typeof JSON.rawJSON !== 'function' ||
+    JSON.stringify([-0], (_key, value) => (Object.is(value, -0) ? JSON.rawJSON('-0') : value)) !==
+      '[-0]'
+  )
+    throw new Error('exact Wave2 observation transport capability is unavailable');
 }
 function readAuditClock() {
   return { date: Date.now(), performance: performance.now() };
@@ -587,6 +602,7 @@ export async function preflightWave2BrowserInputs({ playwright }) {
       page = await context.newPage();
       await page.clock.install({ time: 0 });
       await page.clock.pauseAt(0);
+      await page.evaluate(assertWave2ObservationTransport);
       await page.setContent(
         '<main><button data-overlay-id="outside-control" style="position:absolute;left:20px;top:20px;width:100px;height:100px">Outside</button><button data-overlay-id="next">Next</button></main>',
       );
@@ -821,8 +837,24 @@ export async function runWave2Cell(
     } finally {
       for (const cleanup of [
         async () => {
-          if (page)
-            observation = await bounded(page.evaluate(cleanupFixture), 'fixture cleanup', 5000);
+          if (page) {
+            observation = await bounded(
+              (async () => {
+                const wire = await page.evaluate(cleanupFixture);
+                if (typeof wire !== 'string')
+                  throw fatal('Wave2 observation transport must be a JSON string');
+                let parsed;
+                try {
+                  parsed = JSON.parse(wire);
+                } catch (cause) {
+                  throw fatal('Wave2 observation transport is not valid JSON', cause);
+                }
+                return validateObservation(parsed);
+              })(),
+              'fixture cleanup',
+              5000,
+            );
+          }
         },
         () => input?.close(),
         () => page?.close(),

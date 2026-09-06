@@ -123,8 +123,13 @@ HOME is unchanged. A unique Compose project isolates evaluator networking.
 The evaluator has only the internal network; its proxy additionally has egress
 and permits only literal `registry.npmjs.org:443` CONNECT. Actual direct-denial,
 HTTPS success, and seven denied authorities are checked before candidate work.
-Native input, clock, viewport and axe capabilities are preflighted before
-candidate execution. Before installation and again at exit, the evaluator reads
+Native input, clock, viewport, axe and exact JSON observation transport capabilities
+are preflighted before candidate execution. Operations are awaited without returning
+unused observation copies over the browser protocol. Final cleanup transfers the
+complete observation once as JSON, preserves negative zero with preflighted native
+`JSON.rawJSON`, and strictly parses and validates it on the host. Destruction,
+serialization, transfer and validation retain the same five-second cleanup bound
+and paused candidate clock; no diagnostic fields are projected away. Before installation and again at exit, the evaluator reads
 its actual unified Linux cgroup and preserves raw `memory.events` in command
 stderr. Missing, malformed or unreadable resource evidence and any observed OOM
 kill fail the automation, even if a candidate-local record classified a killed

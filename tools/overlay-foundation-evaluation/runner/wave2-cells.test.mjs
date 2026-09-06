@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { test } from 'node:test';
+import { runInNewContext } from 'node:vm';
 import { BEHAVIORAL_WAVE_CELLS } from '../contracts/cells.mjs';
 import { MODAL_CELL_POLICIES } from './modal-cells.mjs';
 import { canonicalJson } from '../evidence/results.mjs';
@@ -185,7 +186,8 @@ function scenario() {
     probes: [],
   };
 }
-function fakeBrowser({ failOperation, failCleanup } = {}) {
+function fakeBrowser({ failOperation, failCleanup, cleanupTransport, observeTransform } = {}) {
+  const wire = [];
   const calls = [];
   let runtime;
   let now = 0;
@@ -201,6 +203,7 @@ function fakeBrowser({ failOperation, failCleanup } = {}) {
       events: [],
       announcements: [],
       direction: 'ltr',
+      diagnostics: { raw: { negativeZero: -0, text: 'á\\quoted', order: [3, null, true] } },
     }),
     destroy: async () => ({ status: 'destroyed' }),
     operations: { hover() {}, blur() {}, updateContent() {}, focus() {}, point() {}, press() {} },
@@ -232,12 +235,23 @@ function fakeBrowser({ failOperation, failCleanup } = {}) {
       if (fn.name === 'readClock') return now;
       if (fn.name === 'executeOperation') {
         if (args.operation.operation === failOperation) throw new Error('operation failed');
-        return runtime.runOperation(args.operation, args.options);
+        const value = await runInNewContext('(' + fn.toString() + ')(args)', {
+          __LYRA_WAVE2_FIXTURE__: runtime,
+          args,
+        });
+        wire.push({ method: fn.name, value });
+        return value;
       }
       if (fn.name === 'cleanupFixture') {
         if (failCleanup) throw new Error('fixture cleanup failed');
-        await runtime.destroy();
-        return runtime.observe();
+        const bridge = observeTransform
+          ? { ...runtime, observe: () => observeTransform(runtime.observe()) }
+          : runtime;
+        const value = await runInNewContext('(' + fn.toString() + ')()', {
+          __LYRA_WAVE2_FIXTURE__: bridge,
+        });
+        wire.push({ method: fn.name, value });
+        return cleanupTransport ? cleanupTransport(value) : value;
       }
       if (fn.name === 'readObservation') return runtime.observe();
       throw new Error('unexpected evaluate ' + fn.name);
@@ -254,6 +268,8 @@ function fakeBrowser({ failOperation, failCleanup } = {}) {
   };
   return {
     calls,
+    wire,
+    finalObservation: () => runtime.observe(),
     page,
     get binding() {
       return binding;
@@ -757,3 +773,107 @@ test('hydration rejects altered execution bindings before serving or launching t
     assert.deepEqual(f.calls, []);
   }
 });
+
+test('browser transport awaits operations without bulk results and preserves exact final observation', async () => {
+  const { runWave2Cell } = await import(moduleURL),
+    f = fakeBrowser();
+  const result = await runWave2Cell(
+    {
+      cellId: 'chromium',
+      fixtures: new Map([['19.2.8', {}]]),
+      playwright: f.playwright,
+      scenario: scenario(),
+    },
+    f.dependencies,
+  );
+  assert.equal(f.wire.filter((entry) => entry.method === 'executeOperation').length, 8);
+  assert.ok(
+    f.wire
+      .filter((entry) => entry.method === 'executeOperation')
+      .every((entry) => entry.value === undefined),
+  );
+  const wire = f.wire.find((entry) => entry.method === 'cleanupFixture').value;
+  assert.equal(typeof wire, 'string');
+  assert.deepEqual(JSON.parse(wire), f.finalObservation());
+  const observed = structuredClone(result[0].observation);
+  delete observed.diagnostics.nativeInput;
+  assert.deepEqual(observed, f.finalObservation());
+  assert.ok(Object.is(observed.diagnostics.fixture.raw.negativeZero, -0));
+  assert.equal(observed.diagnostics.cleanupObserved, true);
+  assert.ok(!f.calls.includes('resume'));
+});
+
+for (const [name, transport] of [
+  ['object', () => ({})],
+  ['malformed', () => '{invalid'],
+  ['invalid schema', () => JSON.stringify({ diagnostics: {} })],
+  ['non-JSON values', () => '{"diagnostics":{"value":1e999}}'],
+])
+  test(
+    'browser cleanup rejects ' + name + ' transport and still disposes all owned resources',
+    async () => {
+      const { runWave2Cell } = await import(moduleURL),
+        f = fakeBrowser({ cleanupTransport: transport });
+      await assert.rejects(
+        runWave2Cell(
+          {
+            cellId: 'chromium',
+            fixtures: new Map([['19.2.8', {}]]),
+            playwright: f.playwright,
+            scenario: scenario(),
+          },
+          f.dependencies,
+        ),
+        (error) => error.scope === 'run',
+      );
+      assert.deepEqual(f.calls.slice(-4), [
+        'page.close',
+        'context.close',
+        'browser.close',
+        'server.close',
+      ]);
+    },
+  );
+
+test('observation transport capability fails closed when negative zero cannot be preserved', async () => {
+  const { assertWave2ObservationTransport } = await import(moduleURL);
+  for (const rawJSON of [undefined, () => 0]) {
+    assert.throws(
+      () =>
+        runInNewContext('(' + assertWave2ObservationTransport.toString() + ')()', {
+          JSON: { stringify: JSON.stringify, parse: JSON.parse, rawJSON },
+        }),
+      /observation transport capability/,
+    );
+  }
+  assert.doesNotThrow(() => assertWave2ObservationTransport());
+});
+
+for (const value of [undefined, NaN, Infinity, () => {}])
+  test('browser transport rejects lossy JSON value ' + String(value), async () => {
+    const { runWave2Cell } = await import(moduleURL),
+      f = fakeBrowser({
+        observeTransform: (observation) => ({
+          ...observation,
+          diagnostics: { ...observation.diagnostics, invalid: value },
+        }),
+      });
+    await assert.rejects(
+      runWave2Cell(
+        {
+          cellId: 'chromium',
+          fixtures: new Map([['19.2.8', {}]]),
+          playwright: f.playwright,
+          scenario: scenario(),
+        },
+        f.dependencies,
+      ),
+      (error) => error.scope === 'run',
+    );
+    assert.deepEqual(f.calls.slice(-4), [
+      'page.close',
+      'context.close',
+      'browser.close',
+      'server.close',
+    ]);
+  });
