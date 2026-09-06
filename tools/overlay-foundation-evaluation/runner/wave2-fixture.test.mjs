@@ -1,14 +1,19 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { test } from 'node:test';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { resolveContractEntry } from './adapter-entry.mjs';
 
 const modulePath = new URL('./wave2-fixture.mjs', import.meta.url);
+// CI may check out the repository owned by another UID, so only the real-Vite adapters
+// scope a git safe.directory exception to the resolved checkout path per command.
+const realRepositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
+const realRepositoryGitConfig = ['-c', `safe.directory=${realpathSync(realRepositoryRoot)}`];
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
@@ -1078,7 +1083,8 @@ test('real pinned Vite builds the copied axe tool and isolated client/SSR module
   const args = input(setup, {
     repositoryRoot,
     adapterEntry,
-    runCommand: (command, argv, options) => run(command, argv, options),
+    runCommand: (command, argv, options) =>
+      run(command, command === 'git' ? [...realRepositoryGitConfig, ...argv] : argv, options),
   });
   const result = await (
     await loadPrepareWave2Fixture()
@@ -1140,7 +1146,9 @@ test('actual Vite resolution rejects a transitive package file outside the isola
           try {
             return await run(
               cmd,
-              args.map((arg) => (arg === 'silent' ? 'error' : arg)),
+              (cmd === 'git' ? realRepositoryGitConfig : []).concat(
+                args.map((arg) => (arg === 'silent' ? 'error' : arg)),
+              ),
               options,
             );
           } catch (error) {
