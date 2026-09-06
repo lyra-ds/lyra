@@ -3,7 +3,7 @@ import { execFile } from 'node:child_process';
 import { realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
-import { promisify } from 'node:util';
+import { promisify, types } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { checkManifestFile } from './check.mjs';
 import { inspectWave2Evidence as inspect, runWave2 as run } from '../runner/wave2.mjs';
@@ -79,15 +79,91 @@ export async function runWave2Cli({
     runCommand,
   });
 }
+// Fatal diagnostics contain only error fields, never arbitrary thrown objects. Limits
+// include JSON escaping: depth 8, 64 errors, 2 KiB per string, 32 KiB of string
+// values overall, and a final 64 KiB UTF-8 record (including its newline).
+function fatalErrorRecord(error) {
+  const seen = new WeakSet();
+  let nodes = 0,
+    stringBytes = 32768;
+  const read = (value, key) => {
+    try {
+      return value[key];
+    } catch {
+      return undefined;
+    }
+  };
+  const bounded = (value) => {
+    const budget = Math.min(2048, stringBytes);
+    if (budget < 16) return undefined;
+    let result = value.slice(0, 2048);
+    if (value.length > 2048 || Buffer.byteLength(JSON.stringify(result)) > budget) {
+      let low = 0,
+        high = Math.min(value.length, budget);
+      while (low < high) {
+        const middle = Math.ceil((low + high) / 2);
+        if (Buffer.byteLength(JSON.stringify(value.slice(0, middle) + '[truncated]')) <= budget)
+          low = middle;
+        else high = middle - 1;
+      }
+      result = value.slice(0, low) + '[truncated]';
+    }
+    stringBytes -= Buffer.byteLength(JSON.stringify(result));
+    return result;
+  };
+  const visit = (value, depth) => {
+    if (nodes >= 64) return { truncated: 'node limit' };
+    nodes++;
+    if (depth > 8) return { truncated: 'depth limit' };
+    if (!types.isNativeError(value))
+      return {
+        name: 'NonError',
+        message: typeof value === 'string' ? bounded(value) : 'Non-Error thrown value omitted',
+      };
+    if (seen.has(value)) return { truncated: 'cycle' };
+    seen.add(value);
+    const result = {};
+    for (const key of ['name', 'message', 'stack', 'scope', 'classification']) {
+      const field = read(value, key);
+      if (typeof field === 'string') {
+        result[key] = bounded(field);
+        if (result[key] === undefined) result.truncated = 'string byte limit';
+      }
+    }
+    // Aggregate children retain their original order: primary, then cleanup.
+    const children = read(value, 'errors');
+    let isArray = false;
+    try {
+      isArray = Array.isArray(children);
+    } catch {
+      /* Revoked proxy: omit malformed children. */
+    }
+    if (isArray) {
+      result.errors = [];
+      const rawLength = read(children, 'length');
+      const length = Number.isSafeInteger(rawLength) && rawLength >= 0 ? rawLength : 0;
+      for (let index = 0; index < length; index++) {
+        if (nodes >= 64) {
+          result.errors.push({ truncated: 'node limit' });
+          break;
+        }
+        result.errors.push(visit(read(children, index), depth + 1));
+      }
+    }
+    const cause = read(value, 'cause');
+    if (cause !== undefined) result.cause = visit(cause, depth + 1);
+    return result;
+  };
+  const record = JSON.stringify(visit(error, 0)) + '\n';
+  return Buffer.byteLength(record) <= 65536 ? record : '{"truncated":"byte limit"}\n';
+}
 export async function main(options = {}) {
   try {
     const result = await runWave2Cli({ argv: process.argv.slice(2), ...options });
     (options.stdout ?? process.stdout).write(JSON.stringify(result, null, 2) + '\n');
     return 0;
   } catch (error) {
-    (options.stderr ?? process.stderr).write(
-      (error instanceof Error ? error.message : String(error)) + '\n',
-    );
+    (options.stderr ?? process.stderr).write(fatalErrorRecord(error));
     return 1;
   }
 }

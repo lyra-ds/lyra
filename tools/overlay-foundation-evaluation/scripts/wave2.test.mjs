@@ -345,3 +345,116 @@ test('production resource command imports the full graph with both phase values'
   validateResourceLog(result.stderr);
   assert.equal(result.stdout, '');
 });
+
+async function fatalOutput(t, error) {
+  const setup = await fixture(t);
+  const { main } = await import(modulePath);
+  let output = '';
+  const exit = await main({
+    argv: argv(setup),
+    ...dependencies(setup),
+    runWave2: async () => {
+      throw error;
+    },
+    stderr: {
+      write(value) {
+        output += value;
+      },
+    },
+  });
+  assert.equal(exit, 1);
+  assert.ok(Buffer.byteLength(output) <= 65536);
+  return { output, error: JSON.parse(output) };
+}
+
+test('fatal CLI preserves ordered primary and cleanup errors with causes and stacks', async (t) => {
+  const primary = new Error('operation failed', { cause: new Error('native cause') });
+  const cleanup = new Error('browser close timed out');
+  const aggregate = Object.assign(
+    new AggregateError([primary, cleanup], 'Wave2 cleanup is uncertain'),
+    {
+      scope: 'run',
+      classification: 'policy',
+      secretEnvironment: 'must not leak',
+    },
+  );
+  const { output, error } = await fatalOutput(t, aggregate);
+  assert.equal(error.name, 'AggregateError');
+  assert.equal(error.message, 'Wave2 cleanup is uncertain');
+  assert.equal(error.scope, 'run');
+  assert.equal(error.classification, 'policy');
+  assert.equal(error.errors[0].message, 'operation failed');
+  assert.equal(error.errors[0].cause.message, 'native cause');
+  assert.equal(error.errors[0].stack, primary.stack);
+  assert.equal(error.errors[1].message, 'browser close timed out');
+  assert.equal(error.errors[1].stack, cleanup.stack);
+  assert.equal(output.includes('must not leak'), false);
+});
+
+test('fatal CLI bounds depth, cycles, children and UTF-8 bytes without dumping malformed values', async (t) => {
+  const circular = new Error('circular');
+  circular.cause = circular;
+  let deep = new Error('deep leaf');
+  for (let index = 0; index < 20; index++) deep = new Error('depth', { cause: deep });
+  const malformed = new Error('malformed');
+  Object.defineProperty(malformed, 'stack', {
+    get() {
+      throw new Error('getter secret');
+    },
+  });
+  malformed.cause = {
+    secret: 'object secret',
+    toJSON() {
+      throw new Error('must not invoke');
+    },
+  };
+  const aggregate = new AggregateError(
+    [
+      circular,
+      deep,
+      malformed,
+      ...Array.from({ length: 100 }, () => new Error('á\u0000'.repeat(10000))),
+    ],
+    'bounded',
+  );
+  const { output, error } = await fatalOutput(t, aggregate);
+  assert.equal(error.errors[0].cause.truncated, 'cycle');
+  let depth = error.errors[1];
+  for (let index = 0; index < 7; index++) depth = depth.cause;
+  assert.equal(depth.cause.truncated, 'depth limit');
+  assert.equal(error.errors[2].cause.name, 'NonError');
+  assert.ok(error.errors.length <= 64);
+  assert.match(output, /node limit/);
+  assert.equal(output.includes('object secret'), false);
+  assert.equal(output.includes('getter secret'), false);
+  assert.equal(output.includes('deep leaf'), false);
+  assert.match(output, /truncated/);
+});
+
+test('fatal CLI tolerates revoked children and does not expand wide trees beyond depth limit', async (t) => {
+  const revoked = Proxy.revocable([], {});
+  revoked.revoke();
+  const malformed = new AggregateError([], 'revoked children');
+  malformed.errors = revoked.proxy;
+  const { error } = await fatalOutput(t, malformed);
+  assert.equal(error.message, 'revoked children');
+  assert.equal(error.errors, undefined);
+  malformed.errors = new Proxy([], {
+    get(_target, key) {
+      if (key === 'length')
+        return {
+          valueOf() {
+            throw new Error('must not coerce');
+          },
+        };
+      return undefined;
+    },
+  });
+  assert.deepEqual((await fatalOutput(t, malformed)).error.errors, []);
+  let deep = new AggregateError(Array(10000).fill(new Error('hidden leaf')), 'wide');
+  for (let index = 0; index < 8; index++) deep = new Error('depth', { cause: deep });
+  const { output } = await fatalOutput(t, deep);
+  assert.match(output, /depth limit/);
+  assert.match(output, /node limit/);
+  assert.equal(output.includes('hidden leaf'), false);
+});
