@@ -1,6 +1,6 @@
 # CommandPalette backdrop gesture verification
 
-Date: 2026-09-08. Base: `8cc15b5`, branch `feat/v1-incumbent-stabilization`.
+Date: 2026-09-08. Implementation: `a98a953`. Base: `8cc15b5`, branch `feat/v1-incumbent-stabilization`.
 Batuta frontend/medium, Codex `gpt-5.6-terra`; one fixture retry, no escalation.
 Controller verdict: approved. Independent OpenCode `opencode/glm-5.3-flash`
 review: 3/3 DONE, exit 0, unchanged status/diff/scoped-file hash guard; Batuta

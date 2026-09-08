@@ -1,7 +1,7 @@
 # Run — CommandPalette backdrop gesture repair
 
 **Date:** 2026-09-08 · **Lane:** frontend/medium · **Executor:** Codex gpt-5.6-terra
-**Commit:** recorded in WORK.md after the implementation commit · **Verdict:** approved
+**Commit:** `a98a953` · **Verdict:** approved
 
 ## Brief
 
