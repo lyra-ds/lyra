@@ -85,6 +85,8 @@ function DrawerPanel({
   // the exit animation still plays, exactly as Dialog does it.
   useScrollLock(!closing);
 
+  const downOnOverlay = useRef(false);
+
   const { onKeyDown: restOnKeyDown, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
@@ -96,8 +98,11 @@ function DrawerPanel({
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
       className={cx('lyra-drawer-overlay', closing && 'lyra-drawer-overlay--closing')}
+      onMouseDown={(event) => {
+        downOnOverlay.current = event.target === event.currentTarget;
+      }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose?.();
+        if (downOnOverlay.current && event.target === event.currentTarget) onClose?.();
       }}
     >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}

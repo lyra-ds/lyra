@@ -27,9 +27,13 @@ release streams below are a roadmap, not a speculative multi-file executor task.
       Scope: .batuta/v1-drawer-pointer-proof.md
       Accept: A real pointer interaction compares direct backdrop dismissal with press-inside/release-outside behavior using the existing Drawer and Dialog precedent, recording exact source/environment/results; If required execution is unavailable record that limitation without a PASS claim or environment change
 
-All three preparation tasks are complete; this does not complete V1 stabilization.
-The Drawer defect is reproduced and the next repair is scoped in
-`.batuta/v1-drawer-pointer-repair-brief.md`, not yet dispatched.
+- [x] 4. Repair Drawer pointer-origin dismissal — frontend/medium
+      Depends on: 3
+      Scope: packages/react/src/drawer/drawer.tsx, packages/react/src/drawer/drawer.browser.test.tsx
+      Accept: Colocated regression and trusted pointer replay prove RED/GREEN; Chromium/SSR checks pass and WebKit introduces no failure relative to exact original-source baseline, with existing failures explicitly retained; API/dependency scope and independent review pass
+
+All three preparation tasks and the authorized Drawer repair below are complete;
+this does not complete V1 stabilization. Full release qualification remains pending.
 
 ## Decisions and context
 

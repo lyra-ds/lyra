@@ -1,6 +1,6 @@
 # V1 incumbent backlog — source audit at9d214bf
 
-No runtime/browser verification was run for this inventory. All eleven P1
+The original inventory was source-only. Subsequent bounded verification is recorded below. All eleven P1
 ledger entries remain unqualified. A source observation is a reason to write a
 focused reproducer, not a new passing/failing release result. Historical
 findings must be reproduced against current code before a fix is scoped.
@@ -30,3 +30,13 @@ status: the maintainer explicitly superseded comparison, and no implementation
 started. Controller also split its suggested Drawer pointer/focus combined fix;
 only pointer-origin reproduction is the first task. Runtime claims and full
 release qualification remain pending.
+
+## Completed bounded correction — 2026-09-08
+
+Drawer inside-origin dismissal was reproduced with trusted Chromium input and
+repaired in its owning handler. The regression went RED before repair and GREEN
+afterward. Chromium/SSR: 43 passing tests; trusted replay: six scenarios pass.
+WebKit: the same six focus-restoration failures on original and fixed code;
+the two new tests pass. Investigate those failures separately before prescribing
+a focus repair. No dependency/API change or release qualification. See
+v1-drawer-repair-verification.md and v1-drawer-repair-review.md.

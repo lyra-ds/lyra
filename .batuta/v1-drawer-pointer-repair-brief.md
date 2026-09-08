@@ -10,7 +10,7 @@ Confirmed against source 75e536b in the real local Chromium diagnostic recorded 
 
 ## Conventions
 
-Proposed implementation lane: medium/Codex gpt-5.6-terra; independent GLM 5.3 Flash review. English code/docs, existing React conventions, Node 24.18.0. The controller runs actual browser verification outside the executor. No changes to Colima configuration or restart; use existing available resources only. Implementation has not been dispatched.
+Approved implementation lane: medium/Codex gpt-5.6-terra; independent GLM 5.3 Flash review. English code/docs, existing React conventions, Node 24.18.0. The controller runs actual browser verification outside the executor. No changes to Colima configuration or restart; use existing available resources only. Implementation authorized on 2026-09-08; executor stages tests first, then repair after controller RED.
 
 - Follow the project's existing state approach (props drilling, context,
   zustand, redux…).

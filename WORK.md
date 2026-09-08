@@ -7,7 +7,8 @@ comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
 
 - [x] Governance/source-inventory update approved — source commit `2d02444`; critical/self, GLM 5.3 Flash scout and independent review, no retry/escalation. Review 4/4 DONE, unchanged tree, Batuta verifier PASS; cosmetic finding corrected. Baseline 106 tests, new cases RED, current 108 tests and four policy CLIs GREEN. No product/dependency/ledger changes or qualification. See `.batuta/v1-incumbent-direction-review.md`.
 - [x] Drawer pointer-origin reproduction — critical/self; trusted local Chromium input confirms incorrect Drawer onClose, Dialog control passes, six scenarios recorded at source `75e536b`. Independent GLM 5.3 Flash 2/2 DONE, unchanged guard, verifier PASS; no retries/escalation. Product files untouched. See `.batuta/v1-drawer-pointer-proof.md`.
-- [ ] Next: implement only the confirmed Drawer pointer-origin repair from `.batuta/v1-drawer-pointer-repair-brief.md`; medium/Codex Terra, regression first. Not dispatched.
+- [x] Drawer pointer-origin repair complete — medium/Codex gpt-5.6-terra, two planned stages, no implementation retry/escalation. Controller regression RED then GREEN; Chromium/SSR 43/43, trusted pointer six scenarios PASS, types/lint/format PASS. Independent GLM approved with unchanged guard; normalized verifier 3/3 DONE. WebKit same six baseline focus failures, two new tests pass; Firefox/Linux release matrix pending. See `.batuta/v1-drawer-repair-verification.md` and review.
+- [ ] Next: scope the next incumbent regression separately from the recorded backlog. WebKit focus-restoration failures require investigation before any repair; the Drawer pointer-origin defect is closed. No executor or browser/server remains running.
 
 Do not change any Colima configuration or restart the service. Do not restore
 old settings, stop foreign projects, resume comparative diagnostics or merge

@@ -120,6 +120,48 @@ describe('Drawer', () => {
     });
   });
 
+  it('does not request close when a press inside the panel releases on the backdrop', async () => {
+    const onClose = vi.fn();
+    await render(
+      <Drawer open onClose={onClose} title="Details">
+        Body
+      </Drawer>,
+    );
+    const panel = document.querySelector<HTMLElement>('.lyra-drawer')!;
+    const overlay = document.querySelector<HTMLElement>('.lyra-drawer-overlay')!;
+
+    panel.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(onClose).toHaveBeenCalledTimes(0);
+  });
+
+  it('requests close for a backdrop gesture and the close button, but not an inside click', async () => {
+    const onClose = vi.fn();
+    await render(
+      <Drawer open onClose={onClose} title="Details">
+        Body
+      </Drawer>,
+    );
+    const panel = document.querySelector<HTMLElement>('.lyra-drawer')!;
+    const overlay = document.querySelector<HTMLElement>('.lyra-drawer-overlay')!;
+    const close = panel.querySelector<HTMLButtonElement>('.lyra-drawer__close')!;
+
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    panel.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    panel.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    panel.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(close);
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
   it('traps focus, locks scroll, and restores its opener on Escape and backdrop close', async () => {
     const { container } = await render(<DrawerHarness />);
     const opener = container.querySelector<HTMLButtonElement>('button')!;
@@ -138,6 +180,8 @@ describe('Drawer', () => {
 
     await userEvent.click(opener);
     const overlay = document.querySelector<HTMLElement>('.lyra-drawer-overlay')!;
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).toBeNull());
     expect(document.activeElement).toBe(opener);
