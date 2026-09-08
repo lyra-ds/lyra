@@ -11,8 +11,9 @@ comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
 - [x] WebKit focus diagnosis and fixture correction — critical/self diagnosis with guarded GLM scout; low/OpenCode GLM5.3Flash implementation, no retry/escalation. Prepared-opener fixtures now pass WebKit38/38 and Chromium/SSR43/43; two injected broken-restoration cases fail, original runtime bytes restored. Types/lint/format pass. See `.batuta/v1-webkit-focus-verification.md`.
 - [x] Explicit modal return-focus contract drafted — critical/self; GLM5.3Flash independent review, one revision, unchanged guards, final verifier2/2 DONE. Proposal: optional returnFocusTo resolver on React Dialog/Drawer, explicit safety/cycle/successor obligations. See `.batuta/specs/2026-09-08-modal-return-focus-design.md`. Technical review complete; maintainer approved the API on 2026-09-08. Implementation not yet started.
 - [x] Maintainer corrected workflow to Batuta and approved returnFocusTo. Contract moved to `.batuta/specs/2026-09-08-modal-return-focus-design.md`; approved implementation plan: `.batuta/plans/v1-modal-return-focus.md`. No further API-approval question is needed.
-- [x] Task 1 Dialog/shared returnFocusTo verified — Codex gpt-5.6-terra/high, one retry then critical/self correction; Chromium/SSR52, WebKit48, trusted mouse12 and StrictMode2 PASS, types/lint/format PASS; independent GLM4/4 DONE with unchanged guard. See `.batuta/v1-return-focus-task1-verification.md`.
-- [ ] Next: Task 2 Drawer integration through the approved Batuta plan.
+- [x] Task 1 Dialog/shared returnFocusTo verified (`00d2ded`) — Codex gpt-5.6-terra/high, one retry then critical/self correction; Chromium/SSR52, WebKit48, trusted mouse12 and StrictMode2 PASS, types/lint/format PASS; independent GLM4/4 DONE with unchanged guard. See `.batuta/v1-return-focus-task1-verification.md`.
+- [x] Task 2 Drawer returnFocusTo verified — Codex gpt-5.6-terra/medium, one test retry, no escalation; Chromium/SSR70 and WebKit63, trusted mouse12, types/lint/format PASS; mount-only fault RED; GLM3/3 DONE with unchanged guard and no findings. See `.batuta/v1-return-focus-task2-verification.md`.
+- [ ] Next: Task 3 public example migration and documentation.
 
 Do not change any Colima configuration or restart the service. Do not restore
 old settings, stop foreign projects, resume comparative diagnostics or merge

@@ -3,7 +3,7 @@ import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
-import { useState } from 'react';
+import { StrictMode, useRef, useState, type ReactNode } from 'react';
 import { Drawer } from './index';
 
 function DrawerHarness() {
@@ -192,5 +192,188 @@ describe('Drawer', () => {
     overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).toBeNull());
     expect(document.activeElement).toBe(opener);
+  });
+
+  it.each(['escape', 'backdrop', 'button'] as const)(
+    'explicit mouse returnFocusTo restores its declared target after %s dismissal',
+    async (dismissal) => {
+      function ExplicitMouseHarness(): ReactNode {
+        const [open, setOpen] = useState(false);
+        const targetRef = useRef<HTMLHeadingElement>(null);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open without focus preparation
+            </button>
+            <h2 ref={targetRef} tabIndex={-1}>
+              Return destination
+            </h2>
+            <Drawer
+              open={open}
+              onClose={() => setOpen(false)}
+              returnFocusTo={() => targetRef.current}
+              title="Explicit mouse return focus"
+            >
+              Body
+            </Drawer>
+          </>
+        );
+      }
+
+      await render(<ExplicitMouseHarness />);
+      await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).not.toBeNull());
+      const panel = document.querySelector<HTMLElement>('.lyra-drawer')!;
+      expect(panel.getAttribute('returnFocusTo')).toBeNull();
+
+      if (dismissal === 'escape') await userEvent.keyboard('{Escape}');
+      else if (dismissal === 'backdrop') {
+        await userEvent.click(document.querySelector<HTMLElement>('.lyra-drawer-overlay')!, {
+          position: { x: 1, y: 1 },
+        });
+      } else await userEvent.click(panel.querySelector<HTMLButtonElement>('.lyra-drawer__close')!);
+
+      const target = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-drawer__title)')!;
+      await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).toBeNull());
+      expect(document.activeElement).toBe(target);
+    },
+  );
+
+  it('uses a successor after the trigger is removed by the accepted closing commit', async () => {
+    function RemovedTriggerHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      const [showTrigger, setShowTrigger] = useState(true);
+      const successorRef = useRef<HTMLHeadingElement>(null);
+      return (
+        <>
+          {showTrigger && (
+            <button type="button" onClick={() => setOpen(true)}>
+              Remove me on close
+            </button>
+          )}
+          <h2 ref={successorRef} tabIndex={-1}>
+            Workflow successor
+          </h2>
+          <Drawer
+            open={open}
+            onClose={() => {
+              setShowTrigger(false);
+              setOpen(false);
+            }}
+            returnFocusTo={() => successorRef.current}
+            title="Removed trigger"
+          >
+            Body
+          </Drawer>
+        </>
+      );
+    }
+
+    await render(<RemovedTriggerHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    const successor = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-drawer__title)')!;
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).toBeNull());
+    expect(document.activeElement).toBe(successor);
+  });
+
+  it('does not resolve returnFocusTo when a parent ignores a close request', async () => {
+    const resolver = vi.fn(() => document.createElement('button'));
+    function IgnoredCloseHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open ignored close
+          </button>
+          <Drawer open={open} onClose={() => {}} returnFocusTo={resolver} title="Ignored close">
+            Body
+          </Drawer>
+        </>
+      );
+    }
+
+    await render(<IgnoredCloseHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    expect(resolver).not.toHaveBeenCalled();
+  });
+
+  it('captures a fresh opener and resolves once per accepted close during a rapid reopen', async () => {
+    const resolver = vi.fn(() => null);
+    function ControlledRapidReopen({ open }: { open: boolean }): ReactNode {
+      return (
+        <>
+          <button type="button">First keyboard opener</button>
+          <button type="button">Second keyboard opener</button>
+          <Drawer open={open} returnFocusTo={resolver} title="Rapid reopen">
+            Body
+          </Drawer>
+        </>
+      );
+    }
+
+    const { rerender } = await render(<ControlledRapidReopen open={false} />);
+    const firstTrigger = document.querySelectorAll<HTMLButtonElement>('button')[0]!;
+    const secondTrigger = document.querySelectorAll<HTMLButtonElement>('button')[1]!;
+    firstTrigger.focus();
+    await rerender(<ControlledRapidReopen open />);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).not.toBeNull());
+    const firstPanel = document.querySelector<HTMLElement>('.lyra-drawer')!;
+    await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+
+    await rerender(<ControlledRapidReopen open={false} />);
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('.lyra-drawer')?.classList.contains('lyra-drawer--closing'),
+      ).toBe(true),
+    );
+    await vi.waitFor(() => expect(resolver).toHaveBeenCalledTimes(1));
+    expect(document.activeElement).toBe(firstTrigger);
+
+    secondTrigger.focus();
+    await rerender(<ControlledRapidReopen open />);
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('.lyra-drawer')?.classList.contains('lyra-drawer--closing'),
+      ).toBe(false),
+    );
+    expect(document.querySelector('.lyra-drawer')).toBe(firstPanel);
+    await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+
+    await rerender(<ControlledRapidReopen open={false} />);
+    await vi.waitFor(() => expect(resolver).toHaveBeenCalledTimes(2));
+    expect(document.activeElement).toBe(secondTrigger);
+  });
+
+  it('preserves the omitted-prop opener across StrictMode effect replay', async () => {
+    function StrictModeHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open strict drawer
+          </button>
+          <Drawer open={open} onClose={() => setOpen(false)} title="Strict opener">
+            Body
+          </Drawer>
+        </>
+      );
+    }
+
+    await render(
+      <StrictMode>
+        <StrictModeHarness />
+      </StrictMode>,
+    );
+    const trigger = document.querySelector<HTMLButtonElement>('button')!;
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    await vi.waitFor(() => expect(document.querySelector('.lyra-drawer')).toBeNull());
+    expect(document.activeElement).toBe(trigger);
   });
 });

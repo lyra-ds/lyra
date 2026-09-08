@@ -7,7 +7,7 @@
 
 The maintainer approved the contract and required Batuta planning/documentation.
 This plan organizes that authorized implementation; it does not ask for the same
-API approval again. Task 1 is verified; Task 2 is next. Each task is one verified
+API approval again. Tasks 1 and 2 are verified; Task 3 is next. Each task is one verified
 commit, executed sequentially through the project's Batuta routing.
 
 ## Tasks
@@ -17,7 +17,7 @@ commit, executed sequentially through the project's Batuta routing.
       Scope: packages/react/src/internal/use-return-focus.ts, packages/react/src/internal/use-return-focus.browser.test.tsx, packages/react/src/dialog/dialog.tsx, packages/react/src/dialog/dialog.browser.test.tsx, packages/react/src/dialog/dialog.ssr.test.ts
       Accept: Dialog and owner Chromium regressions pass → pnpm --dir packages/react exec vitest run --project 'browser (chromium)' src/internal/use-return-focus.browser.test.tsx src/dialog/dialog.browser.test.tsx; The same cases pass in available WebKit → pnpm --dir packages/react exec vitest run --project 'browser (webkit)' src/internal/use-return-focus.browser.test.tsx src/dialog/dialog.browser.test.tsx; SSR never resolves focus or leaks the prop → pnpm --dir packages/react exec vitest run --project ssr src/dialog/dialog.ssr.test.ts; Trusted mouse regression is RED before repair and GREEN after with no pre-focus workaround; Eligibility, successor, diagnostic and once-per-close lifecycle cases from the approved contract have real behavioral proofs
 
-- [ ] 2. Integrate Drawer with the same owner and fresh opening cycles — frontend/medium
+- [x] 2. Integrate Drawer with the same owner and fresh opening cycles — frontend/medium
       Depends on: 1
       Scope: packages/react/src/drawer/drawer.tsx, packages/react/src/drawer/drawer.browser.test.tsx, packages/react/src/drawer/drawer.ssr.test.ts
       Accept: Drawer and Dialog Chromium/SSR regressions pass → pnpm --dir packages/react exec vitest run --project 'browser (chromium)' --project ssr src/drawer/ src/dialog/; Both browser suites pass in available WebKit → pnpm --dir packages/react exec vitest run --project 'browser (webkit)' src/drawer/ src/dialog/; Drawer trusted mouse input restores declared targets and successors without test focus preparation; Rapid close/reopen captures a fresh opener and no stale restoration runs; Pointer-origin dismissal regression remains green

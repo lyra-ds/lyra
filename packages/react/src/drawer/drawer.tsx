@@ -10,6 +10,7 @@ import type {
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 import { usePresence } from '../internal/use-presence';
 
@@ -36,12 +37,15 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   footer?: ReactNode;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /** Resolves the current logical destination for focus after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
   /** Drawer body content. */
   children: ReactNode;
 }
 
 interface DrawerPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;
+  overlayRef: RefObject<HTMLDivElement | null>;
   attachPanel: (node: HTMLDivElement | null) => void;
   titleId: string;
   title: ReactNode;
@@ -49,6 +53,7 @@ interface DrawerPanelProps {
   onClose?: () => void;
   closeLabel: string;
   captureOpener: (element: Element | null) => void;
+  open: boolean;
   className?: string;
   children: ReactNode;
   rest: HTMLAttributes<HTMLDivElement>;
@@ -59,6 +64,7 @@ interface DrawerPanelProps {
 /** Portal child: DOM-dependent effects intentionally live with the portaled panel. */
 function DrawerPanel({
   panelRef,
+  overlayRef,
   attachPanel,
   titleId,
   title,
@@ -66,6 +72,7 @@ function DrawerPanel({
   onClose,
   closeLabel,
   captureOpener,
+  open,
   className,
   children,
   rest,
@@ -73,12 +80,13 @@ function DrawerPanel({
   onAnimationEnd,
 }: DrawerPanelProps): ReactNode {
   useEffect(() => {
+    if (!open) return;
     const panel = panelRef.current;
     if (!panel) return;
-    captureOpener(document.activeElement);
+    captureOpener(panel.ownerDocument.activeElement);
     const firstFocusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
     (firstFocusable ?? panel).focus();
-  }, [panelRef, captureOpener]);
+  }, [open, panelRef, captureOpener]);
 
   useFocusTrap(panelRef, true);
   // Keyed on the close REQUEST, not on `mounted`: the page is scrollable again immediately while
@@ -97,6 +105,7 @@ function DrawerPanel({
     // The backdrop is a pointer-only close convenience; Escape and the close button provide keyboard access.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
+      ref={overlayRef}
       className={cx('lyra-drawer-overlay', closing && 'lyra-drawer-overlay--closing')}
       onMouseDown={(event) => {
         downOnOverlay.current = event.target === event.currentTarget;
@@ -151,27 +160,31 @@ function DrawerPanel({
 
 /**
  * A modal slide-over panel for details and short forms. It is portaled, traps focus, locks
- * background scroll, and restores focus to its opener after the controlled `open` prop closes.
+ * background scroll, and restores focus to its declared target or opener after the controlled
+ * `open` prop closes.
  */
 export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(function Drawer(
-  { open, onClose, closeLabel = 'Close', title, footer, container, className, children, ...rest },
+  {
+    open,
+    onClose,
+    closeLabel = 'Close',
+    title,
+    footer,
+    container,
+    returnFocusTo,
+    className,
+    children,
+    ...rest
+  },
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const openerRef = useRef<Element | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const { mounted, closing, onAnimationEnd } = usePresence(open);
 
-  useEffect(() => {
-    if (open) return;
-    if (openerRef.current instanceof HTMLElement) openerRef.current.focus();
-    openerRef.current = null;
-  }, [open]);
-
-  const captureOpener = useCallback((element: Element | null) => {
-    openerRef.current = element;
-  }, []);
+  const { captureOpener } = useReturnFocus({ open, returnFocusTo, panelRef, overlayRef });
 
   const attachPanel = useCallback(
     (node: HTMLDivElement | null) => {
@@ -188,6 +201,7 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
     <Portal container={container}>
       <DrawerPanel
         panelRef={panelRef}
+        overlayRef={overlayRef}
         attachPanel={attachPanel}
         titleId={titleId}
         title={title}
@@ -195,6 +209,7 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
         onClose={onClose}
         closeLabel={closeLabel}
         captureOpener={captureOpener}
+        open={open}
         className={className}
         rest={rest}
         closing={closing}

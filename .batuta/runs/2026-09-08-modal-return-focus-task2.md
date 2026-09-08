@@ -1,14 +1,15 @@
-# Run — Dialog shared return-focus ownership
+# Run — Drawer return focus
 
-**Date:** 2026-09-08 · **Lane:** frontend/high → critical · **Executor:** Codex gpt-5.6-terra/high, then controller self
-**Commit:** 00d2ded · **Verdict:** ✅ approved
+**Date:** 2026-09-08 · **Lane:** frontend/medium · **Executor:** Codex gpt-5.6-terra
+**Commit:** pending atomic commit · **Verdict:** ✅ approved
 
 ## Brief
-# Task 1 — Dialog return focus
+# Task 2 — Drawer return focus
 ## Goal
-Implement the approved shared return-focus owner and integrate Dialog. API and plan are approved; execute using Batuta, no Superpowers workflow or new approval.
+Integrate Drawer with the verified shared return-focus owner from Task 1, using the same optional public API and fresh accepted opening cycles.
 ## Context
-Read packages/react/CONVENTIONS.md and the five scoped files. DialogPanel captures immediately before initial focus in its open-keyed effect; root currently restores opener on close. Portal mounts asynchronously; usePresence retains exiting DOM. Existing prepared tests intentionally focus click triggers; keep them, but new explicit-resolver regressions must use genuine mouse activation with no focus preparation. Drawer is Task 2 and out of scope. The full approved contract is appended verbatim and authoritative for this task's Dialog/shared-owner portion.
+You are the implementation executor already dispatched by the Batuta conductor. Implement directly, do not recursively delegate or run Batuta orchestration/review. API and plan approved; no new permission or Superpowers workflow. Controller owns node_modules symlinks; do not remove them. Do not run pnpm/install/browser/static checks in the executor: controller verifies outside sandbox using existing pinned tools. No Colima/Docker/resource changes. Do not commit, push or publish.
+Read packages/react/src/internal/use-return-focus.ts, current Dialog integration and Drawer source/tests. Drawer currently captures on mount only; exit presence reuses that panel, so every accepted reopening must get a fresh captured opener. Preserve the existing pointer-origin dismissal repair. Full approved contract appended verbatim applies to Drawer.
 ## Conventions
 English docs/JSDoc. Existing CSS-first architecture and classes; no CSS imports in shipped React. Pinned Node24.18.0/pnpm11.13.1. Controller runs browser tests outside your sandbox; do not claim unrun tests passed. No dependencies/install/config/Colima/Docker operations, no commit, no remote actions. Keep coordination under .batuta/. Do not invoke nested executors or skills that impose another design workflow.
 
@@ -63,28 +64,24 @@ Work test-first from the acceptance criteria. Investigate root cause before fixi
 2. A failing test means fix the code, not the test.
 3. No test-only flags or branches in production code.
 ## Acceptance criteria
-1. Dialog returnFocusTo is optional public () => HTMLElement | null, consumed not DOM-forwarded; genuine mouse closes on Escape/backdrop/button restore the declared target with preventScroll and remain there after exit. Proof: Dialog browser suite Chromium and WebKit, no new trigger-focus workaround. Existing keyboard/omitted-prop valid opener stays green.
-2. Shared owner implements eligibility and successor/fallback rules in appended contract, excluding closing subtree. Proof: real DOM browser tests for removed/disabled/fieldset/hidden/inert/aria-hidden/disconnected/cross-document/body/html/unfocusable and valid tabindex=-1, valid captured fallback, once-only diagnostic if neither eligible. No invalid focus calls.
-3. Latest resolver once per accepted close after commit refs, no initial-closed/ignored close/closed-rerender/StrictMode duplicate, fresh rapid reopen cycle, no stale delayed focus. Proof: browser tests with meaningful callback/focus counts and real lifecycle changes.
-4. SSR neither invokes resolver nor accesses browser globals/leaks prop. Proof: Dialog SSR suite. Types, scoped lint/format pass.
-Controller will run Chromium/WebKit/SSR outside executor and a revert-product regression proof; keep a clearly named explicit mouse regression that fails on the baseline without missing-module failures. Tests for the new hook may remain separate.
+1. Optional returnFocusTo public type and behavior match Dialog, no DOM leakage, use existing owner instead of duplicating eligibility/cycle code. Proof: Drawer browser/SSR and controller types.
+2. Trusted unprepared mouse Escape/backdrop/close-button returns to explicit trigger or live successor after trigger removal and after exit. Keyboard/omitted valid opener still works. Proof: real Chromium/WebKit input, new exact assertions without pre-focus in mouse click handler.
+3. Rapid close/reopen within presence captures fresh opener; StrictMode and ignored requests do not duplicate/misdirect restoration. Proof: meaningful browser lifecycle tests and once-per-close resolver counts. Existing pointer-origin regression remains green.
+Controller commands: Vitest Chromium+SSR src/drawer/ src/dialog/ and WebKit both, shared owner suite, scoped types/lint/format; trusted input fixture.
 ## Boundaries
-Do not modify focus trap, other components, providers, layer tracking, CSS, dependencies, generated files, docs, configs, locks, workflows, release ledger, resource settings. Preserve prior pointer-origin fix and immutable evidence. No tests skipped, softened or test-only product branches. No installer or browser download.
+Only Drawer integration/tests; no shared owner changes unless report exact needed correction to conductor first. Preserve classes, motion, scroll lock, close paths and panel API. No trap/layer refactor, dependencies/config/docs/generated/lock changes.
 ## Scope
-packages/react/src/internal/use-return-focus.ts
-packages/react/src/internal/use-return-focus.browser.test.tsx
-packages/react/src/dialog/dialog.tsx
-packages/react/src/dialog/dialog.browser.test.tsx
-packages/react/src/dialog/dialog.ssr.test.ts
+packages/react/src/drawer/drawer.tsx
+packages/react/src/drawer/drawer.browser.test.tsx
+packages/react/src/drawer/drawer.ssr.test.ts
 Do not change anything outside this list; if the task requires it, stop and report.
 ## Expected evidence
-Report changed files, behavior covered, exact commands/results and unverified checks honestly. Browser tests are controller responsibility. Do not write coordination files yourself.
+Report touched files and implementation, exact actual checks and what remains unverified. Controller performs checks. Do not claim tests passed without output; no verification attempts needed in your sandbox.
 ## Stop conditions
 1. The code's shape contradicts the brief.
 2. The same command fails twice for the same unexpected reason (a red test the executor just wrote is not that).
 3. The fix needs edits beyond Scope or Boundaries.
 For each acceptance criterion n, print an isolated line `BATUTA-PROGRESS <n> START` before the first edit toward it and `BATUTA-PROGRESS <n> DONE` when its proof passes locally. Plain text, nothing else on that line, no tool required.
-
 ## Approved contract (verbatim)
 # Explicit modal return focus
 
@@ -279,29 +276,49 @@ No runtime/API implementation, dependency/configuration change or V1
 qualification is made by accepting this document into the working branch.
 
 ## Executor report
-Implemented the feedback corrections within the five-file scope.
+Implemented Drawer return-focus integration.
 
 Changed:
-- Shared return-focus owner now commits resolver updates in effects, captures once per opening cycle, rejects stricter unsafe targets, and uses shared modal diagnostics.
-- Dialog tests cover real backdrop coordinates, prop consumption, StrictMode opener restoration, ignored closes, and removed-trigger successor focus.
-- Hook tests cover fieldsets, hidden ancestors, iframe targets, closing subtree rejection, fresh reopen capture, and invalid focus attempts.
-- SSR test imports `vi`.
 
-No pnpm, browser, lint, typecheck, or formatting verification was run. No node_modules cleanup or commit performed.
+- `packages/react/src/drawer/drawer.tsx`
+  - Adds optional `returnFocusTo`.
+  - Uses the shared `useReturnFocus` owner.
+  - Captures focus on every accepted `open` cycle, including rapid reopen during exit.
+  - Tracks overlay ref so closing Drawer descendants are excluded by the shared owner.
+  - Preserves existing backdrop pointer-origin behavior.
+
+- `packages/react/src/drawer/drawer.browser.test.tsx`
+  - Adds explicit unprepared mouse return-focus coverage for Escape, backdrop, and close button.
+  - Covers removed-trigger successor, ignored close requests, rapid reopen/fresh opener/once-per-close resolution, and StrictMode.
+
+- `packages/react/src/drawer/drawer.ssr.test.ts`
+  - Confirms `returnFocusTo` is neither invoked nor forwarded during SSR.
+
+Per instruction, I ran no pnpm, browser, type, lint, or format checks. I emitted `BATUTA-PROGRESS ... START` markers; no `DONE` markers because local proof was intentionally left to the conductor.
+
+## Retry report
+Updated `packages/react/src/drawer/drawer.browser.test.tsx` per controller feedback.
+
+The rapid-reopen proof now:
+
+- Uses focused keyboard-opener state, not unprepared mouse input.
+- Controls `open` transitions directly within the existing presence window.
+- Asserts the same panel DOM node survives close/reopen.
+- Verifies focus re-enters that panel after reopening.
+- Verifies the second opener is restored after the second accepted close.
+- Verifies the resolver runs exactly twice.
+
+No checks or package commands were run.
 
 ## Verification
-# Task 1 verification — Dialog return focus
+# Task 2 verification — Drawer return focus
 
-Verdict: approved after high/Codex gpt-5.6-terra initial delivery, one implementation retry, then critical/self correction. The initial executor was interrupted after repeated sandbox pnpm identity failures; its premature check claims were rejected. No dependency or resource workaround was used.
+Approved. Codex gpt-5.6-terra/medium, one test correction retry, no escalation. Shared owner unchanged from00d2ded; integration adds optional returnFocusTo and keys capture on open transitions.
 
-- Criterion 1: optional public prop consumed; trusted real Chromium/WebKit mouse, three close paths × stable trigger/successor: 12/12 PASS. Same fixture with immutable baseline source: 9/12 failed. Public regression after panel removal passes.
-- Criterion 2: browser owner tests prove eligible target, fallback, invalid target rejection, fieldset/ancestor/cross-document/closing subtree, once-only diagnostic. Three additional valid-focus regressions were RED before critical correction; GREEN after. Negative tabindex/native malformed tabindex/first summary behavior independently measured in both engines.
-- Criterion 3: accepted-commit resolver, capture once per opening, close consumption and fresh reopen. StrictMode keyboard probe failed in both engines before correction and passed both after. Parent open effect had reset the child's capture guard; removed that reset. Ignored-close and successor-after-ref-commit tests pass.
-- Criterion 4: controller Chromium+SSR 52/52, WebKit 48/48. Pinned Node24.18.0 directly invokes installed Vitest4.1.10, tsc, scoped ESLint and Prettier: all exit0. See final-* logs. No tests disabled/softened; targeted RED uses test-name filtering only.
-- Independent OpenCode/GLM5.3Flash review final4/4 DONE, Batuta verifier PASS; status/diff/source hashes unchanged. Initial three findings accepted and corrected. Final low editable-descendant finding declined: real Chromium/WebKit probes show inherited/nested editable spans without tabindex do not focus; explicit tabindex nested target does focus and is accepted (editable.log). No remaining blocking finding.
-- Scope: exactly five approved product files plus Batuta-managed records. No Drawer code, dependencies, configs, workflows, Colima/Docker, remote or release changes. Local proof does not qualify Firefox/pinned Linux or V1 as a whole.
+1. Public API/SSR/types: three scoped Drawer files only; consumes prop and calls shared owner. Controller Chromium/SSR70/70, types and scoped ESLint/Prettier pass (all exit0).
+2. Trusted real Chromium/WebKit mouse:12/12 close-path × stable trigger/successor cases pass, compared with9/12 baseline failures. Focus asserted after panel removal. Existing pointer-origin and omitted valid-opener regressions preserved.
+3. Rapid reopen proves same panel identity, focus re-entry, second opener capture and exactly two resolver calls; isolated mount-only dependency fault makes that test fail (mount-only-red.log); original bytes restored. Final WebKit63/63. StrictMode keyboard and ignored-close cases pass. Initial failed test incorrectly used unprepared mouse with null resolver and did not guarantee presence reuse; retry corrected the fixture contract, not runtime assertions.
 
-Commands run from packages/react with the pinned Node and installed Vitest entry: run --project 'browser (chromium)' --project ssr src/internal/use-return-focus.browser.test.tsx src/dialog/; run --project 'browser (webkit)' src/internal/use-return-focus.browser.test.tsx src/dialog/; tsc --noEmit; scoped eslint; scoped prettier --check. Trusted fixtures: .batuta/runs/v1-return-focus-task1/run.mjs and run-strict.mjs. Raw executor/reviewer logs and immutable RED sources retained locally.
+Independent OpenCode/GLM5.3Flash:3/3 DONE, no findings, unchanged source/status/diff guard; Batuta verifier PASS. Test hygiene clean. Runtime dependency count unchanged. No Colima/Docker/resource/config/remote/release changes. Firefox/Linux release proof remains pending.
 
-## Retries and escalation
-Initial source/type/test failures; one Codex retry; critical controller fixed proven capture reset and eligibility errors. No branch reset: evidence preserved.
+Controller used pinned Node24.18.0 directly with installed Vitest4.1.10: run --project 'browser (chromium)' --project ssr src/internal/use-return-focus.browser.test.tsx src/dialog/ src/drawer/; same browser inputs with --project 'browser (webkit)'; tsc --noEmit, scoped eslint and prettier --check. Exact logs and trusted fixture remain in .batuta/runs/v1-return-focus-task2/.
