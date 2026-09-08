@@ -53,3 +53,13 @@ an unresolved normative V1 gap. Next design must establish an explicit invoking
 control/return target and successor responsibility, without global tracking or
 an assumed replacement foundation. No particular new API is approved yet.
 See v1-webkit-focus-verification.md for exact scope and remaining release gates.
+
+## Proposed return-focus contract
+
+The next API choice is concretely proposed in
+`docs/superpowers/specs/2026-09-08-modal-return-focus-design.md`: one optional
+returnFocusTo resolver, shared internal safety/cycle ownership for Dialog and
+Drawer, and explicit composition-provided successors. Two-criterion independent
+technical review passed after one revision. Maintainer API approval remains
+pending; current runtime and unprepared mouse behavior are unchanged. The
+proposal does not waive no-body or any remaining modal/release requirement.

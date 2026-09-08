@@ -37,9 +37,15 @@ release streams below are a roadmap, not a speculative multi-file executor task.
       Scope: packages/react/src/dialog/dialog.browser.test.tsx, packages/react/src/drawer/drawer.browser.test.tsx
       Accept: Trusted-input diagnosis establishes cause; full local Chromium/WebKit suites pass for prepared compositions; restoration fault injection still fails exact assertions; production unchanged and unprepared mouse restoration remains explicitly unresolved
 
-Preparation, Drawer repair and prepared-opener fixture correction are complete.
+- [x] 6. Draft explicit modal return-focus contract — governance/critical
+      Depends on: 5
+      Scope: docs/superpowers/specs/2026-09-08-modal-return-focus-design.md
+      Accept: Concrete API/lifecycle/compatibility and invalid-target obligations are consistent with existing modal requirements; independent review passes and proposal remains distinct from maintainer approval and implementation
+
+Preparation, Drawer repair, fixture correction and contract drafting are complete.
 This does not complete V1 stabilization. The unprepared WebKit mouse-return-to-body
-gap requires a separate opener/successor contract design; no API is selected.
+gap has a technically reviewed returnFocusTo proposal awaiting maintainer API
+approval; no implementation is authorized merely by this plan entry.
 Full release qualification remains pending.
 
 ## Decisions and context
