@@ -11,7 +11,8 @@ comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
 - [x] WebKit focus diagnosis and fixture correction — critical/self diagnosis with guarded GLM scout; low/OpenCode GLM5.3Flash implementation, no retry/escalation. Prepared-opener fixtures now pass WebKit38/38 and Chromium/SSR43/43; two injected broken-restoration cases fail, original runtime bytes restored. Types/lint/format pass. See `.batuta/v1-webkit-focus-verification.md`.
 - [x] Explicit modal return-focus contract drafted — critical/self; GLM5.3Flash independent review, one revision, unchanged guards, final verifier2/2 DONE. Proposal: optional returnFocusTo resolver on React Dialog/Drawer, explicit safety/cycle/successor obligations. See `.batuta/specs/2026-09-08-modal-return-focus-design.md`. Technical review complete; maintainer approved the API on 2026-09-08. Implementation not yet started.
 - [x] Maintainer corrected workflow to Batuta and approved returnFocusTo. Contract moved to `.batuta/specs/2026-09-08-modal-return-focus-design.md`; approved implementation plan: `.batuta/plans/v1-modal-return-focus.md`. No further API-approval question is needed.
-- [ ] Next: execute Task 1 of the approved Batuta plan. Implementation has not started; actual unprepared WebKit mouse restoration stays unresolved until product and consumer migration pass verification. No executor/browser/server remains running.
+- [x] Task 1 Dialog/shared returnFocusTo verified — Codex gpt-5.6-terra/high, one retry then critical/self correction; Chromium/SSR52, WebKit48, trusted mouse12 and StrictMode2 PASS, types/lint/format PASS; independent GLM4/4 DONE with unchanged guard. See `.batuta/v1-return-focus-task1-verification.md`.
+- [ ] Next: Task 2 Drawer integration through the approved Batuta plan.
 
 Do not change any Colima configuration or restart the service. Do not restore
 old settings, stop foreign projects, resume comparative diagnostics or merge
@@ -529,3 +530,5 @@ remote or publication action is authorized.
 - [x] **Phases 1–3** — monorepo governance, styles package (209 tokens / 248
       classes), and React infrastructure/pilot components imported from GSD;
       merged PRs #1–#3 on 2026-07-17–20. → GSD/claude.
+
+- 2026-09-08: Approved returnFocusTo plan executing: Task 1 delegated to Codex gpt-5.6-terra, high reasoning; no retry yet. Controller verification pending. No Colima/resource changes.

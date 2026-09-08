@@ -15,6 +15,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { usePresence, type PresenceState } from '../internal/use-presence';
+import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 
 /**
@@ -55,6 +56,8 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   closeOnOverlayClick?: boolean;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /** Resolves the current logical destination for focus after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
   /** Body content. */
   children: ReactNode;
 }
@@ -66,6 +69,7 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
 interface DialogPanelProps {
   /** Ref object read by the initial-focus effect and the focus trap (points INTO the portal). */
   panelRef: RefObject<HTMLDivElement | null>;
+  overlayRef: RefObject<HTMLDivElement | null>;
   /** Merged ref callback that populates {@link panelRef} AND the consumer's forwarded ref. */
   attachPanel: (node: HTMLDivElement | null) => void;
   titleId: string;
@@ -94,6 +98,7 @@ interface DialogPanelProps {
  */
 function DialogPanel({
   panelRef,
+  overlayRef,
   attachPanel,
   titleId,
   title,
@@ -121,7 +126,7 @@ function DialogPanel({
     if (!open) return;
     const panel = panelRef.current;
     if (!panel) return;
-    captureOpener(document.activeElement);
+    captureOpener(panel.ownerDocument.activeElement);
     const focusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
     (focusable ?? panel).focus();
   }, [open, panelRef, captureOpener]);
@@ -156,6 +161,7 @@ function DialogPanel({
     // static-element/keyboard-listener a11y rules do not apply to this supplementary handler.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
+      ref={overlayRef}
       className={cx('lyra-dialog-overlay', closing && 'lyra-dialog-overlay--closing')}
       onMouseDown={(event) => {
         downOnOverlay.current = event.target === event.currentTarget;
@@ -244,6 +250,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
     closeOnEsc = true,
     closeOnOverlayClick = true,
     container,
+    returnFocusTo,
     className,
     children,
     ...rest
@@ -252,7 +259,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
 ) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const openerRef = useRef<Element | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const { mounted, closing, onAnimationEnd } = usePresence(open);
 
@@ -260,22 +267,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
   // once close is requested, while the exit animation still plays (D-22).
   useScrollLock(open);
 
-  // Focus restore (D-20 + APG): restore ONLY when the controlled `open` prop actually flips to
-  // false — not merely when a close is requested. A parent that ignores `onClose` keeps `open`
-  // true, so focus stays inside the panel. The opener is captured inside the panel's mount
-  // effect (before focus moves in), so this runs after the capture on any open→close cycle.
-  useEffect(() => {
-    if (open) return;
-    const opener = openerRef.current;
-    if (opener instanceof HTMLElement) {
-      opener.focus();
-    }
-    openerRef.current = null;
-  }, [open]);
-
-  const captureOpener = useCallback((el: Element | null) => {
-    openerRef.current = el;
-  }, []);
+  const { captureOpener } = useReturnFocus({ open, returnFocusTo, panelRef, overlayRef });
 
   // Merge the internal panel ref (needed by the focus effect + trap) with the consumer's
   // forwarded ref, both targeting the panel div (D-08).
@@ -299,6 +291,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
     <Portal container={container}>
       <DialogPanel
         panelRef={panelRef}
+        overlayRef={overlayRef}
         attachPanel={attachPanel}
         titleId={titleId}
         title={title}

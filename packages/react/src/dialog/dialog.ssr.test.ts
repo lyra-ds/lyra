@@ -2,7 +2,7 @@
 // renderToString proves the overlay pilot has NO module-scope DOM access and that the Portal
 // SSR guard renders null server-side: an open Dialog produces a string with no overlay markup
 // and throws nothing (D-21/D-26). This is the shape Phase 4 Drawer/CommandPalette/Toast copy.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import { createElement } from 'react';
 import { Dialog } from './index';
@@ -44,5 +44,19 @@ describe('Dialog — SSR', () => {
         }),
       ),
     ).not.toThrow();
+  });
+
+  it('does not invoke or forward returnFocusTo on the server', () => {
+    const returnFocusTo = vi.fn(() => null);
+    const html = renderToString(
+      createElement(Dialog, {
+        open: true,
+        title: 'No browser globals',
+        returnFocusTo,
+        children: 'Body',
+      }),
+    );
+    expect(returnFocusTo).not.toHaveBeenCalled();
+    expect(html).not.toContain('returnFocusTo');
   });
 });

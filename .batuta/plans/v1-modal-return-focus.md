@@ -3,17 +3,17 @@
 <!-- inputs: profile.md@sha256:c5fffda498a6 routing.md@sha256:99f96b92331f -->
 
 **Goal:** Implement the approved returnFocusTo contract for React Dialog and Drawer and migrate their documented examples, preserving the incumbent and proving mouse restoration without focus preparation.
-**Created:** 2026-09-08 · **Status:** approved
+**Created:** 2026-09-08 · **Status:** in progress
 
 The maintainer approved the contract and required Batuta planning/documentation.
 This plan organizes that authorized implementation; it does not ask for the same
-API approval again. No implementation task has started. Each task is one verified
+API approval again. Task 1 is verified; Task 2 is next. Each task is one verified
 commit, executed sequentially through the project's Batuta routing.
 
 ## Tasks
 
 <!-- prettier-ignore -->
-- [ ] 1. Implement shared return-focus ownership and integrate Dialog — frontend/high
+- [x] 1. Implement shared return-focus ownership and integrate Dialog — frontend/high
       Scope: packages/react/src/internal/use-return-focus.ts, packages/react/src/internal/use-return-focus.browser.test.tsx, packages/react/src/dialog/dialog.tsx, packages/react/src/dialog/dialog.browser.test.tsx, packages/react/src/dialog/dialog.ssr.test.ts
       Accept: Dialog and owner Chromium regressions pass → pnpm --dir packages/react exec vitest run --project 'browser (chromium)' src/internal/use-return-focus.browser.test.tsx src/dialog/dialog.browser.test.tsx; The same cases pass in available WebKit → pnpm --dir packages/react exec vitest run --project 'browser (webkit)' src/internal/use-return-focus.browser.test.tsx src/dialog/dialog.browser.test.tsx; SSR never resolves focus or leaks the prop → pnpm --dir packages/react exec vitest run --project ssr src/dialog/dialog.ssr.test.ts; Trusted mouse regression is RED before repair and GREEN after with no pre-focus workaround; Eligibility, successor, diagnostic and once-per-close lifecycle cases from the approved contract have real behavioral proofs
 

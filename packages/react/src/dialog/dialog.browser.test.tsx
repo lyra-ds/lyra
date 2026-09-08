@@ -12,7 +12,7 @@
 // the render container) and the shared axe helper targets document.body — the tree the portal actually lands
 // in. Dark theme is toggled on document.documentElement so the body-level portal inherits it.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useState, type ReactNode } from 'react';
+import { StrictMode, useRef, useState, type ReactNode } from 'react';
 import { render, cleanup } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
@@ -320,8 +320,79 @@ describe('Dialog — initial focus', () => {
 // --- Close paths + opt-out flags + focus restore ---------------------------------------------
 
 describe('Dialog — close paths', () => {
+  it.each(['escape', 'backdrop', 'button'] as const)(
+    'explicit mouse returnFocusTo restores its declared target after %s dismissal',
+    async (dismissal) => {
+      function ExplicitMouseHarness(): ReactNode {
+        const [open, setOpen] = useState(false);
+        const targetRef = useRef<HTMLHeadingElement>(null);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open without focus preparation
+            </button>
+            <h2 ref={targetRef} tabIndex={-1}>
+              Return destination
+            </h2>
+            <Dialog
+              open={open}
+              onClose={() => setOpen(false)}
+              returnFocusTo={() => targetRef.current}
+              title="Explicit mouse return focus"
+            >
+              Body
+            </Dialog>
+          </>
+        );
+      }
+
+      await render(<ExplicitMouseHarness />);
+      await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+      await vi.waitFor(() => expect(panel()).not.toBeNull());
+      expect(panel()!.getAttribute('returnFocusTo')).toBeNull();
+
+      if (dismissal === 'escape') await userEvent.keyboard('{Escape}');
+      else if (dismissal === 'backdrop') {
+        await userEvent.click(overlay()!, { position: { x: 1, y: 1 } });
+      } else await userEvent.click(closeBtn()!);
+
+      const target = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-dialog__title)')!;
+      await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+      expect(document.activeElement).toBe(target);
+    },
+  );
+
   it('Esc closes and restores focus to the trigger', async () => {
     const { trigger } = await openHarness();
+    await userEvent.keyboard('{Escape}');
+    await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('StrictMode preserves the omitted-prop opener across effect replay', async () => {
+    function StrictModeHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open strict dialog
+          </button>
+          <Dialog open={open} onClose={() => setOpen(false)} title="Strict opener">
+            Body
+          </Dialog>
+        </>
+      );
+    }
+
+    await render(
+      <StrictMode>
+        <StrictModeHarness />
+      </StrictMode>,
+    );
+    const trigger = document.querySelector<HTMLButtonElement>('button')!;
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
     await userEvent.keyboard('{Escape}');
     await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
     expect(document.activeElement).toBe(trigger);
@@ -385,6 +456,69 @@ describe('Dialog — close paths', () => {
     // onClose fired but the parent kept open=true → dialog stays, focus stays inside.
     expect(panel()).not.toBeNull();
     expect(panel()!.contains(document.activeElement)).toBe(true);
+  });
+
+  it('does not resolve returnFocusTo when a parent ignores a close request', async () => {
+    const resolver = vi.fn(() => document.createElement('button'));
+    function IgnoredCloseHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open ignored close
+          </button>
+          <Dialog open={open} onClose={() => {}} returnFocusTo={resolver} title="Ignored close">
+            Body
+          </Dialog>
+        </>
+      );
+    }
+
+    await render(<IgnoredCloseHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    expect(resolver).not.toHaveBeenCalled();
+    expect(panel()!.contains(document.activeElement)).toBe(true);
+  });
+
+  it('uses a successor after the trigger is removed by the accepted closing commit', async () => {
+    function RemovedTriggerHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      const [showTrigger, setShowTrigger] = useState(true);
+      const successorRef = useRef<HTMLHeadingElement>(null);
+      return (
+        <>
+          {showTrigger && (
+            <button type="button" onClick={() => setOpen(true)}>
+              Remove me on close
+            </button>
+          )}
+          <h2 ref={successorRef} tabIndex={-1}>
+            Workflow successor
+          </h2>
+          <Dialog
+            open={open}
+            onClose={() => {
+              setShowTrigger(false);
+              setOpen(false);
+            }}
+            returnFocusTo={() => successorRef.current}
+            title="Removed trigger"
+          >
+            Body
+          </Dialog>
+        </>
+      );
+    }
+
+    await render(<RemovedTriggerHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    const successor = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-dialog__title)')!;
+    await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+    expect(document.activeElement).toBe(successor);
   });
 });
 
