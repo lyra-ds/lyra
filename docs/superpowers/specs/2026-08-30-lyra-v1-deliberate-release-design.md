@@ -13,7 +13,7 @@
 Lyra will reach `1.0.0` through four bounded delivery streams in dependency
 order:
 
-1. select and migrate one overlay behavior foundation;
+1. stabilize the existing Lyra overlay behavior foundation;
 2. replace the Tabs P1 contract;
 3. replace the DataTable P1 contract; and
 4. qualify and publish one exact release candidate.
@@ -28,6 +28,10 @@ named by the approved Core Beta design. It does not reopen every historical
 roadmap item as a release blocker. Components may retain a `Beta` lifecycle
 label when their automated evidence does not support `Stable`, but lifecycle
 labels do not exempt any public export from package SemVer after `1.0.0`.
+
+The [2026-09-08 maintainer decision](./2026-09-08-v1-incumbent-direction.md)
+retains the incumbent and removes comparative foundation selection from the V1
+critical path. Acceptance requirements and the eleven P1 entries are unchanged.
 
 ## 2. Current release boundary
 
@@ -107,14 +111,14 @@ The first stream covers three waves:
 | Anchored | Popover, Dropdown, Tooltip                               | positioning, dismissal, keyboard interaction, typeahead where applicable, focus/hover coordination |
 | Composed | CommandPalette, WorkspaceSwitcher, CreateWorkspaceDialog | reuse the selected foundation while preserving Lyra domain APIs                                    |
 
-An approved overlay-family specification and decision record precede
-production migration. The evaluation compares the incumbent implementation,
-Radix, Base UI, and the approved Zag direction against the same fixtures. It
-may retain the incumbent. If a new foundation wins, exactly one dependency
-owns equivalent production responsibilities and superseded internal portal,
-focus, presence, scroll-lock, and dismiss code is removed in the same stream.
+The approved overlay-family specification and the incumbent-retention decision
+govern bounded corrections to the existing implementation. Reuse Lyra's
+current internal owners and remove duplicate responsibility only where the
+approved contract and a demonstrated gap require it. No external-foundation
+comparison or production migration to another base is required for V1.
+Future substitution requires a new explicit maintainer decision and evidence.
 
-The selected foundation is wrapped behind Lyra-owned internal interfaces.
+The existing foundation remains behind Lyra-owned internal interfaces.
 Public component types, DOM attributes, CSS classes, tokens, and documented
 composition remain Lyra contracts.
 
@@ -134,8 +138,8 @@ inactive panels are not empty focusable placeholders. The contract defines:
 - SSR and hydration behavior.
 
 The migration guide maps the beta API to the compound API with before/after
-examples. The implementation may reuse the chosen overlay-era dependency only
-when the selection specification and measured evidence justify it.
+examples. The implementation uses the existing Lyra base. This stream does not authorize
+a new dependency; any such proposal requires a separate maintainer decision.
 
 ### 5.4 DataTable stream
 
@@ -251,8 +255,8 @@ Each stream follows this sequence:
 
 1. approve the family specification or amendment;
 2. record the current contract and a failing acceptance test;
-3. run the bounded decision spike when a dependency choice exists;
-4. approve the decision record;
+3. apply the approved incumbent-retention decision without a comparative spike;
+4. scope a correction from the reproduced gap and existing owners;
 5. implement the smallest coherent wave;
 6. run focused and full automated gates;
 7. publish migration and compatibility documentation;
@@ -295,11 +299,9 @@ While the ledger remains in `planning`, the release gate MUST reject every
 only after its ledger schema binds every evidence revision to the exact release
 candidate and verifies each referenced artifact against its recorded SHA-256.
 
-After that approval, a second plan covers the evidence harness and foundation
-decision. Production overlay migration receives a third plan only after the
-decision record is approved. None of these approvals authorizes a remote or
-production action.
-
-These boundaries prevent an evaluation plan or library preference from
-preceding the governing contract, and prevent a candidate from becoming
-production code before the alternatives are measured against that contract.
+The 2026-09-08 incumbent-retention decision replaces the earlier mandatory
+comparison and foundation-migration sequence. Batuta now records bounded
+incumbent corrections and the remaining Tabs/DataTable contracts before
+release-candidate qualification. Existing research plans and artifacts are
+historical and do not authorize resumed comparison or dependency adoption.
+None of these approvals authorizes a remote or publication action.

@@ -50,7 +50,17 @@ cover the standalone React and Alpine entries, five representative scenarios,
 and four public CSS entries using packed artifacts and the reproducible
 quality-11 Brotli protocol.
 
-## Overlay decision evidence
+## Current V1 direction
+
+The [2026-09-08 maintainer decision](../../specs/2026-09-08-v1-incumbent-direction.md)
+retains the existing Lyra implementation. Comparative foundation research is
+suspended and is not a V1 release prerequisite. The eleven P1 components remain
+unqualified: stabilize confirmed overlay gaps, complete Tabs/DataTable contract
+work, then qualify the exact release candidate. Existing experimental results
+are historical evidence, not completion claims. Colima configuration and
+restarts are prohibited; unavailable verification stays pending.
+
+## Historical overlay decision evidence
 
 The
 [overlay-foundation ADR template](../../templates/overlay-foundation-adr.md)
@@ -125,10 +135,10 @@ frozen required-check contexts remain `lint`, `typecheck`, `test`, and `build`.
 - [ ] Manual Windows/NVDA and macOS/VoiceOver workflow execution is deferred to
       optional post-release evidence under Automated Core and is not passed.
 
-The overlay-family specification is approved. A separately approved evaluation
-design and implementation plan must compare the incumbent, Radix, Base UI, and
-the active Zag direction before any candidate dependency or production overlay
-migration is authorized.
+The overlay-family specification remains approved. The current direction is
+incumbent stabilization; the historical comparative plans below are not active
+V1 prerequisites and do not authorize dependency adoption or production
+migration. Observable acceptance requirements remain unchanged.
 
 The anchored interaction wave adds a local diagnostic for `OF-ANCHORED`,
 `OF-MENU`, and `OF-TOOLTIP`: 11 anchored, 14 menu, and 13 tooltip scenarios across

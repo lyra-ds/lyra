@@ -1,5 +1,14 @@
 # Overlay foundation evaluation
 
+**Current direction (2026-09-08):** V1 retains the existing Lyra implementation.
+Comparative candidate diagnostics are suspended and are not release
+prerequisites. The [maintainer decision](../../docs/superpowers/specs/2026-09-08-v1-incumbent-direction.md)
+supersedes the earlier compulsory comparison sequence. The protocols, manifests
+and commands below document preserved research; their previous authorization
+does not authorize a new run or dependency adoption. Reuse incumbent checks
+only through a bounded stabilization task. Do not change Colima configuration
+or restart it to run verification. Missing evidence remains pending.
+
 This directory contains the approved repository-owned evaluation harness. The
 core plan validates manifests, verifies artifact and installation behavior, and
 characterizes the incumbent Lyra packages. The modal wave runs a local

@@ -1,3 +1,20 @@
+# Current work — V1 incumbent stabilization
+
+The maintainer retained the existing Lyra base on2026-09-08 and suspended
+comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
+`feat/v1-incumbent-stabilization`, based on origin/main9d214bf. Follow
+`.batuta/plans/v1-incumbent-stabilization.md` and `.batuta/v1-incumbent-backlog.md`.
+
+- [ ] Governance/source-inventory update: critical/self, GLM read-only scout complete with unchanged tree; independent final review pending. Baseline106 policy tests pass, new decision cases RED against original checker,108 current tests and actual ledger check GREEN. No product/dependency/ledger changes or qualification.
+- [ ] Next: reproduce only Drawer backdrop press-origin behavior using the existing Dialog precedent; scope a separate repair only after evidence.
+
+Do not change any Colima configuration or restart the service. Do not restore
+old settings, stop foreign projects, resume comparative diagnostics or merge
+the composed experiment. Missing full release evidence stays pending. No
+remote or publication action is authorized.
+
+## Historical log — earlier directions are superseded
+
 # WORK — lyra-ds
 
 ## In progress

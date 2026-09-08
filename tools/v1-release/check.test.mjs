@@ -82,7 +82,7 @@ const OVERLAY_SPEC_HEADINGS = [
   'SSR, hydration, and no-JavaScript contract',
   'Acceptance matrix',
   'Public API and migration policy',
-  'Foundation evaluation gate',
+  'Foundation decision gate',
   'Failure handling',
   'Approval checklist',
 ];
@@ -129,11 +129,11 @@ const OVERLAY_NORMATIVE_CLAUSE_GROUPS = {
   ],
 };
 
-const OVERLAY_FOUNDATION_CANDIDATES = [
-  'incumbent Lyra implementation',
-  'Radix',
-  'Base UI',
-  'active Zag direction',
+const OVERLAY_FOUNDATION_DECISION_CLAUSES = [
+  'V1 MUST retain the incumbent Lyra implementation.',
+  'Comparative foundation evaluation is not a prerequisite for V1.',
+  'Retaining the incumbent does not waive any required automated acceptance cell.',
+  'Replacing the incumbent requires a new explicit maintainer decision.',
 ];
 
 const OVERLAY_APPROVAL_CONFIRMATIONS = [
@@ -230,7 +230,7 @@ function structurallyCompleteOverlaySpecification() {
     '',
     ...Object.values(OVERLAY_NORMATIVE_CLAUSE_GROUPS).flat(),
     '',
-    ...OVERLAY_FOUNDATION_CANDIDATES,
+    ...OVERLAY_FOUNDATION_DECISION_CLAUSES,
     '',
     ...OVERLAY_SPEC_REFERENCES.map((path) => `- [Required specification](${path})`),
     '',
@@ -610,17 +610,35 @@ for (const [contractName, clauses] of Object.entries(OVERLAY_NORMATIVE_CLAUSE_GR
   });
 }
 
-test('requires every named overlay foundation candidate', () => {
+test('requires each approved foundation decision clause', () => {
   const specification = structurallyCompleteOverlaySpecification();
 
-  for (const candidate of OVERLAY_FOUNDATION_CANDIDATES) {
-    const document = specification.replace(candidate, 'omitted candidate');
+  for (const clause of OVERLAY_FOUNDATION_DECISION_CLAUSES) {
+    const document = specification.replace(clause, 'Omitted decision.');
     assert.ok(
       validateV1Program(overlayDraftProgram(document)).some((error) =>
-        error.includes(`foundation candidate ${candidate}`),
+        error.includes(`foundation decision clause: ${clause}`),
       ),
-      candidate,
+      clause,
     );
+  }
+});
+
+test('accepts an incumbent decision without a comparative candidate list', () => {
+  const document = structurallyCompleteOverlaySpecification();
+  assert.doesNotMatch(document, /Radix|Base UI|Zag/u);
+  assert.deepEqual(validateV1Program(overlayDraftProgram(document)), []);
+});
+
+test('rejects a comparative-only specification without the incumbent decision', () => {
+  let document = structurallyCompleteOverlaySpecification();
+  for (const clause of OVERLAY_FOUNDATION_DECISION_CLAUSES) {
+    document = document.replace(clause, '');
+  }
+  document += '\nincumbent Lyra implementation, Radix, Base UI, active Zag direction';
+  const errors = validateV1Program(overlayDraftProgram(document));
+  for (const clause of OVERLAY_FOUNDATION_DECISION_CLAUSES) {
+    assert.ok(errors.some((error) => error.includes(`foundation decision clause: ${clause}`)));
   }
 });
 

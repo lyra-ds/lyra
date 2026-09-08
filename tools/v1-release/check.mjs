@@ -41,7 +41,7 @@ const OVERLAY_SPEC_HEADINGS = [
   'SSR, hydration, and no-JavaScript contract',
   'Acceptance matrix',
   'Public API and migration policy',
-  'Foundation evaluation gate',
+  'Foundation decision gate',
   'Failure handling',
   'Approval checklist',
 ];
@@ -126,11 +126,11 @@ const OVERLAY_NORMATIVE_CLAUSE_GROUPS = new Map([
   ],
 ]);
 
-const OVERLAY_FOUNDATION_CANDIDATES = [
-  'incumbent Lyra implementation',
-  'Radix',
-  'Base UI',
-  'active Zag direction',
+const OVERLAY_FOUNDATION_DECISION_CLAUSES = [
+  'V1 MUST retain the incumbent Lyra implementation.',
+  'Comparative foundation evaluation is not a prerequisite for V1.',
+  'Retaining the incumbent does not waive any required automated acceptance cell.',
+  'Replacing the incumbent requires a new explicit maintainer decision.',
 ];
 
 const OVERLAY_APPROVAL_CONFIRMATIONS = [
@@ -402,9 +402,9 @@ function validateOverlaySpecification(document, entries, errors) {
       }
     }
   }
-  for (const candidate of OVERLAY_FOUNDATION_CANDIDATES) {
-    if (!document.includes(candidate)) {
-      errors.push(`overlay specification must name foundation candidate ${candidate}`);
+  for (const clause of OVERLAY_FOUNDATION_DECISION_CLAUSES) {
+    if (!normalizedDocument.includes(clause)) {
+      errors.push(`overlay specification must contain foundation decision clause: ${clause}`);
     }
   }
   for (const reference of OVERLAY_SPEC_REFERENCES) {

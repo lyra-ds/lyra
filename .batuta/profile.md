@@ -1,5 +1,22 @@
 # Batuta profile — lyra-ds
 
+## Current maintainer direction — 2026-09-08
+
+Retain the existing Lyra implementation for V1. Comparative foundation research
+is suspended and is not a release prerequisite. Preserve experimental branches
+and raw evidence without integrating the unmerged composed experiment or
+resuming its diagnostics. The active stabilization plan is
+`.batuta/plans/v1-incumbent-stabilization.md` in the sibling
+`lyra-v1-stabilization` checkout, branch `feat/v1-incumbent-stabilization`.
+Prior experimental execution approvals no longer authorize those runs.
+
+The maintainer prohibits ALL Colima configuration changes, including restoring
+4GiB, memory/CPU/disk/VM changes, and restarting the service. Prior resource
+approvals are superseded. Do not stop other projects to free capacity. Run
+bounded checks sequentially within the existing environment; unavailable gates
+stay pending without reducing quality requirements. No new dependencies or
+remote/release action is authorized by this direction update.
+
 Created on 2026-07-20; reconfigured on 2026-09-06. Complements `.claude/CLAUDE.md` —
 what is already there (CSS-first architecture constraints, fixed stack, locked
 decisions) is NOT repeated here; briefs must point executors to the relevant
