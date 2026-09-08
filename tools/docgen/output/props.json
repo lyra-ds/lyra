@@ -1039,6 +1039,12 @@
         "description": "Portal host. Defaults to `document.body`."
       },
       {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical destination for focus after an accepted close."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,
@@ -1088,6 +1094,12 @@
         "type": "HTMLElement",
         "optional": true,
         "description": "Portal host. Defaults to `document.body`."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical destination for focus after an accepted close."
       },
       {
         "name": "children",

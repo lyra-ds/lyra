@@ -43,9 +43,10 @@ release streams below are a roadmap, not a speculative multi-file executor task.
       Accept: Concrete API/lifecycle/compatibility and invalid-target obligations are consistent with existing modal requirements; independent review passes and proposal remains distinct from maintainer approval and implementation
 
 Preparation, Drawer repair, fixture correction and contract drafting are complete.
-This does not complete V1 stabilization. The unprepared WebKit mouse-return-to-body
-gap has a technically reviewed returnFocusTo proposal awaiting maintainer API
-approval; no implementation is authorized merely by this plan entry.
+This does not complete V1 stabilization. The maintainer subsequently approved returnFocusTo; its bounded Dialog/Drawer
+implementation and first-party example migration are complete under
+.batuta/plans/v1-modal-return-focus.md. Unmigrated consumers and the other modal
+contract slices remain unqualified.
 Full release qualification remains pending.
 
 ## Decisions and context

@@ -70,3 +70,22 @@ On 2026-09-08 the maintainer approved returnFocusTo and required Batuta planning
 and task documentation. The contract now lives in .batuta/specs/; execute
 .batuta/plans/v1-modal-return-focus.md. Earlier approval-pending statements above
 are historical. Implementation and release qualification remain incomplete.
+
+## Completed return-focus slice — 2026-09-08
+
+The approved .batuta/plans/v1-modal-return-focus.md is complete: Dialog and Drawer
+share one internal return-focus owner and optional returnFocusTo API; all four
+first-party examples migrated, API pages/reference and additive React changeset
+updated. Source commits00d2ded (Dialog) and9f0844d (Drawer); documentation follows
+in the Task3 commit. Chromium/SSR70, WebKit63 and28 actual built-package example
+close paths pass, with RED-before pointer/StrictMode/mount-only regression proof.
+Build, current declarations, owner-generated API, types, lint and format pass.
+Independent Batuta reviews approved each task; no dependencies or Colima changes.
+
+This supersedes the old approval-pending and mount-only Drawer observations above.
+Bare unmigrated mouse consumers remain unqualified; initial-focus policy, other
+modal families, nested/inert coordination, the other P1 contract gaps and exact
+packed Firefox/Linux release qualification remain open. All eleven P1 ledger
+entries and23acceptance cells retain their existing status; no V1 qualification
+or remote/release action occurred. Next work must follow the remaining incumbent
+backlog in a separately bounded Batuta task. See v1-return-focus-verification.md.

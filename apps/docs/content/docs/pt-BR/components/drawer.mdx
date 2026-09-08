@@ -37,14 +37,69 @@ Prefira outro componente quando:
 
 - O painel é `role="dialog"` com `aria-modal="true"`, nomeado pelo `title` via
   `aria-labelledby`. `title` é o cabeçalho, não o atributo de tooltip HTML nativo.
-- Na abertura, o foco entra no painel e fica retido nele. No fechamento, volta ao elemento que o
-  abriu; a rolagem do corpo fica bloqueada enquanto ele está aberto.
+- On open, focus moves into the panel and stays trapped there. For React, declare its return
+  destination with `returnFocusTo` when a pointer-opened workflow needs an explicit target; body
+  scroll is locked while it is open.
 - Escape, o botão de fechar e um clique no backdrop chamam `onClose`. O backdrop é uma conveniência
   apenas para ponteiro; quem usa teclado fecha com Escape ou com o botão de fechar.
 - O nome acessível do botão de fechar tem como padrão a string em inglês "Close". Passe `closeLabel`
   para traduzi-la em produtos localizados.
 - Por padrão, o componente é portado para `document.body`. Passe `container` apenas quando a aplicação
   precisar de outro host de portal.
+
+## React return focus
+
+`returnFocusTo` is optional and has the type `() => HTMLElement | null`. It resolves freshly after
+an accepted close, so it can read the current workflow state and refs instead of preserving a stale
+element. Use it for a stable, eligible trigger; when that trigger can be removed, disabled, hidden,
+or no longer meaningful, return a logical successor instead.
+
+An eligible destination is connected in the same document, visible, enabled, programmatically
+focusable, and outside the closing panel and overlay. A composition must not return a target that it
+removes while closing. Omitting `returnFocusTo` retains only a valid captured opener that was already
+focused, such as after keyboard opening. Unprepared WebKit mouse usage without a usable explicit
+target remains unqualified: adding this optional prop does not repair unmigrated consumers.
+
+```tsx
+function ProjectDetails({ canReturnToTrigger }: { canReturnToTrigger: boolean }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const successorRef = useRef<HTMLHeadingElement>(null);
+
+  return (
+    <>
+      <Button ref={triggerRef} disabled={!canReturnToTrigger} onClick={() => setOpen(true)}>
+        Open project details
+      </Button>
+      <h2 ref={successorRef} tabIndex={-1}>
+        Project overview
+      </h2>
+      <Drawer
+        open={open}
+        onClose={() => setOpen(false)}
+        returnFocusTo={() =>
+          canReturnToTrigger ? (triggerRef.current ?? successorRef.current) : successorRef.current
+        }
+        title="Project details"
+      >
+        Review the latest deployment before you continue.
+      </Drawer>
+    </>
+  );
+}
+```
+
+`Project overview` is a named, meaningful `tabIndex={-1}` destination. The
+`canReturnToTrigger` state represents current availability; a non-null ref alone does not make a
+target eligible. A removed trigger also falls through its null ref to the successor.
+
+After an accepted close, Lyra prefers an eligible resolver result, then only a still-eligible
+captured opener. It never picks an arbitrary page control or `body` as a fallback. If neither is
+eligible, Lyra makes no invalid focus call and the controlled close still proceeds; the browser may
+land on `body`. This is an invalid composition, and the application must provide a logical successor.
+One development diagnostic reports the invalid composition for that close cycle; it is not successful
+focus restoration. The resolver must only read current state and refs: do not focus, mutate the DOM,
+or start asynchronous work in it.
 
 ## API e código
 

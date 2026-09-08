@@ -1,0 +1,8 @@
+# Task 3 documentation completion
+Examples and generated API diff are correct. Controller build and docgen/check passed; generated files now modified by controller, do not touch them. The patch changeset is correct per VERSIONING.md: 0.x.PATCH covers additive features; preserve it.
+Complete the public contract explanation in the four scoped MDX pages:
+- Specify eligible destination plainly: connected in the same document, visible, enabled, programmatically focusable, outside the closing panel/overlay. Composition must not return a target it removes while closing.
+- Explain optional compatibility explicitly: omitting returnFocusTo only retains a valid already-focused captured opener (e.g. keyboard opening); unprepared WebKit mouse usage without a usable explicit target remains unqualified. Do not imply adding the optional prop fixes unmigrated consumers.
+- Replace the ambiguous 'leaves focus alone' phrasing: no invalid focus call, controlled close still proceeds, browser may land on body if no eligible destination; this is an invalid composition and the application must provide a logical successor. A development diagnostic is not successful restoration.
+- The modified accessibility bullets in pt-BR currently mix English clauses inside Portuguese sentences. Per maintainer English rule, make each entire modified bullet coherent English, preserving unrelated existing translated content.
+Only these four MDX paths need edits; same original scope and contract, no expansion. No further test/example/runtime/changeset/generated changes. No checks, pnpm, delegation, cleanup, approval or commit; controller runs checks/review. Implement directly and report.

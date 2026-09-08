@@ -1,15 +1,14 @@
-# Run — Drawer return focus
+# Run — Public modal return-focus documentation
 
 **Date:** 2026-09-08 · **Lane:** frontend/medium · **Executor:** Codex gpt-5.6-terra
-**Commit:** 9f0844d · **Verdict:** ✅ approved
+**Commit:** pending atomic commit · **Verdict:** ✅ approved
 
 ## Brief
-# Task 2 — Drawer return focus
+# Task 3 — Public return-focus examples and docs
 ## Goal
-Integrate Drawer with the verified shared return-focus owner from Task 1, using the same optional public API and fresh accepted opening cycles.
+Migrate the four first-party examples to the approved explicit returnFocusTo API and document stable-target/successor ownership, compatibility and invalid-composition limits.
 ## Context
-You are the implementation executor already dispatched by the Batuta conductor. Implement directly, do not recursively delegate or run Batuta orchestration/review. API and plan approved; no new permission or Superpowers workflow. Controller owns node_modules symlinks; do not remove them. Do not run pnpm/install/browser/static checks in the executor: controller verifies outside sandbox using existing pinned tools. No Colima/Docker/resource changes. Do not commit, push or publish.
-Read packages/react/src/internal/use-return-focus.ts, current Dialog integration and Drawer source/tests. Drawer currently captures on mount only; exit presence reuses that panel, so every accepted reopening must get a fresh captured opener. Preserve the existing pointer-origin dismissal repair. Full approved contract appended verbatim applies to Drawer.
+You are the implementation executor already dispatched by Batuta. Implement directly, no nested delegation, Batuta orchestration, review or approval. Read current Dialog/Drawer public types and the scoped existing examples/pages. The controller builds declarations, generates docs through tools/docgen/generate.mjs and runs checks after your edits. Do not run pnpm, downloads or static/browser checks inside sandbox. Do not modify generated docs manually. Full approved contract appended verbatim. No new approval or Superpowers workflow. Controller owns dependency symlinks, do not remove them.
 ## Conventions
 English docs/JSDoc. Existing CSS-first architecture and classes; no CSS imports in shipped React. Pinned Node24.18.0/pnpm11.13.1. Controller runs browser tests outside your sandbox; do not claim unrun tests passed. No dependencies/install/config/Colima/Docker operations, no commit, no remote actions. Keep coordination under .batuta/. Do not invoke nested executors or skills that impose another design workflow.
 
@@ -64,19 +63,26 @@ Work test-first from the acceptance criteria. Investigate root cause before fixi
 2. A failing test means fix the code, not the test.
 3. No test-only flags or branches in production code.
 ## Acceptance criteria
-1. Optional returnFocusTo public type and behavior match Dialog, no DOM leakage, use existing owner instead of duplicating eligibility/cycle code. Proof: Drawer browser/SSR and controller types.
-2. Trusted unprepared mouse Escape/backdrop/close-button returns to explicit trigger or live successor after trigger removal and after exit. Keyboard/omitted valid opener still works. Proof: real Chromium/WebKit input, new exact assertions without pre-focus in mouse click handler.
-3. Rapid close/reopen within presence captures fresh opener; StrictMode and ignored requests do not duplicate/misdirect restoration. Proof: meaningful browser lifecycle tests and once-per-close resolver counts. Existing pointer-origin regression remains green.
-Controller commands: Vitest Chromium+SSR src/drawer/ src/dialog/ and WebKit both, shared owner suite, scoped types/lint/format; trusted input fixture.
+1. Four actual examples each pass a current stable trigger resolver without pre-focus or focus-in-click workaround. Use existing Button forwarding ref API. All supported close paths preserve exact trigger focus after exit in Chromium/WebKit. Proof: controller mounts actual imported examples and uses trusted mouse; no stand-in mock.
+2. Both Dialog/Drawer pages in en and pt-BR explain optional () => HTMLElement | null, fresh resolution after accepted close, explicit eligible stable trigger and logical successor when trigger removed/disabled/hidden, fallback to valid captured opener only, no arbitrary/body fallback, one dev diagnostic for invalid composition is NOT successful restoration. Show usable snippet including successor availability state, stable meaningful named tabindex=-1 destination; ref presence alone insufficient. Existing misleading unconditional return-to-opener claim must be corrected. New/updated prose English per maintainer profile; do not translate unrelated existing page content.
+3. Add additive @lyra-ds/react API changeset per repository policy. No package version changes/publication. Controller uses existing React build owner to generate current declarations, then runs docgen owner and --check, React types, lint/format and actual examples. Scope includes generated files only for controller owner generation, not handwritten output.
 ## Boundaries
-Only Drawer integration/tests; no shared owner changes unless report exact needed correction to conductor first. Preserve classes, motion, scroll lock, close paths and panel API. No trap/layer refactor, dependencies/config/docs/generated/lock changes.
+No runtime component changes, dependencies/locks/configs/workflows/ledger changes, no new examples outside four or other modal families. No Colima/Docker/resource operations. No commit/push/PR/merge/release. Preserve existing example actions/labels/layout and close opt-outs.
 ## Scope
-packages/react/src/drawer/drawer.tsx
-packages/react/src/drawer/drawer.browser.test.tsx
-packages/react/src/drawer/drawer.ssr.test.ts
+apps/docs/components/examples/dialog/basic.tsx
+apps/docs/components/examples/dialog/dismissal.tsx
+apps/docs/components/examples/drawer/basic.tsx
+apps/docs/components/examples/drawer/without-footer.tsx
+apps/docs/content/docs/en/components/dialog.mdx
+apps/docs/content/docs/pt-BR/components/dialog.mdx
+apps/docs/content/docs/en/components/drawer.mdx
+apps/docs/content/docs/pt-BR/components/drawer.mdx
+tools/docgen/output/props.json
+tools/docgen/output/llms.txt
+.changeset/explicit-modal-return-focus.md
 Do not change anything outside this list; if the task requires it, stop and report.
 ## Expected evidence
-Report touched files and implementation, exact actual checks and what remains unverified. Controller performs checks. Do not claim tests passed without output; no verification attempts needed in your sandbox.
+Files changed, behavior/docs delivered, checks pending controller. No tests/static checks need to run in executor. End after edits and honest report, do not initiate another workflow.
 ## Stop conditions
 1. The code's shape contradicts the brief.
 2. The same command fails twice for the same unexpected reason (a red test the executor just wrote is not that).
@@ -276,49 +282,30 @@ No runtime/API implementation, dependency/configuration change or V1
 qualification is made by accepting this document into the working branch.
 
 ## Executor report
-Implemented Drawer return-focus integration.
+Implemented the Task 3 scoped edits:
 
-Changed:
+- Added `returnFocusTo={() => triggerRef.current}` to all four actual Dialog/Drawer examples using forwarded Button refs.
+- Updated English and pt-BR Dialog/Drawer pages with explicit resolver, eligibility, successor, captured-opener-only fallback, and invalid-composition diagnostic guidance.
+- Added `.changeset/explicit-modal-return-focus.md` for `@lyra-ds/react`.
 
-- `packages/react/src/drawer/drawer.tsx`
-  - Adds optional `returnFocusTo`.
-  - Uses the shared `useReturnFocus` owner.
-  - Captures focus on every accepted `open` cycle, including rapid reopen during exit.
-  - Tracks overlay ref so closing Drawer descendants are excluded by the shared owner.
-  - Preserves existing backdrop pointer-origin behavior.
-
-- `packages/react/src/drawer/drawer.browser.test.tsx`
-  - Adds explicit unprepared mouse return-focus coverage for Escape, backdrop, and close button.
-  - Covers removed-trigger successor, ignored close requests, rapid reopen/fresh opener/once-per-close resolution, and StrictMode.
-
-- `packages/react/src/drawer/drawer.ssr.test.ts`
-  - Confirms `returnFocusTo` is neither invoked nor forwarded during SSR.
-
-Per instruction, I ran no pnpm, browser, type, lint, or format checks. I emitted `BATUTA-PROGRESS ... START` markers; no `DONE` markers because local proof was intentionally left to the conductor.
+No generated docs, runtime code, checks, dependencies, symlinks, or controller-owned files were changed. Validation remains pending controller.
 
 ## Retry report
-Updated `packages/react/src/drawer/drawer.browser.test.tsx` per controller feedback.
+Applied the feedback to all four scoped MDX pages.
 
-The rapid-reopen proof now:
+The docs now explicitly cover eligible targets, compatibility limits for omitted resolvers, WebKit mouse qualification, invalid no-target behavior, required logical successors, and the diagnostic semantics. The modified pt-BR accessibility bullets are now fully English.
 
-- Uses focused keyboard-opener state, not unprepared mouse input.
-- Controls `open` transitions directly within the existing presence window.
-- Asserts the same panel DOM node survives close/reopen.
-- Verifies focus re-enters that panel after reopening.
-- Verifies the second opener is restored after the second accepted close.
-- Verifies the resolver runs exactly twice.
-
-No checks or package commands were run.
+No checks or package commands were run; controller verification remains pending.
 
 ## Verification
-# Task 2 verification — Drawer return focus
+# Task 3 verification — public return-focus API and examples
 
-Approved. Codex gpt-5.6-terra/medium, one test correction retry, no escalation. Shared owner unchanged from00d2ded; integration adds optional returnFocusTo and keys capture on open transitions.
+Approved. Codex gpt-5.6-terra/medium, one documentation-completeness retry, no escalation. Exactly four examples, four API pages, two owner-generated references and one React changeset; runtime unchanged from9f0844d.
 
-1. Public API/SSR/types: three scoped Drawer files only; consumes prop and calls shared owner. Controller Chromium/SSR70/70, types and scoped ESLint/Prettier pass (all exit0).
-2. Trusted real Chromium/WebKit mouse:12/12 close-path × stable trigger/successor cases pass, compared with9/12 baseline failures. Focus asserted after panel removal. Existing pointer-origin and omitted valid-opener regressions preserved.
-3. Rapid reopen proves same panel identity, focus re-entry, second opener capture and exactly two resolver calls; isolated mount-only dependency fault makes that test fail (mount-only-red.log); original bytes restored. Final WebKit63/63. StrictMode keyboard and ignored-close cases pass. Initial failed test incorrectly used unprepared mouse with null resolver and did not guarantee presence reuse; retry corrected the fixture contract, not runtime assertions.
+1. Four actual imported examples run against freshly built packages/react/dist/index.js. Trusted Chromium151/WebKit26.5 mouse:28/28 supported close paths PASS after panel removal, including footer actions; dismissal opt-outs preserved. Actual examples and all four exact documentation snippets typecheck against current dist declarations. React types and scoped examples ESLint PASS (exit0).
+2. Pages document optional synchronous resolver, accepted-close timing, eligibility, explicit trigger and logical successor from current availability/ref state, valid captured-opener compatibility, unqualified bare WebKit mouse consumers, invalid no-target behavior and diagnostic not being success. New/modified prose English per maintainer. Retry completed missing eligibility/compatibility language and coherent modified bullets; no example behavior retry needed.
+3. Built React with the existing scripts.build owner's tsdown --concurrency2 and scripts/use-client.mjs using pinned Node24.18.0 and installed tools. The first command uses exactly the script's existing NODE_OPTIONS heap limit; no machine/Colima setting changed. Both exit0. The pnpm12 launcher tried registry identity access inside a prior executor and was not used for these controller checks; direct owner commands produce current full declarations/artifacts. tools/docgen/generate.mjs then --check exit0; generated diff contains only the two new optional props. Scoped Prettier PASS. React0.5.0 additive changeset is patch according to VERSIONING.md, without versioning or publication.
 
-Independent OpenCode/GLM5.3Flash:3/3 DONE, no findings, unchanged source/status/diff guard; Batuta verifier PASS. Test hygiene clean. Runtime dependency count unchanged. No Colima/Docker/resource/config/remote/release changes. Firefox/Linux release proof remains pending.
+Independent OpenCode/GLM5.3Flash reviewed all three criteria:3/3 DONE, unchanged status/diff/file guard, Batuta verifier PASS. No findings were printed in its delimited block; that empty block is preserved verbatim in review.md. Controller diff review found no remaining blocker. Original and retry executor reports and exact logs remain local under .batuta/runs/v1-return-focus-task3/; external review trail lives in the main checkout's .batuta/runs/2026-09-08-return-focus-task3-review/.
 
-Controller used pinned Node24.18.0 directly with installed Vitest4.1.10: run --project 'browser (chromium)' --project ssr src/internal/use-return-focus.browser.test.tsx src/dialog/ src/drawer/; same browser inputs with --project 'browser (webkit)'; tsc --noEmit, scoped eslint and prettier --check. Exact logs and trusted fixture remain in .batuta/runs/v1-return-focus-task2/.
+No new dependency, lockfile/config/workflow/release-ledger change, Docker/Colima operation, foreign-service cleanup or remote action. No full Firefox/pinned Linux qualification, full site build, packed-release matrix or V1 declaration is inferred from the scoped local proof.

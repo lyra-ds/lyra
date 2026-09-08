@@ -1,19 +1,21 @@
 'use client';
 
 import { Button, Dialog } from '@lyra-ds/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 export function DialogBasic() {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <Button variant="danger" onClick={() => setOpen(true)}>
+      <Button ref={triggerRef} variant="danger" onClick={() => setOpen(true)}>
         Delete project
       </Button>
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
+        returnFocusTo={() => triggerRef.current}
         title="Delete project"
         footer={
           <>
