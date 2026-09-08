@@ -40,3 +40,16 @@ WebKit: the same six focus-restoration failures on original and fixed code;
 the two new tests pass. Investigate those failures separately before prescribing
 a focus repair. No dependency/API change or release qualification. See
 v1-drawer-repair-verification.md and v1-drawer-repair-review.md.
+
+## Current priority after prepared-opener fixture correction
+
+The six local WebKit test failures had an invalid fixture precondition: mouse
+activation blurred the trigger before open-time capture. Preparing focus inside
+the invoking test handler makes WebKit38/38 and Chromium/SSR43/43 pass; exact
+assertions still fail when runtime restoration is disabled (two cases verified).
+This does **not** repair unprepared real mouse consumers: both Drawer and Dialog
+still capture/return to body in the retained trusted-input diagnostic. That is
+an unresolved normative V1 gap. Next design must establish an explicit invoking
+control/return target and successor responsibility, without global tracking or
+an assumed replacement foundation. No particular new API is approved yet.
+See v1-webkit-focus-verification.md for exact scope and remaining release gates.

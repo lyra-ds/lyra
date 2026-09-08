@@ -32,8 +32,15 @@ release streams below are a roadmap, not a speculative multi-file executor task.
       Scope: packages/react/src/drawer/drawer.tsx, packages/react/src/drawer/drawer.browser.test.tsx
       Accept: Colocated regression and trusted pointer replay prove RED/GREEN; Chromium/SSR checks pass and WebKit introduces no failure relative to exact original-source baseline, with existing failures explicitly retained; API/dependency scope and independent review pass
 
-All three preparation tasks and the authorized Drawer repair below are complete;
-this does not complete V1 stabilization. Full release qualification remains pending.
+- [x] 5. Diagnose WebKit focus failures and correct prepared-opener test fixtures — frontend/low
+      Depends on: 4
+      Scope: packages/react/src/dialog/dialog.browser.test.tsx, packages/react/src/drawer/drawer.browser.test.tsx
+      Accept: Trusted-input diagnosis establishes cause; full local Chromium/WebKit suites pass for prepared compositions; restoration fault injection still fails exact assertions; production unchanged and unprepared mouse restoration remains explicitly unresolved
+
+Preparation, Drawer repair and prepared-opener fixture correction are complete.
+This does not complete V1 stabilization. The unprepared WebKit mouse-return-to-body
+gap requires a separate opener/successor contract design; no API is selected.
+Full release qualification remains pending.
 
 ## Decisions and context
 

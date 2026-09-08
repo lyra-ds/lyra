@@ -10,7 +10,14 @@ function DrawerHarness() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        onClick={(event) => {
+          // Prepare focus at activation — WebKit drops a pre-focused trigger on mousedown, before click.
+          event.currentTarget.focus();
+          setOpen(true);
+        }}
+      >
         Open
       </button>
       <button type="button">Background</button>

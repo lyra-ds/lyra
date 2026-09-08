@@ -78,7 +78,15 @@ function DialogHarness({
     : undefined;
   return (
     <>
-      <button type="button" data-testid="trigger" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        data-testid="trigger"
+        onClick={(event) => {
+          // Prepare focus at activation — WebKit drops a pre-focused trigger on mousedown, before click.
+          event.currentTarget.focus();
+          setOpen(true);
+        }}
+      >
         Open
       </button>
       <button type="button" data-testid="outside">
@@ -108,7 +116,6 @@ async function openHarness(props: HarnessProps = {}): Promise<{
 }> {
   const result = await render(<DialogHarness {...props} />);
   const trigger = result.container.querySelector<HTMLButtonElement>('[data-testid="trigger"]')!;
-  trigger.focus();
   await userEvent.click(trigger);
   await vi.waitFor(() => expect(panel()).not.toBeNull());
   // Initial focus lands inside the panel (effect runs after the portal mounts).
