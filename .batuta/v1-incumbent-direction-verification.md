@@ -1,14 +1,14 @@
 # Incumbent direction verification — 2026-09-08
 
-Controller verification complete, independent four-criterion review pending.
-Base9d214bfb8dbf572aebc967d6a78321294356ba63. New isolated branch
+Controller verification and independent four-criterion review complete: approved.
+Base 9d214bfb8dbf572aebc967d6a78321294356ba63. New isolated branch
 feat/v1-incumbent-stabilization; unmerged composed source not integrated.
 This is a governance/policy update, not product implementation or qualification.
 
 ## Proofs
 
 - Original policy106/106 PASS,0skip, exit0. Main's original checker/test Git
-  blobs match origin/main9d214bf exactly. Retained log in MAIN .batuta/runs/
+  blobs match origin/main 9d214bf exactly. Retained log in MAIN .batuta/runs/
   2026-09-08-v1-direction-policy-baseline.log.
 - New decision-clause omission, incumbent-only positive, and comparative-only
   rejection tests ran against the original checker:3/3 correctly RED, exit1.
@@ -22,7 +22,7 @@ This is a governance/policy update, not product implementation or qualification.
   The last command means ledger consistency, NOT release readiness.
 - Pinned Prettier passes scoped source and managed changed files; full diff
   whitespace passes. New plan has3numbered scoped/laned tasks and3Accept
-  fields plus one valid Status line. Tasks1–2 await final review; Task3 is
+  fields plus one valid Status line. Tasks 1–2 are approved; Task 3 is
   solely a future Drawer pointer-origin reproduction and remains incomplete.
 - Root package.json, lock, CI workflow, program.json and candidates.json hashes
   match baseline; complete packages tree unchanged. No generated evidence,
@@ -56,6 +56,7 @@ unchanged. The old composed plan is deliberately marked suspended to prevent
 its earlier runnable status from reviving revoked diagnostic authorization.
 Main checkout's unrelated preexisting changes are preserved; no commit to main.
 
-Final reviewer receives original full brief, current plan and dated decision,
-this proof and exact gate/log evidence. Four DONE criteria, unchanged guard,
-findings adjudication and verifier gate are required before approval.
+Final reviewer received the original full brief, current plan and dated decision,
+this proof and exact gate/log evidence. Four DONE criteria, unchanged guard and
+verifier PASS; one cosmetic managed-record finding accepted and corrected.
+See v1-incumbent-direction-review.md. Tested source bytes remain unchanged.

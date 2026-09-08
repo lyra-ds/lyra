@@ -5,7 +5,7 @@
 **Goal:** Retain Lyra's existing base, remove compulsory comparative research from the V1 route, and establish the next small regression-driven correction without weakening release acceptance.
 **Created:** 2026-09-08 · **Status:** in progress
 
-The maintainer approved the direction and this update in conversation on2026-09-08.
+The maintainer approved the direction and this update in conversation on 2026-09-08.
 This authorizes the governance update, source inventory and bounded first proof;
 it does not preapprove every future API design or publication. The remaining
 release streams below are a roadmap, not a speculative multi-file executor task.
@@ -13,11 +13,11 @@ release streams below are a roadmap, not a speculative multi-file executor task.
 ## Tasks
 
 <!-- prettier-ignore -->
-- [ ] 1. Record incumbent retention and update the release policy — governance/critical
+- [x] 1. Record incumbent retention and update the release policy — governance/critical
       Scope: docs/superpowers/specs/2026-08-30-lyra-v1-deliberate-release-design.md, docs/superpowers/specs/2026-08-30-overlay-family-design.md, docs/superpowers/specs/2026-09-08-v1-incumbent-direction.md, docs/superpowers/baselines/lyra-v1/README.md, tools/overlay-foundation-evaluation/README.md, tools/v1-release/check.mjs, tools/v1-release/check.test.mjs
       Accept: Decision-policy regressions pass → node --test tools/v1-release/check.test.mjs; Ledger remains internally consistent without qualification → node tools/v1-release/check.mjs; Current docs consistently retain the incumbent and preserve all acceptance requirements
 
-- [ ] 2. Record the source-backed gap inventory and first correction boundary — planning/critical
+- [x] 2. Record the source-backed gap inventory and first correction boundary — planning/critical
       Depends on: 1
       Scope: .batuta/v1-incumbent-backlog.md, .batuta/scout/2026-09-08-v1-incumbent-gaps.md, .batuta/profile.md, WORK.md
       Accept: Every priority names a real current owner and distinguishes source observations from historical or unverified behavior; The first task has one observable failure hypothesis and does not introduce a replacement framework
@@ -30,8 +30,8 @@ release streams below are a roadmap, not a speculative multi-file executor task.
 ## Decisions and context
 
 Active checkout: `../lyra-v1-stabilization`, branch
-`feat/v1-incumbent-stabilization`, based on integrated9d214bf. Experimental
-`feat/v1-overlay-composed-wave` remains separate at94aa4b5 plus managed suspension
+`feat/v1-incumbent-stabilization`, based on integrated 9d214bf. Experimental
+`feat/v1-overlay-composed-wave` remains separate at 94aa4b5 plus managed suspension
 notes only. Its incomplete diagnostic is not a blocker for this direction.
 Do not merge the experiment or resume candidate comparisons. Keep raw history.
 

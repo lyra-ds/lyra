@@ -1,11 +1,11 @@
 # Current work — V1 incumbent stabilization
 
-The maintainer retained the existing Lyra base on2026-09-08 and suspended
+The maintainer retained the existing Lyra base on 2026-09-08 and suspended
 comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
-`feat/v1-incumbent-stabilization`, based on origin/main9d214bf. Follow
+`feat/v1-incumbent-stabilization`, based on origin/main 9d214bf. Follow
 `.batuta/plans/v1-incumbent-stabilization.md` and `.batuta/v1-incumbent-backlog.md`.
 
-- [ ] Governance/source-inventory update: critical/self, GLM read-only scout complete with unchanged tree; independent final review pending. Baseline106 policy tests pass, new decision cases RED against original checker,108 current tests and actual ledger check GREEN. No product/dependency/ledger changes or qualification.
+- [x] Governance/source-inventory update approved — source commit `2d02444`; critical/self, GLM 5.3 Flash scout and independent review, no retry/escalation. Review 4/4 DONE, unchanged tree, Batuta verifier PASS; cosmetic finding corrected. Baseline 106 tests, new cases RED, current 108 tests and four policy CLIs GREEN. No product/dependency/ledger changes or qualification. See `.batuta/v1-incumbent-direction-review.md`.
 - [ ] Next: reproduce only Drawer backdrop press-origin behavior using the existing Dialog precedent; scope a separate repair only after evidence.
 
 Do not change any Colima configuration or restart the service. Do not restore
