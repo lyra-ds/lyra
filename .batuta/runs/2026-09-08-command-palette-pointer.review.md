@@ -1,0 +1,1 @@
+WORK.md:17 · low · One coordination-ledger line changed outside the three-file delivery scope; controller-owned bookkeeping (not product code), acceptable only if controller claims it in its diff review.

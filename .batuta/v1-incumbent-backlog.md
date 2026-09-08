@@ -89,3 +89,17 @@ packed Firefox/Linux release qualification remain open. All eleven P1 ledger
 entries and23acceptance cells retain their existing status; no V1 qualification
 or remote/release action occurred. Next work must follow the remaining incumbent
 backlog in a separately bounded Batuta task. See v1-return-focus-verification.md.
+
+## Completed CommandPalette pointer slice — 2026-09-08
+
+Both cross-boundary mouse gestures (panel to backdrop and reverse) were reproduced
+in Chromium and WebKit and repaired within CommandPaletteRoot. Native proof12/12,
+Chromium/SSR20 and WebKit16 pass; old-source regression fails; types/lint/format
+pass. One narrow keyboard-opener fixture retry; independent GLM review3/3 DONE.
+No public API, dependencies or other component changes. The React patch changeset
+records the fix. See .batuta/v1-command-palette-pointer-verification.md.
+
+CommandPalette unprepared mouse return focus, other modal initial-focus/nested
+coordination, remaining P1 contracts and exact packed Firefox/Linux release
+qualification remain open. This fix does not qualify any P1 ledger entry or
+waive an acceptance cell. Continue with a separately bounded remaining task.

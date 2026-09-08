@@ -378,6 +378,8 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
     const inputRef = useRef<HTMLInputElement | null>(null);
     const listRef = useRef<HTMLDivElement | null>(null);
     const openerRef = useRef<Element | null>(null);
+    const downOnOverlay = useRef(false);
+    const upOnOverlay = useRef(false);
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
@@ -496,8 +498,18 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
         <div
           className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
+          onMouseDown={(event) => {
+            downOnOverlay.current = event.target === event.currentTarget;
+          }}
+          onMouseUp={(event) => {
+            upOnOverlay.current = event.target === event.currentTarget;
+          }}
           onClick={(event) => {
-            if (event.target === event.currentTarget) onClose?.();
+            const isBackdropGesture =
+              downOnOverlay.current && upOnOverlay.current && event.target === event.currentTarget;
+            downOnOverlay.current = false;
+            upOnOverlay.current = false;
+            if (isBackdropGesture) onClose?.();
           }}
         >
           {panel}

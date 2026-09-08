@@ -29,6 +29,12 @@ function setTheme(theme: (typeof themes)[number]): void {
   else document.documentElement.removeAttribute('data-theme');
 }
 
+function backdropDismiss(overlay: HTMLElement): void {
+  overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+  overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+}
+
 type VitestBrowserRunner = { iframeId: string; sessionId: string };
 
 function setViewport(width: number, height: number) {
@@ -233,7 +239,9 @@ describe('CommandPalette', () => {
   it('portals, traps focus, locks scroll, and restores its opener after Escape and backdrop close', async () => {
     const { container } = await render(<OverlayHarness />);
     const opener = container.querySelector<HTMLButtonElement>('button')!;
-    await userEvent.click(opener);
+    opener.focus();
+    expect(document.activeElement).toBe(opener);
+    await userEvent.keyboard('{Enter}');
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
     expect(document.body.style.overflow).toBe('hidden');
     const input = document.querySelector<HTMLInputElement>('[role=combobox]')!;
@@ -246,12 +254,36 @@ describe('CommandPalette', () => {
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
     expect(document.activeElement).toBe(opener);
 
-    await userEvent.click(opener);
+    await userEvent.keyboard('{Enter}');
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk-overlay')).not.toBeNull());
     const overlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
-    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    backdropDismiss(overlay);
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
     expect(document.activeElement).toBe(opener);
+  });
+
+  it('dismisses only a complete backdrop gesture, not cross-boundary gestures', async () => {
+    const onClose = vi.fn();
+    await render(<CommandPalette open onClose={onClose} groups={groups} />);
+    const overlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
+    const panel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+    const input = document.querySelector<HTMLInputElement>('[role=combobox]')!;
+
+    await userEvent.fill(input, 'settings');
+    panel.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(input.value).toBe('settings');
+
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    panel.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(input.value).toBe('settings');
+
+    backdropDismiss(overlay);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('stays mounted with closing motion until its panel animation ends', async () => {
