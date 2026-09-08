@@ -1,7 +1,7 @@
 # Run — Public modal return-focus documentation
 
 **Date:** 2026-09-08 · **Lane:** frontend/medium · **Executor:** Codex gpt-5.6-terra
-**Commit:** pending atomic commit · **Verdict:** ✅ approved
+**Commit:** ce6d022 · **Verdict:** ✅ approved
 
 ## Brief
 # Task 3 — Public return-focus examples and docs
