@@ -39,7 +39,7 @@ release streams below are a roadmap, not a speculative multi-file executor task.
 
 - [x] 6. Draft explicit modal return-focus contract — governance/critical
       Depends on: 5
-      Scope: docs/superpowers/specs/2026-09-08-modal-return-focus-design.md
+      Scope: .batuta/specs/2026-09-08-modal-return-focus-design.md
       Accept: Concrete API/lifecycle/compatibility and invalid-target obligations are consistent with existing modal requirements; independent review passes and proposal remains distinct from maintainer approval and implementation
 
 Preparation, Drawer repair, fixture correction and contract drafting are complete.
@@ -80,3 +80,9 @@ candidate/evidence-binding stage. Then exact versioned tarballs, browsers,
 SSR/hydration, security, bundle/runtime, types and real consumers must pass.
 Manual AT absence remains deferred-by-release-profile. Major Changesets target
 Styles/React/Alpine1.0.0; push/PR/merge/publication require their own authorization.
+
+## Successor plan
+
+The maintainer approved the return-focus contract and required Batuta ownership.
+Continue with .batuta/plans/v1-modal-return-focus.md and the contract under
+.batuta/specs/. Earlier proposal-pending statements record the drafting phase.

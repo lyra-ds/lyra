@@ -1,5 +1,15 @@
 # Batuta profile — lyra-ds
 
+## Planning workflow — maintainer correction, 2026-09-08
+
+Use Batuta for planning and execution coordination. Keep this work's contracts,
+plans, briefs, approvals and handoffs under .batuta/, including .batuta/specs/.
+Do not introduce a Superpowers planning or approval workflow. Existing historical
+repository specs remain source references, not workflow authority. The maintainer
+approved the returnFocusTo contract; do not ask again for that API approval.
+The approved plan is .batuta/plans/v1-modal-return-focus.md. Resource and release
+boundaries below still apply.
+
 ## Current maintainer direction — 2026-09-08
 
 Retain the existing Lyra implementation for V1. Comparative foundation research

@@ -57,9 +57,16 @@ See v1-webkit-focus-verification.md for exact scope and remaining release gates.
 ## Proposed return-focus contract
 
 The next API choice is concretely proposed in
-`docs/superpowers/specs/2026-09-08-modal-return-focus-design.md`: one optional
+`.batuta/specs/2026-09-08-modal-return-focus-design.md`: one optional
 returnFocusTo resolver, shared internal safety/cycle ownership for Dialog and
 Drawer, and explicit composition-provided successors. Two-criterion independent
 technical review passed after one revision. Maintainer API approval remains
 pending; current runtime and unprepared mouse behavior are unchanged. The
 proposal does not waive no-body or any remaining modal/release requirement.
+
+## Maintainer approval and Batuta ownership
+
+On 2026-09-08 the maintainer approved returnFocusTo and required Batuta planning
+and task documentation. The contract now lives in .batuta/specs/; execute
+.batuta/plans/v1-modal-return-focus.md. Earlier approval-pending statements above
+are historical. Implementation and release qualification remain incomplete.

@@ -1,5 +1,9 @@
 # Modal return-focus design verification
 
+Current contract: `.batuta/specs/2026-09-08-modal-return-focus-design.md`, approved
+by the maintainer. Original paths and approval-pending wording below are retained
+as historical drafting/review evidence; Batuta owns the active workflow.
+
 Date: 2026-09-08. Source base b6a3c6c. Critical/self contract draft;
 independent OpenCode opencode/glm-5.3-flash review. One revision, no escalation.
 Both read-only rounds exit0 with unchanged HEAD/status/diff and design hashes.

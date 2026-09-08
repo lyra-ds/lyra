@@ -1,5 +1,9 @@
 # Modal return-focus contract drafting brief
 
+Current contract: `.batuta/specs/2026-09-08-modal-return-focus-design.md`, approved
+by the maintainer. Original paths and approval-pending wording below are retained
+as historical drafting/review evidence; Batuta owns the active workflow.
+
 ## Goal
 
 Produce a concrete approvable API contract for the observed WebKit invoking-control gap, retaining incumbent Lyra and minimal scope.

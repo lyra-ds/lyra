@@ -1,7 +1,9 @@
 # Explicit modal return focus
 
-Status: proposed — maintainer API approval pending. This document does not amend
-approved release requirements or authorize implementation by itself.
+Status: approved by the maintainer on 2026-09-08. Planning and task documentation
+are owned by Batuta under .batuta/. Execute through
+.batuta/plans/v1-modal-return-focus.md. Approval covers this contract and its
+bounded implementation, not release publication or waiver of existing gates.
 
 ## Problem and scope
 
