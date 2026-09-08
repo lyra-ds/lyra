@@ -3,7 +3,7 @@
 <!-- inputs: profile.md@sha256:44e9c9ccb2e9 routing.md@sha256:99f96b92331f -->
 
 **Goal:** Retain Lyra's existing base, remove compulsory comparative research from the V1 route, and establish the next small regression-driven correction without weakening release acceptance.
-**Created:** 2026-09-08 · **Status:** in progress
+**Created:** 2026-09-08 · **Status:** done
 
 The maintainer approved the direction and this update in conversation on 2026-09-08.
 This authorizes the governance update, source inventory and bounded first proof;
@@ -22,10 +22,14 @@ release streams below are a roadmap, not a speculative multi-file executor task.
       Scope: .batuta/v1-incumbent-backlog.md, .batuta/scout/2026-09-08-v1-incumbent-gaps.md, .batuta/profile.md, WORK.md
       Accept: Every priority names a real current owner and distinguishes source observations from historical or unverified behavior; The first task has one observable failure hypothesis and does not introduce a replacement framework
 
-- [ ] 3. Reproduce Drawer backdrop pointer-origin behavior — evidence/critical
+- [x] 3. Reproduce Drawer backdrop pointer-origin behavior — evidence/critical
       Depends on: 2
       Scope: .batuta/v1-drawer-pointer-proof.md
       Accept: A real pointer interaction compares direct backdrop dismissal with press-inside/release-outside behavior using the existing Drawer and Dialog precedent, recording exact source/environment/results; If required execution is unavailable record that limitation without a PASS claim or environment change
+
+All three preparation tasks are complete; this does not complete V1 stabilization.
+The Drawer defect is reproduced and the next repair is scoped in
+`.batuta/v1-drawer-pointer-repair-brief.md`, not yet dispatched.
 
 ## Decisions and context
 

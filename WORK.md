@@ -6,7 +6,8 @@ comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
 `.batuta/plans/v1-incumbent-stabilization.md` and `.batuta/v1-incumbent-backlog.md`.
 
 - [x] Governance/source-inventory update approved — source commit `2d02444`; critical/self, GLM 5.3 Flash scout and independent review, no retry/escalation. Review 4/4 DONE, unchanged tree, Batuta verifier PASS; cosmetic finding corrected. Baseline 106 tests, new cases RED, current 108 tests and four policy CLIs GREEN. No product/dependency/ledger changes or qualification. See `.batuta/v1-incumbent-direction-review.md`.
-- [ ] Next: reproduce only Drawer backdrop press-origin behavior using the existing Dialog precedent; scope a separate repair only after evidence.
+- [x] Drawer pointer-origin reproduction — critical/self; trusted local Chromium input confirms incorrect Drawer onClose, Dialog control passes, six scenarios recorded at source `75e536b`. Independent GLM 5.3 Flash 2/2 DONE, unchanged guard, verifier PASS; no retries/escalation. Product files untouched. See `.batuta/v1-drawer-pointer-proof.md`.
+- [ ] Next: implement only the confirmed Drawer pointer-origin repair from `.batuta/v1-drawer-pointer-repair-brief.md`; medium/Codex Terra, regression first. Not dispatched.
 
 Do not change any Colima configuration or restart the service. Do not restore
 old settings, stop foreign projects, resume comparative diagnostics or merge
