@@ -105,7 +105,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Scope: Tooltip source/browser/SSR tests, optional internal/tooltip-coordinator.ts, additive feedback.css/parity, React+styles patch changeset
       Accept: specs/2026-09-09-tooltip-timing-design.md criteria1–3, controlled clocks/native ownership/cleanup, public compatibility and measured size; independent review before commit.
 
-- [ ] 19. Focus the selected React workspace on every supported opening key — react/low
+- [x] 19. Focus the selected React workspace on every supported opening key — react/low
       Scope: packages/react/src/workspace-switcher/workspace-switcher.tsx, colocated browser test, .changeset/workspace-react-selected-entry.md
       Accept: native click/Enter/Space/ArrowDown/ArrowUp enters selected middle workspace; preserve post-open navigation, callbacks, create behavior and fallback; no API/dependency change.
 - [ ] 20. Prefer the served selected Alpine workspace on arrow opening — alpine/low

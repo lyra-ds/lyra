@@ -105,12 +105,14 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
 
     const handleTriggerKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.defaultPrevented) return;
-      if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+      if (
+        event.key === 'Enter' ||
+        event.key === ' ' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowUp'
+      ) {
         event.preventDefault();
-        openWithFocus(event.key === 'ArrowDown' ? 0 : -2);
-      } else if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        openWithFocus(-1);
+        openWithFocus(-2);
       }
     };
 

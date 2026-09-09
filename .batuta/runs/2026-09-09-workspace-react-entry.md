@@ -1,0 +1,2 @@
+# React workspace selected entry — approved
+OpenCode GLM/low initial delivery, no product retry/escalation. Controller9/8/8, native15, original-source RED/restored GREEN, static/build/docgen PASS. WorkspaceSwitcher8.14/8.25kB;10prior size failures remain. Executor pnpm/Node26/stash process deviation audited and recorded; no residual outside-scope edit/stash. Only pinned controller evidence accepted. See v1-workspace-react-entry-verification.md. Commit pending.

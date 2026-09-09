@@ -181,6 +181,50 @@ describe('WorkspaceSwitcher', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
+  it('opens to the selected middle workspace with Enter, Space, and both arrows', async () => {
+    const workspacesWithSelectedMiddle = [
+      { id: 'alpha', name: 'Alpha', plan: 'Pro', members: 3 },
+      { id: 'beta', name: 'Beta', plan: 'Team', members: 7 },
+      { id: 'gamma', name: 'Gamma', plan: 'Free', members: 1 },
+    ];
+    const onChange = vi.fn();
+    const onCreate = vi.fn();
+    const { container } = await render(
+      <WorkspaceSwitcher
+        workspaces={workspacesWithSelectedMiddle}
+        current="beta"
+        onChange={onChange}
+        onCreate={onCreate}
+      />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    for (const key of ['{Enter}', '{Space}', '{ArrowDown}', '{ArrowUp}'] as const) {
+      trigger.focus();
+      await userEvent.keyboard(key);
+      const options = container.querySelectorAll<HTMLButtonElement>('[role=option]');
+      expect(options).toHaveLength(4);
+      expect(Array.from(options, (option) => option.getAttribute('aria-selected'))).toEqual([
+        'false',
+        'true',
+        'false',
+        'false',
+      ]);
+      const selectedOption = container.querySelector<HTMLButtonElement>(
+        '[role=option][aria-selected="true"]',
+      )!;
+      expect(selectedOption.querySelector('.lyra-wssw__name')!.textContent).toBe('Beta');
+      expect(document.activeElement).toBe(selectedOption);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCreate).not.toHaveBeenCalled();
+      await userEvent.keyboard('{Escape}');
+      expect(container.querySelector('[role=listbox]')).toBeNull();
+      expect(document.activeElement).toBe(trigger);
+    }
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+
   it('flips the popover above the trigger instead of scrolling the page when there is no room below', async () => {
     const { container } = await render(
       <>
