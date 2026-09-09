@@ -1,7 +1,7 @@
 # Run — BottomSheet captured-target documentation
 
 **Date:** 2026-09-09 · **Lane:** documentation/low · **Executor:** OpenCode opencode/glm-5.3-flash
-**Commit:** pending · **Verdict:** ✅ approved
+**Commit:** bda7a00 · **Verdict:** ✅ approved
 
 ## Brief
 You are the implementation worker already delegated by Batuta, not a conductor. Edit directly, no delegation, orchestration, worktree creation, commands using package managers, services, commits or remote writes. Read only the scoped file and this brief.

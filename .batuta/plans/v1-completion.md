@@ -18,7 +18,7 @@
       Scope: .batuta/plans/v1-completion.md, .batuta/v1-incumbent-backlog.md, .batuta/specs/*.md
       Accept: remaining backlog has concrete independently verifiable slices and exact qualification boundaries → read-only controller verdict
 
-- [ ] 5. Remove the obsolete live-checkout freeze while preserving experimental isolation — maintenance/critical
+- [x] 5. Remove the obsolete live-checkout freeze while preserving experimental isolation — maintenance/critical
       Depends on: 3
       Scope: tools/overlay-foundation-evaluation/repository-policy.test.mjs, .batuta/v1-maintenance-policy-verification.md
       Accept: ordinary maintenance passes in a shallow clone and prohibited candidate integration fails → read-only controller verdict; historical candidate and no-live-diagnostic safeguards remain exercised → read-only controller verdict

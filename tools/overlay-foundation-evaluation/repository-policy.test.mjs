@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,43 +11,6 @@ import { BEHAVIORAL_EXTERNAL_ARTIFACTS } from './candidates/catalog.mjs';
 import { MODAL_WAVE_CELLS } from './contracts/modal.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const immutableCheckoutObjects = Object.freeze({
-  '.github/workflows': 'ce01db38c96a8dfcf78b2737258ef6d653121355',
-  'docs/superpowers/baselines/lyra-v1/program.json': '0765f0339c2e11e0c18e1b9ae67ad3296877f91f',
-  packages: '62f0c9bad9608f67c380ed45f862fd4eee53809e',
-  'pnpm-lock.yaml': '9a5a4470cfd63f3b9c2db2a86112e445cf0f5245',
-});
-const rootDependencySnapshot = Object.freeze({
-  devDependencies: {
-    '@arethetypeswrong/cli': '0.18.5',
-    '@changesets/changelog-github': '0.7.0',
-    '@changesets/cli': '2.31.1',
-    '@size-limit/preset-small-lib': '12.1.0',
-    '@types/react': '19.2.18',
-    '@types/react-dom': '19.2.4',
-    '@vitest/browser-playwright': '4.1.10',
-    'axe-core': '4.13.0',
-    eslint: '10.8.1',
-    'eslint-plugin-jsx-a11y': '6.10.2',
-    'eslint-plugin-react-hooks': '7.1.1',
-    playwright: '1.62.1',
-    prettier: '3.9.6',
-    publint: '0.3.23',
-    react: '19.2.8',
-    'react-dom': '19.2.8',
-    'size-limit': '12.1.0',
-    stylelint: '17.14.1',
-    'stylelint-config-standard': '40.0.0',
-    tsdown: '0.22.14',
-    typescript: '5.9.3',
-    'typescript-eslint': '8.66.0',
-    vite: '8.2.1',
-    vitest: '4.1.10',
-    'vitest-browser-react': '2.2.0',
-    wrangler: '4.120.0',
-    yaml: '2.9.0',
-  },
-});
 const modalScripts = Object.freeze({
   'overlay:evaluate:modal:test':
     'node --test tools/overlay-foundation-evaluation/contracts/modal.test.mjs tools/overlay-foundation-evaluation/fixtures/modal/*.test.mjs tools/overlay-foundation-evaluation/candidates/modal/*.test.mjs tools/overlay-foundation-evaluation/runner/modal*.test.mjs tools/overlay-foundation-evaluation/scripts/create-modal-manifest.test.mjs tools/overlay-foundation-evaluation/scripts/modal.test.mjs',
@@ -68,17 +31,6 @@ const incumbentArtifacts = Object.freeze([
   Object.freeze({ source: 'workspace-pack', name: '@lyra-ds/styles', version: '0.5.0' }),
   Object.freeze({ source: 'workspace-pack', name: '@lyra-ds/react', version: '0.5.0' }),
   Object.freeze({ source: 'workspace-pack', name: '@lyra-ds/alpine', version: '0.6.0' }),
-]);
-const overlayComponentIds = new Set([
-  'dialog',
-  'drawer',
-  'bottom-sheet',
-  'popover',
-  'dropdown',
-  'tooltip',
-  'command-palette',
-  'workspace-switcher',
-  'create-workspace-dialog',
 ]);
 const decisionEvidenceCells = Object.freeze([
   'bundle-standalone',
@@ -101,7 +53,6 @@ const threatModelClauses = [
   'If this boundary changes, a Linux-native namespace/openat2 design MUST be adopted before external candidates are executed.',
 ];
 const execFilePromise = promisify(execFile);
-const repositoryGitConfig = ['-c', `safe.directory=${repositoryRoot}`];
 
 async function documentedPnpmCommand(scriptName) {
   const readme = await readFile(
@@ -148,92 +99,137 @@ test('wires core and modal commands without putting the live diagnostic in ordin
   assert.doesNotMatch(rootPackage.scripts.test, /docker|wave2(?:-automation)?\.mjs/u);
 });
 
-test('keeps dependencies, lockfile, packages, workflows, and the V1 ledger immutable', async () => {
-  const rootPackage = JSON.parse(await readFile(resolve(repositoryRoot, 'package.json'), 'utf8'));
-  const currentDependencies = Object.fromEntries(
-    ['dependencies', 'devDependencies', 'optionalDependencies']
-      .filter((section) => rootPackage[section] !== undefined)
-      .map((section) => [section, rootPackage[section]]),
-  );
-  assert.deepEqual(currentDependencies, rootDependencySnapshot);
+const experimentalArtifactNames = Object.values(BEHAVIORAL_EXTERNAL_ARTIFACTS)
+  .flat()
+  .map(({ name }) => name);
 
-  await execFilePromise(
-    'git',
-    [
-      ...repositoryGitConfig,
-      'diff',
-      '--exit-code',
-      'HEAD',
-      '--',
-      ...Object.keys(immutableCheckoutObjects),
-    ],
-    { cwd: repositoryRoot },
-  );
-  for (const [path, expectedObject] of Object.entries(immutableCheckoutObjects)) {
-    const { stdout } = await execFilePromise(
-      'git',
-      [...repositoryGitConfig, 'rev-parse', `HEAD:${path}`],
-      { cwd: repositoryRoot },
-    );
-    assert.equal(stdout.trim(), expectedObject, `${path} must match its checkout snapshot`);
+async function workspaceManifests() {
+  const manifests = [
+    {
+      path: 'package.json',
+      manifest: JSON.parse(await readFile(resolve(repositoryRoot, 'package.json'), 'utf8')),
+    },
+  ];
+  // These are the three immediate-child workspace patterns in pnpm-workspace.yaml.
+  for (const directory of ['packages', 'apps', 'tools']) {
+    for (const entry of await readdir(resolve(repositoryRoot, directory))) {
+      const path = `${directory}/${entry}/package.json`;
+      try {
+        const manifest = JSON.parse(await readFile(resolve(repositoryRoot, path), 'utf8'));
+        manifests.push({ path, manifest });
+      } catch (error) {
+        if (error.code !== 'ENOENT' && error.code !== 'ENOTDIR') throw error;
+      }
+    }
   }
+  return manifests;
+}
 
-  const program = JSON.parse(
-    await readFile(
-      resolve(repositoryRoot, 'docs/superpowers/baselines/lyra-v1/program.json'),
-      'utf8',
-    ),
-  );
-  const overlays = program.components.filter(({ id }) => overlayComponentIds.has(id));
-  assert.equal(overlays.length, overlayComponentIds.size);
-  assert.equal(
-    overlays.every(({ implementationStatus }) =>
-      ['specified', 'planned'].includes(implementationStatus),
-    ),
-    true,
-  );
+test('keeps experimental foundations out of workspace manifests', async () => {
+  for (const { path, manifest } of await workspaceManifests()) {
+    for (const section of [
+      'dependencies',
+      'devDependencies',
+      'optionalDependencies',
+      'peerDependencies',
+    ]) {
+      for (const [name, specifier] of Object.entries(manifest[section] ?? {})) {
+        const experimental = experimentalArtifactNames.find(
+          (artifact) =>
+            name === artifact ||
+            (typeof specifier === 'string' &&
+              (specifier === `npm:${artifact}` || specifier.startsWith(`npm:${artifact}@`))),
+        );
+        assert.equal(
+          experimental,
+          undefined,
+          `${path} ${section}.${name} must not integrate experimental ${experimental}`,
+        );
+      }
+    }
+  }
 });
 
-test(
-  'checks immutable checkout snapshots in a one-commit shallow clone',
-  { skip: process.env.OVERLAY_POLICY_SHALLOW_PROBE === '1' },
-  async (t) => {
-    const temporaryRoot = await mkdtemp(join(tmpdir(), 'overlay-policy-shallow-'));
-    t.after(() => rm(temporaryRoot, { recursive: true }));
-    const shallowRoot = join(temporaryRoot, 'repository');
-    await execFilePromise(
-      'git',
-      ['clone', '--quiet', '--depth', '1', '--no-local', repositoryRoot, shallowRoot],
-      { cwd: temporaryRoot },
-    );
-    assert.equal(
-      (
-        await execFilePromise('git', ['rev-list', '--count', 'HEAD'], { cwd: shallowRoot })
-      ).stdout.trim(),
-      '1',
-    );
-    await copyFile(
-      resolve(repositoryRoot, 'tools/overlay-foundation-evaluation/repository-policy.test.mjs'),
-      resolve(shallowRoot, 'tools/overlay-foundation-evaluation/repository-policy.test.mjs'),
-    );
-    const childEnvironment = { ...process.env, OVERLAY_POLICY_SHALLOW_PROBE: '1' };
-    delete childEnvironment.NODE_TEST_CONTEXT;
-
-    const { stdout } = await execFilePromise(
+test('allows maintenance and rejects experimental integrations in a shallow checkout', async (t) => {
+  const temporaryRoot = await mkdtemp(join(tmpdir(), 'overlay-policy-shallow-'));
+  t.after(() => rm(temporaryRoot, { recursive: true }));
+  const shallowRoot = join(temporaryRoot, 'repository');
+  await execFilePromise(
+    'git',
+    ['clone', '--quiet', '--depth', '1', '--no-local', repositoryRoot, shallowRoot],
+    { cwd: temporaryRoot },
+  );
+  assert.equal(
+    (
+      await execFilePromise('git', ['rev-list', '--count', 'HEAD'], { cwd: shallowRoot })
+    ).stdout.trim(),
+    '1',
+  );
+  await copyFile(
+    resolve(repositoryRoot, 'tools/overlay-foundation-evaluation/repository-policy.test.mjs'),
+    resolve(shallowRoot, 'tools/overlay-foundation-evaluation/repository-policy.test.mjs'),
+  );
+  const childEnvironment = { ...process.env };
+  delete childEnvironment.NODE_TEST_CONTEXT;
+  const runPolicy = () =>
+    execFilePromise(
       process.execPath,
       [
         '--test',
-        '--test-name-pattern=keeps dependencies, lockfile, packages, workflows, and the V1 ledger immutable',
+        '--test-name-pattern=^keeps experimental foundations out of workspace manifests$',
         'tools/overlay-foundation-evaluation/repository-policy.test.mjs',
       ],
-      {
-        cwd: shallowRoot,
-        env: childEnvironment,
-      },
+      { cwd: shallowRoot, env: childEnvironment },
     );
-    assert.match(stdout, /pass 1\b/u);
-  },
-);
+
+  // Exercise permission to maintain files, independently of install/build compatibility gates.
+  const rootPackagePath = resolve(shallowRoot, 'package.json');
+  const rootPackage = JSON.parse(await readFile(rootPackagePath, 'utf8'));
+  rootPackage.devDependencies.eslint =
+    rootPackage.devDependencies.eslint === '10.10.0' ? '10.8.1' : '10.10.0';
+  await writeFile(rootPackagePath, `${JSON.stringify(rootPackage, null, 2)}\n`);
+  for (const [path, comment] of [
+    ['packages/react/src/bottom-sheet/bottom-sheet.tsx', '// Ordinary source maintenance'],
+    ['.github/workflows/ci.yml', '# Ordinary workflow maintenance'],
+    ['pnpm-lock.yaml', '# Ordinary lockfile maintenance'],
+  ]) {
+    const target = resolve(shallowRoot, path);
+    await writeFile(target, `${await readFile(target, 'utf8')}\n${comment}\n`);
+  }
+  assert.match((await runPolicy()).stdout, /pass 1\b/u);
+
+  for (const [path, section, name, specifier] of [
+    ['package.json', 'devDependencies', '@radix-ui/react-dialog', '1.1.23'],
+    [
+      'packages/react/package.json',
+      'dependencies',
+      'modal-primitive',
+      'npm:@base-ui-components/react@1.0.0-rc.0',
+    ],
+    ['apps/docs/package.json', 'optionalDependencies', '@zag-js/dialog', '1.43.3'],
+    [
+      'tools/file-upload-evidence/package.json',
+      'peerDependencies',
+      'dialog-primitive',
+      'npm:@radix-ui/react-dialog@1.1.23',
+    ],
+  ]) {
+    const target = resolve(shallowRoot, path);
+    const original = await readFile(target, 'utf8');
+    const manifest = JSON.parse(original);
+    manifest[section] = { ...manifest[section], [name]: specifier };
+    await writeFile(target, `${JSON.stringify(manifest, null, 2)}\n`);
+    await assert.rejects(runPolicy, (error) => {
+      assert.match(
+        `${error.stdout ?? ''}${error.stderr ?? ''}`,
+        /must not integrate experimental/u,
+      );
+      return true;
+    });
+    await writeFile(target, original);
+    assert.match((await runPolicy()).stdout, /pass 1\b/u);
+  }
+});
 
 test('tracks the four exact behavioral candidate records without selection metadata', async () => {
   const manifest = JSON.parse(
