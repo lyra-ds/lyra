@@ -24,6 +24,10 @@ describe('Tooltip', () => {
           <Tooltip tip="Focused lifecycle">
             <button
               type="button"
+              // WebKit skips implicit native-button Tab stops, so this target
+              // needs an explicit tabIndex for the real Tab gesture below to
+              // reach it on every engine.
+              tabIndex={0}
               onBlur={() => {
                 blurred = true;
               }}

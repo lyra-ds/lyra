@@ -81,3 +81,17 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Accept: distinguish actual native input behavior and fixture assumptions from product regressions with a bounded reproducer; assign independently verifiable repairs without weakening exact focus assertions or introducing dependencies.
 
 **Task 11 completed locally.** Final full React Chromium/SSR779/779; focused Chromium/SSR23, WebKit22 and Firefox22; compiled27 and synchronous consumer-reorder regression PASS. Dropdown remains within2kB. Independent GLM3/3 DONE/no findings/unchanged guard. Final source has no new runtime dependency or public API. Broader source baselines discovered6 separate WebKit failures (673/679) while full Firefox679/679 passed before the final Dropdown identity correction; Task12 diagnoses those exact failures before changing owners.
+
+## WebKit baseline correction tranche
+- [x] 13. Establish the Tooltip focus-lifecycle fixture's native tab stop — verification/low
+      Scope: packages/react/src/tooltip/tooltip.browser.test.tsx
+      Accept: exact focus/open/blur/close assertions pass across three engines and still catch a disabled blur close; no runtime change.
+- [ ] 14. Follow native Calendar entry without a fixed platform stop count — verification/low
+      Scope: packages/react/src/date-picker/date-picker.browser.test.tsx, packages/react/src/date-range-picker/date-range-picker.browser.test.tsx
+      Coupled fixtures share the same Calendar traversal cause. Accept: bounded real Tab traversal reaches the exact active day and retains selection/normalization/close assertions; making the active day unreachable still fails.
+- [ ] 15. Establish real focus ownership in FileUpload removal fixtures — verification/low
+      Scope: packages/react/src/file-upload/file-upload.browser.test.tsx
+      Accept: focused keyboard removal preserves next/previous/input fallback only after controlled commit; moving focus outside prevents stealing; no runtime change and no permissive assertions.
+- [ ] 16. Preserve the current TimePicker option tab sequence explicitly — react/low
+      Scope: packages/react/src/time-picker/time-picker.tsx, packages/react/src/time-picker/time-picker.browser.test.tsx, .changeset/time-picker-keyboard-stops.md
+      Accept: native Tab reaches the existing first option across engines, existing arrows/Home/End and keyboard activation work, selection closes normally; no API/dependency/variant change, measure the bounded size delta without changing budgets.
