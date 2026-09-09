@@ -3,7 +3,7 @@ import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
-import { useState } from 'react';
+import { StrictMode, useRef, useState } from 'react';
 import { BottomSheet } from './index';
 
 function backdropDismiss(overlay: HTMLElement): void {
@@ -13,14 +13,20 @@ function backdropDismiss(overlay: HTMLElement): void {
 
 function BottomSheetHarness() {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)}>
+      <button ref={triggerRef} type="button" onClick={() => setOpen(true)}>
         Open sheet
       </button>
       <button type="button">Background</button>
-      <BottomSheet open={open} onClose={() => setOpen(false)} title="Sheet details">
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        returnFocusTo={() => triggerRef.current}
+        title="Sheet details"
+      >
         <input aria-label="Name" />
         <button type="button">Last</button>
       </BottomSheet>
@@ -165,6 +171,240 @@ describe('BottomSheet', () => {
     await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).toBeNull());
     expect(document.activeElement).toBe(opener);
   });
+
+  it.each(['escape', 'backdrop', 'button'] as const)(
+    'explicit mouse returnFocusTo restores its declared target after %s dismissal',
+    async (dismissal) => {
+      function ExplicitMouseHarness() {
+        const [open, setOpen] = useState(false);
+        const targetRef = useRef<HTMLButtonElement>(null);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open without focus preparation
+            </button>
+            <button ref={targetRef} type="button">
+              Return destination
+            </button>
+            <BottomSheet
+              open={open}
+              onClose={() => setOpen(false)}
+              returnFocusTo={() => targetRef.current}
+              title="Explicit mouse return focus"
+            >
+              Body
+            </BottomSheet>
+          </>
+        );
+      }
+
+      await render(<ExplicitMouseHarness />);
+      await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).not.toBeNull());
+      const panel = document.querySelector<HTMLElement>('.lyra-bottomsheet')!;
+      expect(panel.getAttribute('returnFocusTo')).toBeNull();
+
+      if (dismissal === 'escape') await userEvent.keyboard('{Escape}');
+      else if (dismissal === 'backdrop') {
+        await userEvent.click(document.querySelector<HTMLElement>('.lyra-bottomsheet-overlay')!, {
+          position: { x: 1, y: 1 },
+        });
+      } else
+        await userEvent.click(panel.querySelector<HTMLButtonElement>('.lyra-bottomsheet__close')!);
+
+      const target = document.querySelectorAll<HTMLButtonElement>('button')[1]!;
+      await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).toBeNull());
+      expect(document.activeElement).toBe(target);
+    },
+  );
+
+  it('does not resolve returnFocusTo when a parent ignores a close request', async () => {
+    const resolver = vi.fn(() => document.createElement('button'));
+    function IgnoredCloseHarness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open ignored close
+          </button>
+          <BottomSheet
+            open={open}
+            onClose={() => {}}
+            returnFocusTo={resolver}
+            title="Ignored close"
+          >
+            Body
+          </BottomSheet>
+        </>
+      );
+    }
+
+    await render(<IgnoredCloseHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    expect(resolver).not.toHaveBeenCalled();
+  });
+
+  it('captures a fresh opener and resolves once per accepted close during a rapid reopen', async () => {
+    const resolver = vi.fn(() => null);
+    function ControlledRapidReopen({ open }: { open: boolean }) {
+      return (
+        <>
+          <button type="button">First keyboard opener</button>
+          <button type="button">Second keyboard opener</button>
+          <BottomSheet open={open} returnFocusTo={resolver} title="Rapid reopen">
+            Body
+          </BottomSheet>
+        </>
+      );
+    }
+
+    const { rerender } = await render(<ControlledRapidReopen open={false} />);
+    const firstTrigger = document.querySelectorAll<HTMLButtonElement>('button')[0]!;
+    const secondTrigger = document.querySelectorAll<HTMLButtonElement>('button')[1]!;
+    firstTrigger.focus();
+    await rerender(<ControlledRapidReopen open />);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).not.toBeNull());
+    const firstPanel = document.querySelector<HTMLElement>('.lyra-bottomsheet')!;
+    await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+
+    await rerender(<ControlledRapidReopen open={false} />);
+    await vi.waitFor(() => expect(resolver).toHaveBeenCalledTimes(1));
+    expect(document.activeElement).toBe(firstTrigger);
+
+    secondTrigger.focus();
+    await rerender(<ControlledRapidReopen open />);
+    await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+
+    await rerender(<ControlledRapidReopen open={false} />);
+    await vi.waitFor(() => expect(resolver).toHaveBeenCalledTimes(2));
+    expect(document.activeElement).toBe(secondTrigger);
+  });
+
+  it('resolves an explicit return target once under StrictMode', async () => {
+    const resolver = vi.fn(() => document.querySelector<HTMLButtonElement>('[data-return-target]'));
+    function StrictModeHarness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open strict sheet
+          </button>
+          <button type="button" data-return-target>
+            Strict return destination
+          </button>
+          <BottomSheet
+            open={open}
+            onClose={() => setOpen(false)}
+            returnFocusTo={resolver}
+            title="Strict sheet"
+          >
+            Body
+          </BottomSheet>
+        </>
+      );
+    }
+
+    await render(
+      <StrictMode>
+        <StrictModeHarness />
+      </StrictMode>,
+    );
+    const trigger = document.querySelector<HTMLButtonElement>('button')!;
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    const target = document.querySelector<HTMLButtonElement>('[data-return-target]')!;
+    await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).toBeNull());
+    expect(document.activeElement).toBe(target);
+    expect(resolver).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses only the latest committed returnFocusTo resolver for an accepted close', async () => {
+    const firstResolver = vi.fn(() => document.querySelector<HTMLElement>('[data-return-first]'));
+    const latestResolver = vi.fn(() => document.querySelector<HTMLElement>('[data-return-latest]'));
+    function LatestResolverHarness({
+      open,
+      returnFocusTo,
+    }: {
+      open: boolean;
+      returnFocusTo: () => HTMLElement | null;
+    }) {
+      return (
+        <>
+          <button type="button" data-return-first>
+            First return destination
+          </button>
+          <button type="button" data-return-latest>
+            Latest return destination
+          </button>
+          <BottomSheet open={open} returnFocusTo={returnFocusTo} title="Latest resolver">
+            Body
+          </BottomSheet>
+        </>
+      );
+    }
+
+    const { rerender } = await render(
+      <LatestResolverHarness open={false} returnFocusTo={firstResolver} />,
+    );
+    await rerender(<LatestResolverHarness open={false} returnFocusTo={latestResolver} />);
+    expect(firstResolver).not.toHaveBeenCalled();
+    expect(latestResolver).not.toHaveBeenCalled();
+
+    const opener = document.querySelector<HTMLButtonElement>('[data-return-first]')!;
+    opener.focus();
+    await rerender(<LatestResolverHarness open returnFocusTo={latestResolver} />);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).not.toBeNull());
+
+    await rerender(<LatestResolverHarness open={false} returnFocusTo={latestResolver} />);
+    await vi.waitFor(() => expect(latestResolver).toHaveBeenCalledTimes(1));
+    expect(firstResolver).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(
+      document.querySelector<HTMLButtonElement>('[data-return-latest]'),
+    );
+  });
+
+  it.each(['panel', 'overlay'] as const)(
+    'falls back to the prepared opener when returnFocusTo targets the closing %s',
+    async (invalidTarget) => {
+      function InvalidTargetHarness() {
+        const [open, setOpen] = useState(false);
+        const panelRef = useRef<HTMLDivElement>(null);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Prepared opener
+            </button>
+            <BottomSheet
+              ref={panelRef}
+              open={open}
+              onClose={() => setOpen(false)}
+              returnFocusTo={() =>
+                invalidTarget === 'panel'
+                  ? panelRef.current
+                  : document.querySelector<HTMLElement>('.lyra-bottomsheet-overlay')
+              }
+              title="Invalid return target"
+            >
+              Body
+            </BottomSheet>
+          </>
+        );
+      }
+
+      const { container } = await render(<InvalidTargetHarness />);
+      const opener = container.querySelector<HTMLButtonElement>('button')!;
+      opener.focus();
+      await userEvent.keyboard('{Enter}');
+      await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).not.toBeNull());
+      await userEvent.keyboard('{Escape}');
+      await vi.waitFor(() => expect(document.querySelector('.lyra-bottomsheet')).toBeNull());
+      expect(document.activeElement).toBe(opener);
+    },
+  );
 
   it('does not dismiss when a panel/backdrop drag starts or ends inside the sheet', async () => {
     const onClose = vi.fn();

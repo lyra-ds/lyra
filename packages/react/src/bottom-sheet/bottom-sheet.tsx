@@ -11,6 +11,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { usePresence } from '../internal/use-presence';
+import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 
 const INITIAL_FOCUS_SELECTOR = [
@@ -31,6 +32,11 @@ type BottomSheetBaseProps = Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'aria
   closeLabel?: string;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /**
+   * Resolves the current eligible logical destination for an accepted close. If it is ineligible,
+   * the keyboard-captured opener is used; a successor composition must provide its own target.
+   */
+  returnFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */
   children: ReactNode;
 };
@@ -55,6 +61,7 @@ export type BottomSheetProps = BottomSheetBaseProps &
 
 interface BottomSheetPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;
+  overlayRef: RefObject<HTMLDivElement | null>;
   attachPanel: (node: HTMLDivElement | null) => void;
   titleId: string;
   title: ReactNode | undefined;
@@ -74,6 +81,7 @@ interface BottomSheetPanelProps {
 /** Portal child: DOM-dependent effects intentionally live with the portaled panel. */
 function BottomSheetPanel({
   panelRef,
+  overlayRef,
   attachPanel,
   titleId,
   title,
@@ -94,7 +102,7 @@ function BottomSheetPanel({
     if (!open) return;
     const panel = panelRef.current;
     if (!panel) return;
-    captureOpener(document.activeElement);
+    captureOpener(panel.ownerDocument.activeElement);
     const firstFocusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
     (firstFocusable ?? panel).focus();
   }, [open, panelRef, captureOpener]);
@@ -120,6 +128,7 @@ function BottomSheetPanel({
     // The backdrop is a pointer-only close convenience; Escape and the close button provide keyboard access.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
+      ref={overlayRef}
       className={cx('lyra-bottomsheet-overlay', closing && 'lyra-bottomsheet-overlay--closing')}
       onMouseDown={(event) => {
         downOnOverlay.current = event.target === event.currentTarget;
@@ -179,7 +188,8 @@ function BottomSheetPanel({
 
 /**
  * A controlled modal panel anchored to the bottom viewport edge. It is portaled, traps focus,
- * locks background scroll, and restores focus to its opener after the controlled `open` prop closes.
+ * locks background scroll, and restores focus to its declared target or opener after the controlled
+ * `open` prop closes.
  */
 export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetProps>(
   function BottomSheet(
@@ -189,6 +199,7 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
       closeLabel = 'Close',
       title,
       container,
+      returnFocusTo,
       className,
       children,
       'aria-label': accessibleName,
@@ -198,19 +209,9 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
   ) {
     const titleId = useId();
     const panelRef = useRef<HTMLDivElement | null>(null);
-    const openerRef = useRef<Element | null>(null);
+    const overlayRef = useRef<HTMLDivElement | null>(null);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
-
-    useEffect(() => {
-      if (open) return;
-      const opener = openerRef.current;
-      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
-      openerRef.current = null;
-    }, [open]);
-
-    const captureOpener = useCallback((element: Element | null) => {
-      openerRef.current = element;
-    }, []);
+    const { captureOpener } = useReturnFocus({ open, returnFocusTo, panelRef, overlayRef });
 
     const attachPanel = useCallback(
       (node: HTMLDivElement | null) => {
@@ -227,6 +228,7 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
       <Portal container={container}>
         <BottomSheetPanel
           panelRef={panelRef}
+          overlayRef={overlayRef}
           attachPanel={attachPanel}
           titleId={titleId}
           title={title}
