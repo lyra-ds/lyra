@@ -71,6 +71,14 @@ async function openBottomSheet(host: HTMLElement): Promise<void> {
   expect(overlay(host).style.display).not.toBe('none');
 }
 
+async function openBottomSheetWithKeyboard(host: HTMLElement): Promise<void> {
+  const control = trigger(host);
+  control.focus();
+  await userEvent.keyboard('{Enter}');
+  await flush();
+  expect(overlay(host).style.display).not.toBe('none');
+}
+
 function backdropDismiss(host: HTMLElement): void {
   const backdrop = overlay(host);
   backdrop.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
@@ -138,6 +146,34 @@ describe('lyraBottomSheet', () => {
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
     expect(document.activeElement).toBe(last);
     expect(document.activeElement).not.toBe(outside);
+  });
+
+  it('contains native Tab traversal after a keyboard-owned opening', async () => {
+    const host = mountBottomSheet();
+    await openBottomSheetWithKeyboard(host);
+    const sheet = panel(host);
+    const middle = host.querySelector<HTMLElement>('[aria-label="Middle"]');
+    if (!middle) throw new Error('Expected middle field');
+
+    sheet.focus();
+    let reachedMiddle = false;
+    for (let step = 0; step < 10; step += 1) {
+      await userEvent.keyboard('{Tab}');
+      reachedMiddle ||= document.activeElement === middle;
+      expect(sheet.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toHaveAttribute('data-lyra-focus-trap-boundary');
+    }
+    expect(reachedMiddle).toBe(true);
+
+    sheet.focus();
+    reachedMiddle = false;
+    for (let step = 0; step < 10; step += 1) {
+      await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+      reachedMiddle ||= document.activeElement === middle;
+      expect(sheet.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toHaveAttribute('data-lyra-focus-trap-boundary');
+    }
+    expect(reachedMiddle).toBe(true);
   });
 
   it('closes from Escape on the panel and restores focus to its opener', async () => {

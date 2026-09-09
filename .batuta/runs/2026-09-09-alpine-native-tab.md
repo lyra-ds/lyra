@@ -1,0 +1,3 @@
+# Alpine native modal Tab containment
+
+Approved; commit pending. Codex Terra/high initial284.9s, no retry/escalation. Native24/24containment/liveeligibility/idleboundaries/cleanup (baseline16/24), source50/44of50/50; sixoldWebKitreturnfailures confirmedunderoldhelperandnotwaived. All4newregressions failunderoldhelper/passrestored. Types/format/buildPASS; Alpine21394/21200Bfailjoins11Reactoverages. GLM3/3DONEunchangedguard/verifierPASS; optionalOSblur/privateguardobservationsdeclinedwithboundedcontractrationale. Source9a3e4079b0b719817f1fe188a1ff54a7834535c721f928f50805664ec6e6b4c7; artifact529773604b3b45feb5bc777c341537203232616fe3a19b6fc30f518054230760. No publicAPI/style/dependency/Colima/Docker/remote changes.

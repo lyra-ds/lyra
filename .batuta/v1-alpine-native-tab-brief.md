@@ -72,7 +72,7 @@ Actual source contradicts design, change outside scope needed, same unexpected c
 ## Exact design
 # Alpine native modal Tab containment — bounded incumbent design
 
-Status: controller draft after unchanged guarded GLM scout and native24-case diagnosis; implementation not started. Keep opener restoration as a separate task. The existing shared attachFocusTrap(panel) owner is the only runtime source scope; no public options/bindings, modal callers, dependency or styles change.
+Status: controller bounded design for the already authorized incumbent repair after unchanged guarded GLM scout and native24-case diagnosis. Implementation follows Task24; no public API change. Keep opener restoration as a separate task. The existing shared attachFocusTrap(panel) owner is the only runtime source scope; no public options/bindings, modal callers, dependency or styles change.
 
 ## Proven problem
 Current edge-only trap checks the first/last selector candidate. Native WebKit can skip implicit button stops after Middle, so focus escapes while activeElement is not that computed last candidate. Current synthetic/manual-edge fixtures miss this path. All8native WebKit variants fail containment; Chromium/Firefox16/16pass. Source return-focus failure is separate. The existing React hook already has a verified local-boundary protocol in this branch; reuse its observable design within the existing Alpine owner without importing React or creating a new foundation.

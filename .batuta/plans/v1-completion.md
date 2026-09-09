@@ -129,7 +129,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Depends on: 23
       Scope: WorkspaceSwitcher source/browser, .changeset/workspace-click-cancellation.md
       Accept: original root click precedes defaults, prevents opening/domain effects; stable clicked identity under synchronous consumer reorder; native/browser/static proof, no API change.
-- [ ] 25. Design and repair native Alpine modal Tab containment — alpine/high after critical design
+- [x] 25. Design and repair native Alpine modal Tab containment — alpine/high after critical design
       Scope: existing internal/focus-trap.ts and bounded direct-consumer tests, Alpine patch changeset; exact brief follows the guarded scout.
       Accept: actual non-edge forward/reverse Tabs remain contained with native intermediate navigation, cancellation and complete teardown; current return-focus pointer issue stays separate.
 
@@ -137,3 +137,10 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 - [ ] 26. CreateWorkspaceDialog lifecycle — critical incumbent compatibility/migration design, then high implementation and separate public examples/docs. Current native3/3 immediate-close failure documented; reuse exact request/result lifecycle from approved overlay family, keep Dialog ownership and Alpine unsupported.
 - [ ] 27. Tabs compound real-content ownership — critical selection-family API/migration design before implementation. No final part signatures chosen yet; preserve current classes, support actual owned panels, define server enhancement/failure behavior per existing normative requirement.
 - [ ] 28. DataTable semantic row action — critical bounded data-family API/migration design then existing-owner implementation; keep native table, sort and checkboxselection semantics. Current onRowClick has no in-repo consumers; never make rows into simulated buttons or wrap arbitrary cell children.
+
+## Remaining modal ownership order
+Current guarded scout at19bf93a locates missing initial-target/inert/dynamic-focus ownership and cross-family Escape inconsistency; source gaps require native reproduction before repair.
+- [ ] 29. Complete the existing cross-family Escape consumption protocol for Drawer/BottomSheet — medium coupled current-owner repair after native reproduction, covering both parent/child directions and CommandPalette descendants. Preserve Dialog precedent, consumer cancellation and non-Escape behavior; no newAPI/manager.
+- [ ] 30. Alpine captured-opener and successor contract — critical diagnosis/design from the six old WebKit failures before publicoptions/callerfixture changes. Do not confuse pointerfocus ownership with nativeTab containment.
+- [ ] 31. React modal initial-target, inert, dynamic-focus and sibling/teardown ownership — critical design split into independently verifiable current-owner slices after freshnative proof. Preserve currentreturnFocusTo/Tab/Escape/presence/scroll behavior; no newfoundation/runtime dependency.
+Task29 followsTask25 because its existing-owner inconsistency is directly localized. Then close the bounded modal/API prerequisites for Task26; the lifecycle draft remains in controller artifacts and is not dispatched prematurely. Tasks27/28 still require finalfamilydesigns.
