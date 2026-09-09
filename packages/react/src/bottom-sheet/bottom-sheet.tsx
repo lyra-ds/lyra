@@ -33,8 +33,9 @@ type BottomSheetBaseProps = Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'aria
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
   /**
-   * Resolves the current eligible logical destination for an accepted close. If it is ineligible,
-   * the keyboard-captured opener is used; a successor composition must provide its own target.
+   * Resolves the logical destination for an accepted close. The resolver result is used only when
+   * eligible; otherwise an eligible previously focused opener is the fallback. A successor
+   * composition must supply a meaningful target when the opener can disappear or become ineligible.
    */
   returnFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */

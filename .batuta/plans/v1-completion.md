@@ -31,7 +31,7 @@
       Scope: package.json, pnpm-lock.yaml, apps/docs/package.json, apps/site/package.json, packages/react/package.json, packages/alpine/package.json, tools/file-upload-evidence/package.json, .changeset/v1-library-maintenance.md
       Accept: only selected existing dependency versions change → read-only controller verdict; install/build/types and affected runtime checks pass with held bridge versions preserved → read-only controller verdict
 
-- [ ] 8. Clarify captured-target eligibility in public BottomSheet JSDoc — documentation/low
+- [x] 8. Clarify captured-target eligibility in public BottomSheet JSDoc — documentation/low
       Depends on: 2
       Scope: packages/react/src/bottom-sheet/bottom-sheet.tsx, tools/docgen/output/props.json, tools/docgen/output/llms.txt
       Accept: source and generated prop documentation explicitly require an eligible captured opener → read-only controller verdict; compiled runtime bytes unchanged and owner generation matches → read-only controller verdict

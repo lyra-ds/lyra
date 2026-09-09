@@ -1,7 +1,7 @@
 # Run — BottomSheet public consumers
 
 **Date:** 2026-09-09 · **Lane:** react/medium · **Executor:** Codex gpt-5.6-terra
-**Commit:** pending · **Verdict:** ✅ approved
+**Commit:** 899ed10 · **Verdict:** ✅ approved
 
 ## Brief
 # BottomSheet public invoking compositions — React / medium
@@ -113,7 +113,7 @@ Verified: pinned Node Prettier `--check` passed; `git diff --check` passed. No c
 ## Verification
 # BottomSheet public consumers — verification
 
-Approved scoped documentation/examples. Implementation commit pending. Codex gpt-5.6-terra/medium, one documentation-only retry; no escalation. Controller rebuilt current React through its tsdown/use-client owners and regenerated API references (exactly one new BottomSheet prop).
+Approved scoped documentation/examples. Implementation commit899ed10. Codex gpt-5.6-terra/medium, one documentation-only retry; no escalation. Controller rebuilt current React through its tsdown/use-client owners and regenerated API references (exactly one new BottomSheet prop).
 
 Native actual built-package examples12/12 PASS: StrictMode, Chromium151.0.7922.34/WebKit26.5, two real examples, Escape/backdrop/close button, exact invoking Button restored. Source/dist hashes recorded in .batuta/runs/v1-bottom-sheet-docs/result.json and independently checked. Both exact page snippets plus examples typecheck against current declarations. Scoped lint/format/docgen check PASS. Retry only adds ignored-close/closed-rerender prose and makes the edited pt-BR bullet entirely English. Snippets unchanged; final format/docgen checks PASS. No runtime or dependency edits in this task.
 
