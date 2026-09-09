@@ -1,0 +1,9 @@
+# BottomSheet public consumers — verification
+
+Approved scoped documentation/examples. Implementation commit pending. Codex gpt-5.6-terra/medium, one documentation-only retry; no escalation. Controller rebuilt current React through its tsdown/use-client owners and regenerated API references (exactly one new BottomSheet prop).
+
+Native actual built-package examples12/12 PASS: StrictMode, Chromium151.0.7922.34/WebKit26.5, two real examples, Escape/backdrop/close button, exact invoking Button restored. Source/dist hashes recorded in .batuta/runs/v1-bottom-sheet-docs/result.json and independently checked. Both exact page snippets plus examples typecheck against current declarations. Scoped lint/format/docgen check PASS. Retry only adds ignored-close/closed-rerender prose and makes the edited pt-BR bullet entirely English. Snippets unchanged; final format/docgen checks PASS. No runtime or dependency edits in this task.
+
+Independent GLM review4/4 DONE (three docs criteria plus dependency disposition), status/diff/seven-file guard unchanged, Batuta verifier PASS. Two low observations: accepted request for primary job-status evidence resolved by read-only gh run view34270734805 JSON (exact head5c333c2, testfailure, lint/typecheck/buildsuccess); accepted nonblocking source-JSDoc eligibility precision queued as planTask8, since generated output accurately mirrors the committed source and current pages explain the fallback correctly. No finding indicates a runtime/test failure. Raw review at main .batuta/runs/2026-09-09-bottom-sheet-docs-review/; findings saved verbatim.
+
+Dependency triage is complete, independently reviewed; selected maintenance is still pending installation/verification. No Changesets major migration or remote update. Continue with the queued source documentation clarification and maintenance-policy repair; full V1/packed Linux qualification remains open.

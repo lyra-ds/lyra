@@ -36,13 +36,74 @@ Reach for something else when:
 - BottomSheet is a portaled `role="dialog"` with `aria-modal="true"`. A visible `title` labels it
   with `aria-labelledby`; without a title, a translated `aria-label` is required.
 - On open, focus moves to the first focusable element in the sheet, or the sheet itself, and stays
-  trapped there. Background scroll is locked, and focus returns to the opener after `open` closes.
+  trapped there. Background scroll is locked. Declare `returnFocusTo` for a pointer-opened workflow
+  that needs an explicit return destination.
 - Escape, the close button and a genuine backdrop click call `onClose`. The backdrop records where
   mousedown began, so dragging from the sheet onto the backdrop cannot dismiss it.
 - The sheet is portaled to `document.body` unless `container` supplies another portal host. It
   remains mounted for its animated exit; reduced-motion preferences disable the animation.
 - The close button defaults to the English accessible name "Close". Pass `closeLabel` to translate
   it.
+
+## React return focus
+
+`returnFocusTo` is optional and has the type `() => HTMLElement | null`. It resolves freshly after
+an accepted close, so it can read current workflow state and refs instead of preserving a stale
+element. Use it for a stable, eligible trigger; when that trigger can be removed, disabled, hidden,
+or no longer meaningful, return a logical successor instead.
+
+An eligible destination is connected in the same document, visible, enabled, programmatically
+focusable, and outside the closing sheet and overlay. A composition must not return a target that it
+removes while closing. Omitting `returnFocusTo` retains only a valid captured opener that was already
+focused, such as after keyboard opening. Unprepared WebKit mouse usage without a usable explicit
+target remains unqualified: adding this optional prop does not repair unmigrated consumers.
+
+```tsx
+import { BottomSheet, Button } from '@lyra-ds/react';
+import { useRef, useState } from 'react';
+
+function ProjectDetails({ canReturnToTrigger }: { canReturnToTrigger: boolean }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const successorRef = useRef<HTMLHeadingElement>(null);
+
+  return (
+    <>
+      <Button ref={triggerRef} disabled={!canReturnToTrigger} onClick={() => setOpen(true)}>
+        Open project details
+      </Button>
+      <h2 ref={successorRef} tabIndex={-1}>
+        Project overview
+      </h2>
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        returnFocusTo={() =>
+          canReturnToTrigger ? (triggerRef.current ?? successorRef.current) : successorRef.current
+        }
+        title="Project details"
+      >
+        Review the latest milestone before you continue.
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+`Project overview` is a named, meaningful `tabIndex={-1}` destination. The
+`canReturnToTrigger` state represents current availability; a non-null ref alone does not make a
+target eligible. A removed trigger also falls through its null ref to the successor.
+
+After an accepted close, Lyra prefers an eligible resolver result, then only a still-eligible
+captured opener. It ignores an ineligible resolver result and never picks an arbitrary page control
+or `body` as a fallback. If neither is eligible, Lyra makes no invalid focus call and the controlled
+close still proceeds; the browser may land on `body`. This is an invalid composition, and the
+application must provide a logical successor. One development diagnostic reports the invalid
+composition for that close cycle; it is not successful focus restoration. The resolver must only
+read current state and refs: do not focus, mutate the DOM, or start asynchronous work in it.
+
+An ignored `onClose` request leaves the sheet open: Lyra does not resolve `returnFocusTo` or move
+focus. Once the sheet is closed, rerenders while `open` remains `false` do not restore focus again.
 
 ## API and code
 

@@ -1,7 +1,7 @@
 # Run — BottomSheet return focus
 
 **Date:** 2026-09-09 · **Lane:** react/high · **Executor:** Codex gpt-5.6-terra/high
-**Commit:** pending · **Verdict:** ✅ approved
+**Commit:** 88c5211 · **Verdict:** ✅ approved
 
 ## Brief
 # BottomSheet return focus — high / React — Codex gpt-5.6-terra
@@ -123,7 +123,7 @@ Focused SSR/browser tests remain unverified: Vitest hit sandbox `EPERM` while wr
 ## Verification
 # BottomSheet return-focus verification — 2026-09-09
 
-Approved bounded runtime/API integration. Implementation commit: pending. The shared owner is unchanged; BottomSheet now exposes optional returnFocusTo, supplies panel/overlay exclusions and captures from its panel ownerDocument. Accessible-name union preserved. First-party docs/examples follow as Task2.
+Approved bounded runtime/API integration. Implementation commit: 88c5211. The shared owner is unchanged; BottomSheet now exposes optional returnFocusTo, supplies panel/overlay exclusions and captures from its panel ownerDocument. Accessible-name union preserved. First-party docs/examples follow as Task2.
 
 Controller final checks: native StrictMode Chromium151.0.7922.34/WebKit26.5 pointer paths6/6; focused Chromium/SSR24; WebKit21; types/lint/format all PASS. Original source2638dd4209517a558a8328a7d28a210f77be50003e6da4d0c4750caa0a8ce4aa fails all six exact-trigger native cases; final sourcef6e73dec37b1a2ed382226faa2989f90ba6991a48caeed427de94989e3fb5182 passes. No pointer pre-focus or relaxed assertions. Tests cover ignored requests, rapid fresh capture, latest resolver, StrictMode, invalid closing targets and SSR non-resolution.
 

@@ -907,6 +907,12 @@
         "description": "Portal host. Defaults to `document.body`."
       },
       {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current eligible logical destination for an accepted close. If it is ineligible,\nthe keyboard-captured opener is used; a successor composition must provide its own target."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,

@@ -469,6 +469,11 @@ export interface BottomSheetProps {
   closeLabel?: string;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /**
+   * Resolves the current eligible logical destination for an accepted close. If it is ineligible,
+   * the keyboard-captured opener is used; a successor composition must provide its own target.
+  */
+  returnFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */
   children: ReactNode;
   /** Heading rendered in the sheet header and used as its accessible name. */

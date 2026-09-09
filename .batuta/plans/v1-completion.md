@@ -6,11 +6,11 @@
 - [x] 1. BottomSheet shared return-focus integration — react/high
       Scope: packages/react/src/bottom-sheet/bottom-sheet.tsx, packages/react/src/bottom-sheet/bottom-sheet.browser.test.tsx, packages/react/src/bottom-sheet/bottom-sheet.ssr.test.ts, .changeset/bottom-sheet-return-focus.md
       Accept: accepted-close and fresh-cycle behavior in Chromium/WebKit/SSR → read-only controller verdict; type and scope compatibility → read-only controller verdict
-- [ ] 2. BottomSheet public consumer documentation — react/medium
+- [x] 2. BottomSheet public consumer documentation — react/medium
       Depends on: 1
       Scope: apps/docs/components/examples/bottom-sheet/*.tsx, apps/docs/content/docs/en/components/bottom-sheet.mdx, apps/docs/content/docs/pt-BR/components/bottom-sheet.mdx, tools/docgen/output/props.json, tools/docgen/output/llms.txt
       Accept: actual invoking examples return focus on native pointer activation → read-only controller verdict; generated API matches source → read-only controller verdict
-- [ ] 3. Dependency maintenance disposition — maintenance/critical
+- [x] 3. Dependency maintenance disposition — maintenance/critical
       Scope: .batuta/v1-dependency-disposition.md
       Accept: each open Dependabot PR has evidence-backed integrate/defer disposition and concrete next task → read-only controller verdict
 - [ ] 4. Remaining incumbent contracts and release qualification sequence — planning/critical
@@ -30,6 +30,11 @@
       Depends on: 5
       Scope: package.json, pnpm-lock.yaml, apps/docs/package.json, apps/site/package.json, packages/react/package.json, packages/alpine/package.json, tools/file-upload-evidence/package.json, .changeset/v1-library-maintenance.md
       Accept: only selected existing dependency versions change → read-only controller verdict; install/build/types and affected runtime checks pass with held bridge versions preserved → read-only controller verdict
+
+- [ ] 8. Clarify captured-target eligibility in public BottomSheet JSDoc — documentation/low
+      Depends on: 2
+      Scope: packages/react/src/bottom-sheet/bottom-sheet.tsx, tools/docgen/output/props.json, tools/docgen/output/llms.txt
+      Accept: source and generated prop documentation explicitly require an eligible captured opener → read-only controller verdict; compiled runtime bytes unchanged and owner generation matches → read-only controller verdict
 
 ## Decisions and context
 The maintainer authorized continuing until completion on September 9. This operational continuation uses the previously approved incumbent direction and returnFocusTo contract; no redundant approval is required. This plan is the current executable tranche, not a claim that four tasks alone qualify V1. Subsequent concrete repair and qualification slices will be appended as diagnosis establishes their scope. Keep all 11 P1 components and all 23 required acceptance cells unqualified until bound evidence exists. Public release/versioning and remote writes remain separate actions. Never change Colima configuration or operate Docker/Colima. No foreign service changes. Existing dependency maintenance is being assessed at the maintainer's request; no new foundations or runtime libraries. Main checkout is managed dirt; feature work remains in the stabilization worktree. Keep raw experimental evidence immutable.
