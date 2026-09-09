@@ -26,7 +26,7 @@
       Depends on: 5
       Scope: .github/workflows/ci.yml, .github/workflows/deploy.yml, .github/workflows/release.yml, .github/workflows/sponsors.yml, tools/file-upload-evidence/scripts/deploy-policy.mjs
       Accept: only reviewed action digest/version advances while pnpm stays 11.13.1 → read-only controller verdict; workflow and repository policy checks pass → read-only controller verdict
-- [ ] 7. Prepare and qualify the compatible existing-library maintenance batch — maintenance/high
+- [x] 7. Prepare and qualify the compatible existing-library maintenance batch — maintenance/high
       Depends on: 5
       Scope: package.json, pnpm-lock.yaml, apps/docs/package.json, apps/site/package.json, tools/file-upload-evidence/package.json
       Accept: only selected existing dependency versions change → read-only controller verdict; install/build/types and affected runtime checks pass with held bridge versions preserved → read-only controller verdict
@@ -40,6 +40,14 @@
       Scope: packages/styles/components/navigation/navigation.css, packages/react/src/workspace-switcher/workspace-switcher.browser.test.tsx, tools/parity/parity.mjs, .changeset/workspace-switcher-contrast.md
       Accept: actual light/dark rest/hover/focus axe coverage passes with original-CSS regression RED → controller proof; local additive change preserves handoff and parity → controller proof
 
+- [ ] 10. Diagnose and resolve measured incumbent focus-size overages — performance/critical
+      Scope: .batuta/v1-focus-size-diagnosis.md, .batuta/specs/*.md; product correction scope must follow measured diagnosis
+      Accept: nine overages attributed using same-tool old/new graph and source builds → controller proof; a reviewed bounded optimization or justified measured budget decision preserves all approved focus behavior → controller proof
+
+- [ ] 11. Repair existing Dropdown keyboard navigation contracts — react/medium
+      Scope: packages/react/src/dropdown/dropdown.tsx, packages/react/src/dropdown/dropdown.browser.test.tsx, packages/react/src/dropdown/dropdown.ssr.test.ts, .changeset/dropdown-keyboard-contract.md
+      Accept: current-source regression proves roving tabindex/typeahead and consumer-first cancellation → native/browser/SSR proof; current public variants and native Tab behavior preserved → controller proof
+
 ## Decisions and context
 The maintainer authorized continuing until completion on September 9. This operational continuation uses the previously approved incumbent direction and returnFocusTo contract; no redundant approval is required. This plan is the current executable tranche, not a claim that four tasks alone qualify V1. Subsequent concrete repair and qualification slices will be appended as diagnosis establishes their scope. Keep all 11 P1 components and all 23 required acceptance cells unqualified until bound evidence exists. Public release/versioning and remote writes remain separate actions. Never change Colima configuration or operate Docker/Colima. No foreign service changes. Existing dependency maintenance is being assessed at the maintainer's request; no new foundations or runtime libraries. Main checkout is managed dirt; feature work remains in the stabilization worktree. Keep raw experimental evidence immutable.
 
@@ -52,3 +60,5 @@ The maintainer authorized continuing until completion on September 9. This opera
 **Task 7.** First selected batch is the11 tooling/docs updates in the disposition follow-up. Also hold lucide-react, Alpine/CSP and tsdown with their current artifact/consumer fixture baseline. No published package manifest changes and no new changeset for private docs/development-only updates. The worktree now has its own current frozen dependencies, installed offline with exact pnpm11.13.1.
 
 **Task 9 precedes Task 7.** The current-library React baseline at87f7775 is761/763 with only two WorkspaceSwitcher contrast failures. Correct the actual defect and empty-value dark fixture before dependency comparison. Guarded GLM scout required one retry after external evidence-file access was rejected; retry used controller-supplied evidence inline and completed unchanged. No fixture movement that hides hover failures.
+
+**Task 7 completed locally.** Selected11 versions installed/generated with pinned pnpm11.13.1, current tests/builds/types/lints and export checks pass.453 generated public files unchanged; all9 React size-limit failures identical across old/new library graphs. Those measured source overages are Task10, not waived by this maintenance approval. All remaining P1/packed Linux requirements remain open.
