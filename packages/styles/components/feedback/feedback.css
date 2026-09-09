@@ -593,3 +593,23 @@
     animation: none;
   }
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): React Tooltip owns a bounded hover lifecycle.
+   Its open state remains visible during the 100ms leave grace rather than relying on CSS `:hover`,
+   and only that open pseudo-surface participates in pointer hit testing. */
+.lyra-tooltip[data-state='open']::after {
+  opacity: 1;
+  pointer-events: auto;
+}
+.lyra-tooltip[data-state='open']:not(:hover):not(:focus-within)::after {
+  transform: translateX(-50%) translateY(0);
+}
+.lyra-tooltip--bottom[data-state='open']:not(:hover):not(:focus-within)::after {
+  transform: translateX(-50%) translateY(0);
+}
+.lyra-tooltip--left[data-state='open']:not(:hover):not(:focus-within)::after {
+  transform: translateY(-50%) translateX(0);
+}
+.lyra-tooltip--right[data-state='open']:not(:hover):not(:focus-within)::after {
+  transform: translateY(-50%) translateX(0);
+}

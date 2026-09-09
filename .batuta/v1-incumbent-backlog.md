@@ -172,3 +172,9 @@ Current commands now have one roving tab stop, rendered-label typeahead with500m
 Native Tab diagnosis corrected the external After fixture to explicitly declare a keyboard stop: macOS WebKit skipped its implicit button even with no menu close. No production forced focus or Tab delay was added. See v1-dropdown-keyboard-verification.md for failed attempts, original-source RED and final evidence.
 
 New broad source baseline: full Firefox679/679 passed; WebKit673/679 exposes6 current focus failures in DatePicker, DateRangePicker, TimePicker, Tooltip and2FileUpload cases. These need diagnosis before being called runtime defects. The Tooltip delay/ownership contract and all other earlier P1/packed Linux requirements remain open. No ledger qualification or publication.
+
+## Completed current WebKit baseline tranche
+All six baseline failures are closed. At e287941 full local React Chromium/SSR780, WebKit683 and Firefox683 pass. Three fixture-only corrections retain strict focus assertions and negative controls; TimePicker adds only explicit option tab stops, preserving its existing keyboard sequence. See v1-focus-tranche-verification.md. Wider Tooltip timing/ownership and all remaining P1/packed release requirements remain open.
+
+## Completed Tooltip timing/ownership slice
+The incumbent Tooltip now implements per-document500/300/100ms timing, combined focus/hover and actual pseudo-bubble retention, topmost Escape/cancellation and stale-target cleanup. Native42+actions6 and full React786/689/689 pass; final independent GLM3/3 DONE/unchanged guard. See v1-tooltip-timing-verification.md for failed attempts, causal proofs and limits. Tooltip1954B exceeds1500B, adding one to9previous size overages; no budget waiver. Broader clipping/assistive-technology/cross-family and all packed release gates remain open. Next selected-workspace entry defects are reproduced independently in both stacks; see v1-workspace-entry-diagnosis.md.

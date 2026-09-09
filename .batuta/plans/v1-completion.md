@@ -95,3 +95,19 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 - [x] 16. Preserve the current TimePicker option tab sequence explicitly — react/low
       Scope: packages/react/src/time-picker/time-picker.tsx, packages/react/src/time-picker/time-picker.browser.test.tsx, .changeset/time-picker-keyboard-stops.md
       Accept: native Tab reaches the existing first option across engines, existing arrows/Home/End and keyboard activation work, selection closes normally; no API/dependency/variant change, measure the bounded size delta without changing budgets.
+
+- [x] 17. Reproduce and specify the incumbent Tooltip timing/ownership gap — verification/design critical with guarded GLM scout
+      Scope: .batuta/v1-tooltip-timing-diagnosis.md, .batuta/specs/2026-09-09-tooltip-timing-design.md, controller-owned native artifacts
+      Accept: pinned native clock/input establishes actual cold/leave/combined/topmost/bubble behavior; minimal current-owner correction preserves public API, real content hoverability, description and cleanup without dependencies.
+
+- [x] 18. Repair incumbent Tooltip timing and ownership — react/critical (high initial/retry, controller completion)
+      Depends on: 17
+      Scope: Tooltip source/browser/SSR tests, optional internal/tooltip-coordinator.ts, additive feedback.css/parity, React+styles patch changeset
+      Accept: specs/2026-09-09-tooltip-timing-design.md criteria1–3, controlled clocks/native ownership/cleanup, public compatibility and measured size; independent review before commit.
+
+- [ ] 19. Focus the selected React workspace on every supported opening key — react/low
+      Scope: packages/react/src/workspace-switcher/workspace-switcher.tsx, colocated browser test, .changeset/workspace-react-selected-entry.md
+      Accept: native click/Enter/Space/ArrowDown/ArrowUp enters selected middle workspace; preserve post-open navigation, callbacks, create behavior and fallback; no API/dependency change.
+- [ ] 20. Prefer the served selected Alpine workspace on arrow opening — alpine/low
+      Scope: packages/alpine/src/workspace-switcher.ts, colocated browser test, .changeset/workspace-alpine-selected-entry.md
+      Accept: supported opening methods focus served selected workspace; retain no-selection arrow fallback, consumer-owned aria-selected, event payload/ordering and cleanup; no new API/dependency.
