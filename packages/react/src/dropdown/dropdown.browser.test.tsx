@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
+import { useState } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { Dropdown } from './index';
@@ -108,12 +111,364 @@ describe('Dropdown', () => {
     expect(document.activeElement).toBe(reopened[1]);
   });
 
+  it('keeps one roving command tab stop and updates it for keyboard and direct focus', async () => {
+    const { container } = await render(<Dropdown trigger="Actions" items={items} defaultOpen />);
+    const commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+
+    expect([...commands].filter((command) => command.tabIndex === 0)).toHaveLength(1);
+    expect(commands[0].tabIndex).toBe(0);
+    expect(commands[1].tabIndex).toBe(-1);
+
+    commands[1].focus();
+    await vi.waitFor(() => expect(commands[1].tabIndex).toBe(0));
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(commands[0]);
+    expect(commands[0].tabIndex).toBe(0);
+    expect(commands[1].tabIndex).toBe(-1);
+  });
+
+  it('finds command labels with typeahead without searching icons or group labels', async () => {
+    const { container } = await render(
+      <Dropdown
+        trigger="Actions"
+        defaultOpen
+        items={[
+          { type: 'label', label: 'Archive group' },
+          { id: 'edit', icon: <span>Archive icon</span>, label: <span>Edit</span> },
+          { id: 'archive', label: <strong>Archive</strong> },
+          { id: 'add', label: 'Add' },
+          { id: 'apply', label: 'Apply' },
+          { id: 'angstrom', label: 'Ångström' },
+        ]}
+      />,
+    );
+    let commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    commands[0].focus();
+
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+    await userEvent.keyboard('p');
+    expect(document.activeElement).toBe(commands[3]);
+
+    await userEvent.keyboard('{Escape}{Enter}');
+    commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    commands[3].focus();
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[2]);
+  });
+
+  it('resets the typeahead prefix after 500ms', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = await render(
+        <Dropdown
+          trigger="Actions"
+          defaultOpen
+          items={[
+            { id: 'edit', label: 'Edit' },
+            { id: 'archive', label: 'Archive' },
+          ]}
+        />,
+      );
+      const commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+      commands[0].focus();
+
+      commands[0].dispatchEvent(
+        new window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'a' }),
+      );
+      await Promise.resolve();
+      expect(document.activeElement).toBe(commands[1]);
+
+      await vi.advanceTimersByTimeAsync(500);
+      commands[1].dispatchEvent(
+        new window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'e' }),
+      );
+      await Promise.resolve();
+      expect(document.activeElement).toBe(commands[0]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps an unmatched prefix local to the current menu session', async () => {
+    const { container } = await render(
+      <Dropdown
+        trigger="Actions"
+        defaultOpen
+        items={[
+          { id: 'edit', label: 'Edit' },
+          { id: 'archive', label: 'Archive' },
+        ]}
+      />,
+    );
+    const trigger = container.querySelector<HTMLElement>('[role=button]')!;
+    let commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+
+    commands[0].focus();
+    await userEvent.keyboard('z');
+    expect(document.activeElement).toBe(commands[0]);
+
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[0]);
+    await userEvent.click(trigger);
+    await userEvent.click(trigger);
+    commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    commands[0].focus();
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+  });
+
+  it('clears a partial prefix on reopen and matches synthetic Unicode on the live menu', async () => {
+    const { container } = await render(
+      <Dropdown
+        trigger="Actions"
+        defaultOpen
+        items={[
+          { id: 'edit', label: 'Edit' },
+          { id: 'archive', label: 'Archive' },
+          { id: 'angstrom', label: 'Ångström' },
+        ]}
+      />,
+    );
+    const trigger = container.querySelector<HTMLElement>('[role=button]')!;
+    let commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+
+    commands[0].focus();
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Enter}');
+    commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    commands[0].focus();
+    await userEvent.keyboard('r');
+    expect(document.activeElement).toBe(commands[0]);
+
+    await userEvent.keyboard('{Escape}{Enter}');
+    commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    commands[0].focus();
+    // Synthetic: Playwright's keyboard API does not emit Unicode `å` keydown events.
+    commands[0].dispatchEvent(
+      new window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'å' }),
+    );
+    await vi.waitFor(() => expect(document.activeElement).toBe(commands[2]));
+    expect(document.activeElement).not.toBe(trigger);
+  });
+
+  it('does not typeahead on modifier or composition input', async () => {
+    const { container } = await render(
+      <Dropdown
+        trigger="Actions"
+        defaultOpen
+        items={[
+          { id: 'edit', label: 'Edit' },
+          { id: 'archive', label: 'Archive' },
+        ]}
+      />,
+    );
+    const command = container.querySelector<HTMLButtonElement>('[role=menuitem]')!;
+    command.focus();
+
+    for (const options of [
+      { ctrlKey: true },
+      { altKey: true },
+      { metaKey: true },
+      { isComposing: true },
+    ]) {
+      command.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'a',
+          ...options,
+        }),
+      );
+      expect(document.activeElement).toBe(command);
+    }
+  });
+
+  it('maintains exactly one roving owner through empty and changed command collections', async () => {
+    const { container, rerender } = await render(
+      <Dropdown
+        trigger="Actions"
+        defaultOpen
+        items={[
+          { id: 'edit', label: 'Edit' },
+          { type: 'separator' },
+          { id: 'archive', label: 'Archive' },
+        ]}
+      />,
+    );
+    let commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    commands[1].focus();
+    await vi.waitFor(() =>
+      expect([...commands].map((command) => command.tabIndex)).toEqual([-1, 0]),
+    );
+
+    await rerender(<Dropdown trigger="Actions" defaultOpen items={[]} />);
+    expect(container.querySelectorAll('[role=menuitem]')).toHaveLength(0);
+    await rerender(
+      <Dropdown
+        trigger="Actions"
+        defaultOpen
+        items={[
+          { id: 'archive', label: 'Archive' },
+          { type: 'label', label: 'Actions' },
+          { id: 'edit', label: 'Edit' },
+        ]}
+      />,
+    );
+    commands = container.querySelectorAll<HTMLButtonElement>('[role=menuitem]');
+    expect([...commands].filter((command) => command.tabIndex === 0)).toHaveLength(1);
+    expect([...commands].map((command) => command.tabIndex)).toEqual([-1, 0]);
+  });
+
+  it('keeps capture, child cancellation, and root bubble callbacks in native order', async () => {
+    const calls: string[] = [];
+    const onSelect = vi.fn();
+    const onClickCapture = vi.fn(() => calls.push('capture-click'));
+    const onClick = vi.fn((event: MouseEvent<HTMLSpanElement>) => {
+      calls.push('bubble-click');
+      expect(event.currentTarget).toBe(document.querySelector('.lyra-dropdown'));
+      expect(event.eventPhase).toBe(Event.BUBBLING_PHASE);
+      expect(event.defaultPrevented).toBe(true);
+    });
+    const { container } = await render(
+      <Dropdown
+        trigger="Actions"
+        items={[
+          {
+            id: 'edit',
+            label: 'Edit',
+            onSelect,
+          },
+        ]}
+        defaultOpen
+        onClickCapture={onClickCapture}
+        onClick={onClick}
+      />,
+    );
+    const command = container.querySelector<HTMLButtonElement>('[role=menuitem]')!;
+    command.addEventListener('click', (event) => {
+      calls.push('child-click');
+      event.preventDefault();
+    });
+    await userEvent.click(command);
+    expect(calls).toEqual(['capture-click', 'child-click', 'bubble-click']);
+    expect(onClickCapture).toHaveBeenCalledOnce();
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=menu]')).not.toBeNull();
+  });
+
+  it('lets the root cancel navigation, Tab, Escape, and keyboard activation once', async () => {
+    const onKeyDown = vi.fn((event: KeyboardEvent<HTMLSpanElement>) => {
+      expect(event.currentTarget).toBe(document.querySelector('.lyra-dropdown'));
+      expect(event.eventPhase).toBe(Event.BUBBLING_PHASE);
+      event.preventDefault();
+    });
+    const onClick = vi.fn((event: MouseEvent<HTMLSpanElement>) => event.preventDefault());
+    const onSelect = vi.fn();
+    const { container } = await render(
+      <Dropdown
+        trigger="Actions"
+        items={[
+          { id: 'edit', label: 'Edit', onSelect },
+          { id: 'archive', label: 'Archive' },
+        ]}
+        defaultOpen
+        onKeyDown={onKeyDown}
+        onClick={onClick}
+      />,
+    );
+    const command = container.querySelector<HTMLButtonElement>('[role=menuitem]')!;
+    command.focus();
+
+    await userEvent.keyboard('{ArrowDown}{Tab}{Escape}{Enter}');
+    expect(onKeyDown).toHaveBeenCalledTimes(4);
+    expect(onClick).not.toHaveBeenCalled();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=menu]')).not.toBeNull();
+    expect(document.activeElement).toBe(command);
+
+    await userEvent.click(command);
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=menu]')).not.toBeNull();
+  });
+
+  it('selects the clicked command when the consumer synchronously reorders the items', async () => {
+    const onAlpha = vi.fn();
+    const onBeta = vi.fn();
+    function Example() {
+      const [commands, setCommands] = useState([
+        { id: 'alpha', label: 'Alpha', onSelect: onAlpha },
+        { id: 'beta', label: 'Beta', onSelect: onBeta },
+      ]);
+      return (
+        <Dropdown
+          defaultOpen
+          trigger="Actions"
+          items={commands}
+          onClick={() => flushSync(() => setCommands((current) => [...current].reverse()))}
+        />
+      );
+    }
+    const { container } = await render(<Example />);
+    await userEvent.click(container.querySelectorAll<HTMLButtonElement>('[role=menuitem]')[1]);
+    expect(onBeta).toHaveBeenCalledOnce();
+    expect(onAlpha).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=menu]')).toBeNull();
+  });
+
+  it.each(['{Enter}', ' '])('activates a command once with %s and closes normally', async (key) => {
+    const onSelect = vi.fn();
+    const { container } = await render(
+      <Dropdown defaultOpen trigger="Actions" items={[{ id: 'edit', label: 'Edit', onSelect }]} />,
+    );
+    container.querySelector<HTMLButtonElement>('[role=menuitem]')!.focus();
+    await userEvent.keyboard(key);
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(container.querySelector('[role=menu]')).toBeNull();
+    expect(document.activeElement).toBe(container.querySelector('[role=button]'));
+  });
+
+  it('cancels the pending typeahead timer when unmounted', async () => {
+    vi.useFakeTimers();
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    try {
+      const { container, unmount } = await render(
+        <Dropdown trigger="Actions" defaultOpen items={[{ id: 'archive', label: 'Archive' }]} />,
+      );
+      const command = container.querySelector<HTMLButtonElement>('[role=menuitem]')!;
+      command.focus();
+      command.dispatchEvent(
+        new window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'a' }),
+      );
+      const timerIndex = setTimeoutSpy.mock.calls.findIndex(([, delay]) => delay === 500);
+      expect(timerIndex).toBeGreaterThanOrEqual(0);
+      const timer = setTimeoutSpy.mock.results[timerIndex].value;
+      await unmount();
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(timer);
+      await vi.advanceTimersByTimeAsync(500);
+    } finally {
+      setTimeoutSpy.mockRestore();
+      clearTimeoutSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
   it('selects commands, restores trigger focus, and lets Tab leave the menu', async () => {
     const onSelect = vi.fn();
     const { container } = await render(
       <>
         <Dropdown trigger="Actions" items={[{ id: 'edit', label: 'Edit', onSelect }]} />
-        <button type="button">After</button>
+        {/* WebKit skips implicit button tab stops; declare the native destination explicitly. */}
+        <button type="button" tabIndex={0}>
+          After
+        </button>
       </>,
     );
     const trigger = container.querySelector<HTMLElement>('[role=button]')!;
@@ -129,6 +484,36 @@ describe('Dropdown', () => {
     await userEvent.keyboard('{Tab}');
     expect(container.querySelector('[role=menu]')).toBeNull();
     expect(document.activeElement).not.toBe(reopened);
+  });
+
+  it('lets Tab and Shift+Tab continue to their native adjacent controls after closing', async () => {
+    const { container } = await render(
+      <>
+        <button type="button">Before</button>
+        <Dropdown trigger="Actions" items={[{ id: 'edit', label: 'Edit' }]} />
+        {/* WebKit skips implicit button tab stops; declare the native destination explicitly. */}
+        <button type="button" tabIndex={0}>
+          After
+        </button>
+      </>,
+    );
+    const buttons = container.querySelectorAll<HTMLButtonElement>('button');
+    const before = buttons[0]!;
+    const trigger = container.querySelector<HTMLElement>('[role=button]')!;
+    const after = buttons[1]!;
+
+    await userEvent.click(trigger);
+    let command = container.querySelector<HTMLButtonElement>('[role=menuitem]')!;
+    command.focus();
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(after);
+
+    await userEvent.click(trigger);
+    command = container.querySelector<HTMLButtonElement>('[role=menuitem]')!;
+    command.focus();
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(document.activeElement).toBe(trigger);
+    expect(document.activeElement).not.toBe(before);
   });
 
   it('flips the menu above the trigger instead of scrolling the page when there is no room below', async () => {

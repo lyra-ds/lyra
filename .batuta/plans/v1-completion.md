@@ -44,7 +44,7 @@
       Scope: .batuta/v1-focus-size-diagnosis.md, .batuta/specs/*.md; product correction scope must follow measured diagnosis
       Accept: nine overages attributed using same-tool old/new graph and source builds → controller proof; a reviewed bounded optimization or justified measured budget decision preserves all approved focus behavior → controller proof
 
-- [ ] 11. Repair existing Dropdown keyboard navigation contracts — react/medium
+- [x] 11. Repair existing Dropdown keyboard navigation contracts — react/critical (medium + high retries, controller completion)
       Scope: packages/react/src/dropdown/dropdown.tsx, packages/react/src/dropdown/dropdown.browser.test.tsx, packages/react/src/dropdown/dropdown.ssr.test.ts, .changeset/dropdown-keyboard-contract.md
       Accept: current-source regression proves roving tabindex/typeahead and consumer-first cancellation → native/browser/SSR proof; current public variants and native Tab behavior preserved → controller proof
 
@@ -62,3 +62,22 @@ The maintainer authorized continuing until completion on September 9. This opera
 **Task 9 precedes Task 7.** The current-library React baseline at87f7775 is761/763 with only two WorkspaceSwitcher contrast failures. Correct the actual defect and empty-value dark fixture before dependency comparison. Guarded GLM scout required one retry after external evidence-file access was rejected; retry used controller-supplied evidence inline and completed unchanged. No fixture movement that hides hover failures.
 
 **Task 7 completed locally.** Selected11 versions installed/generated with pinned pnpm11.13.1, current tests/builds/types/lints and export checks pass.453 generated public files unchanged; all9 React size-limit failures identical across old/new library graphs. Those measured source overages are Task10, not waived by this maintenance approval. All remaining P1/packed Linux requirements remain open.
+
+## Remaining execution order and qualification boundary
+After Task11, each item below requires a fresh bounded reproducer before an implementation brief. Historical source allegations are not release failures by themselves. Keep corrections in current owners, reuse existing hooks and styles, and introduce no additional runtime dependency.
+
+1. Tooltip: current trigger/content ownership and approved focus-immediate, hover500ms, document-warm0ms/grace300ms, pointer-transition100ms, Escape and stale-timer cleanup contract. Primary owners packages/react/src/tooltip/tooltip.tsx and colocated browser/SSR tests; any additional internal timing owner needs an explicit scoped brief. Qualify real focus/hover ownership and deterministic clock boundaries; preserve semantic trigger, description IDs and native coarse-pointer action.
+2. WorkspaceSwitcher: reproduce selected-option entry, create-action semantics and consumer cancellation separately for existing React/Alpine support. Scope each stack independently; do not imply cross-stack equivalence. Contrast is already closed and must remain passing.
+3. Remaining modal and anchored ownership: prove one concrete initial-focus, sibling/nested, inert or Popover child-dismissal failure at a time. Reuse current focus/portal/presence/scroll-lock owners. Existing returnFocusTo and repaired native Tab/Escape behavior are mandatory regressions. Any shared coordination proposal must explain its minimum ownership and teardown before implementation.
+4. CreateWorkspaceDialog lifecycle: author a concrete compatibility design in .batuta/specs/ for the existing synchronous onCreate surface and normative operationId/AbortSignal/result state lifecycle before changing that public API. Retain Dialog composition and consumer-owned creation effects. Verify duplicate submit, invalid input, abort, stale resolution, error/retry and accepted-close behavior.
+5. Tabs and DataTable: settle actual content ownership and semantic keyboard row actions using the current public models. Public migration decisions need a concrete Batuta design; no enterprise grid or speculative variants. Selection and command activation must have separate behavioral proofs.
+6. Alpine BottomSheet: establish fresh browser focus/teardown evidence; historical axe/focus allegations remain unconfirmed until reproduced. Scope any repair only from that result.
+7. Final candidate: rebuild exact final artifacts; resolve Task10 using the specified same-pipeline packed comparison without silently refreshing limits or hashes. Bind package/version/file identities to evidence and run available React18/19, browser, SSR/hydration, types, security, export/consumer and bundle gates. A check on source builds is not a check on packed release artifacts.
+
+The required pinned Linux/browser matrix cannot be substituted by local macOS Chromium/WebKit runs. Docker/Colima operations and remote workflow dispatch/publication are outside current authorization. Prepare everything locally that can be verified; retain unavailable cells as pending and identify the exact reviewable final remote action if one is needed. Existing Dependabot PRs remain open remotely; local adoption is not a merge. Do not label the11P1 components or23acceptance cells qualified before their bound evidence exists.
+
+- [ ] 12. Diagnose six current WebKit focus failures — verification/critical, read-only scout first
+      Scope: current test evidence and the existing DatePicker, DateRangePicker, TimePicker, Tooltip and FileUpload owners; correction scope follows each reproduced cause.
+      Accept: distinguish actual native input behavior and fixture assumptions from product regressions with a bounded reproducer; assign independently verifiable repairs without weakening exact focus assertions or introducing dependencies.
+
+**Task 11 completed locally.** Final full React Chromium/SSR779/779; focused Chromium/SSR23, WebKit22 and Firefox22; compiled27 and synchronous consumer-reorder regression PASS. Dropdown remains within2kB. Independent GLM3/3 DONE/no findings/unchanged guard. Final source has no new runtime dependency or public API. Broader source baselines discovered6 separate WebKit failures (673/679) while full Firefox679/679 passed before the final Dropdown identity correction; Task12 diagnoses those exact failures before changing owners.

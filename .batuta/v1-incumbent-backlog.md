@@ -165,3 +165,10 @@ other P1 and packed Firefox/Linux requirements remain open; no ledger promotion.
 BottomSheet shared return focus and actual invoking examples are verified in88c5211/899ed10; public JSDoc eligibility clarified inbda7a00. Native6 and actual examples12 pass; focused Chromium/SSR24 and WebKit21 pass. The original two BottomSheet pointer-return failures are closed.
 
 The experimental checkout freeze was replaced by its actual dependency-isolation boundary in1b7629e, with shallow-clone maintenance/prohibited-dependency regressions. PR220 action6.1.0 adopted locally in87f7775, pnpm unchanged11.13.1. WorkspaceSwitcher light hover contrast and actual-dark fixture now repaired; full React Chromium/SSR765/765. Its create-option semantics and remaining layer/Alpine obligations remain open. These completions do not qualify all11P1 components or23acceptance cells.
+
+## Completed Dropdown keyboard slice — 2026-09-09
+Current commands now have one roving tab stop, rendered-label typeahead with500ms reset and consumer-first cancellation under normal root event bubbling. Clicked command identity survives synchronous consumer reordering. Scope stayed within Dropdown source/tests and a React patch changeset; no API, dependency or styling addition. Final full Chromium/SSR779, focused23/22/22 across Chromium/SSR-WebKit-Firefox, compiled27 plus reorder proof pass, at the unchanged2kB budget. Independent final GLM3/3 DONE, no findings and unchanged guard.
+
+Native Tab diagnosis corrected the external After fixture to explicitly declare a keyboard stop: macOS WebKit skipped its implicit button even with no menu close. No production forced focus or Tab delay was added. See v1-dropdown-keyboard-verification.md for failed attempts, original-source RED and final evidence.
+
+New broad source baseline: full Firefox679/679 passed; WebKit673/679 exposes6 current focus failures in DatePicker, DateRangePicker, TimePicker, Tooltip and2FileUpload cases. These need diagnosis before being called runtime defects. The Tooltip delay/ownership contract and all other earlier P1/packed Linux requirements remain open. No ledger qualification or publication.
