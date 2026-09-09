@@ -164,7 +164,12 @@ describe('WorkspaceSwitcher', () => {
     await userEvent.keyboard('{Home}');
     expect(document.activeElement).toBe(options[0]);
     await userEvent.keyboard('{End}');
-    expect(document.activeElement).toBe(options[2]);
+    expect(document.activeElement).toBe(options[1]);
+    await userEvent.keyboard('{Tab}');
+    const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
+    expect(document.activeElement).toBe(create);
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(document.activeElement).toBe(options[1]);
     await userEvent.keyboard('{Escape}');
     expect(container.querySelector('[role=listbox]')).toBeNull();
     expect(document.activeElement).toBe(trigger);
@@ -176,10 +181,155 @@ describe('WorkspaceSwitcher', () => {
     expect(document.activeElement).toBe(trigger);
 
     await userEvent.keyboard('{Space}');
-    const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
-    await userEvent.click(create);
+    await userEvent.keyboard('{End}');
+    await userEvent.keyboard('{Tab}');
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!);
     expect(onCreate).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it('keeps Create outside the labelled listbox with one roving workspace tab stop', async () => {
+    const { container } = await render(
+      <WorkspaceSwitcher workspaces={workspaces} onCreate={() => {}} />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    const listbox = container.querySelector<HTMLElement>('[role=listbox]')!;
+    const options = Array.from(listbox.querySelectorAll<HTMLButtonElement>('[role=option]'));
+    const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
+
+    expect(listbox.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(options).toHaveLength(2);
+    expect(options.map((option) => option.tabIndex)).toEqual([0, -1]);
+    expect(document.activeElement).toBe(options[0]);
+    expect(trigger.getAttribute('tabindex')).toBe('0');
+    expect(create.getAttribute('tabindex')).toBe('0');
+    expect(create.getAttribute('role')).toBeNull();
+    expect(create.getAttribute('aria-selected')).toBeNull();
+    expect(listbox.contains(create)).toBe(false);
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(options[1]);
+    expect(options.map((option) => option.tabIndex)).toEqual([-1, 0]);
+  });
+
+  it('activates workspace and create actions once from their native controls', async () => {
+    const onChange = vi.fn();
+    const onCreate = vi.fn();
+    const { container } = await render(
+      <WorkspaceSwitcher workspaces={workspaces} onChange={onChange} onCreate={onCreate} />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledWith('acme', workspaces[0]);
+
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{End}');
+    await userEvent.keyboard('{Tab}');
+    await userEvent.keyboard('{Space}');
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it('keeps native entry and exit behavior for create, no-create, and empty popovers', async () => {
+    const { container } = await render(
+      <>
+        <button type="button" tabIndex={0}>
+          Before
+        </button>
+        <WorkspaceSwitcher workspaces={workspaces} onCreate={() => {}} />
+        <button type="button" tabIndex={0}>
+          After
+        </button>
+      </>,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+    const after = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent === 'After',
+    )!;
+
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{End}');
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(container.querySelector('.lyra-wssw__create'));
+    await userEvent.keyboard('{Tab}');
+    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(document.activeElement).toBe(after);
+
+    await userEvent.click(trigger);
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+
+    await cleanup();
+    const empty = await render(<WorkspaceSwitcher workspaces={[]} onCreate={() => {}} />);
+    const emptyTrigger = empty.container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+    emptyTrigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(empty.container.querySelector('.lyra-wssw__create'));
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(empty.container.querySelector('[role=listbox]')).toBeNull();
+    expect(document.activeElement).toBe(emptyTrigger);
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(empty.container.querySelector('.lyra-wssw__create'));
+    await userEvent.keyboard('{Escape}');
+    expect(document.activeElement).toBe(emptyTrigger);
+
+    await cleanup();
+    const noCreate = await render(<WorkspaceSwitcher workspaces={workspaces} />);
+    const noCreateTrigger =
+      noCreate.container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+    noCreateTrigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{Tab}');
+    expect(noCreate.container.querySelector('[role=listbox]')).toBeNull();
+  });
+
+  it('keeps focus on the trigger when an entirely empty popover opens and closes', async () => {
+    const { container } = await render(<WorkspaceSwitcher workspaces={[]} />);
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    await userEvent.keyboard('{Escape}');
+    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('keeps one valid roving option when workspaces reorder', async () => {
+    const { container, rerender } = await render(
+      <WorkspaceSwitcher workspaces={workspaces} current="acme" />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    const originalOptions = container.querySelectorAll<HTMLButtonElement>('[role=option]');
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(originalOptions[1]);
+    expect(Array.from(originalOptions, (option) => option.tabIndex)).toEqual([-1, 0]);
+
+    await rerender(
+      <WorkspaceSwitcher workspaces={[workspaces[1], workspaces[0]]} current="lyra" defaultOpen />,
+    );
+
+    const reorderedOptions = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[role=option]'),
+    );
+    expect(reorderedOptions[0]).toBe(originalOptions[1]);
+    expect(document.activeElement).toBe(reorderedOptions[0]);
+    expect(reorderedOptions.map((option) => option.tabIndex)).toEqual([0, -1]);
   });
 
   it('opens to the selected middle workspace with Enter, Space, and both arrows', async () => {
@@ -204,11 +354,10 @@ describe('WorkspaceSwitcher', () => {
       trigger.focus();
       await userEvent.keyboard(key);
       const options = container.querySelectorAll<HTMLButtonElement>('[role=option]');
-      expect(options).toHaveLength(4);
+      expect(options).toHaveLength(3);
       expect(Array.from(options, (option) => option.getAttribute('aria-selected'))).toEqual([
         'false',
         'true',
-        'false',
         'false',
       ]);
       const selectedOption = container.querySelector<HTMLButtonElement>(
@@ -282,6 +431,10 @@ describe('WorkspaceSwitcher', () => {
 
     cancelDefaults = false;
     await userEvent.keyboard('{End}');
+    expect(document.activeElement).toBe(
+      container.querySelector<HTMLButtonElement>('[role=option]:last-of-type'),
+    );
+    await userEvent.keyboard('{Tab}');
     const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
     expect(document.activeElement).toBe(create);
     cancelDefaults = true;
@@ -301,6 +454,7 @@ describe('WorkspaceSwitcher', () => {
       'Escape',
       'Tab',
       'End',
+      'Tab',
       ' ',
     ]);
     expect(onChange).not.toHaveBeenCalled();

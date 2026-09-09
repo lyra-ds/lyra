@@ -42,7 +42,7 @@
 
 - [ ] 10. Diagnose and resolve measured incumbent focus-size overages — performance/critical
       Scope: .batuta/v1-focus-size-diagnosis.md, .batuta/specs/*.md; product correction scope must follow measured diagnosis
-      Accept: original nine overages plus the measured Tooltip delta attributed using same-tool old/new graph and source builds → controller proof; a reviewed bounded optimization or justified measured budget decision preserves all approved focus behavior → controller proof
+      Accept: original nine overages plus measured Tooltip/WorkspaceSwitcher deltas attributed using same-tool old/new graph and source builds → controller proof; a reviewed bounded optimization or justified measured budget decision preserves all approved focus behavior → controller proof
 
 - [x] 11. Repair existing Dropdown keyboard navigation contracts — react/critical (medium + high retries, controller completion)
       Scope: packages/react/src/dropdown/dropdown.tsx, packages/react/src/dropdown/dropdown.browser.test.tsx, packages/react/src/dropdown/dropdown.ssr.test.ts, .changeset/dropdown-keyboard-contract.md
@@ -116,7 +116,19 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Scope: packages/react/src/workspace-switcher/workspace-switcher.tsx, colocated browser test, .changeset/workspace-react-keyboard-cancellation.md
       Accept: original root event delivered once before defaults; preventDefault stops opening/navigation/dismissal, stopPropagation alone preserves defaults; native/browser/SSR and compatibility proof, no API change.
 
-- [ ] 22. Separate the existing React creation command from workspace selection — react/high
+- [x] 22. Separate the existing React creation command from workspace selection — react/high
       Depends on: 21
       Scope: WorkspaceSwitcher source/browser/SSR, .changeset/workspace-create-command.md
       Accept: specs/2026-09-09-workspace-command-design.md; native command semantics, roving/native Tab, empty-state/activation and cancellation; unchanged API/styles and measured budget.
+
+- [ ] 23. Migrate public workspace documentation to verified behavior — documentation/low
+      Depends on: 22
+      Scope: apps/docs/content/docs/{en,pt-BR}/components/workspace-switcher.mdx
+      Accept: selected entry, separate React creation command/native Tab accurately described; actual Alpine selection-only bindings/data-id/ARIA example executes and no unsupported creation claim remains.
+- [ ] 24. Honor consumer-first React workspace click cancellation — react/medium
+      Depends on: 23
+      Scope: WorkspaceSwitcher source/browser, .changeset/workspace-click-cancellation.md
+      Accept: original root click precedes defaults, prevents opening/domain effects; stable clicked identity under synchronous consumer reorder; native/browser/static proof, no API change.
+- [ ] 25. Design and repair native Alpine modal Tab containment — alpine/high after critical design
+      Scope: existing internal/focus-trap.ts and bounded direct-consumer tests, Alpine patch changeset; exact brief follows the guarded scout.
+      Accept: actual non-edge forward/reverse Tabs remain contained with native intermediate navigation, cancellation and complete teardown; current return-focus pointer issue stays separate.
