@@ -76,7 +76,7 @@ After Task11, each item below requires a fresh bounded reproducer before an impl
 
 The required pinned Linux/browser matrix cannot be substituted by local macOS Chromium/WebKit runs. Docker/Colima operations and remote workflow dispatch/publication are outside current authorization. Prepare everything locally that can be verified; retain unavailable cells as pending and identify the exact reviewable final remote action if one is needed. Existing Dependabot PRs remain open remotely; local adoption is not a merge. Do not label the11P1 components or23acceptance cells qualified before their bound evidence exists.
 
-- [ ] 12. Diagnose six current WebKit focus failures — verification/critical, read-only scout first
+- [x] 12. Diagnose six current WebKit focus failures — verification/critical, read-only scout first
       Scope: current test evidence and the existing DatePicker, DateRangePicker, TimePicker, Tooltip and FileUpload owners; correction scope follows each reproduced cause.
       Accept: distinguish actual native input behavior and fixture assumptions from product regressions with a bounded reproducer; assign independently verifiable repairs without weakening exact focus assertions or introducing dependencies.
 
@@ -92,6 +92,6 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 - [x] 15. Establish real focus ownership in FileUpload removal fixtures — verification/low
       Scope: packages/react/src/file-upload/file-upload.browser.test.tsx
       Accept: focused keyboard removal preserves next/previous/input fallback only after controlled commit; moving focus outside prevents stealing; no runtime change and no permissive assertions.
-- [ ] 16. Preserve the current TimePicker option tab sequence explicitly — react/low
+- [x] 16. Preserve the current TimePicker option tab sequence explicitly — react/low
       Scope: packages/react/src/time-picker/time-picker.tsx, packages/react/src/time-picker/time-picker.browser.test.tsx, .changeset/time-picker-keyboard-stops.md
       Accept: native Tab reaches the existing first option across engines, existing arrows/Home/End and keyboard activation work, selection closes normally; no API/dependency/variant change, measure the bounded size delta without changing budgets.
