@@ -24,3 +24,5 @@ Budget decision remains pending. The quality/performance contract requires exact
 
 ## Later verified incumbent slices
 Tooltip now1954B/1500B and WorkspaceSwitcher8326B/8250B add2entries to the original9 (11React overages). These source behavior changes are separate from the byte-identical library maintenance graph. Exact packed final protocol and disposition remain pending; no budget/hash change or waiver. See the Tooltip and workspace creation verification records.
+
+Task24click cancellation: WorkspaceSwitcher8364/8250B (+38B versusTask22), same11Reactoverages; no limit/hash update. Current callback correctness verified separately; final packed budget decision remainsopen.

@@ -125,10 +125,15 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Depends on: 22
       Scope: apps/docs/content/docs/{en,pt-BR}/components/workspace-switcher.mdx
       Accept: selected entry, separate React creation command/native Tab accurately described; actual Alpine selection-only bindings/data-id/ARIA example executes and no unsupported creation claim remains.
-- [ ] 24. Honor consumer-first React workspace click cancellation — react/medium
+- [x] 24. Honor consumer-first React workspace click cancellation — react/medium
       Depends on: 23
       Scope: WorkspaceSwitcher source/browser, .changeset/workspace-click-cancellation.md
       Accept: original root click precedes defaults, prevents opening/domain effects; stable clicked identity under synchronous consumer reorder; native/browser/static proof, no API change.
 - [ ] 25. Design and repair native Alpine modal Tab containment — alpine/high after critical design
       Scope: existing internal/focus-trap.ts and bounded direct-consumer tests, Alpine patch changeset; exact brief follows the guarded scout.
       Accept: actual non-edge forward/reverse Tabs remain contained with native intermediate navigation, cancellation and complete teardown; current return-focus pointer issue stays separate.
+
+## Remaining public contract designs
+- [ ] 26. CreateWorkspaceDialog lifecycle — critical incumbent compatibility/migration design, then high implementation and separate public examples/docs. Current native3/3 immediate-close failure documented; reuse exact request/result lifecycle from approved overlay family, keep Dialog ownership and Alpine unsupported.
+- [ ] 27. Tabs compound real-content ownership — critical selection-family API/migration design before implementation. No final part signatures chosen yet; preserve current classes, support actual owned panels, define server enhancement/failure behavior per existing normative requirement.
+- [ ] 28. DataTable semantic row action — critical bounded data-family API/migration design then existing-owner implementation; keep native table, sort and checkboxselection semantics. Current onRowClick has no in-repo consumers; never make rows into simulated buttons or wrap arbitrary cell children.

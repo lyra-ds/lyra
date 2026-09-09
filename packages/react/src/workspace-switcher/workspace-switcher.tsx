@@ -45,6 +45,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       defaultOpen = false,
       id,
       className,
+      onClick,
       onKeyDown,
       ...rest
     },
@@ -136,6 +137,12 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       return create && popoverRef.current?.contains(create) ? create : null;
     };
 
+    const workspaceForTarget = (target: EventTarget | null): Workspace | undefined => {
+      const option = optionForTarget(target);
+      if (!option) return undefined;
+      return workspaces[optionButtons().indexOf(option)];
+    };
+
     const handleOptionKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.defaultPrevented) return;
       const option = optionForTarget(event.target);
@@ -190,6 +197,23 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           else if (optionForTarget(event.target)) handleOptionKeyDown(event);
           else if (createForTarget(event.target)) handleCreateKeyDown(event);
         }}
+        onClick={(event) => {
+          const workspace = workspaceForTarget(event.target);
+          const isCreate = createForTarget(event.target) !== null;
+          const isTrigger = triggerRef.current?.contains(event.target as Node);
+          onClick?.(event);
+          if (event.defaultPrevented) return;
+          if (isTrigger) {
+            if (open) close();
+            else openWithFocus();
+          } else if (workspace) {
+            onChange?.(workspace.id, workspace);
+            close(true);
+          } else if (isCreate) {
+            onCreate?.();
+            close(true);
+          }
+        }}
       >
         <button
           ref={triggerRef}
@@ -199,7 +223,6 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={listboxId}
-          onClick={() => (open ? close() : openWithFocus())}
         >
           <Avatar name={selected?.name ?? '?'} size="sm" shape="square" />
           <span className="lyra-wssw__id">
@@ -226,10 +249,6 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
                   tabIndex={workspace.id === rovingWorkspaceId ? 0 : -1}
                   className="lyra-wssw__item"
                   onFocus={() => setFocusedWorkspaceId(workspace.id)}
-                  onClick={() => {
-                    onChange?.(workspace.id, workspace);
-                    close(true);
-                  }}
                 >
                   <Avatar name={workspace.name} size="sm" shape="square" />
                   <span className="lyra-wssw__id">
@@ -254,15 +273,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
             {onCreate && (
               <>
                 <hr className="lyra-wssw__sep" role="presentation" />
-                <button
-                  type="button"
-                  tabIndex={0}
-                  className="lyra-wssw__item lyra-wssw__create"
-                  onClick={() => {
-                    onCreate();
-                    close(true);
-                  }}
-                >
+                <button type="button" tabIndex={0} className="lyra-wssw__item lyra-wssw__create">
                   <span className="lyra-wssw__plus">
                     <Icon name="plus" size={15} />
                   </span>

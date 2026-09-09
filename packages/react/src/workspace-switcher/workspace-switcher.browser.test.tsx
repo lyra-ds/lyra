@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
-import type { KeyboardEvent } from 'react';
+import { useState } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { WorkspaceSwitcher } from './index';
@@ -478,6 +480,110 @@ describe('WorkspaceSwitcher', () => {
     expect(document.activeElement).toBe(
       container.querySelector<HTMLButtonElement>('[role=option][aria-selected="true"]'),
     );
+  });
+
+  it('lets the root cancel native trigger, workspace, and create clicks before their defaults', async () => {
+    const onChange = vi.fn();
+    const onCreate = vi.fn();
+    const events: MouseEvent<HTMLDivElement>[] = [];
+    let cancelDefaults = true;
+    let root: HTMLDivElement | null = null;
+    const { container } = await render(
+      <WorkspaceSwitcher
+        workspaces={workspaces}
+        onChange={onChange}
+        onCreate={onCreate}
+        onClick={(event) => {
+          events.push(event);
+          expect(event.currentTarget).toBe(root);
+          expect(event.target).not.toBe(root);
+          expect(event.defaultPrevented).toBe(false);
+          if (cancelDefaults) event.preventDefault();
+        }}
+      />,
+    );
+    root = container.querySelector<HTMLDivElement>('.lyra-wssw')!;
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    await userEvent.click(trigger);
+    expect(container.querySelector('[role=listbox]')).toBeNull();
+    cancelDefaults = false;
+    await userEvent.click(trigger);
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    cancelDefaults = true;
+    await userEvent.click(trigger);
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    const workspace = container.querySelectorAll<HTMLButtonElement>('[role=option]')[1]!;
+    const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
+    await userEvent.click(workspace);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    await userEvent.click(create);
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(document.activeElement).toBe(workspace);
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(create);
+    await userEvent.keyboard('{Space}');
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(events).toHaveLength(7);
+  });
+
+  it('honors descendant click cancellation and preserves defaults when the root stops propagation', async () => {
+    const onChange = vi.fn();
+    const onOuterClick = vi.fn();
+    const onClick = vi.fn((event: MouseEvent<HTMLDivElement>) => event.stopPropagation());
+    const { container } = await render(
+      <div role="presentation" onClick={onOuterClick}>
+        <WorkspaceSwitcher
+          defaultOpen
+          workspaces={workspaces}
+          onChange={onChange}
+          onClick={onClick}
+        />
+      </div>,
+    );
+    const workspace = container.querySelectorAll<HTMLButtonElement>('[role=option]')[1]!;
+    workspace.addEventListener('click', (event) => event.preventDefault(), { once: true });
+
+    await userEvent.click(workspace);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(onOuterClick).not.toHaveBeenCalled();
+
+    await userEvent.click(workspace);
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledWith('lyra', workspaces[1]);
+    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(onClick).toHaveBeenCalledTimes(2);
+    expect(onOuterClick).not.toHaveBeenCalled();
+  });
+
+  it('keeps the clicked workspace stable when the root synchronously reorders workspaces', async () => {
+    const onChange = vi.fn();
+    function Example() {
+      const [items, setItems] = useState(workspaces);
+      return (
+        <WorkspaceSwitcher
+          defaultOpen
+          workspaces={items}
+          onChange={onChange}
+          onClick={() => flushSync(() => setItems((current) => [...current].reverse()))}
+        />
+      );
+    }
+
+    const { container } = await render(<Example />);
+    await userEvent.click(container.querySelectorAll<HTMLButtonElement>('[role=option]')[1]!);
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledWith('lyra', workspaces[1]);
+    expect(container.querySelector('[role=listbox]')).toBeNull();
   });
 
   it('flips the popover above the trigger instead of scrolling the page when there is no room below', async () => {
