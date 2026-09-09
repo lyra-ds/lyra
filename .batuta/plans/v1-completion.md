@@ -121,7 +121,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Scope: WorkspaceSwitcher source/browser/SSR, .changeset/workspace-create-command.md
       Accept: specs/2026-09-09-workspace-command-design.md; native command semantics, roving/native Tab, empty-state/activation and cancellation; unchanged API/styles and measured budget.
 
-- [ ] 23. Migrate public workspace documentation to verified behavior — documentation/low
+- [x] 23. Migrate public workspace documentation to verified behavior — documentation/low
       Depends on: 22
       Scope: apps/docs/content/docs/{en,pt-BR}/components/workspace-switcher.mdx
       Accept: selected entry, separate React creation command/native Tab accurately described; actual Alpine selection-only bindings/data-id/ARIA example executes and no unsupported creation claim remains.
