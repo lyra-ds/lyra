@@ -1,6 +1,6 @@
 # Nested Dialog Escape verification
 
-Base e976cf3; implementation commit PENDING_COMMIT. Controller verdict: approved after final evidence completion.
+Base e976cf3; implementation commit e55a1bb. Controller verdict: approved after final evidence completion.
 Medium/Codex gpt-5.6-terra, one formatting-only retry, no escalation. No reasoning
 override was passed; the CLI reported its inherited high effort.
 

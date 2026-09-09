@@ -1,7 +1,7 @@
 # Run — nested Dialog Escape containment
 
 **Date:** 2026-09-09 · **Lane:** frontend/medium · **Executor:** Codex gpt-5.6-terra
-**Commit:** PENDING_COMMIT · **Verdict:** ✅ approved
+**Commit:** e55a1bb · **Verdict:** ✅ approved
 
 ## Brief as dispatched
 
