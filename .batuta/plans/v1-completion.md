@@ -42,7 +42,7 @@
 
 - [ ] 10. Diagnose and resolve measured incumbent focus-size overages — performance/critical
       Scope: .batuta/v1-focus-size-diagnosis.md, .batuta/specs/*.md; product correction scope must follow measured diagnosis
-      Accept: nine overages attributed using same-tool old/new graph and source builds → controller proof; a reviewed bounded optimization or justified measured budget decision preserves all approved focus behavior → controller proof
+      Accept: original nine overages plus the measured Tooltip delta attributed using same-tool old/new graph and source builds → controller proof; a reviewed bounded optimization or justified measured budget decision preserves all approved focus behavior → controller proof
 
 - [x] 11. Repair existing Dropdown keyboard navigation contracts — react/critical (medium + high retries, controller completion)
       Scope: packages/react/src/dropdown/dropdown.tsx, packages/react/src/dropdown/dropdown.browser.test.tsx, packages/react/src/dropdown/dropdown.ssr.test.ts, .changeset/dropdown-keyboard-contract.md
@@ -108,6 +108,10 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 - [x] 19. Focus the selected React workspace on every supported opening key — react/low
       Scope: packages/react/src/workspace-switcher/workspace-switcher.tsx, colocated browser test, .changeset/workspace-react-selected-entry.md
       Accept: native click/Enter/Space/ArrowDown/ArrowUp enters selected middle workspace; preserve post-open navigation, callbacks, create behavior and fallback; no API/dependency change.
-- [ ] 20. Prefer the served selected Alpine workspace on arrow opening — alpine/low
+- [x] 20. Prefer the served selected Alpine workspace on arrow opening — alpine/low
       Scope: packages/alpine/src/workspace-switcher.ts, colocated browser test, .changeset/workspace-alpine-selected-entry.md
       Accept: supported opening methods focus served selected workspace; retain no-selection arrow fallback, consumer-owned aria-selected, event payload/ordering and cleanup; no new API/dependency.
+
+- [ ] 21. Honor consumer-first React workspace keyboard cancellation — react/medium
+      Scope: packages/react/src/workspace-switcher/workspace-switcher.tsx, colocated browser test, .changeset/workspace-react-keyboard-cancellation.md
+      Accept: original root event delivered once before defaults; preventDefault stops opening/navigation/dismissal, stopPropagation alone preserves defaults; native/browser/SSR and compatibility proof, no API change.
