@@ -103,3 +103,19 @@ CommandPalette unprepared mouse return focus, other modal initial-focus/nested
 coordination, remaining P1 contracts and exact packed Firefox/Linux release
 qualification remain open. This fix does not qualify any P1 ledger entry or
 waive an acceptance cell. Continue with a separately bounded remaining task.
+
+## Completed CommandPalette return-focus slice — 2026-09-09
+
+CommandPalette now consumes the same optional returnFocusTo contract and unchanged
+shared owner as Dialog/Drawer. Its trigger example and docs header menu declare a
+stable trigger; both API pages and generated references are migrated. Native48/48,
+actual built example6/6, final scoped Chromium/SSR30 and WebKit26 pass, with original
+mouse and missing-successor RED evidence. Build/types/lint/docgen/format pass.
+One Codex/high retry, then critical/self fixture readiness and documentation
+completion; final independent GLM3/3 DONE, no findings, unchanged guard.
+See .batuta/v1-command-palette-focus-verification.md for failures and proof limits.
+
+Unmigrated bare mouse consumers remain unqualified. Modal initial-focus policy
+(including Escape before input focus), nested/inert coordination, other P1
+contracts and full packed Firefox/Linux qualification remain open. No P1 ledger
+entry or acceptance cell was promoted, and no remote/release action occurred.

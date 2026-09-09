@@ -1300,6 +1300,8 @@ export interface CommandPaletteProps {
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
   inline?: boolean;
+  /** Returns the current element to focus after an accepted modal close. Ignored in inline mode. */
+  returnFocusTo?: () => HTMLElement | null;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
   /**

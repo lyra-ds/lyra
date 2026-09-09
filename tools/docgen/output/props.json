@@ -2734,6 +2734,12 @@
         "description": "Renders the panel without an overlay, portal, focus trap, or scroll lock."
       },
       {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Returns the current element to focus after an accepted modal close. Ignored in inline mode."
+      },
+      {
         "name": "className",
         "type": "string",
         "optional": true,

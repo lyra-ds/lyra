@@ -29,6 +29,63 @@ incorporar com `inline`; use Dropdown quando uma lista curta de comandos pertenc
   mismatch.
 </Example>
 
+## Return focus
+
+In modal mode, use `returnFocusTo` for pointer-opened palettes. It is a synchronous resolver that
+runs once after an accepted close has committed, so it reads the current trigger and workflow state
+rather than a stale element. Keyboard opening can omit it when the captured opener remains a valid
+destination.
+
+```tsx
+import { CommandPalette, type CommandGroup } from '@lyra-ds/react';
+import { useRef, useState } from 'react';
+
+function CommandPaletteExample({ canReturnToTrigger }: { canReturnToTrigger: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [showTrigger, setShowTrigger] = useState(true);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const successorRef = useRef<HTMLHeadingElement>(null);
+  const groups: CommandGroup[] = [{ items: [{ id: 'projects', label: 'Projects' }] }];
+
+  return (
+    <>
+      {showTrigger && (
+        <CommandPalette.Trigger
+          ref={triggerRef}
+          label="Search commands"
+          onClick={() => setOpen(true)}
+        />
+      )}
+      <h2 ref={successorRef} tabIndex={-1}>
+        Projects
+      </h2>
+      <CommandPalette
+        open={open}
+        onClose={() => {
+          setShowTrigger(false);
+          setOpen(false);
+        }}
+        returnFocusTo={() =>
+          canReturnToTrigger && triggerRef.current ? triggerRef.current : successorRef.current
+        }
+        groups={groups}
+      />
+    </>
+  );
+}
+```
+
+The returned element must be connected, visible, enabled, in the same document, and programmatically
+focusable. A named region with `tabIndex={-1}` is a valid successor when the trigger is removed or
+no longer meaningful; a removed trigger's null ref falls back to that successor even if availability
+has not changed. Hidden, inert, and `aria-hidden` ancestors make a target ineligible, as do the
+closing panel, overlay, and their descendants while exit presence keeps them mounted. Invalid results
+fall back to a valid captured opener. If neither target is eligible, Lyra makes no invalid focus call
+and emits a development diagnostic once for that close cycle. After removal the browser may leave
+focus on `body`. That is an invalid invoking composition, not a
+successful restoration. `returnFocusTo` is ignored by `inline`, and it never runs for ignored close
+requests or closed renders. Omitted pointer-opened consumers are not automatically repaired.
+
 ## Quando usar
 
 Use CommandPalette quando as pessoas precisarem de um índice buscável de ações ou destinos, acessível pelo teclado.
@@ -47,7 +104,7 @@ Prefira outro componente quando:
 - O foco DOM fica no campo. As setas movem o foco virtual pelas opções, permitindo continuar digitando
   enquanto o descendente ativo muda; Enter seleciona o item ativo e Escape chama `onClose`.
 - O `onSelect` de um item roda antes do callback do palette. No modo modal, passe `onClose` para
-  atualizar `open`; ao fechar, o foco volta ao elemento que abriu a paleta.
+  atualizar `open`; use `returnFocusTo` quando uma paleta aberta por ponteiro precisar de um destino explícito.
 - O modo modal faz portal de um `role="dialog"` nomeado, prende o foco, bloqueia a rolagem e permanece
   montado durante a animação de saída. Passe `aria-label` para substituir “Command palette” numa
   interface localizada. O modo inline não é diálogo e não tem nome de diálogo.

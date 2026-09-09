@@ -1,7 +1,7 @@
 'use client';
 
 import { CommandPalette } from '@lyra-ds/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const groups = [
   {
@@ -15,11 +15,22 @@ const groups = [
 
 export function CommandPaletteTrigger() {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <CommandPalette.Trigger label="Search commands" shortcut="⌘K" onClick={() => setOpen(true)} />
-      <CommandPalette open={open} onClose={() => setOpen(false)} groups={groups} />
+      <CommandPalette.Trigger
+        ref={triggerRef}
+        label="Search commands"
+        shortcut="⌘K"
+        onClick={() => setOpen(true)}
+      />
+      <CommandPalette
+        open={open}
+        onClose={() => setOpen(false)}
+        returnFocusTo={() => triggerRef.current}
+        groups={groups}
+      />
     </>
   );
 }

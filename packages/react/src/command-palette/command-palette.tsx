@@ -16,6 +16,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { usePresence, type PresenceState } from '../internal/use-presence';
+import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 
 /** A command available from {@link CommandPalette}. */
@@ -76,6 +77,8 @@ export interface CommandPaletteProps {
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
   inline?: boolean;
+  /** Returns the current element to focus after an accepted modal close. Ignored in inline mode. */
+  returnFocusTo?: () => HTMLElement | null;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
   /**
@@ -213,11 +216,11 @@ function CommandPalettePanel({
 
   useEffect(() => {
     if (modal && !open) return;
-    if (modal) captureOpener?.(document.activeElement);
+    if (modal) captureOpener?.(panelRef.current?.ownerDocument.activeElement ?? null);
     onReady();
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
     return () => cancelAnimationFrame(frame);
-  }, [captureOpener, inputRef, modal, onReady, open]);
+  }, [captureOpener, inputRef, modal, onReady, open, panelRef]);
 
   useFocusTrap(panelRef, modal && open);
   useScrollLock(modal && open);
@@ -367,6 +370,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
       hints,
       hotkey = 'k',
       inline = false,
+      returnFocusTo,
       className,
       'aria-label': ariaLabel = 'Command palette',
     },
@@ -375,14 +379,20 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
     const idBase = useId();
     const listboxId = `${idBase}-listbox`;
     const panelRef = useRef<HTMLDivElement | null>(null);
+    const overlayRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const listRef = useRef<HTMLDivElement | null>(null);
-    const openerRef = useRef<Element | null>(null);
     const downOnOverlay = useRef(false);
     const upOnOverlay = useRef(false);
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
+    const { captureOpener } = useReturnFocus({
+      open: inline ? false : open,
+      returnFocusTo: inline ? undefined : returnFocusTo,
+      panelRef,
+      overlayRef,
+    });
 
     const flatItems: IndexedCommandItem[] = [];
     const normalizedQuery = query.toLocaleLowerCase();
@@ -422,16 +432,6 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
       },
       [onClose, onSelect],
     );
-
-    const captureOpener = useCallback((element: Element | null) => {
-      openerRef.current = element;
-    }, []);
-
-    useEffect(() => {
-      if (open || inline) return;
-      if (openerRef.current instanceof HTMLElement) openerRef.current.focus();
-      openerRef.current = null;
-    }, [inline, open]);
 
     useEffect(() => {
       if (!hotkey || !onOpen) return;
@@ -497,6 +497,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
         {/* Backdrop click is pointer-only convenience; Escape on the combobox is the keyboard path. */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
         <div
+          ref={overlayRef}
           className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
           onMouseDown={(event) => {
             downOnOverlay.current = event.target === event.currentTarget;
