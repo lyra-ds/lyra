@@ -86,7 +86,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 - [x] 13. Establish the Tooltip focus-lifecycle fixture's native tab stop — verification/low
       Scope: packages/react/src/tooltip/tooltip.browser.test.tsx
       Accept: exact focus/open/blur/close assertions pass across three engines and still catch a disabled blur close; no runtime change.
-- [ ] 14. Follow native Calendar entry without a fixed platform stop count — verification/low
+- [x] 14. Follow native Calendar entry without a fixed platform stop count — verification/low
       Scope: packages/react/src/date-picker/date-picker.browser.test.tsx, packages/react/src/date-range-picker/date-range-picker.browser.test.tsx
       Coupled fixtures share the same Calendar traversal cause. Accept: bounded real Tab traversal reaches the exact active day and retains selection/normalization/close assertions; making the active day unreachable still fails.
 - [ ] 15. Establish real focus ownership in FileUpload removal fixtures — verification/low

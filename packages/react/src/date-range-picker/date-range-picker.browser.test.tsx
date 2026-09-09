@@ -71,7 +71,15 @@ describe('DateRangePicker', () => {
     await expect.element(trigger).toHaveTextContent('5/15/2024 – …');
     trigger.element().focus();
 
-    await userEvent.keyboard('{Enter}{Tab}{Tab}{Tab}{Tab}');
+    await userEvent.keyboard('{Enter}');
+    expect(document.activeElement).toBe(trigger.element());
+
+    // Native Tab order crosses the Calendar's own header buttons before the
+    // grid, so engines need a different count of Tabs to reach the active day.
+    const selected = screen.getByRole('button', { name: 'Wednesday, May 15, 2024' });
+    for (let tabs = 0; tabs < 4 && document.activeElement !== selected.element(); tabs += 1) {
+      await userEvent.keyboard('{Tab}');
+    }
     expect(document.activeElement).toBe(
       screen.getByRole('button', { name: 'Wednesday, May 15, 2024' }).element(),
     );
