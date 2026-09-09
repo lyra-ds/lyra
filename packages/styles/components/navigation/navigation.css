@@ -658,6 +658,14 @@
   color: var(--text-secondary);
 }
 
+/* Additive extension (parity ADDITIVE_EXTENSIONS): WorkspaceSwitcher metadata is `--text-muted`
+   on a hovered `--surface-sunken` item, a 4.34:1 pairing that fails for the plan and member count.
+   `--text-secondary` is the existing semantic text color for readable secondary information on
+   sunken surfaces in both themes. The trigger's plan remains unchanged on its card surface. */
+.lyra-wssw__meta {
+  color: var(--text-secondary);
+}
+
 /* Additive extension (parity ADDITIVE_EXTENSIONS): an idle `:hover` outweighs the `--active` class
    it sits beside (0-2-0 vs 0-1-0), so the selected sidebar item and the selected tab both lost
    their accent treatment under the pointer — the selection read as unselected exactly while a

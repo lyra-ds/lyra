@@ -500,6 +500,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-tabs--pills',
       'lyra-stepper',
       'lyra-wssw__item',
+      // The metadata override keeps plan and member details readable on the item's hover surface.
+      'lyra-wssw__meta',
       'lyra-wssw__trigger',
     ],
     keyframes: [],

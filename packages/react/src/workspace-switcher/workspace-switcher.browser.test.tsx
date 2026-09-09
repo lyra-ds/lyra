@@ -10,15 +10,56 @@ const workspaces = [
   { id: 'lyra', name: 'Lyra', plan: 'Free', members: 2 },
 ];
 
+const themes = ['light', 'dark'] as const;
+
+type RGB = readonly [number, number, number];
+
+function parseRgb(color: string): RGB {
+  const match = color.match(/^rgba?\((.*)\)$/);
+  const channels = match?.[1].match(/\d+(?:\.\d+)?/g)?.map(Number);
+  if (
+    !channels ||
+    (channels.length !== 3 && (channels.length !== 4 || channels[3] !== 1)) ||
+    channels
+      .slice(0, 3)
+      .some((channel) => !Number.isInteger(channel) || channel < 0 || channel > 255)
+  ) {
+    throw new Error(`Expected a resolved opaque rgb color, received ${color}`);
+  }
+  return [channels[0], channels[1], channels[2]];
+}
+
+function relativeLuminance([red, green, blue]: RGB): number {
+  const channels = [red, green, blue].map((channel) => {
+    const srgb = channel / 255;
+    return srgb <= 0.03928 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const foregroundLuminance = relativeLuminance(parseRgb(foreground));
+  const backgroundLuminance = relativeLuminance(parseRgb(background));
+  return (
+    (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+    (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+  );
+}
+
+function setTheme(theme: (typeof themes)[number]): void {
+  if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+}
+
 afterEach(async () => {
   await cleanup();
-  document.documentElement.removeAttribute('data-theme');
+  setTheme('light');
 });
 
 describe('WorkspaceSwitcher', () => {
-  for (const theme of ['light', 'dark'] as const) {
+  for (const theme of themes) {
     it(`emits exact classes and is axe clean in ${theme}`, async () => {
-      document.documentElement.toggleAttribute('data-theme', theme === 'dark');
+      setTheme(theme);
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       try {
         const { container } = await render(
@@ -46,6 +87,61 @@ describe('WorkspaceSwitcher', () => {
         expect(errorSpy).not.toHaveBeenCalled();
       } finally {
         errorSpy.mockRestore();
+      }
+    });
+
+    it(`keeps selected and unselected metadata at WCAG AA contrast at rest, hover, and keyboard focus in ${theme}`, async () => {
+      setTheme(theme);
+      expect(document.documentElement.getAttribute('data-theme')).toBe(
+        theme === 'dark' ? 'dark' : null,
+      );
+
+      const { container } = await render(
+        <WorkspaceSwitcher workspaces={workspaces} onCreate={() => {}} defaultOpen />,
+      );
+      const popover = container.querySelector<HTMLElement>('.lyra-wssw__pop')!;
+      const popoverBackground = getComputedStyle(popover).backgroundColor;
+      expect(popoverBackground).toBe(theme === 'dark' ? 'rgb(18, 20, 48)' : 'rgb(255, 255, 255)');
+
+      const workspaceOptions = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('[role=option]'),
+      ).filter((option) => option.querySelector('.lyra-wssw__meta') != null);
+      expect(workspaceOptions).toHaveLength(2);
+      expect(workspaceOptions.map((option) => option.getAttribute('aria-selected'))).toEqual([
+        'true',
+        'false',
+      ]);
+
+      for (const option of workspaceOptions) {
+        const metadata = option.querySelector<HTMLElement>('.lyra-wssw__meta')!;
+        expect(
+          contrastRatio(getComputedStyle(metadata).color, popoverBackground),
+        ).toBeGreaterThanOrEqual(4.5);
+        await expectNoAxeViolations(container);
+      }
+
+      for (const option of workspaceOptions) {
+        await userEvent.hover(option);
+        expect(option.matches(':hover')).toBe(true);
+        const metadata = option.querySelector<HTMLElement>('.lyra-wssw__meta')!;
+        const hoverBackground = getComputedStyle(option).backgroundColor;
+        expect(
+          contrastRatio(getComputedStyle(metadata).color, hoverBackground),
+        ).toBeGreaterThanOrEqual(4.5);
+        await expectNoAxeViolations(container);
+        await userEvent.unhover(option);
+      }
+
+      const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+      trigger.focus();
+      for (const option of workspaceOptions) {
+        await userEvent.keyboard('{ArrowDown}');
+        expect(document.activeElement).toBe(option);
+        const metadata = option.querySelector<HTMLElement>('.lyra-wssw__meta')!;
+        expect(
+          contrastRatio(getComputedStyle(metadata).color, popoverBackground),
+        ).toBeGreaterThanOrEqual(4.5);
+        await expectNoAxeViolations(container);
       }
     });
   }

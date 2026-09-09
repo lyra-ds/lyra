@@ -159,3 +159,9 @@ and determine the compatible incumbent correction, using the existing approved
 shared return-focus contract as reference. Do not alter Colima or introduce
 new foundation/dependency work. Remaining initial-focus, sibling/modal/inert,
 other P1 and packed Firefox/Linux requirements remain open; no ledger promotion.
+
+## Completed bounded work — 2026-09-09 continuation
+
+BottomSheet shared return focus and actual invoking examples are verified in88c5211/899ed10; public JSDoc eligibility clarified inbda7a00. Native6 and actual examples12 pass; focused Chromium/SSR24 and WebKit21 pass. The original two BottomSheet pointer-return failures are closed.
+
+The experimental checkout freeze was replaced by its actual dependency-isolation boundary in1b7629e, with shallow-clone maintenance/prohibited-dependency regressions. PR220 action6.1.0 adopted locally in87f7775, pnpm unchanged11.13.1. WorkspaceSwitcher light hover contrast and actual-dark fixture now repaired; full React Chromium/SSR765/765. Its create-option semantics and remaining layer/Alpine obligations remain open. These completions do not qualify all11P1 components or23acceptance cells.
