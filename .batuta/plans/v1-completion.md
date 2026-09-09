@@ -22,13 +22,13 @@
       Depends on: 3
       Scope: tools/overlay-foundation-evaluation/repository-policy.test.mjs, .batuta/v1-maintenance-policy-verification.md
       Accept: ordinary maintenance passes in a shallow clone and prohibited candidate integration fails → read-only controller verdict; historical candidate and no-live-diagnostic safeguards remain exercised → read-only controller verdict
-- [ ] 6. Apply pnpm action maintenance from PR 220 — maintenance/low
+- [x] 6. Apply pnpm action maintenance from PR 220 — maintenance/low
       Depends on: 5
-      Scope: .github/workflows/ci.yml, .github/workflows/deploy.yml, .github/workflows/release.yml, .github/workflows/sponsors.yml
+      Scope: .github/workflows/ci.yml, .github/workflows/deploy.yml, .github/workflows/release.yml, .github/workflows/sponsors.yml, tools/file-upload-evidence/scripts/deploy-policy.mjs
       Accept: only reviewed action digest/version advances while pnpm stays 11.13.1 → read-only controller verdict; workflow and repository policy checks pass → read-only controller verdict
 - [ ] 7. Prepare and qualify the compatible existing-library maintenance batch — maintenance/high
       Depends on: 5
-      Scope: package.json, pnpm-lock.yaml, apps/docs/package.json, apps/site/package.json, packages/react/package.json, packages/alpine/package.json, tools/file-upload-evidence/package.json, .changeset/v1-library-maintenance.md
+      Scope: package.json, pnpm-lock.yaml, apps/docs/package.json, apps/site/package.json, tools/file-upload-evidence/package.json
       Accept: only selected existing dependency versions change → read-only controller verdict; install/build/types and affected runtime checks pass with held bridge versions preserved → read-only controller verdict
 
 - [x] 8. Clarify captured-target eligibility in public BottomSheet JSDoc — documentation/low
@@ -44,3 +44,5 @@ The maintainer authorized continuing until completion on September 9. This opera
 **Task 5.** The obsolete test freezes all packages/workflows/lockfile git objects and blocks current stabilization as well as Dependabot. Replace that accidental maintenance prohibition with the actual suspended-experiment boundary. Preserve exact historical candidate metadata and existing live-diagnostic exclusions, reject direct experimental foundation dependencies in root/workspace manifests, and prove legitimate version/source/workflow maintenance is allowed in shallow checkout fixtures. Do not refresh snapshot constants, skip tests, edit historical evidence or promote the V1 ledger. Ledger qualification is owned by the V1 release gate rather than an experiment's checkout snapshot.
 
 **Task 7.** Use .batuta/v1-dependency-disposition.md. Hold Playwright1.62.1 and Vite8.2.1 until a separate coordinated evidence/image migration. Defer Changesets majors. Do not install into controller-provided symlinks: remove only the exact owned links, then create this worktree's own dependency installation with pinned Node24.18.0/pnpm11.13.1. Existing global settings and Colima remain untouched. Numeric bundle budgets and final baseline binding belong to final candidate measurement; do not silently update baseline hashes here. If an individual maintenance update fails compatibility, retain the old version and record the concrete failure instead of broadening migration.
+
+**Task 7.** First selected batch is the11 tooling/docs updates in the disposition follow-up. Also hold lucide-react, Alpine/CSP and tsdown with their current artifact/consumer fixture baseline. No published package manifest changes and no new changeset for private docs/development-only updates. The worktree now has its own current frozen dependencies, installed offline with exact pnpm11.13.1.

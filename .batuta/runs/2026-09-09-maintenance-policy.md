@@ -1,7 +1,7 @@
 # Run — incumbent maintenance policy
 
 **Date:** 2026-09-09 · **Lane:** maintenance/critical · **Executor:** controller/self
-**Commit:** pending · **Verdict:** ✅ approved
+**Commit:** 1b7629e · **Verdict:** ✅ approved
 
 ## Brief
 # Experimental isolation without freezing incumbent maintenance
@@ -63,7 +63,7 @@ Controller implemented and verified the single-file correction directly. No dele
 ## Verification
 # Maintenance policy verification — 2026-09-09
 
-Approved critical/controller correction; implementation commit pending. The experiment no longer freezes ordinary live root dependencies, packages, workflows, lockfile or ledger git objects. It checks the actual current suspended-candidate boundary in root and immediate workspace manifests (packages/*, apps/*, tools/*), including direct dependencies and npm aliases in all four dependency sections. Eight historical policy cases remain intact. Qualification belongs to the existing V1 release owner, not a permanent experiment status freeze.
+Approved critical/controller correction; implementation commit1b7629e. The experiment no longer freezes ordinary live root dependencies, packages, workflows, lockfile or ledger git objects. It checks the actual current suspended-candidate boundary in root and immediate workspace manifests (packages/*, apps/*, tools/*), including direct dependencies and npm aliases in all four dependency sections. Eight historical policy cases remain intact. Qualification belongs to the existing V1 release owner, not a permanent experiment status freeze.
 
 Controller original baseline8/10: exactly the two immutable-checkout tests fail at current stabilization HEAD. Final policy10/10, zero skipped; real one-commit shallow fixture allows maintenance edits, rejects four experimental manifest mutations and passes after each restoration. Canonical release tests108/108 and CLI PASS (internal consistency, not qualified release). Format/diff PASS. Scope: one test file only; no product runtime, historical artifact, manifest/version/lockfile/workflow/live-ledger edits.
 

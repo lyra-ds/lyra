@@ -32,3 +32,11 @@ Selected candidate maintenance from PR 221, pending actual installation/checks: 
 - [Upload artifact 7](https://github.com/actions/upload-artifact/releases/tag/v7.0.0)
 
 Raw gh JSON, diffs and failed-job logs are preserved in the main checkout's .batuta/runs/v1-dependency-triage/. They were read-only requests. Do not report pending candidate updates as installed or approved by tests.
+
+## Selected first maintenance batch
+
+After inspecting coupled fixture pins, select11 existing tooling/docs updates: @types/react-dom19.2.7, eslint10.10.0, publint0.3.24, stylelint17.15.0, typescript-eslint8.69.0, vitest-browser-react2.3.0, wrangler4.129.0, fumadocs-core16.15.7, fumadocs-mdx15.4.0, next16.3.4, next-intl4.14.2. Apply consistently in root, docs, site and file-upload-evidence manifests where each already exists. These remain candidates until installed and verified.
+
+Hold the remaining six PR221 updates for separate coordinated qualification: Playwright/Vite have exact native-evidence/image pins; lucide-react1.30.0 and Alpine3.15.12/CSP3.15.12 are pinned by the packed React18/19 and bundle-consumer fixture locks; tsdown0.22.14 is the current artifact compiler. This first batch keeps published React runtime dependency and Alpine runtime/test baseline versions stable while addressing tooling and docs maintenance. Fixture pins are in tools/react-compat/fixtures/{react18,react19}/package.json and their locks, tools/bundle-baseline/fixture/package.json and lock, and tools/react-compat/file-upload.test.mjs. No claim that those held updates are broken; they require a larger coordinated artifact/fixture comparison than this selected batch. No new dependency names or foundation work.
+
+The primary run-status proof requested by independent review is now retained as main .batuta/runs/v1-dependency-triage/run-34270734805-status.json: exact PR220 head, testfailure, lint/typecheck/buildsuccess. The maintenance freeze was independently repaired in1b7629e (policy10/10, release108/108 plus CLI); this does not qualify any selected library update.
