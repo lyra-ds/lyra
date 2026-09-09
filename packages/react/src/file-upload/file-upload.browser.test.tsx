@@ -676,7 +676,12 @@ describe('FileUpload', () => {
     const screen = await render(<FileUpload items={[first, middle, last]} {...sharedProps} />);
 
     const removeMiddle = screen.getByRole('button', { name: 'Remove middle.pdf' });
-    await removeMiddle.click();
+    // WebKit pointer activation does not focus an implicit button, so the action
+    // must own real keyboard focus before Enter; the post-commit fallback follows
+    // that focus.
+    removeMiddle.element().focus();
+    expect(removeMiddle).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
     expect(removeMiddle).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Remove last.pdf' })).not.toHaveFocus();
     expect(screen.getByLabelText('Drag files here or click to select')).not.toHaveFocus();
@@ -690,13 +695,13 @@ describe('FileUpload', () => {
       expect(screen.getByRole('button', { name: 'Remove last.pdf' })).toHaveFocus(),
     );
 
-    await screen.getByRole('button', { name: 'Remove last.pdf' }).click();
+    await userEvent.keyboard('{Enter}');
     await screen.rerender(<FileUpload items={[first]} {...sharedProps} />);
     await vi.waitFor(() =>
       expect(screen.getByRole('button', { name: 'Remove first.pdf' })).toHaveFocus(),
     );
 
-    await screen.getByRole('button', { name: 'Remove first.pdf' }).click();
+    await userEvent.keyboard('{Enter}');
     await screen.rerender(<FileUpload items={[]} {...sharedProps} />);
     await vi.waitFor(() =>
       expect(screen.getByLabelText('Drag files here or click to select')).toHaveFocus(),
@@ -722,18 +727,29 @@ describe('FileUpload', () => {
     const screen = await render(
       <>
         <FileUpload items={[item]} {...sharedProps} />
-        <button type="button">Outside control</button>
+        {/* tabIndex keeps the Outside control natively pointer-focusable in WebKit. */}
+        <button type="button" tabIndex={0}>
+          Outside control
+        </button>
       </>,
     );
 
-    await screen.getByRole('button', { name: 'Remove report.pdf' }).click();
+    // Enter, not pointer activation, owns the pending removal: WebKit leaves an
+    // implicitly activatable action button unfocused on native click.
+    const removeReport = screen.getByRole('button', { name: 'Remove report.pdf' });
+    removeReport.element().focus();
+    expect(removeReport).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+
     await screen.getByRole('button', { name: 'Outside control' }).click();
     expect(screen.getByRole('button', { name: 'Outside control' })).toHaveFocus();
 
     await screen.rerender(
       <>
         <FileUpload items={[]} {...sharedProps} />
-        <button type="button">Outside control</button>
+        <button type="button" tabIndex={0}>
+          Outside control
+        </button>
       </>,
     );
 
