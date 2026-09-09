@@ -138,3 +138,24 @@ Determine its cause before proposing a focus-owner change. Global modal ordering
 nested/inert coordination, initial-focus policy, other modal owners/P1 contracts
 and full packed Firefox/Linux qualification remain open. No ledger entry or
 acceptance cell was promoted; no remote/release or Colima action occurred.
+
+## Completed native modal Tab containment — 2026-09-09
+
+The observed WebKit Tab escape is repaired in the shared hook. Local hidden
+boundaries only participate during the originating Tab gesture; native intermediate
+navigation is preserved, descendant-native cancellation is respected, and boundaries
+are deactivated/removed with their owner. No API, dependencies or caller changes.
+Native16/16, Chromium/SSR115 and focused WebKit7/7 pass, as do types/lint/format.
+One Codex/high retry followed by critical/controller native-oracle fixture and
+const completion; independent GLM3/3 DONE and no findings with unchanged guards
+(after a formatting-only report retry). See .batuta/v1-webkit-tab-verification.md.
+
+This completes the specific WebKit Tab escape observation in the previous section,
+not global modal coordination or release qualification. The broader WebKit suite
+remains100/102: the same two BottomSheet pointer-opener return-focus assertions
+also fail with the original hook (baseline10/12). Tests and BottomSheet runtime
+were preserved. Next bounded task: diagnose BottomSheet return-focus ownership
+and determine the compatible incumbent correction, using the existing approved
+shared return-focus contract as reference. Do not alter Colima or introduce
+new foundation/dependency work. Remaining initial-focus, sibling/modal/inert,
+other P1 and packed Firefox/Linux requirements remain open; no ledger promotion.
