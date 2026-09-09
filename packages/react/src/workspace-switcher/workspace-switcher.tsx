@@ -116,10 +116,18 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       }
     };
 
-    const handleOptionKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
+    const optionForTarget = (target: EventTarget | null): HTMLButtonElement | null => {
+      if (!(target instanceof Element)) return null;
+      const option = target.closest<HTMLButtonElement>('[role="option"]');
+      return option && popoverRef.current?.contains(option) ? option : null;
+    };
+
+    const handleOptionKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.defaultPrevented) return;
+      const option = optionForTarget(event.target);
+      if (!option) return;
       const options = optionButtons();
-      const currentIndex = options.indexOf(event.currentTarget);
+      const currentIndex = options.indexOf(option);
       if (currentIndex < 0 || options.length === 0) return;
       let nextIndex: number | undefined;
       if (event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % options.length;
@@ -144,8 +152,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
     };
 
     return (
-      // The root forwards the consumer's native onKeyDown from its descendants; the trigger
-      // and option buttons themselves own the interactive behavior.
+      // The root owns keyboard defaults so consumers can cancel the original event first.
       // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div
         {...rest}
@@ -153,7 +160,10 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
         id={rootId}
         className={cx('lyra-wssw', className)}
         onKeyDown={(event) => {
-          if (event.target !== triggerRef.current) onKeyDown?.(event);
+          onKeyDown?.(event);
+          if (event.defaultPrevented) return;
+          if (triggerRef.current?.contains(event.target as Node)) handleTriggerKeyDown(event);
+          else handleOptionKeyDown(event);
         }}
       >
         <button
@@ -164,10 +174,6 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           aria-expanded={open}
           aria-controls={listboxId}
           onClick={() => (open ? close() : openWithFocus(-2))}
-          onKeyDown={(event) => {
-            onKeyDown?.(event as unknown as KeyboardEvent<HTMLDivElement>);
-            handleTriggerKeyDown(event);
-          }}
         >
           <Avatar name={selected?.name ?? '?'} size="sm" shape="square" />
           <span className="lyra-wssw__id">
@@ -194,7 +200,6 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
                 role="option"
                 aria-selected={workspace.id === selected?.id}
                 className="lyra-wssw__item"
-                onKeyDown={handleOptionKeyDown}
                 onClick={() => {
                   onChange?.(workspace.id, workspace);
                   close(true);
@@ -227,7 +232,6 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
                   role="option"
                   aria-selected={false}
                   className="lyra-wssw__item lyra-wssw__create"
-                  onKeyDown={handleOptionKeyDown}
                   onClick={() => {
                     onCreate();
                     close(true);

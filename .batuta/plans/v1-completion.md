@@ -112,6 +112,11 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
       Scope: packages/alpine/src/workspace-switcher.ts, colocated browser test, .changeset/workspace-alpine-selected-entry.md
       Accept: supported opening methods focus served selected workspace; retain no-selection arrow fallback, consumer-owned aria-selected, event payload/ordering and cleanup; no new API/dependency.
 
-- [ ] 21. Honor consumer-first React workspace keyboard cancellation — react/medium
+- [x] 21. Honor consumer-first React workspace keyboard cancellation — react/medium
       Scope: packages/react/src/workspace-switcher/workspace-switcher.tsx, colocated browser test, .changeset/workspace-react-keyboard-cancellation.md
       Accept: original root event delivered once before defaults; preventDefault stops opening/navigation/dismissal, stopPropagation alone preserves defaults; native/browser/SSR and compatibility proof, no API change.
+
+- [ ] 22. Separate the existing React creation command from workspace selection — react/high
+      Depends on: 21
+      Scope: WorkspaceSwitcher source/browser/SSR, .changeset/workspace-create-command.md
+      Accept: specs/2026-09-09-workspace-command-design.md; native command semantics, roving/native Tab, empty-state/activation and cancellation; unchanged API/styles and measured budget.

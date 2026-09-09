@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
+import type { KeyboardEvent } from 'react';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { WorkspaceSwitcher } from './index';
@@ -223,6 +224,106 @@ describe('WorkspaceSwitcher', () => {
     }
     expect(onChange).not.toHaveBeenCalled();
     expect(onCreate).not.toHaveBeenCalled();
+  });
+
+  it('lets the root cancel keyboard defaults before opening, navigation, and dismissal', async () => {
+    const workspacesWithSelectedMiddle = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+      { id: 'gamma', name: 'Gamma' },
+    ];
+    const onChange = vi.fn();
+    const onCreate = vi.fn();
+    let cancelDefaults = true;
+    let root: HTMLDivElement | null = null;
+    const onKeyDown = vi.fn((event: KeyboardEvent<HTMLDivElement>) => {
+      expect(event.currentTarget).toBe(root);
+      expect(event.target).not.toBe(root);
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(event.target);
+      if (cancelDefaults) event.preventDefault();
+    });
+    const { container } = await render(
+      <WorkspaceSwitcher
+        workspaces={workspacesWithSelectedMiddle}
+        current="beta"
+        onChange={onChange}
+        onCreate={onCreate}
+        onKeyDown={onKeyDown}
+      />,
+    );
+    root = container.querySelector<HTMLDivElement>('.lyra-wssw')!;
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+    for (const key of ['{Enter}', '{Space}', '{ArrowDown}', '{ArrowUp}'] as const) {
+      trigger.focus();
+      await userEvent.keyboard(key);
+      expect(container.querySelector('[role=listbox]')).toBeNull();
+      expect(document.activeElement).toBe(trigger);
+    }
+
+    await userEvent.click(trigger);
+    const selected = container.querySelector<HTMLButtonElement>(
+      '[role=option][aria-selected="true"]',
+    )!;
+    expect(document.activeElement).toBe(selected);
+    for (const key of [
+      '{ArrowDown}',
+      '{ArrowUp}',
+      '{Home}',
+      '{End}',
+      '{Escape}',
+      '{Tab}',
+    ] as const) {
+      await userEvent.keyboard(key);
+      expect(container.querySelector('[role=listbox]')).not.toBeNull();
+      expect(document.activeElement).toBe(selected);
+    }
+
+    cancelDefaults = false;
+    await userEvent.keyboard('{End}');
+    const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
+    expect(document.activeElement).toBe(create);
+    cancelDefaults = true;
+    await userEvent.keyboard('{Space}');
+    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(document.activeElement).toBe(create);
+
+    expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual([
+      'Enter',
+      ' ',
+      'ArrowDown',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowUp',
+      'Home',
+      'End',
+      'Escape',
+      'Tab',
+      'End',
+      ' ',
+    ]);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+
+  it('keeps keyboard defaults when the root only stops propagation', async () => {
+    const onAncestorKeyDown = vi.fn();
+    const onKeyDown = vi.fn((event: KeyboardEvent<HTMLDivElement>) => event.stopPropagation());
+    const { container } = await render(
+      <div role="presentation" onKeyDown={onAncestorKeyDown}>
+        <WorkspaceSwitcher workspaces={workspaces} onKeyDown={onKeyDown} />
+      </div>,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+    trigger.focus();
+    await userEvent.keyboard('{ArrowDown}');
+
+    expect(onKeyDown).toHaveBeenCalledOnce();
+    expect(onAncestorKeyDown).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(
+      container.querySelector<HTMLButtonElement>('[role=option][aria-selected="true"]'),
+    );
   });
 
   it('flips the popover above the trigger instead of scrolling the page when there is no room below', async () => {
