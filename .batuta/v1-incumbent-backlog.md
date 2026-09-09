@@ -119,3 +119,22 @@ Unmigrated bare mouse consumers remain unqualified. Modal initial-focus policy
 (including Escape before input focus), nested/inert coordination, other P1
 contracts and full packed Firefox/Linux qualification remain open. No P1 ledger
 entry or acceptance cell was promoted, and no remote/release action occurred.
+
+## Completed nested Dialog Escape slice — 2026-09-09
+
+React-nested Dialog Escape no longer cascades to its parent. Child disabled-close,
+ignored-close and consumer cancellation retain the parent; normal child close
+restores its trigger and a second Escape closes the parent. The change remains in
+Dialog's existing keyboard owner, with no API/dependency/global-layer framework.
+Native Escape10/10, final Chromium/SSR64, WebKit57, types/lint/format pass. One
+formatting-only Codex/medium retry; independent GLM3/3 DONE with unchanged guard.
+See .batuta/v1-dialog-nested-escape-verification.md for exact proof and disposition.
+
+Next bounded investigation: the retained original and current native fixtures show
+WebKit forward Tab from the child input reaches BODY, while reverse Tab returns to
+the input; Chromium passes this path. This existing focus-containment defect was
+observed independently of Escape and is not qualified or repaired by this slice.
+Determine its cause before proposing a focus-owner change. Global modal ordering,
+nested/inert coordination, initial-focus policy, other modal owners/P1 contracts
+and full packed Firefox/Linux qualification remain open. No ledger entry or
+acceptance cell was promoted; no remote/release or Colima action occurred.

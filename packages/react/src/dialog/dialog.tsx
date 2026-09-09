@@ -145,9 +145,13 @@ function DialogPanel({
 
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key === 'Escape' && closeOnEsc) {
-      onClose?.();
-    }
+    if (event.key !== 'Escape') return;
+
+    // Dialog portals remain nested in the React tree, so Escape from a child panel would
+    // otherwise bubble to a parent Dialog's keyboard owner. The child owns this operation
+    // even when its consumer cancels it or its parent declines the close request.
+    event.stopPropagation();
+    if (!event.defaultPrevented && closeOnEsc) onClose?.();
   };
 
   const handleAnimationEnd: AnimationEventHandler<HTMLDivElement> = (event) => {

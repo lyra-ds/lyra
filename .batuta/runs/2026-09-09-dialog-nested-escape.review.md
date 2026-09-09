@@ -1,0 +1,2 @@
+packages/react/src/dialog/dialog.browser.test.tsx:1 · LOW · browser suite/types ran on pre-format bytes (10:40-10:41) while final bytes only got lint/format re-runs; if the Prettier retry had altered semantics, no suite rerun would catch it — mitigated by formatting-only scope and controller-pending final proof.
+WORK.md:19 · LOW · managed controller-owned ledger modified before implementation; if executors silently edit controller state, status tracking can diverge from verified reality — mitigated by single status line matching existing entry format, uncommitted.

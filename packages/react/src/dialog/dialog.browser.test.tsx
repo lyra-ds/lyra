@@ -522,6 +522,199 @@ describe('Dialog — close paths', () => {
   });
 });
 
+// --- Nested Escape containment ---------------------------------------------------------------
+
+describe('Dialog — nested Escape containment', () => {
+  interface NestedDialogHarnessProps {
+    childCloseOnEsc?: boolean;
+    ignoreChildClose?: boolean;
+    onChildClose?: () => void;
+    onChildKeyDown?: DialogProps['onKeyDown'];
+    onParentClose?: () => void;
+    onParentKeyDown?: DialogProps['onKeyDown'];
+    childContent?: ReactNode;
+  }
+
+  function NestedDialogHarness({
+    childCloseOnEsc = true,
+    ignoreChildClose = false,
+    onChildClose,
+    onChildKeyDown,
+    onParentClose,
+    onParentKeyDown,
+    childContent,
+  }: NestedDialogHarnessProps): ReactNode {
+    const [parentOpen, setParentOpen] = useState(false);
+    const [childOpen, setChildOpen] = useState(false);
+    const childTriggerRef = useRef<HTMLButtonElement>(null);
+
+    return (
+      <>
+        <button type="button" aria-label="Open parent dialog" onClick={() => setParentOpen(true)}>
+          Open parent dialog
+        </button>
+        <Dialog
+          open={parentOpen}
+          onClose={() => {
+            onParentClose?.();
+            setParentOpen(false);
+          }}
+          onKeyDown={onParentKeyDown}
+          title="Parent dialog"
+        >
+          <button
+            ref={childTriggerRef}
+            type="button"
+            aria-label="Open child dialog"
+            onClick={() => setChildOpen(true)}
+          >
+            Open child dialog
+          </button>
+          <Dialog
+            open={childOpen}
+            onClose={() => {
+              onChildClose?.();
+              if (!ignoreChildClose) setChildOpen(false);
+            }}
+            onKeyDown={onChildKeyDown}
+            closeOnEsc={childCloseOnEsc}
+            returnFocusTo={() => childTriggerRef.current}
+            title="Child dialog"
+          >
+            {childContent ?? (
+              <button type="button" aria-label="Child action">
+                Child action
+              </button>
+            )}
+          </Dialog>
+        </Dialog>
+      </>
+    );
+  }
+
+  const dialogByTitle = (title: string): HTMLElement | undefined =>
+    [...document.querySelectorAll<HTMLElement>('.lyra-dialog')].find(
+      (element) => element.querySelector('.lyra-dialog__title')?.textContent === title,
+    );
+
+  async function openNestedDialogs(props: NestedDialogHarnessProps = {}): Promise<{
+    childTrigger: HTMLButtonElement;
+  }> {
+    await render(<NestedDialogHarness {...props} />);
+    const parentTrigger = document.querySelector<HTMLButtonElement>(
+      '[aria-label="Open parent dialog"]',
+    )!;
+    await userEvent.click(parentTrigger);
+    await vi.waitFor(() => expect(dialogByTitle('Parent dialog')).toBeDefined());
+
+    const childTrigger = dialogByTitle('Parent dialog')!.querySelector<HTMLButtonElement>(
+      '[aria-label="Open child dialog"]',
+    )!;
+    await userEvent.click(childTrigger);
+    await vi.waitFor(() => expect(dialogByTitle('Child dialog')).toBeDefined());
+    await vi.waitFor(() =>
+      expect(dialogByTitle('Child dialog')!.contains(document.activeElement)).toBe(true),
+    );
+    return { childTrigger };
+  }
+
+  it('closes only the child, restores its trigger, then lets a second Escape close the parent', async () => {
+    const onChildClose = vi.fn();
+    const onParentClose = vi.fn();
+    const { childTrigger } = await openNestedDialogs({ onChildClose, onParentClose });
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(onChildClose).toHaveBeenCalledTimes(1);
+    expect(onParentClose).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dialogByTitle('Child dialog')).toBeUndefined(), { timeout: 500 });
+    expect(dialogByTitle('Parent dialog')).toBeDefined();
+    expect(document.activeElement).toBe(childTrigger);
+
+    await userEvent.keyboard('{Escape}');
+    expect(onParentClose).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(dialogByTitle('Parent dialog')).toBeUndefined(), {
+      timeout: 500,
+    });
+  });
+
+  const containmentCases: Array<{
+    name: string;
+    props: Pick<
+      NestedDialogHarnessProps,
+      'childCloseOnEsc' | 'ignoreChildClose' | 'onChildKeyDown' | 'childContent'
+    >;
+    expectedChildCloseCalls: number;
+  }> = [
+    {
+      name: 'the child disables Escape closing',
+      props: { childCloseOnEsc: false },
+      expectedChildCloseCalls: 0,
+    },
+    {
+      name: 'the child parent ignores its close request',
+      props: { ignoreChildClose: true },
+      expectedChildCloseCalls: 1,
+    },
+    {
+      name: 'the child panel consumer prevents default',
+      props: { onChildKeyDown: (event) => event.preventDefault() },
+      expectedChildCloseCalls: 0,
+    },
+    {
+      name: 'a child input consumer prevents default',
+      props: {
+        childContent: (
+          <input aria-label="Child editor" onKeyDown={(event) => event.preventDefault()} />
+        ),
+      },
+      expectedChildCloseCalls: 0,
+    },
+  ];
+
+  it.each(containmentCases)(
+    'keeps the parent open when $name',
+    async ({ props, expectedChildCloseCalls }) => {
+      const onChildClose = vi.fn();
+      const onParentClose = vi.fn();
+      await openNestedDialogs({ ...props, onChildClose, onParentClose });
+
+      if ('childContent' in props) {
+        dialogByTitle('Child dialog')!
+          .querySelector<HTMLInputElement>('[aria-label="Child editor"]')!
+          .focus();
+      }
+      await userEvent.keyboard('{Escape}');
+
+      expect(onChildClose).toHaveBeenCalledTimes(expectedChildCloseCalls);
+      expect(onParentClose).not.toHaveBeenCalled();
+      expect(dialogByTitle('Parent dialog')).toBeDefined();
+      expect(dialogByTitle('Child dialog')).toBeDefined();
+    },
+  );
+
+  it('runs the child consumer before its cancellable Escape default and preserves non-Escape bubbling', async () => {
+    const calls: string[] = [];
+    await openNestedDialogs({
+      onChildClose: () => calls.push('child-close'),
+      onChildKeyDown: (event) => {
+        calls.push(`child-${event.key}`);
+        if (event.key === 'Escape') event.preventDefault();
+      },
+      onParentKeyDown: (event) => calls.push(`parent-${event.key}`),
+    });
+
+    await userEvent.keyboard('{Escape}');
+    expect(calls).toEqual(['child-Escape']);
+
+    dialogByTitle('Child dialog')!
+      .querySelector<HTMLButtonElement>('[aria-label="Child action"]')!
+      .focus();
+    await userEvent.keyboard('{Enter}');
+    expect(calls).toEqual(['child-Escape', 'child-Enter', 'parent-Enter']);
+  });
+});
+
 // --- Presence: closing class + exit keyframe, then unmount within the wedge guard -------------
 
 describe('Dialog — presence', () => {
