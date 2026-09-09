@@ -1,6 +1,6 @@
 # CommandPalette return-focus verification
 
-Base8d23c3d. Controller verdict: approved. Independent GLM review3/3 DONE, no findings,
+Implementation `4545ddc`; base8d23c3d. Controller verdict: approved. Independent GLM review3/3 DONE, no findings,
 unchanged status/diff/file guard; Batuta verifier PASS.
 High/Codex gpt-5.6-terra, one retry, then self/critical completion of a test
 readiness race and the missing diagnostic sentence. Product runtime/shared
@@ -84,7 +84,7 @@ unchanged status/diff/scoped-file SHA256 guard and3/3 DONE. Findings block is
 verbatim `none`; it followed the report marker and was preserved without changing
 its content. Controller adjudication: no unresolved findings, approved. First
 round remains invalid (external-directory denial, no verdict); no gate was waived.
-Source implementation commit is recorded in WORK.md after creation. Final source
+Source implementation commit: `4545ddc`. Final source
 SHA256: `ce92a6a9083ed19881e2547fd1ad497ad19a64e93cdb7790e95ee79fff326c1a`.
 
 Owned browsers/servers exited and all three temporary dependency symlinks were
