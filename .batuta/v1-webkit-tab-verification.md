@@ -1,6 +1,6 @@
 # Native modal Tab containment verification
 
-Base6e166ec; implementation PENDING_COMMIT. Verdict approved.
+Base6e166ec; implementation f9cb9d2. Verdict approved.
 Route: critical/controller root-cause diagnosis; Codex gpt-5.6-terra/high
 implementation, one high-lane retry, then critical/controller fixture and
 immutable-declaration completion. Independent OpenCode GLM5.3Flash review approved (3/3 DONE).
