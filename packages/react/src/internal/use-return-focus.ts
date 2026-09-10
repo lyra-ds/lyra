@@ -8,6 +8,9 @@ export interface UseReturnFocusOptions {
   returnFocusTo?: () => HTMLElement | null;
   panelRef: RefObject<HTMLElement | null>;
   overlayRef: RefObject<HTMLElement | null>;
+  active?: boolean;
+  closeAuthorityRef?: RefObject<boolean>;
+  fallbackFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export interface ReturnFocusOwner {
@@ -64,8 +67,12 @@ export function useReturnFocus({
   returnFocusTo,
   panelRef,
   overlayRef,
+  active = open,
+  closeAuthorityRef,
+  fallbackFocusRef,
 }: UseReturnFocusOptions): ReturnFocusOwner {
   const previousOpenRef = useRef(open);
+  const previousActiveRef = useRef(active);
   const openerRef = useRef<HTMLElement | null>(null);
   const capturedForCycleRef = useRef(false);
   const resolverRef = useRef(returnFocusTo);
@@ -86,8 +93,18 @@ export function useReturnFocus({
 
   useEffect(() => {
     const wasOpen = previousOpenRef.current;
+    const wasActive = previousActiveRef.current;
     previousOpenRef.current = open;
-    if (open || !wasOpen) return;
+    previousActiveRef.current = active;
+    if (active || !wasActive) return;
+
+    // Parent-driven branch deactivation is not an accepted close for this owner. It releases
+    // this cycle's opener so a controlled child can capture a fresh one when its parent returns.
+    if (open || !wasOpen || (closeAuthorityRef && !closeAuthorityRef.current)) {
+      openerRef.current = null;
+      capturedForCycleRef.current = false;
+      return;
+    }
 
     const ownerDocument = panelRef.current?.ownerDocument ?? openerRef.current?.ownerDocument;
     if (!ownerDocument) return;
@@ -96,11 +113,14 @@ export function useReturnFocus({
     const panel = panelRef.current;
     const overlay = overlayRef.current;
     const opener = openerRef.current;
+    const fallback = fallbackFocusRef?.current ?? null;
     let target: HTMLElement | null = null;
     if (isEligibleReturnFocusTarget(resolverTarget, ownerDocument, panel, overlay)) {
       target = resolverTarget;
     } else if (isEligibleReturnFocusTarget(opener, ownerDocument, panel, overlay)) {
       target = opener;
+    } else if (isEligibleReturnFocusTarget(fallback, ownerDocument, panel, overlay)) {
+      target = fallback;
     }
 
     openerRef.current = null;
@@ -112,7 +132,7 @@ export function useReturnFocus({
         'Lyra modal could not restore focus after closing. Provide an eligible returnFocusTo target.',
       );
     }
-  }, [open, overlayRef, panelRef]);
+  }, [active, closeAuthorityRef, fallbackFocusRef, open, overlayRef, panelRef]);
 
   return { captureOpener };
 }

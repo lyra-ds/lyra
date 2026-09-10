@@ -1,12 +1,5 @@
-import { useEffect } from 'react';
-
-// Module-level reference count so nested overlays (Dialog over Drawer over CommandPalette)
-// share one body lock: only the 0→1 transition applies styles and captures the prior inline
-// values, only the 1→0 transition restores them. A per-hook counter would let an inner overlay
-// unlock the body while an outer one is still open (review fix).
-let lockCount = 0;
-let savedOverflow = '';
-let savedPaddingRight = '';
+import { useEffect, type RefObject } from 'react';
+import { acquireModalScrollLock } from './use-modal-layer';
 
 /**
  * Lock body scroll while `active`, compensating for the removed scrollbar so the page behind a
@@ -19,32 +12,11 @@ let savedPaddingRight = '';
  *
  * All DOM access happens inside the effect, so there is no module-scope DOM reference.
  */
-export function useScrollLock(active: boolean): void {
+export function useScrollLock(active: boolean, ownerRef?: RefObject<HTMLElement | null>): void {
   useEffect(() => {
     if (!active) return;
-
-    lockCount += 1;
-    if (lockCount === 1) {
-      const body = document.body;
-      savedOverflow = body.style.overflow;
-      savedPaddingRight = body.style.paddingRight;
-
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      const existingPadding = parseFloat(getComputedStyle(body).paddingRight) || 0;
-
-      body.style.overflow = 'hidden';
-      if (scrollbarWidth > 0) {
-        body.style.paddingRight = `${existingPadding + scrollbarWidth}px`;
-      }
-    }
-
-    return () => {
-      lockCount -= 1;
-      if (lockCount === 0) {
-        const body = document.body;
-        body.style.overflow = savedOverflow;
-        body.style.paddingRight = savedPaddingRight;
-      }
-    };
-  }, [active]);
+    const ownerDocument = ownerRef ? ownerRef.current?.ownerDocument : document;
+    if (!ownerDocument) return;
+    return acquireModalScrollLock(ownerDocument);
+  }, [active, ownerRef]);
 }

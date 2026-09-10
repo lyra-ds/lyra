@@ -310,7 +310,7 @@ export function useFocusTrap(panelRef: RefObject<HTMLElement | null>, active: bo
 
       const first = candidates[0];
       const last = candidates[candidates.length - 1];
-      const activeEl = document.activeElement;
+      const activeEl = node.ownerDocument.activeElement;
 
       // Panel itself focused: route into the candidate list.
       if (activeEl === node) {

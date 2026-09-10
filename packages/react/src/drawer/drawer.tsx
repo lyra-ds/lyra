@@ -12,6 +12,12 @@ import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
 import { useModalActivity } from '../internal/use-modal-activity';
+import {
+  ModalLayerProvider,
+  useModalLayer,
+  useModalLayerRegistration,
+  type ModalLayerValue,
+} from '../internal/use-modal-layer';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 import { usePresence } from '../internal/use-presence';
@@ -55,6 +61,7 @@ interface DrawerPanelProps {
   rest: HTMLAttributes<HTMLDivElement>;
   closing: boolean;
   onAnimationEnd: AnimationEventHandler;
+  layer: ModalLayerValue;
 }
 
 /** Portal child: DOM-dependent effects intentionally live with the portaled panel. */
@@ -75,7 +82,19 @@ function DrawerPanel({
   rest,
   closing,
   onAnimationEnd,
+  layer,
 }: DrawerPanelProps): ReactNode {
+  const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay, overlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  const { topmost, isTopmost } = useModalLayerRegistration(
+    layer,
+    overlay,
+    captureOpener,
+    revokeGesture,
+  );
   const { focusInitial, resetInitialFocus } = useInitialFocus({
     initialFocusTo,
     panelRef,
@@ -87,24 +106,18 @@ function DrawerPanel({
       resetInitialFocus();
       return;
     }
-    focusInitial();
-  }, [focusInitial, open, resetInitialFocus]);
+    if (topmost) focusInitial();
+  }, [focusInitial, open, resetInitialFocus, topmost]);
 
-  useFocusTrap(panelRef, open);
+  useFocusTrap(panelRef, open && topmost);
   // Keyed on the close REQUEST, not on `mounted`: the page is scrollable again immediately while
   // the exit animation still plays, exactly as Dialog does it.
-  useScrollLock(!closing);
-
-  const downOnOverlay = useRef(false);
-  const revokeGesture = useCallback(() => {
-    downOnOverlay.current = false;
-  }, []);
-  const { attachOverlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  useScrollLock(open, panelRef);
 
   const { onKeyDown: restOnKeyDown, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (!open || event.key !== 'Escape') return;
+    if (!open || !isTopmost() || event.key !== 'Escape') return;
 
     event.stopPropagation();
     if (!event.defaultPrevented) onClose?.();
@@ -120,7 +133,9 @@ function DrawerPanel({
         downOnOverlay.current = open && event.target === event.currentTarget;
       }}
       onClick={(event) => {
-        if (open && downOnOverlay.current && event.target === event.currentTarget) onClose?.();
+        if (open && isTopmost() && downOnOverlay.current && event.target === event.currentTarget) {
+          onClose?.();
+        }
       }}
     >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
@@ -144,7 +159,9 @@ function DrawerPanel({
               type="button"
               className="lyra-drawer__close"
               aria-label={closeLabel}
-              onClick={open ? onClose : undefined}
+              onClick={() => {
+                if (open && isTopmost()) onClose?.();
+              }}
             >
               <svg
                 width="14"
@@ -193,8 +210,17 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const { mounted, closing, onAnimationEnd } = usePresence(open);
+  const layer = useModalLayer(open, panelRef);
 
-  const { captureOpener } = useReturnFocus({ open, returnFocusTo, panelRef, overlayRef });
+  const { captureOpener } = useReturnFocus({
+    open,
+    active: layer.effectiveOpen,
+    closeAuthorityRef: layer.closeAuthorityRef,
+    fallbackFocusRef: layer.parentPanelRef,
+    returnFocusTo,
+    panelRef,
+    overlayRef,
+  });
 
   const attachPanel = useCallback(
     (node: HTMLDivElement | null) => {
@@ -208,26 +234,29 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
   if (!mounted) return null;
 
   return (
-    <Portal container={container}>
-      <DrawerPanel
-        panelRef={panelRef}
-        overlayRef={overlayRef}
-        attachPanel={attachPanel}
-        titleId={titleId}
-        title={title}
-        footer={footer}
-        onClose={onClose}
-        closeLabel={closeLabel}
-        captureOpener={captureOpener}
-        initialFocusTo={initialFocusTo}
-        open={open}
-        className={className}
-        rest={rest}
-        closing={closing}
-        onAnimationEnd={onAnimationEnd}
-      >
-        {children}
-      </DrawerPanel>
-    </Portal>
+    <ModalLayerProvider layer={layer}>
+      <Portal container={container}>
+        <DrawerPanel
+          panelRef={panelRef}
+          overlayRef={overlayRef}
+          attachPanel={attachPanel}
+          titleId={titleId}
+          title={title}
+          footer={footer}
+          onClose={onClose}
+          closeLabel={closeLabel}
+          captureOpener={captureOpener}
+          initialFocusTo={initialFocusTo}
+          open={layer.effectiveOpen}
+          className={className}
+          rest={rest}
+          closing={closing}
+          onAnimationEnd={onAnimationEnd}
+          layer={layer}
+        >
+          {children}
+        </DrawerPanel>
+      </Portal>
+    </ModalLayerProvider>
   );
 });

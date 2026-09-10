@@ -12,6 +12,12 @@ import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
 import { useModalActivity } from '../internal/use-modal-activity';
+import {
+  ModalLayerProvider,
+  useModalLayer,
+  useModalLayerRegistration,
+  type ModalLayerValue,
+} from '../internal/use-modal-layer';
 import { usePresence } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
@@ -73,6 +79,7 @@ interface BottomSheetPanelProps {
   rest: HTMLAttributes<HTMLDivElement>;
   closing: boolean;
   onAnimationEnd: AnimationEventHandler;
+  layer: ModalLayerValue;
 }
 
 /** Portal child: DOM-dependent effects intentionally live with the portaled panel. */
@@ -93,7 +100,21 @@ function BottomSheetPanel({
   rest,
   closing,
   onAnimationEnd,
+  layer,
 }: BottomSheetPanelProps): ReactNode {
+  // A click is dispatched on the nearest common ancestor of its mousedown and mouseup targets.
+  // Record where the press began so dragging from the panel onto the backdrop cannot dismiss it.
+  const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay, overlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  const { topmost, isTopmost } = useModalLayerRegistration(
+    layer,
+    overlay,
+    captureOpener,
+    revokeGesture,
+  );
   const hasTitle = title != null;
 
   const { focusInitial, resetInitialFocus } = useInitialFocus({
@@ -107,24 +128,16 @@ function BottomSheetPanel({
       resetInitialFocus();
       return;
     }
-    focusInitial();
-  }, [focusInitial, open, resetInitialFocus]);
+    if (topmost) focusInitial();
+  }, [focusInitial, open, resetInitialFocus, topmost]);
 
-  useFocusTrap(panelRef, open);
-  useScrollLock(!closing);
-
-  // A click is dispatched on the nearest common ancestor of its mousedown and mouseup targets.
-  // Record where the press began so dragging from the panel onto the backdrop cannot dismiss it.
-  const downOnOverlay = useRef(false);
-  const revokeGesture = useCallback(() => {
-    downOnOverlay.current = false;
-  }, []);
-  const { attachOverlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  useFocusTrap(panelRef, open && topmost);
+  useScrollLock(open, panelRef);
 
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (!open || event.key !== 'Escape') return;
+    if (!open || !isTopmost() || event.key !== 'Escape') return;
 
     event.stopPropagation();
     if (!event.defaultPrevented) onClose?.();
@@ -144,7 +157,9 @@ function BottomSheetPanel({
         downOnOverlay.current = open && event.target === event.currentTarget;
       }}
       onClick={(event) => {
-        if (open && downOnOverlay.current && event.target === event.currentTarget) onClose?.();
+        if (open && isTopmost() && downOnOverlay.current && event.target === event.currentTarget) {
+          onClose?.();
+        }
       }}
     >
       {/* The sheet panel owns the Escape-to-close keydown for the modal-dialog pattern. */}
@@ -173,7 +188,9 @@ function BottomSheetPanel({
                 type="button"
                 className="lyra-bottomsheet__close"
                 aria-label={closeLabel}
-                onClick={open ? onClose : undefined}
+                onClick={() => {
+                  if (open && isTopmost()) onClose?.();
+                }}
               >
                 <svg
                   width="14"
@@ -222,7 +239,16 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
     const panelRef = useRef<HTMLDivElement | null>(null);
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
-    const { captureOpener } = useReturnFocus({ open, returnFocusTo, panelRef, overlayRef });
+    const layer = useModalLayer(open, panelRef);
+    const { captureOpener } = useReturnFocus({
+      open,
+      active: layer.effectiveOpen,
+      closeAuthorityRef: layer.closeAuthorityRef,
+      fallbackFocusRef: layer.parentPanelRef,
+      returnFocusTo,
+      panelRef,
+      overlayRef,
+    });
 
     const attachPanel = useCallback(
       (node: HTMLDivElement | null) => {
@@ -236,27 +262,30 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
     if (!mounted) return null;
 
     return (
-      <Portal container={container}>
-        <BottomSheetPanel
-          panelRef={panelRef}
-          overlayRef={overlayRef}
-          attachPanel={attachPanel}
-          titleId={titleId}
-          title={title}
-          accessibleName={accessibleName}
-          onClose={onClose}
-          closeLabel={closeLabel}
-          open={open}
-          captureOpener={captureOpener}
-          initialFocusTo={initialFocusTo}
-          className={className}
-          rest={rest}
-          closing={closing}
-          onAnimationEnd={onAnimationEnd}
-        >
-          {children}
-        </BottomSheetPanel>
-      </Portal>
+      <ModalLayerProvider layer={layer}>
+        <Portal container={container}>
+          <BottomSheetPanel
+            panelRef={panelRef}
+            overlayRef={overlayRef}
+            attachPanel={attachPanel}
+            titleId={titleId}
+            title={title}
+            accessibleName={accessibleName}
+            onClose={onClose}
+            closeLabel={closeLabel}
+            open={layer.effectiveOpen}
+            captureOpener={captureOpener}
+            initialFocusTo={initialFocusTo}
+            className={className}
+            rest={rest}
+            closing={closing}
+            onAnimationEnd={onAnimationEnd}
+            layer={layer}
+          >
+            {children}
+          </BottomSheetPanel>
+        </Portal>
+      </ModalLayerProvider>
     );
   },
 );

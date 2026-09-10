@@ -1,4 +1,5 @@
-import { useCallback, type RefObject } from 'react';
+import { useCallback, useRef, useState, type RefObject } from 'react';
+import { claimInactiveModalOverlay } from './use-modal-layer';
 
 interface UseModalActivityOptions {
   open: boolean;
@@ -8,6 +9,7 @@ interface UseModalActivityOptions {
 
 interface ModalActivityOwner {
   attachOverlay: (node: HTMLElement | null) => void;
+  overlay: HTMLElement | null;
 }
 
 /**
@@ -20,16 +22,26 @@ export function useModalActivity({
   overlayRef,
   revokeGesture,
 }: UseModalActivityOptions): ModalActivityOwner {
+  const [claimKey] = useState(() => Symbol('lyra-modal-exit'));
+  const attachedOverlayRef = useRef<HTMLElement | null>(null);
+  const [overlay, setOverlay] = useState<HTMLElement | null>(null);
+
   const attachOverlay = useCallback(
     (node: HTMLElement | null) => {
+      const previousNode = attachedOverlayRef.current;
+      if (previousNode && previousNode !== node) {
+        claimInactiveModalOverlay(previousNode, claimKey, false);
+      }
+      attachedOverlayRef.current = node;
       overlayRef.current = node;
+      setOverlay(node);
       if (!node) return;
 
-      node.toggleAttribute('inert', !open);
+      claimInactiveModalOverlay(node, claimKey, !open);
       if (!open) revokeGesture();
     },
-    [open, overlayRef, revokeGesture],
+    [claimKey, open, overlayRef, revokeGesture],
   );
 
-  return { attachOverlay };
+  return { attachOverlay, overlay };
 }

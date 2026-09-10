@@ -16,6 +16,12 @@ import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
 import { useModalActivity } from '../internal/use-modal-activity';
+import {
+  ModalLayerProvider,
+  useModalLayer,
+  useModalLayerRegistration,
+  type ModalLayerValue,
+} from '../internal/use-modal-layer';
 import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
@@ -80,6 +86,7 @@ interface DialogPanelProps {
   className?: string;
   children: ReactNode;
   rest: HTMLAttributes<HTMLDivElement>;
+  layer: ModalLayerValue;
 }
 
 /**
@@ -107,7 +114,23 @@ function DialogPanel({
   className,
   children,
   rest,
+  layer,
 }: DialogPanelProps): ReactNode {
+  // WR-02: records whether the pointer press ORIGINATED on the backdrop. A `click` fires on the
+  // nearest common ancestor of its mousedown+mouseup targets, so a drag that starts inside the
+  // panel (e.g. selecting body text) and releases over the backdrop would otherwise satisfy
+  // `event.target === event.currentTarget` and dismiss the dialog — discarding in-progress input.
+  const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay, overlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  const { topmost, isTopmost } = useModalLayerRegistration(
+    layer,
+    overlay,
+    captureOpener,
+    revokeGesture,
+  );
   const { focusInitial, resetInitialFocus } = useInitialFocus({
     initialFocusTo,
     panelRef,
@@ -119,28 +142,19 @@ function DialogPanel({
       resetInitialFocus();
       return;
     }
-    focusInitial();
-  }, [focusInitial, open, resetInitialFocus]);
+    if (topmost) focusInitial();
+  }, [focusInitial, open, resetInitialFocus, topmost]);
 
   // Trap Tab/Shift+Tab inside the panel (Pitfall 8 — the ref points into the portal subtree).
   // The zero-candidate branch of the trap keeps focus on the panel (tabIndex -1, below).
-  useFocusTrap(panelRef, open);
-
-  // WR-02: records whether the pointer press ORIGINATED on the backdrop. A `click` fires on the
-  // nearest common ancestor of its mousedown+mouseup targets, so a drag that starts inside the
-  // panel (e.g. selecting body text) and releases over the backdrop would otherwise satisfy
-  // `event.target === event.currentTarget` and dismiss the dialog — discarding in-progress input.
-  const downOnOverlay = useRef(false);
-  const revokeGesture = useCallback(() => {
-    downOnOverlay.current = false;
-  }, []);
-  const { attachOverlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  useFocusTrap(panelRef, open && topmost);
+  useScrollLock(open, panelRef);
 
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
 
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (!open || event.key !== 'Escape') return;
+    if (!open || !isTopmost() || event.key !== 'Escape') return;
 
     // Dialog portals remain nested in the React tree, so Escape from a child panel would
     // otherwise bubble to a parent Dialog's keyboard owner. The child owns this operation
@@ -169,6 +183,7 @@ function DialogPanel({
         // Dismiss only when BOTH endpoints of the interaction were the backdrop itself (WR-02).
         if (
           open &&
+          isTopmost() &&
           closeOnOverlayClick &&
           downOnOverlay.current &&
           event.target === event.currentTarget
@@ -200,7 +215,9 @@ function DialogPanel({
               type="button"
               className="lyra-dialog__close"
               aria-label={closeLabel}
-              onClick={open ? onClose : undefined}
+              onClick={() => {
+                if (open && isTopmost()) onClose?.();
+              }}
             >
               <svg
                 width="14"
@@ -267,12 +284,17 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const { mounted, closing, onAnimationEnd } = usePresence(open);
+  const layer = useModalLayer(open, panelRef);
 
-  // Body scroll lock keys on `open` (not `mounted`) so the page is scrollable again immediately
-  // once close is requested, while the exit animation still plays (D-22).
-  useScrollLock(open);
-
-  const { captureOpener } = useReturnFocus({ open, returnFocusTo, panelRef, overlayRef });
+  const { captureOpener } = useReturnFocus({
+    open,
+    active: layer.effectiveOpen,
+    closeAuthorityRef: layer.closeAuthorityRef,
+    fallbackFocusRef: layer.parentPanelRef,
+    returnFocusTo,
+    panelRef,
+    overlayRef,
+  });
 
   // Merge the internal panel ref (needed by the focus effect + trap) with the consumer's
   // forwarded ref, both targeting the panel div (D-08).
@@ -293,28 +315,31 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
   }
 
   return (
-    <Portal container={container}>
-      <DialogPanel
-        panelRef={panelRef}
-        overlayRef={overlayRef}
-        attachPanel={attachPanel}
-        titleId={titleId}
-        title={title}
-        footer={footer}
-        onClose={onClose}
-        closeLabel={closeLabel}
-        closeOnEsc={closeOnEsc}
-        closeOnOverlayClick={closeOnOverlayClick}
-        open={open}
-        closing={closing}
-        onAnimationEnd={onAnimationEnd}
-        captureOpener={captureOpener}
-        initialFocusTo={initialFocusTo}
-        className={className}
-        rest={rest}
-      >
-        {children}
-      </DialogPanel>
-    </Portal>
+    <ModalLayerProvider layer={layer}>
+      <Portal container={container}>
+        <DialogPanel
+          panelRef={panelRef}
+          overlayRef={overlayRef}
+          attachPanel={attachPanel}
+          titleId={titleId}
+          title={title}
+          footer={footer}
+          onClose={onClose}
+          closeLabel={closeLabel}
+          closeOnEsc={closeOnEsc}
+          closeOnOverlayClick={closeOnOverlayClick}
+          open={layer.effectiveOpen}
+          closing={closing}
+          onAnimationEnd={onAnimationEnd}
+          captureOpener={captureOpener}
+          initialFocusTo={initialFocusTo}
+          className={className}
+          rest={rest}
+          layer={layer}
+        >
+          {children}
+        </DialogPanel>
+      </Portal>
+    </ModalLayerProvider>
   );
 });
