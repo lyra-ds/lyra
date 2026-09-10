@@ -41,6 +41,26 @@ afterEach(async () => {
   document.body.style.paddingRight = '';
 });
 
+describe('BottomSheet — declared initial focus', () => {
+  it('uses an eligible declared destination instead of a hidden first control', async () => {
+    const destinationRef = { current: null as HTMLInputElement | null };
+    const resolver = vi.fn(() => destinationRef.current);
+
+    await render(
+      <BottomSheet open initialFocusTo={resolver} title="Declared destination">
+        <button type="button" hidden>
+          Hidden first action
+        </button>
+        <input ref={destinationRef} aria-label="Task field" />
+      </BottomSheet>,
+    );
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(destinationRef.current));
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('.lyra-bottomsheet')!.getAttribute('initialFocusTo')).toBeNull();
+  });
+});
+
 describe('BottomSheet', () => {
   it('runs its consumer before its cancellable Escape default and preserves non-Escape bubbling', async () => {
     const calls: string[] = [];

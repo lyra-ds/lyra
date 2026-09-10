@@ -41,6 +41,26 @@ afterEach(async () => {
   document.body.style.paddingRight = '';
 });
 
+describe('Drawer — declared initial focus', () => {
+  it('uses an eligible declared destination instead of a hidden first control', async () => {
+    const destinationRef = { current: null as HTMLInputElement | null };
+    const resolver = vi.fn(() => destinationRef.current);
+
+    await render(
+      <Drawer open initialFocusTo={resolver} title="Declared destination">
+        <button type="button" hidden>
+          Hidden first action
+        </button>
+        <input ref={destinationRef} aria-label="Task field" />
+      </Drawer>,
+    );
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(destinationRef.current));
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('.lyra-drawer')!.getAttribute('initialFocusTo')).toBeNull();
+  });
+});
+
 describe('Drawer', () => {
   it('runs its consumer before its cancellable Escape default and preserves non-Escape bubbling', async () => {
     const calls: string[] = [];

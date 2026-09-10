@@ -1,0 +1,3 @@
+# Incumbent changeset convention audit
+
+Task33 controller found its own design had applied the post1.0 additive-minor rule while current React remains0.5.x. VERSIONING.md:20-37 requires compatible additions/fixes to be patch during0.x. Task33 metadata is corrected within its own uncommitted changeset; no version command. This is a conductor design precision correction, not executor noncompliance. The existing committed Task30 .changeset/alpine-modal-return-destination.md also declares an additive minor; final pre-release metadata audit must assess/correct that alongside the other incumbent changesets before any deliberate1.0 release. Do not rewrite published tags or bump versions as part of this finding.

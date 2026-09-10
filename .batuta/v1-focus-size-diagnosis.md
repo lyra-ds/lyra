@@ -32,3 +32,10 @@ Task25Alpine nativeTab repair: completeAlpine artifact21394/21200B, about304Babo
 Task29 current Drawer2253/2000B and BottomSheet2296/2000B after local Escape consumption correction. Same11React+1Alpine overages; no limits/hashes changed.
 
 Task30 Alpine explicit return destination:21949/21200B (+555B versusTask25) atartifact8378a723069d2b94bdf3cafe7a7132719f3ef4d83908bfc8727454a1c8eeb6da, sourcecommit3041be4. Same12overall overages. No new dependency; one shared private return helper and four option/caller integrations. This is actual product behavior cost, distinct from suspended experimental evidence and the byte-identical maintenance batch. Final packed comparison/resolution remainspending.
+
+## Task33 initial delivery — provisional source sizes
+
+Pinned controller build and size-limit on the initial367.62s delivery introduces FileManager9808/9500B, now12React+1Alpine=13overages. Drawer2490/2000, BottomSheet2527/2000, CreateWorkspace4065/3200, CommandPalette10253/9500, TimePicker4776/4000, DatePicker5868/5000, DateRange5965/5000, Recurrence7602/7000, WeeklySchedule14992/14500; unchanged Workspace8364/8250, Tooltip1954/1500 and Alpine21949/21200 remain. Raw MAIN .batuta/runs/v1-react-modal-initial-focus-checks/sizes.log. Runtime repair is still in flight; these are provisional measurements, no cap/baseline update and no final packed-size qualification.
+
+## Task33 final source measurements
+Final numeric-filter/CPpanel repair:12React+1Alpineoverages. Drawer2530/2000B, BottomSheet2560/2000, CreateWorkspace4107/3200, Workspace8364/8250, FileManager9808/9500, TimePicker4817/4000, DatePicker5910/5000, DateRange approximately6/5kB, Tooltip1954/1500, CP10298/9500, Recurrence7636/7000, Weekly15044/14500; Alpine21949/21200 unchanged. Exact readable size-limit output and parsedrows under MAIN v1-react-modal-initial-focus-critical/checks/sizes.log and sizes.json. No cap/baseline update or final packed qualification.

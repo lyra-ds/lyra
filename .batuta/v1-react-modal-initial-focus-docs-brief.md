@@ -1,3 +1,80 @@
+You are the implementation worker already delegated by Batuta. Edit directly; no further orchestration/delegation/worktrees/commits/config/services/validation.
+# React initial focus — public examples and documentation
+## Goal
+Publish the reviewed optional initialFocusTo contract using two existing live examples and React sections of eight existing MDX pages.
+## Context
+Runtime Task33 must be verified before this brief is dispatched. The exact contract is appended below; source names and example assignments were discovered by a read-only GLM scout and checked by the controller. Existing DialogBasic is a confirmation with Cancel and Delete footer buttons, both of which only dismiss. Existing DrawerWithoutFooter is read-only activity text. CommandPalette trigger example naturally enters search and stays unchanged. Root/subpath public types and generated API already include the option after controller generation. Keep existing returnFocusTo composition and successor logic. Drawer does expose a public panel ref; a named reading heading is chosen to demonstrate application intent, not work around missing ref support.
+## Conventions
+Pinned Node24.18.0/pnpm11.13.1, TypeScript5.9.3, React functional components, Vitest Browser Mode+SSR. CSS-first .lyra-* styling; no CSS changes. All project docs English. Tests-after profile, but write regression from acceptance first. Only read/edit/report in this worker: all execution/validation belongs to controller. No suppression/config changes even if Stop hooks request them.
+- Follow the project's existing state approach (props drilling, context,
+  zustand, redux…).
+- Components: PascalCase file and export names, one main component per file,
+  colocate with the existing folder pattern (check neighbors before creating).
+- Hooks: `use` prefix, rules of hooks respected.
+- Styling: match the project's existing method (CSS modules, styled-components,
+  Tailwind…).
+- Derive state where possible; `useEffect` only for real external
+  synchronization, with a complete dependency array.
+- Tests: follow the project's runner (vitest/jest + testing-library). Query by
+  role/label, not by test-id, unless the project already standardizes test-ids.
+
+Never:
+
+- Class components in new code.
+- A second state or styling library alongside the project's existing one.
+- Conditional hooks.
+- `any` in a TypeScript project — type props and returns explicitly.
+- Follow the existing code style of the files you touch — naming, formatting,
+  import order.
+- Change only what the brief asks. Every changed line must trace directly
+  back to the brief.
+- Clean up only your own mess: remove imports/variables/functions that YOUR
+  change made unused. Leave pre-existing dead code alone — mention it in your
+  output instead of deleting it.
+- Keep functions small and names descriptive; prefer clarity over cleverness.
+- Comments only for constraints the code cannot express — never to narrate what
+  a line does.
+- If the brief references tests, make them deterministic: no real network, no
+  time-dependent assertions.
+
+Never:
+
+- Reformat code you were not asked to change.
+- Add a dependency the brief does not explicitly allow; no lockfile changes
+  except from an allowed dependency.
+- Drive-by refactors or "improvements" outside the brief's scope.
+- Touch CI config, license, or anything listed under the brief's Boundaries.
+- Silence a signal instead of fixing its source (casts, empty catch blocks,
+  sleeps, copy-paste to dodge the real fix) — the method line says how to
+  mark an unavoidable workaround.
+
+Test the behavior, never the mock.
+A failing test means fix the code, not the test.
+No test-only flags or branches in production code.
+Work test-first from the acceptance criteria. Investigate root cause before fixing a bug; never silence a signal (cast, suppression, empty catch, sleep) instead of fixing its source — if you must, mark `// WORKAROUND: <reason>` and say so in your report.
+## Acceptance criteria
+1. DialogBasic declares its existing least-destructive Cancel button as initialFocusTo using a current typed ref; current trigger/return-focus and dismissal behavior retained. DrawerWithoutFooter declares a named native heading with tabIndex=-1/current typed ref for reading entry and keeps its read-only purpose, no footer. Exactly two live examples changed. No fabricated deletion/success/network state, no additional examples or new CSS. Controller compiles/types/lints and exercises actual examples in three engines: unprepared mouse opening reaches exact Cancel/heading and accepted Escape returns to existing trigger. Existing palette example is a control for natural search.
+2. Eight current MDX React sections describe optional () => HTMLElement | null, synchronous read-only resolver once per accepted opening, current eligible panel member, invalid/null -> named panel directly, omitted -> eligible task control (palette search) then panel. Document application-owned Cancel/reading/field choice, negative-tabindex reading targets, visibility/enabled/same-document/panel membership, no resolver replay on rerenders, inline palette ignores it. Form composition owns focus after failed validation; initial entry does not infer validation failure from aria-invalid. Mention thrown errors focus panel then propagate (palette animation-frame errors use browser handling); no swallowing/warning promise. Keep prose concise, English in both locales. Correct existing unconditional first-focus claims. Add Cancel choice to the existing DeleteProject React snippet so it matches confirmation guidance; preserve its return target logic and honest dismiss-only example. Explain both changed live examples in existing prose; no new MDX examples. Controller compiles exact MDX, validates snippet syntax and live behavior; API table remains generated.
+3. Only ten scoped paths, all edits in MDX before the Alpine stack. Alpine/Blade portions byte-identical; unrelated examples, services/runtime/styles/deps/catalogs/config untouched. Pinned scoped format/types/lint/docs stack checks and independent review required; actual changed examples exercised by controller. No full qualification or library size change claimed; this docs slice adds no shipped library runtime.
+## Boundaries
+No runtime/library/tests/styles/layout/config/dependency/lock/generated catalogs/WORK/.batuta modifications. No package managers/builds/tests/git writes/hooks/ignores/services/remote/Docker/Colima. No visible implementation task IDs or unnecessary duplicated API tables. No permission interview; existing authorized local documentation scope.
+## Scope
+apps/docs/components/examples/dialog/basic.tsx
+apps/docs/components/examples/drawer/without-footer.tsx
+apps/docs/content/docs/en/components/dialog.mdx
+apps/docs/content/docs/en/components/drawer.mdx
+apps/docs/content/docs/en/components/bottom-sheet.mdx
+apps/docs/content/docs/en/components/command-palette.mdx
+apps/docs/content/docs/pt-BR/components/dialog.mdx
+apps/docs/content/docs/pt-BR/components/drawer.mdx
+apps/docs/content/docs/pt-BR/components/bottom-sheet.mdx
+apps/docs/content/docs/pt-BR/components/command-palette.mdx
+Do not change anything outside this list; if the task requires it, stop and report.
+## Expected evidence
+Only read/edit/report. The sole allowed execution is /Volumes/Home/francisross/.local/share/mise/installs/node/24.18.0/bin/node node_modules/prettier/bin/prettier.cjs --write followed by scoped paths. Report exact paths and controller checks not run. For each acceptance criterion n, print isolated BATUTA-PROGRESS <n> START before edits and DONE only after proof passes; controller owns validation.
+## Stop conditions
+Source/design contradicts; same unexpected command fails twice; completion needs outside scope. Preserve and report without broadening. No new UI component or configuration.
+## Exact reviewed contract
 # React modal initial destination and safe entry
 Status: technically reviewed incumbent implementation design. GLM initial3/3DONE with one accepted exception-context correction; bounded final3/3DONE/no findings, both guards unchanged. Controller authorized implementation within ongoing V1 completion. Authorized local incumbent V1 continuation; no separate human approval of this text claimed. Sources: original OF-MODAL initial-focus/ownership requirements, current native hidden-first9/9 failure, and GLM consultation with unchanged guard. This is a bounded slice of Task31, not full modal qualification.
 

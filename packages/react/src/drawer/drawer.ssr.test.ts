@@ -18,17 +18,21 @@ describe('Drawer — SSR', () => {
     ).not.toThrow();
   });
 
-  it('does not invoke or forward returnFocusTo on the server', () => {
+  it('does not invoke or forward focus resolvers on the server', () => {
     const returnFocusTo = vi.fn(() => null);
+    const initialFocusTo = vi.fn(() => null);
     const html = renderToString(
       createElement(Drawer, {
         open: true,
         title: 'No browser globals',
         returnFocusTo,
+        initialFocusTo,
         children: 'Body',
       }),
     );
     expect(returnFocusTo).not.toHaveBeenCalled();
+    expect(initialFocusTo).not.toHaveBeenCalled();
     expect(html).not.toContain('returnFocusTo');
+    expect(html).not.toContain('initialFocusTo');
   });
 });

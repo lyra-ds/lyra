@@ -10,18 +10,10 @@ import type {
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useInitialFocus } from '../internal/use-initial-focus';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 import { usePresence } from '../internal/use-presence';
-
-const INITIAL_FOCUS_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 /** Props for {@link Drawer}. */
 export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -39,6 +31,8 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   container?: HTMLElement;
   /** Resolves the current logical destination for focus after an accepted close. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Drawer body content. */
   children: ReactNode;
 }
@@ -53,6 +47,7 @@ interface DrawerPanelProps {
   onClose?: () => void;
   closeLabel: string;
   captureOpener: (element: Element | null) => void;
+  initialFocusTo?: () => HTMLElement | null;
   open: boolean;
   className?: string;
   children: ReactNode;
@@ -72,6 +67,7 @@ function DrawerPanel({
   onClose,
   closeLabel,
   captureOpener,
+  initialFocusTo,
   open,
   className,
   children,
@@ -79,14 +75,19 @@ function DrawerPanel({
   closing,
   onAnimationEnd,
 }: DrawerPanelProps): ReactNode {
+  const { focusInitial, resetInitialFocus } = useInitialFocus({
+    initialFocusTo,
+    panelRef,
+    captureOpener,
+  });
+
   useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    if (!panel) return;
-    captureOpener(panel.ownerDocument.activeElement);
-    const firstFocusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
-    (firstFocusable ?? panel).focus();
-  }, [open, panelRef, captureOpener]);
+    if (!open) {
+      resetInitialFocus();
+      return;
+    }
+    focusInitial();
+  }, [focusInitial, open, resetInitialFocus]);
 
   useFocusTrap(panelRef, true);
   // Keyed on the close REQUEST, not on `mounted`: the page is scrollable again immediately while
@@ -175,6 +176,7 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
     footer,
     container,
     returnFocusTo,
+    initialFocusTo,
     className,
     children,
     ...rest
@@ -212,6 +214,7 @@ export const Drawer = /*#__PURE__*/ forwardRef<HTMLDivElement, DrawerProps>(func
         onClose={onClose}
         closeLabel={closeLabel}
         captureOpener={captureOpener}
+        initialFocusTo={initialFocusTo}
         open={open}
         className={className}
         rest={rest}

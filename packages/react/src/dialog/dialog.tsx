@@ -14,22 +14,10 @@ import {
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useInitialFocus } from '../internal/use-initial-focus';
 import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
-
-/**
- * Candidate selector for the panel's FIRST focusable element (D-20 initial focus). The panel
- * itself carries `tabindex="-1"`, so it is excluded here and used only as the fallback target.
- */
-const INITIAL_FOCUS_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 /**
  * Props for {@link Dialog}.
@@ -58,6 +46,8 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   container?: HTMLElement;
   /** Resolves the current logical destination for focus after an accepted close. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Body content. */
   children: ReactNode;
 }
@@ -85,6 +75,7 @@ interface DialogPanelProps {
   onAnimationEnd: PresenceState['onAnimationEnd'];
   /** Records the element focused at open time, so focus can be restored on close (D-20). */
   captureOpener: (el: Element | null) => void;
+  initialFocusTo?: () => HTMLElement | null;
   className?: string;
   children: ReactNode;
   rest: HTMLAttributes<HTMLDivElement>;
@@ -111,25 +102,24 @@ function DialogPanel({
   closing,
   onAnimationEnd,
   captureOpener,
+  initialFocusTo,
   className,
   children,
   rest,
 }: DialogPanelProps): ReactNode {
-  // Initial focus (D-20): first focusable in the panel, else the panel itself via tabIndex -1.
-  // Keyed on the `open` TRANSITION, not component mount (WR-03). usePresence keeps DialogPanel
-  // mounted through the exit animation, so a close→reopen within that window reuses the SAME
-  // instance — a mount-only effect would never re-run and focus would strand on the trigger.
-  // Keying on `open` re-enters focus on every false→true flip. panelRef.current is guaranteed set
-  // here because this component lives inside the portal subtree. The opener is captured BEFORE
-  // focus moves so restore has the right target.
+  const { focusInitial, resetInitialFocus } = useInitialFocus({
+    initialFocusTo,
+    panelRef,
+    captureOpener,
+  });
+
   useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    if (!panel) return;
-    captureOpener(panel.ownerDocument.activeElement);
-    const focusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
-    (focusable ?? panel).focus();
-  }, [open, panelRef, captureOpener]);
+    if (!open) {
+      resetInitialFocus();
+      return;
+    }
+    focusInitial();
+  }, [focusInitial, open, resetInitialFocus]);
 
   // Trap Tab/Shift+Tab inside the panel (Pitfall 8 — the ref points into the portal subtree).
   // The zero-candidate branch of the trap keeps focus on the panel (tabIndex -1, below).
@@ -255,6 +245,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
     closeOnOverlayClick = true,
     container,
     returnFocusTo,
+    initialFocusTo,
     className,
     children,
     ...rest
@@ -308,6 +299,7 @@ export const Dialog = /*#__PURE__*/ forwardRef<HTMLDivElement, DialogProps>(func
         closing={closing}
         onAnimationEnd={onAnimationEnd}
         captureOpener={captureOpener}
+        initialFocusTo={initialFocusTo}
         className={className}
         rest={rest}
       >

@@ -913,6 +913,12 @@
         "description": "Resolves the logical destination for an accepted close. The resolver result is used only when\neligible; otherwise an eligible previously focused opener is the fallback. A successor\ncomposition must supply a meaningful target when the opener can disappear or become ineligible."
       },
       {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,
@@ -1051,6 +1057,12 @@
         "description": "Resolves the current logical destination for focus after an accepted close."
       },
       {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,
@@ -1106,6 +1118,12 @@
         "type": "() => HTMLElement | null",
         "optional": true,
         "description": "Resolves the current logical destination for focus after an accepted close."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening."
       },
       {
         "name": "children",
@@ -2744,6 +2762,12 @@
         "type": "() => HTMLElement | null",
         "optional": true,
         "description": "Returns the current element to focus after an accepted modal close. Ignored in inline mode."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening. Ignored in inline mode."
       },
       {
         "name": "className",

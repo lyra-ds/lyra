@@ -475,6 +475,8 @@ export interface BottomSheetProps {
    * composition must supply a meaningful target when the opener can disappear or become ineligible.
   */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */
   children: ReactNode;
   /** Heading rendered in the sheet header and used as its accessible name. */
@@ -540,6 +542,8 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   container?: HTMLElement;
   /** Resolves the current logical destination for focus after an accepted close. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Body content. */
   children: ReactNode;
 }
@@ -564,6 +568,8 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   container?: HTMLElement;
   /** Resolves the current logical destination for focus after an accepted close. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Drawer body content. */
   children: ReactNode;
 }
@@ -1308,6 +1314,8 @@ export interface CommandPaletteProps {
   inline?: boolean;
   /** Returns the current element to focus after an accepted modal close. Ignored in inline mode. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. Ignored in inline mode. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
   /**

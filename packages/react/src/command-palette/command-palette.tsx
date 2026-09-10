@@ -15,6 +15,7 @@ import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useInitialFocus } from '../internal/use-initial-focus';
 import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
@@ -79,6 +80,8 @@ export interface CommandPaletteProps {
   inline?: boolean;
   /** Returns the current element to focus after an accepted modal close. Ignored in inline mode. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. Ignored in inline mode. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
   /**
@@ -175,6 +178,7 @@ interface CommandPalettePanelProps {
   onAnimationEnd: PresenceState['onAnimationEnd'];
   onReady: () => void;
   captureOpener?: (element: Element | null) => void;
+  initialFocusTo?: () => HTMLElement | null;
 }
 
 /**
@@ -208,19 +212,37 @@ function CommandPalettePanel({
   onAnimationEnd,
   onReady,
   captureOpener,
+  initialFocusTo,
 }: CommandPalettePanelProps): ReactNode {
   // A filter invalidates the old option collection, so the active descendant always returns to
   // its first visible item. Keeping DOM focus on this input is the APG activedescendant model.
   const activeItem = flatItems[activeIndex];
   const activeOptionId = activeItem ? `${idBase}-option-${activeItem.index}` : undefined;
 
+  const defaultInitialFocusTo = useCallback(() => inputRef.current, [inputRef]);
+  const captureInitialOpener = useCallback(
+    (element: Element | null) => captureOpener?.(element),
+    [captureOpener],
+  );
+  const { focusInitial, resetInitialFocus } = useInitialFocus({
+    initialFocusTo,
+    panelRef,
+    captureOpener: captureInitialOpener,
+    defaultFocusTo: defaultInitialFocusTo,
+  });
+
   useEffect(() => {
-    if (modal && !open) return;
-    if (modal) captureOpener?.(panelRef.current?.ownerDocument.activeElement ?? null);
+    if (modal && !open) {
+      resetInitialFocus();
+      return;
+    }
     onReady();
-    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    const frame = requestAnimationFrame(() => {
+      if (modal) focusInitial();
+      else inputRef.current?.focus();
+    });
     return () => cancelAnimationFrame(frame);
-  }, [captureOpener, inputRef, modal, onReady, open, panelRef]);
+  }, [focusInitial, inputRef, modal, onReady, open, resetInitialFocus]);
 
   useFocusTrap(panelRef, modal && open);
   useScrollLock(modal && open);
@@ -255,6 +277,16 @@ function CommandPalettePanel({
     }
   };
 
+  const handlePanelKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (!modal || event.key !== 'Escape') return;
+
+    event.stopPropagation();
+    if (!event.defaultPrevented) {
+      event.preventDefault();
+      onClose?.();
+    }
+  };
+
   return (
     <div
       ref={attachPanel}
@@ -262,6 +294,8 @@ function CommandPalettePanel({
       role={modal ? 'dialog' : undefined}
       aria-modal={modal || undefined}
       aria-label={modal ? dialogLabel : undefined}
+      tabIndex={modal ? -1 : undefined}
+      onKeyDown={handlePanelKeyDown}
       onAnimationEnd={onAnimationEnd}
     >
       <div className="lyra-cmdk__search">
@@ -371,6 +405,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
       hotkey = 'k',
       inline = false,
       returnFocusTo,
+      initialFocusTo,
       className,
       'aria-label': ariaLabel = 'Command palette',
     },
@@ -486,6 +521,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
         onAnimationEnd={onAnimationEnd}
         onReady={resetAndFocus}
         captureOpener={inline ? undefined : captureOpener}
+        initialFocusTo={inline ? undefined : initialFocusTo}
       />
     );
 

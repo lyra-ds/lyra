@@ -10,18 +10,10 @@ import type {
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useInitialFocus } from '../internal/use-initial-focus';
 import { usePresence } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
-
-const INITIAL_FOCUS_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 type BottomSheetBaseProps = Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'aria-label'> & {
   /** Controls visibility. `true` mounts the portaled overlay and bottom sheet. */
@@ -38,6 +30,8 @@ type BottomSheetBaseProps = Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'aria
    * composition must supply a meaningful target when the opener can disappear or become ineligible.
    */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */
   children: ReactNode;
 };
@@ -72,6 +66,7 @@ interface BottomSheetPanelProps {
   /** The live controlled value; re-runs focus capture when an exit is cancelled by a reopen. */
   open: boolean;
   captureOpener: (element: Element | null) => void;
+  initialFocusTo?: () => HTMLElement | null;
   className?: string;
   children: ReactNode;
   rest: HTMLAttributes<HTMLDivElement>;
@@ -91,6 +86,7 @@ function BottomSheetPanel({
   closeLabel,
   open,
   captureOpener,
+  initialFocusTo,
   className,
   children,
   rest,
@@ -99,14 +95,19 @@ function BottomSheetPanel({
 }: BottomSheetPanelProps): ReactNode {
   const hasTitle = title != null;
 
+  const { focusInitial, resetInitialFocus } = useInitialFocus({
+    initialFocusTo,
+    panelRef,
+    captureOpener,
+  });
+
   useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    if (!panel) return;
-    captureOpener(panel.ownerDocument.activeElement);
-    const firstFocusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
-    (firstFocusable ?? panel).focus();
-  }, [open, panelRef, captureOpener]);
+    if (!open) {
+      resetInitialFocus();
+      return;
+    }
+    focusInitial();
+  }, [focusInitial, open, resetInitialFocus]);
 
   useFocusTrap(panelRef, true);
   useScrollLock(!closing);
@@ -204,6 +205,7 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
       title,
       container,
       returnFocusTo,
+      initialFocusTo,
       className,
       children,
       'aria-label': accessibleName,
@@ -241,6 +243,7 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
           closeLabel={closeLabel}
           open={open}
           captureOpener={captureOpener}
+          initialFocusTo={initialFocusTo}
           className={className}
           rest={rest}
           closing={closing}

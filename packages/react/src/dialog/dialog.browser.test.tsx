@@ -291,6 +291,24 @@ describe('Dialog — initial focus', () => {
     }
   });
 
+  it('uses an eligible declared initial destination instead of a hidden first control', async () => {
+    const destinationRef = { current: null as HTMLInputElement | null };
+    const resolver = vi.fn(() => destinationRef.current);
+
+    await render(
+      <Dialog open initialFocusTo={resolver} title="Declared destination">
+        <button type="button" hidden>
+          Hidden first action
+        </button>
+        <input ref={destinationRef} aria-label="Task field" />
+      </Dialog>,
+    );
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(destinationRef.current));
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(panel()!.getAttribute('initialFocusTo')).toBeNull();
+  });
+
   it('reopening DURING the exit window re-enters focus and keeps restore working (WR-03)', async () => {
     const { rerender, container } = await render(<ControlledDeep open={false} />);
     const trigger = container.querySelector<HTMLButtonElement>('[data-testid="trigger"]')!;

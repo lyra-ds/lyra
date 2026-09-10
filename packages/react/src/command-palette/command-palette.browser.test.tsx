@@ -120,6 +120,73 @@ afterEach(async () => {
   await setViewport(1200, 800);
 });
 
+describe('CommandPalette — declared initial focus', () => {
+  it('resolves its declared modal destination once in the owned entry frame', async () => {
+    const resolver = vi.fn(() => document.querySelector<HTMLInputElement>('.lyra-cmdk input'));
+
+    await render(<CommandPalette open initialFocusTo={resolver} groups={groups} />);
+
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
+    );
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('.lyra-cmdk')!.getAttribute('initialFocusTo')).toBeNull();
+  });
+
+  it('never resolves initialFocusTo in inline mode', async () => {
+    const resolver = vi.fn(() => null);
+
+    await render(<CommandPalette inline initialFocusTo={resolver} groups={groups} />);
+
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
+    );
+    expect(resolver).not.toHaveBeenCalled();
+  });
+
+  it('focuses the programmatic panel fallback for an invalid declaration and closes it once on Escape', async () => {
+    const onClose = vi.fn();
+    const onParentKeyDown = vi.fn();
+
+    await render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <CommandPalette
+          open
+          initialFocusTo={() => document.body}
+          onClose={onClose}
+          groups={groups}
+        />
+      </div>,
+    );
+
+    const panel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+    await vi.waitFor(() => expect(document.activeElement).toBe(panel));
+    expect(panel.tabIndex).toBe(-1);
+
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
+
+  it('contains an input Escape after the combobox has already handled its close request', async () => {
+    const onClose = vi.fn();
+    const onParentKeyDown = vi.fn();
+
+    await render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <CommandPalette open onClose={onClose} groups={groups} />
+      </div>,
+    );
+
+    const input = document.querySelector<HTMLInputElement>('.lyra-cmdk input')!;
+    await vi.waitFor(() => expect(document.activeElement).toBe(input));
+    await userEvent.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
+});
+
 describe('CommandPalette', () => {
   it('exposes a responsive Trigger with an accessible name after its visible label collapses', async () => {
     await setViewport(375, 800);

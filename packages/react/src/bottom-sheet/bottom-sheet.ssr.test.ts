@@ -25,18 +25,21 @@ describe('BottomSheet — SSR', () => {
     ).not.toThrow();
   });
 
-  it('does not resolve returnFocusTo during server rendering', () => {
+  it('does not resolve focus destinations during server rendering', () => {
     const returnFocusTo = vi.fn(() => null);
+    const initialFocusTo = vi.fn(() => null);
 
     renderToString(
       createElement(BottomSheet, {
         open: true,
         title: 'Server',
         returnFocusTo,
+        initialFocusTo,
         children: 'Sheet body',
       }),
     );
 
     expect(returnFocusTo).not.toHaveBeenCalled();
+    expect(initialFocusTo).not.toHaveBeenCalled();
   });
 });
