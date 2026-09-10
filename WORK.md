@@ -63,7 +63,7 @@ remote or publication action is authorized.
 
 - [x] Task27 React public docs verified — CodexTerra/medium376.85s initial+88.84s one prose/format retry, no escalation; MDX2/snippettypes/stack303/format/native6 PASS,1716protected/453artifact SHA unchanged. GLM47.49s3DONE/no findings/unchanged guard/verifierPASS; commit49c8447. See .batuta/v1-tabs-public-docs-verification.md. Next Alpine selected fallback/runtime/events: current three-engine baseline3preinit PASS/12contract FAIL, zero errors.
 
-- [ ] Task27 Alpine runtime paused at initial verification — CodexTerra/high499.21s, no retry sent. Source3engine/types/format/build/exports/docgen/publictypes PASS; compiled native48/63 PASS with15failures across3engines (IDs, selected-destination navigation, visibility:collapse, panel-button teardown focus), zero page/console errors. Protected1712/React450 SHA unchanged. First high retry pending; product diff uncommitted. See .batuta/v1-tabs-alpine-verification-checkpoint.md. User requested pause2026-09-10; no background executor remains.
+- [x] Task27 Alpine runtime verified — CodexTerra/high initial499.21s + one retry, critical/controller selected-destination fixture and source-coverage completion. Source17/17/17, compiled native63/63 zero errors, static/build/publictypes/docgen and negative5RED/restored15PASS; final GLM245.2s3DONE/no findings/unchanged guard/verifierPASS. Product commit pending below. Whole Alpine23022/21200bytes remains Task10. Next Alpine public MDX/snippet proof and owning-source Blade migration; Task27/V1 not complete. See .batuta/v1-tabs-alpine-verification.md.
 
 ## Historical log — earlier directions are superseded
 
