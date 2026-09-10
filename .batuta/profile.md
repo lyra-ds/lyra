@@ -1,5 +1,23 @@
 # Batuta profile — lyra-ds
 
+## V1 closure priority — maintainer correction, 2026-09-10
+
+Close V1 of the incumbent Lyra core (Styles/React, first-party documentation
+and release tooling) and Alpine before starting Blade work. Blade producer
+migration and Blade compatibility qualification are deferred until core/Alpine
+V1 closure; they are not prerequisites for that closure. Do not modify the
+Blade repository, imported snapshot or Blade examples in this phase. Preserve
+existing cross-stack checks and report incompatibility honestly; this direction
+is not permission to disable checks or claim Blade compatibility.
+
+Current execution plan: `.batuta/plans/v1-completion.md` in
+`../lyra-v1-stabilization`. Next: Task28 DataTable semantic row-action diagnosis
+and bounded contract, then remaining modal/Popover ownership, measured size
+resolution and exact final core/Alpine artifact qualification. Existing no-new-
+dependency, no-Colima/resource/service, experimental-isolation and remote/release
+boundaries remain in force. "Close V1" does not by itself authorize publication,
+versioning, push, merge or remote workflow dispatch.
+
 ## Planning workflow — maintainer correction, 2026-09-08
 
 Use Batuta for planning and execution coordination. Keep this work's contracts,

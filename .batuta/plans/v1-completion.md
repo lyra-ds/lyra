@@ -2,6 +2,35 @@
 **Goal:** Finish approved incumbent stabilization and produce honest release readiness evidence, including triage of existing Dependabot maintenance updates.
 **Created:** 2026-09-09 · **Status:** in progress
 
+## Current release scope and order — 2026-09-10
+
+Maintainer correction: finish Lyra core (Styles/React, its first-party docs and
+release tooling) and Alpine V1 before working on Blade. Earlier "next Blade"
+notes below are historical and superseded. Blade migration/qualification is a
+later satellite task, not a core/Alpine release prerequisite. Preserve the
+imported snapshot and existing checks; do not claim compatibility with the new
+Alpine Tabs markup before its producer migrates.
+
+Execute in this order:
+1. Task28: reproduce DataTable row-command keyboard access and its separation
+   from selection; select a bounded native-table API/migration contract, then
+   implement and verify the current owner and public examples.
+2. Task31 and Task38: close remaining modal/inert/dynamic-focus/sibling teardown
+   and Popover child-layer ownership using fresh reproducers and bounded fixes.
+3. Task10: measure the final source/packed artifacts, resolve the current twelve
+   React and one Alpine size overages without silently raising limits, and
+   preserve all accepted behavior.
+4. Task39: qualify the exact final core/Alpine candidate across the required
+   browser, React18/19, SSR/hydration, types, security, consumer, visual and manual
+   accessibility checks. Unavailable Linux/remote/manual evidence stays pending.
+5. Only after core/Alpine closure, resume the deferred Blade producer migration
+   and its own compatibility qualification.
+
+Tabs React/Alpine implementation and public documentation are locally verified
+through3446d98. Their final release qualification remains part of Task39, not a
+reason to begin Blade now. No new release/resource/remote authorization follows
+from this priority correction.
+
 ## Tasks
 - [x] 1. BottomSheet shared return-focus integration — react/high
       Scope: packages/react/src/bottom-sheet/bottom-sheet.tsx, packages/react/src/bottom-sheet/bottom-sheet.browser.test.tsx, packages/react/src/bottom-sheet/bottom-sheet.ssr.test.ts, .changeset/bottom-sheet-return-focus.md
@@ -135,7 +164,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 
 ## Remaining public contract designs
 - [x] 26. CreateWorkspaceDialog operation lifecycle runtime — high initial/retry then critical/controller test-fixture completion. Native87, source12/11/11, actual examples6/12creates, public types/build/docgen/visual8 PASS; GLM3DONE/no concrete findings/unchanged guard. Existing size cap fails at approximately5.12/3.2kB (Task10). Public MDX follows as Task37; no overall V1 qualification.
-- [ ] 27. Tabs compound real-content ownership — React runtime verified with named Tabs/List/Trigger/Content, current consumers, native-hidden styles and same-format package ownership. React MDX verified; Alpine enhancement/fallback/runtime/docs remain pending; design selected in .batuta/specs/2026-09-10-tabs-owned-content-design.md.
+- [x] 27. Tabs compound real-content implementation and public migration — React and Alpine runtime/docs locally verified through3446d98, including native fallback and panel-container teardown. Final core/Alpine qualification belongs to Task39. Blade producer migration is deferred until core/Alpine V1 closure; no Blade compatibility claim.
 - [ ] 28. DataTable semantic row action — critical bounded data-family API/migration design then existing-owner implementation; keep native table, sort and checkboxselection semantics. Current onRowClick has no in-repo consumers; never make rows into simulated buttons or wrap arbitrary cell children.
 
 ## Remaining modal ownership order
@@ -168,3 +197,19 @@ Task27 paused2026-09-10 at failed initial Alpine verification: source/static/bui
 Task27 Alpine runtime accepted locally2026-09-10 after one high retry and critical source-fixture/coverage correction:17source tests each engine,63native, public/static/build checks PASS; GLMfinal245.2s3DONE/no findings/unchanged guard. WholeAlpine23022/21200bytes unwaived Task10. Next public Alpine MDX/snippet proof, then owning-source Blade migration; see .batuta/v1-tabs-alpine-verification.md. No remote/release/Colima action.
 
 Task27 Alpine public docs and focused panel-container teardown accepted locally2026-09-10: two current MDX snippets,90native scenarios plus63existing native and20source tests eachengine PASS; old runtime2RED/restored2PASS. GLM3DONE/unchangedguard/verifierPASS. WholeAlpine23051/21200B remains unwaivedTask10. Next owning-source Blade migration/qualification; current imported snapshot remains read-only/incompatible. See .batuta/v1-tabs-alpine-docs-verification.md.
+
+## Final core/Alpine closure tasks
+- [ ] 38. Popover child-layer ownership — critical diagnosis, then bounded
+      current-owner repair only if reproduced. Scope starts with the existing
+      Popover owner, native child-layer scenarios and colocated tests. Accept:
+      child interactions/dismissal do not incorrectly close parent layers;
+      native cancellation, focus, placement and teardown remain correct.
+- [ ] 39. Exact core/Alpine V1 candidate qualification — critical verification,
+      after Tasks28/31/38/10. Bind exact package/version/file identities to the
+      required evidence and existing CI/release policy. Accept: required
+      Styles/React/Alpine browser, packed consumer, React18/19, SSR/hydration,
+      security/types/exports/size, visual and manual accessibility evidence is
+      complete and reviewed. No false qualification of missing cells; prepare
+      concrete final external actions for review if required by the unchanged
+      authorization boundary. Blade-specific migration/compatibility is deferred,
+      existing checks are preserved, and no publication is implied.

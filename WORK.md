@@ -1,5 +1,17 @@
 # Current work — V1 incumbent stabilization
 
+## Current priority — 2026-09-10
+
+The maintainer requires Lyra core/Styles/React and Alpine V1 closure before any
+Blade migration. This supersedes earlier "next Blade" entries below. Blade
+producer/snapshot migration and compatibility qualification are deferred until
+core/Alpine V1 closure, without claiming Blade compatibility or weakening
+existing checks. Active checkout remains `../lyra-v1-stabilization`, product
+HEAD `3446d98`. Next: DataTable Task28, remaining modal/Popover contracts, size
+resolution and exact final core/Alpine qualification. Remote/release and resource
+boundaries are unchanged. See `.batuta/plans/v1-completion.md` in the active
+checkout.
+
 The maintainer retained the existing Lyra base on 2026-09-08 and suspended
 comparative foundation work. Active checkout: `../lyra-v1-stabilization`, branch
 `feat/v1-incumbent-stabilization`, based on origin/main 9d214bf. Follow
@@ -583,4 +595,4 @@ remote or publication action is authorized.
 
 - [x] Resumed with maintainer confirmation2026-09-10 at Alpine Tabs public MDX migration/snippet proof. Runtime87cd246 is complete; do not redispatch it. Documentation/medium Codex gpt-5.6-terra with GLM5.3Flash discovery/review; preserve React/Blade sections and all resource/release boundaries. Pending WORK.md bookkeeping will accompany the verified documentation commit.
 
-- [x] Task27 Alpine public MDX and panel-container teardown verified — CodexTerra/medium127.86s, invalid orchestration retry138.49s then high104.96s docs completion; newly discovered section-focus repair high185.20s +23.53s format-only retry. Final source20/20/20, exact snippets90/90 and prior runtime63/63 native, zero JS errors; old runtime2RED/restored2PASS, MDX2/stack303/types/build/publicexports/docgen/formatPASS. GLM257.01s3DONE/1975-file unchanged guard/verifierPASS; sole size observation accepted as existing unwaived Task10. WholeAlpine23051/21200B (+29B). See .batuta/v1-tabs-alpine-docs-verification.md. Product commit recorded after commit. Next owning-source Blade migration; Task27/V1 incomplete.
+- [x] Task27 Alpine public MDX and panel-container teardown verified — CodexTerra/medium127.86s, invalid orchestration retry138.49s then high104.96s docs completion; newly discovered section-focus repair high185.20s +23.53s format-only retry. Final source20/20/20, exact snippets90/90 and prior runtime63/63 native, zero JS errors; old runtime2RED/restored2PASS, MDX2/stack303/types/build/publicexports/docgen/formatPASS. GLM257.01s3DONE/1975-file unchanged guard/verifierPASS; sole size observation accepted as existing unwaived Task10. WholeAlpine23051/21200B (+29B). See .batuta/v1-tabs-alpine-docs-verification.md. Product commit3446d98. Next owning-source Blade migration; Task27/V1 incomplete.

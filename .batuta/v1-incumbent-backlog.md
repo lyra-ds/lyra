@@ -178,3 +178,11 @@ All six baseline failures are closed. At e287941 full local React Chromium/SSR78
 
 ## Completed Tooltip timing/ownership slice
 The incumbent Tooltip now implements per-document500/300/100ms timing, combined focus/hover and actual pseudo-bubble retention, topmost Escape/cancellation and stale-target cleanup. Native42+actions6 and full React786/689/689 pass; final independent GLM3/3 DONE/unchanged guard. See v1-tooltip-timing-verification.md for failed attempts, causal proofs and limits. Tooltip1954B exceeds1500B, adding one to9previous size overages; no budget waiver. Broader clipping/assistive-technology/cross-family and all packed release gates remain open. Next selected-workspace entry defects are reproduced independently in both stacks; see v1-workspace-entry-diagnosis.md.
+
+## Maintainer priority correction — 2026-09-10
+Close Lyra core/Styles/React and Alpine V1 before Blade work. Next remaining
+implementation diagnosis is DataTable Task28, then modal/Popover ownership,
+size resolution and exact final qualification. Tabs React/Alpine runtime/docs
+are locally verified through3446d98. Blade migration is deferred until core/
+Alpine V1 closure and is not a blocker for that scope; imported artifacts remain
+read-only and compatibility unclaimed. This supersedes older next-Blade notes.
