@@ -628,3 +628,75 @@ describe('BottomSheet', () => {
     focusSpy.mockRestore();
   });
 });
+
+describe('BottomSheet — logical close activity', () => {
+  it('inerts its retained exit scope and cannot reuse a backdrop press after reopening', async () => {
+    const onClose = vi.fn();
+    function LogicalCloseHarness() {
+      const [open, setOpen] = useState(false);
+      const triggerRef = useRef<HTMLButtonElement>(null);
+      return (
+        <div data-testid="consumer-host">
+          <button ref={triggerRef} type="button" onClick={() => setOpen(true)}>
+            Open logical sheet
+          </button>
+          <button type="button">Outside</button>
+          <BottomSheet
+            open={open}
+            onClose={() => {
+              onClose();
+              setOpen(false);
+            }}
+            returnFocusTo={() => triggerRef.current}
+            title="Logical close"
+          >
+            Body
+          </BottomSheet>
+        </div>
+      );
+    }
+
+    const { container } = await render(<LogicalCloseHarness />);
+    const trigger = container.querySelector<HTMLButtonElement>('button')!;
+    const outside = container.querySelectorAll<HTMLButtonElement>('button')[1]!;
+    await userEvent.click(trigger);
+    await vi.waitFor(() =>
+      expect(document.querySelector('.lyra-bottomsheet-overlay')).not.toBeNull(),
+    );
+    const retainedOverlay = document.querySelector<HTMLElement>('.lyra-bottomsheet-overlay')!;
+    const retainedPanel = document.querySelector<HTMLElement>('.lyra-bottomsheet')!;
+    await vi.waitFor(() =>
+      expect(retainedOverlay.querySelectorAll('[data-lyra-focus-trap-boundary]')).toHaveLength(2),
+    );
+    const retainedGuards = Array.from(
+      retainedOverlay.querySelectorAll<HTMLElement>('[data-lyra-focus-trap-boundary]'),
+    );
+    expect(retainedGuards).toHaveLength(2);
+    expect(retainedGuards.every((guard) => retainedOverlay.contains(guard))).toBe(true);
+    await vi.waitFor(() => expect(retainedPanel.contains(document.activeElement)).toBe(true));
+    retainedOverlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    await userEvent.keyboard('{Escape}');
+    await vi.waitFor(() => expect(retainedOverlay.hasAttribute('inert')).toBe(true));
+    expect(retainedOverlay.hasAttribute('inert')).toBe(true);
+    expect(retainedOverlay.isConnected).toBe(true);
+    expect(retainedOverlay.contains(retainedPanel)).toBe(true);
+    expect(retainedPanel.getAttribute('aria-modal')).toBeNull();
+    expect(retainedGuards.every((guard) => !guard.isConnected)).toBe(true);
+    expect(container.querySelector('[data-testid="consumer-host"]')!.hasAttribute('inert')).toBe(
+      false,
+    );
+    expect(outside.closest('[inert]')).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+    retainedPanel.focus();
+    expect(document.activeElement).not.toBe(retainedPanel);
+
+    await userEvent.click(trigger);
+    await vi.waitFor(() =>
+      expect(document.querySelector('.lyra-bottomsheet-overlay')).toBe(retainedOverlay),
+    );
+    expect(document.querySelector('.lyra-bottomsheet')).toBe(retainedPanel);
+    retainedOverlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});

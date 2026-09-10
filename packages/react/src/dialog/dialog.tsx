@@ -15,6 +15,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
+import { useModalActivity } from '../internal/use-modal-activity';
 import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
@@ -123,19 +124,23 @@ function DialogPanel({
 
   // Trap Tab/Shift+Tab inside the panel (Pitfall 8 — the ref points into the portal subtree).
   // The zero-candidate branch of the trap keeps focus on the panel (tabIndex -1, below).
-  useFocusTrap(panelRef, true);
+  useFocusTrap(panelRef, open);
 
   // WR-02: records whether the pointer press ORIGINATED on the backdrop. A `click` fires on the
   // nearest common ancestor of its mousedown+mouseup targets, so a drag that starts inside the
   // panel (e.g. selecting body text) and releases over the backdrop would otherwise satisfy
   // `event.target === event.currentTarget` and dismiss the dialog — discarding in-progress input.
   const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay } = useModalActivity({ open, overlayRef, revokeGesture });
 
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
 
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key !== 'Escape') return;
+    if (!open || event.key !== 'Escape') return;
 
     // Dialog portals remain nested in the React tree, so Escape from a child panel would
     // otherwise bubble to a parent Dialog's keyboard owner. The child owns this operation
@@ -155,14 +160,19 @@ function DialogPanel({
     // static-element/keyboard-listener a11y rules do not apply to this supplementary handler.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
-      ref={overlayRef}
+      ref={attachOverlay}
       className={cx('lyra-dialog-overlay', closing && 'lyra-dialog-overlay--closing')}
       onMouseDown={(event) => {
-        downOnOverlay.current = event.target === event.currentTarget;
+        downOnOverlay.current = open && event.target === event.currentTarget;
       }}
       onClick={(event) => {
         // Dismiss only when BOTH endpoints of the interaction were the backdrop itself (WR-02).
-        if (closeOnOverlayClick && downOnOverlay.current && event.target === event.currentTarget) {
+        if (
+          open &&
+          closeOnOverlayClick &&
+          downOnOverlay.current &&
+          event.target === event.currentTarget
+        ) {
           onClose?.();
         }
       }}
@@ -175,7 +185,7 @@ function DialogPanel({
         ref={attachPanel}
         className={cx('lyra-dialog', closing && 'lyra-dialog--closing', className)}
         role="dialog"
-        aria-modal="true"
+        aria-modal={open || undefined}
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
@@ -190,7 +200,7 @@ function DialogPanel({
               type="button"
               className="lyra-dialog__close"
               aria-label={closeLabel}
-              onClick={onClose}
+              onClick={open ? onClose : undefined}
             >
               <svg
                 width="14"

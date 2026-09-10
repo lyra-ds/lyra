@@ -1,5 +1,7 @@
 # Incumbent focus-size diagnosis — 2026-09-09
 
+Current status:12React+1Alpine overages after Task36; the dated sections below preserve earlier measurements. The final section and Task36 verification carry the latest values.
+
 Critical/controller diagnosis with guarded GLM5.3Flash support; no production edits. The71 existing standalone size-limit entries were measured with pinned Node24.18.0, pnpm11.13.1, tsdown0.22.14, size-limit12.1.0 and existing configuration. Same current dist/old library graph and current dist/new library graph produce exactly identical sizes and9 failures. All453 React/Alpine dist files also remain identical across the library maintenance batch. Libraries are not the source of this growth.
 
 A fresh detached checkout at9d214bf, sharing only read-only existing tool installations, rebuilt original React with the same compiler and measured all71 entries PASS. Baseline source was unchanged. Owned borrowed symlinks were verified and removed; the temporary checkout was removed, preserving the stabilization installation. Raw .batuta/runs/v1-size-diagnosis in main checkout records commit, source, dist hashes, build/measurement logs, comparison and cleanup. Initial cleanup guard correctly stopped because node_modules symlinks appeared as untracked files; the second guard accepted only those two known owned links before removal.
@@ -39,3 +41,6 @@ Pinned controller build and size-limit on the initial367.62s delivery introduces
 
 ## Task33 final source measurements
 Final numeric-filter/CPpanel repair:12React+1Alpineoverages. Drawer2530/2000B, BottomSheet2560/2000, CreateWorkspace4107/3200, Workspace8364/8250, FileManager9808/9500, TimePicker4817/4000, DatePicker5910/5000, DateRange approximately6/5kB, Tooltip1954/1500, CP10298/9500, Recurrence7636/7000, Weekly15044/14500; Alpine21949/21200 unchanged. Exact readable size-limit output and parsedrows under MAIN v1-react-modal-initial-focus-critical/checks/sizes.log and sizes.json. No cap/baseline update or final packed qualification.
+
+## Task36 — 2026-09-10 logical-close activity
+Current12Reactoverages: Drawer2616/2000B, BottomSheet2640/2000B, CreateWorkspace4194/3200B, Workspace8364/8250B, FileManager9808/9500B, TimePicker4883/4000B, DatePicker5997/5000B, DateRange approximately6.08/5kB (console-rounded), Tooltip1954/1500B, CommandPalette10409/9500B, Recurrence7725/7000B, Weekly15143/14500B. Alpine21949/21200B remains unchanged and was not rebuilt for this React-only slice. The runtime correction adds small per-entry/composition growth, not a new dependency; budgets remain failed, not waived. Current raw sizes.log/size-overages.json are in MAIN .batuta/runs/v1-react-modal-logical-close-checks. Final packed protocol/disposition remainsTask10.

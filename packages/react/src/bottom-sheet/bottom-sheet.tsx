@@ -11,6 +11,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
+import { useModalActivity } from '../internal/use-modal-activity';
 import { usePresence } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
@@ -109,17 +110,21 @@ function BottomSheetPanel({
     focusInitial();
   }, [focusInitial, open, resetInitialFocus]);
 
-  useFocusTrap(panelRef, true);
+  useFocusTrap(panelRef, open);
   useScrollLock(!closing);
 
   // A click is dispatched on the nearest common ancestor of its mousedown and mouseup targets.
   // Record where the press began so dragging from the panel onto the backdrop cannot dismiss it.
   const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay } = useModalActivity({ open, overlayRef, revokeGesture });
 
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key !== 'Escape') return;
+    if (!open || event.key !== 'Escape') return;
 
     event.stopPropagation();
     if (!event.defaultPrevented) onClose?.();
@@ -133,13 +138,13 @@ function BottomSheetPanel({
     // The backdrop is a pointer-only close convenience; Escape and the close button provide keyboard access.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
-      ref={overlayRef}
+      ref={attachOverlay}
       className={cx('lyra-bottomsheet-overlay', closing && 'lyra-bottomsheet-overlay--closing')}
       onMouseDown={(event) => {
-        downOnOverlay.current = event.target === event.currentTarget;
+        downOnOverlay.current = open && event.target === event.currentTarget;
       }}
       onClick={(event) => {
-        if (downOnOverlay.current && event.target === event.currentTarget) onClose?.();
+        if (open && downOnOverlay.current && event.target === event.currentTarget) onClose?.();
       }}
     >
       {/* The sheet panel owns the Escape-to-close keydown for the modal-dialog pattern. */}
@@ -150,7 +155,7 @@ function BottomSheetPanel({
         className={cx('lyra-bottomsheet', closing && 'lyra-bottomsheet--closing', className)}
         onAnimationEnd={handleAnimationEnd}
         role="dialog"
-        aria-modal="true"
+        aria-modal={open || undefined}
         aria-labelledby={hasTitle ? titleId : undefined}
         aria-label={hasTitle ? undefined : accessibleName}
         tabIndex={-1}
@@ -168,7 +173,7 @@ function BottomSheetPanel({
                 type="button"
                 className="lyra-bottomsheet__close"
                 aria-label={closeLabel}
-                onClick={onClose}
+                onClick={open ? onClose : undefined}
               >
                 <svg
                   width="14"

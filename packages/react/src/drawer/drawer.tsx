@@ -11,6 +11,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
+import { useModalActivity } from '../internal/use-modal-activity';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 import { usePresence } from '../internal/use-presence';
@@ -89,17 +90,21 @@ function DrawerPanel({
     focusInitial();
   }, [focusInitial, open, resetInitialFocus]);
 
-  useFocusTrap(panelRef, true);
+  useFocusTrap(panelRef, open);
   // Keyed on the close REQUEST, not on `mounted`: the page is scrollable again immediately while
   // the exit animation still plays, exactly as Dialog does it.
   useScrollLock(!closing);
 
   const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay } = useModalActivity({ open, overlayRef, revokeGesture });
 
   const { onKeyDown: restOnKeyDown, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key !== 'Escape') return;
+    if (!open || event.key !== 'Escape') return;
 
     event.stopPropagation();
     if (!event.defaultPrevented) onClose?.();
@@ -109,13 +114,13 @@ function DrawerPanel({
     // The backdrop is a pointer-only close convenience; Escape and the close button provide keyboard access.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
-      ref={overlayRef}
+      ref={attachOverlay}
       className={cx('lyra-drawer-overlay', closing && 'lyra-drawer-overlay--closing')}
       onMouseDown={(event) => {
-        downOnOverlay.current = event.target === event.currentTarget;
+        downOnOverlay.current = open && event.target === event.currentTarget;
       }}
       onClick={(event) => {
-        if (downOnOverlay.current && event.target === event.currentTarget) onClose?.();
+        if (open && downOnOverlay.current && event.target === event.currentTarget) onClose?.();
       }}
     >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
@@ -125,7 +130,7 @@ function DrawerPanel({
         className={cx('lyra-drawer', closing && 'lyra-drawer--closing', className)}
         onAnimationEnd={onAnimationEnd}
         role="dialog"
-        aria-modal="true"
+        aria-modal={open || undefined}
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
@@ -139,7 +144,7 @@ function DrawerPanel({
               type="button"
               className="lyra-drawer__close"
               aria-label={closeLabel}
-              onClick={onClose}
+              onClick={open ? onClose : undefined}
             >
               <svg
                 width="14"

@@ -16,6 +16,7 @@ import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
 import { useInitialFocus } from '../internal/use-initial-focus';
+import { useModalActivity } from '../internal/use-modal-activity';
 import { usePresence, type PresenceState } from '../internal/use-presence';
 import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
@@ -214,6 +215,7 @@ function CommandPalettePanel({
   captureOpener,
   initialFocusTo,
 }: CommandPalettePanelProps): ReactNode {
+  const active = !modal || open;
   // A filter invalidates the old option collection, so the active descendant always returns to
   // its first visible item. Keeping DOM focus on this input is the APG activedescendant model.
   const activeItem = flatItems[activeIndex];
@@ -260,6 +262,7 @@ function CommandPalettePanel({
   }, [activeOptionId, listRef]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (!active) return;
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       if (flatItems.length > 0) {
@@ -278,7 +281,7 @@ function CommandPalettePanel({
   };
 
   const handlePanelKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    if (!modal || event.key !== 'Escape') return;
+    if (!modal || !open || event.key !== 'Escape') return;
 
     event.stopPropagation();
     if (!event.defaultPrevented) {
@@ -292,7 +295,7 @@ function CommandPalettePanel({
       ref={attachPanel}
       className={cx('lyra-cmdk', closing && 'lyra-cmdk--closing', className)}
       role={modal ? 'dialog' : undefined}
-      aria-modal={modal || undefined}
+      aria-modal={(modal && open) || undefined}
       aria-label={modal ? dialogLabel : undefined}
       tabIndex={modal ? -1 : undefined}
       onKeyDown={handlePanelKeyDown}
@@ -310,7 +313,7 @@ function CommandPalettePanel({
           aria-activedescendant={activeOptionId}
           value={query}
           placeholder={placeholder}
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={active ? (event) => onQueryChange(event.target.value) : undefined}
           onKeyDown={handleKeyDown}
         />
         <kbd className="lyra-kbd">esc</kbd>
@@ -345,8 +348,8 @@ function CommandPalettePanel({
                       role="option"
                       aria-selected={isActive}
                       className={cx('lyra-cmdk__item', isActive && 'lyra-cmdk__item--active')}
-                      onMouseEnter={() => onActiveIndexChange(index)}
-                      onClick={() => onPick(item)}
+                      onMouseEnter={active ? () => onActiveIndexChange(index) : undefined}
+                      onClick={active ? () => onPick(item) : undefined}
                     >
                       {item.icon && <span className="lyra-cmdk__item-icon">{item.icon}</span>}
                       <span className="lyra-cmdk__item-label">{item.label}</span>
@@ -419,6 +422,15 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
     const listRef = useRef<HTMLDivElement | null>(null);
     const downOnOverlay = useRef(false);
     const upOnOverlay = useRef(false);
+    const revokeGesture = useCallback(() => {
+      downOnOverlay.current = false;
+      upOnOverlay.current = false;
+    }, []);
+    const { attachOverlay } = useModalActivity({
+      open: !inline && open,
+      overlayRef,
+      revokeGesture,
+    });
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
@@ -533,17 +545,20 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
         {/* Backdrop click is pointer-only convenience; Escape on the combobox is the keyboard path. */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
         <div
-          ref={overlayRef}
+          ref={attachOverlay}
           className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
           onMouseDown={(event) => {
-            downOnOverlay.current = event.target === event.currentTarget;
+            downOnOverlay.current = open && event.target === event.currentTarget;
           }}
           onMouseUp={(event) => {
-            upOnOverlay.current = event.target === event.currentTarget;
+            upOnOverlay.current = open && event.target === event.currentTarget;
           }}
           onClick={(event) => {
             const isBackdropGesture =
-              downOnOverlay.current && upOnOverlay.current && event.target === event.currentTarget;
+              open &&
+              downOnOverlay.current &&
+              upOnOverlay.current &&
+              event.target === event.currentTarget;
             downOnOverlay.current = false;
             upOnOverlay.current = false;
             if (isBackdropGesture) onClose?.();
