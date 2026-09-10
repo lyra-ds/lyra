@@ -1,3 +1,5 @@
+Commit8987a05.
+
 # CreateWorkspaceDialog public lifecycle docs — controller verification
 
 Task37 after runtime6f450d2. CodexTerra/medium260.61s initial +168.7s single prose/migration retry; then high130.12s canceled-close wording completion; no high retry. Exactly two current MDX pages in scope. Protected frontmatter, complete static HTML panel/tail and two existing Example ids unchanged; no claim that HTML is an Alpine runtime. All other tracked product hashes and453React/Alpine distribution hashes unchanged.

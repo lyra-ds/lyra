@@ -1425,17 +1425,55 @@ export declare function Stepper(props: StepperProps): JSX.Element;
 ### Tabs
 ```ts
 /** Props for {@link Tabs}. */
-export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-  /** Tabs rendered by the control, in keyboard-navigation order. */
-  items: TabItem[];
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'children' | 'role'> {
   /** Id of the active tab. Tabs are controlled; update this value in `onChange`. */
   active: string;
-  /** Called with a tab id after a click or keyboard navigation activates it. */
-  onChange?: (id: string) => void;
+  /** Called with a tab id after a click or keyboard navigation requests activation. */
+  onChange?: (value: string) => void;
   /** Visual treatment: underline tabs (`"line"`) or segmented tabs (`"pills"`). */
   variant?: 'line' | 'pills';
+  /** Named list, trigger, and content parts owned by this Tabs root. */
+  children: ReactNode;
 }
 export declare function Tabs(props: TabsProps): JSX.Element;
+```
+
+### TabsContent
+```ts
+/** Props for a consumer-owned tab panel. */
+export interface TabsContentProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id' | 'role' | 'tabIndex' | 'aria-labelledby' | 'hidden'> {
+  /** Stable value shared with this panel's matching trigger. */
+  value: string;
+  /** Consumer-owned content that remains mounted across tab switches. */
+  children: ReactNode;
+}
+export declare function TabsContent(props: TabsContentProps): JSX.Element;
+```
+
+### TabsList
+```ts
+/** Props for the tablist part. */
+export interface TabsListProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children' | 'tabIndex'> {
+  /** Tab triggers rendered in their native keyboard-navigation order. */
+  children: ReactNode;
+}
+export declare function TabsList(props: TabsListProps): JSX.Element;
+```
+
+### TabsTrigger
+```ts
+/** Props for a consumer-owned tab trigger. */
+export interface TabsTriggerProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'children' | 'id' | 'role' | 'type' | 'tabIndex' | 'aria-selected' | 'aria-controls'> {
+  /** Stable value shared with this trigger's matching content panel. */
+  value: string;
+  /** Visible trigger label. */
+  children: ReactNode;
+  /** Optional supplementary count displayed after the label. */
+  count?: number;
+  /** Optional icon rendered before the label. */
+  icon?: ReactNode;
+}
+export declare function TabsTrigger(props: TabsTriggerProps): JSX.Element;
 ```
 
 ### WorkspaceSwitcher

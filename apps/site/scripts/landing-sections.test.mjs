@@ -16,7 +16,7 @@ test('derives honest inventory counts from the parity and docgen sources', () =>
       palettePrimitives: 43,
       semanticTokens: 111,
       cssClasses: 436,
-      documentedComponents: 78,
+      documentedComponents: 81,
       whiteLabelInputs: 4,
     });
   });

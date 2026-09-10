@@ -680,3 +680,10 @@
 .lyra-tab--active:hover {
   color: var(--accent-hover);
 }
+
+/* Additive extension: native hidden must win over consumer flex/grid declarations for Tabs. */
+.lyra-tabs[hidden],
+.lyra-tab[hidden],
+[data-lyra-tabs] [hidden] {
+  display: none !important;
+}

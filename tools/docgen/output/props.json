@@ -2981,16 +2981,10 @@
   {
     "name": "Tabs",
     "category": "Navigation",
-    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'children' | 'role'>",
     "description": "Props for {@link Tabs}.",
     "signature": "export declare function Tabs(props: TabsProps): JSX.Element;",
     "props": [
-      {
-        "name": "items",
-        "type": "TabItem[]",
-        "optional": false,
-        "description": "Tabs rendered by the control, in keyboard-navigation order."
-      },
       {
         "name": "active",
         "type": "string",
@@ -2999,15 +2993,90 @@
       },
       {
         "name": "onChange",
-        "type": "(id: string) => void",
+        "type": "(value: string) => void",
         "optional": true,
-        "description": "Called with a tab id after a click or keyboard navigation activates it."
+        "description": "Called with a tab id after a click or keyboard navigation requests activation."
       },
       {
         "name": "variant",
         "type": "'line' | 'pills'",
         "optional": true,
         "description": "Visual treatment: underline tabs (`\"line\"`) or segmented tabs (`\"pills\"`)."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Named list, trigger, and content parts owned by this Tabs root."
+      }
+    ]
+  },
+  {
+    "name": "TabsContent",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id' | 'role' | 'tabIndex' | 'aria-labelledby' | 'hidden'>",
+    "description": "Props for a consumer-owned tab panel.",
+    "signature": "export declare function TabsContent(props: TabsContentProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "optional": false,
+        "description": "Stable value shared with this panel's matching trigger."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Consumer-owned content that remains mounted across tab switches."
+      }
+    ]
+  },
+  {
+    "name": "TabsList",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children' | 'tabIndex'>",
+    "description": "Props for the tablist part.",
+    "signature": "export declare function TabsList(props: TabsListProps): JSX.Element;",
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Tab triggers rendered in their native keyboard-navigation order."
+      }
+    ]
+  },
+  {
+    "name": "TabsTrigger",
+    "category": "Navigation",
+    "extends": "Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'children' | 'id' | 'role' | 'type' | 'tabIndex' | 'aria-selected' | 'aria-controls'>",
+    "description": "Props for a consumer-owned tab trigger.",
+    "signature": "export declare function TabsTrigger(props: TabsTriggerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "optional": false,
+        "description": "Stable value shared with this trigger's matching content panel."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Visible trigger label."
+      },
+      {
+        "name": "count",
+        "type": "number",
+        "optional": true,
+        "description": "Optional supplementary count displayed after the label."
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional icon rendered before the label."
       }
     ]
   },

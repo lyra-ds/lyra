@@ -274,6 +274,40 @@ let ok = true;
       die(`CJS require() proof exited ${cjs.status}\n${cjs.stdout}\n${cjs.stderr}`);
     process.stdout.write(cjs.stdout);
 
+    // Context-owning parts must compose across the root and subpath exports.
+    const mixedTabsProof = `
+      import assert from 'node:assert/strict';
+      import { createRequire } from 'node:module';
+      import { createElement as h } from 'react';
+      import { renderToString } from 'react-dom/server';
+      import * as esmRoot from '@lyra-ds/react';
+      import * as esmTabs from '@lyra-ds/react/tabs';
+      const require = createRequire(import.meta.url);
+      const cjsRoot = require('@lyra-ds/react');
+      const cjsTabs = require('@lyra-ds/react/tabs');
+      for (const [format, root, subpath] of [
+        ['ESM', esmRoot, esmTabs], ['CJS', cjsRoot, cjsTabs],
+      ]) {
+        for (const [owner, parts] of [[root, subpath], [subpath, root]]) {
+          const html = renderToString(h(owner.Tabs, { active: 'one', children: [
+            h(parts.TabsList, { key: 'list', 'aria-label': 'Project tabs', children:
+              h(parts.TabsTrigger, { value: 'one', children: 'Overview' }) }),
+            h(parts.TabsContent, { key: 'panel', value: 'one', children: 'Owned project content' }),
+          ] }));
+          assert.match(html, /role="tab"/);
+          assert.match(html, /role="tabpanel"[^>]*>Owned project content<\\/div>/);
+          assert.doesNotMatch(html, /hidden=""/);
+        }
+        console.log(format + ' mixed Tabs proof OK: both root/subpath directions render owned panels');
+      }
+    `;
+    const mixedTabs = run(process.execPath, ['--input-type=module', '-e', mixedTabsProof], {
+      cwd: viteDir,
+    });
+    if (mixedTabs.status !== 0)
+      die(`Mixed Tabs proof exited ${mixedTabs.status}\n${mixedTabs.stdout}\n${mixedTabs.stderr}`);
+    process.stdout.write(mixedTabs.stdout);
+
     console.log(
       'smoke OK (vite): tarball allowlist verified; real npm install of the @lyra-ds/react + ' +
         '@lyra-ds/styles tarballs; tsc --noEmit clean; production vite build tree-shakes to ' +

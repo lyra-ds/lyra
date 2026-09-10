@@ -5,8 +5,9 @@
 //   assertions and publint/attw gates depend on this 1:1 filename contract.
 // - Each entry builds in its own tsdown config, with `outputOptions.codeSplitting: false`
 //   explicitly set on every build. This prevents shared code from being hoisted into
-//   chunk-*.js files. The only shared internal code is tiny cx/scale utilities, so
-//   per-entry duplication is negligible.
+//   chunk-*.js files. The root forwards its Tabs exports to the existing tabs
+//   entry so compound parts imported through either path share one context.
+//   Other entries retain their existing independent bundles.
 // - Dual `format: ['esm','cjs']` + `dts: true` emits .js/.cjs plus split .d.ts/.d.cts so
 //   attw sees per-condition types (no FalseCJS/FalseESM).
 // - RSC `"use client";` directive: emitted deterministically on EVERY js/cjs output by the
@@ -17,7 +18,10 @@
 //   the standard, tolerated cost of this well-known bundler workaround.)
 // - `deps.neverBundle`: react/react-dom/jsx-runtime are peers and never bundled. lucide-react
 //   is a runtime dependency, so it is also externalized — never bundle the icon set.
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'tsdown';
+
+const tabsModuleId = fileURLToPath(new URL('./src/tabs', import.meta.url));
 
 const entries = {
   index: 'src/index.ts',
@@ -108,11 +112,21 @@ export default defineConfig(
     sourcemap: true,
     clean: index === 0,
     treeshake: true,
-    outputOptions: {
+    outputOptions: (options, format, { cjsDts }) => ({
+      ...options,
       codeSplitting: false,
-    },
+      ...(name === 'index'
+        ? { paths: { [tabsModuleId]: format === 'cjs' || cjsDts ? './tabs.cjs' : './tabs.js' } }
+        : {}),
+    }),
     deps: {
-      neverBundle: ['react', 'react-dom', 'react/jsx-runtime', 'lucide-react'],
+      neverBundle: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'lucide-react',
+        ...(name === 'index' ? ['./tabs'] : []),
+      ],
     },
   })),
 );

@@ -135,7 +135,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 
 ## Remaining public contract designs
 - [x] 26. CreateWorkspaceDialog operation lifecycle runtime — high initial/retry then critical/controller test-fixture completion. Native87, source12/11/11, actual examples6/12creates, public types/build/docgen/visual8 PASS; GLM3DONE/no concrete findings/unchanged guard. Existing size cap fails at approximately5.12/3.2kB (Task10). Public MDX follows as Task37; no overall V1 qualification.
-- [ ] 27. Tabs compound real-content ownership — critical selection-family API/migration design before implementation. No final part signatures chosen yet; preserve current classes, support actual owned panels, define server enhancement/failure behavior per existing normative requirement.
+- [ ] 27. Tabs compound real-content ownership — React runtime verified with named Tabs/List/Trigger/Content, current consumers, native-hidden styles and same-format package ownership. React MDX and Alpine enhancement/fallback/runtime/docs remain pending; design selected in .batuta/specs/2026-09-10-tabs-owned-content-design.md.
 - [ ] 28. DataTable semantic row action — critical bounded data-family API/migration design then existing-owner implementation; keep native table, sort and checkboxselection semantics. Current onRowClick has no in-repo consumers; never make rows into simulated buttons or wrap arbitrary cell children.
 
 ## Remaining modal ownership order
@@ -158,3 +158,5 @@ Task29 followsTask25 because its existing-owner inconsistency is directly locali
 - [x] 37. CreateWorkspaceDialog public lifecycle and migration — medium260.61s +168.7s retry, high130.12s two-clause completion. Current twoMDX/snippettypes/stack303/format PASS; exactcurrentconsumer24native and finalsnippet/453artifactSHAparity. GLMfinal36.75s3DONE/no findings/unchangedguard/verifierPASS. CompleteHTML/frontmatter/Exampleids preserved; no new demo. See .batuta/v1-create-workspace-docs-verification.md.
 
 Task27 fresh baseline on2026-09-10: actual TabsLine example/currentpubliccompiledcode has empty named panels with real Project summary outside in all3engines, no pageerrors. See .batuta/v1-tabs-owned-content-diagnosis.md and .batuta/scout/2026-09-10-tabs-compound-design-support.md. Support proposals are advisory; exact compound/SSR/invalidvalue/Alpine/migration design remains to be selected and technically reviewed before implementation.
+
+Task27 design selected2026-09-10 after GLM301.61s and346.17s technical reviews, all findings adjudicated under .batuta/runs/. React high scope is closed in .batuta/v1-tabs-owned-content-brief.md: four named parts, three current consumers, deterministic SSR/native behavior and proven shared CSS hidden repair. No Alpine runtime/MDX edits in this first slice, no cap/dependency/global configuration changes.
