@@ -122,6 +122,12 @@ export function lyraTabs({ active }: LyraTabsOptions): LyraTabsData {
         activeElement instanceof HTMLButtonElement && this.tabElements().includes(activeElement)
           ? activeElement
           : null;
+      const focusedPanel =
+        this.ready &&
+        activeElement instanceof HTMLElement &&
+        this.panelElements().includes(activeElement)
+          ? activeElement
+          : null;
 
       if (this.clickListener) root?.removeEventListener('click', this.clickListener);
       if (this.keyDownListener) root?.removeEventListener('keydown', this.keyDownListener);
@@ -130,13 +136,13 @@ export function lyraTabs({ active }: LyraTabsOptions): LyraTabsData {
       this.ready = false;
       this.resetNativeContent();
 
-      if (root?.isConnected && focusedTab) {
+      const focusedValue = focusedTab?.dataset.value ?? focusedPanel?.dataset.value;
+      if (root?.isConnected && focusedValue) {
         const destination =
           this.fallbackLinks().find(
             (link) =>
               this.isEligibleFallbackLink(link) &&
-              link.getAttribute('href') ===
-                `#${this.panelIdForValue(focusedTab.dataset.value ?? '')}`,
+              link.getAttribute('href') === `#${this.panelIdForValue(focusedValue)}`,
           ) ?? this.fallbackLinks().find((link) => this.isEligibleFallbackLink(link));
         if (destination?.isConnected) destination.focus();
       }

@@ -345,6 +345,41 @@ describe('lyraTabs', () => {
     expect(document.activeElement).toBe(fallback(host).querySelector('a[href="#two-panel"]'));
   });
 
+  it('restores matching fallback-link focus from an enhanced panel container when destroyed', async () => {
+    const host = mountTabs({ active: 'two' });
+    const panel = panels(host)[1];
+    await flush();
+    panel.focus();
+    expect(document.activeElement).toBe(panel);
+
+    Alpine.destroyTree(root(host));
+    await flush();
+
+    expect(document.activeElement).toBe(fallback(host).querySelector('a[href="#two-panel"]'));
+    expect(panel.hidden).toBe(false);
+    expect(panel.hasAttribute('role')).toBe(false);
+    expect(panel.hasAttribute('aria-labelledby')).toBe(false);
+    expect(panel.hasAttribute('tabindex')).toBe(false);
+    expect(panel.hasAttribute('data-state')).toBe(false);
+  });
+
+  it('uses the first eligible fallback when a focused panel container has no matching fallback', async () => {
+    const host = mountTabs({ active: 'two' });
+    const matchingFallback =
+      fallback(host).querySelector<HTMLAnchorElement>('a[href="#two-panel"]');
+    if (!matchingFallback) throw new Error('Expected matching fallback link');
+    matchingFallback.hidden = true;
+    const panel = panels(host)[1];
+    await flush();
+    panel.focus();
+    expect(document.activeElement).toBe(panel);
+
+    Alpine.destroyTree(root(host));
+    await flush();
+
+    expect(document.activeElement).toBe(fallback(host).querySelector('a[href="#one-panel"]'));
+  });
+
   it('preserves focus in live native panel content when destroyed', async () => {
     const host = mountTabs();
     const panelButton = document.createElement('button');
@@ -357,6 +392,23 @@ describe('lyraTabs', () => {
     await flush();
 
     expect(document.activeElement).toBe(panelButton);
+  });
+
+  it('does not let a detached root take focus from an outside element when destroyed', async () => {
+    const host = mountTabs();
+    const outside = document.createElement('button');
+    outside.type = 'button';
+    document.body.appendChild(outside);
+    outside.focus();
+    expect(document.activeElement).toBe(outside);
+
+    const tabsRoot = root(host);
+    tabsRoot.remove();
+    Alpine.destroyTree(tabsRoot);
+    await flush();
+
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
   });
 
   it('deactivates a server-rendered active class after an accepted change', async () => {
