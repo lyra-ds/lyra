@@ -12,8 +12,8 @@ de uma apresentação tabular simples e comparável.
 ## Exemplos
 
 <Example id="basic" title="Registros operacionais" layout="block">
-  Comece com chaves estáveis de coluna e valores `id` nas linhas. `hover` dá uma pista para
-  percorrer as linhas, mantendo os dados do registro em células de tabela reais.
+  Start with stable column keys and row `id` values. Put a named native action in its own cell;
+  `hover` remains an optional scanning affordance.
 </Example>
 
 <Example id="sortable-selectable" title="Ordenação e seleção de linhas" layout="block">
@@ -52,9 +52,82 @@ Prefira outro componente quando:
 - O `id` da linha é usado como chave React e para seleção. Se uma linha não tiver `id` string ou
   numérico, seu fallback vem da posição original de entrada, então a seleção continua nessa linha
   depois da ordenação.
-- Quando `onRowClick` está presente, o estilo de hover é ligado automaticamente, mas a linha ainda
-  não é um controle operável pelo teclado. Coloque um botão ou link real em uma célula para uma ação
-  pelo teclado.
+- DataTable owns table layout, sorting, and selection. A command belongs to the React consumer in a
+  cell: use a native button for an operation and a native link for navigation. Plain cells and rows
+  are not commands.
+- Set `hover` to `true` only when a visual scanning affordance is useful. It is not implied by a
+  consumer action.
+
+## React cell actions
+
+Move each former row command into an explicit action cell during manual migration. The old
+`onRowClick` contract is removed under the project's pre-1.0 compatibility exception for unsafe
+contracts; the earliest correction is 0.6.0 before stable release, or stable 1.0.0. Keep the
+action's stable domain identity in the consumer, and keep selection and sorting callbacks separate.
+Styles and the static Alpine contract are unchanged.
+
+```tsx
+import { useState } from 'react';
+import { Badge, Button, DataTable, type DataTableColumn } from '@lyra-ds/react';
+
+const columns: DataTableColumn[] = [
+  { key: 'project', label: 'Project' },
+  { key: 'owner', label: 'Owner' },
+  { key: 'status', label: 'Status' },
+  { key: 'actions', label: 'Actions' },
+];
+
+const projects = [
+  {
+    id: 'atlas',
+    project: 'Atlas',
+    owner: 'Maya Chen',
+    status: <Badge tone="success">Healthy</Badge>,
+  },
+  {
+    id: 'orbit',
+    project: 'Orbit',
+    owner: 'Jon Bell',
+    status: <Badge tone="warning">At risk</Badge>,
+  },
+  {
+    id: 'nova',
+    project: 'Nova',
+    owner: 'Priya Shah',
+    status: <Badge tone="neutral">Planning</Badge>,
+  },
+];
+
+export function ProjectTable() {
+  const [openedProject, setOpenedProject] = useState<string | null>(null);
+  const rows = projects.map((project) => ({
+    ...project,
+    actions: (
+      <Button
+        type="button"
+        size="sm"
+        variant="secondary"
+        onClick={() => setOpenedProject(project.id)}
+        tabIndex={0}
+      >
+        Open {project.project}
+      </Button>
+    ),
+  }));
+  const opened = projects.find((project) => project.id === openedProject);
+
+  return (
+    <div>
+      <DataTable columns={columns} rows={rows} hover />
+      <p aria-live="polite">
+        {opened
+          ? `Showing details for ${opened.project}. Owner: ${opened.owner}.`
+          : 'Choose a project action to view its details.'}
+      </p>
+    </div>
+  );
+}
+```
 
 ## API e código
 

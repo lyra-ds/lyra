@@ -271,10 +271,8 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   empty?: ReactNode;
   /** Content rendered below the scrollable table area. */
   footer?: ReactNode;
-  /** Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied. */
+  /** Whether rows highlight on hover. */
   hover?: boolean;
-  /** Called when a data row is clicked. */
-  onRowClick?: (row: RowShape) => void;
   /** Labels for controls and the default empty state. Merged over the English defaults. */
   labels?: DataTableLabels;
 }

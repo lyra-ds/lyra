@@ -11,8 +11,8 @@ or act on rows; choose Table when the records only need a simple, comparable tab
 ## Examples
 
 <Example id="basic" title="Operational records" layout="block">
-  Start with stable column keys and row `id` values. `hover` gives rows a scanning affordance while
-  keeping the record data in real table cells.
+  Start with stable column keys and row `id` values. Put a named native action in its own cell;
+  `hover` remains an optional scanning affordance.
 </Example>
 
 <Example id="sortable-selectable" title="Sorting and row selection" layout="block">
@@ -28,7 +28,7 @@ or act on rows; choose Table when the records only need a simple, comparable tab
 ## When to use
 
 Use DataTable for operational record sets that people need to sort, select, scan in a fixed area or
-open from a row.
+manage with explicit actions.
 
 Reach for something else when:
 
@@ -48,8 +48,82 @@ Reach for something else when:
   distinguishable accessible name.
 - A row's `id` is used for its React key and selection. If a row has no string or numeric `id`, its
   fallback comes from its original input position, so selection stays with that row after sorting.
-- When `onRowClick` is present, hover styling is enabled automatically, but the row is still not a
-  keyboard-operable control. Put a real button or link in a cell for a keyboard action.
+- DataTable owns table layout, sorting, and selection. A command belongs to the React consumer in a
+  cell: use a native button for an operation and a native link for navigation. Plain cells and rows
+  are not commands.
+- Set `hover` to `true` only when a visual scanning affordance is useful. It is not implied by a
+  consumer action.
+
+## React cell actions
+
+Move each former row command into an explicit action cell during manual migration. The old
+`onRowClick` contract is removed under the project's pre-1.0 compatibility exception for unsafe
+contracts; the earliest correction is 0.6.0 before stable release, or stable 1.0.0. Keep the
+action's stable domain identity in the consumer, and keep selection and sorting callbacks separate.
+Styles and the static Alpine contract are unchanged.
+
+```tsx
+import { useState } from 'react';
+import { Badge, Button, DataTable, type DataTableColumn } from '@lyra-ds/react';
+
+const columns: DataTableColumn[] = [
+  { key: 'project', label: 'Project' },
+  { key: 'owner', label: 'Owner' },
+  { key: 'status', label: 'Status' },
+  { key: 'actions', label: 'Actions' },
+];
+
+const projects = [
+  {
+    id: 'atlas',
+    project: 'Atlas',
+    owner: 'Maya Chen',
+    status: <Badge tone="success">Healthy</Badge>,
+  },
+  {
+    id: 'orbit',
+    project: 'Orbit',
+    owner: 'Jon Bell',
+    status: <Badge tone="warning">At risk</Badge>,
+  },
+  {
+    id: 'nova',
+    project: 'Nova',
+    owner: 'Priya Shah',
+    status: <Badge tone="neutral">Planning</Badge>,
+  },
+];
+
+export function ProjectTable() {
+  const [openedProject, setOpenedProject] = useState<string | null>(null);
+  const rows = projects.map((project) => ({
+    ...project,
+    actions: (
+      <Button
+        type="button"
+        size="sm"
+        variant="secondary"
+        onClick={() => setOpenedProject(project.id)}
+        tabIndex={0}
+      >
+        Open {project.project}
+      </Button>
+    ),
+  }));
+  const opened = projects.find((project) => project.id === openedProject);
+
+  return (
+    <div>
+      <DataTable columns={columns} rows={rows} hover />
+      <p aria-live="polite">
+        {opened
+          ? `Showing details for ${opened.project}. Owner: ${opened.owner}.`
+          : 'Choose a project action to view its details.'}
+      </p>
+    </div>
+  );
+}
+```
 
 ## API and code
 

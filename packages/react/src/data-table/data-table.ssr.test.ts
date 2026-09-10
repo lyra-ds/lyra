@@ -16,4 +16,29 @@ describe('DataTable — SSR', () => {
     expect(html).toContain('lyra-table__primary');
     expect(html).toContain('Select all');
   });
+
+  it('renders consumer-owned native action cells without making rows commands', () => {
+    const html = renderToString(
+      createElement(DataTable, {
+        columns: [
+          { key: 'name', label: 'Project' },
+          { key: 'actions', label: 'Actions' },
+        ],
+        rows: [
+          {
+            id: 'north',
+            name: 'North',
+            actions: createElement(
+              'button',
+              { type: 'button', 'aria-label': 'Open North' },
+              'Open',
+            ),
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('<button type="button" aria-label="Open North">Open</button>');
+    expect(html).toContain('<tr><td class="lyra-table__primary">North</td>');
+    expect(html).not.toContain('tabindex');
+  });
 });

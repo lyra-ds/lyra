@@ -82,10 +82,8 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   empty?: ReactNode;
   /** Content rendered below the scrollable table area. */
   footer?: ReactNode;
-  /** Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied. */
+  /** Whether rows highlight on hover. */
   hover?: boolean;
-  /** Called when a data row is clicked. */
-  onRowClick?: (row: RowShape) => void;
   /** Labels for controls and the default empty state. Merged over the English defaults. */
   labels?: DataTableLabels;
 }
@@ -161,7 +159,6 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
       empty,
       footer,
       hover = false,
-      onRowClick,
       labels: labelsProp,
       className,
       ...rest
@@ -232,7 +229,7 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
           <table
             className={cx(
               'lyra-table',
-              (hover || onRowClick) && 'lyra-table--hover',
+              hover && 'lyra-table--hover',
               density === 'compact' && 'lyra-table--compact',
               stickyHeader && 'lyra-table--sticky',
             )}
@@ -316,11 +313,7 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
                       ? labels.selectRow(row)
                       : labels.selectRow;
                   return (
-                    <tr
-                      key={id}
-                      className={isSelected ? 'lyra-table__row--selected' : undefined}
-                      onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    >
+                    <tr key={id} className={isSelected ? 'lyra-table__row--selected' : undefined}>
                       {selectable && (
                         <td className="lyra-table__check">
                           <input

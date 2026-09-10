@@ -520,13 +520,7 @@
         "name": "hover",
         "type": "boolean",
         "optional": true,
-        "description": "Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied."
-      },
-      {
-        "name": "onRowClick",
-        "type": "(row: RowShape) => void",
-        "optional": true,
-        "description": "Called when a data row is clicked."
+        "description": "Whether rows highlight on hover."
       },
       {
         "name": "labels",
