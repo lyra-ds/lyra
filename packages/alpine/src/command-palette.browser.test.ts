@@ -6,8 +6,16 @@ import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
 
 const mountedHosts: HTMLElement[] = [];
+let commandPaletteReturnTarget: HTMLElement | null = null;
+let commandPaletteReturnFocusCalls = 0;
 
 Alpine.plugin(lyra);
+Alpine.data('commandPaletteReturnFocusWorkflow', () => ({
+  returnTarget: () => {
+    commandPaletteReturnFocusCalls += 1;
+    return commandPaletteReturnTarget;
+  },
+}));
 
 const groups = [
   {
@@ -82,11 +90,18 @@ function commandPaletteTemplate(
 }
 
 /** The canonical inline template deliberately has no overlay. */
-function inlineCommandPaletteTemplate(options = JSON.stringify({ groups, inline: true })): string {
+function inlineCommandPaletteTemplate(
+  options = JSON.stringify({ groups, inline: true }),
+  wrapperAttributes = '',
+): string {
+  const wrapperOpen = wrapperAttributes ? `<div ${wrapperAttributes}>` : '';
+  const wrapperClose = wrapperAttributes ? '</div>' : '';
   return `
+    ${wrapperOpen}
     <div class="lyra-command-palette" x-data='lyraCommandPalette(${options})'>
       ${panelMarkup()}
     </div>
+    ${wrapperClose}
   `;
 }
 
@@ -111,9 +126,10 @@ function mountCommandPalette(
 
 function mountInlineCommandPalette(
   options = JSON.stringify({ groups, inline: true }),
+  wrapperAttributes = '',
 ): HTMLElement {
   const host = document.createElement('div');
-  host.innerHTML = inlineCommandPaletteTemplate(options);
+  host.innerHTML = inlineCommandPaletteTemplate(options, wrapperAttributes);
   document.body.appendChild(host);
   Alpine.initTree(host);
   mountedHosts.push(host);
@@ -188,11 +204,18 @@ afterEach(() => {
   }
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
+  commandPaletteReturnTarget?.remove();
+  commandPaletteReturnTarget = null;
+  commandPaletteReturnFocusCalls = 0;
 });
 
 describe('lyraCommandPalette', () => {
   it('mounts the overlay, focuses the input, resets query and active state, and restores its opener', async () => {
-    const host = mountCommandPalette();
+    const host = mountCommandPalette(
+      `{ groups: ${JSON.stringify(groups)}, returnFocusTo: returnTarget }`,
+      'x-data="commandPaletteReturnFocusWorkflow"',
+    );
+    commandPaletteReturnTarget = opener(host);
     await openPalette(host);
 
     expect(panel(host).getAttribute('role')).toBe('dialog');
@@ -211,6 +234,50 @@ describe('lyraCommandPalette', () => {
     await openPalette(host);
     expect(search(host).value).toBe('');
     expect(search(host).getAttribute('aria-activedescendant')).toBe(options(host)[0]?.id);
+  });
+
+  it('keeps the captured keyboard opener fallback when no destination is configured', async () => {
+    const host = mountCommandPalette();
+    const control = opener(host);
+    control.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    await vi.waitFor(() => expect(document.activeElement).toBe(search(host)), { timeout: 3000 });
+    await userEvent.keyboard('{Escape}');
+    await flush();
+
+    expect(document.activeElement).toBe(control);
+  });
+
+  it('never resolves returnFocusTo in inline mode', async () => {
+    const host = mountInlineCommandPalette(
+      '{ groups: [], inline: true, returnFocusTo: returnTarget }',
+      'x-data="commandPaletteReturnFocusWorkflow"',
+    );
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(search(host)), { timeout: 3000 });
+    await userEvent.fill(search(host), 'settings');
+
+    expect(commandPaletteReturnFocusCalls).toBe(0);
+  });
+
+  it('uses an outer Alpine workflow successor after a pointer-opened accepted close', async () => {
+    commandPaletteReturnTarget = document.createElement('h2');
+    commandPaletteReturnTarget.tabIndex = -1;
+    commandPaletteReturnTarget.textContent = 'Command palette successor';
+    document.body.append(commandPaletteReturnTarget);
+    const focus = vi.spyOn(commandPaletteReturnTarget, 'focus');
+    const host = mountCommandPalette(
+      '{ groups: [], returnFocusTo: returnTarget }',
+      'x-data="commandPaletteReturnFocusWorkflow"',
+    );
+
+    await openPalette(host);
+    await userEvent.keyboard('{Escape}');
+    await flush();
+
+    expect(document.activeElement).toBe(commandPaletteReturnTarget);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
   it('traps Tab inside the panel while open', async () => {
@@ -427,11 +494,16 @@ describe('lyraCommandPalette', () => {
     await userEvent.click(external);
     await flush();
     await vi.waitFor(() => expect(overlay(host).style.display).not.toBe('none'), { timeout: 3000 });
+    await vi.waitFor(() => expect(document.activeElement).toBe(search(host)), { timeout: 3000 });
     await userEvent.keyboard('{Escape}');
     await flush();
-    expect(
-      (Alpine.$data(host.firstElementChild as HTMLElement) as { outerOpen: boolean }).outerOpen,
-    ).toBe(false);
+    await vi.waitFor(
+      () =>
+        expect(
+          (Alpine.$data(host.firstElementChild as HTMLElement) as { outerOpen: boolean }).outerOpen,
+        ).toBe(false),
+      { timeout: 3000 },
+    );
   });
 
   it('is axe clean in its open overlay and inline states', async () => {

@@ -1,20 +1,28 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
 
 const mountedHosts: HTMLElement[] = [];
+let bottomSheetReturnTarget: HTMLElement | null = null;
 
 Alpine.plugin(lyra);
+Alpine.data('bottomSheetReturnFocusWorkflow', () => ({
+  returnTarget: () => bottomSheetReturnTarget,
+}));
 
 function mountBottomSheet(
   options = '{}',
   body = '<button type="button" data-testid="first">First</button><input aria-label="Middle"><button type="button" data-testid="last">Last</button>',
+  wrapperAttributes = '',
 ): HTMLElement {
   const host = document.createElement('div');
+  const wrapperOpen = wrapperAttributes ? `<div ${wrapperAttributes}>` : '';
+  const wrapperClose = wrapperAttributes ? '</div>' : '';
   host.innerHTML = `
+    ${wrapperOpen}
     <div x-data="lyraBottomSheet(${options})">
       <button type="button" data-testid="trigger" x-on:click="open = true">Open</button>
       <button type="button" data-testid="outside">Background</button>
@@ -28,6 +36,7 @@ function mountBottomSheet(
         </div>
       </div>
     </div>
+    ${wrapperClose}
   `;
   document.body.appendChild(host);
   Alpine.initTree(host);
@@ -40,7 +49,7 @@ async function flush(): Promise<void> {
 }
 
 function root(host: HTMLElement): HTMLElement {
-  const element = host.firstElementChild;
+  const element = host.querySelector<HTMLElement>('[x-data^="lyraBottomSheet"]');
   if (!(element instanceof HTMLElement)) throw new Error('Expected bottom-sheet root');
   return element;
 }
@@ -92,6 +101,8 @@ afterEach(() => {
   }
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
+  bottomSheetReturnTarget?.remove();
+  bottomSheetReturnTarget = null;
 });
 
 describe('lyraBottomSheet', () => {
@@ -177,14 +188,49 @@ describe('lyraBottomSheet', () => {
   });
 
   it('closes from Escape on the panel and restores focus to its opener', async () => {
-    const host = mountBottomSheet();
+    const host = mountBottomSheet(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="bottomSheetReturnFocusWorkflow"',
+    );
     const opener = trigger(host);
+    bottomSheetReturnTarget = opener;
     await openBottomSheet(host);
 
-    panel(host).dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+    await userEvent.keyboard('{Escape}');
     await flush();
     expect(document.activeElement).toBe(opener);
     expect(overlay(host).classList).toContain('lyra-bottomsheet-overlay--closing');
+  });
+
+  it('keeps the captured keyboard opener fallback when no destination is configured', async () => {
+    const host = mountBottomSheet();
+    const control = trigger(host);
+    await openBottomSheetWithKeyboard(host);
+    await userEvent.keyboard('{Escape}');
+    await flush();
+
+    expect(document.activeElement).toBe(control);
+  });
+
+  it('uses an outer Alpine workflow successor after a pointer-opened accepted close', async () => {
+    bottomSheetReturnTarget = document.createElement('h2');
+    bottomSheetReturnTarget.tabIndex = -1;
+    bottomSheetReturnTarget.textContent = 'Bottom sheet successor';
+    document.body.append(bottomSheetReturnTarget);
+    const focus = vi.spyOn(bottomSheetReturnTarget, 'focus');
+    const host = mountBottomSheet(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="bottomSheetReturnFocusWorkflow"',
+    );
+
+    await openBottomSheet(host);
+    await userEvent.keyboard('{Escape}');
+    await flush();
+
+    expect(document.activeElement).toBe(bottomSheetReturnTarget);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
   it('dismisses through the close button and dispatches lyra:close', async () => {

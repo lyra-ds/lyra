@@ -1,5 +1,6 @@
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
+import { restoreReturnFocus } from './internal/return-focus';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
 
 const INITIAL_FOCUS_SELECTOR = [
@@ -15,6 +16,8 @@ const INITIAL_FOCUS_SELECTOR = [
 export interface LyraBottomSheetOptions {
   /** Whether the sheet starts open. Defaults to `false`. */
   defaultOpen?: boolean;
+  /** Resolves the current logical focus destination after an accepted modal close. */
+  returnFocusTo?: () => HTMLElement | null;
 }
 
 type Binding = Record<string, unknown>;
@@ -64,6 +67,7 @@ type LyraBottomSheetState = LyraBottomSheetData & LyraBottomSheetMagics;
  */
 export function lyraBottomSheet({
   defaultOpen = false,
+  returnFocusTo,
 }: LyraBottomSheetOptions = {}): LyraBottomSheetData {
   const state: LyraBottomSheetData & ThisType<LyraBottomSheetState> = {
     open: defaultOpen,
@@ -111,7 +115,7 @@ export function lyraBottomSheet({
         lockScroll();
         this.scrollLocked = true;
       }
-      this.opener = document.activeElement;
+      this.opener = this.root?.ownerDocument.activeElement ?? null;
       this.$nextTick(() => {
         if (!this.open) return;
         this.attachFocusTrap();
@@ -148,8 +152,17 @@ export function lyraBottomSheet({
     },
 
     restoreOpener() {
-      if (this.opener instanceof HTMLElement && this.opener.isConnected) this.opener.focus();
+      const opener = this.opener;
       this.opener = null;
+      const ownerDocument = this.root?.ownerDocument ?? this.panelElement()?.ownerDocument;
+      if (!ownerDocument) return;
+      restoreReturnFocus({
+        ownerDocument,
+        opener,
+        panel: this.panelElement(),
+        overlay: this.root?.querySelector<HTMLElement>('.lyra-bottomsheet-overlay') ?? null,
+        returnFocusTo,
+      });
     },
 
     dismiss() {

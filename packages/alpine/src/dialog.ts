@@ -1,5 +1,6 @@
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
+import { restoreReturnFocus } from './internal/return-focus';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
 
 const INITIAL_FOCUS_SELECTOR = [
@@ -17,6 +18,8 @@ export interface LyraDialogOptions {
   closeOnEsc?: boolean;
   closeOnOverlayClick?: boolean;
   labelId?: string;
+  /** Resolves the current logical focus destination after an accepted modal close. */
+  returnFocusTo?: () => HTMLElement | null;
 }
 
 type Binding = Record<string, unknown>;
@@ -66,6 +69,7 @@ export function lyraDialog({
   closeOnEsc = true,
   closeOnOverlayClick = true,
   labelId,
+  returnFocusTo,
 }: LyraDialogOptions = {}): LyraDialogData {
   const state: LyraDialogData & ThisType<LyraDialogState> = {
     open: defaultOpen,
@@ -119,7 +123,7 @@ export function lyraDialog({
         lockScroll();
         this.scrollLocked = true;
       }
-      this.opener = document.activeElement;
+      this.opener = this.root?.ownerDocument.activeElement ?? null;
       this.$nextTick(() => {
         if (!this.open) return;
         this.attachFocusTrap();
@@ -156,8 +160,17 @@ export function lyraDialog({
     },
 
     restoreOpener() {
-      if (this.opener instanceof HTMLElement) this.opener.focus();
+      const opener = this.opener;
       this.opener = null;
+      const ownerDocument = this.root?.ownerDocument ?? this.panelElement()?.ownerDocument;
+      if (!ownerDocument) return;
+      restoreReturnFocus({
+        ownerDocument,
+        opener,
+        panel: this.panelElement(),
+        overlay: this.root?.querySelector<HTMLElement>('.lyra-dialog-overlay') ?? null,
+        returnFocusTo,
+      });
     },
 
     overlay: {

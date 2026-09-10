@@ -6,15 +6,23 @@ import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
 
 const mountedHosts: HTMLElement[] = [];
+let drawerReturnTarget: HTMLElement | null = null;
 
 Alpine.plugin(lyra);
+Alpine.data('drawerReturnFocusWorkflow', () => ({
+  returnTarget: () => drawerReturnTarget,
+}));
 
 function mountDrawer(
   options = '{}',
   body = '<button type="button" data-testid="first">First</button><input aria-label="Middle"><button type="button" data-testid="last">Last</button>',
+  wrapperAttributes = '',
 ): HTMLElement {
   const host = document.createElement('div');
+  const wrapperOpen = wrapperAttributes ? `<div ${wrapperAttributes}>` : '';
+  const wrapperClose = wrapperAttributes ? '</div>' : '';
   host.innerHTML = `
+    ${wrapperOpen}
     <div x-data="lyraDrawer(${options})">
       <button type="button" data-testid="trigger" x-on:click="open = true">Open</button>
       <button type="button" data-testid="outside">Background</button>
@@ -28,6 +36,7 @@ function mountDrawer(
         </div>
       </div>
     </div>
+    ${wrapperClose}
   `;
   document.body.appendChild(host);
   Alpine.initTree(host);
@@ -40,7 +49,7 @@ async function flush(): Promise<void> {
 }
 
 function root(host: HTMLElement): HTMLElement {
-  const element = host.firstElementChild;
+  const element = host.querySelector<HTMLElement>('[x-data^="lyraDrawer"]');
   if (!(element instanceof HTMLElement)) throw new Error('Expected drawer root');
   return element;
 }
@@ -89,6 +98,8 @@ afterEach(() => {
   }
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
+  drawerReturnTarget?.remove();
+  drawerReturnTarget = null;
 });
 
 describe('lyraDrawer', () => {
@@ -167,8 +178,13 @@ describe('lyraDrawer', () => {
   });
 
   it('closes through Escape, backdrop click, and the close button while restoring focus', async () => {
-    const host = mountDrawer();
+    const host = mountDrawer(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="drawerReturnFocusWorkflow"',
+    );
     const control = trigger(host);
+    drawerReturnTarget = control;
     await openDrawer(host);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
@@ -182,6 +198,36 @@ describe('lyraDrawer', () => {
     await openDrawer(host);
     await userEvent.click(host.querySelector<HTMLButtonElement>('.lyra-drawer__close')!);
     expect(document.activeElement).toBe(control);
+  });
+
+  it('keeps the captured keyboard opener fallback when no destination is configured', async () => {
+    const host = mountDrawer();
+    const control = trigger(host);
+    control.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    await userEvent.keyboard('{Escape}');
+
+    expect(document.activeElement).toBe(control);
+  });
+
+  it('uses an outer Alpine workflow successor after a pointer-opened accepted close', async () => {
+    drawerReturnTarget = document.createElement('h2');
+    drawerReturnTarget.tabIndex = -1;
+    drawerReturnTarget.textContent = 'Drawer successor';
+    document.body.append(drawerReturnTarget);
+    const focus = vi.spyOn(drawerReturnTarget, 'focus');
+    const host = mountDrawer(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="drawerReturnFocusWorkflow"',
+    );
+
+    await openDrawer(host);
+    await userEvent.keyboard('{Escape}');
+
+    expect(document.activeElement).toBe(drawerReturnTarget);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
   it('does not close for panel interactions but closes on a backdrop click without mousedown tracking', async () => {
@@ -231,8 +277,13 @@ describe('lyraDrawer', () => {
   });
 
   it('cancels an exit on reopen and focuses again before a subsequent restore', async () => {
-    const host = mountDrawer();
+    const host = mountDrawer(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="drawerReturnFocusWorkflow"',
+    );
     const control = trigger(host);
+    drawerReturnTarget = control;
     await openDrawer(host);
     await userEvent.keyboard('{Escape}');
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));

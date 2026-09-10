@@ -59,6 +59,12 @@
         "type": "boolean",
         "optional": true,
         "description": "Whether the sheet starts open. Defaults to `false`."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical focus destination after an accepted modal close."
       }
     ]
   },
@@ -262,6 +268,12 @@
         "type": "string",
         "optional": true,
         "description": "Accessible dialog name in overlay mode. Default: `\"Command palette\"`."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical focus destination after an accepted modal close."
       }
     ]
   },
@@ -403,6 +415,12 @@
         "type": "string",
         "optional": true,
         "description": ""
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical focus destination after an accepted modal close."
       }
     ]
   },
@@ -424,6 +442,12 @@
         "type": "string",
         "optional": true,
         "description": ""
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical focus destination after an accepted modal close."
       }
     ]
   },
