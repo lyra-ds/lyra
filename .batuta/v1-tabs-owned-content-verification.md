@@ -1,5 +1,5 @@
 # Tabs React owned content — controller verification
-Status: React runtime controller verification and independent review PASS; local commit pending. Existing global Task10 overages and remaining Task27/V1 work are not qualified.
+Status: React runtime controller verification and independent review PASS; local commitd1ad2ad. Existing global Task10 overages and remaining Task27/V1 work are not qualified.
 
 ## Routing and scope
 Selected critical design followed GLM301.61s and346.17s guarded technical reviews, with all findings adjudicated under .batuta/runs/. CodexTerra/high574.25s initial +314.48s single retry; critical controller completed one reproduced owned-commit focus repair, restored the original exact dark rest/hover contrast test, clarified controlled-value changeset wording and corrected a native-ID SSR fixture. Initial17allowed paths,16tracked product changes; generated site stats is an existing ignored build output and will not be forced into Git. The packaging follow-up extends the scope below.
@@ -44,4 +44,4 @@ Final overall scope19paths/18tracked product paths; generated site stats stays i
 
 ## Final independent verdict
 
-GLM159.11s exit0, unchanged HEAD/status/diff/scoped-file guard,3actualDONE statuses, empty findings block with no concrete findings; Batuta verifier3/3PASS. Final React-runtime criteria1/2/3 PASS. See `.batuta/runs/2026-09-10-tabs-owned-content-final.review.md`. Local commit follows; fullTask27 still requires React MDX and Alpine slices.
+GLM159.11s exit0, unchanged HEAD/status/diff/scoped-file guard,3actualDONE statuses, empty findings block with no concrete findings; Batuta verifier3/3PASS. Final React-runtime criteria1/2/3 PASS. See `.batuta/runs/2026-09-10-tabs-owned-content-final.review.md`. Local commitd1ad2ad; fullTask27 still requires React MDX and Alpine slices.

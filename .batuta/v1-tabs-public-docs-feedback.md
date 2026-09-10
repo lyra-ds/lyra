@@ -1,0 +1,9 @@
+# Tabs public docs — one medium retry
+Controller scope PASS: only two MDX pages,1716protected paths and453library artifacts unchanged; no Impeccable config. Initial medium376.85s exit0. MDX2/current snippets typecheck/stack303 PASS; exact frontmatter/Alpine/Blade/Example IDs retained. Native current-snippet check is running separately, do not run it yourself.
+
+1. Both locale pages around lines37-40 mention SSR-safe IDs but omit the required SSR/hydration boundary. Add one concise English sentence: server markup and initial client composition/active value must match, and interactive React tab switching requires hydration. Do not imply React offers interactive no-JS switching.
+2. Both migration sections omit the explicit required corrected Styles release floor. Add concise English wording: pair the corrected React release with the Styles release containing the native-hidden fix, earliest0.5.1 or a later combined release containing it. These are compatibility requirements, not a publication/version action. Preserve the existing SemVer exception and earliest React0.6.0/stable1.0.0 guidance.
+3. Clarify "eligible" once in keyboard prose: disabled, hidden or inert triggers are skipped (including CSS/inherited disabled eligibility). Keep selected-disabled content readable and existing invalid-controlled value behavior.
+4. Scoped Prettier --check exits1 for both pages. Use only absolute pinned Node24.18.0 with repository Prettier on these two paths. Controller dry formatter confirms it preserves exact Alpine/Blade tail. No package manager/global Node. No tests/build/config/hook/ignore commands; no source/snippet behavior changes.
+
+This is the single bounded documentation retry. Do not rewrite already-correct prose or reopen API/design. Full original eight-section brief remains applicable; changes limited to these missing sentences and formatting. Controller owns all validation/review/commit.

@@ -135,7 +135,7 @@ The required pinned Linux/browser matrix cannot be substituted by local macOS Ch
 
 ## Remaining public contract designs
 - [x] 26. CreateWorkspaceDialog operation lifecycle runtime — high initial/retry then critical/controller test-fixture completion. Native87, source12/11/11, actual examples6/12creates, public types/build/docgen/visual8 PASS; GLM3DONE/no concrete findings/unchanged guard. Existing size cap fails at approximately5.12/3.2kB (Task10). Public MDX follows as Task37; no overall V1 qualification.
-- [ ] 27. Tabs compound real-content ownership — React runtime verified with named Tabs/List/Trigger/Content, current consumers, native-hidden styles and same-format package ownership. React MDX and Alpine enhancement/fallback/runtime/docs remain pending; design selected in .batuta/specs/2026-09-10-tabs-owned-content-design.md.
+- [ ] 27. Tabs compound real-content ownership — React runtime verified with named Tabs/List/Trigger/Content, current consumers, native-hidden styles and same-format package ownership. React MDX verified; Alpine enhancement/fallback/runtime/docs remain pending; design selected in .batuta/specs/2026-09-10-tabs-owned-content-design.md.
 - [ ] 28. DataTable semantic row action — critical bounded data-family API/migration design then existing-owner implementation; keep native table, sort and checkboxselection semantics. Current onRowClick has no in-repo consumers; never make rows into simulated buttons or wrap arbitrary cell children.
 
 ## Remaining modal ownership order
