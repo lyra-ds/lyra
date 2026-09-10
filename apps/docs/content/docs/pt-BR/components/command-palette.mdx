@@ -124,40 +124,65 @@ Prefira outro componente quando:
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-Esta é a estrutura de painel usada pelo modo inline. Um modal a envolve no overlay e adiciona a semântica de diálogo:
+After the existing Alpine plugin installation (`Alpine.plugin(lyra)`), use the registered
+`lyraCommandPalette` binding; do not import its internal factory. This modal composition is
+consumer-served and is not portaled automatically. The plugin owns its focus trap, scroll lock,
+Escape, search, and active-descendant behavior.
+
+`returnFocusTo` is initial binding configuration, not mutable callback data. On an accepted modal
+close it synchronously reads current state or refs once: Lyra prefers its eligible explicit target
+with `focus({ preventScroll: true })`, then an eligible captured opener with ordinary `focus()`
+and scroll behavior. The target must be connected, visible, enabled, focusable, in the same document, outside
+the closing overlay and panel, and outside hidden, inert, or `aria-hidden` content. There is no
+arbitrary `body` fallback. Return a meaningful successor when the trigger is removed or becomes
+unsafe; do not focus, mutate, or start asynchronous work from the resolver. This example treats an
+absent, disabled, or hidden trigger as unavailable and returns the named successor. Other
+application availability changes, including hidden or inert ancestry and a no-longer-meaningful
+trigger, must choose their meaningful successor from current state; this example covers its named
+simple states, not arbitrary automatic discovery. Initial closed state, opening, ignored close
+requests, exit, and destroy do not resolve it. Inline mode ignores `returnFocusTo`.
 
 ```html
-<div class="lyra-cmdk">
-  <div class="lyra-cmdk__search">
-    <input
-      role="combobox"
-      aria-label="Buscar comandos"
-      aria-expanded="true"
-      aria-controls="command-list"
-      aria-autocomplete="list"
-      aria-activedescendant="command-new-project"
-    />
-    <kbd class="lyra-kbd">esc</kbd>
-  </div>
-  <div class="lyra-cmdk__body" id="command-list" role="listbox">
-    <div class="lyra-cmdk__group" role="group" aria-labelledby="create-label">
-      <span class="lyra-cmdk__group-label" id="create-label">Criar</span>
-      <button
-        class="lyra-cmdk__item lyra-cmdk__item--active"
-        id="command-new-project"
-        type="button"
-        role="option"
-        aria-selected="true"
-      >
-        <span class="lyra-cmdk__item-label">Novo projeto</span>
-        <span class="lyra-cmdk__shortcut"
-          ><kbd class="lyra-kbd">C</kbd><kbd class="lyra-kbd">P</kbd></span
-        >
-      </button>
+<div
+  x-data="lyraCommandPalette({
+    groups: [],
+    hotkey: false,
+    label: 'Search commands',
+    searchLabel: 'Search commands',
+    returnFocusTo: () => {
+      const trigger = document.getElementById('open-command-palette');
+      return trigger instanceof HTMLButtonElement && !trigger.disabled && !trigger.hidden
+        ? trigger
+        : document.getElementById('command-workflow');
+    },
+  })"
+>
+  <button
+    id="open-command-palette"
+    class="lyra-cmdk-trigger"
+    type="button"
+    aria-label="Search commands"
+    @click="open = true"
+  >
+    Search commands
+  </button>
+  <h2 id="command-workflow" tabindex="-1">Command workflow</h2>
+
+  <div class="lyra-cmdk-overlay" x-bind="overlay" style="display: none">
+    <div class="lyra-cmdk" x-bind="panel">
+      <div class="lyra-cmdk__search">
+        <input x-bind="search" />
+        <kbd class="lyra-kbd">esc</kbd>
+      </div>
+      <div class="lyra-cmdk__body" x-bind="list">
+        <p class="lyra-cmdk__empty" x-bind="empty" x-text="emptyText()"></p>
+      </div>
+      <div class="lyra-cmdk__footer">
+        <button class="lyra-btn lyra-btn--ghost lyra-btn--md" type="button" @click="open = false">
+          Close
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="lyra-cmdk__footer">
-    <span><kbd class="lyra-kbd">↑</kbd><kbd class="lyra-kbd">↓</kbd> navegar</span>
   </div>
 </div>
 ```

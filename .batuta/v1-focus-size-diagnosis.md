@@ -30,3 +30,5 @@ Task24click cancellation: WorkspaceSwitcher8364/8250B (+38B versusTask22), same1
 Task25Alpine nativeTab repair: completeAlpine artifact21394/21200B, about304Baboveprevious21.09kB build. Additional Alpineoveragejoins11Reactentries (12totalcurrentoverages). No limits/hashes changed; exactpacked before/after protocol and budgetresolutionpending.
 
 Task29 current Drawer2253/2000B and BottomSheet2296/2000B after local Escape consumption correction. Same11React+1Alpine overages; no limits/hashes changed.
+
+Task30 Alpine explicit return destination:21949/21200B (+555B versusTask25) atartifact8378a723069d2b94bdf3cafe7a7132719f3ef4d83908bfc8727454a1c8eeb6da, sourcecommit3041be4. Same12overall overages. No new dependency; one shared private return helper and four option/caller integrations. This is actual product behavior cost, distinct from suspended experimental evidence and the byte-identical maintenance batch. Final packed comparison/resolution remainspending.

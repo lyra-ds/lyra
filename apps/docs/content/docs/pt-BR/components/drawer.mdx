@@ -111,19 +111,58 @@ or start asynchronous work in it.
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-Sem React, componha as mesmas classes — estado de abertura, retenção de foco, bloqueio de rolagem e
-o caminho de Escape ficam com você:
+After the existing Alpine plugin installation (`Alpine.plugin(lyra)`), use the registered
+`lyraDrawer` binding; do not import its internal factory. The plugin owns opening and closing,
+focus trapping, scroll locking, Escape, and the guarded backdrop click. It does not portal this
+consumer-served composition automatically.
+
+`returnFocusTo` is initial binding configuration, not mutable callback data. On an accepted close
+it synchronously reads current state or refs once: Lyra prefers its eligible explicit target with
+`focus({ preventScroll: true })`, then an eligible captured opener with ordinary `focus()` and
+scroll behavior.
+The target must be connected, visible, enabled, focusable, in the same document, outside the closing
+overlay and panel, and outside hidden, inert, or `aria-hidden` content. There is no arbitrary
+`body` fallback. Return a meaningful successor when the trigger is removed or becomes unsafe; do
+not focus, mutate, or start asynchronous work from the resolver. This example treats an absent,
+disabled, or hidden trigger as unavailable and returns the named successor. Other application
+availability changes, including hidden or inert ancestry and a no-longer-meaningful trigger, must
+choose their meaningful successor from current state; this example covers its named simple states,
+not arbitrary automatic discovery. Initial closed state, opening, ignored close requests, exit, and
+destroy do not resolve it.
 
 ```html
-<div class="lyra-drawer-overlay">
-  <div class="lyra-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-    <div class="lyra-drawer__header">
-      <h2 class="lyra-drawer__title" id="drawer-title">Detalhes do projeto</h2>
-      <button class="lyra-drawer__close" type="button" aria-label="Close">×</button>
-    </div>
-    <div class="lyra-drawer__body">Revise o último deploy antes de continuar.</div>
-    <div class="lyra-drawer__footer">
-      <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button">Concluir</button>
+<div
+  x-data="lyraDrawer({
+    returnFocusTo: () => {
+      const trigger = document.getElementById('open-project-details');
+      return trigger instanceof HTMLButtonElement && !trigger.disabled && !trigger.hidden
+        ? trigger
+        : document.getElementById('project-overview');
+    },
+  })"
+>
+  <button
+    id="open-project-details"
+    class="lyra-btn lyra-btn--primary lyra-btn--md"
+    type="button"
+    @click="open = true"
+  >
+    Open project details
+  </button>
+  <h2 id="project-overview" tabindex="-1">Project overview</h2>
+
+  <div class="lyra-drawer-overlay" x-bind="overlay" style="display: none">
+    <div class="lyra-drawer" x-bind="panel">
+      <div class="lyra-drawer__header">
+        <h2 class="lyra-drawer__title" x-bind="title">Project details</h2>
+        <button class="lyra-drawer__close" x-bind="close">×</button>
+      </div>
+      <div class="lyra-drawer__body">Review the latest deployment before you continue.</div>
+      <div class="lyra-drawer__footer">
+        <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button" x-bind="close">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>
