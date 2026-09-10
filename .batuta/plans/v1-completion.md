@@ -213,3 +213,5 @@ Task27 Alpine public docs and focused panel-container teardown accepted locally2
       concrete final external actions for review if required by the unchanged
       authorization boundary. Blade-specific migration/compatibility is deferred,
       existing checks are preserved, and no publication is implied.
+
+- [x] 40. Local React modal dynamic focus recovery — bounded Task31 slice in existing shared hook;35shared +121four-owner tests each engine, SSR14, compiled252native, types/lint/build/docgen/publicAPI/hash proof PASS. Original source2RED/restoredPASS and four critical regression negatives prove corrections. CodexTerra/high initial+retry then critical completion; final GLM3DONE/no findings/unchangedguard/verifierPASS. See .batuta/v1-modal-dynamic-focus-verification.md. Background inert/topmost/parent-child ownership remains Task31;12React size failures remain unwaived Task10.

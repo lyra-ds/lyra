@@ -28,7 +28,8 @@ interface FocusBoundaryResource {
  * rendered — so none of them can be selected as a Tab wrap target.
  */
 function isTabbable(el: HTMLElement): boolean {
-  if (el.hasAttribute('disabled')) return false;
+  if (el.tabIndex < 0) return false;
+  if (el.matches(':disabled')) return false;
   if (el.hasAttribute('hidden')) return false;
   if (el.closest('[inert]')) return false;
   if (el.closest('[aria-hidden="true"]')) return false;
@@ -41,6 +42,84 @@ function isTabbable(el: HTMLElement): boolean {
 
 function getTabbableCandidates(node: HTMLElement): HTMLElement[] {
   return Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isTabbable);
+}
+
+function isProgrammaticallyFocusable(element: HTMLElement): boolean {
+  if (element.matches('input[type="hidden" i]')) return false;
+
+  const tabIndex = element.getAttribute('tabindex');
+  if (tabIndex !== null && element.tabIndex === Number.parseInt(tabIndex, 10)) return true;
+  if (element.isContentEditable && !element.parentElement?.isContentEditable) return true;
+  if (
+    element.matches(
+      'a[href], area[href], button, select, textarea, iframe, object, embed, audio[controls], video[controls]',
+    )
+  ) {
+    return true;
+  }
+  if (element.matches('input')) return true;
+  if (element.localName !== 'summary') return false;
+
+  const details = element.parentElement;
+  return details?.localName === 'details' && details.querySelector(':scope > summary') === element;
+}
+
+function isVisibleAndEnabled(element: HTMLElement): boolean {
+  if (!element.isConnected || element.matches(':disabled')) return false;
+  if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+  if (element.getClientRects().length === 0) return false;
+
+  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+  return (
+    style?.display !== 'none' && style?.visibility !== 'hidden' && style?.visibility !== 'collapse'
+  );
+}
+
+function isEligibleFocusableElement(element: HTMLElement): boolean {
+  const { body, documentElement } = element.ownerDocument;
+  if (element === body || element === documentElement) return false;
+  return isVisibleAndEnabled(element) && isProgrammaticallyFocusable(element);
+}
+
+function isEligiblePanel(panel: HTMLElement): boolean {
+  return isVisibleAndEnabled(panel);
+}
+
+function isFocusBoundary(element: HTMLElement): boolean {
+  return element.hasAttribute('data-lyra-focus-trap-boundary');
+}
+
+function isOwnedByPanel(element: HTMLElement, panel: HTMLElement): boolean {
+  if (element !== panel && !panel.contains(element)) return false;
+
+  const modalBranch = element.closest<HTMLElement>('[role="dialog"][aria-modal="true"]');
+  if (modalBranch) return modalBranch === panel;
+
+  const dialogBranch = element.closest<HTMLElement>('[role="dialog"]');
+  return !dialogBranch || dialogBranch === panel;
+}
+
+function getRecoveryCandidates(panel: HTMLElement, observedFocus?: HTMLElement): HTMLElement[] {
+  const candidates = getTabbableCandidates(panel).filter((candidate) =>
+    isOwnedByPanel(candidate, panel),
+  );
+  if (
+    !observedFocus ||
+    !isOwnedByPanel(observedFocus, panel) ||
+    candidates.includes(observedFocus)
+  ) {
+    return candidates;
+  }
+
+  const nextCandidateIndex = candidates.findIndex((candidate) =>
+    Boolean(observedFocus.compareDocumentPosition(candidate) & Node.DOCUMENT_POSITION_FOLLOWING),
+  );
+  candidates.splice(
+    nextCandidateIndex === -1 ? candidates.length : nextCandidateIndex,
+    0,
+    observedFocus,
+  );
+  return candidates;
 }
 
 function createFocusBoundary(
@@ -112,7 +191,86 @@ export function useFocusTrap(panelRef: RefObject<HTMLElement | null>, active: bo
     const parent = panel.parentElement;
     if (!parent) return;
 
+    let disposed = false;
+    let lastOwnedFocus: HTMLElement | null = null;
+    let lastCandidateOrder: HTMLElement[] = [];
+    let lastCandidateOrdinal: number | undefined;
     let pendingBoundary: FocusBoundary | undefined;
+
+    const captureOwnedFocus = (target: EventTarget | null): void => {
+      const elementConstructor = panel.ownerDocument.defaultView?.HTMLElement;
+      if (!elementConstructor || !(target instanceof elementConstructor)) return;
+      if (isFocusBoundary(target) || !isOwnedByPanel(target, panel)) return;
+
+      lastOwnedFocus = target;
+      lastCandidateOrder = getRecoveryCandidates(panel, target);
+      lastCandidateOrdinal = lastCandidateOrder.indexOf(target);
+      if (lastCandidateOrdinal === -1) lastCandidateOrdinal = undefined;
+    };
+
+    const getEligibleActiveDestination = (): HTMLElement | null => {
+      const activeElement = panel.ownerDocument.activeElement;
+      const elementConstructor = panel.ownerDocument.defaultView?.HTMLElement;
+      if (!elementConstructor || !(activeElement instanceof elementConstructor)) return null;
+      if (isFocusBoundary(activeElement)) return activeElement;
+      if (activeElement === panel) return isEligiblePanel(panel) ? panel : null;
+      return isEligibleFocusableElement(activeElement) ? activeElement : null;
+    };
+
+    const focusRecoveryTarget = (): void => {
+      if (disposed || !lastOwnedFocus || !isEligiblePanel(panel)) return;
+
+      const lostFocus = lastOwnedFocus;
+      const activeElement = panel.ownerDocument.activeElement;
+      if (
+        activeElement === lostFocus &&
+        isOwnedByPanel(lostFocus, panel) &&
+        isEligibleFocusableElement(lostFocus)
+      ) {
+        lastCandidateOrder = getRecoveryCandidates(panel, lostFocus);
+        lastCandidateOrdinal = lastCandidateOrder.indexOf(lostFocus);
+        return;
+      }
+      const activeDestination = getEligibleActiveDestination();
+      if (activeDestination) {
+        if (!isFocusBoundary(activeDestination) && !isOwnedByPanel(activeDestination, panel)) {
+          lastOwnedFocus = null;
+          lastCandidateOrder = [];
+          lastCandidateOrdinal = undefined;
+        }
+        return;
+      }
+
+      if (isOwnedByPanel(lostFocus, panel) && isEligibleFocusableElement(lostFocus)) {
+        lostFocus.focus({ preventScroll: true });
+        captureOwnedFocus(panel.ownerDocument.activeElement);
+        return;
+      }
+
+      const liveCandidates = getRecoveryCandidates(panel);
+      const isEligibleOwnedCandidate = (candidate: HTMLElement): boolean =>
+        liveCandidates.includes(candidate);
+      let target: HTMLElement | undefined;
+      if (lostFocus.isConnected && panel.contains(lostFocus)) {
+        const currentOrder = getRecoveryCandidates(panel, lostFocus);
+        const currentOrdinal = currentOrder.indexOf(lostFocus);
+        if (currentOrdinal !== -1) {
+          target = currentOrder.slice(currentOrdinal + 1).find(isEligibleOwnedCandidate);
+          target ??= currentOrder.slice(0, currentOrdinal).reverse().find(isEligibleOwnedCandidate);
+        }
+      } else if (lastCandidateOrdinal !== undefined) {
+        target = lastCandidateOrder.slice(lastCandidateOrdinal + 1).find(isEligibleOwnedCandidate);
+        target ??= lastCandidateOrder
+          .slice(0, lastCandidateOrdinal)
+          .reverse()
+          .find(isEligibleOwnedCandidate);
+      }
+
+      target ??= liveCandidates[Math.min(lastCandidateOrdinal ?? 0, liveCandidates.length - 1)];
+      (target ?? panel).focus({ preventScroll: true });
+      captureOwnedFocus(panel.ownerDocument.activeElement);
+    };
+
     const deactivateBoundaries = (): void => {
       pendingBoundary = undefined;
       beforeBoundary.deactivate();
@@ -127,6 +285,9 @@ export function useFocusTrap(panelRef: RefObject<HTMLElement | null>, active: bo
     const afterBoundary = createFocusBoundary(panelRef, 'after', consumePendingBoundary);
     parent.insertBefore(beforeBoundary.element, panel);
     parent.insertBefore(afterBoundary.element, panel.nextSibling);
+    const observer = new MutationObserver(focusRecoveryTarget);
+    observer.observe(panel, { attributes: true, childList: true, subtree: true });
+    captureOwnedFocus(panel.ownerDocument.activeElement);
 
     function onKeyDown(event: KeyboardEvent): void {
       if (event.key !== 'Tab' || event.defaultPrevented) return;
@@ -174,22 +335,43 @@ export function useFocusTrap(panelRef: RefObject<HTMLElement | null>, active: bo
       if (event.key === 'Tab') deactivateBoundaries();
     }
 
-    function onFocusOut(event: FocusEvent): void {
+    const onFocusOut = (event: FocusEvent): void => {
+      const elementConstructor = panel.ownerDocument.defaultView?.HTMLElement;
+      const relatedTarget = event.relatedTarget;
+      if (
+        elementConstructor &&
+        relatedTarget instanceof elementConstructor &&
+        !isFocusBoundary(relatedTarget) &&
+        !isOwnedByPanel(relatedTarget, panel) &&
+        isEligibleFocusableElement(relatedTarget)
+      ) {
+        lastOwnedFocus = null;
+        lastCandidateOrder = [];
+        lastCandidateOrdinal = undefined;
+      }
       if (
         event.relatedTarget !== beforeBoundary.element &&
         event.relatedTarget !== afterBoundary.element
       ) {
         deactivateBoundaries();
       }
+    };
+
+    function onFocusIn(event: FocusEvent): void {
+      captureOwnedFocus(event.target);
     }
 
     panel.addEventListener('keydown', onKeyDown);
     panel.addEventListener('keyup', onKeyUp);
     panel.addEventListener('focusout', onFocusOut);
+    panel.addEventListener('focusin', onFocusIn);
     return () => {
+      disposed = true;
+      observer.disconnect();
       panel.removeEventListener('keydown', onKeyDown);
       panel.removeEventListener('keyup', onKeyUp);
       panel.removeEventListener('focusout', onFocusOut);
+      panel.removeEventListener('focusin', onFocusIn);
       beforeBoundary.dispose();
       afterBoundary.dispose();
     };
