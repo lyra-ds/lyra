@@ -1334,17 +1334,16 @@ export declare function CommandPalette(props: CommandPaletteProps): JSX.Element;
 export interface CreateWorkspaceDialogProps {
   /** Controls visibility. Default `false`. */
   open?: boolean;
-  /** Called when the dialog is dismissed or creation succeeds. */
+  /** Called when the dialog is dismissed or a creation operation is accepted. */
   onClose?: () => void;
-  /** Receives the trimmed workspace name and its URL-safe slug after submission. */
-  onCreate?: (data: {
-    name: string;
-    slug: string;
-  }) => void;
+  /** Receives one owned request and explicitly acknowledges its terminal outcome. */
+  onCreate?: (request: CreateWorkspaceRequest) => CreateWorkspaceResult | Promise<CreateWorkspaceResult>;
   /** Dialog heading. Default `"Create workspace"`. */
   title?: string;
   /** Text rendered before the editable slug. Default `"lyra.dev/"`. */
   slugPrefix?: string;
+  /** Resolves the focus destination after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
 }
 export declare function CreateWorkspaceDialog(props: CreateWorkspaceDialogProps): JSX.Element;
 ```

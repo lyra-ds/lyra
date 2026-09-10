@@ -2800,13 +2800,13 @@
         "name": "onClose",
         "type": "() => void",
         "optional": true,
-        "description": "Called when the dialog is dismissed or creation succeeds."
+        "description": "Called when the dialog is dismissed or a creation operation is accepted."
       },
       {
         "name": "onCreate",
-        "type": "(data: {\n    name: string;\n    slug: string;\n  }) => void",
+        "type": "(request: CreateWorkspaceRequest) => CreateWorkspaceResult | Promise<CreateWorkspaceResult>",
         "optional": true,
-        "description": "Receives the trimmed workspace name and its URL-safe slug after submission."
+        "description": "Receives one owned request and explicitly acknowledges its terminal outcome."
       },
       {
         "name": "title",
@@ -2819,6 +2819,12 @@
         "type": "string",
         "optional": true,
         "description": "Text rendered before the editable slug. Default `\"lyra.dev/\"`."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the focus destination after an accepted close."
       }
     ]
   },

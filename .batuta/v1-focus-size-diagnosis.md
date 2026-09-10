@@ -1,6 +1,6 @@
 # Incumbent focus-size diagnosis — 2026-09-09
 
-Current status:12React+1Alpine overages after Task36; the dated sections below preserve earlier measurements. The final section and Task36 verification carry the latest values.
+Current status:12React+1Alpine overages after Task26; the dated sections below preserve earlier measurements. The final section and Task26 verification carry the latest values.
 
 Critical/controller diagnosis with guarded GLM5.3Flash support; no production edits. The71 existing standalone size-limit entries were measured with pinned Node24.18.0, pnpm11.13.1, tsdown0.22.14, size-limit12.1.0 and existing configuration. Same current dist/old library graph and current dist/new library graph produce exactly identical sizes and9 failures. All453 React/Alpine dist files also remain identical across the library maintenance batch. Libraries are not the source of this growth.
 
@@ -44,3 +44,6 @@ Final numeric-filter/CPpanel repair:12React+1Alpineoverages. Drawer2530/2000B, B
 
 ## Task36 — 2026-09-10 logical-close activity
 Current12Reactoverages: Drawer2616/2000B, BottomSheet2640/2000B, CreateWorkspace4194/3200B, Workspace8364/8250B, FileManager9808/9500B, TimePicker4883/4000B, DatePicker5997/5000B, DateRange approximately6.08/5kB (console-rounded), Tooltip1954/1500B, CommandPalette10409/9500B, Recurrence7725/7000B, Weekly15143/14500B. Alpine21949/21200B remains unchanged and was not rebuilt for this React-only slice. The runtime correction adds small per-entry/composition growth, not a new dependency; budgets remain failed, not waived. Current raw sizes.log/size-overages.json are in MAIN .batuta/runs/v1-react-modal-logical-close-checks. Final packed protocol/disposition remainsTask10.
+
+## Task26 — 2026-09-10 operation lifecycle
+CreateWorkspaceDialog is now approximately5.12kB/3.2kB, compared with4194B before this lifecycle change. The console rounds to decimal kB; no invented exact byte delta. The same12React+1Alpine entries fail, no new runtime dependency or budget/hash change. Current source native87+examples6 verify behavior independently of the failing size gate. MAIN v1-create-workspace-operation-retry-native-checks/sizes.log preserves the measurement; exact final packed protocol and disposition remain Task10.

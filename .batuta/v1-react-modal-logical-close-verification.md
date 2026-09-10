@@ -1,5 +1,5 @@
 # React modal logical-close activity — controller verification
-Status: controller gates and independent GLM3/3DONE/no findings/unchanged guard/verifierPASS complete. Task36 is a bounded part of Task31, not full V1/modal qualification. Base ae3e6ce; no product commit yet.
+Status: controller gates and independent GLM3/3DONE/no findings/unchanged guard/verifierPASS complete. Task36 is a bounded part of Task31, not full V1/modal qualification. Base ae3e6ce; implementation commit3bf23ef.
 
 ## Delivery and routing
 Critical/controller design; GLM initial six precision findings adjudicated, revised3DONE/none/unchanged guard/verifierPASS. CodexTerra/high initial422.8s, one test-only retry307.72s, then critical/controller fixture completion. Initial and retry reports, byte snapshots and scope checks retained. Initial11product paths: four owners, four browser tests, private use-modal-activity helper/test and patch changeset. No SSR or public API/generated/dependency/style/config changes.1701protected tracked source files remain SHA-identical. Runtime/changeset bytes are still exactly the initial implementation bytes; retries/critical changes only improve the five scoped tests.

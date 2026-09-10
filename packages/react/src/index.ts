@@ -80,7 +80,11 @@ export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetProps } from './bottom-sheet';
 
 export { CreateWorkspaceDialog } from './create-workspace-dialog';
-export type { CreateWorkspaceDialogProps } from './create-workspace-dialog';
+export type {
+  CreateWorkspaceDialogProps,
+  CreateWorkspaceRequest,
+  CreateWorkspaceResult,
+} from './create-workspace-dialog';
 
 export { WorkspaceSwitcher } from './workspace-switcher';
 export type { Workspace, WorkspaceSwitcherProps } from './workspace-switcher';
