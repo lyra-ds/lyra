@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 export function DrawerWithoutFooter() {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const readingHeadingRef = useRef<HTMLHeadingElement>(null);
 
   return (
     <>
@@ -15,10 +16,17 @@ export function DrawerWithoutFooter() {
       <Drawer
         open={open}
         onClose={() => setOpen(false)}
+        initialFocusTo={() => readingHeadingRef.current}
         returnFocusTo={() => triggerRef.current}
         title="Recent activity"
       >
-        This read-only detail needs no fixed action area. Use Escape or Close when you are finished.
+        <h2 ref={readingHeadingRef} tabIndex={-1}>
+          Activity details
+        </h2>
+        <p>
+          This read-only detail needs no fixed action area. Use Escape or Close when you are
+          finished.
+        </p>
       </Drawer>
     </>
   );

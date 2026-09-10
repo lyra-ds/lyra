@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 export function DialogBasic() {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -15,11 +16,12 @@ export function DialogBasic() {
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
+        initialFocusTo={() => cancelRef.current}
         returnFocusTo={() => triggerRef.current}
         title="Delete project"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
+            <Button ref={cancelRef} variant="ghost" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button variant="danger" onClick={() => setOpen(false)}>

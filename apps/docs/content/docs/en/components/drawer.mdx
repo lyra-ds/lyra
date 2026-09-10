@@ -37,15 +37,35 @@ Reach for something else when:
 
 - The panel is `role="dialog"` with `aria-modal="true"`, named by `title` through
   `aria-labelledby`. `title` is the heading, not the native HTML tooltip attribute.
-- On open, focus moves into the panel and stays trapped there. For React, declare its return
-  destination with `returnFocusTo` when a pointer-opened workflow needs an explicit target; body
-  scroll is locked while it is open.
+- On open, focus moves to a safe initial destination in the panel and stays trapped there. For React,
+  declare `initialFocusTo` when the application owns the task meaning, and `returnFocusTo` when a
+  pointer-opened workflow needs an explicit return destination; body scroll is locked while it is open.
 - Escape, the close button and a backdrop click call `onClose`. The backdrop is a pointer-only
   convenience; keyboard users close with Escape or the close button.
 - The close button's accessible name defaults to the English string "Close". Pass `closeLabel` to
   translate it for localized products.
 - The component is portaled to `document.body` by default. Pass `container` only when your app
   needs a different portal host.
+
+## React initial focus
+
+`initialFocusTo` is optional and has the type `() => HTMLElement | null`. For each accepted opening
+of a visible modal panel, Lyra synchronously calls the read-only resolver once. Return a current,
+eligible member of that panel; applications own whether this is a least-destructive Cancel action, a
+named reading heading, or an intended form field. The live DrawerWithoutFooter example enters its
+read-only activity detail at the named `tabIndex={-1}` heading and intentionally has no footer.
+
+An eligible target is an `HTMLElement` in the panel's document and current modal panel, connected,
+visible with rendered rectangles, enabled (including its fieldset), programmatically focusable, and
+outside hidden, inert, or `aria-hidden` ancestry. A null or invalid result focuses the named panel
+directly; it never falls through to another control. Omitting the option uses the first eligible task
+control, then the panel. The resolver is not replayed on rerenders; a later accepted opening reads
+the current resolver.
+
+Form composition owns focus after failed validation; initial entry does not infer failure from
+`aria-invalid`. The resolver only reads committed state and refs: do not focus, mutate, or start
+asynchronous work. If it throws, Lyra focuses the panel and propagates the same error through React's
+effect handling.
 
 ## React return focus
 

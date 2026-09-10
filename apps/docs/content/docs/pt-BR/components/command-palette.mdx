@@ -86,6 +86,25 @@ focus on `body`. That is an invalid invoking composition, not a
 successful restoration. `returnFocusTo` is ignored by `inline`, and it never runs for ignored close
 requests or closed renders. Omitted pointer-opened consumers are not automatically repaired.
 
+## Initial focus
+
+`initialFocusTo` is optional and has the type `() => HTMLElement | null`. In modal mode, Lyra calls
+this synchronous, read-only resolver once for each accepted opening. Normal command interaction omits
+it, so the eligible search field remains the task-control default. When an application intentionally
+needs a declared destination, it can return the current named palette panel, which is already present
+with `tabIndex={-1}`. A null or invalid result focuses that panel directly; it never falls through to
+another control. Inline palettes ignore `initialFocusTo`.
+
+An eligible target is an `HTMLElement` in the panel's document and current modal panel, connected,
+visible with rendered rectangles, enabled (including its fieldset), programmatically focusable, and
+outside hidden, inert, or `aria-hidden` ancestry. The resolver is not replayed on rerenders; a later
+accepted opening reads the current resolver. Form composition owns focus after failed validation, so
+initial entry never infers failure from `aria-invalid`.
+
+The resolver only reads committed state and refs: do not focus, mutate, or start asynchronous work.
+If it throws, Lyra focuses the panel and propagates the same error; the palette's animation-frame
+context reports it through normal browser error handling, not a React error boundary.
+
 ## Quando usar
 
 Use CommandPalette quando as pessoas precisarem de um índice buscável de ações ou destinos, acessível pelo teclado.
@@ -101,8 +120,9 @@ Prefira outro componente quando:
 - O campo de busca é um `role="combobox"` com `aria-expanded`, `aria-controls`,
   `aria-autocomplete="list"` e `aria-activedescendant`. Os resultados são `role="option"` dentro de
   um `role="listbox"`; grupos rotulados usam `role="group"`.
-- O foco DOM fica no campo. As setas movem o foco virtual pelas opções, permitindo continuar digitando
-  enquanto o descendente ativo muda; Enter seleciona o item ativo e Escape chama `onClose`.
+- Durante a busca normal, o foco DOM fica no campo. As setas movem o foco virtual pelas opções,
+  permitindo continuar digitando enquanto o descendente ativo muda; Enter seleciona o item ativo e
+  Escape chama `onClose`. Um destino declarado no painel da paleta também é suportado.
 - O `onSelect` de um item roda antes do callback do palette. No modo modal, passe `onClose` para
   atualizar `open`; use `returnFocusTo` quando uma paleta aberta por ponteiro precisar de um destino explícito.
 - O modo modal faz portal de um `role="dialog"` nomeado, prende o foco, bloqueia a rolagem e permanece

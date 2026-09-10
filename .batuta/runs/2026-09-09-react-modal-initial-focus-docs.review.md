@@ -1,0 +1,16 @@
+# React initial-focus documentation — independent review
+
+GLM5.3Flash3/3DONE, exit0, unchanged HEAD/status/diff/scoped SHA guard; Batuta verifierPASS.
+
+<<<FINDINGS
+- basic.tsx:9,19,24 — Verified: existing ghost Cancel carries typed `useRef<HTMLButtonElement>` into `initialFocusTo`; `returnFocusTo={() => triggerRef.current}` untouched; both footer buttons dismiss-only (`setOpen(false)`); no deletion/success fiction. Button ref-forwarding is the pre-existing `triggerRef` pattern.
+- without-footer.tsx:9,19,23 — Verified: named `h2 Activity details` `tabIndex={-1}` + typed `HTMLHeadingElement` ref; read-only purpose, no footer, return target preserved.
+- en/dialog.mdx:47, en/drawer.mdx:50, en/bottom-sheet.mdx:48, en/command-palette.mdx:90 (+ pt-BR mirrors, byte-identical sections) — Verified prose vs runtime contract (`packages/react/src/dialog/dialog.tsx:50` etc., `initialFocusTo?: () => HTMLElement | null`): optional, synchronous read-only, once per accepted opening, same-document/current-panel/connected/visible/enabled-incl-fieldset/focusable/hidden-inert-aria-hidden eligibility, null/invalid → named panel directly, omitted → first eligible task control (palette search) then panel, `tabIndex={-1}` reading targets valid, no rerender replay, inline CP ignores, throw → panel focus then propagate via React effect handling (palette: browser animation-frame handling, no error boundary), form composition owns post-validation focus, no `aria-invalid` inference. Unconditional first-focus claims corrected (dialog.mdx:38, drawer.mdx:40, bottom-sheet.mdx:38, command-palette.mdx:124). CP panel `tabIndex={modal ? -1 : undefined}` confirmed at packages/react/src/command-palette/command-palette.tsx:297.
+- en/dialog.mdx:104-113 / pt-BR mirror — Verified: existing DeleteProject snippet gains only Cancel footer (ghost first, danger last, both dismiss-only); returnFocusTo successor composition preserved verbatim; no new code fences or examples anywhere; no minor/patch/version metadata in any changed hunk.
+- INFO — Scope/parity: exactly 10 scoped product paths changed vs 1d5c8e5 (diff stat 218+/22−); every MDX hunk sits before the `<StackPanel stack="alpine">` markers (en: dialog:141, drawer:131, bottom-sheet:134, palette:145; pt-BR equivalents) → Alpine/Blade tails byte-identical by diff exactness; no runtime/style/deps/config/catalog changes in the diff (status: only the 10 paths + orchestrator's own `.batuta`/`WORK.md` logs, out of product scope).
+- INFO — Proof limits: read-only static review; MDX compile, snippet/example typecheck, ESLint/Prettier, and three-engine native runs were NOT rerun (forbidden here); they rest on controller evidence at .batuta/runs/v1-react-modal-initial-focus-docs-native (native9 Chromium/WebKit/Firefox, types PASS, byte-proof vs 1d5c8e5). No contrary static signal found.
+FINDINGS>>>
+
+## Controller adjudication
+
+No concrete defect returned. Verification observations match the actual ten-path diff and exact compiler/native evidence. Read-only reviewer did not rerun controller checks; that limitation is expected and recorded, while controller proof is independently reproduced. Both footer controls in the augmented snippet are part of the existing dismiss-only confirmation pattern. No runtime/size/release qualification claimed by documentation review.
