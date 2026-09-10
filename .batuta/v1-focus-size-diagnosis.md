@@ -47,3 +47,23 @@ Current12Reactoverages: Drawer2616/2000B, BottomSheet2640/2000B, CreateWorkspace
 
 ## Task26 — 2026-09-10 operation lifecycle
 CreateWorkspaceDialog is now approximately5.12kB/3.2kB, compared with4194B before this lifecycle change. The console rounds to decimal kB; no invented exact byte delta. The same12React+1Alpine entries fail, no new runtime dependency or budget/hash change. Current source native87+examples6 verify behavior independently of the failing size gate. MAIN v1-create-workspace-operation-retry-native-checks/sizes.log preserves the measurement; exact final packed protocol and disposition remain Task10.
+
+## Task10 current packed diagnostic — 2026-09-10, bd9bb5d
+
+A fresh detached checkout rebuilt React and Alpine, packed React/Alpine/Styles, and measured the installed tarballs in a fresh consumer and package store using pinned Node24.18.0/pnpm11.13.1/Vite8.2.1/size-limit12.1.0. Collection finished in35.98s. All450 rebuilt React artifacts match the verified Popover manifest exactly. Raw/minified/quality11 text Brotli measurements cover72 standalone entries, five fixed compositions and four CSS entries. Exact tarballs and checksums are retained.
+
+The size gate still exits1 with13 standalone failures (12React,1Alpine). Collector exit0 means diagnostic collection completed, never budget approval. Popover remains1755/3000B. No absolute limit, scenario ceiling or immutable baseline changed.
+
+| Composition | Historical Brotli B | Current Brotli B | Descriptive delta B |
+| --- | ---: | ---: | ---: |
+| Form |1878|1878|0|
+| Overlays |4912|11030|6118|
+| Application shell |12644|17000|4356|
+| Scheduling |19594|24084|4490|
+| Files and data |12508|15599|3091|
+
+Historical main tools and consumer lock match; repository lock differs. These deltas are descriptive only, not final same-lock before/after qualification or scenario pass/fail verdicts. Next required work is a same-lock comparison and measured optimization scope that preserves verified behavior. The13 failures refer to standalone entries, not the five scenarios.
+
+The controller-only collector retained failed size-limit JSON while measuring remaining rows, retained tarballs before cleanup, and invoked the identical package build tools directly. Initial pnpm run attempted dependency validation against borrowed tool links and aborted before removal; its log is retained. No purge setting or CI bypass was enabled. All borrowed links and the owned temporary checkout were removed after an exact untracked-file guard; active product files were unchanged.
+
+Independent GLM7.24s3DONE/2003-file unchanged guard/verifierPASS approves diagnostic evidence honesty only. Its incidental arithmetic connecting13 failed budgets to five scenarios is declined: those are distinct measurements, and no scenario gate verdict was established. Raw main .batuta/runs/v1-size-current-packed/ includes current-packed.json, packed-size-gate.json, diagnosis.json, retained tarballs, collector adaptation, failed initial log, review and cleanup proof. Task10 and Task39 remain open; Blade deferred.
