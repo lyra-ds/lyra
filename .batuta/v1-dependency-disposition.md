@@ -47,3 +47,6 @@ PR220 workflow action update is committed in87f7775. The selected11 existing-lib
 
 ## Evening recheck — September9,2026
 Read-only GitHub PR list confirms the same six open Dependabot PRs. PR221 remains ef0dee1b01deee506f318c59ccd610b05765dff1; PR220 remains5c333c213c80c924372753f0aa6e41890d5cb3df. Existing11-library/action dispositions remain current; no new batch/merge/publication. Raw main .batuta/runs/v1-dependency-triage/open-prs-2026-09-09-evening.json.
+
+## Read-only refresh — 2026-09-10
+GitHub still shows exactly the same6open Dependabot PRs221,220,203,202,201,199, with unchanged update timestamps. Prior local11-library selection andpnpm/action-setup adoption remain the disposition; larger coordinated migrations remain deferred. MAIN .batuta/runs/v1-dependency-triage/open-prs-2026-09-10.json is the fresh read-only source. No remote modification.

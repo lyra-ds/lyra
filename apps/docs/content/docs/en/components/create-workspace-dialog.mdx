@@ -17,7 +17,8 @@ when that standard flow fits; compose Dialog, Input, Avatar and Button yourself 
 
 <Example id="custom-copy" title="A product-specific URL">
   `title` and `slugPrefix` change the product language around the same workflow. They do not change
-  what is submitted: `onCreate` still receives the trimmed name and URL-safe slug.
+  the submitted request data: `onCreate` receives the trimmed name and URL-safe slug in
+  `request.data`.
 </Example>
 
 ## When to use
@@ -39,18 +40,107 @@ Reach for something else when:
   name from `title`. Focus enters and is trapped in the modal; page scroll is locked.
 - The workspace name and URL fields have visible labels. The avatar preview is derived from the name's
   initials and updates as the person types; it does not replace the written field labels.
-- Create is disabled until `name` has non-whitespace content. Submission trims the name before it
-  reaches `onCreate`.
+- The name field receives the safe initial focus. Submitting a blank name or slug keeps the dialog
+  open, shows the field error, focuses the first invalid field, and does not call `onCreate`.
+- A valid native form submission creates exactly one fresh request with trimmed, copied `data`, an
+  `operationId`, and an initially unaborted owned `signal`. Invalid submission remains available for
+  field validation; while submitting or canceling, duplicate submission is disabled and fields are
+  read-only.
+- Return a matching terminal acknowledgement from `onCreate`: `accepted` requests `onClose`,
+  `rejected` keeps the values, focuses the error summary, and permits a retry, and `canceled` returns
+  to editing when no close is pending. A missing handler or result, a thrown error, or a rejected
+  promise becomes an error rather than a successful create.
+- A normal user close requests `onClose` immediately. While an operation is pending, user close first
+  aborts the owned signal once and waits for that operation's matching `canceled` acknowledgement;
+  that matching `canceled` acknowledgement requests `onClose`; a matching `accepted` acknowledgement
+  requests `onClose`, while a matching rejection stays open as an error. An abort notification does
+  not guarantee that application persistence rolled back.
+- A parent setting controlled `open` to `false` (or unmounting) aborts and invalidates pending work;
+  late results are ignored. The next open resets the form. `onClose` is a controlled close request,
+  so update `open` in response. `returnFocusTo` forwards its destination resolver to Dialog and uses
+  Dialog's documented eligibility and fallback contract.
 - `slugify` lowercases, removes accents, collapses non-alphanumerics to hyphens and trims edge
   hyphens: `Ação Global` becomes `acao-global`.
-- Every closed-to-open transition resets the name, slug and "touched" state. Provide `onClose` and
-  change `open` in response so Escape, the close button and Cancel can actually dismiss the dialog.
 
 ## API and code
 
 <StackTabs>
   <StackPanel stack="react">
     <StackApi stack="react" />
+
+    `onCreate` owns the application persistence decision. It must return an acknowledgement for the
+    same `operationId`; the dialog does not make a network request or invent an outcome.
+
+    ```tsx
+    import {
+      Button,
+      CreateWorkspaceDialog,
+      type CreateWorkspaceRequest,
+      type CreateWorkspaceResult,
+    } from '@lyra-ds/react';
+    import { useRef, useState } from 'react';
+
+    type Workspace = { id: string; name: string; slug: string };
+
+    interface WorkspacePersistence {
+      createWorkspace(
+        data: CreateWorkspaceRequest['data'],
+        options: { signal: AbortSignal },
+      ): Promise<Workspace>;
+    }
+
+    interface WorkspaceCreatorProps {
+      persistence: WorkspacePersistence;
+    }
+
+    export function WorkspaceCreator({ persistence }: WorkspaceCreatorProps) {
+      const [open, setOpen] = useState(false);
+      const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+      async function onCreate(request: CreateWorkspaceRequest): Promise<CreateWorkspaceResult> {
+        try {
+          await persistence.createWorkspace(request.data, { signal: request.signal });
+          return { operationId: request.operationId, status: 'accepted' };
+        } catch (error: unknown) {
+          if (request.signal.aborted) {
+            return { operationId: request.operationId, status: 'canceled' };
+          }
+
+          return {
+            operationId: request.operationId,
+            status: 'rejected',
+            error: error instanceof Error && error.message ? error.message : 'Could not create workspace.',
+          };
+        }
+      }
+
+      return (
+        <>
+          <Button ref={triggerRef} onClick={() => setOpen(true)}>
+            Create workspace
+          </Button>
+          <CreateWorkspaceDialog
+            open={open}
+            onClose={() => setOpen(false)}
+            onCreate={onCreate}
+            returnFocusTo={() => triggerRef.current}
+          />
+        </>
+      );
+    }
+    ```
+
+    For migration, replace the historical void callback with the complete `WorkspaceCreator` consumer
+    above. It passes `data` as `request.data`, passes `request.signal` to persistence, and returns an
+    explicit result with the matching `request.operationId`.
+
+    ```diff
+    - <CreateWorkspaceDialog onCreate={(data) => saveWorkspace(data)} />
+    + // WorkspaceCreator above persists request.data with request.signal.
+    + // It returns { operationId: request.operationId, status: 'accepted' | 'rejected' | 'canceled' }.
+    + <CreateWorkspaceDialog onCreate={onCreate} />
+    ```
+
   </StackPanel>
 
   <StackPanel stack="html">

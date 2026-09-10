@@ -1,5 +1,7 @@
 # CreateWorkspaceDialog operation lifecycle — controller verification
 
+Commit 6f450d2.
+
 Status: implementation and bounded controller gates verified; independent GLM review162.94s,3DONE/no concrete findings/unchanged guard/verifier PASS. Runtime belongs to Task26; public MDX explanation follows separately. No stable release qualification claimed.
 
 ## Routing and scope
