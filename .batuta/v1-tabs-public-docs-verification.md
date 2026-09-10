@@ -1,5 +1,5 @@
 # Tabs React public documentation — controller verification
-Status: controller criteria1/2/3 PASS; independent review47.49s3DONE/no findings/unchanged guard/verifierPASS; local commit pending. Task27 Alpine and full V1 remain unqualified.
+Status: controller criteria1/2/3 PASS; independent review47.49s3DONE/no findings/unchanged guard/verifierPASS; local commit49c8447. Task27 Alpine and full V1 remain unqualified.
 
 Route: Codex gpt-5.6-terra/medium376.85s initial plus88.84s one bounded retry; no escalation. Initial source scope and MDX2/snippettypes/stack303/native6 passed; missing Styles floor, hydration clause and formatting were concrete feedback. Retry adds those clauses, clarifies eligibility and uses pinned Node24.18.0 Prettier. Initial executor read/diff commands only; retry additionally pinned formatter and diff check, no service/config/hook/ignore/package/build mutation. No Impeccable config.
 

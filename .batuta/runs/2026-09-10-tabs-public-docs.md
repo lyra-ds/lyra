@@ -1,5 +1,5 @@
 # Tabs React public documentation
-Status: verified; local commit pending.
+Status: verified; local commit49c8447.
 
 Codex gpt-5.6-terra/medium376.85s initial +88.84s one prose/format retry; no escalation. Scope two MDX pages. Initial MDX/types/stack303/native6 passed; missing Styles floor/SSR boundary and formatting corrected in the single retry. Final current MDX2/snippettypes/stack303/format/native6 PASS; no unexpected browser errors.1716protected paths and453libraryartifact hashes unchanged; frontmatter/live Example IDs/exact Alpine+Blade tail preserved. GLM47.49s3DONE/no findings/unchanged guard/verifierPASS.
 
