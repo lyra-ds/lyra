@@ -1,0 +1,9 @@
+# Cross-family Escape — current diagnosis
+
+The guarded GLM modal scout locates unguarded Escape defaults in DrawerPanel and BottomSheetPanel. Controller reproduced the defect in current built artifacts at3cb4d50: error-free36 native cases across Chromium/WebKit/Firefox give6passes and30failures. Only stopPropagation-only child consumer cases pass; mixed nested defaults and consumer/native cancellation still close the wrong layer. A48-case extension additionally checks nondismissible children and non-Escape propagation before implementation.
+
+The repair reuses DialogPanel's existing consumer-first, stopPropagation-on-Escape, defaultPrevented-aware protocol in the two other panel owners. No new API, event wrapper or global layer manager. Both directions of Drawer/BottomSheet nesting and CommandPalette descendants form one coupled protocol verification. Broader initial-focus/inert/sibling ordering and teardown remain separate.
+
+Main raw .batuta/runs/v1-cross-modal-escape-native/: final fixture.jsx/run-focus-owner.mjs, baseline-36-result.json and baseline48 result after completion. Artifact identities recorded in each result (Dialog7c27e785…, Drawere20bf2de…, BottomSheet08e35dc6…, CommandPalette6add425c…). Earlier drafts incorrectly queried a CommandPalette textbox role, then assumed raw aria-label on titled BottomSheet; both superseded results/runner versions and the correction are retained. They are probe failures, not product failures. The final probe resolves the named Child dialog and waits for that exact element to contain native opening focus. No forced focus or ignored errors. All completed probes close their owned browsers/server; no process termination or foreign service action occurred.
+
+Final baseline48:12pass/36fail, no page errors. Six stopPropagation cases and six non-Escape cases pass; all other intended Escape containment/cancellation cases fail. Native artifact identities unchanged across baseline36/48.

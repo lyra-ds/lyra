@@ -28,3 +28,5 @@ Tooltip now1954B/1500B and WorkspaceSwitcher8326B/8250B add2entries to the origi
 Task24click cancellation: WorkspaceSwitcher8364/8250B (+38B versusTask22), same11Reactoverages; no limit/hash update. Current callback correctness verified separately; final packed budget decision remainsopen.
 
 Task25Alpine nativeTab repair: completeAlpine artifact21394/21200B, about304Baboveprevious21.09kB build. Additional Alpineoveragejoins11Reactentries (12totalcurrentoverages). No limits/hashes changed; exactpacked before/after protocol and budgetresolutionpending.
+
+Task29 current Drawer2253/2000B and BottomSheet2296/2000B after local Escape consumption correction. Same11React+1Alpine overages; no limits/hashes changed.

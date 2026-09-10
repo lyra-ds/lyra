@@ -118,7 +118,10 @@ function BottomSheetPanel({
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key === 'Escape') onClose?.();
+    if (event.key !== 'Escape') return;
+
+    event.stopPropagation();
+    if (!event.defaultPrevented) onClose?.();
   };
   const handleAnimationEnd: AnimationEventHandler<HTMLDivElement> = (event) => {
     restOnAnimationEnd?.(event);

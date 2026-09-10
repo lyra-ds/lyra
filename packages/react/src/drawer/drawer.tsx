@@ -98,7 +98,10 @@ function DrawerPanel({
   const { onKeyDown: restOnKeyDown, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key === 'Escape') onClose?.();
+    if (event.key !== 'Escape') return;
+
+    event.stopPropagation();
+    if (!event.defaultPrevented) onClose?.();
   };
 
   return (

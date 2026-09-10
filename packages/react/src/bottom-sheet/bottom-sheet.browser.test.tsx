@@ -42,6 +42,87 @@ afterEach(async () => {
 });
 
 describe('BottomSheet', () => {
+  it('runs its consumer before its cancellable Escape default and preserves non-Escape bubbling', async () => {
+    const calls: string[] = [];
+    await render(
+      <div role="presentation" onKeyDown={(event) => calls.push(`parent-${event.key}`)}>
+        <BottomSheet
+          open
+          onClose={() => calls.push('close')}
+          onKeyDown={(event) => {
+            calls.push(`consumer-${event.key}-${event.currentTarget.className}`);
+            if (event.key === 'Escape') event.preventDefault();
+          }}
+          title="Sheet details"
+        >
+          <input aria-label="Editor" />
+        </BottomSheet>
+      </div>,
+    );
+
+    const editor = document.querySelector<HTMLInputElement>('[aria-label="Editor"]')!;
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(editor);
+    expect(calls).toEqual(['consumer-Tab-lyra-bottomsheet', 'parent-Tab']);
+    calls.length = 0;
+    await userEvent.keyboard('{Escape}');
+    expect(calls).toEqual(['consumer-Escape-lyra-bottomsheet']);
+
+    await userEvent.keyboard('{Enter}');
+    expect(calls).toEqual([
+      'consumer-Escape-lyra-bottomsheet',
+      'consumer-Enter-lyra-bottomsheet',
+      'parent-Enter',
+    ]);
+  });
+
+  it('keeps Escape local when the consumer stops propagation but does not prevent default', async () => {
+    const onClose = vi.fn();
+    const onParentKeyDown = vi.fn();
+    await render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <BottomSheet
+          open
+          onClose={onClose}
+          onKeyDown={(event) => event.stopPropagation()}
+          title="Sheet details"
+        >
+          <input aria-label="Editor" />
+        </BottomSheet>
+      </div>,
+    );
+
+    const editor = document.querySelector<HTMLInputElement>('[aria-label="Editor"]')!;
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(editor);
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
+
+  it('keeps a descendant-canceled Escape local without closing', async () => {
+    const onClose = vi.fn();
+    const onParentKeyDown = vi.fn();
+    await render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <BottomSheet open onClose={onClose} title="Sheet details">
+          <input aria-label="Editor" onKeyDown={(event) => event.preventDefault()} />
+        </BottomSheet>
+      </div>,
+    );
+
+    const editor = document.querySelector<HTMLInputElement>('[aria-label="Editor"]')!;
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(editor);
+    expect(onParentKeyDown).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('{Escape}');
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onParentKeyDown).toHaveBeenCalledTimes(1);
+  });
+
   for (const theme of ['light', 'dark'] as const) {
     it(`emits its complete class contract and is axe clean in ${theme}`, async () => {
       document.documentElement.toggleAttribute('data-theme', theme === 'dark');
