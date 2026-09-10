@@ -199,7 +199,7 @@ Task27 Alpine runtime accepted locally2026-09-10 after one high retry and critic
 Task27 Alpine public docs and focused panel-container teardown accepted locally2026-09-10: two current MDX snippets,90native scenarios plus63existing native and20source tests eachengine PASS; old runtime2RED/restored2PASS. GLM3DONE/unchangedguard/verifierPASS. WholeAlpine23051/21200B remains unwaivedTask10. Next owning-source Blade migration/qualification; current imported snapshot remains read-only/incompatible. See .batuta/v1-tabs-alpine-docs-verification.md.
 
 ## Final core/Alpine closure tasks
-- [ ] 38. Popover child-layer ownership — critical diagnosis, then bounded
+- [x] 38. Popover child-layer ownership — critical diagnosis, then bounded
       current-owner repair only if reproduced. Scope starts with the existing
       Popover owner, native child-layer scenarios and colocated tests. Accept:
       child interactions/dismissal do not incorrectly close parent layers;
@@ -217,3 +217,5 @@ Task27 Alpine public docs and focused panel-container teardown accepted locally2
 - [x] 40. Local React modal dynamic focus recovery — bounded Task31 slice in existing shared hook;35shared +121four-owner tests each engine, SSR14, compiled252native, types/lint/build/docgen/publicAPI/hash proof PASS. Original source2RED/restoredPASS and four critical regression negatives prove corrections. CodexTerra/high initial+retry then critical completion; final GLM3DONE/no findings/unchangedguard/verifierPASS. See .batuta/v1-modal-dynamic-focus-verification.md. Background inert/topmost/parent-child ownership remains Task31;12React size failures remain unwaived Task10.
 
 **Task31 completed locally at879b315.** Initial focus33, logical close36 and dynamic recovery40 are joined by final background isolation, coherent topmost/parent-child branch ownership and teardown. Source201each engine/SSR14/native342/static/build/docgen and153protected hashes PASS;450React artifacts bound. Independent GLM3DONE/no findings/unchanged1995-file guard/verifierPASS after focused review corrections. See .batuta/v1-modal-isolation-verification.md. Twelve React and one Alpine size failures remain unwaived Task10. Next Task38 Popover current-owner child-layer diagnosis/repair, Task10 measured size resolution, then Task39 exact core/Alpine qualification; Blade deferred.
+
+**Task38 bounded correction completed locally atb471a5c.** Source40eachengine/SSR5/native51/static/build/docgen and153protected hashes PASS; original14RED/restored23PASS. Independent GLM3DONE/no behavioral findings/unchanged2002-file guard/verifierPASS. See .batuta/v1-popover-child-ownership-verification.md. Task39 must explicitly audit remaining anchored placement/RTL/resize and ownership coverage, including the constrained BottomSheet observation; this slice does not qualify those cells. Next Task10 sizes, then exact core/Alpine automated qualification. Blade deferred.
