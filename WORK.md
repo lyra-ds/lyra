@@ -7,8 +7,9 @@ Blade migration. This supersedes earlier "next Blade" entries below. Blade
 producer/snapshot migration and compatibility qualification are deferred until
 core/Alpine V1 closure, without claiming Blade compatibility or weakening
 existing checks. Active checkout remains `../lyra-v1-stabilization`, product
-HEAD `3446d98`. Next: DataTable Task28, remaining modal/Popover contracts, size
-resolution and exact final core/Alpine qualification. Remote/release and resource
+HEAD `879b315`. Task28 DataTable and Task31 React modal ownership are locally
+verified. Next: Task38 Popover child-layer ownership, Task10 size resolution and
+Task39 exact final core/Alpine qualification. Remote/release and resource
 boundaries are unchanged. See `.batuta/plans/v1-completion.md` in the active
 checkout.
 
@@ -604,3 +605,5 @@ remote or publication action is authorized.
 - [x] Task40 / Task31 local dynamic focus recovery accepted — Codex gpt-5.6-terra/high367.14s +399.85s retry, escalated to critical/controller for bounded completion. Final shared35eachengine +fourowners121eachengine, SSR14, native252, types/lint/build/docgen/publicAPI/hash PASS; original2RED/restoredPASS and critical4RED→PASS. GLM full174.23s then delta124.49s3DONE/no findings/unchanged1986-file guard/verifierPASS.12React size failures remain UNWAIVED. See .batuta/v1-modal-dynamic-focus-verification.md. Product commit6b9645c.
 
 - [ ] Task31 next: background isolation and sibling/topmost/parent-child ownership. Fresh native baseline at6b9645c: initial9PASS/removal9PASS/backgroundinert12FAIL, zero probe errors. Dynamic recovery Task40 is closed locally. Continue with a bounded current-owner isolation/coordination design and native proof. Task38Popover, Task10size and Task39final core/Alpine qualification follow; Blade deferred.
+
+- [x] Task31 modal isolation and branch ownership accepted locally — product commit879b315. CodexTerra/high601.24s +446.33s retry then critical/controller correction. Final201source each engine, SSR14,342compiled native, types/lint/build/docgen/publicAPI/hash proof PASS;153protected files and450React artifacts bound. GLM final80.86s3DONE/no findings/1995-file unchanged guard/verifierPASS; review's two proof/behavior corrections completed, retained-reopen hit-proof finding declined with exact three-engine rows. Empty review responses diagnosed as output limits and recovered in the same session.12React+1Alpine size failures remain UNWAIVED. See .batuta/v1-modal-isolation-verification.md. This closes the pending Task31 entries above; no final V1 qualification. Next38Popover,10size,39final core/Alpine; Blade deferred.
