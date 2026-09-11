@@ -240,6 +240,11 @@ describe('Tooltip', () => {
     );
     const { container, rerender } = await render(fixture(true));
     const [first, second] = Array.from(container.querySelectorAll<HTMLElement>('.lyra-tooltip'));
+    // Native reflow can leave :hover on the first root after rendering, which
+    // would make the focused trigger also hovered and suppress expiry.
+    await userEvent.hover(document.body);
+    expect(first!.matches(':hover')).toBe(false);
+    expect(second!.matches(':hover')).toBe(false);
     await act(async () => {
       container.querySelector<HTMLButtonElement>('button')!.focus();
     });
