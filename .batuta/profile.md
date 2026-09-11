@@ -1,5 +1,13 @@
 # Batuta profile — lyra-ds
 
+## Test-fixture dependency exception — maintainer authorization, 2026-09-11
+
+The maintainer explicitly authorized @types/node24.13.3 only in
+tools/react-compat/fixtures/react18 and react19 devDependencies and their own
+lockfiles, including its required transitive types, to resolve the actual
+Vitest browser BufferEncoding type failure. All other no-new-dependency and
+resource/release restrictions remain in force. This is test tooling only.
+
 ## V1 closure priority — maintainer correction, 2026-09-10
 
 Close V1 of the incumbent Lyra core (Styles/React, first-party documentation
