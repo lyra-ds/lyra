@@ -3,7 +3,7 @@
 // Runs in the "browser" vitest project (real chromium) so CSS animations, computed padding,
 // and layout actually resolve — none of which jsdom can provide.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { useRef } from 'react';
+import { act as reactAct, useRef } from 'react';
 import { render, renderHook, cleanup } from 'vitest-browser-react';
 import { usePresence } from './use-presence';
 import { Slot } from './slot';
@@ -11,24 +11,42 @@ import { useScrollLock } from './use-scroll-lock';
 import { useControllableState } from './use-controllable-state';
 import { useFlipPlacement } from './use-flip-placement';
 
-// Real keyframes so onAnimationEnd fires for the presence walk. The panel animation is longer
-// than the child so the child's (bubbled) animationend arrives first and must be IGNORED.
+// Real keyframes so onAnimationEnd fires for the presence walk. Animations begin paused: each
+// test explicitly releases the timeline it is proving, so delayed test scheduling cannot consume
+// the observation window. The panel animation is longer than the child so the child's (bubbled)
+// animationend arrives first and must be IGNORED.
 beforeAll(() => {
   const style = document.createElement('style');
   style.textContent = `
     @keyframes lyra-test-panel-exit { from { opacity: 1; } to { opacity: 0; } }
     @keyframes lyra-test-child-exit { from { opacity: 1; } to { opacity: 0; } }
-    .presence-panel--closing { animation: lyra-test-panel-exit 120ms linear forwards; }
-    .presence-child--closing { animation: lyra-test-child-exit 20ms linear forwards; }
+    .presence-panel--closing { animation: lyra-test-panel-exit 120ms linear forwards paused; }
+    .presence-child--closing { animation: lyra-test-child-exit 20ms linear forwards paused; }
+    .presence-panel--running { animation-play-state: running; }
+    .presence-child--running { animation-play-state: running; }
   `;
   document.head.appendChild(style);
 });
 
 afterEach(async () => {
-  await cleanup();
+  try {
+    await cleanup();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 const tick = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function act(callback: () => void | Promise<void>): Promise<void> {
+  const previous = Reflect.get(globalThis, 'IS_REACT_ACT_ENVIRONMENT');
+  Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true);
+  try {
+    await reactAct(callback);
+  } finally {
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', previous);
+  }
+}
 
 // --- usePresence ---------------------------------------------------------------------------
 
@@ -59,55 +77,131 @@ function PresenceHarness({ open, animate }: PresenceHarnessProps) {
 
 describe('usePresence', () => {
   it('walks open → closing → unmounted via the panel animation', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const { rerender, container } = await render(<PresenceHarness open animate />);
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
     await rerender(<PresenceHarness open={false} animate />);
-    // Still mounted while the exit animation runs.
+    // Still mounted while the deliberately paused exit animation waits to run.
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
-    // After the panel animation ends, onAnimationEnd finalizes the unmount.
-    await vi.waitFor(() => expect(container.querySelector('[data-testid="panel"]')).toBeNull(), {
-      timeout: 1000,
+    const panel = container.querySelector<HTMLElement>('[data-testid="panel"]')!;
+    const panelAnimationEnd = new Promise<void>((resolve) => {
+      panel.addEventListener(
+        'animationend',
+        (event) => {
+          expect(event).toBeInstanceOf(AnimationEvent);
+          expect(event.target).toBe(panel);
+          expect(event.currentTarget).toBe(panel);
+          expect((event as AnimationEvent).animationName).toBe('lyra-test-panel-exit');
+          resolve();
+        },
+        { once: true },
+      );
     });
+
+    // Release the committed CSS timeline inside act so its native event and React update flush
+    // together without an outer act waiting for a rerender to begin the animation.
+    await act(async () => {
+      panel.classList.add('presence-panel--running');
+      await panelAnimationEnd;
+    });
+    expect(container.querySelector('[data-testid="panel"]')).toBeNull();
   });
 
   it('ignores a bubbled child animation end (does not unmount early)', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const { rerender, container } = await render(<PresenceHarness open animate />);
     await rerender(<PresenceHarness open={false} animate />);
 
-    // The child (20ms) finishes well before the panel (120ms). Right after the child would have
-    // ended, the panel must still be mounted — proof the identity check ignores bubbled events.
-    await tick(60);
+    const panel = container.querySelector<HTMLElement>('[data-testid="panel"]')!;
+    const child = container.querySelector<HTMLElement>('[data-testid="child"]')!;
+    const childAnimationEnd = new Promise<void>((resolve) => {
+      panel.addEventListener(
+        'animationend',
+        (event) => {
+          expect(event).toBeInstanceOf(AnimationEvent);
+          expect(event.target).toBe(child);
+          expect(event.currentTarget).toBe(panel);
+          expect((event as AnimationEvent).animationName).toBe('lyra-test-child-exit');
+          resolve();
+        },
+        { once: true },
+      );
+    });
+
+    // The native child event bubbles to the panel handler, but the paused panel remains mounted.
+    await act(async () => {
+      child.classList.add('presence-child--running');
+      await childAnimationEnd;
+    });
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
-    // The panel's own animation still finalizes the unmount eventually.
-    await vi.waitFor(() => expect(container.querySelector('[data-testid="panel"]')).toBeNull(), {
-      timeout: 1000,
+    // Its own animation still finalizes the unmount when that timeline is released.
+    const panelAnimationEnd = new Promise<void>((resolve) => {
+      panel.addEventListener(
+        'animationend',
+        (event) => {
+          expect(event.target).toBe(panel);
+          expect(event.currentTarget).toBe(panel);
+          resolve();
+        },
+        { once: true },
+      );
     });
+    await act(async () => {
+      panel.classList.add('presence-panel--running');
+      await panelAnimationEnd;
+    });
+    expect(container.querySelector('[data-testid="panel"]')).toBeNull();
   });
 
   it('falls back to the timeout when animations do not run', async () => {
-    // animate=false → no CSS animation, so onAnimationEnd never fires; the ~250ms fallback unmounts.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // animate=false → no CSS animation, so onAnimationEnd never fires; the 250ms fallback unmounts.
     const { rerender, container } = await render(<PresenceHarness open animate={false} />);
     await rerender(<PresenceHarness open={false} animate={false} />);
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
 
-    await vi.waitFor(() => expect(container.querySelector('[data-testid="panel"]')).toBeNull(), {
-      timeout: 1000,
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(249);
     });
+    expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(container.querySelector('[data-testid="panel"]')).toBeNull();
   });
 
-  it('cancels the close when reopened mid-animation', async () => {
+  it('cancels the prior fallback when reopened before a new close', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const { rerender, container } = await render(<PresenceHarness open animate />);
-    await rerender(<PresenceHarness open={false} animate />);
-    // Reopen before the animation / fallback completes.
-    await tick(40);
-    await rerender(<PresenceHarness open animate />);
+    await rerender(<PresenceHarness open={false} animate={false} />);
 
-    // Wait past the fallback window — the panel must remain mounted (close was cancelled).
-    await tick(320);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+
+    // Reopen before the first fallback, then begin a new close with its own full deadline.
+    await rerender(<PresenceHarness open animate />);
+    await rerender(<PresenceHarness open={false} animate={false} />);
+
+    // At 250ms, the first close would unmount if reopening had not cancelled its timeout.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(150);
+    });
     expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(99);
+    });
+    expect(container.querySelector('[data-testid="panel"]')).not.toBeNull();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(container.querySelector('[data-testid="panel"]')).toBeNull();
   });
 });
 
