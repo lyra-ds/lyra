@@ -1,6 +1,6 @@
 # Incumbent focus-size diagnosis — 2026-09-09
 
-Current status:12React+1Alpine overages after Task26; the dated sections below preserve earlier measurements. The final section and Task26 verification carry the latest values.
+Current status:10React+1Alpine overages after the two verified private-icon optimizations (2026-09-11). Dated sections below retain earlier measurements; the final section carries the latest values.
 
 Critical/controller diagnosis with guarded GLM5.3Flash support; no production edits. The71 existing standalone size-limit entries were measured with pinned Node24.18.0, pnpm11.13.1, tsdown0.22.14, size-limit12.1.0 and existing configuration. Same current dist/old library graph and current dist/new library graph produce exactly identical sizes and9 failures. All453 React/Alpine dist files also remain identical across the library maintenance batch. Libraries are not the source of this growth.
 
@@ -74,3 +74,22 @@ Controlled same-lock/build/consumer comparison9d214bf→570fe37 now resolves the
 Separate measured prototypes: FileManager9808→5654/9500B, files/data15599→11440B; WorkspaceSwitcher8364→2886/8250B, application-shell17000→16949B. Qualify these two icon optimizations first. Pure focus-predicate extraction saves19–30B in three modal entries and resolves no overage; do not pursue it for size. Nine modal-bearing entries, Tooltip and Alpine remain unresolved after those two potential wins; active product still has13failures. Packed Alpine23040/21200B is reproduced independently of the earlier workspace23051B invocation. No combined prototype, production optimization, budget increase, baseline update or behavior qualification.
 
 Independent GLM13.35s3DONE/no findings/unchanged2006-file guard/verifierPASS approves the evaluation only. See .batuta/v1-size-limit-evaluation.md and MAIN .batuta/runs/v1-size-evaluation/. Task10/39 remain open; Blade deferred.
+
+## Task10 private icons — implemented and verified, 2026-09-11
+FileManagerae229b2 and WorkspaceSwitcherf4336e0 deliver the two measured optimizations. Final packed FileManager5530/9500B (was9808), WorkspaceSwitcher2889/8250B (was8364). Files/data11315B (was15599); application-shell16954B (was17000). Exact final artifacts, SVG/pixel/keyboard proof and source/static/API checks pass. Both existing caps now pass; no cap/baseline change. Current10React+1Alpine=11failures remain below.
+
+| Entry | Current packed Size Limit B | Limit B |
+| --- | ---: | ---: |
+| import { Drawer } from '@lyra-ds/react/drawer' | 4989 | 2000 |
+| import { BottomSheet } from '@lyra-ds/react/bottom-sheet' | 5030 | 2000 |
+| import { CreateWorkspaceDialog } from '@lyra-ds/react/create-workspace-dialog' | 7476 | 3200 |
+| import { TimePicker } from '@lyra-ds/react/time-picker' | 7512 | 4000 |
+| import { DatePicker } from '@lyra-ds/react/date-picker' | 8638 | 5000 |
+| import { DateRangePicker } from '@lyra-ds/react/date-range-picker' | 8733 | 5000 |
+| import { Tooltip } from '@lyra-ds/react/tooltip' | 1954 | 1500 |
+| CommandPalette (curated icon registry + portal) | 12901 | 9500 |
+| RecurrenceSelector (DatePicker composition) | 10444 | 7000 |
+| WeeklyScheduleEditor (Popover and local inputs) | 17784 | 14500 |
+| import lyra from '@lyra-ds/alpine' | 23040 | 21200 |
+
+Controller final combined453-file identity check confirms FileManager evidence still binds after WorkspaceSwitcher.58source tests per engine, SSR2 and54native exact SVG/pixel frames across both components. Independent GLM/verifier approval per component. See .batuta/v1-file-manager-icons-verification.md and .batuta/v1-workspace-switcher-icons-verification.md; raw MAIN .batuta/runs/v1-icon-optimizations/. Next: remaining modal/Tooltip/Alpine budgets require bounded measured optimization or a justified reviewed budget decision. Task39 and anchored placement audit remain open; Blade deferred.

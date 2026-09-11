@@ -17,7 +17,7 @@ Execute in this order:
    implement and verify the current owner and public examples.
 2. Task31 and Task38: close remaining modal/inert/dynamic-focus/sibling teardown
    and Popover child-layer ownership using fresh reproducers and bounded fixes.
-3. Task10: measure the final source/packed artifacts, resolve the current twelve
+3. Task10: measure the final source/packed artifacts, resolve the remaining ten
    React and one Alpine size overages without silently raising limits, and
    preserve all accepted behavior.
 4. Task39: qualify the exact final core/Alpine candidate across the required
@@ -219,3 +219,5 @@ Task27 Alpine public docs and focused panel-container teardown accepted locally2
 **Task31 completed locally at879b315.** Initial focus33, logical close36 and dynamic recovery40 are joined by final background isolation, coherent topmost/parent-child branch ownership and teardown. Source201each engine/SSR14/native342/static/build/docgen and153protected hashes PASS;450React artifacts bound. Independent GLM3DONE/no findings/unchanged1995-file guard/verifierPASS after focused review corrections. See .batuta/v1-modal-isolation-verification.md. Twelve React and one Alpine size failures remain unwaived Task10. Next Task38 Popover current-owner child-layer diagnosis/repair, Task10 measured size resolution, then Task39 exact core/Alpine qualification; Blade deferred.
 
 **Task38 bounded correction completed locally atb471a5c.** Source40eachengine/SSR5/native51/static/build/docgen and153protected hashes PASS; original14RED/restored23PASS. Independent GLM3DONE/no behavioral findings/unchanged2002-file guard/verifierPASS. See .batuta/v1-popover-child-ownership-verification.md. Task39 must explicitly audit remaining anchored placement/RTL/resize and ownership coverage, including the constrained BottomSheet observation; this slice does not qualify those cells. Next Task10 sizes, then exact core/Alpine automated qualification. Blade deferred.
+
+**Task10 private-icon optimization tranche completed locally (2026-09-11).** FileManagerae229b2 and WorkspaceSwitcherf4336e0 now pass their unchanged standalone caps at5530/9500B and2889/8250B. Source58eachengine/SSR2/native54exactSVG+pixel/public153/final453artifact identity and independent review PASS. Remaining10React+1Alpine budgets stay failed and unwaived; Task10 is not closed. See the two component verification records and latest .batuta/v1-focus-size-diagnosis.md. No release/Blade action.
