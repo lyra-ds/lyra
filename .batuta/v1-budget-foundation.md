@@ -1,6 +1,6 @@
 # V1 bundle size decision foundation
 
-Current update2026-09-11: the maintainer accepted the11recommended standalone caps after the size discussion. They are applied and72/72installed-tarball entries pass with unchanged asset bytes; see [accepted decision](specs/2026-09-11-v1-standalone-budget-decision.md). Quantitative responsiveness, scenario/delta/baseline disposition and final release qualification remain pending.
+Current update2026-09-11: the maintainer accepted the11recommended standalone caps after the size discussion. They are applied and72/72installed-tarball entries pass with unchanged asset bytes; see [accepted decision](specs/2026-09-11-v1-standalone-budget-decision.md). Representative mobile laboratory evidence is now available in .batuta/v1-mobile-validation.md; broader approved-family/physical-device responsiveness, scenario/delta/baseline disposition and final release qualification remain separate.
 
 Historical foundation below describes the measured15e1170 pre-approval state and the then-preliminary proposal. Its statements about unapproved caps/11failures apply to that earlier state, not the current accepted configuration. Original measurements and rejected experiments remain unchanged; this record does not establish latency or release readiness.
 
