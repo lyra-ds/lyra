@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { StrictMode, useRef, useState, type ReactNode } from 'react';
@@ -329,9 +329,31 @@ describe('Drawer', () => {
 
       if (dismissal === 'escape') await userEvent.keyboard('{Escape}');
       else if (dismissal === 'backdrop') {
-        await userEvent.click(document.querySelector<HTMLElement>('.lyra-drawer-overlay')!, {
-          position: { x: 1, y: 1 },
-        });
+        const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+        const overlay = document.querySelector<HTMLElement>('.lyra-drawer-overlay')!;
+        const backdropPoint = { x: 1, y: 1 };
+        const nativeClickTargets: (EventTarget | null)[] = [];
+        const captureNativeClick = (event: MouseEvent) => nativeClickTargets.push(event.target);
+
+        try {
+          await page.viewport(1280, 720);
+          overlay.addEventListener('click', captureNativeClick);
+
+          const panelBounds = panel.getBoundingClientRect();
+          expect(
+            backdropPoint.x >= panelBounds.left &&
+              backdropPoint.x <= panelBounds.right &&
+              backdropPoint.y >= panelBounds.top &&
+              backdropPoint.y <= panelBounds.bottom,
+          ).toBe(false);
+          expect(document.elementFromPoint(backdropPoint.x, backdropPoint.y)).toBe(overlay);
+
+          await userEvent.click(overlay, { position: backdropPoint });
+          expect(nativeClickTargets).toEqual([overlay]);
+        } finally {
+          overlay.removeEventListener('click', captureNativeClick);
+          await page.viewport(originalViewport.width, originalViewport.height);
+        }
       } else await userEvent.click(panel.querySelector<HTMLButtonElement>('.lyra-drawer__close')!);
 
       const target = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-drawer__title)')!;
