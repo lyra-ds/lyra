@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
-import { useRef, useState } from 'react';
+import { act as reactAct, useRef, useState } from 'react';
 import '@lyra-ds/styles/styles.css';
 import { CommandPalette, type CommandGroup } from './index';
 
@@ -448,6 +448,16 @@ describe('CommandPalette', () => {
   });
 
   it('uses the latest resolver and fresh captured opener once per accepted close during a rapid reopen', async () => {
+    const exitStyle = document.createElement('style');
+    exitStyle.textContent = `
+      .lyra-cmdk--closing {
+        animation-play-state: paused !important;
+      }
+      .lyra-cmdk--closing.lyra-test-cmdk-exit-running {
+        animation-play-state: running !important;
+      }
+    `;
+
     const staleResolver = vi.fn(() => null);
     const latestResolver = vi.fn(() => null);
     const freshResolver = vi.fn(() => null);
@@ -467,35 +477,93 @@ describe('CommandPalette', () => {
       );
     }
 
-    const { rerender } = await render(
-      <ControlledRapidReopen open={false} returnFocusTo={staleResolver} />,
-    );
-    const firstTrigger = document.querySelectorAll<HTMLButtonElement>('button')[0]!;
-    const secondTrigger = document.querySelectorAll<HTMLButtonElement>('button')[1]!;
-    firstTrigger.focus();
-    await rerender(<ControlledRapidReopen open returnFocusTo={staleResolver} />);
-    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
-    const firstPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
-    await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+    async function act(callback: () => void | Promise<void>): Promise<void> {
+      const previous = Reflect.get(globalThis, 'IS_REACT_ACT_ENVIRONMENT');
+      Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true);
+      try {
+        await reactAct(callback);
+      } finally {
+        Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', previous);
+      }
+    }
 
-    await rerender(<ControlledRapidReopen open returnFocusTo={latestResolver} />);
-    await rerender(<ControlledRapidReopen open={false} returnFocusTo={latestResolver} />);
-    await vi.waitFor(() => expect(firstPanel.classList.contains('lyra-cmdk--closing')).toBe(true));
-    await vi.waitFor(() => expect(latestResolver).toHaveBeenCalledTimes(1));
-    expect(staleResolver).not.toHaveBeenCalled();
-    expect(document.activeElement).toBe(firstTrigger);
+    try {
+      document.head.appendChild(exitStyle);
+      const { rerender } = await render(
+        <ControlledRapidReopen open={false} returnFocusTo={staleResolver} />,
+      );
+      const firstTrigger = document.querySelectorAll<HTMLButtonElement>('button')[0]!;
+      const secondTrigger = document.querySelectorAll<HTMLButtonElement>('button')[1]!;
+      firstTrigger.focus();
+      await rerender(<ControlledRapidReopen open returnFocusTo={staleResolver} />);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+      const firstPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+      await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
 
-    await rerender(<ControlledRapidReopen open={false} returnFocusTo={latestResolver} />);
-    expect(latestResolver).toHaveBeenCalledTimes(1);
+      await rerender(<ControlledRapidReopen open returnFocusTo={latestResolver} />);
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      await rerender(<ControlledRapidReopen open={false} returnFocusTo={latestResolver} />);
+      expect(firstPanel.classList.contains('lyra-cmdk--closing')).toBe(true);
+      expect(getComputedStyle(firstPanel).animationPlayState).toBe('paused');
+      expect(latestResolver).toHaveBeenCalledTimes(1);
+      expect(staleResolver).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(firstTrigger);
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
 
-    secondTrigger.focus();
-    await rerender(<ControlledRapidReopen open returnFocusTo={freshResolver} />);
-    await vi.waitFor(() => expect(firstPanel.classList.contains('lyra-cmdk--closing')).toBe(false));
-    await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+      await rerender(<ControlledRapidReopen open={false} returnFocusTo={latestResolver} />);
+      expect(latestResolver).toHaveBeenCalledTimes(1);
 
-    await rerender(<ControlledRapidReopen open={false} returnFocusTo={freshResolver} />);
-    await vi.waitFor(() => expect(freshResolver).toHaveBeenCalledTimes(1));
-    expect(document.activeElement).toBe(secondTrigger);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(249);
+      });
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      secondTrigger.focus();
+      await rerender(<ControlledRapidReopen open returnFocusTo={freshResolver} />);
+      expect(firstPanel.classList.contains('lyra-cmdk--closing')).toBe(false);
+      await act(async () => {
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      });
+      expect(firstPanel.contains(document.activeElement)).toBe(true);
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      await rerender(<ControlledRapidReopen open={false} returnFocusTo={freshResolver} />);
+      expect(freshResolver).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).toBe(secondTrigger);
+
+      const exitFinished = new Promise<void>((resolve) => {
+        firstPanel.addEventListener(
+          'animationend',
+          (event) => {
+            expect(event).toBeInstanceOf(AnimationEvent);
+            expect(event.target).toBe(firstPanel);
+            expect(event.currentTarget).toBe(firstPanel);
+            expect((event as AnimationEvent).animationName).toBe('lyra-overlay-out');
+            resolve();
+          },
+          { once: true },
+        );
+      });
+      await act(async () => {
+        firstPanel.classList.add('lyra-test-cmdk-exit-running');
+        await exitFinished;
+      });
+      expect(firstPanel.isConnected).toBe(false);
+    } finally {
+      exitStyle.remove();
+      vi.useRealTimers();
+    }
   });
 
   it.each(['panel', 'overlay'] as const)(
