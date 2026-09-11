@@ -17,9 +17,9 @@ Execute in this order:
    implement and verify the current owner and public examples.
 2. Task31 and Task38: close remaining modal/inert/dynamic-focus/sibling teardown
    and Popover child-layer ownership using fresh reproducers and bounded fixes.
-3. Task10: measure the final source/packed artifacts, resolve the remaining ten
-   React and one Alpine size overages without silently raising limits, and
-   preserve all accepted behavior.
+3. Task10: standalone overages are resolved under the11explicitly approved caps
+   (72/72packedPASS, unchanged assets). Complete remaining performance, scenario/
+   migration-delta and historical-baseline disposition while preserving behavior.
 4. Task39: qualify the exact final core/Alpine candidate across the required
    browser, React18/19, SSR/hydration, types, security, consumer, visual and manual
    accessibility checks. Unavailable Linux/remote/manual evidence stays pending.
@@ -225,3 +225,5 @@ Task27 Alpine public docs and focused panel-container teardown accepted locally2
 **Task10 remaining-budget evaluation completed locally (2026-09-11); resolution still open.** At47d0dc1, disposable Tooltip/Alpine simplifications save12/14B and still fail; modal shared-hook extraction grows seven entries and two scenarios. No prototype promoted.453active artifacts unchanged,9tarball hashes/3cleanups/same72imports+cold consumer graph verified; GLM final3DONE/no findings/2014-file guard/verifierPASS. See .batuta/v1-remaining-size-limits.md for exact measurements, rejected unproven cleanup deletion and missing architecture-exception inputs. Next applicable runtime/module-contribution evidence and explicit architecture/budget decision; no cap/baseline waiver. All11failures, Task39 and Blade boundary unchanged.
 
 **Task10 size foundation prepared for maintainer discussion (2026-09-11).** .batuta/v1-budget-foundation.md separates actual Vite minified/Brotli, Size Limit, npm-package and shared CSS costs, explains retained modules/source-region growth, and proposes only11standalone caps with explicit5%maintenance allowance rounded100B (not approved). Existing453artifact identities and matchedgraph/buildoverlay verified; extra exact packed root-import scenario experiment grows all5Brotli totals and is not adopted. GLM3DONE/no findings/2015-file guard/verifierPASS. All11current gates remain failed; quantified responsiveness, scenario-budget disposition, accepted ADR and exact core/Alpine qualification remain distinct pending work. Blade remains deferred.
+
+**Task10 standalone cap resolution complete locally (2026-09-11).** Maintainer accepted the11previously proposed values after discussing page payload. GLM5.3Flash/low59.63s config-only/no retry; controller cold packed37.91s,72/72PASS with same actualsizes/453compiled artifacts/5scenarios/4CSS,3tarball hashes and guarded cleanup. Complete packed files differ only in two package manifests. Workspace71+1 and format/scope PASS. GLM final7.80s3DONE/no defects/2016-file guard/verifierPASS. See .batuta/specs/2026-09-11-v1-standalone-budget-decision.md. Remaining performance/scenario/delta/baseline disposition andTask39/mobile-page qualification stay pending; no V1 release or Blade action.

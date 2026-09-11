@@ -1,6 +1,6 @@
 # Incumbent focus-size diagnosis — 2026-09-09
 
-Current status:10React+1Alpine overages after the two verified private-icon optimizations (2026-09-11). Dated sections below retain earlier measurements; the final section carries the latest values.
+Current status2026-09-11: all72standalone entries pass under the11maintainer-approved updated caps, with identical actual asset sizes. See .batuta/specs/2026-09-11-v1-standalone-budget-decision.md. Dated sections below retain historical failed measurements; broader performance/scenario/baseline qualification remains pending.
 
 Critical/controller diagnosis with guarded GLM5.3Flash support; no production edits. The71 existing standalone size-limit entries were measured with pinned Node24.18.0, pnpm11.13.1, tsdown0.22.14, size-limit12.1.0 and existing configuration. Same current dist/old library graph and current dist/new library graph produce exactly identical sizes and9 failures. All453 React/Alpine dist files also remain identical across the library maintenance batch. Libraries are not the source of this growth.
 
@@ -101,3 +101,7 @@ At47d0dc1, three disposable packed hypotheses retain all11failures: Tooltip time
 ## Budget foundation for maintainer discussion — 2026-09-11
 
 See .batuta/v1-budget-foundation.md for actual consumer JS/CSS versus Size Limit and npm tarball sizes, existing retained-module attribution, source-region growth and explicit preliminary11cap options. Default discussion option adds5%to current Size Limit then rounds up100B; this is policy headroom, not measured runtime capacity or approval. Canonical scenarios remain1878/11030/16954/24084/11315Brotli JS; aggregate CSS13723B once. A new same-artifact root-import variant worsens all5Brotli scenarios; fixtures/consumer code were not migrated. Existing72standalone results and453artifact identities unchanged; GLM3DONE/no findings/guard/verifierPASS. No budget exception applied.
+
+## Approved standalone caps applied — 2026-09-11
+
+Following the maintainer's "De acordo entao", exactly10React+1Alpine limit fields now use the previously presented5%-plus-round100B values. Cold packed72/72PASS; identical72actual sizes/5canonical scenarios/4CSS/453compiled artifact hashes; complete packed-file comparison differs only in the two manifests. Workspace71React+1Alpine/format/scope PASS; GLM final7.80s3DONE/no defects/2016-file guard/verifierPASS. Previous failed rows remain historical evidence. See accepted decision and MAIN v1-approved-budgets/ raw proof. No runtime asset growth; broader scenario/delta/baseline and mobile/runtime qualification remain pending.

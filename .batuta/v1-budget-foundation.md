@@ -1,6 +1,8 @@
 # V1 bundle size decision foundation
 
-Status: measured explanation and **preliminary budget proposal**, not an approved exception. Requested by the maintainer2026-09-11 to understand real sizes and consider increasing limits. No production source, dependency, build configuration, CSS, budget or historical baseline changed. Eleven existing standalone gates remain failed. This document does not establish latency or release readiness.
+Current update2026-09-11: the maintainer accepted the11recommended standalone caps after the size discussion. They are applied and72/72installed-tarball entries pass with unchanged asset bytes; see [accepted decision](specs/2026-09-11-v1-standalone-budget-decision.md). Quantitative responsiveness, scenario/delta/baseline disposition and final release qualification remain pending.
+
+Historical foundation below describes the measured15e1170 pre-approval state and the then-preliminary proposal. Its statements about unapproved caps/11failures apply to that earlier state, not the current accepted configuration. Original measurements and rejected experiments remain unchanged; this record does not establish latency or release readiness.
 
 ## What the measurements mean
 
