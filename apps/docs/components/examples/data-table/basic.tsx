@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Badge, Button, DataTable, type DataTableColumn } from '@lyra-ds/react';
 
