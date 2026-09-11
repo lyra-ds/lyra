@@ -613,3 +613,14 @@
 .lyra-tooltip--right[data-state='open']:not(:hover):not(:focus-within)::after {
   transform: translateY(-50%) translateX(0);
 }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): under native forced-colors the
+   --shadow-focus box-shadow is removed, leaving the Dialog close control with no perceivable
+   :focus-visible indicator. CanvasText keeps the outline in system colors without disabling
+   forced-color-adjust. */
+@media (forced-colors: active) {
+  .lyra-dialog__close:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}

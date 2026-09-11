@@ -241,3 +241,5 @@ Task39 canonical Linux React build resolved by fresh per-entry512MiB processes: 
 Task39 P1packedcompat slice completed: all11components eachReact18/19 have namedNodeSSR plusmatchingHTMLhydration/native cases, strict report guards and actualnegativeproof. ExistingFileUpload proofs retained. See .batuta/v1-p1-react-compat-verification.md. Historicalbaseline/scenario and remaining forcedcolors/motion/RTL/coarsepointer/axe/ledger evidence stayopen; this is not wholeV1qualification.
 
 - Dialog profile follow-up: new packedReact19 producer verifies6media/theme/directioncases perengine.18executed;16PASS and2real Chromium/FirefoxforcedcolorsfocusFAIL exposed. Toolreviewed; owningCSSfix pending. Othercomponents/coarsepointer/ledger/baseline stillpending.
+
+- Dialog forced-colors defect resolved: source6/6 + packedhost18/18 PASS, with oldStyles2focusfailures retained. Profileproducer ab3b9cf unchanged; CSSonly. OtherP1/coarsepointer/finalLinux/baseline/ledger gates remain pending.
