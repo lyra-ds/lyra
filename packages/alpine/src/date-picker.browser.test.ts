@@ -1,8 +1,11 @@
+/// <reference types="vite/client" />
+
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
+import datePickerSource from './date-picker.ts?raw';
 import lyra from './index';
 
 const mountedHosts: HTMLElement[] = [];
@@ -88,11 +91,13 @@ function datePickerTemplate(options = '{}', outer = '', model = '', controls = '
           <div class="lyra-datepicker">
             ${triggerMarkup('@click="open = true"')}
           </div>
-          <div x-data="lyraBottomSheet()" x-modelable="open" x-model="pickerOpen">
+          <div x-data="lyraBottomSheet({
+            returnFocusTo: () => $el.closest('.lyra-datepicker-root')?.querySelector('.lyra-datepicker__btn') ?? null,
+          })" x-modelable="open" x-model="pickerOpen">
             <div class="lyra-bottomsheet-overlay" x-bind="overlay">
-              <div class="lyra-bottomsheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="date-picker-sheet-title" x-bind="panel">
+              <div class="lyra-bottomsheet" role="dialog" aria-modal="true" tabindex="-1" aria-label="Select date" x-bind="panel">
                 <div class="lyra-bottomsheet__header">
-                  <h2 id="date-picker-sheet-title" class="lyra-bottomsheet__title">Select date</h2>
+                  <h2 class="lyra-bottomsheet__title">Select date</h2>
                   <button class="lyra-bottomsheet__close" x-bind="close">Close</button>
                 </div>
                 <div class="lyra-bottomsheet__body"><div class="lyra-cal--sheet">${calendarMarkup()}</div></div>
@@ -107,13 +112,27 @@ function datePickerTemplate(options = '{}', outer = '', model = '', controls = '
   `;
 }
 
-function mountDatePicker(options = '{}', outer = '', model = '', controls = ''): HTMLElement {
+function documentedDatePickerTemplate(): string {
+  const match = / \* ```html\n([\s\S]*?)\n \* ```/.exec(datePickerSource);
+  if (!match) throw new Error('Expected DatePicker documentation HTML');
+  return match[1].replace(/^ \* ?/gm, '');
+}
+
+function mountMarkup(markup: string): HTMLElement {
   const host = document.createElement('div');
-  host.innerHTML = datePickerTemplate(options, outer, model, controls);
+  host.innerHTML = markup;
   document.body.appendChild(host);
   Alpine.initTree(host);
   mountedHosts.push(host);
   return host;
+}
+
+function mountDatePicker(options = '{}', outer = '', model = '', controls = ''): HTMLElement {
+  return mountMarkup(datePickerTemplate(options, outer, model, controls));
+}
+
+function mountDocumentedDatePicker(): HTMLElement {
+  return mountMarkup(documentedDatePickerTemplate());
 }
 
 function picker(host: HTMLElement): HTMLElement {
@@ -123,7 +142,7 @@ function picker(host: HTMLElement): HTMLElement {
 }
 
 function trigger(host: HTMLElement): HTMLButtonElement {
-  const element = host.querySelector<HTMLButtonElement>('[data-testid="date-trigger"]');
+  const element = host.querySelector<HTMLButtonElement>('.lyra-datepicker__btn');
   if (!element) throw new Error('Expected date-picker trigger');
   return element;
 }
@@ -183,6 +202,7 @@ async function expectVisible(element: HTMLElement): Promise<void> {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   for (const host of mountedHosts.splice(0)) {
     Alpine.destroyTree(host);
     host.remove();
@@ -230,13 +250,32 @@ describe('lyraDatePicker', () => {
     );
   });
 
-  it('opens the mobile sheet, closes after a day selection, and restores focus to its opener', async () => {
+  it('opens the mobile sheet from the keyboard, selects a day, and restores focus to its opener', async () => {
     setViewport(true);
     const host = mountDatePicker();
     const control = trigger(host);
     const selected = upcomingDay();
 
     control.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    await expectVisible(sheet(host));
+
+    day(host, selected).focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+
+    expect((Alpine.$data(picker(host)) as { open: boolean }).open).toBe(false);
+    expect(sheet(host).classList).toContain('lyra-bottomsheet--closing');
+    await vi.waitFor(() => expect(document.activeElement).toBe(control));
+  });
+
+  it('returns to its current mobile trigger after an unprepared pointer selection', async () => {
+    setViewport(true);
+    const host = mountDatePicker();
+    const control = trigger(host);
+    const selected = upcomingDay();
+
     await userEvent.click(control);
     await flush();
     await expectVisible(sheet(host));
@@ -244,8 +283,65 @@ describe('lyraDatePicker', () => {
     await userEvent.click(day(host, selected));
     await flush();
 
-    expect((Alpine.$data(picker(host)) as { open: boolean }).open).toBe(false);
-    expect(sheet(host).classList).toContain('lyra-bottomsheet--closing');
+    await vi.waitFor(() => expect(document.activeElement).toBe(control));
+  });
+
+  it('returns each mobile picker to its own current trigger', async () => {
+    setViewport(true);
+    const firstHost = mountDatePicker();
+    const secondHost = mountDatePicker();
+    const firstControl = trigger(firstHost);
+    const secondControl = trigger(secondHost);
+    const selected = upcomingDay();
+
+    await userEvent.click(firstControl);
+    await flush();
+    await expectVisible(sheet(firstHost));
+    await userEvent.click(day(firstHost, selected));
+    await flush();
+    await vi.waitFor(() => expect(document.activeElement).toBe(firstControl));
+
+    secondControl.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    await expectVisible(sheet(secondHost));
+    await userEvent.click(day(secondHost, selected));
+    await flush();
+    await vi.waitFor(() => expect(document.activeElement).toBe(secondControl));
+  });
+
+  it('mounts the documented desktop template and closes after selecting its documented date', async () => {
+    setViewport(false);
+    vi.setSystemTime(new Date(2024, 4, 1, 12));
+    const host = mountDocumentedDatePicker();
+    const control = trigger(host);
+    const selected = new Date(2024, 4, 2);
+
+    await userEvent.click(control);
+    await flush();
+    await expectVisible(popover(host));
+
+    await userEvent.click(day(host, selected));
+    await flush();
+
+    await vi.waitFor(() => expect(popover(host).style.display).toBe('none'), { timeout: 3000 });
+    expect(control.textContent).toContain('5/2/2024');
+  });
+
+  it('mounts the documented mobile template and returns after native pointer selection', async () => {
+    setViewport(true);
+    vi.setSystemTime(new Date(2024, 4, 1, 12));
+    const host = mountDocumentedDatePicker();
+    const control = trigger(host);
+    const selected = new Date(2024, 4, 2);
+
+    await userEvent.click(control);
+    await flush();
+    await expectVisible(sheet(host));
+
+    await userEvent.click(day(host, selected));
+    await flush();
+
     await vi.waitFor(() => expect(document.activeElement).toBe(control));
   });
 

@@ -39,14 +39,13 @@ type LyraDatePickerState = LyraDatePickerData & LyraDatePickerMagics;
  * Popover and the mobile trigger uses one `@click="open = true"` handler.
  *
  * ```html
- * <div x-data="lyraDatePicker({ defaultValue: '2024-05-01', locale: 'en-US' })">
+ * <div class="lyra-datepicker-root" x-data="lyraDatePicker({ defaultValue: '2024-05-01', locale: 'en-US' })">
  *   <template x-if="!mobile">
- *     <div class="lyra-popover-anchor lyra-datepicker"
  *     <!-- Alias scope: x-model resolves in the nested component's own scope first, so a
  *          same-name chain (open ↔ open) would entangle the component with itself. The alias
  *          getter/setter proxies the picker's property under a non-colliding name. -->
  *     <div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
- *       <div x-data="lyraPopover({ ariaLabel: 'Date picker' })" x-modelable="open" x-model="pickerOpen">
+ *       <div class="lyra-popover-anchor lyra-datepicker" x-data="lyraPopover({ ariaLabel: 'Date picker' })" x-modelable="open" x-model="pickerOpen">
  *       <button class="lyra-input lyra-datepicker__btn" x-bind="trigger">
  *         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
  *           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -92,9 +91,12 @@ type LyraDatePickerState = LyraDatePickerData & LyraDatePickerMagics;
  *         </div>
  *       </div>
  *     </div>
+ *     </div>
+ *     </div>
  *   </template>
  *   <template x-if="mobile">
- *     <div class="lyra-datepicker">
+ *     <div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
+ *       <div class="lyra-datepicker">
  *       <button class="lyra-input lyra-datepicker__btn" type="button" @click="open = true">
  *         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
  *           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -104,13 +106,14 @@ type LyraDatePickerState = LyraDatePickerData & LyraDatePickerMagics;
  *         <span :class="{ 'lyra-datepicker__ph': !hasSelection() }" x-text="triggerText()"></span>
  *       </button>
  *     </div>
- *     <div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
- *     <div x-data="lyraBottomSheet()" x-modelable="open" x-model="pickerOpen">
+ *     <div x-data="lyraBottomSheet({
+ *       returnFocusTo: () => $el.closest('.lyra-datepicker-root')?.querySelector('.lyra-datepicker__btn') ?? null,
+ *     })" x-modelable="open" x-model="pickerOpen">
  *       <div class="lyra-bottomsheet-overlay" x-bind="overlay">
  *         <div class="lyra-bottomsheet" role="dialog" aria-modal="true" tabindex="-1"
- *           aria-labelledby="date-picker-sheet-title" x-bind="panel">
+ *           aria-label="Select date" x-bind="panel">
  *           <div class="lyra-bottomsheet__header">
- *             <h2 id="date-picker-sheet-title" class="lyra-bottomsheet__title">Select date</h2>
+ *             <h2 class="lyra-bottomsheet__title">Select date</h2>
  *             <button class="lyra-bottomsheet__close" x-bind="close">Close</button>
  *           </div>
  *           <div class="lyra-bottomsheet__body"><div class="lyra-cal--sheet">
@@ -151,6 +154,8 @@ type LyraDatePickerState = LyraDatePickerData & LyraDatePickerMagics;
  *           </div></div>
  *         </div>
  *       </div>
+ *     </div>
+ *     </div>
  *     </div>
  *   </template>
  * </div>

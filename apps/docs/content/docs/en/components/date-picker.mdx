@@ -46,6 +46,36 @@ Reach for something else when:
 - `labels.calendar` forwards translated Calendar controls, while `locale` formats both the trigger
   and Calendar dates.
 
+## Alpine mobile return focus
+
+Configure the existing mobile BottomSheet with a return resolver. It resolves on close from that
+sheet's enclosing DatePicker root, so each currently rendered trigger remains local when multiple
+pickers share a page. This explicit destination uses `focus({ preventScroll: true })` after a native
+pointer selection. Without it, BottomSheet only falls back to an eligible opener captured before a
+keyboard opening; an unprepared WebKit pointer opening must not rely on that fallback.
+
+```html
+<div class="lyra-datepicker-root" x-data="lyraDatePicker({ locale: 'en-US' })">
+  <div class="lyra-datepicker">
+    <button class="lyra-input lyra-datepicker__btn" type="button" @click="open = true">
+      Select date
+    </button>
+  </div>
+
+  <div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
+    <div
+      x-data="lyraBottomSheet({
+        returnFocusTo: () => $el.closest('.lyra-datepicker-root')?.querySelector('.lyra-datepicker__btn') ?? null,
+      })"
+      x-modelable="open"
+      x-model="pickerOpen"
+    >
+      <!-- Serve the existing BottomSheet overlay, panel, and Calendar markup here. -->
+    </div>
+  </div>
+</div>
+```
+
 ## API and code
 
 <StackTabs>
