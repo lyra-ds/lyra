@@ -19,6 +19,13 @@ tools/docgen/output/llms.txt
 # Blade API snapshot — copied byte-for-byte from the lyra-ds/blade release asset;
 # reformatting would break parity with the published artifact (blade-api check owns it).
 tools/blade-api/api.json
+# Batuta operational artifacts — a mix of mutable coordination documents (e.g. WORK.md is
+# live, editable state) and verbatim historical evidence (briefs, scout/review reports, runs)
+# whose identity is byte/hash-exact. Excluded from product formatting so reformatting cannot
+# alter recorded evidence; verbatim reports must retain their original bytes to stay auditable.
+.batuta/
+# Impeccable hook cache — generated tool state, not product source; regenerated on each run.
+.impeccable/hook.cache.json
 # Batuta task worktrees — a second checkout of this repo under .batuta/worktrees/, so every file
 # in it is a duplicate that prettier would scan (and report, including the handoff and fixtures this
 # file deliberately excludes above — the exclusions are relative to the repo root, not to a nested
