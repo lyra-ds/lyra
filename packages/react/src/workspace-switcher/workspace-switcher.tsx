@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent } from 'react';
+import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { Avatar } from '../avatar';
-import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { useFlipPlacement } from '../internal/use-flip-placement';
 
@@ -229,7 +229,12 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
             <span className="lyra-wssw__name">{selected?.name ?? 'Select workspace'}</span>
             {selected?.plan && <span className="lyra-wssw__plan">{selected.plan}</span>}
           </span>
-          <Icon name="chevrons-up-down" size={15} color="var(--text-faint)" />
+          <ChevronsUpDown
+            className="lyra-icon"
+            size={15}
+            color="var(--text-faint)"
+            aria-hidden="true"
+          />
         </button>
         {open && (
           <div
@@ -265,7 +270,12 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
                     )}
                   </span>
                   {workspace.id === selected?.id && (
-                    <Icon name="check" size={15} color="var(--accent)" />
+                    <Check
+                      className="lyra-icon"
+                      size={15}
+                      color="var(--accent)"
+                      aria-hidden="true"
+                    />
                   )}
                 </button>
               ))}
@@ -275,7 +285,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
                 <hr className="lyra-wssw__sep" role="presentation" />
                 <button type="button" tabIndex={0} className="lyra-wssw__item lyra-wssw__create">
                   <span className="lyra-wssw__plus">
-                    <Icon name="plus" size={15} />
+                    <Plus className="lyra-icon" size={15} aria-hidden="true" />
                   </span>
                   <span className="lyra-wssw__create-label">{createLabel}</span>
                 </button>
