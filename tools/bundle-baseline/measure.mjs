@@ -9,11 +9,12 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { arch, platform, release, tmpdir } from 'node:os';
-import { basename, dirname, extname, join, relative, resolve } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { constants, brotliCompressSync } from 'node:zlib';
 import { format } from 'prettier';
@@ -124,15 +125,34 @@ function emittedAssets(result) {
   }));
 }
 
+function replaceModulePathPrefix(moduleId, root, replacement) {
+  if (moduleId === root) return replacement;
+  if (moduleId.startsWith(`${root}/`) || moduleId.startsWith(`${root}\\`)) {
+    return `${replacement}${moduleId.slice(root.length)}`;
+  }
+  return null;
+}
+
 export function normalizeModulePath(moduleId, fixtureRoot, repositoryRoot = REPO) {
-  for (const [root, replacement] of [
+  const roots = [
     [fixtureRoot, '<fixture>'],
     [repositoryRoot, '<repository>'],
-  ]) {
-    if (moduleId === root) return replacement;
-    if (moduleId.startsWith(`${root}/`) || moduleId.startsWith(`${root}\\`)) {
-      return `${replacement}${moduleId.slice(root.length)}`;
+  ];
+  const canResolveModulePath =
+    isAbsolute(moduleId) &&
+    !moduleId.includes('?') &&
+    !moduleId.includes('#') &&
+    existsSync(moduleId);
+  let canonicalModuleId;
+  for (const [root, replacement] of roots) {
+    const normalized = replaceModulePathPrefix(moduleId, root, replacement);
+    if (normalized) return normalized;
+    if (canonicalModuleId === undefined) {
+      canonicalModuleId = canResolveModulePath ? realpathSync(moduleId) : null;
     }
+    if (!canonicalModuleId || !existsSync(root)) continue;
+    const canonical = replaceModulePathPrefix(canonicalModuleId, realpathSync(root), replacement);
+    if (canonical) return canonical;
   }
   return moduleId;
 }

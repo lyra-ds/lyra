@@ -7,6 +7,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -71,6 +72,75 @@ test('normalizeModulePath only replaces complete path prefixes', () => {
     normalizeModulePath('/workspace/packages/react/src/index.ts', '/tmp/consumer', '/workspace'),
     '<repository>/packages/react/src/index.ts',
   );
+});
+
+test('normalizeModulePath resolves symlinked fixture and repository roots without rewriting outside IDs', () => {
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'lyra-normalize-module-path-'));
+  try {
+    const repositoryRoot = join(temporaryRoot, 'repository');
+    const fixtureRoot = join(repositoryRoot, 'consumer');
+    const repositoryAlias = join(temporaryRoot, 'repository-alias');
+    const fixtureAlias = join(repositoryAlias, 'consumer');
+    const directFixtureAlias = join(temporaryRoot, 'fixture-alias');
+    const nestedModule = join(
+      fixtureRoot,
+      'node_modules',
+      '@lyra-ds',
+      'react',
+      'dist',
+      'workspace-switcher.js',
+    );
+    const standaloneModule = join(fixtureRoot, 'standalone', 'react-02.ts');
+    const repositoryModule = join(repositoryRoot, 'packages', 'react', 'src', 'index.ts');
+    const similarlyPrefixedSibling = join(temporaryRoot, 'repository-sibling', 'index.ts');
+
+    for (const modulePath of [
+      nestedModule,
+      standaloneModule,
+      repositoryModule,
+      similarlyPrefixedSibling,
+    ]) {
+      mkdirSync(dirname(modulePath), { recursive: true });
+      writeFileSync(modulePath, 'export {};\n');
+    }
+    symlinkSync(repositoryRoot, repositoryAlias, 'dir');
+    symlinkSync(fixtureRoot, directFixtureAlias, 'dir');
+
+    assert.equal(
+      normalizeModulePath(nestedModule, fixtureAlias, repositoryAlias),
+      '<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js',
+    );
+    assert.equal(
+      normalizeModulePath(
+        join(fixtureAlias, 'standalone', 'react-02.ts'),
+        fixtureRoot,
+        repositoryRoot,
+      ),
+      '<fixture>/standalone/react-02.ts',
+    );
+    assert.equal(
+      normalizeModulePath(standaloneModule, directFixtureAlias, repositoryRoot),
+      '<fixture>/standalone/react-02.ts',
+    );
+    assert.equal(
+      normalizeModulePath(repositoryModule, fixtureAlias, repositoryAlias),
+      '<repository>/packages/react/src/index.ts',
+    );
+    assert.equal(
+      normalizeModulePath(similarlyPrefixedSibling, fixtureAlias, repositoryAlias),
+      similarlyPrefixedSibling,
+    );
+    assert.equal(
+      normalizeModulePath('virtual:lyra-module', fixtureAlias, repositoryAlias),
+      'virtual:lyra-module',
+    );
+    assert.equal(
+      normalizeModulePath(`${nestedModule}?used`, fixtureAlias, repositoryAlias),
+      `${nestedModule}?used`,
+    );
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true });
+  }
 });
 
 function baselineFixture() {
