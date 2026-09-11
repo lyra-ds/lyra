@@ -14,7 +14,40 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const REQUIRED_CHECKS = Object.freeze(['types', 'build', 'ssr', 'hydration', 'browser']);
+const REQUIRED_CHECKS = Object.freeze([
+  'types',
+  'build',
+  'ssr',
+  'hydration',
+  'browser',
+  'p1-ssr',
+  'p1-browser',
+]);
+
+const P1_COMPONENTS = Object.freeze([
+  'Dialog',
+  'Drawer',
+  'BottomSheet',
+  'Popover',
+  'Dropdown',
+  'Tooltip',
+  'CommandPalette',
+  'WorkspaceSwitcher',
+  'CreateWorkspaceDialog',
+  'Tabs',
+  'DataTable',
+]);
+
+const P1_EVIDENCE = Object.freeze({
+  'p1-ssr': Object.freeze({
+    file: 'p1-ssr-results.json',
+    prefix: 'P1SSR:',
+  }),
+  'p1-browser': Object.freeze({
+    file: 'p1-browser-results.json',
+    prefix: 'P1browser:',
+  }),
+});
 
 export const REACT_COMPATIBILITY_MATRIX = Object.freeze([
   Object.freeze({ directory: 'react18', react: '18.3.1', checks: REQUIRED_CHECKS }),
@@ -181,6 +214,9 @@ function createRuntime(repoRoot = defaultRepoRoot) {
       return findPackedArtifacts(packDirectory, repoRoot);
     },
     run: runCommand,
+    readFile(path) {
+      return readFileSync(path, 'utf8');
+    },
     remove(path) {
       rmSync(path, { recursive: true, force: true });
     },
@@ -207,9 +243,124 @@ const CHECK_COMMANDS = {
     '--browser.enabled',
     '--testNamePattern=emits a cancel intent',
   ],
+  'p1-ssr': ['exec', 'vitest', 'run', 'src/p1.ssr.test.tsx', '--environment=node'],
+  'p1-browser': ['exec', 'vitest', 'run', 'src/p1.browser.test.tsx', '--browser.enabled'],
 };
 
+function evidenceCommand(check) {
+  const evidence = P1_EVIDENCE[check];
+  if (!evidence) return CHECK_COMMANDS[check];
+  return [...CHECK_COMMANDS[check], '--reporter=json', `--outputFile=${evidence.file}`];
+}
+
+function validateCandidateChecks(checks) {
+  const seenChecks = new Set();
+  for (const check of checks) {
+    if (CHECK_COMMANDS[check] === undefined) {
+      throw new Error(`Unknown React compatibility check: ${check}`);
+    }
+    if (seenChecks.has(check)) {
+      throw new Error(`Duplicate React compatibility check: ${check}`);
+    }
+    seenChecks.add(check);
+  }
+  for (const requiredCheck of REQUIRED_CHECKS) {
+    if (!seenChecks.has(requiredCheck)) {
+      throw new Error(`Missing required React compatibility check: ${requiredCheck}`);
+    }
+  }
+}
+
+function assertionResults(report) {
+  if (!report || typeof report !== 'object' || !Array.isArray(report.testResults)) {
+    throw new Error('Vitest result report is missing testResults');
+  }
+  const results = [];
+  for (const testFile of report.testResults) {
+    if (!testFile || typeof testFile !== 'object' || !Array.isArray(testFile.assertionResults)) {
+      throw new Error('Vitest result report has a malformed test file result');
+    }
+    results.push(...testFile.assertionResults);
+  }
+  if (results.length === 0) throw new Error('Vitest result report has no assertion results');
+  return results;
+}
+
+export function verifyP1Evidence(check, reportText) {
+  const evidence = P1_EVIDENCE[check];
+  if (!evidence) throw new Error(`Unknown P1 evidence phase: ${check}`);
+
+  let report;
+  try {
+    report = JSON.parse(reportText);
+  } catch {
+    throw new Error(`Vitest ${check} result report is not valid JSON`);
+  }
+
+  const expectedTitles = new Set(
+    P1_COMPONENTS.map((component) => `${evidence.prefix} ${component}`),
+  );
+  const seenTitles = new Set();
+  for (const assertion of assertionResults(report)) {
+    if (!assertion || typeof assertion !== 'object' || typeof assertion.title !== 'string') {
+      throw new Error(`Vitest ${check} result report has a malformed assertion`);
+    }
+    if (!expectedTitles.has(assertion.title)) {
+      throw new Error(
+        `Vitest ${check} result report has unknown component evidence: ${assertion.title}`,
+      );
+    }
+    if (assertion.status !== 'passed') {
+      throw new Error(
+        `Vitest ${check} result report did not pass ${assertion.title}: ${String(assertion.status)}`,
+      );
+    }
+    if (seenTitles.has(assertion.title)) {
+      throw new Error(
+        `Vitest ${check} result report has duplicate component evidence: ${assertion.title}`,
+      );
+    }
+    seenTitles.add(assertion.title);
+  }
+
+  for (const expectedTitle of expectedTitles) {
+    if (!seenTitles.has(expectedTitle)) {
+      throw new Error(
+        `Vitest ${check} result report is missing component evidence: ${expectedTitle}`,
+      );
+    }
+  }
+  if (
+    report.success !== true ||
+    report.numTotalTests !== expectedTitles.size ||
+    report.numPassedTests !== expectedTitles.size ||
+    report.numFailedTests !== 0 ||
+    report.numPendingTests !== 0 ||
+    report.numTodoTests !== 0 ||
+    report.numFailedTestSuites !== 0 ||
+    report.numPendingTestSuites !== 0 ||
+    report.testResults.some((file) => file.status !== 'passed')
+  ) {
+    throw new Error(`Vitest ${check} result report is unsuccessful or inconsistent`);
+  }
+}
+
+function verifyP1EvidenceFile(candidateRoot, check, runtime) {
+  const evidence = P1_EVIDENCE[check];
+  if (!evidence) return;
+  let reportText;
+  try {
+    reportText = runtime.readFile(join(candidateRoot, evidence.file));
+  } catch (error) {
+    throw new Error(
+      `Vitest ${check} result report is missing: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  verifyP1Evidence(check, reportText);
+}
+
 function runCandidate(candidate, tarballs, runtime) {
+  validateCandidateChecks(candidate.checks);
   const candidateRoot = runtime.makeTemp(`lyra-react-compat-${candidate.directory}-`);
   let storeRoot;
   try {
@@ -225,9 +376,10 @@ function runCandidate(candidate, tarballs, runtime) {
     runtime.installPackedArtifacts(candidateRoot, tarballs);
 
     for (const check of candidate.checks) {
-      const args = CHECK_COMMANDS[check];
+      const args = evidenceCommand(check);
       if (args === undefined) throw new Error(`Unknown React compatibility check: ${check}`);
       runtime.run('pnpm', args, commandOptions);
+      verifyP1EvidenceFile(candidateRoot, check, runtime);
       console.log(`React ${candidate.react}: ${check} passed`);
     }
   } finally {
