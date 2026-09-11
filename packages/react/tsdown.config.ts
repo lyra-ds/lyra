@@ -103,6 +103,7 @@ const entries = {
 
 export default defineConfig(
   Object.entries(entries).map(([name, entry], index) => ({
+    name,
     entry: { [name]: entry },
     format: ['esm', 'cjs'],
     dts: true,

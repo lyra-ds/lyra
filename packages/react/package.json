@@ -785,7 +785,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsdown --concurrency 2 && node scripts/use-client.mjs",
+    "build": "node scripts/build.mjs",
     "test:browser": "vitest run --project browser --browser.name chromium && vitest run --project browser --browser.name firefox && vitest run --project browser --browser.name webkit",
     "test:ssr": "vitest run --project ssr",
     "test": "pnpm run test:ssr",
