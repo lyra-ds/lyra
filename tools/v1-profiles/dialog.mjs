@@ -20,7 +20,6 @@ import { installPackedArtifacts, runCommand } from '../react-compat/file-upload.
 const TOOL_DIRECTORY = dirname(fileURLToPath(import.meta.url));
 const REPOSITORY = resolve(TOOL_DIRECTORY, '..', '..');
 const REACT_19_FIXTURE = join(REPOSITORY, 'tools', 'react-compat', 'fixtures', 'react19');
-const FIXTURE_SOURCE = join(TOOL_DIRECTORY, 'fixtures', 'dialog.tsx');
 const PROFILES = Object.freeze([
   'axe-light',
   'axe-dark',
@@ -31,12 +30,32 @@ const PROFILES = Object.freeze([
 ]);
 const ENGINES = Object.freeze(['chromium', 'firefox', 'webkit']);
 const REQUIRE = createRequire(import.meta.url);
+const DIALOG_RUNNER = Object.freeze({
+  component: 'Dialog',
+  fixtureSource: join(TOOL_DIRECTORY, 'fixtures', 'dialog.tsx'),
+  fixtureName: 'dialog.tsx',
+  sourceFiles: [join(TOOL_DIRECTORY, 'dialog.mjs'), join(TOOL_DIRECTORY, 'fixtures', 'dialog.tsx')],
+  exportName: './dialog',
+  panelSelector: '.lyra-dialog',
+  overlaySelector: '.lyra-dialog-overlay',
+  closeSelector: '.lyra-dialog__close',
+  titleSelector: '.lyra-dialog__title',
+  bodySelector: '.lyra-dialog__body',
+  dialogName: 'Edit notification preferences',
+  descriptionId: 'dialog-description',
+  description: 'Choose how this workspace sends notifications.',
+  minimumCloseTarget: 44,
+  temporaryPrefix: 'lyra-dialog-profiles-',
+  reportScope:
+    'React19 packed Dialog six-profile browser-media emulation slice only; no OS high-contrast, hydration, coarse-pointer, other-components, historical-baseline, or release claims.',
+});
+let runner = DIALOG_RUNNER;
 
 function usage() {
   return [
-    'Usage: node tools/v1-profiles/dialog.mjs --react-tarball PATH --styles-tarball PATH --output PATH [--browser chromium|firefox|webkit]',
+    `Usage: node tools/v1-profiles/${runner.component.toLowerCase()}.mjs --react-tarball PATH --styles-tarball PATH --output PATH [--browser chromium|firefox|webkit]`,
     '',
-    'Runs the React 19 packed Dialog six-profile slice. The output path must not exist.',
+    `Runs the React 19 packed ${runner.component} six-profile slice. The output path must not exist.`,
   ].join('\n');
 }
 
@@ -74,10 +93,7 @@ function sha256(path) {
 
 function sourceFileHashes() {
   return Object.fromEntries(
-    [join(TOOL_DIRECTORY, 'dialog.mjs'), FIXTURE_SOURCE].map((path) => [
-      path.slice(REPOSITORY.length + 1),
-      sha256(path),
-    ]),
+    runner.sourceFiles.map((path) => [path.slice(REPOSITORY.length + 1), sha256(path)]),
   );
 }
 
@@ -99,11 +115,14 @@ function copyConsumerFixture(destination) {
     cpSync(join(REACT_19_FIXTURE, name), join(destination, name));
   }
   mkdirSync(join(destination, 'src'), { recursive: true });
-  cpSync(FIXTURE_SOURCE, join(destination, 'src', 'dialog.tsx'));
-  writeFileSync(join(destination, 'src', 'main.tsx'), "import './dialog';\n");
+  cpSync(runner.fixtureSource, join(destination, 'src', runner.fixtureName));
+  writeFileSync(
+    join(destination, 'src', 'main.tsx'),
+    `import './${runner.fixtureName.replace(/\.tsx$/, '')}';\n`,
+  );
   writeFileSync(
     join(destination, 'index.html'),
-    '<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Lyra packed Dialog profiles</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
+    `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Lyra packed ${runner.component} profiles</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`,
   );
 }
 
@@ -145,8 +164,8 @@ function prepareConsumer({ consumer, store, reactTarball, stylesTarball }) {
     'Installed packed Styles package identity is wrong',
   );
   assert(
-    Object.hasOwn(reactManifest.exports, './dialog'),
-    'Packed React artifact does not export ./dialog',
+    Object.hasOwn(reactManifest.exports, runner.exportName),
+    `Packed React artifact does not export ${runner.exportName}`,
   );
   assert(
     existsSync(join(consumer, 'node_modules', '@lyra-ds', 'styles', 'styles.css')),
@@ -251,43 +270,46 @@ async function stopPreview(child) {
   );
 }
 
-async function waitForDialogEntrance(page) {
-  return page.locator('.lyra-dialog-overlay').evaluate(async (overlay) => {
-    const panel = overlay.querySelector('.lyra-dialog');
-    const close = panel?.querySelector('.lyra-dialog__close');
-    if (!(panel instanceof HTMLElement) || !(close instanceof HTMLElement)) {
-      throw new Error('Dialog entrance did not expose its owned panel and close control');
-    }
-    const closeSize = () => {
-      const rect = close.getBoundingClientRect();
-      return { width: rect.width, height: rect.height };
-    };
-    const animations = [overlay, panel]
-      .flatMap((element) =>
-        element.getAnimations({ subtree: false }).map((animation) => ({ element, animation })),
-      )
-      .filter(({ animation }) => {
-        const timing = animation.effect?.getComputedTiming();
-        return Number.isFinite(timing?.activeDuration) && timing.activeDuration > 0;
-      });
-    const before = closeSize();
-    const observedAnimations = animations.map(({ element, animation }) => ({
-      target: element.className,
-      name: 'animationName' in animation ? animation.animationName : animation.id,
-      playState: animation.playState,
-      activeDuration: animation.effect?.getComputedTiming().activeDuration,
-    }));
-    await Promise.all(animations.map(({ animation }) => animation.finished));
-    return { animations: observedAnimations, close: { before, after: closeSize() } };
-  });
+async function waitForEntrance(page) {
+  return page.locator(runner.overlaySelector).evaluate(
+    async (overlay, selectors) => {
+      const panel = overlay.querySelector(selectors.panel);
+      const close = panel?.querySelector(selectors.close);
+      if (!(panel instanceof HTMLElement) || !(close instanceof HTMLElement)) {
+        throw new Error(
+          `${selectors.component} entrance did not expose its owned panel and close control`,
+        );
+      }
+      const closeSize = () => {
+        const rect = close.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      };
+      const animations = [overlay, panel]
+        .flatMap((element) =>
+          element.getAnimations({ subtree: false }).map((animation) => ({ element, animation })),
+        )
+        .filter(({ animation }) => {
+          const timing = animation.effect?.getComputedTiming();
+          return Number.isFinite(timing?.activeDuration) && timing.activeDuration > 0;
+        });
+      const before = closeSize();
+      const observedAnimations = animations.map(({ element, animation }) => ({
+        target: element.className,
+        name: 'animationName' in animation ? animation.animationName : animation.id,
+        playState: animation.playState,
+        activeDuration: animation.effect?.getComputedTiming().activeDuration,
+      }));
+      await Promise.all(animations.map(({ animation }) => animation.finished));
+      return { animations: observedAnimations, close: { before, after: closeSize() } };
+    },
+    { panel: runner.panelSelector, close: runner.closeSelector, component: runner.component },
+  );
 }
 
-async function openDialog(page, { waitForEntrance = true } = {}) {
+async function openModal(page, { awaitEntrance = true } = {}) {
   await page.getByRole('button', { name: 'Open preferences' }).click();
-  await page
-    .getByRole('dialog', { name: 'Edit notification preferences' })
-    .waitFor({ state: 'visible' });
-  return waitForEntrance ? waitForDialogEntrance(page) : undefined;
+  await page.getByRole('dialog', { name: runner.dialogName }).waitFor({ state: 'visible' });
+  return awaitEntrance ? waitForEntrance(page) : undefined;
 }
 
 async function expectClosedAndRestored(page) {
@@ -298,100 +320,130 @@ async function expectClosedAndRestored(page) {
 }
 
 async function pageMeasurements(page) {
-  return page.evaluate(() => {
-    const panel = document.querySelector('.lyra-dialog');
-    const overlay = document.querySelector('.lyra-dialog-overlay');
-    const close = document.querySelector('.lyra-dialog__close');
-    const title = document.querySelector('.lyra-dialog__title');
-    const body = document.querySelector('.lyra-dialog__body');
-    const disabled = document.querySelector('button:disabled');
-    const enabled = document.getElementById('send-test-notification');
-    if (!(
-      panel instanceof HTMLElement &&
-      overlay instanceof HTMLElement &&
-      close instanceof HTMLElement &&
-      title instanceof HTMLElement &&
-      body instanceof HTMLElement &&
-      disabled instanceof HTMLButtonElement &&
-      enabled instanceof HTMLButtonElement &&
-      !enabled.disabled
-    )) {
-      throw new Error('Dialog fixture did not render its required elements');
-    }
-    const panelStyle = getComputedStyle(panel);
-    const closeStyle = getComputedStyle(close);
-    const disabledStyle = getComputedStyle(disabled);
-    const enabledStyle = getComputedStyle(enabled);
-    const closeRect = close.getBoundingClientRect();
-    const titleRect = title.getBoundingClientRect();
-    return {
-      direction: panelStyle.direction,
-      panel: {
-        display: panelStyle.display,
-        borderStyle: panelStyle.borderStyle,
-        borderWidth: panelStyle.borderWidth,
-        borderColor: panelStyle.borderColor,
-        backgroundColor: panelStyle.backgroundColor,
-        color: panelStyle.color,
-        animationName: panelStyle.animationName,
-        animationDuration: panelStyle.animationDuration,
-      },
-      overlay: {
-        display: getComputedStyle(overlay).display,
-        animationName: getComputedStyle(overlay).animationName,
-        animationDuration: getComputedStyle(overlay).animationDuration,
-      },
-      close: {
-        width: closeRect.width,
-        height: closeRect.height,
-        focus: {
-          focusVisible: close.matches(':focus-visible'),
-          outlineStyle: closeStyle.outlineStyle,
-          outlineWidth: closeStyle.outlineWidth,
-          outlineColor: closeStyle.outlineColor,
-          outlineOffset: closeStyle.outlineOffset,
-          boxShadow: closeStyle.boxShadow,
-          backgroundColor: closeStyle.backgroundColor,
-          color: closeStyle.color,
-          borderColor: closeStyle.borderColor,
-          borderWidth: closeStyle.borderWidth,
+  return page.evaluate(
+    (selectors) => {
+      const panel = document.querySelector(selectors.panel);
+      const overlay = document.querySelector(selectors.overlay);
+      const close = document.querySelector(selectors.close);
+      const title = document.querySelector(selectors.title);
+      const body = document.querySelector(selectors.body);
+      const disabled = document.querySelector('button:disabled');
+      const enabled = document.getElementById('send-test-notification');
+      if (!(
+        panel instanceof HTMLElement &&
+        overlay instanceof HTMLElement &&
+        close instanceof HTMLElement &&
+        title instanceof HTMLElement &&
+        body instanceof HTMLElement &&
+        disabled instanceof HTMLButtonElement &&
+        enabled instanceof HTMLButtonElement &&
+        !enabled.disabled
+      )) {
+        throw new Error(`${selectors.component} fixture did not render its required elements`);
+      }
+      const panelStyle = getComputedStyle(panel);
+      const closeStyle = getComputedStyle(close);
+      const disabledStyle = getComputedStyle(disabled);
+      const enabledStyle = getComputedStyle(enabled);
+      const closeRect = close.getBoundingClientRect();
+      const titleRect = title.getBoundingClientRect();
+      return {
+        direction: panelStyle.direction,
+        panel: {
+          display: panelStyle.display,
+          borderStyle: panelStyle.borderStyle,
+          borderWidth: panelStyle.borderWidth,
+          borderColor: panelStyle.borderColor,
+          ...(selectors.measureInlineStartBoundary
+            ? {
+                inlineStartBoundary: {
+                  style: panelStyle.borderInlineStartStyle,
+                  width: panelStyle.borderInlineStartWidth,
+                  color: panelStyle.borderInlineStartColor,
+                },
+              }
+            : {}),
+          backgroundColor: panelStyle.backgroundColor,
+          color: panelStyle.color,
+          animationName: panelStyle.animationName,
+          animationDuration: panelStyle.animationDuration,
+          ...(selectors.measurePanelEdge
+            ? {
+                x: panel.getBoundingClientRect().x,
+                right: panel.getBoundingClientRect().right,
+              }
+            : {}),
         },
-        x: closeRect.x,
-      },
-      titleX: titleRect.x,
-      body: {
-        textAlign: getComputedStyle(body).textAlign,
-        color: getComputedStyle(body).color,
-        backgroundColor: getComputedStyle(body).backgroundColor,
-      },
-      disabled: {
-        disabled: disabled.disabled,
-        color: disabledStyle.color,
-        borderStyle: disabledStyle.borderStyle,
-        opacity: disabledStyle.opacity,
-      },
-      enabled: {
-        color: enabledStyle.color,
-        borderStyle: enabledStyle.borderStyle,
-        opacity: enabledStyle.opacity,
-      },
-      description: document.getElementById('dialog-description')?.textContent,
-    };
-  });
+        overlay: {
+          display: getComputedStyle(overlay).display,
+          animationName: getComputedStyle(overlay).animationName,
+          animationDuration: getComputedStyle(overlay).animationDuration,
+        },
+        close: {
+          width: closeRect.width,
+          height: closeRect.height,
+          focus: {
+            focusVisible: close.matches(':focus-visible'),
+            outlineStyle: closeStyle.outlineStyle,
+            outlineWidth: closeStyle.outlineWidth,
+            outlineColor: closeStyle.outlineColor,
+            outlineOffset: closeStyle.outlineOffset,
+            boxShadow: closeStyle.boxShadow,
+            backgroundColor: closeStyle.backgroundColor,
+            color: closeStyle.color,
+            borderColor: closeStyle.borderColor,
+            borderWidth: closeStyle.borderWidth,
+          },
+          x: closeRect.x,
+        },
+        titleX: titleRect.x,
+        ...(selectors.measurePanelEdge ? { viewportWidth: window.innerWidth } : {}),
+        body: {
+          textAlign: getComputedStyle(body).textAlign,
+          color: getComputedStyle(body).color,
+          backgroundColor: getComputedStyle(body).backgroundColor,
+        },
+        disabled: {
+          disabled: disabled.disabled,
+          color: disabledStyle.color,
+          borderStyle: disabledStyle.borderStyle,
+          opacity: disabledStyle.opacity,
+        },
+        enabled: {
+          color: enabledStyle.color,
+          borderStyle: enabledStyle.borderStyle,
+          opacity: enabledStyle.opacity,
+        },
+        description: document.getElementById(selectors.descriptionId)?.textContent,
+      };
+    },
+    {
+      panel: runner.panelSelector,
+      overlay: runner.overlaySelector,
+      close: runner.closeSelector,
+      title: runner.titleSelector,
+      body: runner.bodySelector,
+      descriptionId: runner.descriptionId,
+      component: runner.component,
+      measurePanelEdge: runner.assertPanelInlineEnd === true,
+      measureInlineStartBoundary: runner.assertPanelInlineStartBoundary === true,
+    },
+  );
 }
 
-function assertOpenDialog(measurements) {
+function assertOpenModal(measurements) {
   assert(
     measurements.panel.display !== 'none' && measurements.overlay.display !== 'none',
-    'Dialog panel or overlay is not visible',
+    `${runner.component} panel or overlay is not visible`,
   );
   assert(
-    parseFloat(measurements.close.width) >= 44 && parseFloat(measurements.close.height) >= 44,
-    'Close target is smaller than 44 by 44 CSS pixels',
+    parseFloat(measurements.close.width) >= runner.minimumCloseTarget &&
+      parseFloat(measurements.close.height) >= runner.minimumCloseTarget,
+    `Close target is smaller than ${runner.minimumCloseTarget} by ${runner.minimumCloseTarget} CSS pixels`,
   );
   assert(
-    measurements.description === 'Choose how this workspace sends notifications.',
-    'Dialog descriptive content is missing',
+    measurements.description === runner.description,
+    `${runner.component} descriptive content is missing`,
   );
 }
 
@@ -412,7 +464,30 @@ function assertForcedColorsSurface(measurements) {
   );
   assert(
     measurements.body.color !== measurements.panel.backgroundColor,
-    'Forced-colors dialog content is not perceivable against the panel background',
+    `Forced-colors ${runner.component.toLowerCase()} content is not perceivable against the panel background`,
+  );
+  assert(
+    measurements.disabled.disabled &&
+      measurements.disabled.opacity !== '0' &&
+      (measurements.disabled.color !== measurements.enabled.color ||
+        measurements.disabled.opacity !== measurements.enabled.opacity ||
+        measurements.disabled.borderStyle !== measurements.enabled.borderStyle),
+    'Forced-colors disabled control is not distinguishable from the comparable enabled control',
+  );
+}
+
+function assertForcedColorsInlineStartBoundary(measurements) {
+  const boundary = measurements.panel.inlineStartBoundary;
+  assert(
+    boundary &&
+      boundary.style !== 'none' &&
+      parseFloat(boundary.width) > 0 &&
+      boundary.color !== measurements.panel.backgroundColor,
+    'Forced-colors panel inline-start boundary is not perceivable against its background',
+  );
+  assert(
+    measurements.body.color !== measurements.panel.backgroundColor,
+    `Forced-colors ${runner.component.toLowerCase()} content is not perceivable against the panel background`,
   );
   assert(
     measurements.disabled.disabled &&
@@ -448,9 +523,10 @@ function hasVisibleFocusIndicator(unfocused, focused, panelBackground) {
 
 async function assertNativeCloseFocus(page, observation) {
   await page.waitForFunction(
-    () =>
+    (closeSelector) =>
       document.activeElement instanceof HTMLElement &&
-      document.activeElement.matches('.lyra-dialog__close'),
+      document.activeElement.matches(closeSelector),
+    runner.closeSelector,
   );
   await page.keyboard.press('Shift+Tab');
   await page.getByRole('button', { name: 'Save changes' }).evaluate((element) => {
@@ -479,16 +555,17 @@ async function assertNativeCloseFocus(page, observation) {
   );
 }
 
-async function assertKeyboardDialog(page) {
+async function assertKeyboardModal(page) {
   await page.waitForFunction(
-    () =>
+    (closeSelector) =>
       document.activeElement instanceof HTMLElement &&
-      document.activeElement.matches('.lyra-dialog__close'),
+      document.activeElement.matches(closeSelector),
+    runner.closeSelector,
   );
-  await page.getByRole('button', { name: 'Close' }).evaluate((element) => {
+  await page.getByRole('button', { name: 'Close' }).evaluate((element, component) => {
     if (document.activeElement !== element)
-      throw new Error('Dialog did not place initial focus on the close button');
-  });
+      throw new Error(`${component} did not place initial focus on the close button`);
+  }, runner.component);
   await page.keyboard.press('Tab');
   await page.getByLabel('Notification email').evaluate((element) => {
     if (document.activeElement !== element)
@@ -532,7 +609,7 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
       document.documentElement.toggleAttribute('data-theme', activeTheme === 'dark');
       if (activeTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
     }, theme);
-    observation.entrance = await openDialog(page);
+    observation.entrance = await openModal(page);
     observation.measurements = await pageMeasurements(page);
     await page.evaluate(
       (otherTheme) => {
@@ -550,9 +627,9 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
       observation.measurements.panel.backgroundColor !==
         observation.oppositeTheme.panel.backgroundColor &&
         observation.measurements.body.color !== observation.oppositeTheme.body.color,
-      `${theme} theme did not change the actual Dialog surface and content colors`,
+      `${theme} theme did not change the actual ${runner.component} surface and content colors`,
     );
-    assertOpenDialog(observation.measurements);
+    assertOpenModal(observation.measurements);
     await page.screenshot({ path: screenshotPath, fullPage: true });
     assert(
       (await page.locator('html').getAttribute('data-theme')) ===
@@ -581,10 +658,12 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
       observation.unavailable = 'This browser does not expose forced-colors: active.';
       return observation;
     }
-    observation.entrance = await openDialog(page);
+    observation.entrance = await openModal(page);
     observation.measurements = await pageMeasurements(page);
-    assertOpenDialog(observation.measurements);
-    assertForcedColorsSurface(observation.measurements);
+    assertOpenModal(observation.measurements);
+    if (runner.assertPanelInlineStartBoundary)
+      assertForcedColorsInlineStartBoundary(observation.measurements);
+    else assertForcedColorsSurface(observation.measurements);
     await page.screenshot({ path: screenshotPath, fullPage: true });
     await assertNativeCloseFocus(page, observation);
     await page.keyboard.press('Escape');
@@ -606,9 +685,9 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
       overflow: document.body.style.overflow,
       rootInert: document.getElementById('root')?.inert ?? false,
     }));
-    await openDialog(page, { waitForEntrance: false });
+    await openModal(page, { awaitEntrance: false });
     observation.measurements = await pageMeasurements(page);
-    assertOpenDialog(observation.measurements);
+    assertOpenModal(observation.measurements);
     assert(
       observation.measurements.panel.animationName === 'none' &&
         observation.measurements.overlay.animationName === 'none',
@@ -621,7 +700,7 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
     }));
     assert(
       observation.bodyDuring.overflow === 'hidden' && observation.bodyDuring.rootInert,
-      'Open Dialog did not lock scroll and inert the background',
+      `Open ${runner.component} did not lock scroll and inert the background`,
     );
     await page.keyboard.press('Escape');
     await expectClosedAndRestored(page);
@@ -642,17 +721,17 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
   await page.evaluate((activeDirection) => {
     document.documentElement.dir = activeDirection;
   }, direction);
-  observation.entrance = await openDialog(page);
-  await assertKeyboardDialog(page);
+  observation.entrance = await openModal(page);
+  await assertKeyboardModal(page);
   observation.measurements = await pageMeasurements(page);
-  assertOpenDialog(observation.measurements);
+  assertOpenModal(observation.measurements);
   assert(
     observation.measurements.direction === direction,
-    `${direction} did not reach the portalled Dialog`,
+    `${direction} did not reach the portalled ${runner.component}`,
   );
   assert(
     observation.measurements.body.textAlign === 'start',
-    `${direction} dialog content is not logically aligned`,
+    `${direction} ${runner.component.toLowerCase()} content is not logically aligned`,
   );
   if (direction === 'ltr')
     assert(
@@ -664,6 +743,15 @@ async function executeProfile(page, profile, screenshotPath, observation, failur
       observation.measurements.close.x < observation.measurements.titleX,
       'RTL close control is not at logical end',
     );
+  if (runner.assertPanelInlineEnd) {
+    assert(
+      direction === 'ltr'
+        ? Math.abs(observation.measurements.panel.right - observation.measurements.viewportWidth) <
+            1
+        : Math.abs(observation.measurements.panel.x) < 1,
+      `${direction} ${runner.component.toLowerCase()} panel is not anchored to logical inline-end`,
+    );
+  }
   await page.screenshot({ path: screenshotPath, fullPage: true });
   await page.keyboard.press('Escape');
   await expectClosedAndRestored(page);
@@ -762,8 +850,13 @@ async function cleanupOwnedResources({ browser, preview, temporaryRoot }) {
   return outcomes;
 }
 
-async function main() {
-  const options = parseArguments(process.argv.slice(2));
+export async function runModalProfiles(
+  nextRunner,
+  argumentsList = process.argv.slice(2),
+  commandLine = process.argv,
+) {
+  runner = Object.freeze({ ...DIALOG_RUNNER, ...nextRunner });
+  const options = parseArguments(argumentsList);
   if (options.help) {
     console.log(usage());
     return;
@@ -772,15 +865,14 @@ async function main() {
   const reactTarball = validatePackedPackage(options.reactTarball, '@lyra-ds/react');
   const stylesTarball = validatePackedPackage(options.stylesTarball, '@lyra-ds/styles');
   mkdirSync(options.output, { recursive: false });
-  const temporaryRoot = mkdtempSync(join(tmpdir(), 'lyra-dialog-profiles-'));
+  const temporaryRoot = mkdtempSync(join(tmpdir(), runner.temporaryPrefix));
   let preview;
   let browser;
   const report = {
     schemaVersion: 1,
-    scope:
-      'React19 packed Dialog six-profile browser-media emulation slice only; no OS high-contrast, hydration, coarse-pointer, other-components, historical-baseline, or release claims.',
+    scope: runner.reportScope,
     revision: commandOutput('git', ['rev-parse', 'HEAD']),
-    command: process.argv.map((value) => JSON.stringify(value)).join(' '),
+    command: commandLine.map((value) => JSON.stringify(value)).join(' '),
     sourceFiles: sourceFileHashes(),
     inputTarballs: {
       react: {
@@ -871,7 +963,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.stack : String(error));
-  process.exitCode = 1;
-});
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  runModalProfiles(DIALOG_RUNNER).catch((error) => {
+    console.error(error instanceof Error ? error.stack : String(error));
+    process.exitCode = 1;
+  });
+}

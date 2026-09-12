@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Resumed — 2026-09-12
+
+Maintainer confirmed the resume summary. Continue in the stabilization checkout at f92c689; next bounded cycle is packed Drawer P1 media/theme/direction profiles, then BottomSheet. The three composition growth exceptions remain approved; no repeated numerical approval. Remaining touch, final Linux/artifact/CI, ledger and baseline/runtime qualification stay open. Historical pause notes below are superseded.
+
 ## Paused — 2026-09-12
 
 Maintainer approved the exact one-time composition growth exceptions: overlays +6118 B (11030 B total), application-shell +4310 B (16954 B total), scheduling +4490 B (24084 B total), all Brotli JavaScript. See `.batuta/specs/2026-09-12-v1-composition-budget-decision.md` in the active checkout. Future 1500/3000 B ceilings remain; no 5% composition allowance, baseline-pointer acceptance or release qualification is implied.
@@ -664,3 +668,5 @@ remote or publication action is authorized.
 - Packed Dialog media-profile producer: Terra/high455.96s +retry416.53s → critical controller; actual18cases16PASS+2real forced-colorsCSS failures, nofalseGREEN; GLM92.66s+16.18s review/3.61sformat correction, verifierPASS. Reusable CLI and negativecleanup/entrance proofs complete; separateCSS fix next. Evidence .batuta/v1-dialog-profiles-verification.md.
 
 - Dialog forced-colors focus: GLM/low79.45s +retry170.81s; native CSS6/6 and unchanged ab3b9cf packed runner18/18 PASS after targeted CSS fix (old16/18). Independent Codex/Terra medium45.89s,3DONE/no findings, verifierPASS. Evidence .batuta/v1-dialog-forced-colors-verification.md; no full V1 claim.
+
+- Packed Drawer profiles completed locally: Terra/high +one retry, no escalation; Dialog18/18PASS, Drawer16/18PASS with2actual forced-colors focus failures, reduced-motion artifact negative and real startup-exit19 proof PASS; GLM3DONE/unchangedguard/verifierPASS. See .batuta/v1-drawer-profiles-verification.md. CSS repair next; no V1 qualification.
