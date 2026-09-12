@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Current checkpoint — 2026-09-12
+
+Packed Drawer runner8000590 and the verified one-selector Drawer forced-colors repair complete the bounded host Drawer profile slice: Drawer18/18 and Dialog18/18 packed profiles, existing Dialog source6/6, stylelint/parity PASS. Next is BottomSheet profiles, followed by the remaining qualification work already listed below. Three composition exceptions remain approved. No V1 release qualification or external action. See .batuta/v1-drawer-forced-colors-verification.md. This supersedes earlier Drawer-next notes.
+
 ## Resumed — 2026-09-12
 
 Maintainer confirmed the resume summary. Continue in the stabilization checkout at f92c689; next bounded cycle is packed Drawer P1 media/theme/direction profiles, then BottomSheet. The three composition growth exceptions remain approved; no repeated numerical approval. Remaining touch, final Linux/artifact/CI, ledger and baseline/runtime qualification stay open. Historical pause notes below are superseded.
@@ -669,4 +673,6 @@ remote or publication action is authorized.
 
 - Dialog forced-colors focus: GLM/low79.45s +retry170.81s; native CSS6/6 and unchanged ab3b9cf packed runner18/18 PASS after targeted CSS fix (old16/18). Independent Codex/Terra medium45.89s,3DONE/no findings, verifierPASS. Evidence .batuta/v1-dialog-forced-colors-verification.md; no full V1 claim.
 
-- Packed Drawer profiles completed locally: Terra/high +one retry, no escalation; Dialog18/18PASS, Drawer16/18PASS with2actual forced-colors focus failures, reduced-motion artifact negative and real startup-exit19 proof PASS; GLM3DONE/unchangedguard/verifierPASS. See .batuta/v1-drawer-profiles-verification.md. CSS repair next; no V1 qualification.
+- Packed Drawer profiles committed8000590: Terra/high +one retry, no escalation; Dialog18/18PASS, Drawer16/18PASS with2actual forced-colors focus failures, reduced-motion artifact negative and real startup-exit19 proof PASS; GLM3DONE/unchangedguard/verifierPASS. See .batuta/v1-drawer-profiles-verification.md. CSS repair next; no V1 qualification.
+
+- Drawer forced-colors repair verified: GLM5.3Flash/low52.61s, no retry/escalation; oneCSSselector, original16/18→18/18Drawer, Dialog18/18+source6/6PASS, archive/scope/cleanup/stylelint/parity checksPASS. Commit recorded in the run trail; next BottomSheet profiles.

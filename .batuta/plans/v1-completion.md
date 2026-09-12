@@ -243,3 +243,5 @@ Task39 P1packedcompat slice completed: all11components eachReact18/19 have named
 - Dialog profile follow-up: new packedReact19 producer verifies6media/theme/directioncases perengine.18executed;16PASS and2real Chromium/FirefoxforcedcolorsfocusFAIL exposed. Toolreviewed; owningCSSfix pending. Othercomponents/coarsepointer/ledger/baseline stillpending.
 
 - Dialog forced-colors defect resolved: source6/6 + packedhost18/18 PASS, with oldStyles2focusfailures retained. Profileproducer ab3b9cf unchanged; CSSonly. OtherP1/coarsepointer/finalLinux/baseline/ledger gates remain pending.
+
+- Drawer profiles and forced-colors repair completed locally2026-09-12: runner8000590, Drawer18/18/Dialog18/18 packedhost+sourceDialog6/6PASS, singleCSSselector repair after actualold2focusfailures. See .batuta/v1-drawer-forced-colors-verification.md. Next BottomSheet profiles; finalLinux/artifacts/ledger/baseline/runtime remainopen.
