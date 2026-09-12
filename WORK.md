@@ -1,5 +1,13 @@
 # Current work — V1 incumbent stabilization
 
+## Paused — 2026-09-12
+
+Maintainer approved the exact one-time composition growth exceptions: overlays +6118 B (11030 B total), application-shell +4310 B (16954 B total), scheduling +4490 B (24084 B total), all Brotli JavaScript. See `.batuta/specs/2026-09-12-v1-composition-budget-decision.md` in the active checkout. Future 1500/3000 B ceilings remain; no 5% composition allowance, baseline-pointer acceptance or release qualification is implied.
+
+Active checkout: `../lyra-v1-stabilization`, branch `feat/v1-incumbent-stabilization`; latest product commit `7ba835cf7adf72e2638a5c4985e4c5f98abcd7d3`, following Dialog profile producer `ab3b9cf`. Dialog source 6/6 and packed media profiles 18/18 PASS; fresh collector 72/72 standalone caps PASS and shared CSS +22 Brotli bytes. Historical baseline check still FAIL; V1 remains incomplete. Next: remaining P1 profiles (Drawer/BottomSheet onward), touch/coarse pointer, exact final Linux/artifact/CI binding, 253-cell ledger/migrations/compatibility, remaining deltas and separate immutable core baseline/runtime-family acceptance. Blade remains deferred.
+
+Paused at the maintainer's request after recording approval; no implementation or verification is running in the active checkout. Process cwd inventory found existing controller services and composed-wave processes, preserved without stopping them. All four worktrees are retained: main (`main`), anchored-wave (`feat/v1-overlay-anchored-wave`), composed-wave (`feat/v1-overlay-composed-wave`), stabilization (`feat/v1-incumbent-stabilization`). MAIN remains controller-only with pre-existing managed dirt; no MAIN commit. Resume from `.batuta/handoff.md` and MAIN `.batuta/runs/v1-focus-closure/resume-point.md`. This section supersedes older next-step/status entries below.
+
 ## Current priority — 2026-09-10
 
 The maintainer requires Lyra core/Styles/React and Alpine V1 closure before any
