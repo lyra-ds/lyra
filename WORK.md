@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## BottomSheet forced-colors repair complete — 2026-09-13
+
+Maintainer-approved one-selector CSS repair verified: OpenCode/GLM-5.3-Flash low, no retry/escalation. BottomSheet18/18, Dialog18/18, Drawer18/18 on fresh Styles pack; native focus now solid2px CanvasText outline. Controller full pnpm test PASS168.02s, stylelint/parity PASS, exact scope/sourcehash/cleanup checks PASS. See `.batuta/reviews/v1-product-review/react-bottom-sheet-focus.md`; raw evidence MAIN `.batuta/runs/v1-bottom-sheet-focus-20260913/`. No other backlog task executed; full V1, remaining profiles and external platform evidence remain pending.
+
 ## BottomSheet P1 review complete — 2026-09-13
 
 Codex/Terra high implemented the scoped producer/fixture and minimal shared-runner extension; one formatting/report retry, no escalation. Controller native packed profiles: BottomSheet16/18, Chromium/Firefox forced-colors close-focus FAIL; Dialog18/18, Drawer18/18. Negative fixture control detected wrong Save output and restored bytes. Full pnpm test PASS163.56s, final formatting/syntax/source-hash/cleanup checks PASS, GLM4/4DONE. Product/style code unchanged. The approved one-task review is complete and stopped; the narrow forced-colors CSS repair in the focused report remains proposed. No V1 qualification or other backlog execution. Raw evidence: MAIN `.batuta/runs/v1-bottom-sheet-20260913/`.

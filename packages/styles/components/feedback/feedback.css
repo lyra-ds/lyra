@@ -620,7 +620,8 @@
    forced-color-adjust. */
 @media (forced-colors: active) {
   .lyra-dialog__close:focus-visible,
-  .lyra-drawer__close:focus-visible {
+  .lyra-drawer__close:focus-visible,
+  .lyra-bottomsheet__close:focus-visible {
     outline: 2px solid CanvasText;
     outline-offset: 2px;
   }
