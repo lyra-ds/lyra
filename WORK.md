@@ -1,5 +1,10 @@
 # Current work — V1 incumbent stabilization
 
+## V1 review loop approved — 2026-09-13
+
+Maintainer approved .batuta/plans/v1-loop-review.md and its execution contract and authorized proceeding with the loop. Preparing the mandatory clean-checkout/toolchain/global-test preflight; no delivery is launched until it passes. Existing resource, dependency, release and Blade boundaries remain unchanged.
+
+
 ## Current checkpoint — 2026-09-12
 
 Packed Drawer runner8000590 and the verified one-selector Drawer forced-colors repair complete the bounded host Drawer profile slice: Drawer18/18 and Dialog18/18 packed profiles, existing Dialog source6/6, stylelint/parity PASS. Next is BottomSheet profiles, followed by the remaining qualification work already listed below. Three composition exceptions remain approved. No V1 release qualification or external action. See .batuta/v1-drawer-forced-colors-verification.md. This supersedes earlier Drawer-next notes.
