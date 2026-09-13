@@ -74,7 +74,7 @@ async function runRejectedPnpm(args) {
   assert.fail(`pnpm ${args.join(' ')} unexpectedly succeeded`);
 }
 
-test('wires core and modal commands without putting the live diagnostic in ordinary tests', async () => {
+test('keeps suspended evaluation commands explicit and the manifest prohibition in ordinary tests', async () => {
   const rootPackage = JSON.parse(await readFile(resolve(repositoryRoot, 'package.json'), 'utf8'));
   assert.equal(
     rootPackage.scripts['overlay:evaluate:core:test'],
@@ -91,7 +91,14 @@ test('wires core and modal commands without putting the live diagnostic in ordin
   for (const [name, command] of Object.entries({ ...modalScripts, ...wave2Scripts })) {
     assert.equal(rootPackage.scripts[name], command);
   }
-  assert.match(rootPackage.scripts.test, /pnpm overlay:evaluate:core:test/u);
+  assert.ok(
+    rootPackage.scripts.test
+      .split(' && ')
+      .includes(
+        'node --test --test-name-pattern="^keeps experimental foundations out of workspace manifests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs',
+      ),
+  );
+  assert.doesNotMatch(rootPackage.scripts.test, /pnpm overlay:evaluate:core:test/u);
   assert.doesNotMatch(
     rootPackage.scripts.test,
     /pnpm overlay:evaluate:(?:modal|wave2)(?::auto)?(?:\s|$)/u,

@@ -31,3 +31,43 @@ Unknown: the evidence does not establish a common cause for all 161 failures, th
 - `rg` located root scripts, workspace `test`/`pretest` scripts, CI consumers, policy subtests, and threat-model references.
 - `find tools/overlay-foundation-evaluation -maxdepth 2 -type f -name '*.test.mjs' -print | sort` enumerated the glob-reachable evaluation files.
 - `git status --short` was read before writing; no pre-existing changes were reported.
+
+## Task 2 implementation evidence
+
+The root `pnpm test` chain now keeps `pnpm security:check` first, then runs only
+the active manifest prohibition with the native Windows-compatible command
+`node --test --test-name-pattern="^keeps experimental foundations out of workspace manifests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs`.
+The broad `overlay:evaluate:core:test` command remains defined as an explicit
+suspended experiment command, together with the modal and Wave 2 commands.
+The normal chain still builds React and Alpine before the existing tool-test
+group and retains serial workspace tests (`--workspace-concurrency=1`).
+
+Focused passing evidence on macOS, Node 24.18.0 and pnpm 11.13.1:
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `node --test tools/phase1/browser-config.test.mjs` | 0 | 8 pass, including the security → manifest prohibition → build order and separate browser/serial workspace contract. |
+| `node --test --test-name-pattern="^keeps experimental foundations out of workspace manifests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs` | 0 | 1 pass: the retained active manifest prohibition. |
+| `node --test --test-name-pattern="^keeps suspended evaluation commands explicit and the manifest prohibition in ordinary tests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs` | 0 | 1 pass: explicit experiment commands remain intact while root omits core evaluation. |
+| `node --test --test-name-pattern="^documents the cumulative local diagnostic boundary$" tools/overlay-foundation-evaluation/repository-policy.test.mjs` | 0 | 1 pass: the updated README retains required diagnostic-boundary documentation. |
+
+Disposable command-chain failure probe (no source files were edited):
+
+```sh
+node -e "process.exit(23)" && node -e "process.exit(0)"
+```
+
+The command exited 23; the succeeding child did not run. This separately proves
+native double-quoted child arguments preserve a failing child’s nonzero exit in
+the `&&` chain.
+
+Limitation: `pnpm test` was intentionally not run here. Full default-gate
+verification remains controller-owned after its frozen installation; no global
+PASS is claimed by this task. Suspended experiment diagnostics, Docker, and
+Colima were not run.
+
+## Task 2 controller verification
+
+Full `pnpm test` exited 0 in 149.03 seconds on macOS with pinned Node24.18.0/pnpm11.13.1 after frozen installation in the owned task checkout. Working tree remained clean. Controller also reran browser-config (8 pass), explicit-command and README-boundary contracts (2 pass), and scoped Prettier (pass). A disposable package using the actual root command chain with its first child deliberately replaced by exit23 propagated exit23 through `pnpm test`; temporary root removed. Raw logs and command results: MAIN `.batuta/runs/test-simplification-execution/task2-controller-test.log`, `task2-controller-test.json`, `task2-chain-probe.json`.
+
+Independent OpenCode/GLM review found no blocking source issue. Initial round could not read paths and is invalid; inline-evidence retry completed read-only. Its pending full-gate observation is now satisfied by the controller run. Its task3-not-started observation concerns the next plan task, not this change. Its generic-probe limitation was addressed by the actual pnpm-chain probe above; a passing suite alone would not prove failure propagation. No Linux/Windows or V1 qualification claim.

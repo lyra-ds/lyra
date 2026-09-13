@@ -8,7 +8,7 @@
 - [x] 1. Identify necessary tests and suspended experiment coupling — testing/medium
       Scope: .batuta/reviews/test-simplification.md
       Accept: Each suite reachable from root pnpm test maps to an active requirement and caller or an explicit suspended experiment, with source references; Proposed exclusions identify surviving coverage and active consumers, including dynamic scripts and CI calls; Record existing failure evidence and distinguish demonstrated causes from hypotheses without rerunning the entire suite for inventory
-- [ ] 2. Decouple suspended evaluation from the contributor gate — testing/medium
+- [x] 2. Decouple suspended evaluation from the contributor gate — testing/medium
       Depends on: 1
       Scope: package.json, tools/phase1/browser-config.test.mjs, tools/overlay-foundation-evaluation/repository-policy.test.mjs, tools/overlay-foundation-evaluation/README.md, .batuta/reviews/test-simplification.md
       Accept: Only exclusions justified by task 1 leave the ordinary gate and no active product/security obligation loses coverage; Existing explicit experiment commands and historical sources/evidence remain intact; A disposable test-chain failure probe records an actual nonzero exit without leaving source changes, independently of the passing run; Updated ordering and policy assertions preserve security-before-build and active requirements, and the real native gate succeeds → pnpm test; Diff contains no blanket OS skips, security fallback, new dependencies or lock changes

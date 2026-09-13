@@ -1,5 +1,7 @@
 # Current work — V1 incumbent stabilization
 
+Task 2 verified: Codex/Terra medium, no implementation retry/escalation; GLM independent review required one path-access retry. Native macOS full pnpm test PASS (149.03s), controller failure propagation exit23, scoped format/contracts PASS, clean tree. Suspended suite separated; active manifest prohibition retained. Proceed to native contribution docs/workflow.
+
 Task 1 inventory verified: Codex/gpt-5.6-terra, medium, no retry/escalation. Controller confirmed 35 glob-reachable evaluation files, four recursive workspace test owners and direct policy/order coupling. Documentation-only acceptance; known global gate failure was not rerun or called passing. Preserve the active experimental-dependency prohibition as a minimal explicit entry; proceed to task 2.
 
 ## Test simplification approved — 2026-09-13

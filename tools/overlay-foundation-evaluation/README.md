@@ -15,7 +15,10 @@ characterizes the incumbent Lyra packages. The modal wave runs a local
 diagnostic for `OF-MODAL`. Wave 2 adds `OF-ANCHORED`, `OF-MENU`, and
 `OF-TOOLTIP`; neither wave selects a foundation.
 
-`pnpm overlay:evaluate:core:test` runs the core protocol tests.
+`pnpm overlay:evaluate:core:test` runs the core protocol tests as an explicit
+suspended experiment command. Ordinary `pnpm test` runs only the active
+experimental-foundation manifest prohibition through
+`node --test --test-name-pattern="^keeps experimental foundations out of workspace manifests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs`.
 `pnpm overlay:evaluate:check --manifest <path>` validates an explicit
 prospective manifest without network access or installation.
 `pnpm overlay:evaluate:incumbent --output <path>` builds and characterizes
