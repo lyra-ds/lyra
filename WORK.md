@@ -1,6 +1,10 @@
 # Current work — V1 incumbent stabilization
 
-Task3 verified: Codex/Terra medium, one doc retry, no escalation; GLM3/3DONE. Native macOS pnpm build PASS50.22s and complete browser matrix PASS595.43s (Styles91+React818+Alpine319 per engine,3684 total). actionlint/format/YAML/pins and28 existing CI/browser contracts PASS. Linux/Windows unrun. Proceed only to task4 replacement proposal.
+## Test simplification complete — 2026-09-13
+
+All4 approved tasks verified and committed on `review/v1-completion-loop`. Native macOS full pnpm test, build and3684 browser cases PASS without Docker. Separate native contributor workflow added, Linux/Windows unrun. Old38 loop and Linux bridge suspended. Next proposal `.batuta/plans/v1-product-review.md` contains one BottomSheet P1 task plus preserved38-obligation mapping; it is not approved or executed. No V1 qualification, release or remote action. See `.batuta/reviews/test-simplification.md` and MAIN `.batuta/runs/test-simplification-execution/` for actual evidence and routing.
+
+Task4 documentation complete: old38 plan/contract suspended and operator commands explicitly disabled; `.batuta/plans/v1-product-review.md` is proposed only, maps all38 obligations, and permits no execution without separate approval. It offers one bounded React BottomSheet P1 slice—first implement its missing producer/fixture by reusing Dialog, then run it—and stops; no audit infrastructure or container prerequisite. macOS evidence remains test0/149.03s, build0/50.22s, browsers0/595.43s/3684 cases only and does not qualify all V1 artifacts or platforms. Linux/Windows, remote workflow, and V1 artifact/platform qualification remain pending; preserve conditional Dialog/Drawer18/18 and React18/19 evidence, Blade/manual-touch requirements, immutable baselines, composition exceptions, future ceilings, and old37's pending11P1×23 acceptance coverage in existing acceptance records/focused reports without a registry, validator, or canonical-ledger promotion.
 
 Task 2 verified: Codex/Terra medium, no implementation retry/escalation; GLM independent review required one path-access retry. Native macOS full pnpm test PASS (149.03s), controller failure propagation exit23, scoped format/contracts PASS, clean tree. Suspended suite separated; active manifest prohibition retained. Proceed to native contribution docs/workflow.
 

@@ -1,6 +1,8 @@
-# Execution contract — approved V1 review loop
+# Historical execution contract — suspended V1 review loop
 
-This is the companion to `.batuta/plans/v1-loop-review.md`, proposed on 2026-09-12 and approved by the maintainer on 2026-09-13 with permission to proceed with the loop after its mandatory preflight. Existing release, resource and dependency boundaries remain unchanged. All project documents are in English; conversation may remain in Portuguese.
+This was the companion to `.batuta/plans/v1-loop-review.md`, proposed on 2026-09-12 and historically approved on 2026-09-13. It is superseded and suspended by the approved test-simplification plan; do not use it to launch, preflight, or resume the old 38-task loop or a container prerequisite. Its history and boundaries remain preserved here. `.batuta/plans/v1-product-review.md` is a replacement proposal only, not an approval or execution contract.
+
+The recorded macOS native runs do not qualify all V1 artifacts or any other platform. Preserve old task 37's 11 P1 × 23 coverage obligation in existing acceptance records and focused reports until checked; do not recreate the disabled ledger, registry, validator, or canonical promotion.
 
 ## Outcome and limits
 
@@ -66,9 +68,9 @@ A reproducible product defect produces its actual trigger, expected/observed beh
 
 No push, PR creation, merge, versioning, publication or remote workflow dispatch. Read-only inspection of an available CI record may document status but cannot qualify an unpublished local HEAD. No Blade producer migration or compatibility claim. The final proposal names exact remaining external actions separately from local technical findings.
 
-## Operator commands after approval and successful preflight
+## Historical operator commands — disabled
 
-Run from the clean chosen stabilization/review checkout with the pinned toolchain and evidence-root environment already set. These are future commands, not actions performed while writing this proposal:
+Do not run these commands. They are retained only as historical source text; neither this contract nor the former plan has execution authority.
 
 ```sh
 batuta loop --dry-run --parallel 1 --skills /Volumes/Home/francisross/.codex/plugins/cache/batuta/batuta/0.6.2/skills/batuta .batuta/plans/v1-loop-review.md

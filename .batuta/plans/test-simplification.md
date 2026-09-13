@@ -2,7 +2,7 @@
 <!-- inputs: profile.md@sha256:bd14c147316c routing.md@sha256:99f96b92331f -->
 
 **Goal:** Remove unjustified infrastructure from the normal contribution path while preserving useful product and security regression coverage. Prepare a native Linux, macOS and Windows contribution path without Docker or WSL prerequisites, prove it on available hosts and keep unexecuted platforms explicitly unverified. Simplify the suspended 38-task review before implementing any new audit framework.
-**Created:** 2026-09-13 · **Status:** approved
+**Created:** 2026-09-13 · **Status:** done
 
 ## Tasks
 - [x] 1. Identify necessary tests and suspended experiment coupling — testing/medium
@@ -16,7 +16,7 @@
       Depends on: 2
       Scope: CONTRIBUTING.md, .github/workflows/native-contributors.yml, .batuta/reviews/test-simplification.md
       Accept: Document native Node24 and pinned pnpm install, build, common tests and browser setup without Docker or WSL requirements; Define a separate native-contributors workflow with non-required native Linux macOS Windows jobs using existing pinned tools, preserving every existing CI job name and container qualification guard, with no remote dispatch; Actual locally available native commands report commands exits and platform identity, other OS results stay pending until run; Existing browser accessibility compatibility and release checks retain their obligations, and Linux-only browser/reference qualification is distinguished from native contributor support
-- [ ] 4. Replace the oversized review with the remaining product work — docs/medium
+- [x] 4. Replace the oversized review with the remaining product work — docs/medium
       Depends on: 3
       Scope: .batuta/plans/v1-loop-review.md, .batuta/specs/2026-09-12-v1-loop-review-contract.md, .batuta/plans/v1-product-review.md, .batuta/reviews/test-simplification.md, WORK.md
       Accept: Every original review obligation has a concise mapping to existing reusable evidence, necessary product task or explicit pending decision, with no silent deletion; New proposal excludes generic audit runner registry and validator infrastructure and new security portability work unless an active requirement proves necessity; Record the final native platform status and remaining blockers honestly without claiming V1 qualification or approving the replacement plan

@@ -1,10 +1,13 @@
-# Plan — V1 completion review through Batuta loop
+# Historical plan — V1 completion review through Batuta loop
 <!-- inputs: profile.md@sha256:bd14c147316c routing.md@sha256:99f96b92331f -->
 
-**Goal:** Review all five remaining core/Alpine V1 fronts with actual bounded evidence, reusable missing profile producers, explicit defects and a complete acceptance-gap map. Produce an approvable correction/acceptance follow-up without confusing audit completion with V1 qualification.
-**Created:** 2026-09-12 · **Status:** approved
+**Historical status:** superseded and suspended on 2026-09-13; do not execute, dispatch, dry-run, or resume any of its 38 tasks.
 
-> Execution hold — 2026-09-13: newer maintainer direction rejects OS/container dependence and requests test simplification first. Historical approval below does not authorize launching this superseded approach. See `test-simplification.md`; replacement remains proposed.
+> The approved test-simplification plan supersedes this execution authority. The replacement is `.batuta/plans/v1-product-review.md`, which is **proposed only** and requires separate approval before any task runs. This file is retained as the historical source for the complete old-38 obligation map; its task text below is not operator instruction.
+
+> Execution hold — 2026-09-13: newer maintainer direction rejects OS/container dependence and requests test simplification first. Historical approval below does not authorize launching this superseded approach. See `test-simplification.md` and the proposed replacement; no container prerequisite or old-loop launch is authorized.
+
+> Coverage hold — old task 37's 11 P1 × 23 acceptance obligation remains pending in existing acceptance records and focused-report mapping until real coverage is checked. This does not authorize its former ledger, registry, validator, or canonical promotion.
 
 ## Tasks
 - [ ] 1. Implement the minimal audit report contract and command capture — testing/high
