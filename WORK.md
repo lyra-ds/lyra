@@ -2,7 +2,7 @@
 
 ## Test simplification planning — 2026-09-13
 
-The maintainer rejected Docker/OS dependence and requested a lean plan plus independent review by Codex Fable 5.1. The previous 38-task loop and Linux bridge proposal are suspended by this direction. Proposed plan: `.batuta/plans/test-simplification.md` (four bounded tasks, no product edits or new audit framework). Structural self-check passes. Independent validation is pending: requested model name is absent from the local Codex model catalog, and an exact identifier or authorized alternative was requested. No execution or validation success is claimed.
+The maintainer rejected Docker/OS dependence and requested a lean plan plus independent review by Codex Fable 5.1. The previous 38-task loop and Linux bridge proposal are suspended by this direction. Proposed plan: `.batuta/plans/test-simplification.md` (four bounded tasks, no product edits or new audit framework). Structural self-check passes. Independent review completed after model clarification: Claude Fable5.1 and Cursor Grok4.6 both returned REVISE. Their concrete findings were verified and addressed in the proposed plan; see `.batuta/reviews/test-simplification-plan-review.md`. No implementation, external approval of the amended text, or product test success is claimed.
 
 ## V1 review loop preflight blocked — 2026-09-13
 
