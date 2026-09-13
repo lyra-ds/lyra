@@ -71,3 +71,41 @@ Colima were not run.
 Full `pnpm test` exited 0 in 149.03 seconds on macOS with pinned Node24.18.0/pnpm11.13.1 after frozen installation in the owned task checkout. Working tree remained clean. Controller also reran browser-config (8 pass), explicit-command and README-boundary contracts (2 pass), and scoped Prettier (pass). A disposable package using the actual root command chain with its first child deliberately replaced by exit23 propagated exit23 through `pnpm test`; temporary root removed. Raw logs and command results: MAIN `.batuta/runs/test-simplification-execution/task2-controller-test.log`, `task2-controller-test.json`, `task2-chain-probe.json`.
 
 Independent OpenCode/GLM review found no blocking source issue. Initial round could not read paths and is invalid; inline-evidence retry completed read-only. Its pending full-gate observation is now satisfied by the controller run. Its task3-not-started observation concerns the next plan task, not this change. Its generic-probe limitation was addressed by the actual pnpm-chain probe above; a passing suite alone would not prove failure propagation. No Linux/Windows or V1 qualification claim.
+
+## Task 3 native contributor status
+
+`CONTRIBUTING.md` now specifies the native Node `24.18.0` and pnpm `11.13.1`
+path: `pnpm install --frozen-lockfile`, `pnpm test`, and `pnpm build`. Browser
+work is deliberately separate: `pnpm exec playwright install chromium firefox
+webkit`, then `pnpm test:browsers`. Docker and WSL are not contributor
+prerequisites. The existing pinned Linux Playwright-container qualification
+continues to carry browser, accessibility, compatibility, and release
+obligations; it is not evidence that every native OS or engine has passed.
+
+`.github/workflows/native-contributors.yml` defines non-required native Linux,
+macOS, and Windows jobs. It reuses the action pins and `.nvmrc` setup from
+`.github/workflows/ci.yml`, has no `container` stanza, and uses only
+platform-neutral `pnpm` commands: frozen install, `pnpm test`, and `pnpm build`.
+The Windows job intentionally contains no Unix environment-variable syntax,
+shell interpolation, path assumption, or glob; the root test command's quoted
+test-name pattern was already recorded as Windows-compatible in Task 2.
+
+| Surface | Evidence | Status |
+| --- | --- | --- |
+| macOS common native path | Controller: frozen install, Node `24.18.0`, pnpm `11.13.1`, and `pnpm test` exit 0 in 149.03 seconds. | Available proof; no separate `pnpm build` result is claimed here. |
+| Linux common native path | New workflow definition only; no local or remote run was performed. | Unverified. |
+| Windows common native path | New workflow definition only; no local or remote run was performed. | Unverified; static command inspection only. |
+| Native Playwright install and `pnpm test:browsers` | No native browser command was run for this task. | Unverified on every OS and engine. |
+| Existing Linux container browser reference | Existing `ci.yml` remains untouched. | Obligation retained; this configuration change is not passing CI. |
+
+No remote workflow was dispatched and no branch-protection or required-context
+configuration was changed. A failing native platform or browser engine must be
+recorded with its exact command, platform or engine, exit code, and missing
+requirement before any support claim; any resulting source portability repair is
+outside Task 3 scope.
+
+## Task 3 controller verification
+
+Native macOS in a fresh owned checkout, frozen install, Node24.18.0/pnpm11.13.1: `pnpm build` exit0 in50.22s; `pnpm test:browsers` exit0 in595.43s. Chromium/Firefox/WebKit each passed Styles91, React818 and Alpine319 tests:3684 total executed cases, no failed or skipped suites. This supersedes the earlier task3 browser-pending table for macOS only. Existing installed Playwright engines were used; the browser-install command itself was not rerun. Raw durable logs/results: MAIN `.batuta/runs/test-simplification-execution/task3-{build,browser}.{log,json}`. Linux/Windows and remote native workflow executions remain pending.
+
+Controller verification: scoped Prettier, actionlint on the new workflow, YAML/runners/command/pin inspection, unchanged old CI bytes, and28 browser config/matrix tests all PASS. Source tree clean after commands. GLM independent review3/3 DONE; its pin-identity uncertainty was resolved by the controller comparison. One Terra documentation retry corrected an unverified-platform overclaim and setup build/typecheck order. No product, dependency, resource, baseline or old required-CI changes.

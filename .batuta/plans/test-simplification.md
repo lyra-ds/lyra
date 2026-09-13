@@ -12,7 +12,7 @@
       Depends on: 1
       Scope: package.json, tools/phase1/browser-config.test.mjs, tools/overlay-foundation-evaluation/repository-policy.test.mjs, tools/overlay-foundation-evaluation/README.md, .batuta/reviews/test-simplification.md
       Accept: Only exclusions justified by task 1 leave the ordinary gate and no active product/security obligation loses coverage; Existing explicit experiment commands and historical sources/evidence remain intact; A disposable test-chain failure probe records an actual nonzero exit without leaving source changes, independently of the passing run; Updated ordering and policy assertions preserve security-before-build and active requirements, and the real native gate succeeds → pnpm test; Diff contains no blanket OS skips, security fallback, new dependencies or lock changes
-- [ ] 3. Document and validate the native contributor path — infra/medium
+- [x] 3. Document and validate the native contributor path — infra/medium
       Depends on: 2
       Scope: CONTRIBUTING.md, .github/workflows/native-contributors.yml, .batuta/reviews/test-simplification.md
       Accept: Document native Node24 and pinned pnpm install, build, common tests and browser setup without Docker or WSL requirements; Define a separate native-contributors workflow with non-required native Linux macOS Windows jobs using existing pinned tools, preserving every existing CI job name and container qualification guard, with no remote dispatch; Actual locally available native commands report commands exits and platform identity, other OS results stay pending until run; Existing browser accessibility compatibility and release checks retain their obligations, and Linux-only browser/reference qualification is distinguished from native contributor support
