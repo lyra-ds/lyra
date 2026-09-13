@@ -45,6 +45,7 @@ const DIALOG_RUNNER = Object.freeze({
   descriptionId: 'dialog-description',
   description: 'Choose how this workspace sends notifications.',
   minimumCloseTarget: 44,
+  requireIdentityStage: false,
   temporaryPrefix: 'lyra-dialog-profiles-',
   reportScope:
     'React19 packed Dialog six-profile browser-media emulation slice only; no OS high-contrast, hydration, coarse-pointer, other-components, historical-baseline, or release claims.',
@@ -53,7 +54,7 @@ let runner = DIALOG_RUNNER;
 
 function usage() {
   return [
-    `Usage: node tools/v1-profiles/${runner.component.toLowerCase()}.mjs --react-tarball PATH --styles-tarball PATH --output PATH [--browser chromium|firefox|webkit]`,
+    `Usage: node tools/v1-profiles/${runner.scriptName ?? runner.component.toLowerCase()}.mjs --react-tarball PATH --styles-tarball PATH --output PATH${runner.requireIdentityStage ? ' --identity-stage PATH' : ' [--identity-stage PATH]'} [--browser chromium|firefox|webkit]`,
     '',
     `Runs the React 19 packed ${runner.component} six-profile slice. The output path must not exist.`,
   ].join('\n');
@@ -64,7 +65,15 @@ function parseArguments(argumentsList) {
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
     if (argument === '--help') return { help: true };
-    if (!['--react-tarball', '--styles-tarball', '--output', '--browser'].includes(argument)) {
+    if (
+      ![
+        '--react-tarball',
+        '--styles-tarball',
+        '--output',
+        '--browser',
+        '--identity-stage',
+      ].includes(argument)
+    ) {
       throw new Error(`Unknown argument: ${argument}`);
     }
     const value = argumentsList[index + 1];
@@ -76,6 +85,9 @@ function parseArguments(argumentsList) {
   for (const required of ['--react-tarball', '--styles-tarball', '--output']) {
     if (!values[required]) throw new Error(`Missing required ${required}`);
   }
+  if (runner.requireIdentityStage && !values['--identity-stage']) {
+    throw new Error('Missing required --identity-stage');
+  }
   if (values['--browser'] && !ENGINES.includes(values['--browser'])) {
     throw new Error('--browser must be chromium, firefox, or webkit');
   }
@@ -83,6 +95,7 @@ function parseArguments(argumentsList) {
     reactTarball: resolve(values['--react-tarball']),
     stylesTarball: resolve(values['--styles-tarball']),
     output: resolve(values['--output']),
+    identityStage: values['--identity-stage'] ? resolve(values['--identity-stage']) : undefined,
     engines: values['--browser'] ? [values['--browser']] : [...ENGINES],
   };
 }
@@ -99,6 +112,35 @@ function sourceFileHashes() {
 
 function json(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
+}
+
+function stagedIdentity(path, reactTarball, stylesTarball) {
+  assert(existsSync(path), `Identity stage does not exist: ${path}`);
+  const stage = json(path);
+  const revision = commandOutput('git', ['rev-parse', 'HEAD']);
+  assert(stage.head === revision, 'Identity stage revision does not match HEAD');
+  for (const product of ['packages/react', 'packages/styles']) {
+    assert(
+      stage.product_trees?.[product] === commandOutput('git', ['rev-parse', `HEAD:${product}`]),
+      `Identity stage product tree does not match ${product}`,
+    );
+  }
+  for (const lock of ['pnpm-lock.yaml', 'tools/react-compat/fixtures/react19/pnpm-lock.yaml']) {
+    assert(
+      stage.locks?.[lock] === sha256(join(REPOSITORY, lock)),
+      `Identity stage lock does not match ${lock}`,
+    );
+  }
+  for (const [tarball, name] of [
+    [reactTarball, 'react'],
+    [stylesTarball, 'styles'],
+  ]) {
+    assert(
+      stage.tarballs?.[tarball] === sha256(tarball),
+      `Identity stage ${name} tarball does not match its recorded SHA-256`,
+    );
+  }
+  return { path, sha256: sha256(path), ...stage };
 }
 
 function commandOutput(command, args, cwd = REPOSITORY) {
@@ -347,6 +389,7 @@ async function pageMeasurements(page) {
       const enabledStyle = getComputedStyle(enabled);
       const closeRect = close.getBoundingClientRect();
       const titleRect = title.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
       return {
         direction: panelStyle.direction,
         panel: {
@@ -369,10 +412,11 @@ async function pageMeasurements(page) {
           animationDuration: panelStyle.animationDuration,
           ...(selectors.measurePanelEdge
             ? {
-                x: panel.getBoundingClientRect().x,
-                right: panel.getBoundingClientRect().right,
+                x: panelRect.x,
+                right: panelRect.right,
               }
             : {}),
+          ...(selectors.measurePanelBottomAttachment ? { bottom: panelRect.bottom } : {}),
         },
         overlay: {
           display: getComputedStyle(overlay).display,
@@ -398,6 +442,7 @@ async function pageMeasurements(page) {
         },
         titleX: titleRect.x,
         ...(selectors.measurePanelEdge ? { viewportWidth: window.innerWidth } : {}),
+        ...(selectors.measurePanelBottomAttachment ? { viewportHeight: window.innerHeight } : {}),
         body: {
           textAlign: getComputedStyle(body).textAlign,
           color: getComputedStyle(body).color,
@@ -426,6 +471,7 @@ async function pageMeasurements(page) {
       descriptionId: runner.descriptionId,
       component: runner.component,
       measurePanelEdge: runner.assertPanelInlineEnd === true,
+      measurePanelBottomAttachment: runner.assertPanelBottomAttachment === true,
       measureInlineStartBoundary: runner.assertPanelInlineStartBoundary === true,
     },
   );
@@ -445,6 +491,12 @@ function assertOpenModal(measurements) {
     measurements.description === runner.description,
     `${runner.component} descriptive content is missing`,
   );
+  if (runner.assertPanelBottomAttachment) {
+    assert(
+      Math.abs(measurements.panel.bottom - measurements.viewportHeight) < 1,
+      `${runner.component} panel is not attached to the viewport bottom edge`,
+    );
+  }
 }
 
 function assertNoPageFailures({ consoleErrors, pageErrors }, operation) {
@@ -864,6 +916,9 @@ export async function runModalProfiles(
   assert(!existsSync(options.output), `Output path already exists: ${options.output}`);
   const reactTarball = validatePackedPackage(options.reactTarball, '@lyra-ds/react');
   const stylesTarball = validatePackedPackage(options.stylesTarball, '@lyra-ds/styles');
+  const identityStage = options.identityStage
+    ? stagedIdentity(options.identityStage, options.reactTarball, options.stylesTarball)
+    : undefined;
   mkdirSync(options.output, { recursive: false });
   const temporaryRoot = mkdtempSync(join(tmpdir(), runner.temporaryPrefix));
   let preview;
@@ -874,6 +929,7 @@ export async function runModalProfiles(
     revision: commandOutput('git', ['rev-parse', 'HEAD']),
     command: commandLine.map((value) => JSON.stringify(value)).join(' '),
     sourceFiles: sourceFileHashes(),
+    ...(identityStage ? { identityStage } : {}),
     inputTarballs: {
       react: {
         path: options.reactTarball,

@@ -2,10 +2,10 @@
 <!-- inputs: profile.md@sha256:bd14c147316c routing.md@sha256:99f96b92331f -->
 
 **Goal:** Start one identity-bound, packed React BottomSheet P1 slice using the established Dialog-profile pattern. Preserve every remaining old-38 obligation as a focused backlog item or a decision; do not construct a new audit system.
-**Created:** 2026-09-13 · **Status:** approved
+**Created:** 2026-09-13 · **Status:** done
 
 ## Tasks
-- [ ] 1. Implement and run the packed React BottomSheet P1 producer — testing/high
+- [x] 1. Implement and run the packed React BottomSheet P1 producer — testing/high
       Scope: tools/v1-profiles/bottom-sheet.mjs, tools/v1-profiles/fixtures/bottom-sheet.tsx, tools/v1-profiles/dialog.mjs, .batuta/reviews/v1-product-review/react-bottom-sheet.md
       Accept: Create the missing narrow BottomSheet producer and fixture by reusing the existing profile runner, recording source and packed tarball hashes, lock identity, tool and browser versions, named cases and actual exits; Run light-theme axe, dark-theme axe, forced colors, reduced motion, LTR and RTL profiles in Chromium Firefox and WebKit, with exact tarball and fresh output paths bound before invocation and controller-captured results; Demonstrate a discriminating fixture negative control is detected and restored, with independent read-only verification of behavior and evidence; Record any product defect with its trigger, observed result, narrow owner and separately proposed repair task, without changing product code
 

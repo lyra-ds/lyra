@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## BottomSheet P1 review complete — 2026-09-13
+
+Codex/Terra high implemented the scoped producer/fixture and minimal shared-runner extension; one formatting/report retry, no escalation. Controller native packed profiles: BottomSheet16/18, Chromium/Firefox forced-colors close-focus FAIL; Dialog18/18, Drawer18/18. Negative fixture control detected wrong Save output and restored bytes. Full pnpm test PASS163.56s, final formatting/syntax/source-hash/cleanup checks PASS, GLM4/4DONE. Product/style code unchanged. The approved one-task review is complete and stopped; the narrow forced-colors CSS repair in the focused report remains proposed. No V1 qualification or other backlog execution. Raw evidence: MAIN `.batuta/runs/v1-bottom-sheet-20260913/`.
+
 ## BottomSheet P1 slice approved — 2026-09-13
 
 Maintainer approved the bounded v1-product-review plan. Proceed with one missing BottomSheet producer/fixture through Codex/Terra high, native packed profiles and negative control, no product repair. All remaining backlog and environment/release boundaries persist.
