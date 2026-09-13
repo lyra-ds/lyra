@@ -1,5 +1,7 @@
 # Current work — V1 incumbent stabilization
 
+Task 1 inventory verified: Codex/gpt-5.6-terra, medium, no retry/escalation. Controller confirmed 35 glob-reachable evaluation files, four recursive workspace test owners and direct policy/order coupling. Documentation-only acceptance; known global gate failure was not rerun or called passing. Preserve the active experimental-dependency prohibition as a minimal explicit entry; proceed to task 2.
+
 ## Test simplification approved — 2026-09-13
 
 Maintainer approved the revised four-task plan. Start task 1 inventory through Codex/Terra, then preserve active coverage while decoupling suspended evaluation. The old review loop and Linux bridge remain suspended.

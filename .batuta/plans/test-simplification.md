@@ -5,7 +5,7 @@
 **Created:** 2026-09-13 · **Status:** approved
 
 ## Tasks
-- [ ] 1. Identify necessary tests and suspended experiment coupling — testing/medium
+- [x] 1. Identify necessary tests and suspended experiment coupling — testing/medium
       Scope: .batuta/reviews/test-simplification.md
       Accept: Each suite reachable from root pnpm test maps to an active requirement and caller or an explicit suspended experiment, with source references; Proposed exclusions identify surviving coverage and active consumers, including dynamic scripts and CI calls; Record existing failure evidence and distinguish demonstrated causes from hypotheses without rerunning the entire suite for inventory
 - [ ] 2. Decouple suspended evaluation from the contributor gate — testing/medium
