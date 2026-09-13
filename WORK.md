@@ -1,5 +1,10 @@
 # Current work — V1 incumbent stabilization
 
+## V1 review loop preflight blocked — 2026-09-13
+
+The approved 38-task plan passed the clean-checkout dry-run on `review/v1-completion-loop`. No delivery was launched: full host `pnpm test` exited 1 (530 pass,161 fail,2 skipped in the failing 693-test suite). A canonical-TMPDIR probe in this checkout confirms `/proc/self/fd` is unavailable. See `.batuta/v1-loop-preflight.md` for raw evidence hashes and a bounded Linux gate-bridge proposal requiring separate environment/security-design authorization. Continue from this checkout after that prerequisite; preserve all older worktrees.
+
+
 ## V1 review loop approved — 2026-09-13
 
 Maintainer approved .batuta/plans/v1-loop-review.md and its execution contract and authorized proceeding with the loop. Preparing the mandatory clean-checkout/toolchain/global-test preflight; no delivery is launched until it passes. Existing resource, dependency, release and Blade boundaries remain unchanged.
