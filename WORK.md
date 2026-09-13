@@ -1,5 +1,11 @@
 # Current work — V1 incumbent stabilization
 
+## Backlog reassessed — 2026-09-13
+
+Maintainer-requested triage completed: `.batuta/plans/v1-backlog-triage.md` maps all38 historical IDs exactly once. Removed audit-framework implementation, folded provenance into each lot, replaced automatic component-producer tasks with evidence-gap review, consolidated interaction/platform/package/readiness work, and parked unresolved policy implementation. No requirements are silently waived and no replacement loop is approved. Next useful action is a read-only coverage-gap review; no further component task selected or run.
+
+Popover motion repair delivered at `6b881d7`; only CSS, its existing parity entry and managed evidence integrated. The failed producer and shared-runner changes remain absent. Raw final product-tree mapping is in MAIN `.batuta/runs/v1-popover-motion-20260913/final-integration.json`. No push, merge to main, release, container or remote dispatch.
+
 ## Popover motion repair and producer disposition — 2026-09-13
 
 OpenCode/GLM low CSS repair plus one parity-registration retry verified: reduced-motion3/3 none/0s, normal motion preserved; existing modal54/54 PASS; native full test exit0/164.54s, Styles lint/parity/format PASS and canonical mutation RED/restored PASS. Independent Terra review3DONE, unchanged guard. See `.batuta/reviews/v1-product-review/react-popover-motion.md` and MAIN raw `.batuta/runs/v1-popover-motion-20260913/`.
