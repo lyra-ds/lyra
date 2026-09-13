@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## BottomSheet P1 slice approved — 2026-09-13
+
+Maintainer approved the bounded v1-product-review plan. Proceed with one missing BottomSheet producer/fixture through Codex/Terra high, native packed profiles and negative control, no product repair. All remaining backlog and environment/release boundaries persist.
+
 ## Test simplification complete — 2026-09-13
 
 All4 approved tasks verified and committed on `review/v1-completion-loop`. Native macOS full pnpm test, build and3684 browser cases PASS without Docker. Separate native contributor workflow added, Linux/Windows unrun. Old38 loop and Linux bridge suspended. Next proposal `.batuta/plans/v1-product-review.md` contains one BottomSheet P1 task plus preserved38-obligation mapping; it is not approved or executed. No V1 qualification, release or remote action. See `.batuta/reviews/test-simplification.md` and MAIN `.batuta/runs/test-simplification-execution/` for actual evidence and routing.

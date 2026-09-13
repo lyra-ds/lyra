@@ -2,7 +2,7 @@
 <!-- inputs: profile.md@sha256:bd14c147316c routing.md@sha256:99f96b92331f -->
 
 **Goal:** Start one identity-bound, packed React BottomSheet P1 slice using the established Dialog-profile pattern. Preserve every remaining old-38 obligation as a focused backlog item or a decision; do not construct a new audit system.
-**Created:** 2026-09-13 · **Status:** proposed
+**Created:** 2026-09-13 · **Status:** approved
 
 ## Tasks
 - [ ] 1. Implement and run the packed React BottomSheet P1 producer — testing/high
@@ -11,7 +11,7 @@
 
 ## Decisions and context
 
-This proposal remains unapproved; execution requires maintainer approval. Acceptance here is semantic and requires the conductor to bind actual tarball/output paths and run the producer, not execute placeholder commands or treat review prose as a shell proof. The existing Dialog CLI establishes the intended producer shape: `--react-tarball PATH --styles-tarball PATH --output PATH`, with optional `--browser chromium|firefox|webkit`. BottomSheet has no producer or fixture yet, so task 1 must create the narrow producer before running it; it must not claim an existing BottomSheet producer.
+The maintainer approved this one-task slice on 2026-09-13. Execute BottomSheet only, then stop. Acceptance here is semantic and requires the conductor to bind actual tarball/output paths and run the producer, not execute placeholder commands or treat review prose as a shell proof. The existing Dialog CLI establishes the intended producer shape: `--react-tarball PATH --styles-tarball PATH --output PATH`, with optional `--browser chromium|firefox|webkit`. BottomSheet has no producer or fixture yet, so task 1 must create the narrow producer before running it; it must not claim an existing BottomSheet producer.
 
 macOS-only native evidence is `pnpm test` exit 0 in 149.03s, `pnpm build` exit 0 in 50.22s, and the three-engine browser matrix exit 0 in 595.43s (Styles 91, React 818, Alpine 319 per engine; 3,684 cases). It does not qualify Linux, Windows, remote workflows, packed V1 artifacts, or release platforms. Dialog/Drawer 18/18 and named React18/19 P1 evidence are reusable only when source, packed artifact, tool, and environment identities match exactly. Preserve deferred Blade, manual and touch requirements, immutable baselines, the three accepted composition exceptions, and future ceilings.
 
