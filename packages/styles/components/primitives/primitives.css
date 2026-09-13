@@ -35,3 +35,6 @@
 /* Additive extension (parity ADDITIVE_EXTENSIONS): the canonical entry keyframe starts at
    opacity 0; this transform-only override satisfies the project motion constraint. */
 @keyframes lyra-popover-in { from { transform: translateY(4px); } to { transform: translateY(0); } }
+
+/* Disable the entry animation when the user prefers reduced motion. */
+@media (prefers-reduced-motion: reduce) { .lyra-popover { animation: none; } }

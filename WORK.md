@@ -1,5 +1,11 @@
 # Current work — V1 incumbent stabilization
 
+## Popover motion repair and producer disposition — 2026-09-13
+
+OpenCode/GLM low CSS repair plus one parity-registration retry verified: reduced-motion3/3 none/0s, normal motion preserved; existing modal54/54 PASS; native full test exit0/164.54s, Styles lint/parity/format PASS and canonical mutation RED/restored PASS. Independent Terra review3DONE, unchanged guard. See `.batuta/reviews/v1-product-review/react-popover-motion.md` and MAIN raw `.batuta/runs/v1-popover-motion-20260913/`.
+
+The new Popover producer was aborted after Terra/high retry and critical escalation retained WebKit keyboard harness failures. Its implementation and shared-runner changes are excluded from integration; raw/source retained in MAIN `.batuta/runs/v1-popover-20260913/`. Full Popover review remains pending; no successful producer negative control or full V1 claim. Only the separately proven CSS repair is delivered. Next: finish maintainer-requested backlog triage; do not restart the old loop or auto-create more producers.
+
 ## BottomSheet forced-colors repair complete — 2026-09-13
 
 Maintainer-approved one-selector CSS repair verified: OpenCode/GLM-5.3-Flash low, no retry/escalation. BottomSheet18/18, Dialog18/18, Drawer18/18 on fresh Styles pack; native focus now solid2px CanvasText outline. Controller full pnpm test PASS168.02s, stylelint/parity PASS, exact scope/sourcehash/cleanup checks PASS. See `.batuta/reviews/v1-product-review/react-bottom-sheet-focus.md`; raw evidence MAIN `.batuta/runs/v1-bottom-sheet-focus-20260913/`. No other backlog task executed; full V1, remaining profiles and external platform evidence remain pending.

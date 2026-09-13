@@ -402,7 +402,8 @@ const ADDITIVE_EXTENSIONS = {
   'components/primitives/primitives.css': {
     // The handoff's Popover entrance fades from opacity 0; the package deliberately redefines this
     // exact keyframe after the canonical region to meet the transform-only entrance-motion constraint.
-    classes: [],
+    // `lyra-popover` is additive: its reduced-motion rule only disables the entrance animation.
+    classes: ['lyra-popover'],
     keyframes: ['lyra-popover-in'],
   },
   'components/feedback/feedback.css': {
