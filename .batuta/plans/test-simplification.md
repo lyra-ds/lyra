@@ -2,7 +2,7 @@
 <!-- inputs: profile.md@sha256:bd14c147316c routing.md@sha256:99f96b92331f -->
 
 **Goal:** Remove unjustified infrastructure from the normal contribution path while preserving useful product and security regression coverage. Prepare a native Linux, macOS and Windows contribution path without Docker or WSL prerequisites, prove it on available hosts and keep unexecuted platforms explicitly unverified. Simplify the suspended 38-task review before implementing any new audit framework.
-**Created:** 2026-09-13 · **Status:** proposed
+**Created:** 2026-09-13 · **Status:** approved
 
 ## Tasks
 - [ ] 1. Identify necessary tests and suspended experiment coupling — testing/medium
@@ -23,7 +23,7 @@
 
 ## Decisions and context
 
-The maintainer rejected a Linux container prerequisite and required OS-independent contribution. The old 38-task loop is suspended by this newer direction, despite its historical approval. Do not launch it. This proposal is planning only until approved. Normal routing predicts Codex/gpt-5.6-terra for all four medium tasks, and the maintainer requested independent reviews through Claude Fable 5.1 and Cursor Grok 4.6. Both reviewed the original proposal read-only using claude-fable-5-1 and cursor-grok-4.6-high, returned REVISE, and the conductor addressed their findings here. See .batuta/reviews/test-simplification-plan-review.md. This revised text has conductor validation, not a second external APPROVE verdict. No permanent routing change is authorized.
+The maintainer rejected a Linux container prerequisite and required OS-independent contribution. The old 38-task loop is suspended by this newer direction, despite its historical approval. Do not launch it. The maintainer approved this amended four-task plan on 2026-09-13. Execute its bounded tasks sequentially. Normal routing predicts Codex/gpt-5.6-terra for all four medium tasks, and the maintainer requested independent reviews through Claude Fable 5.1 and Cursor Grok 4.6. Both reviewed the original proposal read-only using claude-fable-5-1 and cursor-grok-4.6-high, returned REVISE, and the conductor addressed their findings here. See .batuta/reviews/test-simplification-plan-review.md. This revised text has conductor validation, not a second external APPROVE verdict. No permanent routing change is authorized.
 
 Evidence: at 9384eb3, macOS Node24.18.0/pnpm11.13.1 global pnpm test exited 1. Its failing evaluation suite reported 693 tests, 530 pass, 161 fail, 2 skipped. A canonical-TMPDIR probe isolated 11 failures including unavailable /proc/self/fd. These numbers do not establish that all failed tests are unnecessary or that excluding the experiment fixes every platform. See .batuta/v1-loop-preflight.md and its immutable raw log references. The comparison experiment was suspended when the incumbent was retained. Root pnpm test currently invokes overlay:evaluate:core:test unconditionally. CONTRIBUTING currently presents a container as the browser workflow: removing just the root experiment command would not satisfy native contribution.
 

@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Test simplification approved — 2026-09-13
+
+Maintainer approved the revised four-task plan. Start task 1 inventory through Codex/Terra, then preserve active coverage while decoupling suspended evaluation. The old review loop and Linux bridge remain suspended.
+
 ## Test simplification planning — 2026-09-13
 
 The maintainer rejected Docker/OS dependence and requested a lean plan plus independent review by Codex Fable 5.1. The previous 38-task loop and Linux bridge proposal are suspended by this direction. Proposed plan: `.batuta/plans/test-simplification.md` (four bounded tasks, no product edits or new audit framework). Structural self-check passes. Independent review completed after model clarification: Claude Fable5.1 and Cursor Grok4.6 both returned REVISE. Their concrete findings were verified and addressed in the proposed plan; see `.batuta/reviews/test-simplification-plan-review.md`. No implementation, external approval of the amended text, or product test success is claimed.
