@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Test simplification planning — 2026-09-13
+
+The maintainer rejected Docker/OS dependence and requested a lean plan plus independent review by Codex Fable 5.1. The previous 38-task loop and Linux bridge proposal are suspended by this direction. Proposed plan: `.batuta/plans/test-simplification.md` (four bounded tasks, no product edits or new audit framework). Structural self-check passes. Independent validation is pending: requested model name is absent from the local Codex model catalog, and an exact identifier or authorized alternative was requested. No execution or validation success is claimed.
+
 ## V1 review loop preflight blocked — 2026-09-13
 
 The approved 38-task plan passed the clean-checkout dry-run on `review/v1-completion-loop`. No delivery was launched: full host `pnpm test` exited 1 (530 pass,161 fail,2 skipped in the failing 693-test suite). A canonical-TMPDIR probe in this checkout confirms `/proc/self/fd` is unavailable. See `.batuta/v1-loop-preflight.md` for raw evidence hashes and a bounded Linux gate-bridge proposal requiring separate environment/security-design authorization. Continue from this checkout after that prerequisite; preserve all older worktrees.

@@ -4,6 +4,8 @@
 **Goal:** Review all five remaining core/Alpine V1 fronts with actual bounded evidence, reusable missing profile producers, explicit defects and a complete acceptance-gap map. Produce an approvable correction/acceptance follow-up without confusing audit completion with V1 qualification.
 **Created:** 2026-09-12 · **Status:** approved
 
+> Execution hold — 2026-09-13: newer maintainer direction rejects OS/container dependence and requests test simplification first. Historical approval below does not authorize launching this superseded approach. See `test-simplification.md`; replacement remains proposed.
+
 ## Tasks
 - [ ] 1. Implement the minimal audit report contract and command capture — testing/high
       Scope: tools/v1-review/check.mjs, tools/v1-review/run.mjs, tools/v1-review/check.test.mjs, tools/v1-review/cases.json
