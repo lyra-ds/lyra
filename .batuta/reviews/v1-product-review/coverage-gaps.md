@@ -79,3 +79,7 @@ The [proposed amendment](../../specs/2026-09-14-v1-acceptance-policy-amendment.m
 ## Native numerical gate implemented — 2026-09-14
 
 The acceptance amendment was approved and the [native budget gate](native-bundle-budget.md) now passes on current packed artifacts. CI uses the new budget command while strict historical reproduction remains available. The72 absolute checks and9/3 exception ceilings pass without rewriting a reference; full provenance is emitted. Common/focused/workflow checks pass. This resolves the numerical CI comparison mismatch in gaps3/6, not core promotion, missing family runtime protocols, packed Alpine runtime or platform/media qualification.
+
+## Packed Alpine public runtime closure — 2026-09-14
+
+The packed-Alpine portion of gap3 now has observed browser-runtime evidence for candidate1ed9c60:32 existing public test files,315 passed per native Chromium/Firefox/WebKit (945 total), exact archive hashes matching previous artifact qualification, source fallback rejection and a failing no-op-plugin control followed by exact restoration. The7 source-only internal tests are not counted as packed evidence. No new test suite or permanent runner was added. See `alpine-packed-runtime.md` and MAIN `.batuta/runs/alpine-packed-runtime-20260914/`. This closes that bounded package-runtime gap only; other operating systems, applicable profiles/performance protocols and final V1 acceptance remain separate.
