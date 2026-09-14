@@ -47,3 +47,7 @@ Controller corrected the scout's nonexistent `--profile` suggestion (the existin
 ## First bounded follow-up complete — 2026-09-14
 
 The proposed permanent Popover CSS motion regression is now implemented and verified in the existing Styles suite. See [verification](popover-motion-regression.md):3/3 positive,3/3 original-rule failures,3/3 restored,276 complete Styles cases and common suite PASS. This resolves the Popover part of gap1 only; no replacement packed producer or automatic next task.
+
+## Remaining gap1 regressions complete — 2026-09-14
+
+Drawer and BottomSheet now reuse the Dialog native close-focus cases in the existing Styles suite. See [verification](modal-close-focus-regressions.md): six isolated selector-removal runs fail only their target case; exact CSS restoration; all288 Styles cases pass across three separately invoked engines, and common pnpm test passes. Combined reruns encountered trace-stop errors and remain failed attempts. This completes the reproduced CSS regressions in gap1, not the other five gap categories or full platform qualification.

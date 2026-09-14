@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Modal close-focus regressions complete — 2026-09-14
+
+OpenCode/GLM low, one invocation/no implementation retry: extended the existing Dialog Styles cases through one shared table to Drawer and BottomSheet. Initial native matrix18/18 PASS; removing each repaired selector gives exactly one corresponding failure per engine, six isolated negative runs. CSS restored byte-for-byte; full Styles96/96 per engine (288 total) and common pnpm test exit0/228.10s. Combined reruns hit Vitest trace-stop errors; those are recorded as failed attempts, not waived or claimed green. Separate-engine runs retain all assertions and trace settings. Format/scope/hygiene PASS. See `.batuta/reviews/v1-product-review/modal-close-focus-regressions.md`; raw MAIN `.batuta/runs/modal-close-focus-regressions-20260914/`. Gap1 permanent regressions complete; no product/config/dependency edits, old loop suspended, other gaps remain separate.
+
 ## Popover motion regression complete — 2026-09-14
 
 OpenCode/GLM low, one invocation/no retry/escalation: one Styles test using the existing native media command. Controller three-engine positive3/3, removed-rule negative3/3FAIL, exact CSS restoration and fresh3/3PASS; full Styles276PASS, common pnpm test exit0/158.14s, format/scope/hash/diff PASS. No product/config/dependency changes. See `.batuta/reviews/v1-product-review/popover-motion-regression.md`; raw MAIN `.batuta/runs/popover-motion-regression-20260914/` records the final commit. First proposed gap1 lot complete; remaining gaps stay separate, old loop suspended, no other lot started.
