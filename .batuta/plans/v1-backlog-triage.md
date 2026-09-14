@@ -31,3 +31,7 @@ After the bounded Popover CSS repair, perform one read-only coverage-gap review 
 ## Evidence and boundaries
 
 See `../reviews/test-simplification.md`, `../reviews/v1-product-review/react-bottom-sheet-focus.md`, and `../reviews/v1-product-review/react-popover-motion.md`. The aborted Popover producer, failures and candidate source are preserved below MAIN `.batuta/runs/v1-popover-20260913/`; no negative-control success or completed Popover qualification is claimed. Mac native contribution gates passed; Linux/Windows native workflow runs remain pending. Manual deferral follows the existing release profile and is not newly waived here. Blade stays deferred. No push, merge to main, release, container operation or remote dispatch.
+
+## Coverage comparison completed — 2026-09-13
+
+[Coverage-gap review](../reviews/v1-product-review/coverage-gaps.md) now supplies the concrete comparison. It retains six gap categories, recommends first protecting the reproduced Popover CSS regression through the existing native Styles suite, and separates package/platform reruns from contract and acceptance decisions. No replacement producer or implementation task was started. The old loop remains suspended.
