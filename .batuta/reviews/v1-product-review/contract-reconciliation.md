@@ -29,3 +29,7 @@ Raw scout transcript/report, unchanged guard, cited-path checks, controller adju
 ## Implementation follow-up — 2026-09-14
 
 The subsequently authorized Alpine typeahead slice is implemented and verified; see [delivery](alpine-dropdown-typeahead.md). The source-absence finding above describes this reconciliation's base revision. Tabs canonical record correction and broader family qualification remain separate.
+
+## Canonical reference follow-up — 2026-09-14
+
+The subsequently authorized scoped Tabs ledger correction is complete: existing specification path, draft/specified, with all other records and evidence preserved. See [verification](tabs-ledger-reference.md). The pending-update statements above describe this review's historical base; no final qualification is implied.

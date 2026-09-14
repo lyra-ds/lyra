@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Tabs ledger reference corrected — 2026-09-14
+
+OpenCode/GLM low, one invocation33.08s/no implementation retry/escalation. Exactly3 Tabs leaf values updated: tracked existing spec path and draft/specified lifecycle pair. Controller normalized full-JSON comparison proves all other records/evidence unchanged; existing v1-release checker, scoped formatting and common pnpm test exit0/160.01s PASS. Frozen install repaired checkout tooling availability without dependency/lock changes. See `.batuta/reviews/v1-product-review/tabs-ledger-reference.md`; raw MAIN `.batuta/runs/tabs-ledger-reference-20260914/` records final commit. Gap5 bounded fixes complete; no component qualification, new tests, runtime change or next lot. Old loop remains suspended.
+
 ## Alpine Dropdown typeahead complete — 2026-09-14
 
 Codex/Terra medium, one bounded four-line test-proof retry, no escalation; independent GLM3DONE/unchanged guard with low timing observation adjudicated. Existing Alpine owner now handles prefix/cycling/500ms expiry and close/destroy resets; three focused cases plus patch changeset, no API/CSS/dependency/budget change. Original-source matching/expiry RED in all3, destroy cleanup RED Chromium, corrected external-watcher cleanup RED all3, exact restoration. Final complete Alpine322 per engine/966 total PASS; common pnpm test exit0/298.45s, format/types/build/docgen PASS, size23.35kB within24.2kB. See `.batuta/reviews/v1-product-review/alpine-dropdown-typeahead.md`; raw MAIN `.batuta/runs/alpine-dropdown-typeahead-20260914/` records final integration. Canonical Tabs record and final package/platform qualification remain separate; old loop suspended, no further lot launched.
