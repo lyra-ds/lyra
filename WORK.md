@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Contract reconciliation complete — 2026-09-14
+
+OpenCode/GLM research, one invocation/no retry, unchanged guard; controller checked all14 cited paths, normative Alpine parity, current handler and actual lifecycle pairs. Tabs authored reference is stale; canonical update remains scoped separately, proposed draft/specified without qualification. Rejected scout's invalid draft/planned edit and blanket approval inference. Alpine Dropdown typeahead is applicable and unwaived in bounded records, with implementation absent by source inspection. See `.batuta/reviews/v1-product-review/contract-reconciliation.md`; raw MAIN `.batuta/runs/contract-reconciliation-20260914/`. Optional checker probe failed to import missing yaml; no test/runtime/validator PASS claimed, no install. Only managed documentation changed; no canonical ledger/product edit. Next useful product task: bounded Alpine typeahead reproduction/fix, no new framework or old-loop restart.
+
 ## Modal close-focus regressions complete — 2026-09-14
 
 OpenCode/GLM low, one invocation/no implementation retry: extended the existing Dialog Styles cases through one shared table to Drawer and BottomSheet. Initial native matrix18/18 PASS; removing each repaired selector gives exactly one corresponding failure per engine, six isolated negative runs. CSS restored byte-for-byte; full Styles96/96 per engine (288 total) and common pnpm test exit0/228.10s. Combined reruns hit Vitest trace-stop errors; those are recorded as failed attempts, not waived or claimed green. Separate-engine runs retain all assertions and trace settings. Format/scope/hygiene PASS. See `.batuta/reviews/v1-product-review/modal-close-focus-regressions.md`; raw MAIN `.batuta/runs/modal-close-focus-regressions-20260914/`. Gap1 permanent regressions complete; no product/config/dependency edits, old loop suspended, other gaps remain separate.
