@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Acceptance policy approved; native budget implementation starting — 2026-09-14
+
+Maintainer replied “De acordo” to proposal98a6c28 and the explicit approval question. The nine one-time exceptions, Alpine category and native budget / exact reproduction separation are now approved under existing runtime/immutability prerequisites. Next bounded implementation: existing bundle-tool native budget command and CI step, with strict reproduction/FileUpload behavior preserved; no core promotion or invented family runtime policy. Batuta high lane Codex/gpt-5.6-terra, isolated worktree; independent GLM research90.72s/unchanged guard. No old38loop or remote/container/release action.
+
 ## Acceptance-policy proposal ready — 2026-09-14
 
 Critical policy drafting by conductor; OpenCode/GLM research151.48s, unchanged guard. Proposed exact9 standalone migration exceptions, Alpine complex-aggregate category, and native budget / exact reproduction / immutable promotion separation. Attributed root lock to c5cfaae and CSS to existing contract fixes; explicit FileUpload runtime thresholds preserved, other family protocol decisions remain pending. Controller recomputed9 rows and candidate identities; independent GLM review162.48s,3DONE/no findings after one external-path access retry with raw JSON inline. See `.batuta/specs/2026-09-14-v1-acceptance-policy-amendment.md`; raw MAIN `.batuta/runs/v1-acceptance-policy-20260914/`. Proposal is ready for maintainer decision, not accepted policy. No product/test/CI/baseline edit, new benchmark, promotion or automatic next lot.

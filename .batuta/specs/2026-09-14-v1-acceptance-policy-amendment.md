@@ -1,12 +1,12 @@
 # V1 acceptance-policy amendment — 2026-09-14
 
-**Status: proposed for maintainer decision; not approved or implemented.** The maintainer authorized preparing this amendment after reconciliation 2352423. That authorization does not approve the previously unpresented numerical exceptions below. Scope: incumbent Styles/React/Alpine before Blade. Existing September 11 absolute-cap and September 12 composition approvals remain in force.
+**Status: approved by the maintainer on 2026-09-14; implementation pending.** After reviewing proposal98a6c28 and the explicit approval question, the maintainer replied “De acordo”. This accepts the nine exact one-time migration exceptions, Alpine category and native-budget/exact-reproduction separation below, subject to the preserved runtime and immutability prerequisites. Scope: incumbent Styles/React/Alpine before Blade. Existing September 11 absolute-cap and September 12 composition approvals remain in force.
 
-## Proposed one-time migration decision
+## Accepted one-time migration decision
 
 Accept only the following nine historical-to-current canonical standalone JavaScript Brotli increases. These are exact byte allowances without an extra percentage or maintenance margin. Reference: `0003123e22ec57d21946b3f6f383fd2da7d1bd0a`; measured product candidate: `dc9d54f`, retained in MAIN `.batuta/runs/current-artifact-validation-20260914/current-bundle-measurement.json`.
 
-| React public entry | Historical bytes | Candidate bytes | Proposed exception: increase |
+| React public entry | Historical bytes | Candidate bytes | Approved exception: increase |
 | --- | ---: | ---: | ---: |
 | @lyra-ds/react/drawer | 1758 | 5762 | 4004 |
 | @lyra-ds/react/bottom-sheet | 1822 | 5788 | 3966 |
@@ -24,11 +24,11 @@ Benefit: retain the incumbent's verified dynamic focus recovery, background iner
 
 Rejected alternatives are already documented in `2026-09-11-v1-standalone-budget-decision.md`, `2026-09-12-v1-composition-budget-decision.md`, `.batuta/v1-size-limit-evaluation.md` and `.batuta/v1-remaining-size-limits.md`: accepted private-icon reductions are included; bounded deduplication saved 12–30 bytes; shared-panel and root-import prototypes grew measured output. Reverting verified behavior sacrifices required contracts. Native-only or alternate foundations were not qualified as equivalent and comparative work remains suspended. This does not claim that every optimization is exhausted.
 
-The proposed allowance changes no shipped byte, public API, dependency or version. It accepts the recorded migration impact, distinct from the already approved Size Limit pipeline. Do not sum these entry sizes as page payload: overlapping dependencies are shared, and actual consumer composition determines the payload. The older representative mobile lab remains diagnostic, not current-candidate runtime qualification.
+The approved allowance changes no shipped byte, public API, dependency or version. It accepts the recorded migration impact, distinct from the already approved Size Limit pipeline. Do not sum these entry sizes as page payload: overlapping dependencies are shared, and actual consumer composition determines the payload. The older representative mobile lab remains diagnostic, not current-candidate runtime qualification.
 
 ## Candidate and comparability disposition
 
-- Treat the whole Alpine plugin as a complex aggregate entry: 23306→25730 Brotli bytes (+2424), within the 3000-byte default. This category assignment is part of this proposal, not a newly granted size exception.
+- Treat the whole Alpine plugin as a complex aggregate entry: 23306→25730 Brotli bytes (+2424), within the 3000-byte default. This category assignment is part of this approval, not a newly granted size exception.
 - Tabs now measures the complete Tabs/TabsList/TabsTrigger/TabsContent public composition: 748→1780 canonical Brotli bytes (+1032). Preserve both import definitions and label this fixture-shape change; do not claim identical-fixture performance. Its independent Size Limit cap remains 1500 bytes, current 1452.
 - Shared stylesheet root and styles.css are aliases of the same emitted CSS: 13668→13776 Brotli bytes (+108 each alias, not 216 bytes of mandatory payload). Preserve all four CSS entry records and attribute source changes; numerical JS exceptions do not erase CSS history.
 - Retain toolchain, collector/configuration, compression, externals, consumer lock and resolved graph identities. Current and reference Node 24.18.0, pnpm 11.13.1, Vite 8.2.1, Size Limit 12.1.0 and Brotli settings match. Tool or fixture changes require a labeled comparison/migration decision, never an unexplained automatic reset.
@@ -49,7 +49,7 @@ These identify the measured candidate only. Different future package bytes need 
 
 ## Native budget validation and exact reproduction
 
-Proposed behavior for a later narrow extension of the existing tool:
+Approved behavior for the bounded extension of the existing tool:
 
 | Purpose | Required decision | Environment and identity rule |
 | --- | --- | --- |
@@ -59,7 +59,7 @@ Proposed behavior for a later narrow extension of the existing tool:
 
 Native Linux/macOS/Windows contribution keeps frozen install/test/build through the existing workflow. No Docker, WSL or matching historical host prerequisite. A cross-host output difference still counts toward the numerical budget; OS/architecture provenance is never deleted to hide it. If the measurement protocol cannot establish comparability, report that condition and do not promote evidence. Native cross-platform success remains to be observed through ordinary authorized integration.
 
-Keep the current exact `--check` semantics and required CI wiring until an explicit implementation replaces the budget gate with the approved contract and retains reproduction as a named, accessible operation. This proposal alone disables nothing. Native budget success cannot stand in for release acceptance or browser/platform qualification.
+Keep the current exact `--check` semantics and required CI wiring until an explicit implementation replaces the budget gate with the approved contract and retains reproduction as a named, accessible operation. Approval alone disables nothing. Native budget success cannot stand in for release acceptance or browser/platform qualification.
 
 ## Runtime prerequisites and immutable promotion
 
@@ -73,9 +73,9 @@ Core acceptance must reuse existing collection and immutable-record patterns, wi
 
 ## Decision and execution boundary
 
-The requested decision is the nine exact one-time migration exceptions plus the Alpine category and separation of native budget validation from exact reproduction, subject to the preserved runtime/immutability conditions above. It grants no runtime PASS, baseline promotion, release, dependency change or remote action. Missing family protocol approval remains a concrete prerequisite; this amendment does not invent numeric thresholds.
+The accepted decision is the nine exact one-time migration exceptions plus the Alpine category and separation of native budget validation from exact reproduction, subject to the preserved runtime/immutability conditions above. It grants no runtime PASS, baseline promotion, release, dependency change or remote action. Missing family protocol approval remains a concrete prerequisite; this amendment does not invent numeric thresholds.
 
-After maintainer acceptance, record that decision here and brief the smallest existing-tool change against this contract. Do not launch the old 38-task loop or a replacement automatic queue. The historical 466-difference check remains a retained FAIL until its proper reconciliation; no result is relabeled by adopting this proposal.
+The maintainer acceptance is recorded above. Implement the smallest existing-tool change against this contract. Do not launch the old 38-task loop or a replacement automatic queue. The historical 466-difference check remains a retained FAIL until its proper reconciliation; no result is relabeled by adopting this proposal.
 
 ## Proposal verification
 
