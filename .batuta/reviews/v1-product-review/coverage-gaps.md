@@ -67,3 +67,7 @@ The canonical Tabs reference now names the existing tracked contract with the co
 ## Current package evidence refreshed — 2026-09-14
 
 See [artifact validation](current-artifact-validation.md). React18/19 compatibility and existing React/Styles packed consumers now use the current exact artifact pair; exports/types and current72 installed-tarball budgets pass for the applicable packages. This advances gap3 but does not close it wholesale: historical bundle comparison fails466 differences, Alpine packed consumer runtime remains unproved, and final release/platform acceptance is separate. Source and immutable references remain unchanged; no automatic baseline promotion.
+
+## Bundle policy reconciliation recorded — 2026-09-14
+
+See [bundle reconciliation](bundle-reference-reconciliation.md): all11 changed absolute caps are approved and five composition measurements match the accepted decision. Nine canonical standalone React deltas exceed3000B and still need migration disposition; absolute-cap approval is not a delta waiver. The historical exact check also compares architecture, hashes and changed measurements. FileUpload-only acceptance cannot promote core evidence. No baseline, CI or product change; gap6 acceptance policy and final runtime/platform obligations remain pending.
