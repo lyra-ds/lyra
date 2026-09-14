@@ -43,3 +43,7 @@ The first justified implementation is the small Popover CSS regression case in g
 This is a requirement/evidence comparison with sampled test-body inspection, not exhaustive execution of 253 acceptance cells. No newly reproduced product defect or full V1 PASS is asserted. The raw review files, both scout outputs, guards, controller anchor checks and exact hash comparison are in MAIN `.batuta/runs/v1-coverage-gap-review-20260913/`.
 
 Controller corrected the scout's nonexistent `--profile` suggestion (the existing CLI has `--browser`), rejected immediate creation of another Popover producer, replaced the claim that Tabs lacks a spec, and rejected inferring Alpine feature scope from absent code. Blanket claims that all behavioral gaps are closed or that focus-based tests prove native Tab traversal were not adopted. Media absence statements are bounded by the inspected suites; unrelated diagnostic evidence may exist elsewhere. The complete normalized scout transcript is preserved as research, not adopted wholesale as the verdict.
+
+## First bounded follow-up complete — 2026-09-14
+
+The proposed permanent Popover CSS motion regression is now implemented and verified in the existing Styles suite. See [verification](popover-motion-regression.md):3/3 positive,3/3 original-rule failures,3/3 restored,276 complete Styles cases and common suite PASS. This resolves the Popover part of gap1 only; no replacement packed producer or automatic next task.

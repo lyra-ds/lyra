@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Popover motion regression complete — 2026-09-14
+
+OpenCode/GLM low, one invocation/no retry/escalation: one Styles test using the existing native media command. Controller three-engine positive3/3, removed-rule negative3/3FAIL, exact CSS restoration and fresh3/3PASS; full Styles276PASS, common pnpm test exit0/158.14s, format/scope/hash/diff PASS. No product/config/dependency changes. See `.batuta/reviews/v1-product-review/popover-motion-regression.md`; raw MAIN `.batuta/runs/popover-motion-regression-20260914/` records the final commit. First proposed gap1 lot complete; remaining gaps stay separate, old loop suspended, no other lot started.
+
 ## Coverage-gap review complete — 2026-09-13
 
 Read-only OpenCode/GLM research plus one targeted correction, both unchanged-tree guards; controller checked source assertions, CLI options, authored Tabs contract and raw compatibility identities. Five compatibility source hashes and React tarball unchanged; Styles artifact changed, so final-candidate compatibility revalidation uses the existing producer. Six retained gap categories and first proposed lot are in `.batuta/reviews/v1-product-review/coverage-gaps.md`: small permanent Popover motion regression in the existing Styles browser suite, then evidence/contract work as justified. Alpine Dropdown typeahead applicability and Tabs reference drift are explicit, not silently waived. No product/test code, new runner, tests/builds, baseline, remote or container actions. Raw MAIN `.batuta/runs/v1-coverage-gap-review-20260913/`.
