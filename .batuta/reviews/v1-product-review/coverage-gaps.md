@@ -63,3 +63,7 @@ The concrete missing behavior identified in gap5 is now implemented in the exist
 ## Tabs record follow-up complete — 2026-09-14
 
 The canonical Tabs reference now names the existing tracked contract with the conservative draft/specified lifecycle pair; see [verification](tabs-ledger-reference.md). Exactly three leaf values changed, all other evidence and records stayed identical, and the existing checker/common suite pass. This closes the remaining bounded reference correction in gap5 after Alpine typeahead delivery. It does not qualify broader Tabs capabilities or the remaining media/package/platform/runtime acceptance gaps.
+
+## Current package evidence refreshed — 2026-09-14
+
+See [artifact validation](current-artifact-validation.md). React18/19 compatibility and existing React/Styles packed consumers now use the current exact artifact pair; exports/types and current72 installed-tarball budgets pass for the applicable packages. This advances gap3 but does not close it wholesale: historical bundle comparison fails466 differences, Alpine packed consumer runtime remains unproved, and final release/platform acceptance is separate. Source and immutable references remain unchanged; no automatic baseline promotion.
