@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Native bundle budget gate complete — 2026-09-14
+
+Approved amendment implemented through Codex/Terra high plus one retry, then controller/critical correction of confirmed native-executable and legacy-schema failures. New `pnpm baseline:bundles --check-budgets` supplies full provenance and enforces72 absolute budgets, pinned9 standalone/3composition exceptions, inventory/protocol validity; CI swaps exactly one step. Fresh public command47.97s PASS,39focused cases PASS, format/actionlint PASS, common pnpm test161.08s PASS. Actual package hashes unchanged;511protected-file proof and7legacy function-body comparisons pass. Independent final GLM3DONE; optional constant suggestion declined. See `.batuta/reviews/v1-product-review/native-bundle-budget.md`; raw MAIN `.batuta/runs/native-bundle-budget-20260914/` retains failed attempts and final integration SHA. Native numerical gate complete; exact reproduction remains distinct, core promotion/runtime/platform/media qualification pending. No baseline promotion, remote action or next loop launched.
+
 ## Acceptance policy approved; native budget implementation starting — 2026-09-14
 
 Maintainer replied “De acordo” to proposal98a6c28 and the explicit approval question. The nine one-time exceptions, Alpine category and native budget / exact reproduction separation are now approved under existing runtime/immutability prerequisites. Next bounded implementation: existing bundle-tool native budget command and CI step, with strict reproduction/FileUpload behavior preserved; no core promotion or invented family runtime policy. Batuta high lane Codex/gpt-5.6-terra, isolated worktree; independent GLM research90.72s/unchanged guard. No old38loop or remote/container/release action.

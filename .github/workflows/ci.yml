@@ -129,7 +129,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      - run: pnpm baseline:bundles --check
+      - run: pnpm baseline:bundles --check-budgets
       # Phase 5, GEN-01..GEN-03: declaration-driven docs drift guard; consumes dist.
       - run: node tools/docgen/generate.mjs --check
       - run: node tools/docgen/alpine.mjs --check

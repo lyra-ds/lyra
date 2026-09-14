@@ -110,14 +110,21 @@ requires all three packages to reach `1.0.0` independently.
 
 ## CI commands
 
-| Required job | Command                         | Protected evidence                                      |
-| ------------ | ------------------------------- | ------------------------------------------------------- |
-| `lint`       | `pnpm phase0:check`             | Overlay ADR template structure                          |
-| `lint`       | `pnpm release-policy:check`     | Independent-versioning policy and release configuration |
-| `build`      | `pnpm baseline:bundles --check` | Packed-artifact bundle baseline drift                   |
+| Required job | Command                                 | Protected evidence                                      |
+| ------------ | --------------------------------------- | ------------------------------------------------------- |
+| `lint`       | `pnpm phase0:check`                     | Overlay ADR template structure                          |
+| `lint`       | `pnpm release-policy:check`             | Independent-versioning policy and release configuration |
+| `build`      | `pnpm baseline:bundles --check-budgets` | Native packed-artifact bundle budgets                   |
 
 These checks run as steps inside the existing `lint` and `build` jobs. The
 frozen required-check contexts remain `lint`, `typecheck`, `test`, and `build`.
+
+`pnpm baseline:bundles --check-budgets` is the native contributor gate. It
+validates packed archives, absolute Size Limit caps, approved JavaScript
+migration deltas, and reports CSS/module drift without treating it as a
+JavaScript budget. `pnpm baseline:bundles --check` remains the stricter exact
+historical-reproduction operation. Passing either command is not release or
+runtime acceptance.
 
 ## Phase 0 exit checklist
 

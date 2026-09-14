@@ -1,6 +1,6 @@
 # V1 acceptance-policy amendment — 2026-09-14
 
-**Status: approved by the maintainer on 2026-09-14; implementation pending.** After reviewing proposal98a6c28 and the explicit approval question, the maintainer replied “De acordo”. This accepts the nine exact one-time migration exceptions, Alpine category and native-budget/exact-reproduction separation below, subject to the preserved runtime and immutability prerequisites. Scope: incumbent Styles/React/Alpine before Blade. Existing September 11 absolute-cap and September 12 composition approvals remain in force.
+**Status: approved by the maintainer on 2026-09-14; native budget gate implemented and verified, core promotion pending.** After reviewing proposal98a6c28 and the explicit approval question, the maintainer replied “De acordo”. This accepts the nine exact one-time migration exceptions, Alpine category and native-budget/exact-reproduction separation below, subject to the preserved runtime and immutability prerequisites. Scope: incumbent Styles/React/Alpine before Blade. Existing September 11 absolute-cap and September 12 composition approvals remain in force.
 
 ## Accepted one-time migration decision
 
@@ -80,3 +80,7 @@ The maintainer acceptance is recorded above. Implement the smallest existing-too
 ## Proposal verification
 
 Controller recalculated all nine rows from retained current/reference JSON and checked all three candidate package hashes and the root lock hash. Source history attributes the three CSS files and single root-lock update. OpenCode/GLM5.3Flash research151.48s, unchanged guard; independent review162.48s,3DONE/no findings, unchanged status and proposal hash. First review attempt ended after an external-directory read denial without a verdict; the retry received the exact raw JSON inline. No approval-review bypass or widened permissions was needed. No test/build/benchmark rerun for this prose-only amendment. Raw proofs and complete transcripts: MAIN `.batuta/runs/v1-acceptance-policy-20260914/`.
+
+## Native gate delivery
+
+The approved native budget command and CI bundle step are implemented; see [verification](../reviews/v1-product-review/native-bundle-budget.md). Fresh packed budgets, focused/common tests, formatting and workflow validation pass. Exact reproduction and FileUpload acceptance remain intact; no core baseline promotion or runtime qualification follows from this delivery.

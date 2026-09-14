@@ -75,3 +75,7 @@ See [bundle reconciliation](bundle-reference-reconciliation.md): all11 changed a
 ## Acceptance amendment prepared — 2026-09-14
 
 The [proposed amendment](../../specs/2026-09-14-v1-acceptance-policy-amendment.md) presents the nine exact migration exceptions, Alpine category, attributed CSS/lock changes and native budget versus exact reproduction rules. Existing numerical approvals and FileUpload runtime policy remain intact. Controller data checks and independent review pass for the proposal only; maintainer acceptance, missing family runtime protocols, tooling implementation and final qualification remain separate. No baseline or required CI gate changed.
+
+## Native numerical gate implemented — 2026-09-14
+
+The acceptance amendment was approved and the [native budget gate](native-bundle-budget.md) now passes on current packed artifacts. CI uses the new budget command while strict historical reproduction remains available. The72 absolute checks and9/3 exception ceilings pass without rewriting a reference; full provenance is emitted. Common/focused/workflow checks pass. This resolves the numerical CI comparison mismatch in gaps3/6, not core promotion, missing family runtime protocols, packed Alpine runtime or platform/media qualification.
