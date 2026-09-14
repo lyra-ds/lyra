@@ -1,5 +1,9 @@
 # Current work — V1 incumbent stabilization
 
+## Alpine Dropdown typeahead complete — 2026-09-14
+
+Codex/Terra medium, one bounded four-line test-proof retry, no escalation; independent GLM3DONE/unchanged guard with low timing observation adjudicated. Existing Alpine owner now handles prefix/cycling/500ms expiry and close/destroy resets; three focused cases plus patch changeset, no API/CSS/dependency/budget change. Original-source matching/expiry RED in all3, destroy cleanup RED Chromium, corrected external-watcher cleanup RED all3, exact restoration. Final complete Alpine322 per engine/966 total PASS; common pnpm test exit0/298.45s, format/types/build/docgen PASS, size23.35kB within24.2kB. See `.batuta/reviews/v1-product-review/alpine-dropdown-typeahead.md`; raw MAIN `.batuta/runs/alpine-dropdown-typeahead-20260914/` records final integration. Canonical Tabs record and final package/platform qualification remain separate; old loop suspended, no further lot launched.
+
 ## Contract reconciliation complete — 2026-09-14
 
 OpenCode/GLM research, one invocation/no retry, unchanged guard; controller checked all14 cited paths, normative Alpine parity, current handler and actual lifecycle pairs. Tabs authored reference is stale; canonical update remains scoped separately, proposed draft/specified without qualification. Rejected scout's invalid draft/planned edit and blanket approval inference. Alpine Dropdown typeahead is applicable and unwaived in bounded records, with implementation absent by source inspection. See `.batuta/reviews/v1-product-review/contract-reconciliation.md`; raw MAIN `.batuta/runs/contract-reconciliation-20260914/`. Optional checker probe failed to import missing yaml; no test/runtime/validator PASS claimed, no install. Only managed documentation changed; no canonical ledger/product edit. Next useful product task: bounded Alpine typeahead reproduction/fix, no new framework or old-loop restart.

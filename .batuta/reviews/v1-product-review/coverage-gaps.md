@@ -55,3 +55,7 @@ Drawer and BottomSheet now reuse the Dialog native close-focus cases in the exis
 ## Gap5 reconciliation recorded — 2026-09-14
 
 See [contract reconciliation](contract-reconciliation.md). Tabs has an authored controller-selected contract; canonical reference correction remains a separately scoped record update. The conservative proposed lifecycle pair is draft/specified, not the invalid draft/planned combination. Alpine Dropdown typeahead is an applicable OF-MENU obligation with no waiver found in the bounded current records and no implementation branch in its handler. It remains a concrete open product gap. This resolves the applicability questions, not the implementation or final acceptance.
+
+## Alpine typeahead follow-up complete — 2026-09-14
+
+The concrete missing behavior identified in gap5 is now implemented in the existing Alpine Dropdown owner, with three meaningful browser cases and an Alpine patch changeset. See [verification](alpine-dropdown-typeahead.md): final966 Alpine cases across three engines, common suite and scoped build/type/size checks PASS; original-source and cleanup mutation evidence retained. This closes that implementation gap only. Tabs canonical record correction remains outstanding; final-candidate Alpine evidence must account for this source change. No full OF-MENU or release qualification is claimed.

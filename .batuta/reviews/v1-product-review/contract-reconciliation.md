@@ -25,3 +25,7 @@ Disposition: record typeahead as open and required; do not claim Alpine menu par
 ## Evidence and limits
 
 Raw scout transcript/report, unchanged guard, cited-path checks, controller adjudication and failed probe: MAIN `.batuta/runs/contract-reconciliation-20260914/`. Search excluded dependencies, generated output, old raw logs and scout transcripts; a waiver hidden only there is not ruled out. No browser tests, builds, package installs or remote actions ran. This report resolves applicability and a proposed record correction; it does not deliver the Alpine behavior, update the canonical ledger or qualify V1.
+
+## Implementation follow-up — 2026-09-14
+
+The subsequently authorized Alpine typeahead slice is implemented and verified; see [delivery](alpine-dropdown-typeahead.md). The source-absence finding above describes this reconciliation's base revision. Tabs canonical record correction and broader family qualification remain separate.

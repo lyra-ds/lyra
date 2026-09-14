@@ -50,6 +50,32 @@ function menu(host: HTMLElement): HTMLElement {
   return element;
 }
 
+function mountTypeaheadDropdown(): HTMLElement {
+  const host = document.createElement('div');
+  host.innerHTML = `
+    <div x-data="{ outer: true }">
+      <div x-data="lyraDropdown({ defaultOpen: true })" x-modelable="open" x-model="outer" class="lyra-dropdown">
+        <button type="button" x-bind="trigger">Actions</button>
+        <div x-bind="menu">
+          <span class="lyra-menu__label">Archive group</span>
+          <button type="button" x-bind="item"><span aria-hidden="true">Archive icon</span>Edit</button>
+          <hr class="lyra-menu__sep">
+          <button type="button" x-bind="item">Archive</button>
+          <button type="button" x-bind="item" aria-disabled="true">Add</button>
+          <button type="button" x-bind="item">Apply</button>
+          <button type="button" x-bind="item">Ångström</button>
+        </div>
+      </div>
+      <button type="button" data-testid="external-close" x-on:click="outer = false">Close externally</button>
+      <button type="button" data-testid="external-open" x-on:click="outer = true">Open externally</button>
+    </div>
+  `;
+  document.body.appendChild(host);
+  Alpine.initTree(host);
+  mountedHosts.push(host);
+  return host;
+}
+
 afterEach(() => {
   for (const host of mountedHosts.splice(0)) {
     Alpine.destroyTree(host);
@@ -140,6 +166,119 @@ describe('lyraDropdown', () => {
     await userEvent.keyboard('{ArrowUp}');
     await flush();
     expect(document.activeElement).toBe(commands[1]);
+  });
+
+  it('typeaheads through rendered command labels without selecting or closing the menu', async () => {
+    const host = mountTypeaheadDropdown();
+    const control = trigger(host);
+    const commands = menu(host).querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
+    commands[0]?.focus();
+
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+    await userEvent.keyboard('p');
+    expect(document.activeElement).toBe(commands[3]);
+
+    await userEvent.keyboard('{Escape}{Enter}');
+    commands[0]?.focus();
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[2]);
+
+    await userEvent.keyboard('{Escape}{Enter}');
+    commands[4]?.focus();
+    await userEvent.keyboard('a');
+    expect(document.activeElement).toBe(commands[1]);
+
+    await userEvent.keyboard('{Escape}{Enter}');
+    commands[0]?.focus();
+    // Synthetic: native browser keyboard input does not reliably emit Unicode keydown events.
+    commands[0]?.dispatchEvent(
+      new window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'å' }),
+    );
+    expect(document.activeElement).toBe(commands[4]);
+    expect(control.getAttribute('aria-expanded')).toBe('true');
+
+    await userEvent.keyboard('z');
+    expect(document.activeElement).toBe(commands[4]);
+    expect(control.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('expires and clears the typeahead buffer when closed or destroyed', async () => {
+    const host = mountTypeaheadDropdown();
+    const commands = menu(host).querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
+    commands[0]?.focus();
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    try {
+      // Synthetic: this live-DOM event lets the local fake clock prove the exact expiry boundary.
+      commands[0]?.dispatchEvent(
+        new window.KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'a' }),
+      );
+      expect(document.activeElement).toBe(commands[1]);
+      await vi.advanceTimersByTimeAsync(500);
+      vi.useRealTimers();
+      commands[1]?.focus();
+      await userEvent.keyboard('e');
+      expect(document.activeElement).toBe(commands[0]);
+
+      const externalClose = host.querySelector<HTMLButtonElement>('[data-testid="external-close"]');
+      const externalOpen = host.querySelector<HTMLButtonElement>('[data-testid="external-open"]');
+      if (!externalClose || !externalOpen) throw new Error('Expected external controls');
+      externalClose.focus();
+      await userEvent.keyboard('{Enter}');
+      await flush();
+      externalOpen.focus();
+      await userEvent.keyboard('{Enter}');
+      await flush();
+      commands[0]?.focus();
+      await userEvent.keyboard('a');
+      expect(document.activeElement).toBe(commands[1]);
+
+      const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+      Alpine.destroyTree(dropdown(host));
+      expect(clearTimeoutSpy).toHaveBeenCalled();
+      clearTimeoutSpy.mockRestore();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not typeahead from canceled, modified, composing, or space input', async () => {
+    const host = mountTypeaheadDropdown();
+    const commands = menu(host).querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
+    commands[0]?.focus();
+
+    for (const options of [
+      { ctrlKey: true },
+      { altKey: true },
+      { metaKey: true },
+      { isComposing: true },
+    ]) {
+      commands[0]?.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'a',
+          ...options,
+        }),
+      );
+      expect(document.activeElement).toBe(commands[0]);
+    }
+
+    const canceled = new window.KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'a',
+    });
+    canceled.preventDefault();
+    commands[0]?.dispatchEvent(canceled);
+    expect(document.activeElement).toBe(commands[0]);
+
+    await userEvent.keyboard(' ');
+    await flush();
+    expect(trigger(host).getAttribute('aria-expanded')).toBe('false');
   });
 
   it('closes after a command selection with focus restored, while Tab keeps native focus order', async () => {
