@@ -71,3 +71,7 @@ See [artifact validation](current-artifact-validation.md). React18/19 compatibil
 ## Bundle policy reconciliation recorded — 2026-09-14
 
 See [bundle reconciliation](bundle-reference-reconciliation.md): all11 changed absolute caps are approved and five composition measurements match the accepted decision. Nine canonical standalone React deltas exceed3000B and still need migration disposition; absolute-cap approval is not a delta waiver. The historical exact check also compares architecture, hashes and changed measurements. FileUpload-only acceptance cannot promote core evidence. No baseline, CI or product change; gap6 acceptance policy and final runtime/platform obligations remain pending.
+
+## Acceptance amendment prepared — 2026-09-14
+
+The [proposed amendment](../../specs/2026-09-14-v1-acceptance-policy-amendment.md) presents the nine exact migration exceptions, Alpine category, attributed CSS/lock changes and native budget versus exact reproduction rules. Existing numerical approvals and FileUpload runtime policy remain intact. Controller data checks and independent review pass for the proposal only; maintainer acceptance, missing family runtime protocols, tooling implementation and final qualification remain separate. No baseline or required CI gate changed.
