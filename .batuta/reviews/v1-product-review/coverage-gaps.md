@@ -95,3 +95,7 @@ Gap2 now has a bounded Dropdown observation: React/Alpine each pass native Chrom
 ## Current remaining-work consolidation — 2026-09-15
 
 Use [remaining acceptance work](remaining-acceptance.md) for the current disposition and execution order. Historical open entries above are superseded only by their named completion records. Four fronts remain: current-candidate FileUpload runtime, bounded applicable media/interaction reconciliation, native Linux/Windows observations, then consolidated acceptance. Controller confirmed accepted FileUpload React/Styles hashes differ from the current pair; existing measurement CLI emits raw JSON without canonical writes. No new producer queue or policy approval is proposed.
+
+## FileUpload current-candidate runtime measured — 2026-09-15
+
+The existing measurement command passes all six operations at3ea446a on the shared current React/Styles hashes. See [runtime evidence](file-upload-current-runtime.md):30 samples per operation, maximum p951.200ms and worst1.400ms; no long task observed within measured windows. This closes the fresh measurement gap only. Accepted pointer/canonical reports unchanged; remaining applicable media/platform and consolidated acceptance stay open.
