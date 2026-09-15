@@ -99,3 +99,7 @@ Use [remaining acceptance work](remaining-acceptance.md) for the current disposi
 ## FileUpload current-candidate runtime measured — 2026-09-15
 
 The existing measurement command passes all six operations at3ea446a on the shared current React/Styles hashes. See [runtime evidence](file-upload-current-runtime.md):30 samples per operation, maximum p951.200ms and worst1.400ms; no long task observed within measured windows. This closes the fresh measurement gap only. Accepted pointer/canonical reports unchanged; remaining applicable media/platform and consolidated acceptance stay open.
+
+## Popover sequential keyboard slice observed — 2026-09-15
+
+See [native keyboard proof](popover-native-tab.md): React/Alpine pass Tab/Shift+Tab journeys in Chromium/Firefox and Option+Tab journeys in WebKit, including Enter/Space opening, exit without trap, closed-panel skip, Escape restoration and a detected prevention control. Initial WebKit plain Tab skipped an ordinary button before Popover; an independent native-control page reproduced it. Initial failure retained, WebKit plain-Tab qualification remains open. No product change/new permanent suite; other media/platform/final acceptance requirements remain separate.

@@ -6,6 +6,8 @@ Consolidated at `d21c78f328f0385c96d6f469b656dbcb1ff3a9c1`. This is the current 
 
 The [FileUpload current-candidate runtime](file-upload-current-runtime.md) now passes at3ea446a on the same shared React/Styles hashes: six operations,30 samples each, maximum p951.200ms, worst1.400ms, no long task observed in measured windows. Front1's measurement condition is complete; canonical acceptance remains front4. Next: front2's bounded media/interaction mapping. Front3 still awaits ordinary integration. The table below preserves the original execution order and reason for measurement.
 
+The [Popover sequential keyboard lot](popover-native-tab.md) now supplies React/Alpine Tab/Shift+Tab proof in Chromium/Firefox and separately qualified Option+Tab proof in WebKit. A plain native-control page reproduced WebKit's plain-Tab button skip; no product defect or unqualified three-engine plain-Tab PASS is claimed. Other Popover media/direction requirements remain open.
+
 ## Execution order and completion conditions
 
 | Order / front | Actual remaining work | Existing evidence or tooling to reuse | Completion condition |
