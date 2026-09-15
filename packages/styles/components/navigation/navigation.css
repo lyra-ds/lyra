@@ -701,3 +701,16 @@
     outline-offset: 2px;
   }
 }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): under forced colors the palette's active
+   option and its idle siblings collapse to indistinguishable system colors — Canvas background
+   over transparent, identical text and weight — so the selection vanishes inside the panel. The
+   outline restores a system-color distinction without touching background, text or descendant
+   colors; the negative offset keeps it inside the panel, whose `overflow: hidden` clips anything
+   drawn past its own edge. Idle options stay outline-free. */
+@media (forced-colors: active) {
+  .lyra-cmdk .lyra-cmdk__item--active {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+}

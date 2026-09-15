@@ -1,6 +1,15 @@
-import { beforeAll, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { commands, userEvent } from 'vitest/browser';
 import '../styles.css';
+
+declare module 'vitest/browser' {
+  interface BrowserCommands {
+    emulateFileUploadMedia(options: {
+      forcedColors?: 'active' | 'none';
+      reducedMotion?: 'reduce' | 'no-preference';
+    }): Promise<void>;
+  }
+}
 
 /**
  * Across the system, an idle `:hover` rule carries more specificity than the `--active` class it
@@ -132,5 +141,80 @@ describe('.lyra-tab--active under hover', () => {
     } finally {
       root.removeAttribute('data-theme');
     }
+  });
+});
+
+/* Forced colors maps the palette's active option onto Canvas and its idle siblings onto
+   transparent — same black text, same weight — so the selection becomes invisible inside the
+   panel, which clips anything drawn past its edge. The repair is an additive system-color
+   outline on the active option only. Emulation here is browser-level forced-colors media
+   emulation, not a native OS high-contrast session. */
+describe('.lyra-cmdk__item--active under forced colors', () => {
+  const cmdkFixture = (): string => `
+    <div class="lyra-cmdk" data-probe="cmdk-panel" role="dialog" aria-label="Command palette">
+      <div class="lyra-cmdk__body" role="listbox" aria-label="Commands">
+        <button type="button" role="option" class="lyra-cmdk__item lyra-cmdk__item--active"
+                data-probe="cmdk-active" aria-selected="true">Deploy</button>
+        <button type="button" role="option" class="lyra-cmdk__item"
+                data-probe="cmdk-idle" aria-selected="false">Undeploy</button>
+      </div>
+    </div>`;
+
+  const cmdkEl = (probe: string): HTMLElement =>
+    document.querySelector<HTMLElement>(`[data-probe="${probe}"]`)!;
+  const styleOf = (probe: string): CSSStyleDeclaration => getComputedStyle(cmdkEl(probe));
+
+  /* The panel enters with a finite opacity/transform animation; `outline-style` is already
+     solid from the first frame, so settle the entrance itself before reading computed state. */
+  const settleEntrance = async (): Promise<void> => {
+    await Promise.all(
+      cmdkEl('cmdk-panel')
+        .getAnimations({ subtree: false })
+        .filter((animation) => {
+          const timing = animation.effect?.getComputedTiming();
+          return Number.isFinite(timing?.activeDuration) && (timing?.activeDuration ?? 0) > 0;
+        })
+        .map((animation) => animation.finished),
+    );
+  };
+
+  afterEach(async () => {
+    await commands.emulateFileUploadMedia({ forcedColors: 'none', reducedMotion: 'no-preference' });
+    document.querySelector('[data-probe="cmdk-panel"]')?.remove();
+  });
+
+  it('keeps a system-color outline on the active option and none on the idle one in forced colors', async () => {
+    document.body.insertAdjacentHTML('beforeend', cmdkFixture());
+    await commands.emulateFileUploadMedia({
+      forcedColors: 'active',
+      reducedMotion: 'no-preference',
+    });
+
+    expect(window.matchMedia('(forced-colors: active)').matches).toBe(true);
+
+    await settleEntrance();
+    const activeStyle = styleOf('cmdk-active');
+    await settle(() => activeStyle.outlineStyle).toBe('solid');
+    expect(activeStyle.outlineWidth).toBe('2px');
+    expect(activeStyle.outlineOffset).toBe('-2px');
+    expect(activeStyle.outlineColor).not.toBe('transparent');
+    expect(/rgba\([^)]*,\s*0\)$/.test(activeStyle.outlineColor)).toBe(false);
+    expect(activeStyle.outlineColor).not.toBe(
+      getComputedStyle(cmdkEl('cmdk-panel')).backgroundColor,
+    );
+
+    expect(styleOf('cmdk-idle').outlineStyle).toBe('none');
+  });
+
+  it('adds no outline in normal mode, where the active surface already reads', async () => {
+    document.body.insertAdjacentHTML('beforeend', cmdkFixture());
+    await commands.emulateFileUploadMedia({
+      forcedColors: 'none',
+      reducedMotion: 'no-preference',
+    });
+
+    const activeStyle = styleOf('cmdk-active');
+    await settle(() => activeStyle.outlineStyle).toBe('none');
+    expect(styleOf('cmdk-idle').outlineStyle).toBe('none');
   });
 });
