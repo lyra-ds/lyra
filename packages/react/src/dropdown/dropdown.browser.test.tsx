@@ -22,6 +22,10 @@ function setTheme(theme: (typeof themes)[number]): void {
   else document.documentElement.removeAttribute('data-theme');
 }
 
+async function waitForEntryAnimation(element: HTMLElement): Promise<void> {
+  await Promise.all(element.getAnimations().map((animation) => animation.finished));
+}
+
 afterEach(async () => {
   await cleanup();
   setTheme('light');
@@ -52,6 +56,48 @@ describe('Dropdown', () => {
       }
     });
   }
+
+  it.each([
+    { name: 'inherited LTR default start', direction: 'ltr', edge: 'left' },
+    { name: 'inherited RTL default start', direction: 'rtl', edge: 'right' },
+    { name: 'inherited LTR explicit start', direction: 'ltr', align: 'start', edge: 'left' },
+    { name: 'inherited LTR explicit end', direction: 'ltr', align: 'end', edge: 'right' },
+    { name: 'inherited RTL explicit start', direction: 'rtl', align: 'start', edge: 'right' },
+    { name: 'inherited RTL explicit end', direction: 'rtl', align: 'end', edge: 'left' },
+    {
+      name: 'nested LTR default start within RTL',
+      direction: 'rtl',
+      nestedDirection: 'ltr',
+      edge: 'left',
+    },
+  ] as const)(
+    'aligns $name logically after its entry animation',
+    async ({ direction, nestedDirection, align, edge }) => {
+      const { container } = await render(
+        <div dir={direction}>
+          <div dir={nestedDirection}>
+            <Dropdown
+              defaultOpen
+              align={align}
+              items={items}
+              style={{ left: 300, position: 'fixed', top: 160 }}
+              trigger={
+                <button type="button" style={{ height: 32, width: 120 }}>
+                  Actions
+                </button>
+              }
+            />
+          </div>
+        </div>,
+      );
+      const anchor = container.querySelector<HTMLElement>('.lyra-dropdown')!;
+      const popup = container.querySelector<HTMLElement>('[role="menu"]')!;
+
+      await waitForEntryAnimation(popup);
+
+      expect(popup.getBoundingClientRect()[edge]).toBeCloseTo(anchor.getBoundingClientRect()[edge]);
+    },
+  );
 
   it('makes a Button trigger the control itself: one tab stop, the ARIA on the focused element', async () => {
     const { container } = await render(

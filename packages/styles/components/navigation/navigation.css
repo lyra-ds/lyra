@@ -556,6 +556,11 @@
   animation: lyra-fade-out var(--duration-base) var(--ease-out) forwards;
 }
 
+/* Additive extension (parity ADDITIVE_EXTENSIONS): Dropdown's explicit alignment follows the
+   inherited writing direction while its legacy classes retain their canonical physical offsets. */
+.lyra-menu.lyra-menu--start { left: auto; inset-inline-start: 0; }
+.lyra-menu.lyra-menu--end { right: auto; inset-inline-end: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .lyra-cmdk-overlay,
   .lyra-cmdk,

@@ -808,3 +808,5 @@ remote or publication action is authorized.
 - Packed Drawer profiles committed8000590: Terra/high +one retry, no escalation; Dialog18/18PASS, Drawer16/18PASS with2actual forced-colors focus failures, reduced-motion artifact negative and real startup-exit19 proof PASS; GLM3DONE/unchangedguard/verifierPASS. See .batuta/v1-drawer-profiles-verification.md. CSS repair next; no V1 qualification.
 
 - Drawer forced-colors repair verified: GLM5.3Flash/low52.61s, no retry/escalation; oneCSSselector, original16/18→18/18Drawer, Dialog18/18+source6/6PASS, archive/scope/cleanup/stylelint/parity checksPASS. Commit recorded in the run trail; next BottomSheet profiles.
+
+- Dropdown RTL: Codex/Terra medium +1retry → high escalation for exact parity registration; packed12/24→24/24, source141/common/types/stylelint/parityPASS, real negative control3RTL failures each adapter. Independent GLM retracted3 unsupported findings. Current P1 public-Button screening195interactions/66axePASS; FileUpload maxp951.1ms/worst1.3ms on matching archives. Report .batuta/reviews/v1-product-review/dropdown-rtl-and-current-screening.md; full media/native OS/acceptance still open.

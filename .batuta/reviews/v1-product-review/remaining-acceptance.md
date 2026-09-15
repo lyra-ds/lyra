@@ -4,6 +4,8 @@ Consolidated at `d21c78f328f0385c96d6f469b656dbcb1ff3a9c1`. This is the current 
 
 ## Latest candidate change
 
+[Dropdown direction repair and current screening](dropdown-rtl-and-current-screening.md) supersede the immediate execution pointer below: packed24/24, source141cases/common/parity/staticPASS; current FileUpload six-operation measurementPASS. Only Styles changed after the Popover repair. Reused P1 public-Button consumer195interaction observations and66axe observationsPASS; full media-contract cells remain unqualified. Next local work is the detailed media remainder and scoped evidence binding, not another FileUpload rerun without a relevant candidate change.
+
 [Popover logical alignment](popover-rtl-alignment.md) is now repaired and verified: settled packed geometry60/72→72/72, source171cases/common/static/parity/sizePASS. Explicit start/end mirrors RTL; auto/center/nested LTR remain correct. This product change creates new React/Alpine/Styles archive hashes. The earlier FileUpload measurement and other exact-artifact reports remain historical; refresh affected evidence or justify scoped reuse before final acceptance. The previously completed FileUpload lot is not automatically qualification of this newer candidate.
 
 ## Update after the next bounded lot

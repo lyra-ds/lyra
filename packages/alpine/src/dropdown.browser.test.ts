@@ -28,8 +28,42 @@ function mountDropdown(options = '{}'): HTMLElement {
   return host;
 }
 
+function mountLogicalAlignmentDropdown({
+  align,
+  direction,
+  nestedDirection,
+}: {
+  align?: 'start' | 'end';
+  direction: 'ltr' | 'rtl';
+  nestedDirection?: 'ltr' | 'rtl';
+}): HTMLElement {
+  const host = document.createElement('div');
+  host.innerHTML = `
+    <div dir="${direction}">
+      ${nestedDirection ? `<div dir="${nestedDirection}">` : ''}
+        <div
+          x-data="lyraDropdown({ defaultOpen: true${align ? `, align: '${align}'` : ''} })"
+          class="lyra-dropdown"
+          style="left: 300px; position: fixed; top: 160px"
+        >
+          <button type="button" x-bind="trigger" style="height: 32px; width: 120px">Actions</button>
+          <div x-bind="menu"><button type="button" x-bind="item">Edit</button></div>
+        </div>
+      ${nestedDirection ? '</div>' : ''}
+    </div>
+  `;
+  document.body.appendChild(host);
+  Alpine.initTree(host);
+  mountedHosts.push(host);
+  return host;
+}
+
 async function flush(): Promise<void> {
   await Alpine.nextTick();
+}
+
+async function waitForEntryAnimation(element: HTMLElement): Promise<void> {
+  await Promise.all(element.getAnimations().map((animation) => animation.finished));
 }
 
 function dropdown(host: HTMLElement): HTMLElement {
@@ -127,6 +161,34 @@ describe('lyraDropdown', () => {
     expect(menu(host).classList).toContain('lyra-menu--end');
     expect(menu(host).classList).toContain('lyra-menu--up');
   });
+
+  it.each([
+    { name: 'inherited LTR default start', direction: 'ltr', edge: 'left' },
+    { name: 'inherited RTL default start', direction: 'rtl', edge: 'right' },
+    { name: 'inherited LTR explicit start', direction: 'ltr', align: 'start', edge: 'left' },
+    { name: 'inherited LTR explicit end', direction: 'ltr', align: 'end', edge: 'right' },
+    { name: 'inherited RTL explicit start', direction: 'rtl', align: 'start', edge: 'right' },
+    { name: 'inherited RTL explicit end', direction: 'rtl', align: 'end', edge: 'left' },
+    {
+      name: 'nested LTR default start within RTL',
+      direction: 'rtl',
+      nestedDirection: 'ltr',
+      edge: 'left',
+    },
+  ] as const)(
+    'aligns $name logically after its entry animation',
+    async ({ direction, nestedDirection, align, edge }) => {
+      const host = mountLogicalAlignmentDropdown({ align, direction, nestedDirection });
+      await flush();
+      const popup = menu(host);
+
+      await waitForEntryAnimation(popup);
+
+      expect(popup.getBoundingClientRect()[edge]).toBeCloseTo(
+        dropdown(host).getBoundingClientRect()[edge],
+      );
+    },
+  );
 
   it('sets the trigger ARIA trio and derives a menu id from the root id', () => {
     const host = mountDropdown();

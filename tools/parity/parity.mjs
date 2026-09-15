@@ -475,6 +475,9 @@ const ADDITIVE_EXTENSIONS = {
   'components/navigation/navigation.css': {
     classes: [
       'lyra-dropdown__trigger',
+      // Dropdown's public start/end alignment classes add logical inline offsets.
+      'lyra-menu--start',
+      'lyra-menu--end',
       'lyra-cmdk',
       'lyra-kbd',
       'lyra-cmdk__group-label',
