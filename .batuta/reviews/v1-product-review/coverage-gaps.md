@@ -87,3 +87,7 @@ The packed-Alpine portion of gap3 now has observed browser-runtime evidence for 
 ## Tooltip native tap-action slice verified — 2026-09-15
 
 Gap2 now has a bounded native submit-button observation for Tooltip: React and Alpine each pass Chromium/Firefox/WebKit with coarse/no-hover emulation and trusted touch events, exactly-once native action, fixture interception control and restored action. Exact packed artifacts match the current checkout. See [verification](tooltip-native-tap.md). maxTouchPoints reports1/0/0 across the engines and is not treated as positive device-capability evidence. This adds no permanent test/producer and does not qualify other Tooltip actions, target geometry, physical devices or remaining media/interaction/platform cells. The approved September15 numerical-runtime deferral remains separate and unchanged.
+
+## Dropdown enabled-command native tap slice verified — 2026-09-15
+
+Gap2 now has a bounded Dropdown observation: React/Alpine each pass native Chromium/Firefox/WebKit coarse/no-hover emulation for opening, exactly-once enabled selection, explicit trigger-focus restoration and outside-tap dismissal. Fixture click-interception control is detected and removal restores the action. Exact packed artifacts/current shipped files match. See [verification](dropdown-native-tap.md). Disabled variants remain outside this public-model slice; no physical-device, geometry, other media/direction/platform or complete Dropdown/V1 qualification. No product change, new permanent suite or numerical-policy change.
