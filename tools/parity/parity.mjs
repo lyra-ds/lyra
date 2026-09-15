@@ -466,6 +466,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-combobox__pop--up',
       'lyra-combobox__trigger',
       'lyra-combobox__option',
+      // Forced-colors focus indicator for the handoff's shadow-only input.
+      'lyra-input',
       'lyra-input--sm',
       'lyra-formrow',
       'lyra-cal__day',
@@ -518,7 +520,7 @@ const ADDITIVE_EXTENSIONS = {
   },
   'components/data/data.css': {
     // Contrast repair: the handoff's column headings sit at 4.34:1 on the sunken header band.
-    classes: ['lyra-table'],
+    classes: ['lyra-table', 'lyra-table__sortbtn'],
     keyframes: [],
   },
   'components/files/files.css': {

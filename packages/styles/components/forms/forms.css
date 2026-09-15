@@ -429,3 +429,12 @@ button.lyra-datepicker__btn svg { color: var(--text-muted); flex: none; }
   cursor: not-allowed;
   background: transparent;
 }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): forced colors suppresses the
+   shadow-only focus treatment, so retain a native system-color ring for keyboard focus. */
+@media (forced-colors: active) {
+  .lyra-input:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
