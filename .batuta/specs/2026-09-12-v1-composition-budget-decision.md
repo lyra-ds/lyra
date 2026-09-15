@@ -42,6 +42,8 @@ Raw `baseline-dialog-final-{actual,expected,summary,result}.json` and the comman
 
 Approval of these three numbers alone does not make the historical check pass. The remaining entry deltas still need disposition. Final qualification must bind the exact packages and environment to approved family runtime datasets, thresholds and passing evidence. A separately reviewed immutable core acceptance mechanism must preserve the existing FileUpload pointer, comparisons and runtime validation; existing evidence must not be rewritten.
 
+> **2026-09-15 superseding note:** the approved [V1 Automated Core runtime-scope decision](2026-09-15-v1-runtime-scope-proposal.md) narrows the family-runtime prerequisite above for the incumbent V1 Automated Core release profile only. Families with no already-approved numerical protocol — located as Overlay, Tabs and DataTable — MAY be explicitly deferred as a non-PASS disposition. FileUpload and every other already-approved numerical budget, the exact package/environment binding, the immutable core acceptance mechanism and candidate binding remain in force unchanged. This note does not rewrite this decision's approval.
+
 The representative mobile lab remains diagnostic context, not a family SLA or field INP qualification. No unfinished release cell becomes PASS through this decision. No dependency, feature, versioning, merge, publication or Blade action is authorized by this decision.
 
 ## Evidence location and enactment

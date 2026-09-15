@@ -1,26 +1,30 @@
-# Proposed V1 Automated Core runtime-scope decision
+# V1 Automated Core runtime-scope decision (approved 2026-09-15)
 
-**Status: proposed; not approved or enacted.** Prepared on 2026-09-15 at candidate `acd4e809ab1a7513b19ad306be5549f57fa809ca`. The maintainer authorized continued work, not this newly proposed release-gate change. All current requirements remain in force until an explicit decision.
+**Status: approved and enacted by the maintainer on 2026-09-15.** Prepared on 2026-09-15 at candidate `acd4e809ab1a7513b19ad306be5549f57fa809ca`. The earlier maintainer authorization covered continued work only; later the same day the maintainer approved this release-gate change as recorded below. All requirements not explicitly deferred by this decision remain in force.
 
-## Decision requested
+## Approval record
+
+On 2026-09-15, after reviewing proposal `ba84ecc` and the explicit scope question, the maintainer replied **“aprovado”**. This enacts the V1 Automated Core runtime-scope decision exactly as written in this document and directs the canonical reconciliation it describes. The original proposal and its review remain preserved at `ba84ecc` and in the linked raw evidence; the file name and existing links are unchanged.
+
+## Decision requested and enacted
 
 For the incumbent Styles/React/Alpine **V1 Automated Core release only**, defer the creation and numerical qualification of new family responsiveness budgets where no approved numerical family protocol currently exists. Preserve every existing approved numerical runtime contract, including FileUpload, and every applicable functional, browser, accessibility, media, compatibility, package, security and release requirement.
 
 This is a deliberate reduction in required performance evidence for this release profile. It does not prove that unmeasured operations are fast, establish a universal latency SLA, or turn current browser-test durations into responsiveness evidence. The Full profile is unchanged. No known required performance-budget failure or P1 defect can be waived through this decision.
 
-The bounded audit identifies Overlay, Tabs and DataTable as lacking located approved numerical protocols. This is not an exhaustive exemption list for all components. Before applying the proposed deferral to any other family, its governing contract must be checked and its disposition explicitly recorded; an existing approved budget always remains mandatory. No blank ledger cell automatically becomes inapplicable or passed.
+The bounded audit identifies Overlay, Tabs and DataTable as lacking located approved numerical protocols. This is not an exhaustive exemption list for all components. Before applying the approved deferral to any other family, its governing contract must be checked and its disposition explicitly recorded; an existing approved budget always remains mandatory. No blank ledger cell automatically becomes inapplicable or passed.
 
-## Why a decision is necessary
+## Why the decision was necessary
 
 The approved [quality specification](../../docs/superpowers/specs/lyra-v1/05-quality-performance.md#complex-component-responsiveness), lines433-449, requires each complex family to define workloads and a user-facing threshold. It also requires pinned production Chromium, fixed device/viewport and controlled conditions, explicit warm-up, at least30 samples per operation, median/p95/worst, long tasks, rendering assumptions and an event-to-next-paint boundary. It supplies no universal millisecond threshold.
 
-The approved [September14 amendment](2026-09-14-v1-acceptance-policy-amendment.md#runtime-prerequisites-and-immutable-promotion) preserves those family protocols as a prerequisite to core acceptance. Its instruction is: “Approve missing protocol/threshold choices before collecting qualification measurements.” The [Automated Core amendment](../../docs/superpowers/specs/lyra-v1/05-quality-performance.md#2026-08-27-amendment-automated-core-release-profile) currently defers manual evidence only; it does **not** already defer automated performance obligations.
+At proposal time, the approved [September14 amendment](2026-09-14-v1-acceptance-policy-amendment.md#runtime-prerequisites-and-immutable-promotion) preserved those family protocols as a prerequisite to core acceptance. Its instruction was: “Approve missing protocol/threshold choices before collecting qualification measurements.” The [Automated Core amendment](../../docs/superpowers/specs/lyra-v1/05-quality-performance.md#2026-08-27-amendment-automated-core-release-profile) deferred manual evidence only; it did **not** already defer automated performance obligations. The dated September15 canonical exception now supplies the approved change.
 
-Consequently, using functional runtime tests instead of missing performance qualification without a new approval would weaken an existing gate silently. This proposal requests that scope change openly. The shared quality specification requires maintainer and PRD-owner approval for a V1 gate change; technical review alone is not approval.
+Consequently, using functional runtime tests instead of missing performance qualification without a new approval would weaken an existing gate silently. This proposal requested that scope change openly instead; the shared quality specification requires maintainer and PRD-owner approval for a V1 gate change, technical review alone is not approval, and that approval is now recorded above.
 
-## Proposed disposition
+## Disposition (as enacted)
 
-| Obligation | Proposed V1 Automated Core treatment |
+| Obligation | Enacted V1 Automated Core treatment |
 | --- | --- |
 | FileUpload numerical runtime | Keep the existing100 controlled items/20 active attempts, at least30 iterations in pinned production Chromium; named operations each p95≤100ms, worst<250ms, no long task>50ms. Preserve its own immutable evidence and validator. Exact-candidate validity remains to be checked; this document grants no PASS. |
 | Other already approved numerical runtime budgets, if found | Keep them mandatory. The absence of a budget in this bounded audit does not revoke an existing contract. |
@@ -30,7 +34,7 @@ Consequently, using functional runtime tests instead of missing performance qual
 | Media, direction, coarse pointer and platforms | No new deferral. Required automated evidence stays required. Existing manual deferral rules remain exactly as approved. Native Linux/Windows observations and ordinary required CI remain outstanding. |
 | Immutable core acceptance | A later bounded implementation may admit the explicitly approved numerical deferrals while still requiring all preserved numerical budgets, applicable functional evidence, candidate identities and every other acceptance prerequisite. No pointer, validator or canonical status changes merely because this proposal exists or is approved. |
 
-## Alternatives and recommendation
+## Alternatives considered (proposal history)
 
 **Recommended for the stated small-lot V1 workflow: approve the narrowly described Automated Core scope adjustment.** It avoids inventing performance targets solely to complete a checklist and preserves already-defined contracts. The cost is explicit: responsiveness outside existing approved numerical protocols is not quantitatively qualified for this V1 release.
 
@@ -40,14 +44,14 @@ Do not adopt the representative mobile lab's200ms operation proxy as a release S
 
 ## Enactment and stop
 
-If approved, the next bounded documentation change must add this exception to the canonical Automated Core/quality contract and reconcile the September12/14 core-acceptance prerequisites, linking the explicit approval. Preserve the general and Full-profile requirements and all immutable historical reports. Existing machine enums, release ledger and validators are not changed until their separately scoped implementation is necessary and reviewed. Deferred results must stay visibly unqualified.
+As enacted on 2026-09-15, the bounded documentation change adds this exception to the canonical Automated Core/quality contract and reconciles the September12/14 core-acceptance prerequisites, linking this explicit approval. Preserve the general and Full-profile requirements and all immutable historical reports. Existing machine enums, release ledger and validators are not changed until their separately scoped implementation is necessary and reviewed. Deferred results must stay visibly unqualified.
 
 After reconciliation, resume only concrete remaining evidence gaps using existing tools. A later Full-profile claim or performance commitment still needs its own approved protocol and measurements. This decision is not permission to publish V1, mark the ledger qualified, merge/push, change versions/dependencies, launch remote workflows, alter containers/services/resources, start Blade or resume the old38-task loop.
 
-Before approval, stop at this reviewable proposal. No product, test, CI, canonical specification, performance budget, baseline or release gate has been changed.
+Before approval, work stopped at this reviewable proposal. Enactment is documentation-only: the canonical specification prose now records this exception and the September12/14 prerequisites carry dated superseding notes, while no product, test, CI, machine enum, performance budget, baseline, ledger, validator or executable release check has been changed. The normative performance requirement is narrowed only as explicitly approved above.
 
 ## Evidence and review
 
 Read-only OpenCode/GLM research and controller checks located the normative clauses and checked current Overlay/Tabs/DataTable contracts and existing runner ownership. The search was bounded; it is not a complete historical budget audit. Modal profile producers are existing behavioral surfaces, not proven ready-made performance observers. All raw sources, research transcript, guard and review records are in MAIN `.batuta/runs/v1-runtime-policy-20260915/`.
 
-Independent OpenCode/GLM review returned3/3 DONE with no findings and an unchanged-tree guard. Controller checked cited paths, proposal links, exact normative clauses and source hashes. This validates the proposal’s accuracy and explicit boundaries; it is not maintainer approval or evidence that a release gate has passed. No tests, builds or benchmarks were run for this documentation-only decision.
+Independent OpenCode/GLM review returned3/3 DONE with no findings and an unchanged-tree guard. Controller checked cited paths, proposal links, exact normative clauses and source hashes. This validates the proposal’s accuracy and explicit boundaries; it was not maintainer approval at the time. Maintainer approval is now recorded in the [approval record](#approval-record). No tests, builds or benchmarks were run for this documentation-only decision.

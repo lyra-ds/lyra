@@ -60,6 +60,31 @@ layer; the manual procedures remain optional post-release evidence. Missing
 manual evidence is non-blocking only under Automated Core, MUST be labeled
 `deferred-by-release-profile`, and MUST NOT be represented as a pass.
 
+### 2026-09-15 amendment: Automated Core runtime-scope exception
+
+The maintainer approved the
+[V1 Automated Core runtime-scope decision](../../../../.batuta/specs/2026-09-15-v1-runtime-scope-proposal.md)
+on 2026-09-15 by replying “aprovado” after reviewing proposal `ba84ecc` and the
+explicit scope question. For the incumbent Styles/React/Alpine **V1 Automated
+Core release only**, where a complex component family has no already-approved
+numerical responsiveness protocol, the creation and numerical qualification of
+that new protocol MAY be explicitly deferred and recorded as a non-PASS
+disposition; a deferral MUST NOT be recorded as a pass, as measured
+responsiveness evidence, or as a universal latency SLA. The decision identifies
+Overlay, Tabs, and DataTable as the located families in this state; that list is
+not an exhaustive exemption, and applying the deferral to any other family
+requires inspecting its governing contract and recording an explicit
+disposition. A blank ledger cell does not become inapplicable or passed. Every
+existing approved numerical runtime contract remains mandatory, including the
+FileUpload thresholds (100 controlled items, 20 active attempts, at least 30
+iterations in pinned production Chromium; each named operation p95 ≤ 100ms,
+worst < 250ms, no long task > 50ms). Every applicable functional, browser,
+accessibility, media, compatibility, package, security, and release requirement
+also remains mandatory. The [Full profile](./README.md#automated-core-release-profile)
+and every other requirement of this document are unchanged. This amendment
+creates no new enum, ledger cell, validator, or benchmark; a separately scoped
+implementation must handle any machine-readable change and review.
+
 ## Quality levels, severity, and service-level objectives
 
 The shared [`P1`](./README.md#p1), [`P2`](./README.md#p2),
@@ -447,6 +472,12 @@ measurement boundary. The family specification MUST set its user-facing
 threshold before implementation. The candidate MUST meet that threshold and
 MUST NOT introduce a statistically repeatable regression hidden by a faster
 unrelated operation or by discarded outliers.
+
+Under the [Automated Core release profile](./README.md#automated-core-release-profile),
+the [2026-09-15 runtime-scope amendment](#2026-09-15-amendment-automated-core-runtime-scope-exception)
+explicitly defers the missing numerical protocols of the identified families as
+a non-PASS disposition instead of PASS. This subsection remains fully in force
+as the general rule and for the [Full profile](./README.md#automated-core-release-profile).
 
 ### Comparison artifacts
 

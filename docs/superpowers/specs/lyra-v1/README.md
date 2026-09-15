@@ -44,6 +44,10 @@ assistive-technology evidence.
 
 A release explicitly using Automated Core requires every applicable automated layer and treats manual assistive-technology evidence as non-blocking post-release evidence. Missing manual evidence MUST be labeled `deferred-by-release-profile` and MUST NOT be represented as a pass. The Full profile retains the original manual requirements.
 
+### 2026-09-15 runtime-scope exception for Automated Core
+
+The maintainer approved the [V1 Automated Core runtime-scope decision](../../../../.batuta/specs/2026-09-15-v1-runtime-scope-proposal.md) on 2026-09-15 by replying “aprovado” after reviewing proposal `ba84ecc` and the explicit scope question. For the incumbent Styles/React/Alpine **V1 Automated Core release only**, where a component family has no already-approved numerical responsiveness protocol, the creation and numerical qualification of that new protocol MAY be explicitly deferred and recorded as a non-PASS disposition; it MUST NOT be recorded as a pass or as measured responsiveness evidence. The located families in that state are Overlay, Tabs and DataTable; that list is not an exhaustive exemption, and applying the deferral to any other family requires inspecting its governing contract and recording an explicit disposition. Every existing approved numerical runtime contract, including the FileUpload thresholds, and every applicable functional, browser, accessibility, media, compatibility, package, security, and release requirement remains mandatory. The Full profile and every other requirement of this profile are unchanged. This exception creates no new enum, ledger cell, validator, or benchmark.
+
 ## PRD traceability
 
 Each requirement below has exactly one primary owning specification. Secondary
@@ -186,6 +190,7 @@ normal repository review.
 
 | Date       | Change                                                                                                                             |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-15 | Approved the Automated Core runtime-scope exception: for the V1 Automated Core release only, new numerical family responsiveness protocols without an existing approved budget MAY be explicitly deferred as a non-PASS disposition (located families: Overlay, Tabs, DataTable); all approved numerical budgets and every other requirement remain in force. |
 | 2026-08-13 | PRD owner and Lyra maintainer approved all five foundational specifications after technical and interaction-standard review.       |
 | 2026-08-13 | Recognized the released Blade port and added a non-blocking follow-up track after affected React contracts become stable.          |
 | 2026-08-12 | Restricted normative language to the five permitted terms and made lifecycle, authority, and inclusion gates explicitly normative. |
