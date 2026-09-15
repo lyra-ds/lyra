@@ -109,6 +109,12 @@ export const Popover = /*#__PURE__*/ forwardRef<HTMLSpanElement, PopoverProps>(f
   const placement = useFlipPlacement(open, triggerRef, panelRef, 8);
   const resolvedSide = side === 'auto' ? placement.side : side === 'bottom' ? 'down' : 'up';
   const resolvedAlign = align ?? placement.align;
+  const automaticAlignmentStyle =
+    align === undefined
+      ? placement.align === 'start'
+        ? { left: 0, right: 'auto' }
+        : { left: 'auto', right: 0 }
+      : undefined;
 
   useEffect(() => {
     if (!open) return;
@@ -263,7 +269,11 @@ export const Popover = /*#__PURE__*/ forwardRef<HTMLSpanElement, PopoverProps>(f
           )}
           role="dialog"
           aria-label={ariaLabel}
-          style={width === undefined ? undefined : { width }}
+          style={
+            width === undefined && automaticAlignmentStyle === undefined
+              ? undefined
+              : { width, ...automaticAlignmentStyle }
+          }
         >
           {children}
         </div>

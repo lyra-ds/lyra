@@ -2,6 +2,10 @@
 
 Consolidated at `d21c78f328f0385c96d6f469b656dbcb1ff3a9c1`. This is the current short disposition of the historical [coverage review](coverage-gaps.md), not a new unattended plan or a claim that only four tests remain. Existing approved requirements still apply. A missing evidence mapping is not automatically a product defect or an instruction to create a test.
 
+## Latest candidate change
+
+[Popover logical alignment](popover-rtl-alignment.md) is now repaired and verified: settled packed geometry60/72→72/72, source171cases/common/static/parity/sizePASS. Explicit start/end mirrors RTL; auto/center/nested LTR remain correct. This product change creates new React/Alpine/Styles archive hashes. The earlier FileUpload measurement and other exact-artifact reports remain historical; refresh affected evidence or justify scoped reuse before final acceptance. The previously completed FileUpload lot is not automatically qualification of this newer candidate.
+
 ## Update after the next bounded lot
 
 The [FileUpload current-candidate runtime](file-upload-current-runtime.md) now passes at3ea446a on the same shared React/Styles hashes: six operations,30 samples each, maximum p951.200ms, worst1.400ms, no long task observed in measured windows. Front1's measurement condition is complete; canonical acceptance remains front4. Next: front2's bounded media/interaction mapping. Front3 still awaits ordinary integration. The table below preserves the original execution order and reason for measurement.

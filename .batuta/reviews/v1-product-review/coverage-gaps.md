@@ -103,3 +103,7 @@ The existing measurement command passes all six operations at3ea446a on the shar
 ## Popover sequential keyboard slice observed — 2026-09-15
 
 See [native keyboard proof](popover-native-tab.md): React/Alpine pass Tab/Shift+Tab journeys in Chromium/Firefox and Option+Tab journeys in WebKit, including Enter/Space opening, exit without trap, closed-panel skip, Escape restoration and a detected prevention control. Initial WebKit plain Tab skipped an ordinary button before Popover; an independent native-control page reproduced it. Initial failure retained, WebKit plain-Tab qualification remains open. No product change/new permanent suite; other media/platform/final acceptance requirements remain separate.
+
+## Popover explicit RTL defect repaired — 2026-09-15
+
+See [repair verification](popover-rtl-alignment.md). Existing physical offsets caused12/72 settled packed cases to fail; the narrow CSS/adapter repair passes72/72 plus171source cases/common/types/lint/parity/size. Original code makes the new source regressions fail; corrected bytes restored. One implementation retry preserved classes and handoff CSS. New package hashes require affected exact-artifact evidence refresh or justified reuse; prior FileUpload/compatibility/touch/keyboard reports are not automatically rebound. Other media/platform/final acceptance remain open.

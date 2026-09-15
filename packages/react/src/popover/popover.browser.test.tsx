@@ -98,6 +98,101 @@ describe('Popover', () => {
     focusSpy.mockRestore();
   });
 
+  it.each([
+    { name: 'inherited LTR start', direction: 'ltr', align: 'start', edge: 'left' },
+    { name: 'inherited LTR end', direction: 'ltr', align: 'end', edge: 'right' },
+    { name: 'inherited RTL start', direction: 'rtl', align: 'start', edge: 'right' },
+    { name: 'inherited RTL end', direction: 'rtl', align: 'end', edge: 'left' },
+    {
+      name: 'nested LTR start within RTL',
+      direction: 'rtl',
+      nestedDirection: 'ltr',
+      align: 'start',
+      edge: 'left',
+    },
+    {
+      name: 'nested LTR end within RTL',
+      direction: 'rtl',
+      nestedDirection: 'ltr',
+      align: 'end',
+      edge: 'right',
+    },
+    { name: 'inherited LTR center', direction: 'ltr', align: 'center', edge: 'center' },
+    { name: 'inherited RTL center', direction: 'rtl', align: 'center', edge: 'center' },
+  ] as const)(
+    'aligns explicit logical values for $name',
+    async ({ direction, nestedDirection, align, edge }) => {
+      const { container } = await render(
+        <div dir={direction}>
+          <div dir={nestedDirection}>
+            <Popover
+              defaultOpen
+              align={align}
+              side="bottom"
+              width={280}
+              style={{ left: 300, position: 'fixed', top: 160 }}
+              trigger={
+                <button type="button" style={{ height: 32, width: 120 }}>
+                  Options
+                </button>
+              }
+            >
+              Panel content
+            </Popover>
+          </div>
+        </div>,
+      );
+      const anchor = container.querySelector<HTMLElement>('.lyra-popover-anchor')!;
+      const panel = container.querySelector<HTMLElement>('[role="dialog"]')!;
+      await vi.waitFor(() => {
+        const anchorBounds = anchor.getBoundingClientRect();
+        const panelBounds = panel.getBoundingClientRect();
+
+        if (edge === 'center') {
+          expect((panelBounds.left + panelBounds.right) / 2).toBeCloseTo(
+            (anchorBounds.left + anchorBounds.right) / 2,
+          );
+        } else {
+          expect(panelBounds[edge]).toBeCloseTo(anchorBounds[edge]);
+        }
+      });
+    },
+  );
+
+  it.each([
+    { direction: 'ltr', edge: 'left' },
+    { direction: 'ltr', edge: 'right' },
+    { direction: 'rtl', edge: 'left' },
+    { direction: 'rtl', edge: 'right' },
+  ] as const)(
+    'keeps automatic placement in the viewport at the $direction $edge edge',
+    async ({ direction, edge }) => {
+      const { container } = await render(
+        <div dir={direction}>
+          <Popover
+            defaultOpen
+            width={280}
+            style={{ [edge]: 0, position: 'fixed', top: 160 }}
+            trigger={
+              <button type="button" style={{ height: 32, width: 120 }}>
+                Options
+              </button>
+            }
+          >
+            Panel content
+          </Popover>
+        </div>,
+      );
+      const panel = container.querySelector<HTMLElement>('[role="dialog"]')!;
+      await vi.waitFor(() => {
+        const panelBounds = panel.getBoundingClientRect();
+
+        expect(panelBounds.left).toBeGreaterThanOrEqual(0);
+        expect(panelBounds.right).toBeLessThanOrEqual(window.innerWidth);
+      });
+    },
+  );
+
   it('restores the current trigger once after an accepted Escape from the panel', async () => {
     const { container } = await render(
       <Popover defaultOpen trigger={<button type="button">Options</button>}>
