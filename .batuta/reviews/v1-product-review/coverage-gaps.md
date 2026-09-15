@@ -91,3 +91,7 @@ Gap2 now has a bounded native submit-button observation for Tooltip: React and A
 ## Dropdown enabled-command native tap slice verified — 2026-09-15
 
 Gap2 now has a bounded Dropdown observation: React/Alpine each pass native Chromium/Firefox/WebKit coarse/no-hover emulation for opening, exactly-once enabled selection, explicit trigger-focus restoration and outside-tap dismissal. Fixture click-interception control is detected and removal restores the action. Exact packed artifacts/current shipped files match. See [verification](dropdown-native-tap.md). Disabled variants remain outside this public-model slice; no physical-device, geometry, other media/direction/platform or complete Dropdown/V1 qualification. No product change, new permanent suite or numerical-policy change.
+
+## Current remaining-work consolidation — 2026-09-15
+
+Use [remaining acceptance work](remaining-acceptance.md) for the current disposition and execution order. Historical open entries above are superseded only by their named completion records. Four fronts remain: current-candidate FileUpload runtime, bounded applicable media/interaction reconciliation, native Linux/Windows observations, then consolidated acceptance. Controller confirmed accepted FileUpload React/Styles hashes differ from the current pair; existing measurement CLI emits raw JSON without canonical writes. No new producer queue or policy approval is proposed.
