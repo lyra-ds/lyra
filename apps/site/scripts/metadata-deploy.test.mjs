@@ -136,7 +136,7 @@ test('emits crawler discovery files and a self-only hosting policy', () => {
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
   assert.match(headers, /Permissions-Policy:/);
-  assert.match(headers, /\/og\.png\n  Content-Type: image\/png/);
+  assert.match(headers, /\/og\.png\r?\n  Content-Type: image\/png/);
 });
 
 test('keeps the site layout contained and its chrome touch-safe on narrow viewports', () => {
