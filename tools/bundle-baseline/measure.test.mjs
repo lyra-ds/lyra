@@ -168,6 +168,21 @@ test('normalizeModulePath only replaces complete path prefixes', () => {
   );
 });
 
+test('normalizeModulePath uses protocol separators for Windows root-relative IDs', () => {
+  assert.equal(
+    normalizeModulePath(
+      'C:\\consumer\\node_modules\\@lyra-ds\\react\\dist\\workspace-switcher.js',
+      'C:\\consumer',
+      'C:\\repository',
+    ),
+    '<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js',
+  );
+  assert.equal(
+    normalizeModulePath('C:\\consumer-sibling\\index.js', 'C:\\consumer', 'C:\\repository'),
+    'C:\\consumer-sibling\\index.js',
+  );
+});
+
 test('normalizeModulePath resolves symlinked fixture and repository roots without rewriting outside IDs', () => {
   const temporaryRoot = mkdtempSync(join(tmpdir(), 'lyra-normalize-module-path-'));
   try {
@@ -1305,11 +1320,22 @@ test('changed Lyra tarballs install independently of the external lock', () => {
       `${JSON.stringify({ name: '@lyra-ds/react', version: '9.9.9', exports: './index.js' })}\n`,
     );
     writeFileSync(join(packageDirectory, 'index.js'), "export const artifactMarker = 'changed';\n");
-    const packed = spawnSync('npm', ['pack', '--pack-destination', packDirectory], {
-      cwd: packageDirectory,
-      encoding: 'utf8',
-      env: { ...process.env, npm_config_cache: join(fixture, 'npm-cache') },
-    });
+    const packed = spawnSync(
+      process.platform === 'win32' ? 'npm.cmd' : 'npm',
+      [
+        'pack',
+        process.platform === 'win32'
+          ? `--pack-destination="${packDirectory}"`
+          : '--pack-destination',
+        ...(process.platform === 'win32' ? [] : [packDirectory]),
+      ],
+      {
+        cwd: packageDirectory,
+        encoding: 'utf8',
+        env: { ...process.env, npm_config_cache: join(fixture, 'npm-cache') },
+        shell: process.platform === 'win32',
+      },
+    );
     assert.equal(packed.status, 0, packed.stderr);
     const tarball = join(packDirectory, readdirSync(packDirectory)[0]);
 

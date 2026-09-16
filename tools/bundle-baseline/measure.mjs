@@ -146,7 +146,7 @@ function emittedAssets(result) {
 function replaceModulePathPrefix(moduleId, root, replacement) {
   if (moduleId === root) return replacement;
   if (moduleId.startsWith(`${root}/`) || moduleId.startsWith(`${root}\\`)) {
-    return `${replacement}${moduleId.slice(root.length)}`;
+    return `${replacement}${moduleId.slice(root.length).replaceAll('\\', '/')}`;
   }
   return null;
 }
@@ -191,7 +191,7 @@ function moduleContributions(result, fixtureRoot) {
 
 async function viteBuild({ buildFunction, entry, externals, minify, name, root }) {
   const originalWorkingDirectory = process.cwd();
-  process.chdir(root);
+  process.chdir(REPO);
   try {
     return await buildFunction({
       configFile: false,
