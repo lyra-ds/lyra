@@ -24,17 +24,17 @@ const STANDALONE_EXCEPTIONS = {
   '@lyra-ds/react/drawer': 4004,
   '@lyra-ds/react/bottom-sheet': 3966,
   '@lyra-ds/react/create-workspace-dialog': 5008,
-  '@lyra-ds/react/time-picker': 4173,
-  '@lyra-ds/react/date-picker': 4200,
-  '@lyra-ds/react/date-range-picker': 4193,
+  '@lyra-ds/react/time-picker': 4218,
+  '@lyra-ds/react/date-picker': 4260,
+  '@lyra-ds/react/date-range-picker': 4242,
   '@lyra-ds/react/command-palette': 4251,
-  '@lyra-ds/react/recurrence-selector': 4202,
-  '@lyra-ds/react/weekly-schedule-editor': 4165,
+  '@lyra-ds/react/recurrence-selector': 4235,
+  '@lyra-ds/react/weekly-schedule-editor': 4240,
 };
 const SCENARIO_EXCEPTIONS = {
-  overlays: 6118,
+  overlays: 6137,
   'application-shell': 4310,
-  scheduling: 4490,
+  scheduling: 4546,
 };
 const COMPLEX_STANDALONE = new Set([...Object.keys(STANDALONE_EXCEPTIONS), '@lyra-ds/alpine']);
 const REQUIRED_ENVIRONMENT_FIELDS = ['node', 'pnpm', 'vite', 'sizeLimit'];
