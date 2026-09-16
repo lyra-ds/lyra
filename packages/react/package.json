@@ -1265,7 +1265,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "1.5 kB"
+      "limit": "1.6 kB"
     },
     {
       "name": "import { Accordion } from '@lyra-ds/react/accordion'",

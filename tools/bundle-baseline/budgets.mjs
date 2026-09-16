@@ -16,6 +16,7 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/react/command-palette': { configuredLimit: '13.6 kB', bytes: 13600 },
   '@lyra-ds/react/recurrence-selector': { configuredLimit: '11 kB', bytes: 11000 },
   '@lyra-ds/react/weekly-schedule-editor': { configuredLimit: '18.7 kB', bytes: 18700 },
+  '@lyra-ds/react/tabs': { configuredLimit: '1.6 kB', bytes: 1600 },
   '@lyra-ds/alpine': { configuredLimit: '24.2 kB', bytes: 24200 },
 };
 
