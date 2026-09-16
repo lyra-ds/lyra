@@ -4,7 +4,9 @@ The latest repaired candidate includes [pill Tabs reflow and focused visibility]
 
 This replaces the stale execution pointers in the preceding revision. It is a short disposition of the existing [coverage review](coverage-gaps.md), not a new task queue or permission to create a test for every ledger cell.
 
-The [approved Tabs cap is applied](tabs-approved-cap.md): 1,567 <= 1,600 bytes and all 72 absolute limits pass. The complete native gate now reveals seven separately governed migration-growth overruns, listed together in that record. No other ceiling was changed. The earlier [local qualification](final-local-qualification.md) remains valid within its exact code/artifact scope.
+The [approved Tabs cap is applied](tabs-approved-cap.md): 1,567 <= 1,600 bytes and all 72 absolute limits pass. The complete native gate now reveals seven separately governed migration-growth overruns, listed together in that record. The [joint diagnosis and seven-value proposal](../../specs/2026-09-16-popover-migration-exceptions.md) attributes them to the validated Popover RTL repair; approval remains pending. No other ceiling was changed. The earlier [local qualification](final-local-qualification.md) remains valid within its exact code/artifact scope.
+
+The [refreshed media/zoom record](current-media-and-zoom.md) adds 195 current P1 interactions, 66 axe observations and 12 actual Chromium page-zoom observations. Its explicit scope limits remain in force.
 
 ## Remaining fronts
 
