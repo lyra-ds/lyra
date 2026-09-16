@@ -626,6 +626,16 @@
 .lyra-tabs--pills .lyra-tab {
   color: var(--text-secondary);
 }
+.lyra-tabs--pills {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  scroll-padding-inline: var(--space-1);
+}
+.lyra-tabs--pills .lyra-tab {
+  flex: none;
+  scroll-margin-inline: var(--space-1);
+}
 .lyra-tab__count {
   color: var(--text-secondary);
 }

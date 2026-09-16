@@ -126,11 +126,9 @@ The maintainer rejected Docker/OS dependence and requested a lean plan plus inde
 
 The approved 38-task plan passed the clean-checkout dry-run on `review/v1-completion-loop`. No delivery was launched: full host `pnpm test` exited 1 (530 pass,161 fail,2 skipped in the failing 693-test suite). A canonical-TMPDIR probe in this checkout confirms `/proc/self/fd` is unavailable. See `.batuta/v1-loop-preflight.md` for raw evidence hashes and a bounded Linux gate-bridge proposal requiring separate environment/security-design authorization. Continue from this checkout after that prerequisite; preserve all older worktrees.
 
-
 ## V1 review loop approved — 2026-09-13
 
 Maintainer approved .batuta/plans/v1-loop-review.md and its execution contract and authorized proceeding with the loop. Preparing the mandatory clean-checkout/toolchain/global-test preflight; no delivery is launched until it passes. Existing resource, dependency, release and Blade boundaries remain unchanged.
-
 
 ## Current checkpoint — 2026-09-12
 
@@ -814,3 +812,5 @@ remote or publication action is authorized.
 - Forced-color keyboard focus: Codex/Terra medium,0retry/escalation; Button/Input/Tabs/DataTable4additive CSS rules, source30PASS/oldCSS4expectedfail/common/parity/stylelintPASS; packed12type-engine outcomesPASS. Unrelated hook suppression removed before snapshot. Report .batuta/reviews/v1-product-review/forced-color-control-focus.md. Next: reproduced CommandPalette forced-color active-state loss, then remaining media/acceptance.
 
 - CommandPalette forced active state: OpenCode/GLM low+1test-fidelityretry, Codex/Terra review3DONE; source36/nativepacked6/common/parity/stylelintPASS; originalCSSforcedcasefails. Styles-only additiveinsideoutline, normalmodeunchanged. Report .batuta/reviews/v1-product-review/command-palette-forced-state.md. Next: proven pillTabs narrow long-content overflow.
+
+- Pill Tabs reflow/focus verified: CSS-only lot aborted; new Codex/Terra high runtime lot +one retry, GLM low geometry-precision correction. Source126/packed84/common/types/parity/stylelintPASS;16expected negative failures. GLM independent3DONE,2lowfindingsdeclined with code rationale after2timeouts. Exact482archivefilesbound, originalpaddingretained; no full V1/zoom/native-OS claim. Report .batuta/reviews/v1-product-review/tabs-reflow-focus.md; final current-artifact qualification next.

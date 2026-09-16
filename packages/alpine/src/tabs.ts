@@ -43,6 +43,7 @@ interface LyraTabsData {
   isEligible(tab: HTMLButtonElement): boolean;
   eligibleTabs(): HTMLButtonElement[];
   isTabEntry(tab: HTMLButtonElement): boolean;
+  revealFocusedTab(tab: HTMLButtonElement): void;
   requestChange(value: string, focusTarget?: HTMLButtonElement): void;
   handleRootClick(event: MouseEvent): void;
   handleRootKeyDown(event: KeyboardEvent): void;
@@ -54,6 +55,7 @@ interface LyraTabsData {
 
 interface LyraTabsMagics {
   $el: HTMLElement;
+  $nextTick(callback: () => void): void;
   $watch(path: string, callback: (value: string) => void): void;
 }
 
@@ -272,6 +274,10 @@ export function lyraTabs({ active }: LyraTabsOptions): LyraTabsData {
         return;
       }
       this.ready = true;
+      this.$nextTick(() => {
+        const focused = document.activeElement;
+        if (focused instanceof HTMLButtonElement) this.revealFocusedTab(focused);
+      });
     },
 
     resetNativeContent() {
@@ -340,6 +346,31 @@ export function lyraTabs({ active }: LyraTabsOptions): LyraTabsData {
       const eligible = this.eligibleTabs();
       const selected = eligible.find((candidate) => this.isActiveTab(candidate));
       return tab === (selected ?? eligible[0]);
+    },
+
+    revealFocusedTab(tab) {
+      const root = this.root;
+      const list = this.listElement();
+      if (
+        this.destroyed ||
+        !root?.isConnected ||
+        !list ||
+        document.activeElement !== tab ||
+        !this.isActiveTab(tab) ||
+        !this.isEligible(tab)
+      ) {
+        return;
+      }
+      const listRect = list.getBoundingClientRect();
+      const tabRect = tab.getBoundingClientRect();
+      const inset = 4;
+      const offset =
+        tabRect.left < listRect.left + inset
+          ? tabRect.left - (listRect.left + inset)
+          : tabRect.right > listRect.right - inset
+            ? tabRect.right - (listRect.right - inset)
+            : 0;
+      if (offset) list.scrollBy({ left: offset > 0 ? Math.ceil(offset) : Math.floor(offset) });
     },
 
     requestChange(value, focusTarget) {

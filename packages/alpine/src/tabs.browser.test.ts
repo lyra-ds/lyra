@@ -13,30 +13,39 @@ function tabsMarkup({
   active = 'one',
   customIds = false,
   direction = 'ltr',
+  longPills = false,
   variant = 'line',
   serverRenderedActive = false,
 }: {
   active?: string;
   customIds?: boolean;
   direction?: 'ltr' | 'rtl';
+  longPills?: boolean;
   variant?: 'line' | 'pills';
   serverRenderedActive?: boolean;
 } = {}): string {
   const listClasses = variant === 'pills' ? 'lyra-tabs lyra-tabs--pills' : 'lyra-tabs';
   const staticActiveClass = serverRenderedActive && active === 'one' ? ' lyra-tab--active' : '';
+  const fallbackLinks = longPills
+    ? '<a href="#all-panel">All workspace issues</a><a href="#open-panel">Issues awaiting investigation</a><a href="#closed-panel">Completed workspace issues</a>'
+    : '<a href="#one-panel">One</a><a href="#two-panel">Two</a><a href="#three-panel">Three</a>';
+  const tabButtons = longPills
+    ? '<button type="button" class="lyra-tab" data-value="all" x-bind="tab">All workspace issues <span class="lyra-tab__count">24000</span></button><button type="button" class="lyra-tab" data-value="open" x-bind="tab">Issues awaiting investigation <span class="lyra-tab__count">8000</span></button><button type="button" class="lyra-tab" data-value="closed" x-bind="tab">Completed workspace issues <span class="lyra-tab__count">16000</span></button>'
+    : `<button ${customIds ? 'id="custom-one-tab"' : ''} type="button" class="lyra-tab${staticActiveClass}" data-value="one" x-bind="tab">One <span class="lyra-tab__count">2</span></button>
+        <button type="button" class="lyra-tab" data-value="two" x-bind="tab">Two</button>
+        <button type="button" class="lyra-tab" data-value="three" x-bind="tab">Three</button>`;
+  const tabPanels = longPills
+    ? '<section id="all-panel" data-value="all" x-bind="panel"><h2>All issues</h2></section><section id="open-panel" data-value="open" x-bind="panel"><h2>Open issues</h2></section><section id="closed-panel" data-value="closed" x-bind="panel"><h2>Closed issues</h2></section>'
+    : '<section id="one-panel" data-value="one" x-bind="panel"><h2>One</h2><p>One panel</p></section><section id="two-panel" data-value="two" x-bind="panel"><h2>Two</h2><p>Two panel</p></section><section id="three-panel" data-value="three" x-bind="panel"><h2>Three</h2><p>Three panel</p></section>';
   return `
     <div ${customIds ? 'id="project-tabs"' : ''} data-lyra-tabs x-data="lyraTabs({ active: '${active}' })">
       <nav aria-label="Project sections" data-lyra-tabs-fallback x-bind="fallback">
-        <a href="#one-panel">One</a><a href="#two-panel">Two</a><a href="#three-panel">Three</a>
+        ${fallbackLinks}
       </nav>
       <div class="${listClasses}" dir="${direction}" aria-label="Project sections" data-lyra-tabs-enhanced x-bind="list" hidden>
-        <button ${customIds ? 'id="custom-one-tab"' : ''} type="button" class="lyra-tab${staticActiveClass}" data-value="one" x-bind="tab">One <span class="lyra-tab__count">2</span></button>
-        <button type="button" class="lyra-tab" data-value="two" x-bind="tab">Two</button>
-        <button type="button" class="lyra-tab" data-value="three" x-bind="tab">Three</button>
+        ${tabButtons}
       </div>
-      <section id="one-panel" data-value="one" x-bind="panel"><h2>One</h2><p>One panel</p></section>
-      <section id="two-panel" data-value="two" x-bind="panel"><h2>Two</h2><p>Two panel</p></section>
-      <section id="three-panel" data-value="three" x-bind="panel"><h2>Three</h2><p>Three panel</p></section>
+      ${tabPanels}
     </div>
   `;
 }
@@ -78,6 +87,28 @@ function tabs(host: HTMLElement): HTMLButtonElement[] {
 
 function panels(host: HTMLElement): HTMLElement[] {
   return Array.from(host.querySelectorAll<HTMLElement>('section[x-bind="panel"]'));
+}
+
+// The browser rounds the scrollable range to integers while getBoundingClientRect
+// returns fractional values, so allow up to 0.5 CSSpx of scroll quantization
+// when measuring the 4px focus inset.
+const FOCUS_INSET_CSS_PX = 4;
+const SCROLL_QUANTIZATION_TOLERANCE_CSS_PX = 0.5;
+
+async function expectFocusInset(tablist: HTMLElement, destination: HTMLElement): Promise<void> {
+  await expect
+    .poll(() => {
+      const listRect = tablist.getBoundingClientRect();
+      const destinationRect = destination.getBoundingClientRect();
+      return (
+        tablist.scrollWidth > tablist.clientWidth &&
+        destinationRect.left >=
+          listRect.left + FOCUS_INSET_CSS_PX - SCROLL_QUANTIZATION_TOLERANCE_CSS_PX &&
+        destinationRect.right <=
+          listRect.right - FOCUS_INSET_CSS_PX + SCROLL_QUANTIZATION_TOLERANCE_CSS_PX
+      );
+    })
+    .toBe(true);
 }
 
 afterEach(() => {
@@ -231,6 +262,43 @@ describe('lyraTabs', () => {
       expect(panels(host)[index].hidden).toBe(false);
     }
   });
+
+  for (const width of [343, 288])
+    for (const direction of ['ltr', 'rtl'] as const)
+      it(`contains long pill tabs at ${width}px in ${direction} and keeps native destinations visible`, async () => {
+        const host = mountTabs({ active: 'open', direction, longPills: true, variant: 'pills' });
+        host.style.width = `${width}px`;
+        await flush();
+        const tablist = list(host);
+        const controls = tabs(host);
+        const tabPanels = panels(host);
+        const arrowStart = direction === 'rtl' ? 2 : 0;
+
+        expect(tablist.getBoundingClientRect().width).toBeLessThanOrEqual(host.clientWidth);
+        expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+        expect(tablist.scrollWidth).toBeGreaterThan(tablist.clientWidth);
+
+        await userEvent.click(controls[arrowStart]);
+        await flush();
+        expect(tabPanels[arrowStart].hidden).toBe(false);
+        await userEvent.keyboard('{ArrowRight}');
+        await flush();
+        expect(document.activeElement).toBe(controls[1]);
+        expect(tabPanels[1].hidden).toBe(false);
+        await expectFocusInset(tablist, controls[1]);
+
+        await userEvent.keyboard('{End}');
+        await flush();
+        expect(document.activeElement).toBe(controls[2]);
+        expect(tabPanels[2].hidden).toBe(false);
+        await expectFocusInset(tablist, controls[2]);
+
+        await userEvent.keyboard('{Home}');
+        await flush();
+        expect(document.activeElement).toBe(controls[0]);
+        expect(tabPanels[0].hidden).toBe(false);
+        await expectFocusInset(tablist, controls[0]);
+      });
 
   it('dispatches a cancellable before event when navigation targets the selected value', async () => {
     const host = mountTabs();

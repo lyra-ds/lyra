@@ -147,6 +147,19 @@ function eventTrigger(
   return trigger;
 }
 
+function revealTriggerInset(list: HTMLDivElement, trigger: HTMLButtonElement): void {
+  const listRect = list.getBoundingClientRect();
+  const triggerRect = trigger.getBoundingClientRect();
+  const inset = 4;
+  const offset =
+    triggerRect.left < listRect.left + inset
+      ? triggerRect.left - (listRect.left + inset)
+      : triggerRect.right > listRect.right - inset
+        ? triggerRect.right - (listRect.right - inset)
+        : 0;
+  if (offset) list.scrollBy({ left: offset > 0 ? Math.ceil(offset) : Math.floor(offset) });
+}
+
 function setForwardedRef<T>(ref: ForwardedRef<T>, node: T | null): void {
   if (typeof ref === 'function') ref(node);
   else if (ref) ref.current = node;
@@ -171,6 +184,8 @@ export const Tabs = /*#__PURE__*/ forwardRef<HTMLDivElement, TabsProps>(function
       const selected = triggers.find((trigger) => trigger.dataset.value === active);
       const nextEntry = selected?.dataset.value ?? triggers[0]?.dataset.value ?? null;
       setEntryValue((current) => (current === nextEntry ? current : nextEntry));
+
+      if (selected === root.ownerDocument.activeElement) revealTriggerInset(list, selected);
 
       const focusedOwnedNode = focusedOwnedNodeRef.current;
       if (!focusedOwnedNode || focusedOwnedNode.isConnected) return;
@@ -290,6 +305,7 @@ export const TabsList = /*#__PURE__*/ forwardRef<HTMLDivElement, TabsListProps>(
     event.preventDefault();
     const next = triggers[nextIndex];
     next.focus();
+    revealTriggerInset(list, next);
     context.onChange?.(next.dataset.value!);
   };
 

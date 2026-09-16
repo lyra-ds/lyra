@@ -34,6 +34,57 @@ function Example({ onChange }: { onChange?: (value: string) => void }): React.JS
   );
 }
 
+function PillReflowExample({
+  direction,
+  onChange,
+}: {
+  direction: 'ltr' | 'rtl';
+  onChange?: (value: string) => void;
+}): React.JSX.Element {
+  const [active, setActive] = useState('open');
+
+  return (
+    <Tabs active={active} onChange={onChange ?? setActive} variant="pills">
+      <TabsList aria-label="Issue status" dir={direction}>
+        <TabsTrigger value="all" count={24000}>
+          All workspace issues
+        </TabsTrigger>
+        <TabsTrigger value="open" count={8000}>
+          Issues awaiting investigation
+        </TabsTrigger>
+        <TabsTrigger value="closed" count={16000}>
+          Completed workspace issues
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="all">All issues</TabsContent>
+      <TabsContent value="open">Open issues</TabsContent>
+      <TabsContent value="closed">Closed issues</TabsContent>
+    </Tabs>
+  );
+}
+
+// The browser rounds the scrollable range to integers while getBoundingClientRect
+// returns fractional values, so allow up to 0.5 CSSpx of scroll quantization
+// when measuring the 4px focus inset.
+const FOCUS_INSET_CSS_PX = 4;
+const SCROLL_QUANTIZATION_TOLERANCE_CSS_PX = 0.5;
+
+async function expectFocusInset(tablist: HTMLElement, destination: HTMLElement): Promise<void> {
+  await expect
+    .poll(() => {
+      const listRect = tablist.getBoundingClientRect();
+      const destinationRect = destination.getBoundingClientRect();
+      return (
+        tablist.scrollWidth > tablist.clientWidth &&
+        destinationRect.left >=
+          listRect.left + FOCUS_INSET_CSS_PX - SCROLL_QUANTIZATION_TOLERANCE_CSS_PX &&
+        destinationRect.right <=
+          listRect.right - FOCUS_INSET_CSS_PX + SCROLL_QUANTIZATION_TOLERANCE_CSS_PX
+      );
+    })
+    .toBe(true);
+}
+
 function SelfDisablingTrigger(): React.JSX.Element {
   const [disabled, setDisabled] = useState(false);
 
@@ -180,6 +231,61 @@ describe('Tabs', () => {
     await userEvent.click(container.querySelectorAll('[role=tab]')[1]);
     await userEvent.click(container.querySelectorAll('[role=tab]')[0]);
     expect(container.querySelector<HTMLInputElement>('[aria-label="One input"]')).toBe(input);
+  });
+
+  for (const width of [343, 288])
+    for (const direction of ['ltr', 'rtl'] as const)
+      it(`contains long pill tabs at ${width}px in ${direction} and keeps native destinations visible`, async () => {
+        const { container } = await render(
+          <div data-consumer style={{ width }}>
+            <PillReflowExample direction={direction} />
+          </div>,
+        );
+        const consumer = container.querySelector<HTMLElement>('[data-consumer]')!;
+        const tablist = container.querySelector<HTMLElement>('[role=tablist]')!;
+        const tabs = container.querySelectorAll<HTMLButtonElement>('[role=tab]');
+        const panels = container.querySelectorAll<HTMLElement>('[role=tabpanel]');
+        const arrowStart = direction === 'rtl' ? 2 : 0;
+
+        expect(tablist.getBoundingClientRect().width).toBeLessThanOrEqual(consumer.clientWidth);
+        expect(consumer.scrollWidth).toBeLessThanOrEqual(consumer.clientWidth);
+        expect(tablist.scrollWidth).toBeGreaterThan(tablist.clientWidth);
+
+        await userEvent.click(tabs[arrowStart]);
+        expect(panels[arrowStart].hidden).toBe(false);
+        await userEvent.keyboard('{ArrowRight}');
+        expect(document.activeElement).toBe(tabs[1]);
+        expect(panels[1].hidden).toBe(false);
+        await expectFocusInset(tablist, tabs[1]);
+
+        await userEvent.keyboard('{End}');
+        expect(document.activeElement).toBe(tabs[2]);
+        expect(panels[2].hidden).toBe(false);
+        await expectFocusInset(tablist, tabs[2]);
+
+        await userEvent.keyboard('{Home}');
+        expect(document.activeElement).toBe(tabs[0]);
+        expect(panels[0].hidden).toBe(false);
+        await expectFocusInset(tablist, tabs[0]);
+      });
+
+  it('keeps a keyboard-focused pill visible when a controlled change does not commit', async () => {
+    const { container } = await render(
+      <div data-consumer style={{ width: 343 }}>
+        <PillReflowExample direction="ltr" onChange={() => {}} />
+      </div>,
+    );
+    const tablist = container.querySelector<HTMLElement>('[role=tablist]')!;
+    const tabs = container.querySelectorAll<HTMLButtonElement>('[role=tab]');
+    const panels = container.querySelectorAll<HTMLElement>('[role=tabpanel]');
+
+    await userEvent.click(tabs[1]);
+    await userEvent.keyboard('{End}');
+
+    expect(document.activeElement).toBe(tabs[2]);
+    expect(panels[1].hidden).toBe(false);
+    expect(panels[2].hidden).toBe(true);
+    await expectFocusInset(tablist, tabs[2]);
   });
 
   it('roves with automatic activation, wrap, Home and End', async () => {
