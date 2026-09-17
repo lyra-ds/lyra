@@ -838,3 +838,5 @@ remote or publication action is authorized.
 - PR223 site header race: OpenCode/opencode/glm-5.3-flash, low, 0 implementation retries, no escalation. Isolated analytics generator fixture; controller site suite20/20, format/diff PASS. Windows revalidation pending; formal GitHub review still required.
 
 - PR223 Windows integration contention: OpenCode/opencode/glm-5.3-flash research and low execution,0 retries,no escalation. Same-head rerun moved timeout from ingest to real bundling; bound evidence file parallelism, no timeout/runtime/assertion changes.349/349 local PASS; remote pending.
+
+- Post-merge Windows preview timeout: OpenCode/GLM5.3Flash low,0retry/no escalation. Existing120s child deadline shared with five real-build cases; old5500ms delay RED/fixed PASS,349/349 suite PASS. PR223 merged41a82e3 with explicit admin authorization; stable publication remains pending.

@@ -12,6 +12,7 @@ const viteExecutable = resolve(packageRoot, 'node_modules/vite/bin/vite.js');
 const temporaryRoots = [];
 const revision = '1234567890abcdef1234567890abcdef12345678';
 const buildTime = '2026-08-17T12:00:00.000Z';
+const previewBuildTimeoutMs = 120_000;
 
 const entries = [
   {
@@ -115,7 +116,7 @@ function buildPreview(environment) {
       cwd: packageRoot,
       encoding: 'utf8',
       env: environment,
-      timeout: 120_000,
+      timeout: previewBuildTimeoutMs,
     },
   );
 
@@ -301,55 +302,63 @@ describe('isolated preview build', () => {
       },
       'LYRA_EVIDENCE_BUILD_TIME must be an ISO 8601 UTC timestamp.',
     ],
-  ])('fails closed for %s', (_caseName, overrides, expectedError) => {
-    const { outputRoot, result } = buildPreview(previewEnvironment(overrides));
+  ])(
+    'fails closed for %s',
+    (_caseName, overrides, expectedError) => {
+      const { outputRoot, result } = buildPreview(previewEnvironment(overrides));
 
-    expect(result.status).not.toBe(0);
-    expect(`${result.stdout}\n${result.stderr}`).toContain(expectedError);
-    expect(existsSync(outputRoot)).toBe(false);
-  });
+      expect(result.status).not.toBe(0);
+      expect(`${result.stdout}\n${result.stderr}`).toContain(expectedError);
+      expect(existsSync(outputRoot)).toBe(false);
+    },
+    previewBuildTimeoutMs,
+  );
 
-  it('emits only the two revision-pinned localized routes and private hashed assets', () => {
-    const { outputRoot, result } = buildPreview(
-      previewEnvironment({
-        FILE_UPLOAD_EVIDENCE: '1',
-        LYRA_EVIDENCE_REVISION: revision,
-        LYRA_EVIDENCE_BUILD_TIME: buildTime,
-      }),
-    );
+  it(
+    'emits only the two revision-pinned localized routes and private hashed assets',
+    () => {
+      const { outputRoot, result } = buildPreview(
+        previewEnvironment({
+          FILE_UPLOAD_EVIDENCE: '1',
+          LYRA_EVIDENCE_REVISION: revision,
+          LYRA_EVIDENCE_BUILD_TIME: buildTime,
+        }),
+      );
 
-    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
-    const outputFiles = filesUnder(outputRoot);
-    expect(outputFiles.filter((path) => path.endsWith('/index.html'))).toEqual([
-      'en/file-upload-evidence/index.html',
-      'pt-BR/file-upload-evidence/index.html',
-    ]);
-    expect(
-      outputFiles.every((path) => path.endsWith('/index.html') || path.startsWith('assets/')),
-    ).toBe(true);
-    const assets = outputFiles.filter((path) => path.startsWith('assets/'));
-    expect(assets.length).toBeGreaterThan(0);
-    expect(assets.every((path) => /-[A-Za-z0-9_-]{8,}\.(?:css|js)$/u.test(path))).toBe(true);
-
-    for (const entry of entries) {
-      const html = readFileSync(resolve(outputRoot, entry.path), 'utf8');
-      expect(openingTags(html, 'html')[0]?.attributes.lang).toBe(entry.locale);
+      expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+      const outputFiles = filesUnder(outputRoot);
+      expect(outputFiles.filter((path) => path.endsWith('/index.html'))).toEqual([
+        'en/file-upload-evidence/index.html',
+        'pt-BR/file-upload-evidence/index.html',
+      ]);
       expect(
-        openingTags(html, 'meta')
-          .find(({ attributes }) => attributes.name?.toLowerCase() === 'robots')
-          ?.attributes.content?.toLowerCase()
-          .replaceAll(' ', ''),
-      ).toBe('noindex,nofollow');
-      expect(html).toContain(revision);
-      expect(html).toContain(buildTime);
-    }
+        outputFiles.every((path) => path.endsWith('/index.html') || path.startsWith('assets/')),
+      ).toBe(true);
+      const assets = outputFiles.filter((path) => path.startsWith('assets/'));
+      expect(assets.length).toBeGreaterThan(0);
+      expect(assets.every((path) => /-[A-Za-z0-9_-]{8,}\.(?:css|js)$/u.test(path))).toBe(true);
 
-    for (const path of outputFiles) {
-      const contents = readFileSync(resolve(outputRoot, path), 'utf8');
-      expect(contents).not.toContain('__LYRA_EVIDENCE_REVISION__');
-      expect(contents).not.toContain('__LYRA_EVIDENCE_BUILD_TIME__');
-    }
-  });
+      for (const entry of entries) {
+        const html = readFileSync(resolve(outputRoot, entry.path), 'utf8');
+        expect(openingTags(html, 'html')[0]?.attributes.lang).toBe(entry.locale);
+        expect(
+          openingTags(html, 'meta')
+            .find(({ attributes }) => attributes.name?.toLowerCase() === 'robots')
+            ?.attributes.content?.toLowerCase()
+            .replaceAll(' ', ''),
+        ).toBe('noindex,nofollow');
+        expect(html).toContain(revision);
+        expect(html).toContain(buildTime);
+      }
+
+      for (const path of outputFiles) {
+        const contents = readFileSync(resolve(outputRoot, path), 'utf8');
+        expect(contents).not.toContain('__LYRA_EVIDENCE_REVISION__');
+        expect(contents).not.toContain('__LYRA_EVIDENCE_BUILD_TIME__');
+      }
+    },
+    previewBuildTimeoutMs,
+  );
 });
 
 describe('ordinary documentation output', () => {
