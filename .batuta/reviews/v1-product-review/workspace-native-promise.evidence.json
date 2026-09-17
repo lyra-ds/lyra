@@ -1,0 +1,15 @@
+{
+  "scope": "Retained controller-local verification, not consolidated candidate acceptance",
+  "sha256": {
+    "workspace-promise-types-final.log": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92",
+    "workspace-promise-lint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace-promise-chromium-final.log": "2c9bd9c660a75725421b9c579bd7ba415a367403ae62cc72d9e397b1e2b55723",
+    "workspace-promise-firefox-final.log": "aa2c16f3d41b391b51c5a46d8706e20eb124773cd4684c63e9df08f5ea45d304",
+    "workspace-promise-webkit-final.log": "e9a5250f61d016ed5641382c4591afd8931525a1b17032ea41b488b3da8fc8b6",
+    "workspace-promise-final-results.json": "781a4908cd7fad9505df825a6da4c91b367ffd20bb25de92e622e0c764853c71",
+    "workspace-promise-budgets-final.log": "0c6280cf73adcead09dcf49ad3be3de39bb874e40eca4f30d153e96f4824f8fc",
+    "workspace-promise-negative-final.log": "68f6c3939815983a9beedd5d671bc8d871d663eb822335f2182bf243cfc2a061",
+    "workspace-promise-negative-final.json": "9f338352f767213818d4ac465e36e65e89817c112f279a166d925ac30dd09085",
+    "workspace-promise-review.log": "be7b5050b7153fa1587e9fd8ae3e5b51903ec85427981aeb23c0038c6f559bba"
+  }
+}

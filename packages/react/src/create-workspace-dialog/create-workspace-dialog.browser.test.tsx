@@ -219,29 +219,49 @@ describe('CreateWorkspaceDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('accepts a native Promise created in a same-origin iframe', async () => {
-    const frame = document.createElement('iframe');
-    document.body.appendChild(frame);
-    const onClose = vi.fn();
-    const onCreate = vi.fn((request: CreateWorkspaceRequest) =>
-      frame.contentWindow!.window.Promise.resolve({
-        operationId: request.operationId,
-        status: 'accepted' as const,
-      }),
-    );
-    try {
-      await render(<CreateWorkspaceDialog open onCreate={onCreate} onClose={onClose} />);
-      const name = document.querySelector<HTMLInputElement>('.lyra-input')!;
-      const submit = Array.from(
-        document.querySelectorAll<HTMLButtonElement>('.lyra-dialog__footer button'),
-      ).find((button) => button.textContent?.includes('Create workspace'))!;
-      await userEvent.fill(name, 'Acme');
-      await userEvent.click(submit);
-      await vi.waitFor(() => expect(onClose).toHaveBeenCalledOnce());
-    } finally {
-      frame.remove();
-    }
-  });
+  for (const realm of ['same realm', 'same-origin iframe'] as const) {
+    it(`keeps a held branded native Promise from the ${realm} pending until it is accepted`, async () => {
+      const frame = realm === 'same-origin iframe' ? document.createElement('iframe') : null;
+      if (frame) document.body.appendChild(frame);
+
+      let resolve: (result: { operationId: string; status: 'accepted' }) => void = () => {};
+      const PromiseConstructor = frame ? frame.contentWindow!.window.Promise : Promise;
+      const onClose = vi.fn();
+      const onCreate = vi.fn<
+        (request: CreateWorkspaceRequest) => Promise<{ operationId: string; status: 'accepted' }>
+      >(() => {
+        const promise = new PromiseConstructor<{ operationId: string; status: 'accepted' }>(
+          (nextResolve) => {
+            resolve = nextResolve;
+          },
+        );
+        Object.defineProperty(promise, Symbol.toStringTag, { value: 'BrandedPromise' });
+        return promise;
+      });
+
+      try {
+        await render(<CreateWorkspaceDialog open onCreate={onCreate} onClose={onClose} />);
+        const name = document.querySelector<HTMLInputElement>('.lyra-input')!;
+        const submit = Array.from(
+          document.querySelectorAll<HTMLButtonElement>('.lyra-dialog__footer button'),
+        ).find((button) => button.textContent?.includes('Create workspace'))!;
+        await userEvent.fill(name, 'Acme');
+        await userEvent.click(submit);
+
+        const form = document.querySelector<HTMLFormElement>(
+          'form[aria-label="Create workspace"]',
+        )!;
+        expect(form.dataset.state).toBe('submitting');
+        expect(form.querySelector('[role="alert"]')).toBeNull();
+        expect(onClose).not.toHaveBeenCalled();
+
+        resolve({ operationId: onCreate.mock.calls[0]![0].operationId, status: 'accepted' });
+        await vi.waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+      } finally {
+        frame?.remove();
+      }
+    });
+  }
 
   it('invalidates a held operation before a parent layout effect can settle a forced close', async () => {
     let request: CreateWorkspaceRequest | undefined;
