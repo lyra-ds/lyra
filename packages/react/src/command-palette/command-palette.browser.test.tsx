@@ -742,6 +742,12 @@ describe('CommandPalette', () => {
 
 describe('CommandPalette — logical close activity', () => {
   it('inerts its retained modal scope, revokes a prior gesture, and leaves inline behavior alone', async () => {
+    const exitStyle = document.createElement('style');
+    exitStyle.textContent = `
+      .lyra-cmdk--closing {
+        animation-play-state: paused !important;
+      }
+    `;
     const onClose = vi.fn();
     const onSelect = vi.fn();
     const initialFocusTo = vi.fn(() => null);
@@ -769,70 +775,78 @@ describe('CommandPalette — logical close activity', () => {
       );
     }
 
-    const { container, rerender } = await render(<LogicalCloseHarness />);
-    const trigger = container.querySelector<HTMLButtonElement>('button')!;
-    const outside = container.querySelectorAll<HTMLButtonElement>('button')[1]!;
-    await userEvent.click(trigger);
-    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk-overlay')).not.toBeNull());
-    const retainedOverlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
-    const retainedPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
-    await vi.waitFor(() =>
-      expect(retainedOverlay.querySelectorAll('[data-lyra-focus-trap-boundary]')).toHaveLength(2),
-    );
-    await vi.waitFor(() =>
-      expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
-    );
-    const retainedGuards = Array.from(
-      retainedOverlay.querySelectorAll<HTMLElement>('[data-lyra-focus-trap-boundary]'),
-    );
-    expect(retainedGuards).toHaveLength(2);
-    expect(retainedGuards.every((guard) => retainedOverlay.contains(guard))).toBe(true);
-    retainedOverlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    try {
+      document.head.appendChild(exitStyle);
+      const { container, rerender } = await render(<LogicalCloseHarness />);
+      const trigger = container.querySelector<HTMLButtonElement>('button')!;
+      const outside = container.querySelectorAll<HTMLButtonElement>('button')[1]!;
+      await userEvent.click(trigger);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk-overlay')).not.toBeNull());
+      const retainedOverlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
+      const retainedPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+      await vi.waitFor(() =>
+        expect(retainedOverlay.querySelectorAll('[data-lyra-focus-trap-boundary]')).toHaveLength(2),
+      );
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
+      );
+      const retainedGuards = Array.from(
+        retainedOverlay.querySelectorAll<HTMLElement>('[data-lyra-focus-trap-boundary]'),
+      );
+      expect(retainedGuards).toHaveLength(2);
+      expect(retainedGuards.every((guard) => retainedOverlay.contains(guard))).toBe(true);
+      retainedOverlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
-    await userEvent.keyboard('{Escape}');
-    await vi.waitFor(() => expect(retainedOverlay.hasAttribute('inert')).toBe(true));
-    expect(retainedOverlay.hasAttribute('inert')).toBe(true);
-    expect(retainedOverlay.isConnected).toBe(true);
-    expect(retainedOverlay.contains(retainedPanel)).toBe(true);
-    expect(retainedPanel.getAttribute('aria-modal')).toBeNull();
-    expect(retainedGuards.every((guard) => !guard.isConnected)).toBe(true);
-    expect(container.querySelector('[data-testid="consumer-host"]')!.hasAttribute('inert')).toBe(
-      false,
-    );
-    expect(outside.closest('[inert]')).toBeNull();
-    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
-    retainedPanel.focus();
-    expect(document.activeElement).not.toBe(retainedPanel);
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      await userEvent.keyboard('{Escape}');
+      await vi.waitFor(() => expect(retainedOverlay.hasAttribute('inert')).toBe(true));
+      expect(getComputedStyle(retainedPanel).animationPlayState).toBe('paused');
+      expect(retainedOverlay.hasAttribute('inert')).toBe(true);
+      expect(retainedOverlay.isConnected).toBe(true);
+      expect(retainedOverlay.contains(retainedPanel)).toBe(true);
+      expect(retainedPanel.getAttribute('aria-modal')).toBeNull();
+      expect(retainedGuards.every((guard) => !guard.isConnected)).toBe(true);
+      expect(container.querySelector('[data-testid="consumer-host"]')!.hasAttribute('inert')).toBe(
+        false,
+      );
+      expect(outside.closest('[inert]')).toBeNull();
+      await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+      retainedPanel.focus();
+      expect(document.activeElement).not.toBe(retainedPanel);
 
-    await userEvent.click(trigger);
-    await vi.waitFor(() =>
-      expect(document.querySelector('.lyra-cmdk-overlay')).toBe(retainedOverlay),
-    );
-    expect(document.querySelector('.lyra-cmdk')).toBe(retainedPanel);
-    retainedOverlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-    retainedOverlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(onClose).toHaveBeenCalledTimes(1);
+      await userEvent.click(trigger);
+      await vi.waitFor(() =>
+        expect(document.querySelector('.lyra-cmdk-overlay')).toBe(retainedOverlay),
+      );
+      expect(document.querySelector('.lyra-cmdk')).toBe(retainedPanel);
+      retainedOverlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      retainedOverlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(onClose).toHaveBeenCalledTimes(1);
 
-    await rerender(
-      <div data-testid="consumer-host">
-        <button type="button">Outside</button>
-        <CommandPalette
-          inline
-          initialFocusTo={initialFocusTo}
-          returnFocusTo={returnFocusTo}
-          onSelect={onSelect}
-          groups={groups}
-        />
-      </div>,
-    );
-    const inlineItem = container.querySelector<HTMLButtonElement>('.lyra-cmdk__item')!;
-    const inlineOutside = container.querySelector<HTMLButtonElement>('button')!;
-    expect(inlineItem.closest('[inert]')).toBeNull();
-    expect(inlineItem.closest('[aria-modal="true"]')).toBeNull();
-    expect(inlineOutside.closest('[inert]')).toBeNull();
-    await userEvent.click(inlineItem);
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(initialFocusTo).not.toHaveBeenCalled();
-    expect(returnFocusTo).not.toHaveBeenCalled();
+      await rerender(
+        <div data-testid="consumer-host">
+          <button type="button">Outside</button>
+          <CommandPalette
+            inline
+            initialFocusTo={initialFocusTo}
+            returnFocusTo={returnFocusTo}
+            onSelect={onSelect}
+            groups={groups}
+          />
+        </div>,
+      );
+      const inlineItem = container.querySelector<HTMLButtonElement>('.lyra-cmdk__item')!;
+      const inlineOutside = container.querySelector<HTMLButtonElement>('button')!;
+      expect(inlineItem.closest('[inert]')).toBeNull();
+      expect(inlineItem.closest('[aria-modal="true"]')).toBeNull();
+      expect(inlineOutside.closest('[inert]')).toBeNull();
+      await userEvent.click(inlineItem);
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(initialFocusTo).not.toHaveBeenCalled();
+      expect(returnFocusTo).not.toHaveBeenCalled();
+    } finally {
+      exitStyle.remove();
+      vi.useRealTimers();
+    }
   });
 });
