@@ -46,6 +46,29 @@ const modalFixture = (prefix: ModalVariant['prefix']): string => `
 </main>
 `;
 
+const dialogLayoutFixture = (body: string): string => `
+<main>
+  <div class="lyra-dialog-overlay">
+    <div class="lyra-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-layout-title">
+      <div class="lyra-dialog__header">
+        <h2 id="dialog-layout-title" class="lyra-dialog__title">Edit notification preferences</h2>
+        <button type="button" class="lyra-dialog__close" aria-label="Close">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div class="lyra-dialog__body">${body}</div>
+      <div class="lyra-dialog__footer"><button type="button">Save changes</button></div>
+    </div>
+  </div>
+</main>
+`;
+
+const layoutElement = <T extends HTMLElement>(selector: string): T => {
+  const element = document.querySelector<T>(selector);
+  if (!element) throw new Error(`Missing dialog layout element: ${selector}`);
+  return element;
+};
+
 const closeControl = (prefix: ModalVariant['prefix']): HTMLElement => {
   const close = document.querySelector<HTMLElement>(`[data-testid="${prefix}-close"]`);
   if (!close) throw new Error(`Missing ${prefix} close control`);
@@ -65,6 +88,24 @@ const settleEntrance = async (prefix: ModalVariant['prefix']): Promise<void> => 
   const targets = [
     document.querySelector<HTMLElement>(`[data-testid="${prefix}-overlay"]`),
     document.querySelector<HTMLElement>(`[data-testid="${prefix}-panel"]`),
+  ];
+  const animations = targets.flatMap((element) =>
+    element instanceof HTMLElement ? element.getAnimations({ subtree: false }) : [],
+  );
+  await Promise.all(
+    animations
+      .filter((animation) => {
+        const timing = animation.effect?.getComputedTiming();
+        return Number.isFinite(timing?.activeDuration) && (timing?.activeDuration ?? 0) > 0;
+      })
+      .map((animation) => animation.finished),
+  );
+};
+
+const settleDialogLayoutEntrance = async (): Promise<void> => {
+  const targets = [
+    document.querySelector<HTMLElement>('.lyra-dialog-overlay'),
+    document.querySelector<HTMLElement>('[role="dialog"]'),
   ];
   const animations = targets.flatMap((element) =>
     element instanceof HTMLElement ? element.getAnimations({ subtree: false }) : [],
@@ -128,5 +169,55 @@ describe.each(modalVariants)('$name close control native keyboard focus indicato
     const title = document.querySelector<HTMLElement>(`[data-testid="${variant.prefix}-title"]`);
     if (!title) throw new Error(`Missing ${variant.prefix} title`);
     expect(getComputedStyle(title).color).not.toBe(panelBackground);
+  });
+});
+
+describe('Dialog content layout', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('keeps long public dialog content scrollable while its header, close control, and footer stay visible', async () => {
+    const paragraphs = Array.from(
+      { length: 12 },
+      (_, index) =>
+        `<p>Notification preference ${index + 1} explains how this workspace sends updates across email, mobile, and in-product channels. You can review delivery timing, select the teams that receive each alert, and update these choices whenever your workspace policies change.</p>`,
+    ).join('');
+    document.body.innerHTML = dialogLayoutFixture(paragraphs);
+    await settleDialogLayoutEntrance();
+
+    const overlay = layoutElement<HTMLDivElement>('.lyra-dialog-overlay');
+    const dialog = layoutElement<HTMLDivElement>('[role="dialog"]');
+    const header = layoutElement<HTMLDivElement>('.lyra-dialog__header');
+    const body = layoutElement<HTMLDivElement>('.lyra-dialog__body');
+    const footer = layoutElement<HTMLDivElement>('.lyra-dialog__footer');
+    const close = layoutElement<HTMLButtonElement>('button[aria-label="Close"]');
+    const overlayRect = overlay.getBoundingClientRect();
+    const dialogRect = dialog.getBoundingClientRect();
+
+    expect(getComputedStyle(body).overflowY).toMatch(/auto|scroll/);
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+    expect(dialogRect.top).toBeGreaterThanOrEqual(overlayRect.top);
+    expect(dialogRect.bottom).toBeLessThanOrEqual(overlayRect.bottom);
+    expect(header.getBoundingClientRect().top).toBeGreaterThanOrEqual(overlayRect.top);
+    expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(overlayRect.top);
+    expect(close.getBoundingClientRect().bottom).toBeLessThanOrEqual(overlayRect.bottom);
+    expect(footer.getBoundingClientRect().bottom).toBeLessThanOrEqual(overlayRect.bottom);
+  });
+
+  it('keeps short public dialog content naturally compact', async () => {
+    document.body.innerHTML = dialogLayoutFixture(
+      '<p>Choose how this workspace sends notifications.</p>',
+    );
+    await settleDialogLayoutEntrance();
+
+    const overlay = layoutElement<HTMLDivElement>('.lyra-dialog-overlay');
+    const dialog = layoutElement<HTMLDivElement>('[role="dialog"]');
+    const body = layoutElement<HTMLDivElement>('.lyra-dialog__body');
+    const overlayRect = overlay.getBoundingClientRect();
+    const dialogRect = dialog.getBoundingClientRect();
+
+    expect(body.scrollHeight).toBe(body.clientHeight);
+    expect(dialogRect.height).toBeLessThan(overlayRect.height - 48);
   });
 });
