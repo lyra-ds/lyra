@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { relative, resolve, sep } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { pnpmInvocation } from '../scripts/test-process.mjs';
+
 const packageRoot = resolve(import.meta.dirname, '..');
 const repositoryRoot = resolve(packageRoot, '../..');
 const viteExecutable = resolve(packageRoot, 'node_modules/vite/bin/vite.js');
@@ -352,7 +354,8 @@ describe('isolated preview build', () => {
 
 describe('ordinary documentation output', () => {
   it('contains no file-upload evidence route or asset after a fresh production build', () => {
-    const result = spawnSync('pnpm', ['--filter', '@lyra-ds/docs', 'run', 'build'], {
+    const buildInvocation = pnpmInvocation(['--filter', '@lyra-ds/docs', 'run', 'build']);
+    const result = spawnSync(buildInvocation.command, buildInvocation.args, {
       cwd: repositoryRoot,
       encoding: 'utf8',
       env: { ...process.env, NODE_ENV: 'production' },

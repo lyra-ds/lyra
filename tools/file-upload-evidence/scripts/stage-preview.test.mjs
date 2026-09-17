@@ -4,11 +4,10 @@ import { join, parse, relative, resolve, sep } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { stagePreview } from './stage-preview.mjs';
+import { wranglerInvocation } from './test-process.mjs';
 
 const revision = '1234567890abcdef1234567890abcdef12345678';
 const temporaryRoots = [];
-const repositoryRoot = resolve(import.meta.dirname, '../../..');
-const wranglerExecutable = resolve(repositoryRoot, 'node_modules/.bin/wrangler');
 
 async function fixture() {
   const workspaceRoot = await mkdtemp(join(tmpdir(), 'lyra-stage-preview-test-'));
@@ -91,11 +90,17 @@ describe('stagePreview', () => {
         /secret|\bKV\b|\bR2\b|\bD1\b|console\.|Access-Control-Allow-Origin/iu,
       );
 
-      const compilation = spawnSync(
-        wranglerExecutable,
-        ['pages', 'functions', 'build', 'functions', '--outdir=compiled'],
-        { cwd: wranglerCwd, encoding: 'utf8' },
-      );
+      const compilationInvocation = wranglerInvocation([
+        'pages',
+        'functions',
+        'build',
+        'functions',
+        '--outdir=compiled',
+      ]);
+      const compilation = spawnSync(compilationInvocation.command, compilationInvocation.args, {
+        cwd: wranglerCwd,
+        encoding: 'utf8',
+      });
       expect(compilation.status, `${compilation.stdout}\n${compilation.stderr}`).toBe(0);
     });
 
