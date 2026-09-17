@@ -12,7 +12,7 @@
 // the render container) and the shared axe helper targets document.body — the tree the portal actually lands
 // in. Dark theme is toggled on document.documentElement so the body-level portal inherits it.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useState, type ReactNode } from 'react';
+import { StrictMode, useRef, useState, type ReactNode } from 'react';
 import { render, cleanup } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
@@ -78,7 +78,15 @@ function DialogHarness({
     : undefined;
   return (
     <>
-      <button type="button" data-testid="trigger" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        data-testid="trigger"
+        onClick={(event) => {
+          // Prepare focus at activation — WebKit drops a pre-focused trigger on mousedown, before click.
+          event.currentTarget.focus();
+          setOpen(true);
+        }}
+      >
         Open
       </button>
       <button type="button" data-testid="outside">
@@ -108,7 +116,6 @@ async function openHarness(props: HarnessProps = {}): Promise<{
 }> {
   const result = await render(<DialogHarness {...props} />);
   const trigger = result.container.querySelector<HTMLButtonElement>('[data-testid="trigger"]')!;
-  trigger.focus();
   await userEvent.click(trigger);
   await vi.waitFor(() => expect(panel()).not.toBeNull());
   // Initial focus lands inside the panel (effect runs after the portal mounts).
@@ -284,6 +291,24 @@ describe('Dialog — initial focus', () => {
     }
   });
 
+  it('uses an eligible declared initial destination instead of a hidden first control', async () => {
+    const destinationRef = { current: null as HTMLInputElement | null };
+    const resolver = vi.fn(() => destinationRef.current);
+
+    await render(
+      <Dialog open initialFocusTo={resolver} title="Declared destination">
+        <button type="button" hidden>
+          Hidden first action
+        </button>
+        <input ref={destinationRef} aria-label="Task field" />
+      </Dialog>,
+    );
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(destinationRef.current));
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(panel()!.getAttribute('initialFocusTo')).toBeNull();
+  });
+
   it('reopening DURING the exit window re-enters focus and keeps restore working (WR-03)', async () => {
     const { rerender, container } = await render(<ControlledDeep open={false} />);
     const trigger = container.querySelector<HTMLButtonElement>('[data-testid="trigger"]')!;
@@ -313,8 +338,79 @@ describe('Dialog — initial focus', () => {
 // --- Close paths + opt-out flags + focus restore ---------------------------------------------
 
 describe('Dialog — close paths', () => {
+  it.each(['escape', 'backdrop', 'button'] as const)(
+    'explicit mouse returnFocusTo restores its declared target after %s dismissal',
+    async (dismissal) => {
+      function ExplicitMouseHarness(): ReactNode {
+        const [open, setOpen] = useState(false);
+        const targetRef = useRef<HTMLHeadingElement>(null);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open without focus preparation
+            </button>
+            <h2 ref={targetRef} tabIndex={-1}>
+              Return destination
+            </h2>
+            <Dialog
+              open={open}
+              onClose={() => setOpen(false)}
+              returnFocusTo={() => targetRef.current}
+              title="Explicit mouse return focus"
+            >
+              Body
+            </Dialog>
+          </>
+        );
+      }
+
+      await render(<ExplicitMouseHarness />);
+      await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+      await vi.waitFor(() => expect(panel()).not.toBeNull());
+      expect(panel()!.getAttribute('returnFocusTo')).toBeNull();
+
+      if (dismissal === 'escape') await userEvent.keyboard('{Escape}');
+      else if (dismissal === 'backdrop') {
+        await userEvent.click(overlay()!, { position: { x: 1, y: 1 } });
+      } else await userEvent.click(closeBtn()!);
+
+      const target = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-dialog__title)')!;
+      await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+      expect(document.activeElement).toBe(target);
+    },
+  );
+
   it('Esc closes and restores focus to the trigger', async () => {
     const { trigger } = await openHarness();
+    await userEvent.keyboard('{Escape}');
+    await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('StrictMode preserves the omitted-prop opener across effect replay', async () => {
+    function StrictModeHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open strict dialog
+          </button>
+          <Dialog open={open} onClose={() => setOpen(false)} title="Strict opener">
+            Body
+          </Dialog>
+        </>
+      );
+    }
+
+    await render(
+      <StrictMode>
+        <StrictModeHarness />
+      </StrictMode>,
+    );
+    const trigger = document.querySelector<HTMLButtonElement>('button')!;
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
     await userEvent.keyboard('{Escape}');
     await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
     expect(document.activeElement).toBe(trigger);
@@ -378,6 +474,262 @@ describe('Dialog — close paths', () => {
     // onClose fired but the parent kept open=true → dialog stays, focus stays inside.
     expect(panel()).not.toBeNull();
     expect(panel()!.contains(document.activeElement)).toBe(true);
+  });
+
+  it('does not resolve returnFocusTo when a parent ignores a close request', async () => {
+    const resolver = vi.fn(() => document.createElement('button'));
+    function IgnoredCloseHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open ignored close
+          </button>
+          <Dialog open={open} onClose={() => {}} returnFocusTo={resolver} title="Ignored close">
+            Body
+          </Dialog>
+        </>
+      );
+    }
+
+    await render(<IgnoredCloseHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    expect(resolver).not.toHaveBeenCalled();
+    expect(panel()!.contains(document.activeElement)).toBe(true);
+  });
+
+  it('uses a successor after the trigger is removed by the accepted closing commit', async () => {
+    function RemovedTriggerHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      const [showTrigger, setShowTrigger] = useState(true);
+      const successorRef = useRef<HTMLHeadingElement>(null);
+      return (
+        <>
+          {showTrigger && (
+            <button type="button" onClick={() => setOpen(true)}>
+              Remove me on close
+            </button>
+          )}
+          <h2 ref={successorRef} tabIndex={-1}>
+            Workflow successor
+          </h2>
+          <Dialog
+            open={open}
+            onClose={() => {
+              setShowTrigger(false);
+              setOpen(false);
+            }}
+            returnFocusTo={() => successorRef.current}
+            title="Removed trigger"
+          >
+            Body
+          </Dialog>
+        </>
+      );
+    }
+
+    await render(<RemovedTriggerHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(panel()).not.toBeNull());
+    await userEvent.keyboard('{Escape}');
+    const successor = document.querySelector<HTMLHeadingElement>('h2:not(.lyra-dialog__title)')!;
+    await vi.waitFor(() => expect(panel()).toBeNull(), { timeout: 500 });
+    expect(document.activeElement).toBe(successor);
+  });
+});
+
+// --- Nested Escape containment ---------------------------------------------------------------
+
+describe('Dialog — nested Escape containment', () => {
+  interface NestedDialogHarnessProps {
+    childCloseOnEsc?: boolean;
+    ignoreChildClose?: boolean;
+    onChildClose?: () => void;
+    onChildKeyDown?: DialogProps['onKeyDown'];
+    onParentClose?: () => void;
+    onParentKeyDown?: DialogProps['onKeyDown'];
+    childContent?: ReactNode;
+  }
+
+  function NestedDialogHarness({
+    childCloseOnEsc = true,
+    ignoreChildClose = false,
+    onChildClose,
+    onChildKeyDown,
+    onParentClose,
+    onParentKeyDown,
+    childContent,
+  }: NestedDialogHarnessProps): ReactNode {
+    const [parentOpen, setParentOpen] = useState(false);
+    const [childOpen, setChildOpen] = useState(false);
+    const childTriggerRef = useRef<HTMLButtonElement>(null);
+
+    return (
+      <>
+        <button type="button" aria-label="Open parent dialog" onClick={() => setParentOpen(true)}>
+          Open parent dialog
+        </button>
+        <Dialog
+          open={parentOpen}
+          onClose={() => {
+            onParentClose?.();
+            setParentOpen(false);
+          }}
+          onKeyDown={onParentKeyDown}
+          title="Parent dialog"
+        >
+          <button
+            ref={childTriggerRef}
+            type="button"
+            aria-label="Open child dialog"
+            onClick={() => setChildOpen(true)}
+          >
+            Open child dialog
+          </button>
+          <Dialog
+            open={childOpen}
+            onClose={() => {
+              onChildClose?.();
+              if (!ignoreChildClose) setChildOpen(false);
+            }}
+            onKeyDown={onChildKeyDown}
+            closeOnEsc={childCloseOnEsc}
+            returnFocusTo={() => childTriggerRef.current}
+            title="Child dialog"
+          >
+            {childContent ?? (
+              <button type="button" aria-label="Child action">
+                Child action
+              </button>
+            )}
+          </Dialog>
+        </Dialog>
+      </>
+    );
+  }
+
+  const dialogByTitle = (title: string): HTMLElement | undefined =>
+    [...document.querySelectorAll<HTMLElement>('.lyra-dialog')].find(
+      (element) => element.querySelector('.lyra-dialog__title')?.textContent === title,
+    );
+
+  async function openNestedDialogs(props: NestedDialogHarnessProps = {}): Promise<{
+    childTrigger: HTMLButtonElement;
+  }> {
+    await render(<NestedDialogHarness {...props} />);
+    const parentTrigger = document.querySelector<HTMLButtonElement>(
+      '[aria-label="Open parent dialog"]',
+    )!;
+    await userEvent.click(parentTrigger);
+    await vi.waitFor(() => expect(dialogByTitle('Parent dialog')).toBeDefined());
+
+    const childTrigger = dialogByTitle('Parent dialog')!.querySelector<HTMLButtonElement>(
+      '[aria-label="Open child dialog"]',
+    )!;
+    await userEvent.click(childTrigger);
+    await vi.waitFor(() => expect(dialogByTitle('Child dialog')).toBeDefined());
+    await vi.waitFor(() =>
+      expect(dialogByTitle('Child dialog')!.contains(document.activeElement)).toBe(true),
+    );
+    return { childTrigger };
+  }
+
+  it('closes only the child, restores its trigger, then lets a second Escape close the parent', async () => {
+    const onChildClose = vi.fn();
+    const onParentClose = vi.fn();
+    const { childTrigger } = await openNestedDialogs({ onChildClose, onParentClose });
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(onChildClose).toHaveBeenCalledTimes(1);
+    expect(onParentClose).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dialogByTitle('Child dialog')).toBeUndefined(), { timeout: 500 });
+    expect(dialogByTitle('Parent dialog')).toBeDefined();
+    expect(document.activeElement).toBe(childTrigger);
+
+    await userEvent.keyboard('{Escape}');
+    expect(onParentClose).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(dialogByTitle('Parent dialog')).toBeUndefined(), {
+      timeout: 500,
+    });
+  });
+
+  const containmentCases: Array<{
+    name: string;
+    props: Pick<
+      NestedDialogHarnessProps,
+      'childCloseOnEsc' | 'ignoreChildClose' | 'onChildKeyDown' | 'childContent'
+    >;
+    expectedChildCloseCalls: number;
+  }> = [
+    {
+      name: 'the child disables Escape closing',
+      props: { childCloseOnEsc: false },
+      expectedChildCloseCalls: 0,
+    },
+    {
+      name: 'the child parent ignores its close request',
+      props: { ignoreChildClose: true },
+      expectedChildCloseCalls: 1,
+    },
+    {
+      name: 'the child panel consumer prevents default',
+      props: { onChildKeyDown: (event) => event.preventDefault() },
+      expectedChildCloseCalls: 0,
+    },
+    {
+      name: 'a child input consumer prevents default',
+      props: {
+        childContent: (
+          <input aria-label="Child editor" onKeyDown={(event) => event.preventDefault()} />
+        ),
+      },
+      expectedChildCloseCalls: 0,
+    },
+  ];
+
+  it.each(containmentCases)(
+    'keeps the parent open when $name',
+    async ({ props, expectedChildCloseCalls }) => {
+      const onChildClose = vi.fn();
+      const onParentClose = vi.fn();
+      await openNestedDialogs({ ...props, onChildClose, onParentClose });
+
+      if ('childContent' in props) {
+        dialogByTitle('Child dialog')!
+          .querySelector<HTMLInputElement>('[aria-label="Child editor"]')!
+          .focus();
+      }
+      await userEvent.keyboard('{Escape}');
+
+      expect(onChildClose).toHaveBeenCalledTimes(expectedChildCloseCalls);
+      expect(onParentClose).not.toHaveBeenCalled();
+      expect(dialogByTitle('Parent dialog')).toBeDefined();
+      expect(dialogByTitle('Child dialog')).toBeDefined();
+    },
+  );
+
+  it('runs the child consumer before its cancellable Escape default and preserves non-Escape bubbling', async () => {
+    const calls: string[] = [];
+    await openNestedDialogs({
+      onChildClose: () => calls.push('child-close'),
+      onChildKeyDown: (event) => {
+        calls.push(`child-${event.key}`);
+        if (event.key === 'Escape') event.preventDefault();
+      },
+      onParentKeyDown: (event) => calls.push(`parent-${event.key}`),
+    });
+
+    await userEvent.keyboard('{Escape}');
+    expect(calls).toEqual(['child-Escape']);
+
+    dialogByTitle('Child dialog')!
+      .querySelector<HTMLButtonElement>('[aria-label="Child action"]')!
+      .focus();
+    await userEvent.keyboard('{Enter}');
+    expect(calls).toEqual(['child-Escape', 'child-Enter', 'parent-Enter']);
   });
 });
 
@@ -521,5 +873,73 @@ describe('Dialog — ref', () => {
     await vi.waitFor(() => expect(node).not.toBeNull());
     expect(node!.getAttribute('role')).toBe('dialog');
     expect(node!.classList.contains('lyra-dialog')).toBe(true);
+  });
+});
+
+describe('Dialog — logical close activity', () => {
+  it('inerts its retained exit scope and cannot reuse a backdrop press after reopening', async () => {
+    const onClose = vi.fn();
+    function LogicalCloseHarness(): ReactNode {
+      const [open, setOpen] = useState(false);
+      const triggerRef = useRef<HTMLButtonElement>(null);
+      return (
+        <div data-testid="consumer-host">
+          <button ref={triggerRef} type="button" onClick={() => setOpen(true)}>
+            Open logical dialog
+          </button>
+          <button type="button">Outside</button>
+          <Dialog
+            open={open}
+            onClose={() => {
+              onClose();
+              setOpen(false);
+            }}
+            returnFocusTo={() => triggerRef.current}
+            title="Logical close"
+          >
+            Body
+          </Dialog>
+        </div>
+      );
+    }
+
+    const { container } = await render(<LogicalCloseHarness />);
+    const trigger = container.querySelector<HTMLButtonElement>('button')!;
+    const outside = container.querySelectorAll<HTMLButtonElement>('button')[1]!;
+    await userEvent.click(trigger);
+    await vi.waitFor(() => expect(overlay()).not.toBeNull());
+    const retainedOverlay = overlay()!;
+    const retainedPanel = panel()!;
+    await vi.waitFor(() =>
+      expect(retainedOverlay.querySelectorAll('[data-lyra-focus-trap-boundary]')).toHaveLength(2),
+    );
+    const retainedGuards = Array.from(
+      retainedOverlay.querySelectorAll<HTMLElement>('[data-lyra-focus-trap-boundary]'),
+    );
+    expect(retainedGuards).toHaveLength(2);
+    expect(retainedGuards.every((guard) => retainedOverlay.contains(guard))).toBe(true);
+    await vi.waitFor(() => expect(retainedPanel.contains(document.activeElement)).toBe(true));
+    retainedOverlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    await userEvent.keyboard('{Escape}');
+    await vi.waitFor(() => expect(retainedOverlay.hasAttribute('inert')).toBe(true));
+    expect(retainedOverlay.hasAttribute('inert')).toBe(true);
+    expect(retainedOverlay.isConnected).toBe(true);
+    expect(retainedOverlay.contains(retainedPanel)).toBe(true);
+    expect(retainedPanel.getAttribute('aria-modal')).toBeNull();
+    expect(retainedGuards.every((guard) => !guard.isConnected)).toBe(true);
+    expect(container.querySelector('[data-testid="consumer-host"]')!.hasAttribute('inert')).toBe(
+      false,
+    );
+    expect(outside.closest('[inert]')).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+    retainedPanel.focus();
+    expect(document.activeElement).not.toBe(retainedPanel);
+
+    await userEvent.click(trigger);
+    await vi.waitFor(() => expect(overlay()).toBe(retainedOverlay));
+    expect(panel()).toBe(retainedPanel);
+    retainedOverlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

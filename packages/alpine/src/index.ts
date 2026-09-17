@@ -127,7 +127,7 @@ export type { LyraPopoverOptions } from './popover';
 export type { LyraSegmentedControlOptions } from './segmented-control';
 export type { LyraSidebarGroupOptions } from './sidebar-group';
 export type { LyraTableOfContentsOptions } from './table-of-contents';
-export type { LyraTabsOptions } from './tabs';
+export type { LyraTabsChangeDetail, LyraTabsOptions } from './tabs';
 export type { LyraThemeStore } from './theme';
 export type { LyraTimeInputOptions } from './time-input';
 export type { LyraTimePickerLabels, LyraTimePickerOptions } from './time-picker';

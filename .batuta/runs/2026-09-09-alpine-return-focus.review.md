@@ -1,0 +1,13 @@
+<<<FINDINGS
+packages/alpine/src/bottom-sheet.browser.test.ts:200: low: one of six option-wired restore cases switched close input from synthetic panel keydown dispatch to real `userEvent.keyboard('{Escape}')`; mouse open and exact opener assertion preserved, but test-method change beyond brief's "preserve" wording — synthetic dispatch would exercise same watcher path.
+packages/alpine/src/dialog.browser.test.ts:300: low: throw-at-owner proof calls `data.restoreOpener()` directly, so source suites never drive a real accepted close with throwing resolver through the Alpine watcher to observe propagation into Alpine error handling; no-catch propagation verified only structurally (helper test + direct call), native artifacts claimed not part of reviewed diff.
+packages/alpine/src/drawer.browser.test.ts:203: low: drawer/bottom-sheet/command-palette source suites lack colocated reentrant-reopen/destroy/ignored-close option regressions (dialog + shared helper only); criterion 2 per-family lifecycle proof at source level delegated to controller native24 artifacts, not provable from these files alone.
+packages/alpine/src/internal/return-focus.ts:14: info: `isContentEditable` eligibility uses only immediate-parent check; deeper non-editable nesting edge untested, matches conservative React reference intent.
+FINDINGS>>>
+
+Controller adjudication:
+- Declined BottomSheet input-method concern: exact retry feedback explicitly requested native Escape; actual mouse opening and exact return target remain, stronger native route also used by compiled probes.
+- Accepted additional watcher-error evidence request, resolved without product edits: native12/12 fourfamilies×threeengines drive actual pointeropen/Escape accepted close, observe original Error identity through Alpine normal window-error path exactly once, openfalse/openernull before error and zero return-target focus. Expected error is distinguished from unexpected page/probe failures; none unexpected. Source helper/direct owner remain valid local proof.
+- Declined missing colocated per-family lifecycle concern: controller native24 reproduced allfour public families' reentrant/destroy boundaries, plus explicit24exit counts and ignoredDialog3. Acceptance does not require mirroring native proof in every source file; inline CP directproof alsoPASS.
+- Declined contenteditable informational edge: matches retained conservative root-editable eligibility and no concrete failure was shown; no broader editability compatibility claim.
+Final verdict approved; no runtime changes after independent review. Reviewer3/3DONE, guardunchanged, Batuta verifierPASS.

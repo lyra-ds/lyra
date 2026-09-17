@@ -402,7 +402,8 @@ const ADDITIVE_EXTENSIONS = {
   'components/primitives/primitives.css': {
     // The handoff's Popover entrance fades from opacity 0; the package deliberately redefines this
     // exact keyframe after the canonical region to meet the transform-only entrance-motion constraint.
-    classes: [],
+    // `lyra-popover` is additive: its reduced-motion rule only disables the entrance animation.
+    classes: ['lyra-popover'],
     keyframes: ['lyra-popover-in'],
   },
   'components/feedback/feedback.css': {
@@ -465,6 +466,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-combobox__pop--up',
       'lyra-combobox__trigger',
       'lyra-combobox__option',
+      // Forced-colors focus indicator for the handoff's shadow-only input.
+      'lyra-input',
       'lyra-input--sm',
       'lyra-formrow',
       'lyra-cal__day',
@@ -474,6 +477,9 @@ const ADDITIVE_EXTENSIONS = {
   'components/navigation/navigation.css': {
     classes: [
       'lyra-dropdown__trigger',
+      // Dropdown's public start/end alignment classes add logical inline offsets.
+      'lyra-menu--start',
+      'lyra-menu--end',
       'lyra-cmdk',
       'lyra-kbd',
       'lyra-cmdk__group-label',
@@ -500,6 +506,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-tabs--pills',
       'lyra-stepper',
       'lyra-wssw__item',
+      // The metadata override keeps plan and member details readable on the item's hover surface.
+      'lyra-wssw__meta',
       'lyra-wssw__trigger',
     ],
     keyframes: [],
@@ -512,7 +520,7 @@ const ADDITIVE_EXTENSIONS = {
   },
   'components/data/data.css': {
     // Contrast repair: the handoff's column headings sit at 4.34:1 on the sunken header band.
-    classes: ['lyra-table'],
+    classes: ['lyra-table', 'lyra-table__sortbtn'],
     keyframes: [],
   },
   'components/files/files.css': {

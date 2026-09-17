@@ -30,6 +30,82 @@ modal or embeds `inline`; use Dropdown instead when a short command list belongs
   mismatch.
 </Example>
 
+## Return focus
+
+In modal mode, use `returnFocusTo` for pointer-opened palettes. It is a synchronous resolver that
+runs once after an accepted close has committed, so it reads the current trigger and workflow state
+rather than a stale element. Keyboard opening can omit it when the captured opener remains a valid
+destination.
+
+```tsx
+import { CommandPalette, type CommandGroup } from '@lyra-ds/react';
+import { useRef, useState } from 'react';
+
+function CommandPaletteExample({ canReturnToTrigger }: { canReturnToTrigger: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [showTrigger, setShowTrigger] = useState(true);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const successorRef = useRef<HTMLHeadingElement>(null);
+  const groups: CommandGroup[] = [{ items: [{ id: 'projects', label: 'Projects' }] }];
+
+  return (
+    <>
+      {showTrigger && (
+        <CommandPalette.Trigger
+          ref={triggerRef}
+          label="Search commands"
+          onClick={() => setOpen(true)}
+        />
+      )}
+      <h2 ref={successorRef} tabIndex={-1}>
+        Projects
+      </h2>
+      <CommandPalette
+        open={open}
+        onClose={() => {
+          setShowTrigger(false);
+          setOpen(false);
+        }}
+        returnFocusTo={() =>
+          canReturnToTrigger && triggerRef.current ? triggerRef.current : successorRef.current
+        }
+        groups={groups}
+      />
+    </>
+  );
+}
+```
+
+The returned element must be connected, visible, enabled, in the same document, and programmatically
+focusable. A named region with `tabIndex={-1}` is a valid successor when the trigger is removed or
+no longer meaningful; a removed trigger's null ref falls back to that successor even if availability
+has not changed. Hidden, inert, and `aria-hidden` ancestors make a target ineligible, as do the
+closing panel, overlay, and their descendants while exit presence keeps them mounted. Invalid results
+fall back to a valid captured opener. If neither target is eligible, Lyra makes no invalid focus call
+and emits a development diagnostic once for that close cycle. After removal the browser may leave
+focus on `body`. That is an invalid invoking composition, not a
+successful restoration. `returnFocusTo` is ignored by `inline`, and it never runs for ignored close
+requests or closed renders. Omitted pointer-opened consumers are not automatically repaired.
+
+## Initial focus
+
+`initialFocusTo` is optional and has the type `() => HTMLElement | null`. In modal mode, Lyra calls
+this synchronous, read-only resolver once for each accepted opening. Normal command interaction omits
+it, so the eligible search field remains the task-control default. When an application intentionally
+needs a declared destination, it can return the current named palette panel, which is already present
+with `tabIndex={-1}`. A null or invalid result focuses that panel directly; it never falls through to
+another control. Inline palettes ignore `initialFocusTo`.
+
+An eligible target is an `HTMLElement` in the panel's document and current modal panel, connected,
+visible with rendered rectangles, enabled (including its fieldset), programmatically focusable, and
+outside hidden, inert, or `aria-hidden` ancestry. The resolver is not replayed on rerenders; a later
+accepted opening reads the current resolver. Form composition owns focus after failed validation, so
+initial entry never infers failure from `aria-invalid`.
+
+The resolver only reads committed state and refs: do not focus, mutate, or start asynchronous work.
+If it throws, Lyra focuses the panel and propagates the same error; the palette's animation-frame
+context reports it through normal browser error handling, not a React error boundary.
+
 ## When to use
 
 Use CommandPalette when people need a keyboard-reachable, searchable index of actions or destinations.
@@ -45,10 +121,11 @@ Reach for something else when:
 - The search input is a `role="combobox"` with `aria-expanded`, `aria-controls`,
   `aria-autocomplete="list"` and `aria-activedescendant`. Results are `role="option"` in a
   `role="listbox"`; labelled groups use `role="group"`.
-- DOM focus stays in the input. Arrow keys move virtual focus through the options, so people can keep
-  typing while the active descendant changes; Enter selects the active item and Escape calls `onClose`.
+- During normal search interaction, DOM focus stays in the input. Arrow keys move virtual focus through
+  the options, so people can keep typing while the active descendant changes; Enter selects the active
+  item and Escape calls `onClose`. A declared palette-panel destination is also supported.
 - An item's `onSelect` runs before the palette-level callback. In modal mode, supply `onClose` to
-  update `open`; closing restores focus to the element that opened the palette.
+  update `open`; use `returnFocusTo` when a pointer-opened palette needs an explicit return target.
 - Modal mode portals a named `role="dialog"`, traps focus, locks scroll and remains mounted for exit
   motion. Pass `aria-label` to replace “Command palette” in a localized interface. Inline mode is
   not a dialog and has no dialog name.
@@ -68,40 +145,65 @@ Reach for something else when:
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-This is the panel structure used by inline mode. A modal wraps it in the overlay and adds dialog semantics:
+After the existing Alpine plugin installation (`Alpine.plugin(lyra)`), use the registered
+`lyraCommandPalette` binding; do not import its internal factory. This modal composition is
+consumer-served and is not portaled automatically. The plugin owns its focus trap, scroll lock,
+Escape, search, and active-descendant behavior.
+
+`returnFocusTo` is initial binding configuration, not mutable callback data. On an accepted modal
+close it synchronously reads current state or refs once: Lyra prefers its eligible explicit target
+with `focus({ preventScroll: true })`, then an eligible captured opener with ordinary `focus()`
+and scroll behavior. The target must be connected, visible, enabled, focusable, in the same document, outside
+the closing overlay and panel, and outside hidden, inert, or `aria-hidden` content. There is no
+arbitrary `body` fallback. Return a meaningful successor when the trigger is removed or becomes
+unsafe; do not focus, mutate, or start asynchronous work from the resolver. This example treats an
+absent, disabled, or hidden trigger as unavailable and returns the named successor. Other
+application availability changes, including hidden or inert ancestry and a no-longer-meaningful
+trigger, must choose their meaningful successor from current state; this example covers its named
+simple states, not arbitrary automatic discovery. Initial closed state, opening, ignored close
+requests, exit, and destroy do not resolve it. Inline mode ignores `returnFocusTo`.
 
 ```html
-<div class="lyra-cmdk">
-  <div class="lyra-cmdk__search">
-    <input
-      role="combobox"
-      aria-label="Search commands"
-      aria-expanded="true"
-      aria-controls="command-list"
-      aria-autocomplete="list"
-      aria-activedescendant="command-new-project"
-    />
-    <kbd class="lyra-kbd">esc</kbd>
-  </div>
-  <div class="lyra-cmdk__body" id="command-list" role="listbox">
-    <div class="lyra-cmdk__group" role="group" aria-labelledby="create-label">
-      <span class="lyra-cmdk__group-label" id="create-label">Create</span>
-      <button
-        class="lyra-cmdk__item lyra-cmdk__item--active"
-        id="command-new-project"
-        type="button"
-        role="option"
-        aria-selected="true"
-      >
-        <span class="lyra-cmdk__item-label">New project</span>
-        <span class="lyra-cmdk__shortcut"
-          ><kbd class="lyra-kbd">C</kbd><kbd class="lyra-kbd">P</kbd></span
-        >
-      </button>
+<div
+  x-data="lyraCommandPalette({
+    groups: [],
+    hotkey: false,
+    label: 'Search commands',
+    searchLabel: 'Search commands',
+    returnFocusTo: () => {
+      const trigger = document.getElementById('open-command-palette');
+      return trigger instanceof HTMLButtonElement && !trigger.disabled && !trigger.hidden
+        ? trigger
+        : document.getElementById('command-workflow');
+    },
+  })"
+>
+  <button
+    id="open-command-palette"
+    class="lyra-cmdk-trigger"
+    type="button"
+    aria-label="Search commands"
+    @click="open = true"
+  >
+    Search commands
+  </button>
+  <h2 id="command-workflow" tabindex="-1">Command workflow</h2>
+
+  <div class="lyra-cmdk-overlay" x-bind="overlay" style="display: none">
+    <div class="lyra-cmdk" x-bind="panel">
+      <div class="lyra-cmdk__search">
+        <input x-bind="search" />
+        <kbd class="lyra-kbd">esc</kbd>
+      </div>
+      <div class="lyra-cmdk__body" x-bind="list">
+        <p class="lyra-cmdk__empty" x-bind="empty" x-text="emptyText()"></p>
+      </div>
+      <div class="lyra-cmdk__footer">
+        <button class="lyra-btn lyra-btn--ghost lyra-btn--md" type="button" @click="open = false">
+          Close
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="lyra-cmdk__footer">
-    <span><kbd class="lyra-kbd">↑</kbd><kbd class="lyra-kbd">↓</kbd> navigate</span>
   </div>
 </div>
 ```

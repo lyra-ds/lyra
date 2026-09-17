@@ -76,6 +76,46 @@ describe('TimePicker', () => {
     expect(trigger.element().textContent).toContain('09:30');
   });
 
+  it('keeps explicit native Tab stops on time options across the full keyboard flow', async () => {
+    const onChange = vi.fn();
+    const screen = await render(
+      <TimePicker label="Meeting time" min="09:00" max="10:00" step={30} onChange={onChange} />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Meeting time' });
+    await expect.element(trigger).toHaveTextContent('Select time');
+    trigger.element().focus();
+
+    await userEvent.keyboard('{Enter}');
+    const listbox = screen.getByRole('listbox', { name: 'Time options' });
+    await expect.element(listbox).toBeInTheDocument();
+    const options = () =>
+      Array.from(listbox.element().querySelectorAll<HTMLButtonElement>('[role="option"]'));
+    expect(options().map((option) => option.textContent)).toEqual(['09:00', '09:30', '10:00']);
+
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(options()[0]);
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(options()[1]);
+    await userEvent.keyboard('{Home}');
+    expect(document.activeElement).toBe(options()[0]);
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(options()[1]);
+    await userEvent.keyboard('{End}');
+    expect(document.activeElement).toBe(options()[2]);
+    await userEvent.keyboard('{Home}');
+    expect(document.activeElement).toBe(options()[0]);
+    await userEvent.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(options()[0]);
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(options()[1]);
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith('09:30');
+    expect(screen.container.querySelector('[role=listbox]')).toBeNull();
+    await expect.element(trigger).toHaveTextContent('09:30');
+  });
+
   it('opens its time options inside BottomSheet at the mobile breakpoint', async () => {
     emulateMobile();
     const screen = await render(<TimePicker label="Meeting time" defaultValue="09:00" />);

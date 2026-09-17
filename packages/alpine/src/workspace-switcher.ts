@@ -106,12 +106,18 @@ export function lyraWorkspaceSwitcher({
       const selectedIndex = options.findIndex(
         (option) => option.getAttribute('aria-selected') === 'true',
       );
-      const target =
-        this.pendingFocus === -2
-          ? Math.max(selectedIndex, 0)
-          : this.pendingFocus < 0
-            ? options.length - 1
-            : this.pendingFocus;
+      // Open sentinels: -2 prefers the served selected option, falling back to the
+      // first option; -3 prefers it with a last-option fallback (trigger ArrowUp).
+      let target: number;
+      if (this.pendingFocus === -2) {
+        target = Math.max(selectedIndex, 0);
+      } else if (this.pendingFocus < -2) {
+        target = selectedIndex >= 0 ? selectedIndex : options.length - 1;
+      } else if (this.pendingFocus < 0) {
+        target = options.length - 1;
+      } else {
+        target = this.pendingFocus;
+      }
       options[Math.min(target, options.length - 1)]?.focus({ preventScroll: true });
       this.pendingFocus = null;
     },
@@ -170,10 +176,10 @@ export function lyraWorkspaceSwitcher({
         this.openPopover(-2);
       } else if (event.key === 'ArrowDown') {
         event.preventDefault();
-        this.openPopover(0);
+        this.openPopover(-2);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        this.openPopover(-1);
+        this.openPopover(-3);
       }
     },
 

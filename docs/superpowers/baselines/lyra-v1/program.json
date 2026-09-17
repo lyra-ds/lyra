@@ -216,10 +216,13 @@
       "stream": "tabs",
       "wave": "tabs",
       "priority": "P1",
-      "governingSpecification": { "path": null, "status": "not-authored" },
+      "governingSpecification": {
+        "path": ".batuta/specs/2026-09-10-tabs-owned-content-design.md",
+        "status": "draft"
+      },
       "currentContract": ["packages/react/src/tabs/tabs.tsx"],
       "targetContracts": ["v1-tabs"],
-      "implementationStatus": "planned",
+      "implementationStatus": "specified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
       "acceptanceEvidence": {},

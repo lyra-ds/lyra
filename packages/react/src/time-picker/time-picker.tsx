@@ -203,6 +203,7 @@ export const TimePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, TimePickerPro
             key={time}
             type="button"
             role="option"
+            tabIndex={0}
             aria-selected={time === selected || undefined}
             className={cx(
               'lyra-timelist__item',

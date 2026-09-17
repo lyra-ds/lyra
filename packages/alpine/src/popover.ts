@@ -191,6 +191,10 @@ export function lyraPopover({
         return {
           display: this.open ? null : 'none',
           width: this.width === undefined ? null : `${this.width}px`,
+          left:
+            this.align === undefined ? (this.placement.align === 'start' ? '0px' : 'auto') : null,
+          right:
+            this.align === undefined ? (this.placement.align === 'end' ? '0px' : 'auto') : null,
         };
       },
       [':class']() {

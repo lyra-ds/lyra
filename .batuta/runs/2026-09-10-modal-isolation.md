@@ -1,0 +1,7 @@
+# 2026-09-10 — modal branch isolation
+
+Basea9c6e3f; branch feat/v1-incumbent-stabilization, isolated active checkout. High CodexTerra initial601.24s + retry446.33s; ⏫ critical/controller for reproduced gaps and verification. GLM scout/design reviews and final read-only implementation review, all content guards retained. ✅ Approved locally: final GLM80.86s3DONE/no findings/1995-file unchanged guard; Batuta verifier PASS.
+
+Authoritative result: .batuta/v1-modal-isolation-verification.md. Contract/scout/brief/retry/critical files describe exact scope and findings. Main raw directory .batuta/runs/v1-modal-isolation/ retains executor/retry logs and immutable snapshots; RED/GREEN proofs; check.py/checks-result.json; native-checks.py/native-checks-result.json; final-artifacts.json/final-artifact-proof.json; size-before/after/delta; initial empty review metadata, resumed findings, review-disposition.md, retained-reopen-review-proof.json, final-review.log and verifier.json. The prepared compact-review.py was never dispatched; session continuation recovered the authoritative findings.
+
+Final proof:201source each engine,14SSR,342compiled,153protected public/Alpine files,450React artifact manifest. Twelve React and one Alpine size failures remain UNWAIVED. No remote/resource/Blade operation, no new dependencies/config/CSS/API. Hook-generated .impeccable cache remains unstaged. Explicit product and managed-document staging only.

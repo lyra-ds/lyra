@@ -69,7 +69,7 @@ test('runs each browser instance serially before persisting shared trace evidenc
   }
 });
 
-test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild React dist', () => {
+test('keeps browser execution separate and serializes workspace tests that rebuild React dist', () => {
   const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
   const packageScripts = Object.fromEntries(
     browserPackages.map((packageFile) => [
@@ -88,12 +88,12 @@ test('keeps Browser Mode Docker-only and serializes workspace tests that rebuild
   assert.equal(packageScripts['packages/alpine/package.json'].test, undefined);
 });
 
-test('checks the lock and overlay core before prebuilding React and Alpine', () => {
+test('checks the lock and manifest prohibition before prebuilding React and Alpine', () => {
   const rootScripts = JSON.parse(readFileSync(resolve('package.json'), 'utf8')).scripts;
   const rootTestCommands = rootScripts.test.split(' && ');
   const requiredOrder = [
     'pnpm security:check',
-    'pnpm overlay:evaluate:core:test',
+    'node --test --test-name-pattern="^keeps experimental foundations out of workspace manifests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs',
     'pnpm --filter @lyra-ds/react run build',
     'pnpm --filter @lyra-ds/alpine run build',
   ];

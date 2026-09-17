@@ -11,9 +11,8 @@ views is cheap; if loading a view is costly, use a control that lets people choo
 ## Examples
 
 <Example id="line" title="Line tabs" layout="block">
-  `active` is required and controlled. Update it in `onChange`; click and keyboard navigation both
-  request the new id. Tabs renders labels and empty panels only, so your application renders
-  content.
+  `active` is required and controlled. Update it in `onChange`; accepted click and keyboard
+  navigation request a value, and your matching `TabsContent` owns the actual panel content.
 </Example>
 
 <Example id="pills-and-counts" title="Pills and counts" layout="block">
@@ -32,16 +31,98 @@ Reach for something else when:
 - **A panel is expensive to render or fetch** — use a control with explicit activation so arrowing
   through choices does not trigger work someone did not ask for.
 
-## Accessibility
+## React composition
 
-- Renders a `role="tablist"` with native tab buttons. Each tab has `role="tab"`, `aria-selected` and
-  `aria-controls`; generated empty `role="tabpanel"` elements are labelled by their tabs.
-- Uses roving `tabIndex`: only the active tab is in the Tab order. ArrowLeft/ArrowRight wrap, and
-  Home/End move to the first or last tab.
-- Arrow navigation activates automatically as it moves focus. That works for cheap panels; avoid it
-  when a panel starts expensive rendering or a network request.
-- The component does not render panel content. Render that content yourself and preserve a visible
-  focus indicator for any controls you add around it.
+Import `Tabs`, `TabsList`, `TabsTrigger`, and `TabsContent` from `@lyra-ds/react` or
+`@lyra-ds/react/tabs`. `Tabs` is the controlled root: pass its required `active` value and update it
+from `onChange(value)`. It is a neutral native `div` that forwards its ref and `id`; when no `id` is
+provided it uses an SSR-safe generated fallback. A supplied root `id` must be a valid, unique native
+ID. Server markup and the initial client composition and `active` value must match; interactive React
+tab switching requires hydration.
+
+Use exactly one `TabsList` for each root. Values must be nonempty, unique, stable across reordering,
+and paired between every `TabsTrigger` and `TabsContent` in that root. Duplicate or unpaired markup is
+unsupported; Tabs does not choose a first winner or repair it. `TabItem` remains a safe data type for
+consumer data, but it does not render items: choose values and place your actual content manually.
+
+| Part          | Owns                                                                                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Tabs`        | Controlled selection, root `div`, root ref and ID, and the `line` or `pills` variant.                                                                      |
+| `TabsList`    | One native `div` with `role="tablist"`, its ref, label, class name, and list-level native handlers.                                                        |
+| `TabsTrigger` | A native `button` with ref; stable `value` and children are required, while `icon`, `count`, `disabled`, and ordinary native button handlers are optional. |
+| `TabsContent` | A native `div` with ref, a matching required `value`, and the opaque application children that it keeps mounted.                                           |
+
+All four parts forward their actual native nodes and their supported native props. Lyra owns the
+semantic attributes: tab roles, selected state, generated paired IDs, `aria-controls`,
+`aria-labelledby`, roving `tabIndex`, and hidden state. Do not provide competing values for those
+owned attributes.
+
+```tsx
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@lyra-ds/react/tabs';
+
+export function ProjectTabs(): React.JSX.Element {
+  const [active, setActive] = useState('summary');
+
+  return (
+    <Tabs active={active} onChange={setActive} id="project-tabs">
+      <TabsList aria-label="Project views">
+        <TabsTrigger value="summary">Summary</TabsTrigger>
+        <TabsTrigger value="activity" count={8}>
+          Activity
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="summary">
+        <p>Project summary</p>
+      </TabsContent>
+      <TabsContent value="activity">
+        <p>Eight recent project updates.</p>
+      </TabsContent>
+    </Tabs>
+  );
+}
+```
+
+### Migration from the historical item form
+
+This before form is historical only; it is not supported current API. It was an unsafe coexistence
+shape because an `items` placeholder could not own or pair real application panels. The pre-1.0
+project SemVer exception permits its earliest correction/removal in `0.6.0`, or in stable `1.0.0`.
+Pair the corrected React release with the Styles release containing the native-hidden fix: `0.5.1` at
+the earliest, or a later combined release containing it. These are compatibility requirements, not a
+publication or version action.
+Keep `TabItem` only as your data type, decide content and values manually, and move the old list
+`ref`, `className`, and label to `TabsList`.
+
+```diff
+- <Tabs active={active} onChange={setActive} items={items} />
++ <Tabs active={active} onChange={setActive}>
++   <TabsList aria-label="Project views" ref={listRef} className="project-tabs">
++     <TabsTrigger value="summary">Summary</TabsTrigger>
++   </TabsList>
++   <TabsContent value="summary"><p>Project summary</p></TabsContent>
++ </Tabs>
+```
+
+## Accessibility and controlled behavior
+
+Tabs enters its native list with the selected eligible tab, or the first eligible tab after client
+normalization. Eligible tabs exclude disabled, hidden, or inert triggers, including CSS or inherited
+disabled eligibility. An invalid `active` value leaves every trigger unselected and every content
+panel hidden until the parent supplies a valid value. If an enabled tab is available after client
+entry, keyboard navigation can make an explicit recovery request; Tabs never fabricates accepted
+selection.
+
+An accepted click, Enter, Space, ArrowLeft, ArrowRight, Home, or End requests `onChange(value)` once.
+Arrows wrap among eligible tabs only; Home and End use the first and last eligible tab, and left/right
+reverse in RTL. Native list or trigger handlers can prevent the event and therefore prevent Tabs'
+request. Updating `active` is the parent's responsibility, and a prop change never echoes another
+callback.
+
+Content stays mounted across switches, preserving its local state. Lyra hides inactive content and
+maintains its ARIA relationship; selected disabled content remains readable. Tabs does not promise
+generic focus restoration when its root is removed. Avoid automatic activation when a panel starts
+expensive rendering or a network request.
 
 ## API and code
 
@@ -53,47 +134,52 @@ Reach for something else when:
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-Tabs emits the tablist and its empty labelled panels. Application content is separate from this markup.
+Alpine Tabs progressively enhances real, headed sections. This is complete current markup: without JavaScript, while Alpine is delayed, or if initialization fails, the fallback links and every section stay visible and usable. Do not add `x-cloak` to fallback content.
 
 ```html
-<div class="lyra-tabs" id="project-tabs" role="tablist">
-  <button
-    id="project-tabs-tab-0"
-    class="lyra-tab lyra-tab--active"
-    type="button"
-    role="tab"
-    aria-selected="true"
-    aria-controls="project-tabs-panel-0"
-    tabindex="0"
-  >
-    Overview
-  </button>
-  <button
-    id="project-tabs-tab-1"
-    class="lyra-tab"
-    type="button"
-    role="tab"
-    aria-selected="false"
-    aria-controls="project-tabs-panel-1"
-    tabindex="-1"
-  >
-    Activity<span class="lyra-tab__count">8</span>
-  </button>
+<div id="project-tabs" data-lyra-tabs x-data="lyraTabs({ active: 'overview' })">
+  <nav aria-label="Project sections" data-lyra-tabs-fallback x-bind="fallback">
+    <a href="#project-overview-panel">Overview</a>
+    <a href="#project-activity-panel">Activity</a>
+  </nav>
+  <div class="lyra-tabs" aria-label="Project sections" data-lyra-tabs-enhanced x-bind="list" hidden>
+    <button
+      id="project-overview-tab"
+      type="button"
+      class="lyra-tab"
+      data-value="overview"
+      x-bind="tab"
+    >
+      Overview
+    </button>
+    <button
+      id="project-activity-tab"
+      type="button"
+      class="lyra-tab"
+      data-value="activity"
+      x-bind="tab"
+    >
+      Activity
+    </button>
+  </div>
+  <section id="project-overview-panel" data-value="overview" x-bind="panel">
+    <h2>Overview</h2>
+    <p>Project summary</p>
+  </section>
+  <section id="project-activity-panel" data-value="activity" x-bind="panel">
+    <h2>Activity</h2>
+    <p>Recent project activity</p>
+  </section>
 </div>
-<div
-  id="project-tabs-panel-0"
-  role="tabpanel"
-  aria-labelledby="project-tabs-tab-0"
-  tabindex="0"
-></div>
-<div
-  id="project-tabs-panel-1"
-  role="tabpanel"
-  aria-labelledby="project-tabs-tab-1"
-  tabindex="0"
-  hidden
-></div>
 ```
+
+The controlled `onChange` discussion above describes React; `lyraTabs({ active: string })` instead accepts `active` as an application input and updates it after an accepted interaction. `ready` is a read-only adapter output: only successful validation of one owned list, unique nonempty trigger/section `data-value` pairs, stable unique native section IDs, and a valid initial active value changes to enhanced mode. Pairs must be complete before initialization and stay structurally static for that enhancement lifetime; replacing them requires corrected markup and reinitialization. That transition hides the fallback and applies the list, tab, and panel bindings together. Missing or invalid pairs, a failed initialization, or an invalid external `active` retain fallback; a later valid `active` revalidates the existing structure. Root and trigger IDs may be generated, but supplied section IDs remain the fallback anchors and missing section IDs are not promised as generated.
+
+Before `ready`, the enhanced list is statically hidden and sections have no tab roles, ARIA state, or hidden state. After `ready`, bindings provide the tablist, selected state, ID links, and mounted active/inactive panels. Valid external `active` changes update those bindings without emitting an interaction event. Eligible triggers exclude disabled, hidden, inert, or nonfocusable triggers, including inherited disabled, hidden, or inert presentation. Native Tab enters the selected eligible trigger, or the first eligible trigger; selected disabled content remains readable, and all-ineligible controls have no trigger tab stop. Arrow keys wrap among eligible controls, Home and End use their bounds, RTL mirrors Left and Right, and Enter or Space uses the native button click.
+
+Native trigger or list prevention runs before Lyra's default and suppresses Lyra effects and custom events. For an accepted interaction, `lyra:tabs-before-change` is synchronous, bubbling, composed, and cancelable; its `LyraTabsChangeDetail` is `{ value: string, previousValue: string }`, and it precedes Lyra focus and active changes. A veto suppresses those effects and the result event. Otherwise, Lyra updates `active` and synchronously emits one bubbling, composed, noncancelable `lyra:tabs-change` with the same detail; observers see committed `active`, while reactive DOM reads belong in `$nextTick`. Same-selected accepted interactions may emit. Recognized keyboard navigation still prevents its native default after consumer guards, including when the custom event vetoes Lyra effects.
+
+Migration is manual: replace the unsafe old form of a hidden server panel or content detached from its tab with real headed sections, stable values and IDs, and fallback links. That unsafe form cannot coexist as a safe shim. This is a pre-1 SemVer exception: the earliest breaking correction is `0.6.0`, or stable `1.0.0`; it is not a publication claim. Use corrected Styles `0.5.1` or a later combined release containing the hidden repair. Older Alpine cannot support `ready`, `fallback`, or this enhanced markup, although static fallback alone works without the adapter. On destroy, readable fallback returns; focus from an enhanced trigger or focused panel container moves to its matching eligible fallback link, or the first eligible fallback link. Naturally focusable native descendants and outside focus are preserved, and root removal never targets detached nodes.
 
   </StackPanel>
 

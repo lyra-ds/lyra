@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent } from 'react';
+import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { Avatar } from '../avatar';
-import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { useFlipPlacement } from '../internal/use-flip-placement';
 
@@ -45,6 +45,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       defaultOpen = false,
       id,
       className,
+      onClick,
       onKeyDown,
       ...rest
     },
@@ -55,12 +56,16 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
     const listboxId = `${rootId}-listbox`;
     const listboxLabelId = `${rootId}-listbox-label`;
     const [open, setOpen] = useState(defaultOpen);
-    const [pendingFocus, setPendingFocus] = useState<number | null>(null);
+    const [pendingFocus, setPendingFocus] = useState<'workspace' | 'create' | null>(null);
+    const [focusedWorkspaceId, setFocusedWorkspaceId] = useState<string | null>(null);
     const rootRef = useRef<HTMLDivElement | null>(null);
     const triggerRef = useRef<HTMLButtonElement | null>(null);
     const popoverRef = useRef<HTMLDivElement | null>(null);
     const placement = useFlipPlacement(open, triggerRef, popoverRef);
     const selected = workspaces.find((workspace) => workspace.id === current) ?? workspaces[0];
+    const rovingWorkspaceId = workspaces.some((workspace) => workspace.id === focusedWorkspaceId)
+      ? focusedWorkspaceId
+      : selected?.id;
 
     const optionButtons = (): HTMLButtonElement[] =>
       Array.from(popoverRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? []);
@@ -71,26 +76,25 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       if (restoreFocus) triggerRef.current?.focus();
     };
 
-    const openWithFocus = (index: number): void => {
-      setPendingFocus(index);
+    const openWithFocus = (): void => {
+      setPendingFocus(workspaces.length > 0 ? 'workspace' : onCreate ? 'create' : null);
       setOpen(true);
     };
 
     useEffect(() => {
       if (!open || pendingFocus === null) return;
       const options = optionButtons();
-      if (options.length === 0) return;
-      const selectedIndex = options.findIndex(
-        (option) => option.getAttribute('aria-selected') === 'true',
-      );
-      const target =
-        pendingFocus === -2
-          ? Math.max(selectedIndex, 0)
-          : pendingFocus < 0
-            ? options.length - 1
-            : pendingFocus;
-      // preventScroll: the popover is already placed to fit; focusing an option must not scroll.
-      options[Math.min(target, options.length - 1)]?.focus({ preventScroll: true });
+      if (pendingFocus === 'workspace' && options.length > 0) {
+        const selectedIndex = options.findIndex(
+          (option) => option.getAttribute('aria-selected') === 'true',
+        );
+        // preventScroll: the popover is already placed to fit; focusing an option must not scroll.
+        options[Math.max(selectedIndex, 0)]?.focus({ preventScroll: true });
+      } else if (pendingFocus === 'create') {
+        popoverRef.current?.querySelector<HTMLButtonElement>('.lyra-wssw__create')?.focus({
+          preventScroll: true,
+        });
+      }
       setPendingFocus(null);
     }, [open, pendingFocus]);
 
@@ -105,19 +109,46 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
 
     const handleTriggerKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.defaultPrevented) return;
-      if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+      if (event.key === 'Escape' && open) {
         event.preventDefault();
-        openWithFocus(event.key === 'ArrowDown' ? 0 : -2);
-      } else if (event.key === 'ArrowUp') {
+        close(true);
+        return;
+      }
+      if (
+        event.key === 'Enter' ||
+        event.key === ' ' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowUp'
+      ) {
         event.preventDefault();
-        openWithFocus(-1);
+        openWithFocus();
       }
     };
 
-    const handleOptionKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
+    const optionForTarget = (target: EventTarget | null): HTMLButtonElement | null => {
+      if (!(target instanceof Element)) return null;
+      const option = target.closest<HTMLButtonElement>('[role="option"]');
+      return option && popoverRef.current?.contains(option) ? option : null;
+    };
+
+    const createForTarget = (target: EventTarget | null): HTMLButtonElement | null => {
+      if (!(target instanceof Element)) return null;
+      const create = target.closest<HTMLButtonElement>('.lyra-wssw__create');
+      return create && popoverRef.current?.contains(create) ? create : null;
+    };
+
+    const workspaceForTarget = (target: EventTarget | null): Workspace | undefined => {
+      const option = optionForTarget(target);
+      if (!option) return undefined;
+      return workspaces[optionButtons().indexOf(option)];
+    };
+
+    const handleOptionKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.defaultPrevented) return;
+      const option = optionForTarget(event.target);
+      if (!option) return;
       const options = optionButtons();
-      const currentIndex = options.indexOf(event.currentTarget);
+      const currentIndex = options.indexOf(option);
       if (currentIndex < 0 || options.length === 0) return;
       let nextIndex: number | undefined;
       if (event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % options.length;
@@ -130,8 +161,18 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       } else if (event.key === 'Escape') {
         event.preventDefault();
         close(true);
-      } else if (event.key === 'Tab') {
+      } else if (event.key === 'Tab' && (event.shiftKey || !onCreate)) {
         close();
+      }
+    };
+
+    const handleCreateKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
+      if (event.defaultPrevented) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close(true);
+      } else if (event.key === 'Tab') {
+        if (!event.shiftKey || optionButtons().length === 0) close();
       }
     };
 
@@ -142,8 +183,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
     };
 
     return (
-      // The root forwards the consumer's native onKeyDown from its descendants; the trigger
-      // and option buttons themselves own the interactive behavior.
+      // The root owns keyboard defaults so consumers can cancel the original event first.
       // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div
         {...rest}
@@ -151,88 +191,101 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
         id={rootId}
         className={cx('lyra-wssw', className)}
         onKeyDown={(event) => {
-          if (event.target !== triggerRef.current) onKeyDown?.(event);
+          onKeyDown?.(event);
+          if (event.defaultPrevented) return;
+          if (triggerRef.current?.contains(event.target as Node)) handleTriggerKeyDown(event);
+          else if (optionForTarget(event.target)) handleOptionKeyDown(event);
+          else if (createForTarget(event.target)) handleCreateKeyDown(event);
+        }}
+        onClick={(event) => {
+          const workspace = workspaceForTarget(event.target);
+          const isCreate = createForTarget(event.target) !== null;
+          const isTrigger = triggerRef.current?.contains(event.target as Node);
+          onClick?.(event);
+          if (event.defaultPrevented) return;
+          if (isTrigger) {
+            if (open) close();
+            else openWithFocus();
+          } else if (workspace) {
+            onChange?.(workspace.id, workspace);
+            close(true);
+          } else if (isCreate) {
+            onCreate?.();
+            close(true);
+          }
         }}
       >
         <button
           ref={triggerRef}
           type="button"
+          tabIndex={0}
           className="lyra-wssw__trigger"
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={listboxId}
-          onClick={() => (open ? close() : openWithFocus(-2))}
-          onKeyDown={(event) => {
-            onKeyDown?.(event as unknown as KeyboardEvent<HTMLDivElement>);
-            handleTriggerKeyDown(event);
-          }}
         >
           <Avatar name={selected?.name ?? '?'} size="sm" shape="square" />
           <span className="lyra-wssw__id">
             <span className="lyra-wssw__name">{selected?.name ?? 'Select workspace'}</span>
             {selected?.plan && <span className="lyra-wssw__plan">{selected.plan}</span>}
           </span>
-          <Icon name="chevrons-up-down" size={15} color="var(--text-faint)" />
+          <ChevronsUpDown
+            className="lyra-icon"
+            size={15}
+            color="var(--text-faint)"
+            aria-hidden="true"
+          />
         </button>
         {open && (
           <div
             ref={popoverRef}
-            id={listboxId}
             className={cx('lyra-wssw__pop', placement.side === 'up' && 'lyra-wssw__pop--up')}
-            role="listbox"
-            aria-labelledby={listboxLabelId}
           >
             <span id={listboxLabelId} className="lyra-wssw__pop-label">
               Workspaces
             </span>
-            {workspaces.map((workspace) => (
-              <button
-                key={workspace.id}
-                type="button"
-                role="option"
-                aria-selected={workspace.id === selected?.id}
-                className="lyra-wssw__item"
-                onKeyDown={handleOptionKeyDown}
-                onClick={() => {
-                  onChange?.(workspace.id, workspace);
-                  close(true);
-                }}
-              >
-                <Avatar name={workspace.name} size="sm" shape="square" />
-                <span className="lyra-wssw__id">
-                  <span className="lyra-wssw__name">{workspace.name}</span>
-                  {(workspace.plan || workspace.members !== undefined) && (
-                    <span className="lyra-wssw__meta">
-                      {[
-                        workspace.plan,
-                        workspace.members !== undefined ? `${workspace.members} members` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
+            <div id={listboxId} role="listbox" aria-labelledby={listboxLabelId}>
+              {workspaces.map((workspace) => (
+                <button
+                  key={workspace.id}
+                  type="button"
+                  role="option"
+                  aria-selected={workspace.id === selected?.id}
+                  tabIndex={workspace.id === rovingWorkspaceId ? 0 : -1}
+                  className="lyra-wssw__item"
+                  onFocus={() => setFocusedWorkspaceId(workspace.id)}
+                >
+                  <Avatar name={workspace.name} size="sm" shape="square" />
+                  <span className="lyra-wssw__id">
+                    <span className="lyra-wssw__name">{workspace.name}</span>
+                    {(workspace.plan || workspace.members !== undefined) && (
+                      <span className="lyra-wssw__meta">
+                        {[
+                          workspace.plan,
+                          workspace.members !== undefined ? `${workspace.members} members` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
+                    )}
+                  </span>
+                  {workspace.id === selected?.id && (
+                    <Check
+                      className="lyra-icon"
+                      size={15}
+                      color="var(--accent)"
+                      aria-hidden="true"
+                    />
                   )}
-                </span>
-                {workspace.id === selected?.id && (
-                  <Icon name="check" size={15} color="var(--accent)" />
-                )}
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
             {onCreate && (
               <>
                 <hr className="lyra-wssw__sep" role="presentation" />
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={false}
-                  className="lyra-wssw__item lyra-wssw__create"
-                  onKeyDown={handleOptionKeyDown}
-                  onClick={() => {
-                    onCreate();
-                    close(true);
-                  }}
-                >
+                <button type="button" tabIndex={0} className="lyra-wssw__item lyra-wssw__create">
                   <span className="lyra-wssw__plus">
-                    <Icon name="plus" size={15} />
+                    <Plus className="lyra-icon" size={15} aria-hidden="true" />
                   </span>
                   <span className="lyra-wssw__create-label">{createLabel}</span>
                 </button>

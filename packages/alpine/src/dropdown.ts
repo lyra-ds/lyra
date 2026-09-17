@@ -17,12 +17,17 @@ interface LyraDropdownData {
   menuId: string;
   root: HTMLElement | null;
   pendingFocus: number | null;
+  typeaheadPrefix: string;
+  typeaheadTimeout: ReturnType<typeof setTimeout> | null;
   placement: FlipPlacement;
   stopMeasuring: (() => void) | null;
   removeDocumentMouseDown: (() => void) | null;
   init(): void;
   destroy(): void;
   commandItems(): HTMLElement[];
+  commandText(command: HTMLElement): string;
+  clearTypeahead(): void;
+  handleTypeahead(event: KeyboardEvent, currentIndex: number): void;
   triggerElement(): HTMLElement | null;
   menuElement(): HTMLElement | null;
   focusPendingItem(): void;
@@ -61,6 +66,8 @@ export function lyraDropdown({
     menuId: '',
     root: null,
     pendingFocus: null,
+    typeaheadPrefix: '',
+    typeaheadTimeout: null,
     placement: { side: 'down', align: 'start' },
     stopMeasuring: null,
     removeDocumentMouseDown: null,
@@ -73,6 +80,7 @@ export function lyraDropdown({
       this.menuId = `${this.$el.id}-menu`;
       this.$watch('open', (open) => {
         if (!open) {
+          this.clearTypeahead();
           this.stopPlacement();
           this.stopOutsideClick();
           return;
@@ -94,6 +102,7 @@ export function lyraDropdown({
     },
 
     destroy() {
+      this.clearTypeahead();
       this.stopPlacement();
       this.stopOutsideClick();
     },
@@ -102,6 +111,25 @@ export function lyraDropdown({
       return Array.from(
         this.menuElement()?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
       );
+    },
+
+    commandText(command) {
+      const walker = document.createTreeWalker(command, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          return node.parentElement?.closest('[aria-hidden="true"]')
+            ? NodeFilter.FILTER_REJECT
+            : NodeFilter.FILTER_ACCEPT;
+        },
+      });
+      let label = '';
+      while (walker.nextNode()) label += walker.currentNode.textContent ?? '';
+      return label.trim();
+    },
+
+    clearTypeahead() {
+      if (this.typeaheadTimeout !== null) clearTimeout(this.typeaheadTimeout);
+      this.typeaheadPrefix = '';
+      this.typeaheadTimeout = null;
     },
 
     triggerElement() {
@@ -126,12 +154,14 @@ export function lyraDropdown({
     },
 
     closeMenu(restoreFocus = false) {
+      this.clearTypeahead();
       this.open = false;
       this.pendingFocus = null;
       if (restoreFocus) this.restoreTriggerFocus();
     },
 
     openMenu(focusIndex) {
+      this.clearTypeahead();
       this.pendingFocus = focusIndex;
       this.open = true;
     },
@@ -179,6 +209,35 @@ export function lyraDropdown({
       }
     },
 
+    handleTypeahead(event, currentIndex) {
+      if (
+        event.key === ' ' ||
+        event.key.length !== 1 ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.isComposing
+      ) {
+        return;
+      }
+
+      const key = event.key.toLocaleLowerCase();
+      const prefix = this.typeaheadPrefix === key ? key : `${this.typeaheadPrefix}${key}`;
+      const commands = this.commandItems();
+      const matchingIndex = Array.from(
+        { length: commands.length },
+        (_, offset) => (currentIndex + offset + 1) % commands.length,
+      ).find((index) => {
+        const command = commands[index];
+        return command ? this.commandText(command).toLocaleLowerCase().startsWith(prefix) : false;
+      });
+
+      if (this.typeaheadTimeout !== null) clearTimeout(this.typeaheadTimeout);
+      this.typeaheadPrefix = prefix;
+      this.typeaheadTimeout = setTimeout(() => this.clearTypeahead(), 500);
+      if (matchingIndex !== undefined) commands[matchingIndex]?.focus({ preventScroll: true });
+    },
+
     handleMenuItemKeyDown(event) {
       if (event.defaultPrevented) return;
       const commands = this.commandItems();
@@ -202,6 +261,8 @@ export function lyraDropdown({
       } else if (event.key === 'Tab') {
         // Do not prevent Tab: closing must leave native sequential focus navigation intact.
         this.closeMenu();
+      } else {
+        this.handleTypeahead(event, currentIndex);
       }
     },
 

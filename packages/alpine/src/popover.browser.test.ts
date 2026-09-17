@@ -1,6 +1,6 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
@@ -12,21 +12,31 @@ Alpine.plugin(lyra);
 function mountPopover({
   options = '{}',
   position,
+  direction,
+  nestedDirection,
+  triggerStyle,
 }: {
   options?: string;
   position?: string;
+  direction?: 'ltr' | 'rtl';
+  nestedDirection?: 'ltr' | 'rtl';
+  triggerStyle?: string;
 } = {}): HTMLElement {
   const host = document.createElement('div');
   host.innerHTML = `
+    <div ${direction ? `dir="${direction}"` : ''}>
+      ${nestedDirection ? `<div dir="${nestedDirection}">` : ''}
     <div
       x-data="lyraPopover(${options})"
       class="lyra-popover-anchor"
       ${position ? `style="position: fixed; ${position}"` : ''}
     >
-      <button x-bind="trigger">Options</button>
+      <button x-bind="trigger" ${triggerStyle ? `style="${triggerStyle}"` : ''}>Options</button>
       <div class="lyra-popover" x-bind="panel">
         <button type="button">Panel action</button>
       </div>
+    </div>
+      ${nestedDirection ? '</div>' : ''}
     </div>
   `;
   document.body.appendChild(host);
@@ -175,6 +185,79 @@ describe('lyraPopover', () => {
     expect(control.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(control);
   });
+
+  it.each([
+    { name: 'inherited LTR start', direction: 'ltr', align: 'start', edge: 'left' },
+    { name: 'inherited LTR end', direction: 'ltr', align: 'end', edge: 'right' },
+    { name: 'inherited RTL start', direction: 'rtl', align: 'start', edge: 'right' },
+    { name: 'inherited RTL end', direction: 'rtl', align: 'end', edge: 'left' },
+    {
+      name: 'nested LTR start within RTL',
+      direction: 'rtl',
+      nestedDirection: 'ltr',
+      align: 'start',
+      edge: 'left',
+    },
+    {
+      name: 'nested LTR end within RTL',
+      direction: 'rtl',
+      nestedDirection: 'ltr',
+      align: 'end',
+      edge: 'right',
+    },
+    { name: 'inherited LTR center', direction: 'ltr', align: 'center', edge: 'center' },
+    { name: 'inherited RTL center', direction: 'rtl', align: 'center', edge: 'center' },
+  ] as const)(
+    'aligns explicit logical values for $name',
+    async ({ direction, nestedDirection, align, edge }) => {
+      const host = mountPopover({
+        options: `{ defaultOpen: true, side: 'bottom', align: '${align}', width: 280 }`,
+        position: 'left: 300px; top: 160px;',
+        direction,
+        nestedDirection,
+        triggerStyle: 'height: 32px; width: 120px;',
+      });
+      await flush();
+      const anchorBounds = root(host).getBoundingClientRect();
+      const popup = panel(host);
+      await vi.waitFor(() => {
+        const panelBounds = popup.getBoundingClientRect();
+
+        if (edge === 'center') {
+          expect((panelBounds.left + panelBounds.right) / 2).toBeCloseTo(
+            (anchorBounds.left + anchorBounds.right) / 2,
+          );
+        } else {
+          expect(panelBounds[edge]).toBeCloseTo(anchorBounds[edge]);
+        }
+      });
+    },
+  );
+
+  it.each([
+    { direction: 'ltr', edge: 'left' },
+    { direction: 'ltr', edge: 'right' },
+    { direction: 'rtl', edge: 'left' },
+    { direction: 'rtl', edge: 'right' },
+  ] as const)(
+    'keeps automatic placement in the viewport at the $direction $edge edge',
+    async ({ direction, edge }) => {
+      const host = mountPopover({
+        options: '{ defaultOpen: true, width: 280 }',
+        position: `${edge}: 0; top: 160px;`,
+        direction,
+        triggerStyle: 'height: 32px; width: 120px;',
+      });
+      await flush();
+      const popup = panel(host);
+      await vi.waitFor(() => {
+        const panelBounds = popup.getBoundingClientRect();
+
+        expect(panelBounds.left).toBeGreaterThanOrEqual(0);
+        expect(panelBounds.right).toBeLessThanOrEqual(window.innerWidth);
+      });
+    },
+  );
 
   it('resolves automatic placement from a forced real-layout flip', async () => {
     const host = mountPopover({ position: 'bottom: 0; left: 40vw;' });

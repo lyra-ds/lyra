@@ -1,0 +1,187 @@
+{
+  "source": "75e536bf23df3b6793862a69126c30a76f2dad38",
+  "node": "v24.18.0",
+  "platform": "darwin",
+  "before": {
+    "packages/react/src/drawer/drawer.tsx": "6bad242a92ec5d066b1c044dcae837400960281a4dc7e15d39bb726f7e71dd02",
+    "packages/react/src/dialog/dialog.tsx": "674837e2dae7d7682ed110d6272493511c2e912efe55240f4dd1102ad39ea1d3",
+    "packages/styles/styles.css": "3dd7ba037d829139ed960886c983d48623f612e56abd6e2cc74637811f17a3ed",
+    "package.json": "0dd4dd75b05c43c088d77ffb20e48548fee47b5898741770162dcb36c2b3f32b",
+    "pnpm-lock.yaml": "5120e1bf5960a6876599684d47415808d3022ba283fdb47dc9ef7a1dac4537b4"
+  },
+  "scenarios": [
+    {
+      "component": "drawer",
+      "gesture": "backdrop",
+      "geometry": {
+        "inside": "lyra-drawer__body",
+        "outside": "lyra-drawer-overlay",
+        "overlayPosition": "fixed"
+      },
+      "closeRequests": 1,
+      "trace": [
+        {
+          "type": "mousedown",
+          "target": "lyra-drawer-overlay",
+          "trusted": true
+        },
+        {
+          "type": "mouseup",
+          "target": "lyra-drawer-overlay",
+          "trusted": true
+        },
+        {
+          "type": "click",
+          "target": "lyra-drawer-overlay",
+          "trusted": true
+        }
+      ]
+    },
+    {
+      "component": "drawer",
+      "gesture": "inside",
+      "geometry": {
+        "inside": "lyra-drawer__body",
+        "outside": "lyra-drawer-overlay",
+        "overlayPosition": "fixed"
+      },
+      "closeRequests": 0,
+      "trace": [
+        {
+          "type": "mousedown",
+          "target": "lyra-drawer__body",
+          "trusted": true
+        },
+        {
+          "type": "mouseup",
+          "target": "lyra-drawer__body",
+          "trusted": true
+        },
+        {
+          "type": "click",
+          "target": "lyra-drawer__body",
+          "trusted": true
+        }
+      ]
+    },
+    {
+      "component": "drawer",
+      "gesture": "inside-to-backdrop",
+      "geometry": {
+        "inside": "lyra-drawer__body",
+        "outside": "lyra-drawer-overlay",
+        "overlayPosition": "fixed"
+      },
+      "closeRequests": 1,
+      "trace": [
+        {
+          "type": "mousedown",
+          "target": "lyra-drawer__body",
+          "trusted": true
+        },
+        {
+          "type": "mouseup",
+          "target": "lyra-drawer-overlay",
+          "trusted": true
+        },
+        {
+          "type": "click",
+          "target": "lyra-drawer-overlay",
+          "trusted": true
+        }
+      ]
+    },
+    {
+      "component": "dialog",
+      "gesture": "backdrop",
+      "geometry": {
+        "inside": "P",
+        "outside": "lyra-dialog-overlay",
+        "overlayPosition": "fixed"
+      },
+      "closeRequests": 1,
+      "trace": [
+        {
+          "type": "mousedown",
+          "target": "lyra-dialog-overlay",
+          "trusted": true
+        },
+        {
+          "type": "mouseup",
+          "target": "lyra-dialog-overlay",
+          "trusted": true
+        },
+        {
+          "type": "click",
+          "target": "lyra-dialog-overlay",
+          "trusted": true
+        }
+      ]
+    },
+    {
+      "component": "dialog",
+      "gesture": "inside",
+      "geometry": {
+        "inside": "P",
+        "outside": "lyra-dialog-overlay",
+        "overlayPosition": "fixed"
+      },
+      "closeRequests": 0,
+      "trace": [
+        {
+          "type": "mousedown",
+          "target": "P",
+          "trusted": true
+        },
+        {
+          "type": "mouseup",
+          "target": "P",
+          "trusted": true
+        },
+        {
+          "type": "click",
+          "target": "P",
+          "trusted": true
+        }
+      ]
+    },
+    {
+      "component": "dialog",
+      "gesture": "inside-to-backdrop",
+      "geometry": {
+        "inside": "P",
+        "outside": "lyra-dialog-overlay",
+        "overlayPosition": "fixed"
+      },
+      "closeRequests": 0,
+      "trace": [
+        {
+          "type": "mousedown",
+          "target": "P",
+          "trusted": true
+        },
+        {
+          "type": "mouseup",
+          "target": "lyra-dialog-overlay",
+          "trusted": true
+        },
+        {
+          "type": "click",
+          "target": "lyra-dialog-overlay",
+          "trusted": true
+        }
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "browser": "151.0.7922.34",
+  "after": {
+    "packages/react/src/drawer/drawer.tsx": "6bad242a92ec5d066b1c044dcae837400960281a4dc7e15d39bb726f7e71dd02",
+    "packages/react/src/dialog/dialog.tsx": "674837e2dae7d7682ed110d6272493511c2e912efe55240f4dd1102ad39ea1d3",
+    "packages/styles/styles.css": "3dd7ba037d829139ed960886c983d48623f612e56abd6e2cc74637811f17a3ed",
+    "package.json": "0dd4dd75b05c43c088d77ffb20e48548fee47b5898741770162dcb36c2b3f32b",
+    "pnpm-lock.yaml": "5120e1bf5960a6876599684d47415808d3022ba283fdb47dc9ef7a1dac4537b4"
+  },
+  "result": "REPRODUCED: Drawer requests dismissal for inside-to-backdrop; Dialog does not",
+  "cleanup": "owned browser and server closed"
+}

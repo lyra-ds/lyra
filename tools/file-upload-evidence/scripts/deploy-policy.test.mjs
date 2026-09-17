@@ -10,6 +10,7 @@ import { parse, stringify } from 'yaml';
 
 import { parseAutomationArgs } from './automation.mjs';
 import * as deployPolicy from './deploy-policy.mjs';
+import { posixShell } from './test-process.mjs';
 
 const { resolvePreviewDeployment, validateDeployPolicy } = deployPolicy;
 
@@ -190,7 +191,7 @@ function mutatePreview(source, mutate) {
 }
 
 async function workflowSource() {
-  return readFile(workflowPath, 'utf8');
+  return (await readFile(workflowPath, 'utf8')).replaceAll('\r\n', '\n');
 }
 
 function mutateWorkflow(source, mutate) {
@@ -235,7 +236,7 @@ describe('validateDeployPolicy', () => {
     temporaryRoots.push(root);
     const githubOutput = join(root, 'github-output');
 
-    await execFile('/bin/sh', ['-eu', '-c', step.run], {
+    await execFile(posixShell(), ['-eu', '-c', step.run], {
       env: {
         ...process.env,
         GITHUB_OUTPUT: githubOutput,
@@ -282,7 +283,7 @@ describe('validateDeployPolicy', () => {
       .replace('${{ steps.evidence.outputs.archive }}', archive)
       .replace('${{ steps.deployment.outputs.url }}', deploymentUrl);
 
-    await execFile('/bin/sh', ['-eu', '-c', command], {
+    await execFile(posixShell(), ['-eu', '-c', command], {
       cwd: repositoryRoot,
       env: { ...process.env, GITHUB_OUTPUT: githubOutput, GITHUB_SHA: revision },
     });
@@ -322,7 +323,7 @@ describe('validateDeployPolicy', () => {
       .replace('${{ steps.deployment.outputs.url }}', deploymentUrl)
       .replace('${{ steps.evidence.outputs.revision-prefix }}', revision.slice(0, 12));
 
-    await execFile('/bin/sh', ['-eu', '-c', command], {
+    await execFile(posixShell(), ['-eu', '-c', command], {
       env: {
         ...process.env,
         ...environment,

@@ -1,6 +1,17 @@
 'use client';
 
-import { Badge, Button, Card, CodeBlock, Input, Tabs, Tag } from '@lyra-ds/react';
+import {
+  Badge,
+  Button,
+  Card,
+  CodeBlock,
+  Input,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Tag,
+} from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -38,48 +49,50 @@ export function ComponentPreview() {
         <h2 className="lw-h2">{t('showcaseTitle')}</h2>
         <p className="lw-section__sub">{t('showcaseSubtitle')}</p>
         <Card padded={false}>
-          <div className="lw-show__tabs">
-            <Tabs
-              className="lw-show-tabs-controls"
-              items={[
-                { id: 'preview', label: t('showcasePreviewTab') },
-                { id: 'code', label: t('showcaseCodeTab') },
-              ]}
-              active={tab}
-              onChange={setTab}
-            />
-          </div>
-          {tab === 'preview' ? (
-            <div className="lw-show__stage">
-              <Button className="lw-show__action">{preview.primaryAction}</Button>
-              <Button className="lw-show__action" variant="secondary">
-                {preview.secondaryAction}
-              </Button>
-              <Badge tone="success" dot>
-                {preview.status}
-              </Badge>
-              <Tag>{preview.tag}</Tag>
-              <Input className="lw-show__input" placeholder={preview.inputPlaceholder} size="sm" />
+          <Tabs active={tab} onChange={setTab}>
+            <div className="lw-show__tabs">
+              <TabsList className="lw-show-tabs-controls">
+                <TabsTrigger value="preview">{t('showcasePreviewTab')}</TabsTrigger>
+                <TabsTrigger value="code">{t('showcaseCodeTab')}</TabsTrigger>
+              </TabsList>
             </div>
-          ) : (
-            <CodeBlock
-              language="tsx"
-              lineNumbers
-              wrap
-              copyLabel={t('showcaseCopy')}
-              copiedLabel={t('showcaseCopied')}
-              copyText={code}
-            >
-              <code>
-                {code.split('\n').map((line, index) => (
-                  <span className="line" key={`${line}-${index}`}>
-                    {line}
-                    {'\n'}
-                  </span>
-                ))}
-              </code>
-            </CodeBlock>
-          )}
+            <TabsContent value="preview">
+              <div className="lw-show__stage">
+                <Button className="lw-show__action">{preview.primaryAction}</Button>
+                <Button className="lw-show__action" variant="secondary">
+                  {preview.secondaryAction}
+                </Button>
+                <Badge tone="success" dot>
+                  {preview.status}
+                </Badge>
+                <Tag>{preview.tag}</Tag>
+                <Input
+                  className="lw-show__input"
+                  placeholder={preview.inputPlaceholder}
+                  size="sm"
+                />
+              </div>
+            </TabsContent>
+            <TabsContent value="code">
+              <CodeBlock
+                language="tsx"
+                lineNumbers
+                wrap
+                copyLabel={t('showcaseCopy')}
+                copiedLabel={t('showcaseCopied')}
+                copyText={code}
+              >
+                <code>
+                  {code.split('\n').map((line, index) => (
+                    <span className="line" key={`${line}-${index}`}>
+                      {line}
+                      {'\n'}
+                    </span>
+                  ))}
+                </code>
+              </CodeBlock>
+            </TabsContent>
+          </Tabs>
         </Card>
       </div>
     </section>

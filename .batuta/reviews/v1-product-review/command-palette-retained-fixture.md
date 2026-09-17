@@ -1,0 +1,9 @@
+# CommandPalette retained-close fixture — 2026-09-17
+
+PR223 LinuxWebKit failed strict retained-overlay identity after close/focus checks/native reopen. The original isolated case passes on local WebKit. Adding a temporary350ms real delay before reopening reproduces the exact original-versus-new overlay difference: normal exit animation or250ms presence fallback can legitimately finish before the test checks identity.
+
+The existing logical-close fixture now explicitly holds the retained phase using paused closing CSS animation and selective setTimeout/clearTimeout control, following the existing rapid-reopen test pattern. Native Escape/click, all same-node/inert/focus/removed-guard/revoked-gesture/inline assertions remain. An added computed-style assertion verifies the pause. Finally removes the owned style and restores real timers. No production runtime, CSS duration, dependency or API changes.
+
+Controller verification:31cases per Chromium/Firefox/WebKit (93PASS), React types and formatting/diff/scope PASS. A temporary350ms real requestAnimationFrame-based delay still passes the repaired case in all three engines; the diagnostic is removed and exact source bytes restored. The original delayed fixture remains a retainedFAIL. The common suite had already passed for the preceding Windows test-only lot; no unrelated rerun was needed for this browser fixture change.
+
+Codex/Terra medium, no retry; GLM independent review marked both criteria DONE, unchanged status guard. Controller accepts the assertion/scope/cleanup review, not the reviewer's unsupported identification of the user-event package version: actual native browser executions supply input evidence. NativeLinuxWebKit CI remains the follow-up qualification. Raw MAIN .batuta/runs/pr223-followup contains source diagnosis, before/after delays,93case logs, typecheck and review. No stable V1 or merge claim.

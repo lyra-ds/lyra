@@ -1,5 +1,58 @@
 # Batuta profile — lyra-ds
 
+## Test-fixture dependency exception — maintainer authorization, 2026-09-11
+
+The maintainer explicitly authorized @types/node24.13.3 only in
+tools/react-compat/fixtures/react18 and react19 devDependencies and their own
+lockfiles, including its required transitive types, to resolve the actual
+Vitest browser BufferEncoding type failure. All other no-new-dependency and
+resource/release restrictions remain in force. This is test tooling only.
+
+## V1 closure priority — maintainer correction, 2026-09-10
+
+Close V1 of the incumbent Lyra core (Styles/React, first-party documentation
+and release tooling) and Alpine before starting Blade work. Blade producer
+migration and Blade compatibility qualification are deferred until core/Alpine
+V1 closure; they are not prerequisites for that closure. Do not modify the
+Blade repository, imported snapshot or Blade examples in this phase. Preserve
+existing cross-stack checks and report incompatibility honestly; this direction
+is not permission to disable checks or claim Blade compatibility.
+
+Current execution plan: `.batuta/plans/v1-completion.md` in
+`../lyra-v1-stabilization`. Next: Task28 DataTable semantic row-action diagnosis
+and bounded contract, then remaining modal/Popover ownership, measured size
+resolution and exact final core/Alpine artifact qualification. Existing no-new-
+dependency, no-Colima/resource/service, experimental-isolation and remote/release
+boundaries remain in force. "Close V1" does not by itself authorize publication,
+versioning, push, merge or remote workflow dispatch.
+
+## Planning workflow — maintainer correction, 2026-09-08
+
+Use Batuta for planning and execution coordination. Keep this work's contracts,
+plans, briefs, approvals and handoffs under .batuta/, including .batuta/specs/.
+Do not introduce a Superpowers planning or approval workflow. Existing historical
+repository specs remain source references, not workflow authority. The maintainer
+approved the returnFocusTo contract; do not ask again for that API approval.
+The approved plan is .batuta/plans/v1-modal-return-focus.md. Resource and release
+boundaries below still apply.
+
+## Current maintainer direction — 2026-09-08
+
+Retain the existing Lyra implementation for V1. Comparative foundation research
+is suspended and is not a release prerequisite. Preserve experimental branches
+and raw evidence without integrating the unmerged composed experiment or
+resuming its diagnostics. The active stabilization plan is
+`.batuta/plans/v1-incumbent-stabilization.md` in the sibling
+`lyra-v1-stabilization` checkout, branch `feat/v1-incumbent-stabilization`.
+Prior experimental execution approvals no longer authorize those runs.
+
+The maintainer prohibits ALL Colima configuration changes, including restoring
+4GiB, memory/CPU/disk/VM changes, and restarting the service. Prior resource
+approvals are superseded. Do not stop other projects to free capacity. Run
+bounded checks sequentially within the existing environment; unavailable gates
+stay pending without reducing quality requirements. No new dependencies or
+remote/release action is authorized by this direction update.
+
 Created on 2026-07-20; reconfigured on 2026-09-06. Complements `.claude/CLAUDE.md` —
 what is already there (CSS-first architecture constraints, fixed stack, locked
 decisions) is NOT repeated here; briefs must point executors to the relevant

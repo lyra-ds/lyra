@@ -1,6 +1,7 @@
 import { moveActiveIndex, scrollActiveIntoView } from './internal/active-descendant';
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
+import { restoreReturnFocus } from './internal/return-focus';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
 import { whenVisible } from './internal/when-visible';
 
@@ -54,6 +55,8 @@ export interface LyraCommandPaletteOptions {
   inline?: boolean;
   /** Accessible dialog name in overlay mode. Default: `"Command palette"`. */
   label?: string;
+  /** Resolves the current logical focus destination after an accepted modal close. */
+  returnFocusTo?: () => HTMLElement | null;
 }
 
 interface IndexedCommandItem {
@@ -219,6 +222,7 @@ export function lyraCommandPalette({
   hotkey = 'k',
   inline = false,
   label = 'Command palette',
+  returnFocusTo,
 }: LyraCommandPaletteOptions = {}): LyraCommandPaletteData {
   let activeScrollPending = false;
   const state: LyraCommandPaletteData & ThisType<LyraCommandPaletteState> = {
@@ -366,7 +370,7 @@ export function lyraCommandPalette({
       this.presence?.update(true);
       this.query = '';
       this.activeIndex = 0;
-      this.opener = document.activeElement;
+      this.opener = this.root?.ownerDocument.activeElement ?? null;
       if (!this.scrollLocked) {
         lockScroll();
         this.scrollLocked = true;
@@ -408,8 +412,17 @@ export function lyraCommandPalette({
     },
 
     restoreOpener() {
-      if (this.opener instanceof HTMLElement) this.opener.focus();
+      const opener = this.opener;
       this.opener = null;
+      const ownerDocument = this.root?.ownerDocument ?? this.panelElement()?.ownerDocument;
+      if (!ownerDocument) return;
+      restoreReturnFocus({
+        ownerDocument,
+        opener,
+        panel: this.panelElement(),
+        overlay: this.root?.querySelector<HTMLElement>('.lyra-cmdk-overlay') ?? null,
+        returnFocusTo,
+      });
     },
 
     scheduleActiveScroll() {

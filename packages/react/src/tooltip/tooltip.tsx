@@ -2,20 +2,21 @@ import {
   cloneElement,
   forwardRef,
   isValidElement,
+  useCallback,
   useEffect,
   useId,
   useRef,
   useState,
 } from 'react';
 import type {
-  FocusEvent,
   HTMLAttributes,
   KeyboardEvent as ReactKeyboardEvent,
-  MouseEvent,
   ReactElement,
   ReactNode,
 } from 'react';
 import { cx } from '../internal/cx';
+import { getTooltipCoordinator } from '../internal/tooltip-coordinator';
+import type { TooltipCoordinator, TooltipOwner } from '../internal/tooltip-coordinator';
 import { useTooltipPlacement } from '../internal/use-tooltip-placement';
 import type { TooltipPlacement } from '../internal/use-tooltip-placement';
 
@@ -49,6 +50,7 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
     onMouseLeave,
     onFocus,
     onBlur,
+    onKeyDown,
     ...rest
   },
   ref,
@@ -58,34 +60,150 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
   const tooltipId = useId();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement | null>(null);
+  const [rootNode, setRootNode] = useState<HTMLSpanElement | null>(null);
+  const coordinatorRef = useRef<TooltipCoordinator | null>(null);
+  const openTimerRef = useRef<number | undefined>(undefined);
+  const closeTimerRef = useRef<number | undefined>(undefined);
+  const timerWindowRef = useRef<Window | null>(null);
+  const hoverRef = useRef(false);
+  const focusRef = useRef(false);
+  const visibleRef = useRef(false);
+  const dismissedRef = useRef(false);
+  const targetRef = useRef<Element | null>(null);
+  const tipRef = useRef(tip);
+  tipRef.current = tip;
   const resolvedPlacement = useTooltipPlacement(open, placement, rootRef);
 
-  const show = (): void => setOpen(true);
-  const hide = (): void => setOpen(false);
-
-  const attachRoot = (node: HTMLSpanElement | null): void => {
-    rootRef.current = node;
-    if (typeof ref === 'function') ref(node);
-    else if (ref) ref.current = node;
-  };
-
-  // WCAG 1.4.13 asks that content shown on hover be dismissible without moving the pointer. The
-  // element's own key handler only fires when focus is inside it, which is never true for a tip
-  // opened by hovering, so Escape has to be heard at the document.
-  useEffect(() => {
-    if (!open) return;
-    const onDocumentKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') hide();
-    };
-    document.addEventListener('keydown', onDocumentKeyDown);
-    return () => document.removeEventListener('keydown', onDocumentKeyDown);
-  }, [open]);
-  const handleKeyDown = (event: ReactKeyboardEvent<HTMLElement>): void => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      hide();
+  const clearOpenTimer = useCallback((): void => {
+    if (openTimerRef.current !== undefined) {
+      timerWindowRef.current?.clearTimeout(openTimerRef.current);
+      openTimerRef.current = undefined;
     }
-  };
+  }, []);
+  const clearCloseTimer = useCallback((): void => {
+    if (closeTimerRef.current !== undefined) {
+      timerWindowRef.current?.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = undefined;
+    }
+  }, []);
+  const close = useCallback((): void => {
+    clearOpenTimer();
+    clearCloseTimer();
+    if (!visibleRef.current) return;
+    visibleRef.current = false;
+    setOpen(false);
+    coordinatorRef.current?.closed(ownerRef.current);
+  }, [clearCloseTimer, clearOpenTimer]);
+  const openNow = useCallback(
+    (scheduledTarget?: Element): void => {
+      clearOpenTimer();
+      clearCloseTimer();
+      const root = rootRef.current;
+      const target = root?.firstElementChild;
+      if (
+        dismissedRef.current ||
+        !root?.isConnected ||
+        !target ||
+        !root.contains(target) ||
+        (scheduledTarget !== undefined && target !== scheduledTarget)
+      ) {
+        return;
+      }
+      targetRef.current = target;
+      if (!visibleRef.current) {
+        visibleRef.current = true;
+        setOpen(true);
+        coordinatorRef.current?.opened(ownerRef.current);
+      }
+    },
+    [clearCloseTimer, clearOpenTimer],
+  );
+  const updateOwnership = useCallback((): void => {
+    if (!hoverRef.current && !focusRef.current) dismissedRef.current = false;
+    coordinatorRef.current?.ownershipChanged();
+  }, []);
+  const scheduleClose = useCallback((): void => {
+    if (focusRef.current || !visibleRef.current || closeTimerRef.current !== undefined) return;
+    const window = rootRef.current?.ownerDocument.defaultView;
+    if (!window) return;
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = undefined;
+      if (!hoverRef.current && !focusRef.current) close();
+    }, 100);
+  }, [close]);
+  const scheduleOpen = useCallback((): void => {
+    if (dismissedRef.current || visibleRef.current || openTimerRef.current !== undefined) return;
+    if (coordinatorRef.current?.isWarm()) {
+      openNow();
+      return;
+    }
+    const root = rootRef.current;
+    const window = root?.ownerDocument.defaultView;
+    if (!root || !window) return;
+    const target = root.firstElementChild;
+    if (!target) return;
+    targetRef.current = target;
+    const scheduledTip = tipRef.current;
+    openTimerRef.current = window.setTimeout(() => {
+      openTimerRef.current = undefined;
+      if (hoverRef.current && tipRef.current === scheduledTip) openNow(target);
+    }, 500);
+  }, [openNow]);
+  const dismiss = useCallback((): void => {
+    dismissedRef.current = true;
+    close();
+    updateOwnership();
+  }, [close, updateOwnership]);
+  const ownerRef = useRef<TooltipOwner>({
+    hasOwnership: () => hoverRef.current || focusRef.current,
+    dismiss,
+  });
+  ownerRef.current.dismiss = dismiss;
+
+  const attachRoot = useCallback(
+    (node: HTMLSpanElement | null): void => {
+      if (rootRef.current !== node) {
+        rootRef.current = node;
+        if (node) timerWindowRef.current = node.ownerDocument.defaultView;
+        setRootNode((current) => (current === node ? current : node));
+      }
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref],
+  );
+
+  useEffect(() => {
+    if (!rootNode) return;
+    const coordinator = getTooltipCoordinator(rootNode.ownerDocument);
+    const owner = ownerRef.current;
+    coordinatorRef.current = coordinator;
+    targetRef.current = rootNode.firstElementChild;
+    coordinator.register(owner);
+    const observer = new MutationObserver(() => {
+      if (targetRef.current && !rootNode.contains(targetRef.current)) {
+        focusRef.current = rootNode.contains(rootNode.ownerDocument.activeElement);
+        hoverRef.current = rootNode.matches(':hover');
+        close();
+        updateOwnership();
+      }
+    });
+    observer.observe(rootNode, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      clearOpenTimer();
+      clearCloseTimer();
+      coordinator.unregister(owner);
+      coordinatorRef.current = null;
+      visibleRef.current = false;
+    };
+  }, [clearCloseTimer, clearOpenTimer, close, rootNode, updateOwnership]);
+
+  useEffect(() => {
+    clearOpenTimer();
+    clearCloseTimer();
+    if (visibleRef.current) close();
+  }, [clearCloseTimer, clearOpenTimer, close, tip]);
 
   const child = isValidElement(children)
     ? (children as ReactElement<Record<string, unknown>>)
@@ -93,36 +211,6 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
   const target = child
     ? cloneElement(child, {
         'aria-describedby': [child.props['aria-describedby'], tooltipId].filter(Boolean).join(' '),
-        onFocus: (event: FocusEvent<HTMLElement>) => {
-          const childHandler = child.props.onFocus as
-            ((event: FocusEvent<HTMLElement>) => void) | undefined;
-          childHandler?.(event);
-          show();
-        },
-        onBlur: (event: FocusEvent<HTMLElement>) => {
-          const childHandler = child.props.onBlur as
-            ((event: FocusEvent<HTMLElement>) => void) | undefined;
-          childHandler?.(event);
-          hide();
-        },
-        onMouseEnter: (event: MouseEvent<HTMLElement>) => {
-          const childHandler = child.props.onMouseEnter as
-            ((event: MouseEvent<HTMLElement>) => void) | undefined;
-          childHandler?.(event);
-          show();
-        },
-        onMouseLeave: (event: MouseEvent<HTMLElement>) => {
-          const childHandler = child.props.onMouseLeave as
-            ((event: MouseEvent<HTMLElement>) => void) | undefined;
-          childHandler?.(event);
-          hide();
-        },
-        onKeyDown: (event: ReactKeyboardEvent<HTMLElement>) => {
-          const childHandler = child.props.onKeyDown as
-            ((event: ReactKeyboardEvent<HTMLElement>) => void) | undefined;
-          childHandler?.(event);
-          if (!event.defaultPrevented) handleKeyDown(event);
-        },
       })
     : children;
 
@@ -143,21 +231,43 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
       data-state={open ? 'open' : 'closed'}
       onMouseEnter={(event) => {
         onMouseEnter?.(event);
-        show();
+        if (event.defaultPrevented) return;
+        hoverRef.current = true;
+        clearCloseTimer();
+        updateOwnership();
+        scheduleOpen();
       }}
       onMouseLeave={(event) => {
         onMouseLeave?.(event);
-        hide();
+        if (event.defaultPrevented) return;
+        hoverRef.current = false;
+        clearOpenTimer();
+        updateOwnership();
+        scheduleClose();
       }}
       onFocus={(event) => {
         onFocus?.(event);
-        show();
+        if (event.defaultPrevented) return;
+        focusRef.current = true;
+        clearCloseTimer();
+        updateOwnership();
+        openNow();
       }}
       onBlur={(event) => {
         onBlur?.(event);
-        hide();
+        if (event.defaultPrevented || rootRef.current?.contains(event.relatedTarget)) return;
+        focusRef.current = false;
+        updateOwnership();
+        if (!hoverRef.current) close();
       }}
-      onKeyDown={handleKeyDown}
+      onKeyDown={(event: ReactKeyboardEvent<HTMLSpanElement>) => {
+        onKeyDown?.(event);
+        if (!event.defaultPrevented && coordinatorRef.current?.dismissTop(event.nativeEvent)) {
+          // React ancestors inspect the SyntheticEvent, while the document route receives its
+          // native event. Mark both only when this Tooltip actually handled Escape.
+          event.preventDefault();
+        }
+      }}
     >
       {target}
       <span id={tooltipId} role="tooltip" hidden>

@@ -271,10 +271,8 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   empty?: ReactNode;
   /** Content rendered below the scrollable table area. */
   footer?: ReactNode;
-  /** Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied. */
+  /** Whether rows highlight on hover. */
   hover?: boolean;
-  /** Called when a data row is clicked. */
-  onRowClick?: (row: RowShape) => void;
   /** Labels for controls and the default empty state. Merged over the English defaults. */
   labels?: DataTableLabels;
 }
@@ -469,6 +467,14 @@ export interface BottomSheetProps {
   closeLabel?: string;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /**
+   * Resolves the logical destination for an accepted close. The resolver result is used only when
+   * eligible; otherwise an eligible previously focused opener is the fallback. A successor
+   * composition must supply a meaningful target when the opener can disappear or become ineligible.
+  */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */
   children: ReactNode;
   /** Heading rendered in the sheet header and used as its accessible name. */
@@ -532,6 +538,10 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   closeOnOverlayClick?: boolean;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /** Resolves the current logical destination for focus after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Body content. */
   children: ReactNode;
 }
@@ -554,6 +564,10 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
   footer?: ReactNode;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /** Resolves the current logical destination for focus after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Drawer body content. */
   children: ReactNode;
 }
@@ -1296,6 +1310,10 @@ export interface CommandPaletteProps {
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
   inline?: boolean;
+  /** Returns the current element to focus after an accepted modal close. Ignored in inline mode. */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. Ignored in inline mode. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
   /**
@@ -1314,17 +1332,16 @@ export declare function CommandPalette(props: CommandPaletteProps): JSX.Element;
 export interface CreateWorkspaceDialogProps {
   /** Controls visibility. Default `false`. */
   open?: boolean;
-  /** Called when the dialog is dismissed or creation succeeds. */
+  /** Called when the dialog is dismissed or a creation operation is accepted. */
   onClose?: () => void;
-  /** Receives the trimmed workspace name and its URL-safe slug after submission. */
-  onCreate?: (data: {
-    name: string;
-    slug: string;
-  }) => void;
+  /** Receives one owned request and explicitly acknowledges its terminal outcome. */
+  onCreate?: (request: CreateWorkspaceRequest) => CreateWorkspaceResult | Promise<CreateWorkspaceResult>;
   /** Dialog heading. Default `"Create workspace"`. */
   title?: string;
   /** Text rendered before the editable slug. Default `"lyra.dev/"`. */
   slugPrefix?: string;
+  /** Resolves the focus destination after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
 }
 export declare function CreateWorkspaceDialog(props: CreateWorkspaceDialogProps): JSX.Element;
 ```
@@ -1406,17 +1423,55 @@ export declare function Stepper(props: StepperProps): JSX.Element;
 ### Tabs
 ```ts
 /** Props for {@link Tabs}. */
-export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-  /** Tabs rendered by the control, in keyboard-navigation order. */
-  items: TabItem[];
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'children' | 'role'> {
   /** Id of the active tab. Tabs are controlled; update this value in `onChange`. */
   active: string;
-  /** Called with a tab id after a click or keyboard navigation activates it. */
-  onChange?: (id: string) => void;
+  /** Called with a tab id after a click or keyboard navigation requests activation. */
+  onChange?: (value: string) => void;
   /** Visual treatment: underline tabs (`"line"`) or segmented tabs (`"pills"`). */
   variant?: 'line' | 'pills';
+  /** Named list, trigger, and content parts owned by this Tabs root. */
+  children: ReactNode;
 }
 export declare function Tabs(props: TabsProps): JSX.Element;
+```
+
+### TabsContent
+```ts
+/** Props for a consumer-owned tab panel. */
+export interface TabsContentProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id' | 'role' | 'tabIndex' | 'aria-labelledby' | 'hidden'> {
+  /** Stable value shared with this panel's matching trigger. */
+  value: string;
+  /** Consumer-owned content that remains mounted across tab switches. */
+  children: ReactNode;
+}
+export declare function TabsContent(props: TabsContentProps): JSX.Element;
+```
+
+### TabsList
+```ts
+/** Props for the tablist part. */
+export interface TabsListProps extends Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children' | 'tabIndex'> {
+  /** Tab triggers rendered in their native keyboard-navigation order. */
+  children: ReactNode;
+}
+export declare function TabsList(props: TabsListProps): JSX.Element;
+```
+
+### TabsTrigger
+```ts
+/** Props for a consumer-owned tab trigger. */
+export interface TabsTriggerProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'children' | 'id' | 'role' | 'type' | 'tabIndex' | 'aria-selected' | 'aria-controls'> {
+  /** Stable value shared with this trigger's matching content panel. */
+  value: string;
+  /** Visible trigger label. */
+  children: ReactNode;
+  /** Optional supplementary count displayed after the label. */
+  count?: number;
+  /** Optional icon rendered before the label. */
+  icon?: ReactNode;
+}
+export declare function TabsTrigger(props: TabsTriggerProps): JSX.Element;
 ```
 
 ### WorkspaceSwitcher

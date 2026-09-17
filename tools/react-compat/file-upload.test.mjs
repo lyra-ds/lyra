@@ -7,8 +7,13 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 import * as compatibility from './file-upload.mjs';
 
-const { findPackedArtifacts, REACT_COMPATIBILITY_MATRIX, runCommand, runFileUploadCompatibility } =
-  compatibility;
+const {
+  findPackedArtifacts,
+  REACT_COMPATIBILITY_MATRIX,
+  runCommand,
+  runFileUploadCompatibility,
+  verifyP1Evidence,
+} = compatibility;
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -78,6 +83,41 @@ function hasLocalProtocol(values) {
   return false;
 }
 
+function p1EvidenceReport(prefix, overrides = {}) {
+  const components = [
+    'Dialog',
+    'Drawer',
+    'BottomSheet',
+    'Popover',
+    'Dropdown',
+    'Tooltip',
+    'CommandPalette',
+    'WorkspaceSwitcher',
+    'CreateWorkspaceDialog',
+    'Tabs',
+    'DataTable',
+  ];
+  return JSON.stringify({
+    success: true,
+    numTotalTests: 11,
+    numPassedTests: 11,
+    numFailedTests: 0,
+    numPendingTests: 0,
+    numTodoTests: 0,
+    numFailedTestSuites: 0,
+    numPendingTestSuites: 0,
+    testResults: [
+      {
+        status: 'passed',
+        assertionResults: components.map((component) => ({
+          title: `${prefix}: ${component}`,
+          status: overrides[component] ?? 'passed',
+        })),
+      },
+    ],
+  });
+}
+
 test('local lock protocol detection rejects unrelated file tarballs', () => {
   assert.equal(hasLocalProtocol(['file:/tmp/unrelated.tgz']), true);
 });
@@ -86,8 +126,14 @@ test('compatibility matrix names React 18 and 19 and every required layer', () =
   assert.deepEqual(
     REACT_COMPATIBILITY_MATRIX.map(({ react, checks }) => ({ react, checks })),
     [
-      { react: '18.3.1', checks: ['types', 'build', 'ssr', 'hydration', 'browser'] },
-      { react: '19.2.8', checks: ['types', 'build', 'ssr', 'hydration', 'browser'] },
+      {
+        react: '18.3.1',
+        checks: ['types', 'build', 'ssr', 'hydration', 'browser', 'p1-ssr', 'p1-browser'],
+      },
+      {
+        react: '19.2.8',
+        checks: ['types', 'build', 'ssr', 'hydration', 'browser', 'p1-ssr', 'p1-browser'],
+      },
     ],
   );
 });
@@ -118,6 +164,11 @@ test('packs once, resolves each frozen external graph once, then directly instal
       if (args[0] === 'add') throw new Error('ERR_PNPM_NO_OFFLINE_META');
       events.push(['run', command, args, options]);
       return { stdout: '', stderr: '' };
+    },
+    readFile(path) {
+      return path.endsWith('p1-ssr-results.json')
+        ? p1EvidenceReport('P1SSR')
+        : p1EvidenceReport('P1browser');
     },
     remove(path) {
       events.push(['remove', path]);
@@ -192,9 +243,173 @@ test('packs once, resolves each frozen external graph once, then directly instal
     ]);
     assert.deepEqual(
       candidateCommands.filter(([, , args]) => args[0] === 'exec').map(([, , args]) => args[1]),
-      ['tsc', 'vite', 'vitest', 'vitest', 'vitest'],
+      ['tsc', 'vite', 'vitest', 'vitest', 'vitest', 'vitest', 'vitest'],
+    );
+    assert.deepEqual(
+      candidateCommands
+        .filter(([, , args]) => args.includes('src/p1.ssr.test.tsx'))
+        .map(([, , args]) => args),
+      [
+        [
+          'exec',
+          'vitest',
+          'run',
+          'src/p1.ssr.test.tsx',
+          '--environment=node',
+          '--reporter=json',
+          '--outputFile=p1-ssr-results.json',
+        ],
+      ],
+      `${directory} must execute the P1 SSR fixture`,
+    );
+    assert.deepEqual(
+      candidateCommands
+        .filter(([, , args]) => args.includes('src/p1.browser.test.tsx'))
+        .map(([, , args]) => args),
+      [
+        [
+          'exec',
+          'vitest',
+          'run',
+          'src/p1.browser.test.tsx',
+          '--browser.enabled',
+          '--reporter=json',
+          '--outputFile=p1-browser-results.json',
+        ],
+      ],
+      `${directory} must execute the P1 browser fixture with machine-readable evidence`,
     );
   }
+});
+
+test('fails closed when a required compatibility check is missing from the runner', async () => {
+  const runtime = {
+    repoRoot,
+    makeTemp(prefix) {
+      return `/tmp/${prefix}closed-check`;
+    },
+    copyFixture() {},
+    writeScaffolding() {},
+    findTarballs() {
+      return { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' };
+    },
+    installPackedArtifacts() {},
+    run() {
+      return { stdout: '', stderr: '' };
+    },
+    remove() {},
+  };
+
+  await assert.rejects(
+    () =>
+      runFileUploadCompatibility({
+        runtime,
+        matrix: [{ directory: 'react18', react: '18.3.1', checks: ['p1-missing-proof'] }],
+      }),
+    /Unknown React compatibility check: p1-missing-proof/,
+  );
+});
+
+test('fails closed when a known required compatibility check is omitted', async () => {
+  const runtime = {
+    repoRoot,
+    makeTemp(prefix) {
+      return `/tmp/${prefix}missing-required-check`;
+    },
+    findTarballs() {
+      return { react: '/tmp/react.tgz', styles: '/tmp/styles.tgz' };
+    },
+    run() {
+      return { stdout: '', stderr: '' };
+    },
+    remove() {},
+  };
+
+  await assert.rejects(
+    () =>
+      runFileUploadCompatibility({
+        runtime,
+        matrix: [
+          {
+            directory: 'react18',
+            react: '18.3.1',
+            checks: ['types', 'build', 'ssr', 'hydration', 'browser', 'p1-ssr'],
+          },
+        ],
+      }),
+    /Missing required React compatibility check: p1-browser/,
+  );
+});
+
+test('P1 Vitest evidence rejects missing, skipped, and failed component cases', () => {
+  assert.throws(
+    () =>
+      verifyP1Evidence(
+        'p1-ssr',
+        JSON.stringify({
+          testResults: [
+            {
+              assertionResults: [
+                { title: 'P1SSR: Dialog', status: 'passed' },
+                { title: 'P1SSR: Drawer', status: 'passed' },
+              ],
+            },
+          ],
+        }),
+      ),
+    /missing component evidence: P1SSR: BottomSheet/,
+  );
+  assert.throws(
+    () => verifyP1Evidence('p1-browser', p1EvidenceReport('P1browser', { Tooltip: 'skipped' })),
+    /did not pass P1browser: Tooltip: skipped/,
+  );
+  assert.throws(
+    () => verifyP1Evidence('p1-browser', p1EvidenceReport('P1browser', { DataTable: 'failed' })),
+    /did not pass P1browser: DataTable: failed/,
+  );
+  assert.throws(
+    () =>
+      verifyP1Evidence(
+        'p1-ssr',
+        JSON.stringify({
+          testResults: [
+            {
+              assertionResults: [
+                { title: 'P1SSR: Dialog', status: 'passed' },
+                { title: 'P1SSR: Dialog', status: 'passed' },
+              ],
+            },
+          ],
+        }),
+      ),
+    /duplicate component evidence: P1SSR: Dialog/,
+  );
+  assert.throws(() => verifyP1Evidence('p1-ssr', '{'), /result report is not valid JSON/);
+});
+
+test('P1 evidence rejects failed or inconsistent reports despite passed case records', () => {
+  for (const patch of [
+    { success: false },
+    { numFailedTestSuites: 1 },
+    { numPendingTestSuites: 1 },
+    { numFailedTests: 1 },
+    { numPendingTests: 1 },
+    { numTodoTests: 1 },
+    { numTotalTests: 12 },
+    { numPassedTests: 10 },
+  ]) {
+    const report = { ...JSON.parse(p1EvidenceReport('P1SSR')), ...patch };
+    assert.throws(
+      () => verifyP1Evidence('p1-ssr', JSON.stringify(report)),
+      /unsuccessful or inconsistent/,
+    );
+  }
+  const report = JSON.parse(p1EvidenceReport('P1SSR'));
+  report.testResults[0].status = 'failed';
+  assert.throws(
+    () => verifyP1Evidence('p1-ssr', JSON.stringify(report)),
+    /unsuccessful or inconsistent/,
+  );
 });
 
 test('direct installation extracts exact scoped packages without mutating the frozen lockfile', async () => {
@@ -343,6 +558,7 @@ test('fixtures freeze the exact external React 18 and React 19 dependency graphs
         'react-dom': '18.3.1',
       },
       devDependencies: {
+        '@types/node': '24.13.3',
         '@types/react': '18.3.31',
         '@types/react-dom': '18.3.7',
         '@vitest/browser-playwright': '4.1.10',
@@ -361,6 +577,7 @@ test('fixtures freeze the exact external React 18 and React 19 dependency graphs
         'react-dom': '19.2.8',
       },
       devDependencies: {
+        '@types/node': '24.13.3',
         '@types/react': '19.2.18',
         '@types/react-dom': '19.2.4',
         '@vitest/browser-playwright': '4.1.10',

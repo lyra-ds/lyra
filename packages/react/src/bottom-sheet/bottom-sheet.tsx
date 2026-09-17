@@ -10,17 +10,17 @@ import type {
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useInitialFocus } from '../internal/use-initial-focus';
+import { useModalActivity } from '../internal/use-modal-activity';
+import {
+  ModalLayerProvider,
+  useModalLayer,
+  useModalLayerRegistration,
+  type ModalLayerValue,
+} from '../internal/use-modal-layer';
 import { usePresence } from '../internal/use-presence';
+import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
-
-const INITIAL_FOCUS_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 type BottomSheetBaseProps = Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'aria-label'> & {
   /** Controls visibility. `true` mounts the portaled overlay and bottom sheet. */
@@ -31,6 +31,14 @@ type BottomSheetBaseProps = Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'aria
   closeLabel?: string;
   /** Portal host. Defaults to `document.body`. */
   container?: HTMLElement;
+  /**
+   * Resolves the logical destination for an accepted close. The resolver result is used only when
+   * eligible; otherwise an eligible previously focused opener is the fallback. A successor
+   * composition must supply a meaningful target when the opener can disappear or become ineligible.
+   */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Bottom sheet body content. */
   children: ReactNode;
 };
@@ -55,6 +63,7 @@ export type BottomSheetProps = BottomSheetBaseProps &
 
 interface BottomSheetPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;
+  overlayRef: RefObject<HTMLDivElement | null>;
   attachPanel: (node: HTMLDivElement | null) => void;
   titleId: string;
   title: ReactNode | undefined;
@@ -64,16 +73,19 @@ interface BottomSheetPanelProps {
   /** The live controlled value; re-runs focus capture when an exit is cancelled by a reopen. */
   open: boolean;
   captureOpener: (element: Element | null) => void;
+  initialFocusTo?: () => HTMLElement | null;
   className?: string;
   children: ReactNode;
   rest: HTMLAttributes<HTMLDivElement>;
   closing: boolean;
   onAnimationEnd: AnimationEventHandler;
+  layer: ModalLayerValue;
 }
 
 /** Portal child: DOM-dependent effects intentionally live with the portaled panel. */
 function BottomSheetPanel({
   panelRef,
+  overlayRef,
   attachPanel,
   titleId,
   title,
@@ -82,34 +94,53 @@ function BottomSheetPanel({
   closeLabel,
   open,
   captureOpener,
+  initialFocusTo,
   className,
   children,
   rest,
   closing,
   onAnimationEnd,
+  layer,
 }: BottomSheetPanelProps): ReactNode {
-  const hasTitle = title != null;
-
-  useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    if (!panel) return;
-    captureOpener(document.activeElement);
-    const firstFocusable = panel.querySelector<HTMLElement>(INITIAL_FOCUS_SELECTOR);
-    (firstFocusable ?? panel).focus();
-  }, [open, panelRef, captureOpener]);
-
-  useFocusTrap(panelRef, true);
-  useScrollLock(!closing);
-
   // A click is dispatched on the nearest common ancestor of its mousedown and mouseup targets.
   // Record where the press began so dragging from the panel onto the backdrop cannot dismiss it.
   const downOnOverlay = useRef(false);
+  const revokeGesture = useCallback(() => {
+    downOnOverlay.current = false;
+  }, []);
+  const { attachOverlay, overlay } = useModalActivity({ open, overlayRef, revokeGesture });
+  const { topmost, isTopmost } = useModalLayerRegistration(
+    layer,
+    overlay,
+    captureOpener,
+    revokeGesture,
+  );
+  const hasTitle = title != null;
+
+  const { focusInitial, resetInitialFocus } = useInitialFocus({
+    initialFocusTo,
+    panelRef,
+    captureOpener,
+  });
+
+  useEffect(() => {
+    if (!open) {
+      resetInitialFocus();
+      return;
+    }
+    if (topmost) focusInitial();
+  }, [focusInitial, open, resetInitialFocus, topmost]);
+
+  useFocusTrap(panelRef, open && topmost);
+  useScrollLock(open, panelRef);
 
   const { onKeyDown: restOnKeyDown, onAnimationEnd: restOnAnimationEnd, ...restProps } = rest;
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     restOnKeyDown?.(event);
-    if (event.key === 'Escape') onClose?.();
+    if (!open || !isTopmost() || event.key !== 'Escape') return;
+
+    event.stopPropagation();
+    if (!event.defaultPrevented) onClose?.();
   };
   const handleAnimationEnd: AnimationEventHandler<HTMLDivElement> = (event) => {
     restOnAnimationEnd?.(event);
@@ -120,12 +151,15 @@ function BottomSheetPanel({
     // The backdrop is a pointer-only close convenience; Escape and the close button provide keyboard access.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
+      ref={attachOverlay}
       className={cx('lyra-bottomsheet-overlay', closing && 'lyra-bottomsheet-overlay--closing')}
       onMouseDown={(event) => {
-        downOnOverlay.current = event.target === event.currentTarget;
+        downOnOverlay.current = open && event.target === event.currentTarget;
       }}
       onClick={(event) => {
-        if (downOnOverlay.current && event.target === event.currentTarget) onClose?.();
+        if (open && isTopmost() && downOnOverlay.current && event.target === event.currentTarget) {
+          onClose?.();
+        }
       }}
     >
       {/* The sheet panel owns the Escape-to-close keydown for the modal-dialog pattern. */}
@@ -136,7 +170,7 @@ function BottomSheetPanel({
         className={cx('lyra-bottomsheet', closing && 'lyra-bottomsheet--closing', className)}
         onAnimationEnd={handleAnimationEnd}
         role="dialog"
-        aria-modal="true"
+        aria-modal={open || undefined}
         aria-labelledby={hasTitle ? titleId : undefined}
         aria-label={hasTitle ? undefined : accessibleName}
         tabIndex={-1}
@@ -154,7 +188,9 @@ function BottomSheetPanel({
                 type="button"
                 className="lyra-bottomsheet__close"
                 aria-label={closeLabel}
-                onClick={onClose}
+                onClick={() => {
+                  if (open && isTopmost()) onClose?.();
+                }}
               >
                 <svg
                   width="14"
@@ -179,7 +215,8 @@ function BottomSheetPanel({
 
 /**
  * A controlled modal panel anchored to the bottom viewport edge. It is portaled, traps focus,
- * locks background scroll, and restores focus to its opener after the controlled `open` prop closes.
+ * locks background scroll, and restores focus to its declared target or opener after the controlled
+ * `open` prop closes.
  */
 export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetProps>(
   function BottomSheet(
@@ -189,6 +226,8 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
       closeLabel = 'Close',
       title,
       container,
+      returnFocusTo,
+      initialFocusTo,
       className,
       children,
       'aria-label': accessibleName,
@@ -198,19 +237,18 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
   ) {
     const titleId = useId();
     const panelRef = useRef<HTMLDivElement | null>(null);
-    const openerRef = useRef<Element | null>(null);
+    const overlayRef = useRef<HTMLDivElement | null>(null);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
-
-    useEffect(() => {
-      if (open) return;
-      const opener = openerRef.current;
-      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
-      openerRef.current = null;
-    }, [open]);
-
-    const captureOpener = useCallback((element: Element | null) => {
-      openerRef.current = element;
-    }, []);
+    const layer = useModalLayer(open, panelRef);
+    const { captureOpener } = useReturnFocus({
+      open,
+      active: layer.effectiveOpen,
+      closeAuthorityRef: layer.closeAuthorityRef,
+      fallbackFocusRef: layer.parentPanelRef,
+      returnFocusTo,
+      panelRef,
+      overlayRef,
+    });
 
     const attachPanel = useCallback(
       (node: HTMLDivElement | null) => {
@@ -224,25 +262,30 @@ export const BottomSheet = /*#__PURE__*/ forwardRef<HTMLDivElement, BottomSheetP
     if (!mounted) return null;
 
     return (
-      <Portal container={container}>
-        <BottomSheetPanel
-          panelRef={panelRef}
-          attachPanel={attachPanel}
-          titleId={titleId}
-          title={title}
-          accessibleName={accessibleName}
-          onClose={onClose}
-          closeLabel={closeLabel}
-          open={open}
-          captureOpener={captureOpener}
-          className={className}
-          rest={rest}
-          closing={closing}
-          onAnimationEnd={onAnimationEnd}
-        >
-          {children}
-        </BottomSheetPanel>
-      </Portal>
+      <ModalLayerProvider layer={layer}>
+        <Portal container={container}>
+          <BottomSheetPanel
+            panelRef={panelRef}
+            overlayRef={overlayRef}
+            attachPanel={attachPanel}
+            titleId={titleId}
+            title={title}
+            accessibleName={accessibleName}
+            onClose={onClose}
+            closeLabel={closeLabel}
+            open={layer.effectiveOpen}
+            captureOpener={captureOpener}
+            initialFocusTo={initialFocusTo}
+            className={className}
+            rest={rest}
+            closing={closing}
+            onAnimationEnd={onAnimationEnd}
+            layer={layer}
+          >
+            {children}
+          </BottomSheetPanel>
+        </Portal>
+      </ModalLayerProvider>
     );
   },
 );

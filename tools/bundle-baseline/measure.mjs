@@ -9,15 +9,17 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { arch, platform, release, tmpdir } from 'node:os';
-import { basename, dirname, extname, join, relative, resolve } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { constants, brotliCompressSync } from 'node:zlib';
 import { format } from 'prettier';
 import { build } from 'vite';
+import { checkBundleBudgets } from './budgets.mjs';
 
 const TOOL_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(TOOL_DIR, '..', '..');
@@ -90,7 +92,8 @@ export function summarizeAssets(assets) {
 }
 
 function run(command, args, options = {}) {
-  const result = spawnSync(command, args, { encoding: 'utf8', ...options });
+  const invocation = command === 'pnpm' ? resolvePnpmInvocation(args) : { command, args };
+  const result = spawnSync(invocation.command, invocation.args, { encoding: 'utf8', ...options });
   if (result.error) throw new Error(`could not run ${command}: ${result.error.message}`);
   if (result.status !== 0) {
     throw new Error(
@@ -98,6 +101,22 @@ function run(command, args, options = {}) {
     );
   }
   return result.stdout.trim();
+}
+
+export function resolvePnpmInvocation(
+  args,
+  {
+    npmExecPath = process.env.npm_execpath,
+    nodeExecutable = process.execPath,
+    platformName = process.platform,
+  } = {},
+) {
+  if (npmExecPath) {
+    return ['.js', '.cjs', '.mjs'].includes(extname(npmExecPath).toLowerCase())
+      ? { command: nodeExecutable, args: [npmExecPath, ...args] }
+      : { command: npmExecPath, args };
+  }
+  return { command: platformName === 'win32' ? 'pnpm.cmd' : 'pnpm', args };
 }
 
 function sha256(source) {
@@ -124,15 +143,34 @@ function emittedAssets(result) {
   }));
 }
 
+function replaceModulePathPrefix(moduleId, root, replacement) {
+  if (moduleId === root) return replacement;
+  if (moduleId.startsWith(`${root}/`) || moduleId.startsWith(`${root}\\`)) {
+    return `${replacement}${moduleId.slice(root.length).replaceAll('\\', '/')}`;
+  }
+  return null;
+}
+
 export function normalizeModulePath(moduleId, fixtureRoot, repositoryRoot = REPO) {
-  for (const [root, replacement] of [
+  const roots = [
     [fixtureRoot, '<fixture>'],
     [repositoryRoot, '<repository>'],
-  ]) {
-    if (moduleId === root) return replacement;
-    if (moduleId.startsWith(`${root}/`) || moduleId.startsWith(`${root}\\`)) {
-      return `${replacement}${moduleId.slice(root.length)}`;
+  ];
+  const canResolveModulePath =
+    isAbsolute(moduleId) &&
+    !moduleId.includes('?') &&
+    !moduleId.includes('#') &&
+    existsSync(moduleId);
+  let canonicalModuleId;
+  for (const [root, replacement] of roots) {
+    const normalized = replaceModulePathPrefix(moduleId, root, replacement);
+    if (normalized) return normalized;
+    if (canonicalModuleId === undefined) {
+      canonicalModuleId = canResolveModulePath ? realpathSync(moduleId) : null;
     }
+    if (!canonicalModuleId || !existsSync(root)) continue;
+    const canonical = replaceModulePathPrefix(canonicalModuleId, realpathSync(root), replacement);
+    if (canonical) return canonical;
   }
   return moduleId;
 }
@@ -153,7 +191,7 @@ function moduleContributions(result, fixtureRoot) {
 
 async function viteBuild({ buildFunction, entry, externals, minify, name, root }) {
   const originalWorkingDirectory = process.cwd();
-  process.chdir(root);
+  process.chdir(REPO);
   try {
     return await buildFunction({
       configFile: false,
@@ -254,6 +292,43 @@ function packArtifacts(tempRoot) {
   };
 }
 
+function selectedArtifactIdentities(tarballs) {
+  const packages = {
+    react: '@lyra-ds/react',
+    alpine: '@lyra-ds/alpine',
+    styles: '@lyra-ds/styles',
+  };
+  return Object.fromEntries(
+    Object.entries(tarballs).map(([key, tarball]) => {
+      const packageName = packages[key];
+      if (!packageName) throw new Error(`unknown packed artifact: ${key}`);
+      return [packageName, { tarball: basename(tarball), sha256: sha256(readFileSync(tarball)) }];
+    }),
+  );
+}
+
+function fixtureSourceFiles() {
+  return [
+    join(FIXTURE_SOURCE, 'package.json'),
+    join(FIXTURE_SOURCE, 'pnpm-lock.yaml'),
+    ...SCENARIO_NAMES.map((name) => join(TOOL_DIR, 'scenarios', `${name}.ts`)),
+  ];
+}
+
+export function fixtureSourceSha256({
+  files = fixtureSourceFiles(),
+  relativePath = (file) => relative(REPO, file),
+} = {}) {
+  return sha256(
+    files
+      .map(
+        (file) =>
+          `${relativePath(file).replaceAll('\\', '/')}\n${readFileSync(file, 'utf8').replaceAll('\r\n', '\n')}`,
+      )
+      .join('\n'),
+  );
+}
+
 function installFixture(tempRoot, tarballs) {
   const fixture = join(tempRoot, 'consumer');
   const store = join(tempRoot, 'pnpm-store');
@@ -279,7 +354,9 @@ function installFixture(tempRoot, tarballs) {
     run('pnpm', ['list', '--json', '--depth', 'Infinity', '--ignore-workspace'], { cwd: fixture }),
   );
   const resolvedGraph = normalizeResolvedGraph(installed);
-  installPackedArtifacts(fixture, tarballs);
+  const artifacts = installPackedArtifacts(fixture, tarballs, {
+    expectedArtifacts: selectedArtifactIdentities(tarballs),
+  });
   return {
     artifactInstallation: 'offline tar extraction after frozen external install',
     directory: fixture,
@@ -287,26 +364,50 @@ function installFixture(tempRoot, tarballs) {
     packageManager,
     resolvedGraph,
     resolvedGraphSha256: sha256(JSON.stringify(resolvedGraph)),
+    sourceSha256: fixtureSourceSha256(),
+    artifacts,
   };
 }
 
-export function installPackedArtifacts(fixture, tarballs) {
+export function installPackedArtifacts(fixture, tarballs, { expectedArtifacts } = {}) {
   const packages = {
     react: '@lyra-ds/react',
     alpine: '@lyra-ds/alpine',
     styles: '@lyra-ds/styles',
   };
+  const artifacts = {};
   for (const [key, tarball] of Object.entries(tarballs)) {
     const packageName = packages[key];
     if (!packageName) throw new Error(`unknown packed artifact: ${key}`);
+    const artifact = {
+      tarball: basename(tarball),
+      sha256: sha256(readFileSync(tarball)),
+    };
+    const expected = expectedArtifacts?.[packageName];
+    if (
+      expected &&
+      (!expected.sha256 ||
+        expected.sha256 !== artifact.sha256 ||
+        expected.tarball !== artifact.tarball)
+    ) {
+      throw new Error(
+        `${key} tarball identity does not match the archive selected for measurement`,
+      );
+    }
     const destination = join(fixture, 'node_modules', ...packageName.split('/'));
     mkdirSync(destination, { recursive: true });
     run('tar', ['-xzf', tarball, '--strip-components=1', '-C', destination]);
-    const installedName = readJson(join(destination, 'package.json')).name;
+    if (sha256(readFileSync(tarball)) !== artifact.sha256) {
+      throw new Error(`${key} tarball changed while being extracted for measurement`);
+    }
+    const installedPackage = readJson(join(destination, 'package.json'));
+    const installedName = installedPackage.name;
     if (installedName !== packageName) {
       throw new Error(`${key} tarball contains ${installedName}, expected ${packageName}`);
     }
+    artifacts[packageName] = { version: installedPackage.version, ...artifact };
   }
+  return artifacts;
 }
 
 function normalizeResolvedDependencies(dependencies = {}) {
@@ -334,19 +435,6 @@ async function fixtureViteBuild(fixture) {
   const vitePackage = readJson(join(fixture, 'node_modules', 'vite', 'package.json'));
   const viteEntry = join(fixture, 'node_modules', 'vite', vitePackage.exports['.']);
   return (await import(pathToFileURL(viteEntry).href)).build;
-}
-
-function tarballMetadata(tarballs) {
-  const metadata = {};
-  for (const [key, tarball] of Object.entries(tarballs)) {
-    const packageJson = readJson(join(REPO, 'packages', key, 'package.json'));
-    metadata[packageJson.name] = {
-      version: packageJson.version,
-      tarball: basename(tarball),
-      sha256: sha256(readFileSync(tarball)),
-    };
-  }
-  return metadata;
 }
 
 function publicReactSubpath(entry) {
@@ -479,7 +567,7 @@ async function measureCss(fixture, buildFunction) {
   return measurements;
 }
 
-function environment(fixture, tarballs, exactCommand) {
+export function environment(fixture, exactCommand) {
   return {
     operatingSystem: `${platform()} ${release()}`,
     architecture: arch(),
@@ -496,6 +584,9 @@ function environment(fixture, tarballs, exactCommand) {
       lockfileSha256: fixture.lockfileSha256,
       resolvedGraph: fixture.resolvedGraph,
       resolvedGraphSha256: fixture.resolvedGraphSha256,
+      ...(exactCommand === 'pnpm baseline:bundles --check-budgets'
+        ? { sourceSha256: fixture.sourceSha256 }
+        : {}),
     },
     exactCommand,
     cacheState: 'cold: fresh temporary consumer and pnpm store',
@@ -503,7 +594,7 @@ function environment(fixture, tarballs, exactCommand) {
       mode: 'text',
       quality: 11,
     },
-    packages: tarballMetadata(tarballs),
+    packages: fixture.artifacts,
   };
 }
 
@@ -542,7 +633,7 @@ export async function collectBaseline({ exactCommand = 'pnpm baseline:bundles --
       measuredAt: new Date().toISOString(),
       revision: run('git', ['rev-parse', 'HEAD'], { cwd: REPO }),
       owner: 'Lyra maintainers',
-      environment: environment(fixture, tarballs, exactCommand),
+      environment: environment(fixture, exactCommand),
       externals: EXTERNALS,
       standalone,
       scenarios,
@@ -1130,9 +1221,12 @@ export async function runBundleBaselineCli(
 ) {
   const mode = args[0];
   const acceptsComparison = mode === '--accept-comparison' && args.length === 2;
-  if ((!['--write', '--check'].includes(mode) || args.length !== 1) && !acceptsComparison) {
+  if (
+    (!['--write', '--check', '--check-budgets'].includes(mode) || args.length !== 1) &&
+    !acceptsComparison
+  ) {
     throw new Error(
-      'usage: node tools/bundle-baseline/measure.mjs --write|--check|--accept-comparison file-upload',
+      'usage: node tools/bundle-baseline/measure.mjs --write|--check|--check-budgets|--accept-comparison file-upload',
     );
   }
   if (acceptsComparison) {
@@ -1143,21 +1237,32 @@ export async function runBundleBaselineCli(
     assertBaselineArtifactsWritable(paths);
   }
 
-  const expected = mode === '--check' ? await resolveBaselineReference(paths) : null;
-  const current = await collect({ exactCommand: expected?.environment.exactCommand });
+  const expected =
+    mode === '--check' || mode === '--check-budgets' ? await resolveBaselineReference(paths) : null;
+  const current = await collect({
+    exactCommand:
+      mode === '--check-budgets'
+        ? 'pnpm baseline:bundles --check-budgets'
+        : expected?.environment.exactCommand,
+  });
   if (mode === '--write') {
     await writeBaselineArtifacts(current, paths);
     const { baselineJson, baselineMarkdown } = baselineArtifactPaths(paths);
     return `Wrote ${relative(REPO, baselineJson)} and ${relative(REPO, baselineMarkdown)}`;
   }
 
+  if (mode === '--check-budgets') {
+    return checkBundleBudgets(expected, current);
+  }
   compareBaseline(expected, current);
   return 'Bundle baseline check OK: package checksums, environment, and measurements match.';
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   runBundleBaselineCli(process.argv.slice(2))
-    .then((message) => console.log(message))
+    .then((result) =>
+      console.log(typeof result === 'string' ? result : JSON.stringify(result, null, 2)),
+    )
     .catch((error) => {
       console.error(`bundle-baseline FAILED: ${error.message}`);
       process.exitCode = 1;

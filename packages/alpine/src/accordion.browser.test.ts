@@ -32,10 +32,10 @@ function mountAccordion({
       </div>
       <div class="lyra-acc__item" data-value="two" x-bind="item">
         <button class="lyra-acc__trigger" x-bind="trigger">Two <span class="lyra-acc__chevron" aria-hidden="true"></span></button>
-        <div class="lyra-acc__panel-wrap" x-bind="panelWrap"><div class="lyra-acc__panel-clip"><div class="lyra-acc__panel" x-bind="panel">Two panel <button type="button" data-testid="two-action">Two action</button></div></div></div>
+        <div class="lyra-acc__panel-wrap" x-bind="panelWrap"><div class="lyra-acc__panel-clip"><div class="lyra-acc__panel" x-bind="panel">Two panel <input type="text" aria-label="Two panel action" data-testid="two-action"></div></div></div>
       </div>
     </div>
-    <button type="button" data-testid="after">After</button>
+    <input type="text" aria-label="After accordion" data-testid="after">
   `;
   document.body.appendChild(host);
   Alpine.initTree(host);
@@ -156,14 +156,22 @@ describe('lyraAccordion', () => {
   it('keeps a closed panel inert and unreachable by Tab while its DOM remains present', async () => {
     const host = mountAccordion({ defaultOpen: 'one' });
     const controls = triggers(host);
-    const after = host.querySelector<HTMLButtonElement>('[data-testid="after"]');
-    if (!after) throw new Error('Expected focus target after accordion');
+    const twoAction = host.querySelector<HTMLInputElement>('[data-testid="two-action"]');
+    const after = host.querySelector<HTMLInputElement>('[data-testid="after"]');
+    if (!twoAction || !after) throw new Error('Expected text input focus targets');
 
     expect(panelWraps(host)[1].hasAttribute('inert')).toBe(true);
     expect(panels(host)[1]).toBeInstanceOf(HTMLElement);
     controls[1].focus();
     await userEvent.keyboard('{Tab}');
     expect(document.activeElement).toBe(after);
+
+    await userEvent.click(controls[1]);
+    await flush();
+    expect(panelWraps(host)[1].hasAttribute('inert')).toBe(false);
+    controls[1].focus();
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(twoAction);
   });
 
   it('is axe clean while closed and open', async () => {

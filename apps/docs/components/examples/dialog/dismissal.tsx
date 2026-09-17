@@ -1,21 +1,23 @@
 'use client';
 
 import { Button, Dialog } from '@lyra-ds/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 // A dialog the user must resolve deliberately: Escape and backdrop clicks are off,
 // and omitting `onClose` would also drop the × — so the footer is the only way out.
 export function DialogDismissal() {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <Button variant="secondary" onClick={() => setOpen(true)}>
+      <Button ref={triggerRef} variant="secondary" onClick={() => setOpen(true)}>
         Review terms
       </Button>
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
+        returnFocusTo={() => triggerRef.current}
         title="Accept the updated terms"
         closeOnEsc={false}
         closeOnOverlayClick={false}

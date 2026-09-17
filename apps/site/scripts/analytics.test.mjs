@@ -1,15 +1,30 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import test from 'node:test';
 
 const appRoot = resolve(import.meta.dirname, '..');
-const templatePath = resolve(appRoot, 'scripts', '_headers.template');
-const headerPath = resolve(appRoot, 'public', '_headers');
-const generatorPath = resolve(appRoot, 'scripts', 'generate-headers.mjs');
 const analyticsPath = resolve(appRoot, 'components', 'consent-analytics.tsx');
 const configuredOrigin = 'https://metrics.example.test';
+
+// The real generate-headers.mjs truncates and rewrites public/_headers, which
+// races with metadata-deploy.test.mjs reading the same file in parallel runs.
+// Run a copy of the real generator inside an isolated temp app fixture instead.
+const fixtureRoot = mkdtempSync(join(tmpdir(), 'site-headers-fixture-'));
+const fixtureHeaderPath = join(fixtureRoot, 'public', '_headers');
+const fixtureTemplatePath = join(fixtureRoot, 'scripts', '_headers.template');
+const fixtureGeneratorPath = join(fixtureRoot, 'scripts', 'generate-headers.mjs');
+
+mkdirSync(join(fixtureRoot, 'scripts'), { recursive: true });
+mkdirSync(join(fixtureRoot, 'public'), { recursive: true });
+copyFileSync(resolve(appRoot, 'scripts', 'generate-headers.mjs'), fixtureGeneratorPath);
+copyFileSync(resolve(appRoot, 'scripts', '_headers.template'), fixtureTemplatePath);
+
+test.after(() => {
+  rmSync(fixtureRoot, { recursive: true, force: true });
+});
 
 function generate(environment = {}) {
   const env = { ...process.env, ...environment };
@@ -17,13 +32,13 @@ function generate(environment = {}) {
   if (!('NEXT_PUBLIC_OPENPANEL_CLIENT_ID' in environment))
     delete env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID;
 
-  return spawnSync(process.execPath, [generatorPath], { encoding: 'utf8', env });
+  return spawnSync(process.execPath, [fixtureGeneratorPath], { encoding: 'utf8', env });
 }
 
 test('unconfigured headers are byte-identical to the committed template', () => {
   const result = generate();
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(readFileSync(headerPath), readFileSync(templatePath));
+  assert.deepEqual(readFileSync(fixtureHeaderPath), readFileSync(fixtureTemplatePath));
 });
 
 test('configured headers allow the OpenPanel origin only for scripts and connections', () => {
@@ -33,7 +48,7 @@ test('configured headers allow the OpenPanel origin only for scripts and connect
   });
   assert.equal(result.status, 0, result.stderr);
 
-  const headers = readFileSync(headerPath, 'utf8');
+  const headers = readFileSync(fixtureHeaderPath, 'utf8');
   assert.match(headers, new RegExp(`script-src 'self' 'unsafe-inline' ${configuredOrigin}`));
   assert.match(headers, new RegExp(`connect-src 'self' ${configuredOrigin}`));
   assert.equal(headers.split(configuredOrigin).length - 1, 2);
@@ -73,8 +88,8 @@ test('the consent owner loads OpenPanel once after all consent without replay or
   assert.doesNotMatch(source, /identify|trackOutgoingLinks|trackAttributes/);
 });
 
-test('restores unconfigured headers for subsequent local commands', () => {
+test('an unconfigured run restores the template in the fixture for subsequent commands', () => {
   const result = generate();
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(readFileSync(headerPath), readFileSync(templatePath));
+  assert.deepEqual(readFileSync(fixtureHeaderPath), readFileSync(fixtureTemplatePath));
 });

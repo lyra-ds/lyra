@@ -1,12 +1,24 @@
 # Overlay foundation evaluation
 
+**Current direction (2026-09-08):** V1 retains the existing Lyra implementation.
+Comparative candidate diagnostics are suspended and are not release
+prerequisites. The [maintainer decision](../../docs/superpowers/specs/2026-09-08-v1-incumbent-direction.md)
+supersedes the earlier compulsory comparison sequence. The protocols, manifests
+and commands below document preserved research; their previous authorization
+does not authorize a new run or dependency adoption. Reuse incumbent checks
+only through a bounded stabilization task. Do not change Colima configuration
+or restart it to run verification. Missing evidence remains pending.
+
 This directory contains the approved repository-owned evaluation harness. The
 core plan validates manifests, verifies artifact and installation behavior, and
 characterizes the incumbent Lyra packages. The modal wave runs a local
 diagnostic for `OF-MODAL`. Wave 2 adds `OF-ANCHORED`, `OF-MENU`, and
 `OF-TOOLTIP`; neither wave selects a foundation.
 
-`pnpm overlay:evaluate:core:test` runs the core protocol tests.
+`pnpm overlay:evaluate:core:test` runs the core protocol tests as an explicit
+suspended experiment command. Ordinary `pnpm test` runs only the active
+experimental-foundation manifest prohibition through
+`node --test --test-name-pattern="^keeps experimental foundations out of workspace manifests$" tools/overlay-foundation-evaluation/repository-policy.test.mjs`.
 `pnpm overlay:evaluate:check --manifest <path>` validates an explicit
 prospective manifest without network access or installation.
 `pnpm overlay:evaluate:incumbent --output <path>` builds and characterizes

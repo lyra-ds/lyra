@@ -1,0 +1,2 @@
+# TimePicker keyboard stops — approved
+OpenCode GLM/low, initial scoped delivery, no retry/escalation. Executor Node inspection permission failed; controller all3 engines7/6/6, static/build/docgen, original-source RED/restored GREEN PASS. TimePicker4522B Brotli unchanged;9 older size failures remain. Runtime addition is one tabindex. See v1-time-picker-keyboard-stops-verification.md. Commite287941.

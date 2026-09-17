@@ -6,15 +6,31 @@ import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
 
 const mountedHosts: HTMLElement[] = [];
+let dialogReturnTarget: HTMLElement | null = null;
+let dialogReturnFocusCalls = 0;
+let dialogReturnFocusReopen: (() => void) | null = null;
+let dialogReturnFocusError: unknown = null;
 
 Alpine.plugin(lyra);
+Alpine.data('dialogReturnFocusWorkflow', () => ({
+  returnTarget: () => {
+    dialogReturnFocusCalls += 1;
+    if (dialogReturnFocusError) throw dialogReturnFocusError;
+    dialogReturnFocusReopen?.();
+    return dialogReturnTarget;
+  },
+}));
 
 function mountDialog(
   options = '{}',
   body = '<button type="button" data-testid="first">First</button><input aria-label="Middle"><button type="button" data-testid="last">Last</button>',
+  wrapperAttributes = '',
 ): HTMLElement {
   const host = document.createElement('div');
+  const wrapperOpen = wrapperAttributes ? `<div ${wrapperAttributes}>` : '';
+  const wrapperClose = wrapperAttributes ? '</div>' : '';
   host.innerHTML = `
+    ${wrapperOpen}
     <div x-data="lyraDialog(${options})">
       <button type="button" data-testid="trigger" x-on:click="open = true">Open</button>
       <button type="button" data-testid="outside">Background</button>
@@ -28,6 +44,7 @@ function mountDialog(
         </div>
       </div>
     </div>
+    ${wrapperClose}
   `;
   document.body.appendChild(host);
   Alpine.initTree(host);
@@ -40,7 +57,7 @@ async function flush(): Promise<void> {
 }
 
 function root(host: HTMLElement): HTMLElement {
-  const element = host.firstElementChild;
+  const element = host.querySelector<HTMLElement>('[x-data^="lyraDialog"]');
   if (!(element instanceof HTMLElement)) throw new Error('Expected dialog root');
   return element;
 }
@@ -93,6 +110,11 @@ afterEach(() => {
   }
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
+  dialogReturnTarget?.remove();
+  dialogReturnTarget = null;
+  dialogReturnFocusCalls = 0;
+  dialogReturnFocusReopen = null;
+  dialogReturnFocusError = null;
 });
 
 describe('lyraDialog', () => {
@@ -170,8 +192,13 @@ describe('lyraDialog', () => {
   });
 
   it('closes through Esc, backdrop press-and-release, and the close button while restoring focus', async () => {
-    const host = mountDialog();
+    const host = mountDialog(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="dialogReturnFocusWorkflow"',
+    );
     const control = trigger(host);
+    dialogReturnTarget = control;
     await openDialog(host);
     await userEvent.keyboard('{Escape}');
     expect(document.activeElement).toBe(control);
@@ -185,6 +212,98 @@ describe('lyraDialog', () => {
     await openDialog(host);
     await userEvent.click(host.querySelector<HTMLButtonElement>('.lyra-dialog__close')!);
     expect(document.activeElement).toBe(control);
+  });
+
+  it('keeps the captured keyboard opener fallback when no destination is configured', async () => {
+    const host = mountDialog();
+    const control = trigger(host);
+    control.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    await userEvent.keyboard('{Escape}');
+
+    expect(document.activeElement).toBe(control);
+  });
+
+  it('uses an outer Alpine workflow successor after a pointer-opened accepted close', async () => {
+    dialogReturnTarget = document.createElement('h2');
+    dialogReturnTarget.tabIndex = -1;
+    dialogReturnTarget.textContent = 'Dialog successor';
+    document.body.append(dialogReturnTarget);
+    const focus = vi.spyOn(dialogReturnTarget, 'focus');
+    const host = mountDialog(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="dialogReturnFocusWorkflow"',
+    );
+
+    await openDialog(host);
+    await userEvent.keyboard('{Escape}');
+
+    expect(document.activeElement).toBe(dialogReturnTarget);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+  });
+
+  it('resolves once per accepted close and captures a fresh return record after a reentrant reopen', async () => {
+    const host = mountDialog(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="dialogReturnFocusWorkflow"',
+    );
+    const control = trigger(host);
+    dialogReturnTarget = control;
+    const data = Alpine.$data(root(host)) as { open: boolean; opener: Element | null };
+    let openerAtResolution: Element | null | undefined;
+    dialogReturnFocusReopen = () => {
+      openerAtResolution = data.opener;
+      data.open = true;
+    };
+
+    await openDialog(host);
+    await userEvent.keyboard('{Escape}');
+    await flush();
+
+    expect(dialogReturnFocusCalls).toBe(1);
+    expect(openerAtResolution).toBeNull();
+    expect(data.open).toBe(true);
+    dialogReturnFocusReopen = null;
+    await userEvent.keyboard('{Escape}');
+    await flush();
+
+    expect(dialogReturnFocusCalls).toBe(2);
+    expect(document.activeElement).toBe(control);
+  });
+
+  it('clears the owner record before a throwing resolver and does not resolve while closed or destroyed', async () => {
+    const host = mountDialog(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="dialogReturnFocusWorkflow"',
+    );
+    const control = trigger(host);
+    dialogReturnTarget = control;
+    const data = Alpine.$data(root(host)) as {
+      open: boolean;
+      opener: Element | null;
+      restoreOpener(): void;
+    };
+
+    expect(dialogReturnFocusCalls).toBe(0);
+    data.open = false;
+    await flush();
+    expect(dialogReturnFocusCalls).toBe(0);
+    const thrown = { reason: 'workflow target was retired' };
+    const focus = vi.spyOn(control, 'focus');
+    data.opener = control;
+    dialogReturnFocusError = thrown;
+
+    expect(() => data.restoreOpener()).toThrow(thrown);
+    expect(data.opener).toBeNull();
+    expect(focus).not.toHaveBeenCalled();
+    dialogReturnFocusError = null;
+    Alpine.destroyTree(root(host));
+
+    expect(dialogReturnFocusCalls).toBe(1);
   });
 
   it('honors disabled close options and never closes for panel interactions or a panel-to-backdrop drag', async () => {
@@ -248,8 +367,13 @@ describe('lyraDialog', () => {
   });
 
   it('cancels an exit on reopen and focuses again before a subsequent restore', async () => {
-    const host = mountDialog();
+    const host = mountDialog(
+      '{ returnFocusTo: returnTarget }',
+      undefined,
+      'x-data="dialogReturnFocusWorkflow"',
+    );
     const control = trigger(host);
+    dialogReturnTarget = control;
     await openDialog(host);
     await userEvent.keyboard('{Escape}');
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));

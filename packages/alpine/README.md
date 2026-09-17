@@ -57,13 +57,18 @@ or a Node version with ESM support. There is no CommonJS build.
 | `lyraDropdown`  | `trigger`, `menu`, `item`               | `open`                             |
 | `lyraDialog`    | `overlay`, `panel`, `title`, `close`    | `open`                             |
 | `lyraDrawer`    | `overlay`, `panel`, `title`, `close`    | `open`                             |
-| `lyraTabs`      | `list`, `tab`, `panel`                  | `active`                           |
+| `lyraTabs`      | `fallback`, `list`, `tab`, `panel`      | `active`                           |
 | `lyraAccordion` | `item`, `trigger`, `panelWrap`, `panel` | `openItems` (array)                |
 | `lyraTooltip`   | `root`, `target`, `bubble`              | — (parity: React exposes none)     |
 | `lyraPopover`   | `trigger`, `panel`                      | `open`                             |
 
 Each component lands with a browser test suite (keyboard, focus, `inert`, axe)
 run against the real `@lyra-ds/styles` CSS.
+
+Tabs uses a required native fallback: render `fallback` as links to the real
+headed `panel` sections, and keep the enhanced `list` statically hidden until
+Alpine succeeds. `ready` is a read-only adapter output, not controllable state;
+older Blade Tabs markup needs manual migration before it can use this contract.
 
 ## Compatibility
 

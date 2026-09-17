@@ -520,13 +520,7 @@
         "name": "hover",
         "type": "boolean",
         "optional": true,
-        "description": "Whether rows highlight on hover. Automatically enabled when `onRowClick` is supplied."
-      },
-      {
-        "name": "onRowClick",
-        "type": "(row: RowShape) => void",
-        "optional": true,
-        "description": "Called when a data row is clicked."
+        "description": "Whether rows highlight on hover."
       },
       {
         "name": "labels",
@@ -907,6 +901,18 @@
         "description": "Portal host. Defaults to `document.body`."
       },
       {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the logical destination for an accepted close. The resolver result is used only when\neligible; otherwise an eligible previously focused opener is the fallback. A successor\ncomposition must supply a meaningful target when the opener can disappear or become ineligible."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,
@@ -1039,6 +1045,18 @@
         "description": "Portal host. Defaults to `document.body`."
       },
       {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical destination for focus after an accepted close."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": false,
@@ -1088,6 +1106,18 @@
         "type": "HTMLElement",
         "optional": true,
         "description": "Portal host. Defaults to `document.body`."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current logical destination for focus after an accepted close."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening."
       },
       {
         "name": "children",
@@ -2722,6 +2752,18 @@
         "description": "Renders the panel without an overlay, portal, focus trap, or scroll lock."
       },
       {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Returns the current element to focus after an accepted modal close. Ignored in inline mode."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus destination inside the modal on each accepted opening. Ignored in inline mode."
+      },
+      {
         "name": "className",
         "type": "string",
         "optional": true,
@@ -2752,13 +2794,13 @@
         "name": "onClose",
         "type": "() => void",
         "optional": true,
-        "description": "Called when the dialog is dismissed or creation succeeds."
+        "description": "Called when the dialog is dismissed or a creation operation is accepted."
       },
       {
         "name": "onCreate",
-        "type": "(data: {\n    name: string;\n    slug: string;\n  }) => void",
+        "type": "(request: CreateWorkspaceRequest) => CreateWorkspaceResult | Promise<CreateWorkspaceResult>",
         "optional": true,
-        "description": "Receives the trimmed workspace name and its URL-safe slug after submission."
+        "description": "Receives one owned request and explicitly acknowledges its terminal outcome."
       },
       {
         "name": "title",
@@ -2771,6 +2813,12 @@
         "type": "string",
         "optional": true,
         "description": "Text rendered before the editable slug. Default `\"lyra.dev/\"`."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the focus destination after an accepted close."
       }
     ]
   },
@@ -2927,16 +2975,10 @@
   {
     "name": "Tabs",
     "category": "Navigation",
-    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange'>",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'children' | 'role'>",
     "description": "Props for {@link Tabs}.",
     "signature": "export declare function Tabs(props: TabsProps): JSX.Element;",
     "props": [
-      {
-        "name": "items",
-        "type": "TabItem[]",
-        "optional": false,
-        "description": "Tabs rendered by the control, in keyboard-navigation order."
-      },
       {
         "name": "active",
         "type": "string",
@@ -2945,15 +2987,90 @@
       },
       {
         "name": "onChange",
-        "type": "(id: string) => void",
+        "type": "(value: string) => void",
         "optional": true,
-        "description": "Called with a tab id after a click or keyboard navigation activates it."
+        "description": "Called with a tab id after a click or keyboard navigation requests activation."
       },
       {
         "name": "variant",
         "type": "'line' | 'pills'",
         "optional": true,
         "description": "Visual treatment: underline tabs (`\"line\"`) or segmented tabs (`\"pills\"`)."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Named list, trigger, and content parts owned by this Tabs root."
+      }
+    ]
+  },
+  {
+    "name": "TabsContent",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'id' | 'role' | 'tabIndex' | 'aria-labelledby' | 'hidden'>",
+    "description": "Props for a consumer-owned tab panel.",
+    "signature": "export declare function TabsContent(props: TabsContentProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "optional": false,
+        "description": "Stable value shared with this panel's matching trigger."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Consumer-owned content that remains mounted across tab switches."
+      }
+    ]
+  },
+  {
+    "name": "TabsList",
+    "category": "Navigation",
+    "extends": "Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children' | 'tabIndex'>",
+    "description": "Props for the tablist part.",
+    "signature": "export declare function TabsList(props: TabsListProps): JSX.Element;",
+    "props": [
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Tab triggers rendered in their native keyboard-navigation order."
+      }
+    ]
+  },
+  {
+    "name": "TabsTrigger",
+    "category": "Navigation",
+    "extends": "Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'children' | 'id' | 'role' | 'type' | 'tabIndex' | 'aria-selected' | 'aria-controls'>",
+    "description": "Props for a consumer-owned tab trigger.",
+    "signature": "export declare function TabsTrigger(props: TabsTriggerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "value",
+        "type": "string",
+        "optional": false,
+        "description": "Stable value shared with this trigger's matching content panel."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Visible trigger label."
+      },
+      {
+        "name": "count",
+        "type": "number",
+        "optional": true,
+        "description": "Optional supplementary count displayed after the label."
+      },
+      {
+        "name": "icon",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional icon rendered before the label."
       }
     ]
   },

@@ -22,6 +22,7 @@ Documented as `app-sidebar`. Mount with `x-data="lyraAppSidebar({ … })"`.
 Documented as `bottom-sheet`. Mount with `x-data="lyraBottomSheet({ … })"`.
 
 - `defaultOpen?: boolean` — Whether the sheet starts open. Defaults to `false`.
+- `returnFocusTo?: () => HTMLElement | null` — Resolves the current logical focus destination after an accepted modal close.
 ### lyraCalendar
 
 Documented as `calendar`. Mount with `x-data="lyraCalendar({ … })"`.
@@ -70,6 +71,7 @@ Documented as `command-palette`. Mount with `x-data="lyraCommandPalette({ … })
 - `hotkey?: string | false` — Command/Ctrl key used to toggle the overlay. Falsy disables it. Default: `"k"`.
 - `inline?: boolean` — Render only the panel, without modal behavior. Default: `false`.
 - `label?: string` — Accessible dialog name in overlay mode. Default: `"Command palette"`.
+- `returnFocusTo?: () => HTMLElement | null` — Resolves the current logical focus destination after an accepted modal close.
 ### lyraCookieBanner
 
 Documented as `cookie-banner`. Mount with `x-data="lyraCookieBanner({ … })"`.
@@ -109,12 +111,14 @@ Documented as `dialog`. Mount with `x-data="lyraDialog({ … })"`.
 - `closeOnEsc?: boolean`
 - `closeOnOverlayClick?: boolean`
 - `labelId?: string`
+- `returnFocusTo?: () => HTMLElement | null` — Resolves the current logical focus destination after an accepted modal close.
 ### lyraDrawer
 
 Documented as `drawer`. Mount with `x-data="lyraDrawer({ … })"`.
 
 - `defaultOpen?: boolean`
 - `labelId?: string`
+- `returnFocusTo?: () => HTMLElement | null` — Resolves the current logical focus destination after an accepted modal close.
 ### lyraDropdown
 
 Documented as `dropdown`. Mount with `x-data="lyraDropdown({ … })"`.

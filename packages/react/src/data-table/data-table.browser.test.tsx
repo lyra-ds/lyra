@@ -1,3 +1,4 @@
+import { useState, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
@@ -163,6 +164,94 @@ describe('DataTable', () => {
       .element(screen.getByRole('checkbox', { name: 'Select South' }))
       .toBeInTheDocument();
   });
+
+  it('keeps native cell actions independent from sorting and selection', async () => {
+    const onAction = vi.fn();
+    const actionColumns = [
+      { key: 'name', label: 'Name', sortable: true },
+      { key: 'actions', label: 'Actions' },
+    ];
+
+    function ProjectTable(): ReactNode {
+      const [opened, setOpened] = useState<string | null>(null);
+      const actionRows = ['North', 'South'].map((name) => ({
+        id: name.toLowerCase(),
+        name,
+        actions: (
+          <button
+            type="button"
+            tabIndex={0}
+            onClick={() => {
+              onAction(name);
+              setOpened(name);
+            }}
+          >
+            Open {name}
+          </button>
+        ),
+      }));
+
+      return (
+        <>
+          <DataTable
+            columns={actionColumns}
+            rows={actionRows}
+            selectable
+            labels={{ selectRow: (row) => `Select ${String(row.name)}` }}
+          />
+          <p>{opened ? `${opened} details are open.` : 'No project is open.'}</p>
+        </>
+      );
+    }
+
+    const screen = await render(<ProjectTable />);
+    await userEvent.click(screen.getByRole('button', { name: 'Name' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Select South' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Open South' }));
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenLastCalledWith('South');
+    await expect.element(screen.getByText('South details are open.')).toBeInTheDocument();
+    expect(
+      (screen.getByRole('checkbox', { name: 'Select South' }).element() as HTMLInputElement)
+        .checked,
+    ).toBe(true);
+
+    (screen.getByRole('button', { name: 'Open South' }).element() as HTMLButtonElement).focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    expect(onAction).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not turn rows into commands when a stale JavaScript onRowClick prop is supplied', async () => {
+    const retiredCallback = vi.fn();
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const screen = await render(
+        <DataTable
+          columns={columns}
+          rows={rows}
+          // @ts-expect-error onRowClick is deliberately stale JavaScript consumer input.
+          onRowClick={retiredCallback}
+        />,
+      );
+
+      await userEvent.click(screen.getByRole('row', { name: /North/ }));
+      expect(retiredCallback).not.toHaveBeenCalled();
+      expect(screen.container.querySelector('table')!.className).toBe('lyra-table');
+      expect(errorSpy.mock.calls).toEqual([
+        [expect.stringContaining('Unknown event handler property'), 'onRowClick'],
+      ]);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it('applies hover styling only when requested', async () => {
+    const screen = await render(<DataTable columns={columns} rows={rows} hover />);
+    expect(screen.container.querySelector('table')!.className).toContain('lyra-table--hover');
+  });
+
   it('keeps selection attached to the same row after sorting when rows have no id', async () => {
     const screen = await render(
       <DataTable

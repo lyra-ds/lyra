@@ -28,11 +28,12 @@ technology-neutral observable contracts:
   CreateWorkspaceDialog to reuse the applicable lower-level contract without
   forking it.
 
-This approved specification defines the behavior that a later evaluation MUST
-measure. It does not select an implementation foundation, authorize a
-dependency, claim compatibility or migration completion, or authorize a
-runtime change. The incumbent Lyra implementation, Radix, Base UI, and the
-active Zag direction remain unevaluated alternatives.
+This approved specification defines the behavior that incumbent stabilization
+MUST meet. The [2026-09-08 maintainer decision](./2026-09-08-v1-incumbent-direction.md)
+retains Lyra's existing implementation and suspends comparative foundation
+selection as a V1 prerequisite. It does not claim compatibility, completed
+migration, passing acceptance, or authorize dependency adoption. Runtime
+corrections remain bounded by the observable contracts below.
 
 ## Scope and ownership
 
@@ -637,8 +638,8 @@ does not replace the preserved first-attempt result.
 The current React props, exported value/item types, root and subpath exports,
 Alpine registration names/options/events, required `.lyra-*` classes, native
 and ARIA relationships, public `data-tip` and `data-state`, and DOM/ref targets
-listed in the inventory are Lyra-owned current contracts. The later foundation
-evaluation MUST use them as the incumbent boundary; it MUST NOT silently treat
+listed in the inventory are Lyra-owned current contracts. Incumbent
+stabilization MUST use them as its current boundary; it MUST NOT silently treat
 a vendor surface as the target API.
 
 This specification does not freeze a replacement signature or claim compatibility.
@@ -662,22 +663,25 @@ compatibility ranges, deprecation release, removal release, migration path, or
 completed codemod. Those fields remain absent in the program ledger until the
 approved implementation and exact packed-consumer evidence exist.
 
-## Foundation evaluation gate
+## Foundation decision gate
 
-After this specification receives written approval, a later decision phase
-MUST run the incumbent Lyra implementation, Radix, Base UI, and the active Zag
-direction against the same accepted fixtures, inputs, production build
-configuration, and evidence schema. The comparison MAY retain the incumbent
-and MUST NOT preselect a winner by popularity, familiarity, implementation
-effort, or this specification's wording.
+V1 MUST retain the incumbent Lyra implementation.
+Comparative foundation evaluation is not a prerequisite for V1.
+Retaining the incumbent does not waive any required automated acceptance cell.
+Replacing the incumbent requires a new explicit maintainer decision.
 
-The later ADR MUST use the
-[overlay foundation ADR template](../templates/overlay-foundation-adr.md) and
-MUST include exact candidate versions/revisions, the complete contract matrix,
-browser and assistive-technology disposition, SSR/hydration results, public API
-isolation, standalone and composition bundle results, CSS/runtime impact,
-removed-code and dependency accounting, migration impact, and immutable raw
-artifacts.
+The [approved direction](./2026-09-08-v1-incumbent-direction.md) records a scope
+choice, not comparative superiority or completed qualification. Preserve
+historical candidate experiments without integrating or resuming them. The
+[overlay foundation ADR template](../templates/overlay-foundation-adr.md)
+remains available for a separately authorized future substitution; completing
+its multi-candidate comparison is not required to stabilize the incumbent.
+
+V1 qualification still requires exact revision/artifact identity, the complete
+applicable contract matrix, honest assistive-technology disposition,
+SSR/hydration, public API isolation, standalone/composition bundle results,
+CSS/runtime impact, relevant removed-code accounting, migration compatibility
+and immutable evidence for the actual Lyra release candidate.
 
 The default maximum Brotli increase is `1.5 kB` for a simple primitive and
 `3 kB` for a complex component or representative composition, measured in
@@ -687,7 +691,7 @@ dependencies before evaluating the final delta. A larger result requires the
 approved ADR exception defined by the foundational specifications; reduced
 implementation effort is not a user benefit and cannot justify it.
 
-The ADR cannot be accepted when any applicable WCAG 2.2 Level AA, browser, SSR,
+The V1 release candidate cannot be qualified when any applicable WCAG 2.2 Level AA, browser, SSR,
 or hydration cell fails; a known violation is filtered; a vendor type or
 vendor-required public part/selector/attribute leaks; a bundle limit fails
 without approval; evidence is mutable, incomplete, stale, retry-only, or for
@@ -711,7 +715,7 @@ expected result to `PASS`. Retrying MAY gather diagnostics but MUST NOT erase
 the first failure.
 
 The stream MUST stop without promotion when this specification is not approved,
-an evaluation uses unequal fixtures, two equivalent foundations remain in
+an authorized future comparison uses unequal fixtures, two equivalent foundations remain in
 production, a required automated cell is absent or failing, a public contract
 leaks vendor details, packed bytes differ from evidence, a bundle gate fails,
 removed-code accounting is incomplete, or migration/compatibility evidence is

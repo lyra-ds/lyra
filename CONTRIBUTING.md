@@ -11,10 +11,11 @@ By participating, you agree to abide by our
 
 Lyra DS is a pnpm monorepo.
 
-- **Node.js 24** (the version pinned in [`.nvmrc`](./.nvmrc)). If you use `nvm`,
-  run `nvm use`; otherwise install Node 24 by your preferred means. The repo sets
-  `engine-strict=true`, so an older Node will refuse to install.
-- **pnpm >= 11.13.** There are two supported ways to get it:
+- **Node.js 24.18.0** (pinned in [`.nvmrc`](./.nvmrc)). If you use `nvm`, run
+  `nvm use`; otherwise install that Node version by your preferred means. The
+  repo sets `engine-strict=true`, so an older Node will refuse to install.
+- **pnpm 11.13.1** (pinned in the root `packageManager` field). There are two
+  supported ways to get it:
   - `corepack enable` — the built-in Node package-manager shim. Note that
     corepack no longer ships with every newer Node line, so this path may not be
     available on your install.
@@ -26,22 +27,33 @@ Lyra DS is a pnpm monorepo.
 Then install and run the root scripts:
 
 ```bash
-pnpm install          # install the whole workspace
+pnpm install --frozen-lockfile
 pnpm lint             # prettier --check .
 pnpm format           # prettier --write .
-pnpm typecheck        # recursive, per-package (when packages define it)
-pnpm test             # non-browser workspace tests, SSR checks, and repository guardrails
 pnpm build            # recursive, per-package (when packages define it)
+pnpm typecheck        # recursive, per-package (when packages define it)
+pnpm test             # common non-browser tests, SSR checks, and repository guardrails
 ```
 
-Browser Mode is deliberately run in the pinned Playwright container, which supplies
-Chromium, Firefox, and WebKit without installing browser binaries on your machine:
+The intended native install, test, and build path is configured for Linux, macOS,
+and Windows; it does not require Docker or WSL. The common gate is verified on
+macOS; Linux and Windows native runs remain pending actual execution.
+
+## Browser-tested changes
+
+When a change affects browser-tested behavior, install the Playwright engines
+locally and run the separate browser check:
 
 ```bash
-env UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm browser-tests
+pnpm exec playwright install chromium firefox webkit
+pnpm test:browsers
 ```
 
-Run this browser matrix before opening a PR that changes browser-tested behavior.
+This is separate from `pnpm test`; do not silently skip an engine that fails to
+install or run. Record the command, engine, exit code, and missing requirement
+instead. The pinned Linux Playwright-container matrix in CI remains the reference
+qualification for browser, accessibility, compatibility, and release obligations;
+it is CI infrastructure, not a Docker or WSL prerequisite for contributors.
 
 ## Changesets
 

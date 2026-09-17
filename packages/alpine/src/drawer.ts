@@ -1,5 +1,6 @@
 import { attachFocusTrap } from './internal/focus-trap';
 import { createPresence, type PresenceController } from './internal/presence';
+import { restoreReturnFocus } from './internal/return-focus';
 import { lockScroll, unlockScroll } from './internal/scroll-lock';
 
 const INITIAL_FOCUS_SELECTOR = [
@@ -15,6 +16,8 @@ const INITIAL_FOCUS_SELECTOR = [
 export interface LyraDrawerOptions {
   defaultOpen?: boolean;
   labelId?: string;
+  /** Resolves the current logical focus destination after an accepted modal close. */
+  returnFocusTo?: () => HTMLElement | null;
 }
 
 type Binding = Record<string, unknown>;
@@ -59,6 +62,7 @@ let nextDrawerId = 0;
 export function lyraDrawer({
   defaultOpen = false,
   labelId,
+  returnFocusTo,
 }: LyraDrawerOptions = {}): LyraDrawerData {
   const state: LyraDrawerData & ThisType<LyraDrawerState> = {
     open: defaultOpen,
@@ -109,7 +113,7 @@ export function lyraDrawer({
         lockScroll();
         this.scrollLocked = true;
       }
-      this.opener = document.activeElement;
+      this.opener = this.root?.ownerDocument.activeElement ?? null;
       this.$nextTick(() => {
         if (!this.open) return;
         this.attachFocusTrap();
@@ -146,8 +150,17 @@ export function lyraDrawer({
     },
 
     restoreOpener() {
-      if (this.opener instanceof HTMLElement) this.opener.focus();
+      const opener = this.opener;
       this.opener = null;
+      const ownerDocument = this.root?.ownerDocument ?? this.panelElement()?.ownerDocument;
+      if (!ownerDocument) return;
+      restoreReturnFocus({
+        ownerDocument,
+        opener,
+        panel: this.panelElement(),
+        overlay: this.root?.querySelector<HTMLElement>('.lyra-drawer-overlay') ?? null,
+        returnFocusTo,
+      });
     },
 
     overlay: {

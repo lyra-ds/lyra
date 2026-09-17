@@ -15,7 +15,17 @@ import { Icon } from '../icon';
 import { cx } from '../internal/cx';
 import { Portal } from '../internal/portal';
 import { useFocusTrap } from '../internal/use-focus-trap';
+import { useInitialFocus } from '../internal/use-initial-focus';
+import { useModalActivity } from '../internal/use-modal-activity';
+import {
+  ModalLayerProvider,
+  isModalLayerTopmost,
+  useModalLayer,
+  useModalLayerRegistration,
+  type ModalLayerValue,
+} from '../internal/use-modal-layer';
 import { usePresence, type PresenceState } from '../internal/use-presence';
+import { useReturnFocus } from '../internal/use-return-focus';
 import { useScrollLock } from '../internal/use-scroll-lock';
 
 /** A command available from {@link CommandPalette}. */
@@ -76,6 +86,10 @@ export interface CommandPaletteProps {
   hotkey?: string;
   /** Renders the panel without an overlay, portal, focus trap, or scroll lock. */
   inline?: boolean;
+  /** Returns the current element to focus after an accepted modal close. Ignored in inline mode. */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Resolves the initial focus destination inside the modal on each accepted opening. Ignored in inline mode. */
+  initialFocusTo?: () => HTMLElement | null;
   /** Additional class name appended to `.lyra-cmdk`. */
   className?: string;
   /**
@@ -147,6 +161,7 @@ interface VisibleCommandGroup {
 
 interface CommandPalettePanelProps {
   panelRef: RefObject<HTMLDivElement | null>;
+  overlay: HTMLElement | null;
   attachPanel: (node: HTMLDivElement | null) => void;
   inputRef: RefObject<HTMLInputElement | null>;
   listRef: RefObject<HTMLDivElement | null>;
@@ -172,6 +187,9 @@ interface CommandPalettePanelProps {
   onAnimationEnd: PresenceState['onAnimationEnd'];
   onReady: () => void;
   captureOpener?: (element: Element | null) => void;
+  initialFocusTo?: () => HTMLElement | null;
+  layer: ModalLayerValue;
+  revokeGesture: () => void;
 }
 
 /**
@@ -180,6 +198,7 @@ interface CommandPalettePanelProps {
  */
 function CommandPalettePanel({
   panelRef,
+  overlay,
   attachPanel,
   inputRef,
   listRef,
@@ -205,22 +224,53 @@ function CommandPalettePanel({
   onAnimationEnd,
   onReady,
   captureOpener,
+  initialFocusTo,
+  layer,
+  revokeGesture,
 }: CommandPalettePanelProps): ReactNode {
+  const { topmost, isTopmost } = useModalLayerRegistration(
+    layer,
+    overlay,
+    captureOpener,
+    revokeGesture,
+  );
+  const active = !modal || open;
   // A filter invalidates the old option collection, so the active descendant always returns to
   // its first visible item. Keeping DOM focus on this input is the APG activedescendant model.
   const activeItem = flatItems[activeIndex];
   const activeOptionId = activeItem ? `${idBase}-option-${activeItem.index}` : undefined;
 
-  useEffect(() => {
-    if (modal && !open) return;
-    if (modal) captureOpener?.(document.activeElement);
-    onReady();
-    const frame = requestAnimationFrame(() => inputRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
-  }, [captureOpener, inputRef, modal, onReady, open]);
+  const defaultInitialFocusTo = useCallback(() => inputRef.current, [inputRef]);
+  const captureInitialOpener = useCallback(
+    (element: Element | null) => captureOpener?.(element),
+    [captureOpener],
+  );
+  const { focusInitial, resetInitialFocus } = useInitialFocus({
+    initialFocusTo,
+    panelRef,
+    captureOpener: captureInitialOpener,
+    defaultFocusTo: defaultInitialFocusTo,
+  });
 
-  useFocusTrap(panelRef, modal && open);
-  useScrollLock(modal && open);
+  useEffect(() => {
+    if (modal && !open) {
+      resetInitialFocus();
+      return;
+    }
+    onReady();
+  }, [modal, onReady, open, resetInitialFocus]);
+
+  useEffect(() => {
+    if (modal && (!open || !topmost)) return;
+    const frame = requestAnimationFrame(() => {
+      if (modal) focusInitial();
+      else inputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusInitial, inputRef, modal, open, topmost]);
+
+  useFocusTrap(panelRef, modal && open && topmost);
+  useScrollLock(modal && open, panelRef);
 
   // Focus never leaves the input in this model, so the active option needs manual scrolling.
   useEffect(() => {
@@ -235,6 +285,7 @@ function CommandPalettePanel({
   }, [activeOptionId, listRef]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (!active || (modal && !isTopmost())) return;
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       if (flatItems.length > 0) {
@@ -252,13 +303,25 @@ function CommandPalettePanel({
     }
   };
 
+  const handlePanelKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (!modal || !open || !isTopmost() || event.key !== 'Escape') return;
+
+    event.stopPropagation();
+    if (!event.defaultPrevented) {
+      event.preventDefault();
+      onClose?.();
+    }
+  };
+
   return (
     <div
       ref={attachPanel}
       className={cx('lyra-cmdk', closing && 'lyra-cmdk--closing', className)}
       role={modal ? 'dialog' : undefined}
-      aria-modal={modal || undefined}
+      aria-modal={(modal && open) || undefined}
       aria-label={modal ? dialogLabel : undefined}
+      tabIndex={modal ? -1 : undefined}
+      onKeyDown={handlePanelKeyDown}
       onAnimationEnd={onAnimationEnd}
     >
       <div className="lyra-cmdk__search">
@@ -273,7 +336,7 @@ function CommandPalettePanel({
           aria-activedescendant={activeOptionId}
           value={query}
           placeholder={placeholder}
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={active ? (event) => onQueryChange(event.target.value) : undefined}
           onKeyDown={handleKeyDown}
         />
         <kbd className="lyra-kbd">esc</kbd>
@@ -308,8 +371,12 @@ function CommandPalettePanel({
                       role="option"
                       aria-selected={isActive}
                       className={cx('lyra-cmdk__item', isActive && 'lyra-cmdk__item--active')}
-                      onMouseEnter={() => onActiveIndexChange(index)}
-                      onClick={() => onPick(item)}
+                      onMouseEnter={() => {
+                        if (active && (!modal || isTopmost())) onActiveIndexChange(index);
+                      }}
+                      onClick={() => {
+                        if (active && (!modal || isTopmost())) onPick(item);
+                      }}
                     >
                       {item.icon && <span className="lyra-cmdk__item-icon">{item.icon}</span>}
                       <span className="lyra-cmdk__item-label">{item.label}</span>
@@ -367,6 +434,8 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
       hints,
       hotkey = 'k',
       inline = false,
+      returnFocusTo,
+      initialFocusTo,
       className,
       'aria-label': ariaLabel = 'Command palette',
     },
@@ -375,12 +444,33 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
     const idBase = useId();
     const listboxId = `${idBase}-listbox`;
     const panelRef = useRef<HTMLDivElement | null>(null);
+    const overlayRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const listRef = useRef<HTMLDivElement | null>(null);
-    const openerRef = useRef<Element | null>(null);
+    const downOnOverlay = useRef(false);
+    const upOnOverlay = useRef(false);
+    const revokeGesture = useCallback(() => {
+      downOnOverlay.current = false;
+      upOnOverlay.current = false;
+    }, []);
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const { mounted, closing, onAnimationEnd } = usePresence(open);
+    const layer = useModalLayer(!inline && open, panelRef);
+    const { attachOverlay, overlay } = useModalActivity({
+      open: !inline && layer.effectiveOpen,
+      overlayRef,
+      revokeGesture,
+    });
+    const { captureOpener } = useReturnFocus({
+      open: inline ? false : open,
+      active: layer.effectiveOpen,
+      closeAuthorityRef: layer.closeAuthorityRef,
+      fallbackFocusRef: layer.parentPanelRef,
+      returnFocusTo: inline ? undefined : returnFocusTo,
+      panelRef,
+      overlayRef,
+    });
 
     const flatItems: IndexedCommandItem[] = [];
     const normalizedQuery = query.toLocaleLowerCase();
@@ -421,16 +511,6 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
       [onClose, onSelect],
     );
 
-    const captureOpener = useCallback((element: Element | null) => {
-      openerRef.current = element;
-    }, []);
-
-    useEffect(() => {
-      if (open || inline) return;
-      if (openerRef.current instanceof HTMLElement) openerRef.current.focus();
-      openerRef.current = null;
-    }, [inline, open]);
-
     useEffect(() => {
       if (!hotkey || !onOpen) return;
       const handleDocumentKeyDown = (event: globalThis.KeyboardEvent): void => {
@@ -438,6 +518,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
           (event.metaKey || event.ctrlKey) &&
           event.key.toLocaleLowerCase() === hotkey.toLocaleLowerCase()
         ) {
+          if (open && !inline && !isModalLayerTopmost(overlay, layer.token)) return;
           event.preventDefault();
           if (open) onClose?.();
           else onOpen();
@@ -445,7 +526,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
       };
       document.addEventListener('keydown', handleDocumentKeyDown);
       return () => document.removeEventListener('keydown', handleDocumentKeyDown);
-    }, [hotkey, onClose, onOpen, open]);
+    }, [hotkey, inline, layer.token, onClose, onOpen, open, overlay]);
 
     const attachPanel = useCallback(
       (node: HTMLDivElement | null) => {
@@ -459,6 +540,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
     const panel = (
       <CommandPalettePanel
         panelRef={panelRef}
+        overlay={overlay}
         attachPanel={attachPanel}
         inputRef={inputRef}
         listRef={listRef}
@@ -475,7 +557,7 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
         hints={{ ...DEFAULT_HINTS, ...hints }}
         className={className}
         modal={!inline}
-        open={inline || open}
+        open={inline || layer.effectiveOpen}
         closing={!inline && closing}
         onQueryChange={handleQueryChange}
         onActiveIndexChange={setActiveIndex}
@@ -484,6 +566,9 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
         onAnimationEnd={onAnimationEnd}
         onReady={resetAndFocus}
         captureOpener={inline ? undefined : captureOpener}
+        initialFocusTo={inline ? undefined : initialFocusTo}
+        layer={layer}
+        revokeGesture={revokeGesture}
       />
     );
 
@@ -491,18 +576,34 @@ const CommandPaletteRoot = /*#__PURE__*/ forwardRef<HTMLDivElement, CommandPalet
     if (!mounted) return null;
 
     return (
-      <Portal>
-        {/* Backdrop click is pointer-only convenience; Escape on the combobox is the keyboard path. */}
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-        <div
-          className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) onClose?.();
-          }}
-        >
-          {panel}
-        </div>
-      </Portal>
+      <ModalLayerProvider layer={layer}>
+        <Portal>
+          {/* Backdrop click is pointer-only convenience; Escape on the combobox is the keyboard path. */}
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+          <div
+            ref={attachOverlay}
+            className={cx('lyra-cmdk-overlay', closing && 'lyra-cmdk-overlay--closing')}
+            onMouseDown={(event) => {
+              downOnOverlay.current = open && event.target === event.currentTarget;
+            }}
+            onMouseUp={(event) => {
+              upOnOverlay.current = open && event.target === event.currentTarget;
+            }}
+            onClick={(event) => {
+              const isBackdropGesture =
+                open &&
+                downOnOverlay.current &&
+                upOnOverlay.current &&
+                event.target === event.currentTarget;
+              downOnOverlay.current = false;
+              upOnOverlay.current = false;
+              if (isBackdropGesture && isModalLayerTopmost(overlay, layer.token)) onClose?.();
+            }}
+          >
+            {panel}
+          </div>
+        </Portal>
+      </ModalLayerProvider>
     );
   },
 );

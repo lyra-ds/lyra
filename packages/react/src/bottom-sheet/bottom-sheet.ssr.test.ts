@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BottomSheet } from './index';
 
 describe('BottomSheet — SSR', () => {
@@ -23,5 +23,23 @@ describe('BottomSheet — SSR', () => {
         }),
       ),
     ).not.toThrow();
+  });
+
+  it('does not resolve focus destinations during server rendering', () => {
+    const returnFocusTo = vi.fn(() => null);
+    const initialFocusTo = vi.fn(() => null);
+
+    renderToString(
+      createElement(BottomSheet, {
+        open: true,
+        title: 'Server',
+        returnFocusTo,
+        initialFocusTo,
+        children: 'Sheet body',
+      }),
+    );
+
+    expect(returnFocusTo).not.toHaveBeenCalled();
+    expect(initialFocusTo).not.toHaveBeenCalled();
   });
 });

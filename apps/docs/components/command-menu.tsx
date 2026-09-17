@@ -3,7 +3,7 @@
 import { CommandPalette, type CommandGroup } from '@lyra-ds/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { components, groupLabelKey, groupOrder } from '@/lib/components';
 import { publishedFoundations } from '@/lib/foundations';
 import type { Locale } from '@/lib/i18n';
@@ -17,6 +17,7 @@ export function CommandMenu({ locale }: { locale: Locale }) {
   const t = useTranslations();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   function go(href: string) {
     setOpen(false);
@@ -56,11 +57,17 @@ export function CommandMenu({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <CommandPalette.Trigger label={t('search')} shortcut="⌘K" onClick={() => setOpen(true)} />
+      <CommandPalette.Trigger
+        ref={triggerRef}
+        label={t('search')}
+        shortcut="⌘K"
+        onClick={() => setOpen(true)}
+      />
       <CommandPalette
         open={open}
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
+        returnFocusTo={() => triggerRef.current}
         groups={groups}
         placeholder={t('search')}
         emptyMessage={t('searchEmpty')}

@@ -1,0 +1,23 @@
+# Packed Dialog profile evidence producer
+
+Base ddee84f648ee23e5eed096418acf5cab869e5832 plus exact2newtoolsource hashes in raw dialog-profiles-reviewed-old/report.json. Existing React/Styles tarballs were freshly repacked and match prior P1 compatibility SHA256 exactly: React658d9faf2987c5401baf2e665b92ad9b12d7b2f507d6385035006cd06c18a5da; Styles38c568b3f7a033f79acb30b782d641371cf0fc856676f26bc0e611f55565d355. All450React emittedfiles unchanged. No dependencies/locks/manifests/runtime/assets changed in this tool task.
+
+## Delivered and executed
+New tools/v1-profiles/dialog.mjs accepts explicit packedReact/Styles artifacts and a new output directory. It builds a frozen React19.2.8 production Vite8.2.1 consumer with publicpackageimports, uses alreadydeclared rootPlaywright/axe as external instrumentation, and runs six independent cases per engine sequentially. Freshcontexts, strict process/case/cleanup failures, tarball/source/lock identities, computedmeasurements and screenshots are retained. No existing P1/FileUpload tooling modified.
+
+Controller finalold run19.40s,18unique cases: axe-light/dark, reducedmotion,ltr,rtlPASS all3engines; forcedcolorsFAIL Chromium/Firefox andPASS WebKit. Overall exit1, nofatal; allownedcontexts/browsers/preview/store/consumer cleaned. This truthful report exposes an existingCSS defect, not a fullypassedqualificationgate. Rootcause: feedback.css .lyra-dialog__close:focus-visible removesoutline; forcedcolors removesnormalboxshadow inChromium/Firefox. Fix is a separateCSS task. WebKit's emulation retainsnormalshadow; this is mediaemulation evidence, notanOS-levelhighcontrastclaim.
+
+Realthememutation changes actualopenDialog panelbackground/bodycolor. Normalgeometry waitsfornaturalownedfiniteentrancecompletion, withoutfinish/cancel/syntheticanimationevent orsleep. Reducedmotion verifies0spatialanimation, realopen/close andscroll/inertrestoration. Nativekeyboardchecks exactfocus, twoforminputs, trapboundarycycle andpublicreturnFocusTo resolver. Forcedcolors asserts actualnativefocus-visible, surface/content/disabled distinctions andcomputedindicator. Axe usesfullWCAG2.2AA tagset withoutknownviolationfiltering. ActualfooterSave updatesvisibleoutput andcloses; no console/pageerrors duringownedoperations.
+
+## Diagnosis, negative and routing
+InitialTerrahigh455.96s andonehighretry416.53s, thencriticalcontrollercompletion. Initialtargetmeasurements41.80px duringentry became44px afternaturalcompletion; reducedmotion44px throughout. Highretry leftWebKitfixtureassumptions aroundpointerbuttonfocus/nativebuttonTab. Ownedreproductions isolatedthoseknownplatformbehaviors; publicopenerresolver andnativeinputstops fixfixture assumptions withoutlibrarychanges orskippingkeyboard. Failedattempts retained.
+
+Meaningfulnegative: a separateownedcopy injects actualpreviewchildexit19. It exits1 with0cases, recordsstartupfailure andalreadyexitedchild, removesownroot. Thisprovesmissingcases/startuperrorsarenotPASS, notallpossiblecleanupfaults. CanonicaloldpackedCSS alreadyprovides2realregressionfailures. Syntax/format/diff checksPASS. Independent review and follow-up passed; see below.
+
+## Limits
+React19 packedDialog six-profile browsermediaemulationslice only. It doesnotclosecoarsepointer/touchscroll, other10P1components, full253cellledger, historicalbaseline/runtimepolicy, physicaldevice/OSmanualAT, Alpine-specificprofilecoverage orrelease. ExistingReact18/19SSR/hydration evidence remainsseparate. CLI is directlyexecutable; rootCI wiring isnotaddedinthisboundedtooltask.
+
+Raw MAIN .batuta/runs/v1-focus-closure/dialog-profiles-* preserves2attempts, criticaldiagnosis, finaloldreport, startupnegative, tarballs, sourcehashes, screenshots andcleanup. Historicaldiagnostics arenotnewPASS orrestorableproductdrafts.
+
+## Independent review and small corrections
+GLM three-lens92.66s returned3DONE withunchangedwholetracked+2new/statusguard. Two low findings accepted: alreadyfinished entrancecanreturnzeroanimations, andignoredSIGTERM couldhangcleanup. Both reproduced: realalreadysettledpackedconsumer caused5falseFAIL; actualownedNodechildignoringSIGTERM keptoldcleanup pending. Controllerfix preservesstrictgeometry/naturalactivecompletion andboundsSIGTERM/SIGKILL separatelyat2000ms. Realignore-signalchildnowforciblyexitsafter2012ms andcleanuprejects (notPASS). Informationalgeneralizationconcernaboutboxshadowbranchforhypotheticalothercontrols isoutofDialogscope anddeclined. Follow-upGLM16.18s nofindings,3DONE; formatting-only3.61s correctedmixedcaseverdictsyntax, verifier3/3PASS. Allguardsunchanged. Exactfinalcanonical19.40s repeats16PASS+2knownCSSFAIL; alreadysettleddiagnostic8.56s has5PASS+sameknownfocusFAIL. Sourcehashesbindthecurrenttwofiles. No productgatewaiver.

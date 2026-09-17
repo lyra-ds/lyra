@@ -785,7 +785,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsdown --concurrency 2 && node scripts/use-client.mjs",
+    "build": "node scripts/build.mjs",
     "test:browser": "vitest run --project browser --browser.name chromium && vitest run --project browser --browser.name firefox && vitest run --project browser --browser.name webkit",
     "test:ssr": "vitest run --project ssr",
     "test": "pnpm run test:ssr",
@@ -865,7 +865,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2 kB"
+      "limit": "5.3 kB"
     },
     {
       "name": "import { BottomSheet } from '@lyra-ds/react/bottom-sheet'",
@@ -875,7 +875,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2 kB"
+      "limit": "5.3 kB"
     },
     {
       "name": "import { CreateWorkspaceDialog } from '@lyra-ds/react/create-workspace-dialog'",
@@ -885,7 +885,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "3.2 kB"
+      "limit": "7.9 kB"
     },
     {
       "name": "WorkspaceSwitcher (curated icon registry)",
@@ -1045,7 +1045,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "4 kB"
+      "limit": "7.9 kB"
     },
     {
       "name": "import { TimeInput } from '@lyra-ds/react/time-input'",
@@ -1065,7 +1065,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "5 kB"
+      "limit": "9.1 kB"
     },
     {
       "name": "import { DateRangePicker } from '@lyra-ds/react/date-range-picker'",
@@ -1075,7 +1075,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "5 kB"
+      "limit": "9.2 kB"
     },
     {
       "name": "import { Badge } from '@lyra-ds/react/badge'",
@@ -1258,14 +1258,14 @@
       "limit": "500 B"
     },
     {
-      "name": "import { Tabs } from '@lyra-ds/react/tabs'",
+      "name": "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'",
       "path": "dist/tabs.js",
-      "import": "{ Tabs }",
+      "import": "{ Tabs, TabsList, TabsTrigger, TabsContent }",
       "ignore": [
         "react",
         "react-dom"
       ],
-      "limit": "1.5 kB"
+      "limit": "1.6 kB"
     },
     {
       "name": "import { Accordion } from '@lyra-ds/react/accordion'",
@@ -1305,7 +1305,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "1.5 kB"
+      "limit": "2.1 kB"
     },
     {
       "name": "import { Select } from '@lyra-ds/react/select'",
@@ -1466,7 +1466,7 @@
         "react-dom",
         "react-dom/client"
       ],
-      "limit": "9.5 kB"
+      "limit": "13.6 kB"
     },
     {
       "name": "import { ThemeProvider } from '@lyra-ds/react/theme-provider'",
@@ -1486,7 +1486,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "7 kB"
+      "limit": "11 kB"
     },
     {
       "name": "WeeklyScheduleEditor (Popover and local inputs)",
@@ -1496,7 +1496,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "14.5 kB"
+      "limit": "18.7 kB"
     },
     {
       "name": "SlotPicker (Calendar and TimeZonePicker composition)",

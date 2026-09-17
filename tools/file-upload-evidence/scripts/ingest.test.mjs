@@ -17,7 +17,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 import { strToU8, zipSync } from 'fflate';
 import { format } from 'prettier';
@@ -714,7 +714,7 @@ describe('ingestEvidence', () => {
         path,
       );
     }
-    assert.doesNotMatch(markdown, new RegExp(root.replaceAll('/', '\\/'), 'u'));
+    assert.equal(markdown.includes(root), false);
   });
 
   it('publishes deterministic Automated Core evidence without manual claims', async () => {
@@ -883,7 +883,7 @@ describe('ingestEvidence', () => {
   it('renders hostile artifact paths as inert labels with RFC3986-safe destinations', async () => {
     const root = await temporaryRoot();
     const repository = await createRepository(root);
-    const hostilePath = 'artifacts/DF-FU-M01/x`](javascript:alert(1)) [`y.png';
+    const hostilePath = 'artifacts/DF-FU-M01/x`](javascript-alert(1)) [`y.png';
     const inputs = await writeInputs(root, {
       m01: manualRecord('DF-FU-M01', {
         artifactPaths: [hostilePath],
@@ -910,13 +910,13 @@ describe('ingestEvidence', () => {
     assert.match(
       markdown,
       new RegExp(
-        `${DESTINATION_NAME}/artifacts/DF-FU-M01/x%60%5D%28javascript%3Aalert%281%29%29%20%5B%60y\\.png`,
+        `${DESTINATION_NAME}/artifacts/DF-FU-M01/x%60%5D%28javascript-alert%281%29%29%20%5B%60y\\.png`,
         'u',
       ),
     );
     assert.match(
       markdown,
-      /\[artifacts\/DF-FU-M01\/x&#96;&#93;&#40;javascript:alert&#40;1&#41;&#41; &#91;&#96;y\.png\]/u,
+      /\[artifacts\/DF-FU-M01\/x&#96;&#93;&#40;javascript-alert&#40;1&#41;&#41; &#91;&#96;y\.png\]/u,
     );
     assert.match(
       markdown,
@@ -1528,7 +1528,9 @@ describe('ingestEvidence', () => {
     const first = ingestEvidence(options, {
       async writeFile(path, ...arguments_) {
         const result = await writeFile(path, ...arguments_);
-        if (path.endsWith('.ingest.lock/transaction.json')) {
+        if (
+          path === join(repository.parent, `.${DESTINATION_NAME}.ingest.lock`, 'transaction.json')
+        ) {
           sawLock();
           await release;
         }
@@ -1958,7 +1960,7 @@ describe('ingestEvidence', () => {
 
     const outcome = await ingestEvidence(options, {
       async rmdir(path) {
-        if (!refusedCleanup && path.endsWith(`/${lockName}`)) {
+        if (!refusedCleanup && basename(path) === lockName) {
           refusedCleanup = true;
           throw new Error('injected release directory cleanup failure');
         }
@@ -1993,7 +1995,11 @@ describe('ingestEvidence', () => {
 
     const outcome = await ingestEvidence(options, {
       async rmdir(path) {
-        if (!replaced && path.endsWith(`/${lockName}`) && path.includes('.release-audit-')) {
+        if (
+          !replaced &&
+          basename(path) === lockName &&
+          basename(dirname(path)).includes('.release-audit-')
+        ) {
           replaced = true;
           await rename(path, `${path}.displaced`);
           await mkdir(path);

@@ -106,7 +106,7 @@ describe('lyraWorkspaceSwitcher', () => {
     expect(listbox.style.display).toBe('none');
   });
 
-  it('focuses the selected, first, or last option when the trigger opens from its keys', async () => {
+  it('focuses the served selected workspace when the trigger opens from Enter, Space, or an arrow', async () => {
     const host = mountWorkspaceSwitcher();
     const control = trigger(host);
 
@@ -125,10 +125,52 @@ describe('lyraWorkspaceSwitcher', () => {
     await flush();
     await userEvent.keyboard('{ArrowDown}');
     await flush();
+    expect(document.activeElement).toBe(options(host)[1]);
+
+    await userEvent.keyboard('{Escape}');
+    await flush();
+    await userEvent.keyboard('{ArrowUp}');
+    await flush();
+    expect(document.activeElement).toBe(options(host)[1]);
+  });
+
+  it('falls back to the first or last option on arrows when no option is served as selected', async () => {
+    const host = mountWorkspaceSwitcher();
+    const control = trigger(host);
+    for (const option of options(host)) option.setAttribute('aria-selected', 'false');
+
+    control.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
     expect(document.activeElement).toBe(options(host)[0]);
 
     await userEvent.keyboard('{Escape}');
     await flush();
+    await userEvent.keyboard('{ArrowDown}');
+    await flush();
+    expect(document.activeElement).toBe(options(host)[0]);
+
+    await userEvent.keyboard('{Escape}');
+    await flush();
+    await userEvent.keyboard('{ArrowUp}');
+    await flush();
+    expect(document.activeElement).toBe(options(host)[2]);
+  });
+
+  it('opens onto a newly served selection on the next arrow opening', async () => {
+    const host = mountWorkspaceSwitcher();
+    const control = trigger(host);
+
+    control.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await flush();
+    expect(document.activeElement).toBe(options(host)[1]);
+
+    await userEvent.keyboard('{Escape}');
+    await flush();
+    options(host)[1].setAttribute('aria-selected', 'false');
+    options(host)[2].setAttribute('aria-selected', 'true');
+
     await userEvent.keyboard('{ArrowUp}');
     await flush();
     expect(document.activeElement).toBe(options(host)[2]);

@@ -1,0 +1,2 @@
+.batuta/v1-dependency-disposition.md:10 · low: "lint/typecheck/build pass" for run 34270734805 is unverifiable from listed raw logs (log holds only the `test` job); keep the claim or attach those job logs.
+tools/docgen/output/llms.txt:472 · low: generated JSDoc drops the "still-eligible" qualifier for the captured opener ("If it is ineligible, the keyboard-captured opener is used"), which the docs pages state more precisely; mirrors committed runtime JSDoc, so generated output still matches declarations.

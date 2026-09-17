@@ -1,0 +1,3 @@
+# Workspace click cancellation
+
+Approved; commit19bf93a. Codex Terra/medium initial and one test-only retry, no escalation. Controller19/18/18, native60+keyboard42+command60, original-source RED/restored GREEN, static/build/docgen PASS. Source08172fe5d715d47c8cbc9af443a2080d9d7a88fb90df572788b68940c7c09850; artifact3a665ebcb757195ab6b843d8b793d9bb7ea1f1774df29fdc8bc6ca4f6121c0f4. GLM3/3 DONE unchanged guard, Batuta verifier PASS; narrative informational findings retained/adjudicated. Workspace8364/8250B +38B, same11Reactoverages pending. Retry unpinned formatter check audited; pinned controller proof only. No API/dependency/style or services/remote changes.

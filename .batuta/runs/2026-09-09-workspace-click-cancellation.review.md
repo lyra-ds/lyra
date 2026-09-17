@@ -1,0 +1,17 @@
+<<<FINDINGS
+Mechanism (workspace-switcher.tsx:200-216): single root synthetic onClick. Snapshot target→workspace/isCreate/isTrigger (:201-203), consumer callback invoked first (:204), defaultPrevented gate (:205), defaults after. HEAD per-control onClicks (trigger :226, option :252, create :276) removed — no effect can precede consumer. Document mousedown outside-close pre-existing, untouched.
+
+Cancellation: descendant-native preventDefault runs in target phase before React container delegation → :205 sees defaultPrevented → default blocked while consumer still receives event once (test :537-566 first click, `once:true` native handler). stopPropagation in prop callback is synthetic-only → outer React delivery blocked, :205 proceeds → Lyra default preserved (second click: onChange once, onOuterClick never). Real native (non-React) descendant stopPropagation would stop propagation before container and kill both outer delivery and Lyra default — standard DOM semantics, outside the tested root-callback contract.
+
+flushSync identity: workspace object resolved via live optionButtons() indexOf (:143) before consumer callback; reorder/replacement inside callback cannot alter emitted reference; close(true) operates on post-rerender tree. onChange exactly once; selection never creates (option checked before create; `[role=option]` never matches `.lyra-wssw__create`).
+
+Keyboard contracts: trigger Enter/Space keydown preventDefault (:123) suppresses native click → toggle once, no double-fire; root onKeyDown consumer-first intact (Task21). Option/create Enter/Space deliberately unintercepted → native click → root onClick → single onChange/onCreate (tests :220-241, :485-535 keyboard segments with cancelDefaults=true).
+
+Tests real: 3 new regressions assert currentTarget identity (`toBe(root)`), once-counts, exact callback args, DOM state, 7-event count; flushSync consumer uses actual Shift+Tab/Tab navigation and active-node checks; no skip/only, no sleeps, no artificial focus, no weakened keyboard/contrast/flip/roving suites.
+
+Scope: diff vs HEAD c8fd611 = exactly the 3 scoped product files (2 modified, changeset new; .batuta/WORK.md mutations are controller bookkeeping, non-product). API/types/classes/markup/exports unchanged; onClick was rest-spread at HEAD, now destructured and called first — same public type, no double dispatch.
+
+Notes: in-repo flushSync regression covers reorder only; replacement-with-new-objects rests on controller compiled artifact (60/60), accepted as supplied. Root-cancel test asserts target only as `not.toBe(root)` — weaker than exact-target assertions elsewhere. 8364/8250B are controller-measured artifact sizes (source raw 11331/25632B not comparable in review); budget overrun stays Task10 — performance gate NOT passed.
+FINDINGS>>>
+
+Controller adjudication: report confirms3/3criteria; no concrete blocking defect. Read-only guard unchanged. Native60proof covers replacement identity; additional duplicate source test declined. Exact event target receives native per-control target class and original event in native proof; the weaker source target-not-root assertion is supplementary. Reviewer prose accidentally associates native navigation with the flushSync test; actual tests separate these as intended. React stopPropagation also forwards to the native event; intended outer React callback is blocked, Lyra defaults remain. Size failure remainsTask10. Findings retained verbatim despite narrative formatting.

@@ -7,6 +7,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -20,10 +21,13 @@ import {
   brotliBytes,
   checkBaselineArtifacts,
   compareBaseline,
+  fixtureSourceSha256,
   createComparison,
+  environment,
   installPackedArtifacts,
   measureScenario,
   normalizeModulePath,
+  resolvePnpmInvocation,
   renderComparisonMarkdown,
   resolveBaselineReference,
   runBundleBaselineCli,
@@ -32,11 +36,102 @@ import {
   writeBaselineArtifacts,
   writeComparisonArtifacts,
 } from './measure.mjs';
+import {
+  APPROVED_ABSOLUTE_CAPS,
+  APPROVED_FIXTURE_SOURCE_SHA256,
+  checkBundleBudgets,
+} from './budgets.mjs';
 
 const toolDirectory = dirname(fileURLToPath(import.meta.url));
 
+test('pnpm invocation executes a native program without parsing its binary as JavaScript', () => {
+  const invocation = resolvePnpmInvocation(['--version'], { npmExecPath: process.execPath });
+  const result = spawnSync(invocation.command, invocation.args, { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), process.version);
+});
+
+test('environment preserves historical fixture fields outside the budget command', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'lyra-budget-environment-'));
+  try {
+    for (const [name, version] of [
+      ['vite', '8.2.1'],
+      ['size-limit', '12.1.0'],
+    ]) {
+      const destination = join(directory, 'node_modules', name);
+      mkdirSync(destination, { recursive: true });
+      writeFileSync(join(destination, 'package.json'), JSON.stringify({ name, version }));
+    }
+    const fixture = {
+      directory,
+      artifactInstallation: 'offline tar extraction after frozen external install',
+      packageManager: 'pnpm@11.13.1',
+      lockfileSha256: 'a'.repeat(64),
+      resolvedGraph: [],
+      resolvedGraphSha256: 'b'.repeat(64),
+      sourceSha256: APPROVED_FIXTURE_SOURCE_SHA256,
+      artifacts: {},
+    };
+    const historicalFields = [
+      'artifactInstallation',
+      'packageManager',
+      'lockfileSha256',
+      'resolvedGraph',
+      'resolvedGraphSha256',
+    ];
+    for (const command of ['pnpm evidence:file-upload', 'pnpm baseline:bundles --write']) {
+      assert.deepEqual(Object.keys(environment(fixture, command).fixture), historicalFields);
+    }
+    assert.equal(
+      environment(fixture, 'pnpm baseline:bundles --check-budgets').fixture.sourceSha256,
+      fixture.sourceSha256,
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('brotliBytes is deterministic and uses text input', () => {
   assert.equal(brotliBytes('export const value = 1;'), brotliBytes('export const value = 1;'));
+});
+
+test('fixture source fingerprint uses portable protocol paths and LF text', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-fixture-fingerprint-'));
+  try {
+    const lf = join(fixture, 'lf.ts');
+    const crlf = join(fixture, 'crlf.ts');
+    writeFileSync(lf, 'export const fixture = true;\n');
+    writeFileSync(crlf, 'export const fixture = true;\r\n');
+
+    assert.equal(
+      fixtureSourceSha256({
+        files: [lf],
+        relativePath: () => 'tools/bundle-baseline/scenarios/form.ts',
+      }),
+      fixtureSourceSha256({
+        files: [crlf],
+        relativePath: () => 'tools\\bundle-baseline\\scenarios\\form.ts',
+      }),
+    );
+    assert.equal(fixtureSourceSha256(), APPROVED_FIXTURE_SOURCE_SHA256);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('pnpm uses its current JavaScript entry without a shell when available', () => {
+  assert.deepEqual(
+    resolvePnpmInvocation(['pack'], {
+      npmExecPath: '/tooling/pnpm.cjs',
+      nodeExecutable: '/node/bin/node',
+      platformName: 'win32',
+    }),
+    { command: '/node/bin/node', args: ['/tooling/pnpm.cjs', 'pack'] },
+  );
+  assert.deepEqual(
+    resolvePnpmInvocation(['--version'], { npmExecPath: '', platformName: 'win32' }),
+    { command: 'pnpm.cmd', args: ['--version'] },
+  );
 });
 
 test('summarizeAssets keeps JavaScript and CSS separate', () => {
@@ -71,6 +166,90 @@ test('normalizeModulePath only replaces complete path prefixes', () => {
     normalizeModulePath('/workspace/packages/react/src/index.ts', '/tmp/consumer', '/workspace'),
     '<repository>/packages/react/src/index.ts',
   );
+});
+
+test('normalizeModulePath uses protocol separators for Windows root-relative IDs', () => {
+  assert.equal(
+    normalizeModulePath(
+      'C:\\consumer\\node_modules\\@lyra-ds\\react\\dist\\workspace-switcher.js',
+      'C:\\consumer',
+      'C:\\repository',
+    ),
+    '<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js',
+  );
+  assert.equal(
+    normalizeModulePath('C:\\consumer-sibling\\index.js', 'C:\\consumer', 'C:\\repository'),
+    'C:\\consumer-sibling\\index.js',
+  );
+});
+
+test('normalizeModulePath resolves symlinked fixture and repository roots without rewriting outside IDs', () => {
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'lyra-normalize-module-path-'));
+  try {
+    const repositoryRoot = join(temporaryRoot, 'repository');
+    const fixtureRoot = join(repositoryRoot, 'consumer');
+    const repositoryAlias = join(temporaryRoot, 'repository-alias');
+    const fixtureAlias = join(repositoryAlias, 'consumer');
+    const directFixtureAlias = join(temporaryRoot, 'fixture-alias');
+    const nestedModule = join(
+      fixtureRoot,
+      'node_modules',
+      '@lyra-ds',
+      'react',
+      'dist',
+      'workspace-switcher.js',
+    );
+    const standaloneModule = join(fixtureRoot, 'standalone', 'react-02.ts');
+    const repositoryModule = join(repositoryRoot, 'packages', 'react', 'src', 'index.ts');
+    const similarlyPrefixedSibling = join(temporaryRoot, 'repository-sibling', 'index.ts');
+
+    for (const modulePath of [
+      nestedModule,
+      standaloneModule,
+      repositoryModule,
+      similarlyPrefixedSibling,
+    ]) {
+      mkdirSync(dirname(modulePath), { recursive: true });
+      writeFileSync(modulePath, 'export {};\n');
+    }
+    symlinkSync(repositoryRoot, repositoryAlias, 'dir');
+    symlinkSync(fixtureRoot, directFixtureAlias, 'dir');
+
+    assert.equal(
+      normalizeModulePath(nestedModule, fixtureAlias, repositoryAlias),
+      '<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js',
+    );
+    assert.equal(
+      normalizeModulePath(
+        join(fixtureAlias, 'standalone', 'react-02.ts'),
+        fixtureRoot,
+        repositoryRoot,
+      ),
+      '<fixture>/standalone/react-02.ts',
+    );
+    assert.equal(
+      normalizeModulePath(standaloneModule, directFixtureAlias, repositoryRoot),
+      '<fixture>/standalone/react-02.ts',
+    );
+    assert.equal(
+      normalizeModulePath(repositoryModule, fixtureAlias, repositoryAlias),
+      '<repository>/packages/react/src/index.ts',
+    );
+    assert.equal(
+      normalizeModulePath(similarlyPrefixedSibling, fixtureAlias, repositoryAlias),
+      similarlyPrefixedSibling,
+    );
+    assert.equal(
+      normalizeModulePath('virtual:lyra-module', fixtureAlias, repositoryAlias),
+      'virtual:lyra-module',
+    );
+    assert.equal(
+      normalizeModulePath(`${nestedModule}?used`, fixtureAlias, repositoryAlias),
+      `${nestedModule}?used`,
+    );
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true });
+  }
 });
 
 function baselineFixture() {
@@ -116,6 +295,201 @@ function baselineFixture() {
     css: {},
   };
 }
+
+function budgetReferenceFixture() {
+  return JSON.parse(
+    readFileSync(
+      join(
+        toolDirectory,
+        '..',
+        '..',
+        'docs',
+        'superpowers',
+        'baselines',
+        'lyra-v1',
+        'comparisons',
+        'file-upload',
+        '0003123e22ec57d21946b3f6f383fd2da7d1bd0a.json',
+      ),
+      'utf8',
+    ),
+  ).after;
+}
+
+function approvedBudgetCandidate() {
+  const candidate = structuredClone(budgetReferenceFixture());
+  candidate.environment.operatingSystem = 'darwin 25.0.0';
+  candidate.environment.architecture = 'arm64';
+  candidate.environment.lockfileSha256 =
+    '33e367f83f485e9235c99698fa43acb75f41c7b1ff715411c64d09c42754db4a';
+  candidate.environment.exactCommand = 'pnpm baseline:bundles --check-budgets';
+  candidate.environment.fixture.sourceSha256 = APPROVED_FIXTURE_SOURCE_SHA256;
+  candidate.environment.packages = {
+    '@lyra-ds/react': {
+      version: '0.5.0',
+      tarball: 'lyra-ds-react-0.5.0.tgz',
+      sha256: '658d9faf2987c5401baf2e665b92ad9b12d7b2f507d6385035006cd06c18a5da',
+    },
+    '@lyra-ds/styles': {
+      version: '0.5.0',
+      tarball: 'lyra-ds-styles-0.5.0.tgz',
+      sha256: '74fd16fc24d58345b4fccdf30681b37218079dea0646f09c765727aa570489f3',
+    },
+    '@lyra-ds/alpine': {
+      version: '0.6.0',
+      tarball: 'lyra-ds-alpine-0.6.0.tgz',
+      sha256: 'de296884efffe7bcad7f74af9a93595a74ce763edb8bb8e21587559cac09e8aa',
+    },
+  };
+  const standaloneExceptions = {
+    '@lyra-ds/react/drawer': 4004,
+    '@lyra-ds/react/bottom-sheet': 3966,
+    '@lyra-ds/react/create-workspace-dialog': 5008,
+    '@lyra-ds/react/time-picker': 4173,
+    '@lyra-ds/react/date-picker': 4200,
+    '@lyra-ds/react/date-range-picker': 4193,
+    '@lyra-ds/react/command-palette': 4251,
+    '@lyra-ds/react/recurrence-selector': 4202,
+    '@lyra-ds/react/weekly-schedule-editor': 4165,
+  };
+  for (const entries of Object.values(candidate.standalone)) {
+    for (const entry of entries) {
+      const cap = APPROVED_ABSOLUTE_CAPS[entry.publicEntry];
+      if (cap) {
+        entry.configuredLimit = cap.configuredLimit;
+        entry.sizeLimit.sizeLimit = cap.bytes;
+        entry.sizeLimit.size = Math.min(entry.sizeLimit.size, cap.bytes);
+      }
+      if (standaloneExceptions[entry.publicEntry] !== undefined) {
+        const reference = budgetReferenceFixture().standalone.react.find(
+          (item) => item.publicEntry === entry.publicEntry,
+        );
+        entry.assets.javascript.brotliBytes =
+          reference.assets.javascript.brotliBytes + standaloneExceptions[entry.publicEntry];
+      }
+    }
+  }
+  const tabs = candidate.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/tabs',
+  );
+  tabs.name = "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'";
+  tabs.sizeLimit.name = tabs.name;
+  tabs.sizeLimit.size = 1452;
+  tabs.assets.javascript.brotliBytes = 1780;
+  candidate.standalone.alpine[0].assets.javascript.brotliBytes = 25730;
+  for (const [name, increase] of Object.entries({
+    overlays: 6118,
+    'application-shell': 4310,
+    scheduling: 4490,
+  })) {
+    candidate.scenarios[name].assets.javascript.brotliBytes += increase;
+  }
+  return candidate;
+}
+
+test('native budget check accepts the approved historical migration on a different architecture', () => {
+  const result = checkBundleBudgets(budgetReferenceFixture(), approvedBudgetCandidate());
+
+  assert.equal(result.result, 'pass');
+  assert.equal(result.environment.architecture, 'arm64');
+  assert.equal(result.artifacts['@lyra-ds/react'].version, '0.5.0');
+  assert.equal(
+    result.entries.react.find((entry) => entry.publicEntry === '@lyra-ds/react/drawer').migration
+      .approvedException,
+    4004,
+  );
+  assert.equal(result.entries.css.length, 4);
+});
+
+test('native budget check rejects migration and absolute-cap breaches without trusting Size Limit passed', () => {
+  const candidate = approvedBudgetCandidate();
+  const drawer = candidate.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/drawer',
+  );
+  drawer.assets.javascript.brotliBytes += 1;
+  drawer.sizeLimit.passed = true;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate),
+    /drawer Brotli increase exceeds approved exception/,
+  );
+
+  const overCap = approvedBudgetCandidate();
+  overCap.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/tooltip',
+  ).sizeLimit.size = 2101;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), overCap),
+    /tooltip exceeds absolute cap/,
+  );
+});
+
+test('native budget check rejects malformed, duplicate, and missing measurements', () => {
+  for (const [label, mutate, message] of [
+    [
+      'negative metric',
+      (candidate) => (candidate.standalone.react[0].assets.javascript.brotliBytes = -1),
+      /finite nonnegative integer/,
+    ],
+    ['missing candidate revision', (candidate) => delete candidate.revision, /candidate revision/],
+    ['invalid schema version', (candidate) => (candidate.schemaVersion = 999), /schema version/],
+    [
+      'missing module list',
+      (candidate) => delete candidate.standalone.react[0].modules,
+      /modules must be an array/,
+    ],
+    [
+      'negative module contribution',
+      (candidate) => (candidate.standalone.react[0].modules[0].renderedBytes = -1),
+      /renderedBytes must be a finite nonnegative integer/,
+    ],
+    [
+      'missing emitted file list',
+      (candidate) => delete candidate.standalone.react[0].assets.javascript.files,
+      /files must be an array/,
+    ],
+  ]) {
+    const invalid = approvedBudgetCandidate();
+    mutate(invalid);
+    assert.throws(() => checkBundleBudgets(budgetReferenceFixture(), invalid), message, label);
+  }
+
+  const duplicate = approvedBudgetCandidate();
+  duplicate.standalone.react.push(structuredClone(duplicate.standalone.react[0]));
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), duplicate),
+    /duplicate candidate React standalone/,
+  );
+
+  const missing = approvedBudgetCandidate();
+  delete missing.scenarios.form;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), missing),
+    /scenario measurements differ/,
+  );
+});
+
+test('native budget check rejects unapproved import, protocol, and configured-cap changes', () => {
+  const importChanged = approvedBudgetCandidate();
+  importChanged.standalone.react.find((entry) => entry.publicEntry === '@lyra-ds/react/tabs').name =
+    "import { Tabs } from '@lyra-ds/react/tabs'";
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), importChanged),
+    /unapproved import/,
+  );
+
+  const protocolChanged = approvedBudgetCandidate();
+  protocolChanged.externals = ['react'];
+  assert.throws(() => checkBundleBudgets(budgetReferenceFixture(), protocolChanged), /externals/);
+
+  const capChanged = approvedBudgetCandidate();
+  capChanged.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/drawer',
+  ).sizeLimit.sizeLimit = 5301;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), capChanged),
+    /unapproved Size Limit cap/,
+  );
+});
 
 function fileUploadBaselineFixture({
   revision = 'before-revision',
@@ -530,6 +904,24 @@ test('compareBaseline ignores operating-system release evidence alone', () => {
   assert.doesNotThrow(() => compareBaseline(expected, actual));
 });
 
+test('compareBaseline retains the historical packed-artifact metadata order', () => {
+  const expected = budgetReferenceFixture();
+  const actual = structuredClone(expected);
+  actual.environment.packages = Object.fromEntries(
+    Object.entries(expected.environment.packages).map(([name, artifact]) => [
+      name,
+      { version: artifact.version, tarball: artifact.tarball, sha256: artifact.sha256 },
+    ]),
+  );
+
+  assert.deepEqual(Object.keys(actual.environment.packages['@lyra-ds/react']), [
+    'version',
+    'tarball',
+    'sha256',
+  ]);
+  assert.doesNotThrow(() => compareBaseline(expected, actual));
+});
+
 test('compareBaseline rejects reproducibility-critical tool and checksum drift', () => {
   for (const [field, mutate] of [
     ['Vite version', (baseline) => (baseline.environment.vite = '8.2.2')],
@@ -824,6 +1216,46 @@ test('bundle CLI --check compares one collection without modifying artifacts', a
   }
 });
 
+test('bundle CLI --check-budgets returns the native budget result without writing evidence', async () => {
+  const baselineRoot = join(
+    toolDirectory,
+    '..',
+    '..',
+    'docs',
+    'superpowers',
+    'baselines',
+    'lyra-v1',
+  );
+  const paths = {
+    baselineJson: join(baselineRoot, 'bundles.json'),
+    baselineMarkdown: join(baselineRoot, 'bundles.md'),
+    currentJson: join(baselineRoot, 'current.json'),
+    comparisonDirectory: join(baselineRoot, 'comparisons'),
+  };
+  const originalPointer = readFileSync(paths.currentJson, 'utf8');
+  const originalBaseline = readFileSync(paths.baselineJson, 'utf8');
+
+  const report = await runBundleBaselineCli(['--check-budgets'], {
+    paths,
+    collect: async ({ exactCommand }) => {
+      const candidate = approvedBudgetCandidate();
+      assert.equal(exactCommand, 'pnpm baseline:bundles --check-budgets');
+      return candidate;
+    },
+  });
+
+  assert.equal(report.kind, 'bundle-budget');
+  assert.equal(report.result, 'pass');
+  assert.equal(report.candidateRevision, approvedBudgetCandidate().revision);
+  assert.equal(report.environment.fixture.sourceSha256, APPROVED_FIXTURE_SOURCE_SHA256);
+  assert.deepEqual(report.environment.brotli, { mode: 'text', quality: 11 });
+  assert.equal(report.externals[0], 'react');
+  assert.equal(report.entries.react.length + report.entries.alpine.length, 72);
+  assert.ok(Array.isArray(report.entries.react[0].modules.after));
+  assert.equal(readFileSync(paths.currentJson, 'utf8'), originalPointer);
+  assert.equal(readFileSync(paths.baselineJson, 'utf8'), originalBaseline);
+});
+
 test('measureScenario builds a CSS library entry', async () => {
   const fixture = mkdtempSync(join(tmpdir(), 'lyra-bundle-test-'));
   try {
@@ -888,14 +1320,27 @@ test('changed Lyra tarballs install independently of the external lock', () => {
       `${JSON.stringify({ name: '@lyra-ds/react', version: '9.9.9', exports: './index.js' })}\n`,
     );
     writeFileSync(join(packageDirectory, 'index.js'), "export const artifactMarker = 'changed';\n");
-    const packed = spawnSync('npm', ['pack', '--pack-destination', packDirectory], {
-      cwd: packageDirectory,
-      encoding: 'utf8',
-    });
+    const packed = spawnSync(
+      process.platform === 'win32' ? 'npm.cmd' : 'npm',
+      [
+        'pack',
+        process.platform === 'win32'
+          ? `--pack-destination="${packDirectory}"`
+          : '--pack-destination',
+        ...(process.platform === 'win32' ? [] : [packDirectory]),
+      ],
+      {
+        cwd: packageDirectory,
+        encoding: 'utf8',
+        env: { ...process.env, npm_config_cache: join(fixture, 'npm-cache') },
+        shell: process.platform === 'win32',
+      },
+    );
     assert.equal(packed.status, 0, packed.stderr);
     const tarball = join(packDirectory, readdirSync(packDirectory)[0]);
 
-    installPackedArtifacts(fixture, { react: tarball });
+    const artifacts = installPackedArtifacts(fixture, { react: tarball });
+    assert.deepEqual(Object.keys(artifacts['@lyra-ds/react']), ['version', 'tarball', 'sha256']);
 
     const installed = join(fixture, 'node_modules', '@lyra-ds', 'react');
     assert.equal(
@@ -903,6 +1348,11 @@ test('changed Lyra tarballs install independently of the external lock', () => {
       '9.9.9',
     );
     assert.match(readFileSync(join(installed, 'index.js'), 'utf8'), /artifactMarker = 'changed'/);
+    writeFileSync(tarball, `${readFileSync(tarball)}mutated`);
+    assert.throws(
+      () => installPackedArtifacts(fixture, { react: tarball }, { expectedArtifacts: artifacts }),
+      /tarball identity does not match the archive selected for measurement/,
+    );
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

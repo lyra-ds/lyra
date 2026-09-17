@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
-import { useState } from 'react';
+import { act as reactAct, useRef, useState } from 'react';
 import '@lyra-ds/styles/styles.css';
 import { CommandPalette, type CommandGroup } from './index';
 
@@ -27,6 +27,12 @@ const groups: CommandGroup[] = [
 function setTheme(theme: (typeof themes)[number]): void {
   if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
   else document.documentElement.removeAttribute('data-theme');
+}
+
+function backdropDismiss(overlay: HTMLElement): void {
+  overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+  overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 }
 
 type VitestBrowserRunner = { iframeId: string; sessionId: string };
@@ -87,12 +93,98 @@ function HotkeyHarness({ onOpen, onClose }: { onOpen: () => void; onClose: () =>
   );
 }
 
+function ExplicitReturnFocusHarness() {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  return (
+    <>
+      <button ref={triggerRef} type="button" onClick={() => setOpen(true)}>
+        Open without focus preparation
+      </button>
+      <CommandPalette
+        open={open}
+        onOpen={() => setOpen(true)}
+        onClose={() => setOpen(false)}
+        returnFocusTo={() => triggerRef.current}
+        groups={groups}
+      />
+    </>
+  );
+}
+
 afterEach(async () => {
   await cleanup();
   setTheme('light');
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
   await setViewport(1200, 800);
+});
+
+describe('CommandPalette — declared initial focus', () => {
+  it('resolves its declared modal destination once in the owned entry frame', async () => {
+    const resolver = vi.fn(() => document.querySelector<HTMLInputElement>('.lyra-cmdk input'));
+
+    await render(<CommandPalette open initialFocusTo={resolver} groups={groups} />);
+
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
+    );
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('.lyra-cmdk')!.getAttribute('initialFocusTo')).toBeNull();
+  });
+
+  it('never resolves initialFocusTo in inline mode', async () => {
+    const resolver = vi.fn(() => null);
+
+    await render(<CommandPalette inline initialFocusTo={resolver} groups={groups} />);
+
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
+    );
+    expect(resolver).not.toHaveBeenCalled();
+  });
+
+  it('focuses the programmatic panel fallback for an invalid declaration and closes it once on Escape', async () => {
+    const onClose = vi.fn();
+    const onParentKeyDown = vi.fn();
+
+    await render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <CommandPalette
+          open
+          initialFocusTo={() => document.body}
+          onClose={onClose}
+          groups={groups}
+        />
+      </div>,
+    );
+
+    const panel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+    await vi.waitFor(() => expect(document.activeElement).toBe(panel));
+    expect(panel.tabIndex).toBe(-1);
+
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
+
+  it('contains an input Escape after the combobox has already handled its close request', async () => {
+    const onClose = vi.fn();
+    const onParentKeyDown = vi.fn();
+
+    await render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <CommandPalette open onClose={onClose} groups={groups} />
+      </div>,
+    );
+
+    const input = document.querySelector<HTMLInputElement>('.lyra-cmdk input')!;
+    await vi.waitFor(() => expect(document.activeElement).toBe(input));
+    await userEvent.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
 });
 
 describe('CommandPalette', () => {
@@ -233,7 +325,9 @@ describe('CommandPalette', () => {
   it('portals, traps focus, locks scroll, and restores its opener after Escape and backdrop close', async () => {
     const { container } = await render(<OverlayHarness />);
     const opener = container.querySelector<HTMLButtonElement>('button')!;
-    await userEvent.click(opener);
+    opener.focus();
+    expect(document.activeElement).toBe(opener);
+    await userEvent.keyboard('{Enter}');
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
     expect(document.body.style.overflow).toBe('hidden');
     const input = document.querySelector<HTMLInputElement>('[role=combobox]')!;
@@ -246,12 +340,317 @@ describe('CommandPalette', () => {
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
     expect(document.activeElement).toBe(opener);
 
-    await userEvent.click(opener);
+    await userEvent.keyboard('{Enter}');
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk-overlay')).not.toBeNull());
     const overlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
-    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    backdropDismiss(overlay);
     await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
     expect(document.activeElement).toBe(opener);
+  });
+
+  it.each(['escape', 'backdrop', 'selection', 'hotkey'] as const)(
+    'returns explicit mouse focus to its declared target after %s dismissal',
+    async (dismissal) => {
+      const { container } = await render(<ExplicitReturnFocusHarness />);
+      const trigger = container.querySelector<HTMLButtonElement>('button')!;
+      await userEvent.click(trigger);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(document.querySelector('[role=combobox]')),
+      );
+      expect(document.querySelector('.lyra-cmdk')!.getAttribute('returnFocusTo')).toBeNull();
+
+      if (dismissal === 'escape') {
+        await userEvent.keyboard('{Escape}');
+      } else if (dismissal === 'backdrop') {
+        backdropDismiss(document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!);
+      } else if (dismissal === 'selection') {
+        await userEvent.click(document.querySelector<HTMLButtonElement>('[role=option]')!);
+      } else {
+        document.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            ctrlKey: true,
+            key: 'k',
+          }),
+        );
+      }
+
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
+      expect(document.activeElement).toBe(trigger);
+    },
+  );
+
+  it('does not resolve returnFocusTo when a parent ignores a close request', async () => {
+    const resolver = vi.fn(() => document.createElement('button'));
+    function IgnoredCloseHarness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open ignored close
+          </button>
+          <CommandPalette open={open} onClose={() => {}} returnFocusTo={resolver} groups={groups} />
+        </>
+      );
+    }
+
+    await render(<IgnoredCloseHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(document.querySelector('[role=combobox]')),
+    );
+    await userEvent.keyboard('{Escape}');
+    expect(resolver).not.toHaveBeenCalled();
+    expect(document.querySelector('.lyra-cmdk')!.contains(document.activeElement)).toBe(true);
+  });
+
+  it('uses a successor after the trigger is removed by the accepted closing commit', async () => {
+    function RemovedTriggerHarness() {
+      const [open, setOpen] = useState(false);
+      const [showTrigger, setShowTrigger] = useState(true);
+      const successorRef = useRef<HTMLHeadingElement>(null);
+      return (
+        <>
+          {showTrigger && (
+            <button type="button" onClick={() => setOpen(true)}>
+              Remove me on close
+            </button>
+          )}
+          <h2 ref={successorRef} tabIndex={-1}>
+            Workflow successor
+          </h2>
+          <CommandPalette
+            open={open}
+            onClose={() => {
+              setShowTrigger(false);
+              setOpen(false);
+            }}
+            returnFocusTo={() => successorRef.current}
+            groups={groups}
+          />
+        </>
+      );
+    }
+
+    await render(<RemovedTriggerHarness />);
+    await userEvent.click(document.querySelector<HTMLButtonElement>('button')!);
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(document.querySelector('[role=combobox]')),
+    );
+    await userEvent.keyboard('{Escape}');
+    const successor = document.querySelector<HTMLHeadingElement>('h2')!;
+    await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
+    expect(document.activeElement).toBe(successor);
+  });
+
+  it('uses the latest resolver and fresh captured opener once per accepted close during a rapid reopen', async () => {
+    const exitStyle = document.createElement('style');
+    exitStyle.textContent = `
+      .lyra-cmdk--closing {
+        animation-play-state: paused !important;
+      }
+      .lyra-cmdk--closing.lyra-test-cmdk-exit-running {
+        animation-play-state: running !important;
+      }
+    `;
+
+    const staleResolver = vi.fn(() => null);
+    const latestResolver = vi.fn(() => null);
+    const freshResolver = vi.fn(() => null);
+    function ControlledRapidReopen({
+      open,
+      returnFocusTo,
+    }: {
+      open: boolean;
+      returnFocusTo: () => null;
+    }) {
+      return (
+        <>
+          <button type="button">First keyboard opener</button>
+          <button type="button">Second keyboard opener</button>
+          <CommandPalette open={open} returnFocusTo={returnFocusTo} groups={groups} />
+        </>
+      );
+    }
+
+    async function act(callback: () => void | Promise<void>): Promise<void> {
+      const previous = Reflect.get(globalThis, 'IS_REACT_ACT_ENVIRONMENT');
+      Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true);
+      try {
+        await reactAct(callback);
+      } finally {
+        Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', previous);
+      }
+    }
+
+    try {
+      document.head.appendChild(exitStyle);
+      const { rerender } = await render(
+        <ControlledRapidReopen open={false} returnFocusTo={staleResolver} />,
+      );
+      const firstTrigger = document.querySelectorAll<HTMLButtonElement>('button')[0]!;
+      const secondTrigger = document.querySelectorAll<HTMLButtonElement>('button')[1]!;
+      firstTrigger.focus();
+      await rerender(<ControlledRapidReopen open returnFocusTo={staleResolver} />);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+      const firstPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+      await vi.waitFor(() => expect(firstPanel.contains(document.activeElement)).toBe(true));
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      await rerender(<ControlledRapidReopen open returnFocusTo={latestResolver} />);
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      await rerender(<ControlledRapidReopen open={false} returnFocusTo={latestResolver} />);
+      expect(firstPanel.classList.contains('lyra-cmdk--closing')).toBe(true);
+      expect(getComputedStyle(firstPanel).animationPlayState).toBe('paused');
+      expect(latestResolver).toHaveBeenCalledTimes(1);
+      expect(staleResolver).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(firstTrigger);
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      await rerender(<ControlledRapidReopen open={false} returnFocusTo={latestResolver} />);
+      expect(latestResolver).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(249);
+      });
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      secondTrigger.focus();
+      await rerender(<ControlledRapidReopen open returnFocusTo={freshResolver} />);
+      expect(firstPanel.classList.contains('lyra-cmdk--closing')).toBe(false);
+      await act(async () => {
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      });
+      expect(firstPanel.contains(document.activeElement)).toBe(true);
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(firstPanel.isConnected).toBe(true);
+      expect(document.querySelector('.lyra-cmdk')).toBe(firstPanel);
+
+      await rerender(<ControlledRapidReopen open={false} returnFocusTo={freshResolver} />);
+      expect(freshResolver).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).toBe(secondTrigger);
+
+      const exitFinished = new Promise<void>((resolve) => {
+        firstPanel.addEventListener(
+          'animationend',
+          (event) => {
+            expect(event).toBeInstanceOf(AnimationEvent);
+            expect(event.target).toBe(firstPanel);
+            expect(event.currentTarget).toBe(firstPanel);
+            expect((event as AnimationEvent).animationName).toBe('lyra-overlay-out');
+            resolve();
+          },
+          { once: true },
+        );
+      });
+      await act(async () => {
+        firstPanel.classList.add('lyra-test-cmdk-exit-running');
+        await exitFinished;
+      });
+      expect(firstPanel.isConnected).toBe(false);
+    } finally {
+      exitStyle.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it.each(['panel', 'overlay'] as const)(
+    'falls back to the prepared opener when returnFocusTo targets the closing %s',
+    async (invalidTarget) => {
+      function InvalidTargetHarness() {
+        const [open, setOpen] = useState(false);
+        const panelRef = useRef<HTMLDivElement>(null);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Prepared opener
+            </button>
+            <CommandPalette
+              ref={panelRef}
+              open={open}
+              onClose={() => setOpen(false)}
+              returnFocusTo={() =>
+                invalidTarget === 'panel'
+                  ? panelRef.current
+                  : document.querySelector<HTMLElement>('.lyra-cmdk-overlay')
+              }
+              groups={groups}
+            />
+          </>
+        );
+      }
+
+      const { container } = await render(<InvalidTargetHarness />);
+      const opener = container.querySelector<HTMLButtonElement>('button')!;
+      opener.focus();
+      await userEvent.keyboard('{Enter}');
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).not.toBeNull());
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(document.querySelector('[role=combobox]')),
+      );
+      await userEvent.keyboard('{Escape}');
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk')).toBeNull());
+      expect(document.activeElement).toBe(opener);
+    },
+  );
+
+  it('ignores returnFocusTo across inline open toggles without disturbing input focus', async () => {
+    const resolver = vi.fn(() => document.createElement('button'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { container, rerender } = await render(
+        <CommandPalette inline open={false} returnFocusTo={resolver} groups={groups} />,
+      );
+      const input = container.querySelector<HTMLInputElement>('[role=combobox]')!;
+      await vi.waitFor(() => expect(document.activeElement).toBe(input));
+
+      await rerender(<CommandPalette inline open returnFocusTo={resolver} groups={groups} />);
+      await rerender(
+        <CommandPalette inline open={false} returnFocusTo={resolver} groups={groups} />,
+      );
+
+      expect(resolver).not.toHaveBeenCalled();
+      expect(warn).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(input);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('dismisses only a complete backdrop gesture, not cross-boundary gestures', async () => {
+    const onClose = vi.fn();
+    await render(<CommandPalette open onClose={onClose} groups={groups} />);
+    const overlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
+    const panel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+    const input = document.querySelector<HTMLInputElement>('[role=combobox]')!;
+
+    await userEvent.fill(input, 'settings');
+    panel.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(input.value).toBe('settings');
+
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    panel.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(input.value).toBe('settings');
+
+    backdropDismiss(overlay);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('stays mounted with closing motion until its panel animation ends', async () => {
@@ -338,5 +737,116 @@ describe('CommandPalette', () => {
     expect(container.querySelector('[role=combobox]')!.getAttribute('aria-label')).toBe(
       'Pesquisar comandos',
     );
+  });
+});
+
+describe('CommandPalette — logical close activity', () => {
+  it('inerts its retained modal scope, revokes a prior gesture, and leaves inline behavior alone', async () => {
+    const exitStyle = document.createElement('style');
+    exitStyle.textContent = `
+      .lyra-cmdk--closing {
+        animation-play-state: paused !important;
+      }
+    `;
+    const onClose = vi.fn();
+    const onSelect = vi.fn();
+    const initialFocusTo = vi.fn(() => null);
+    const returnFocusTo = vi.fn(() => null);
+    function LogicalCloseHarness() {
+      const [open, setOpen] = useState(false);
+      const triggerRef = useRef<HTMLButtonElement>(null);
+      return (
+        <div data-testid="consumer-host">
+          <button ref={triggerRef} type="button" onClick={() => setOpen(true)}>
+            Open logical palette
+          </button>
+          <button type="button">Outside</button>
+          <CommandPalette
+            open={open}
+            onClose={() => {
+              onClose();
+              setOpen(false);
+            }}
+            onSelect={onSelect}
+            groups={groups}
+            returnFocusTo={() => triggerRef.current}
+          />
+        </div>
+      );
+    }
+
+    try {
+      document.head.appendChild(exitStyle);
+      const { container, rerender } = await render(<LogicalCloseHarness />);
+      const trigger = container.querySelector<HTMLButtonElement>('button')!;
+      const outside = container.querySelectorAll<HTMLButtonElement>('button')[1]!;
+      await userEvent.click(trigger);
+      await vi.waitFor(() => expect(document.querySelector('.lyra-cmdk-overlay')).not.toBeNull());
+      const retainedOverlay = document.querySelector<HTMLElement>('.lyra-cmdk-overlay')!;
+      const retainedPanel = document.querySelector<HTMLElement>('.lyra-cmdk')!;
+      await vi.waitFor(() =>
+        expect(retainedOverlay.querySelectorAll('[data-lyra-focus-trap-boundary]')).toHaveLength(2),
+      );
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(document.querySelector('.lyra-cmdk input')),
+      );
+      const retainedGuards = Array.from(
+        retainedOverlay.querySelectorAll<HTMLElement>('[data-lyra-focus-trap-boundary]'),
+      );
+      expect(retainedGuards).toHaveLength(2);
+      expect(retainedGuards.every((guard) => retainedOverlay.contains(guard))).toBe(true);
+      retainedOverlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      await userEvent.keyboard('{Escape}');
+      await vi.waitFor(() => expect(retainedOverlay.hasAttribute('inert')).toBe(true));
+      expect(getComputedStyle(retainedPanel).animationPlayState).toBe('paused');
+      expect(retainedOverlay.hasAttribute('inert')).toBe(true);
+      expect(retainedOverlay.isConnected).toBe(true);
+      expect(retainedOverlay.contains(retainedPanel)).toBe(true);
+      expect(retainedPanel.getAttribute('aria-modal')).toBeNull();
+      expect(retainedGuards.every((guard) => !guard.isConnected)).toBe(true);
+      expect(container.querySelector('[data-testid="consumer-host"]')!.hasAttribute('inert')).toBe(
+        false,
+      );
+      expect(outside.closest('[inert]')).toBeNull();
+      await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+      retainedPanel.focus();
+      expect(document.activeElement).not.toBe(retainedPanel);
+
+      await userEvent.click(trigger);
+      await vi.waitFor(() =>
+        expect(document.querySelector('.lyra-cmdk-overlay')).toBe(retainedOverlay),
+      );
+      expect(document.querySelector('.lyra-cmdk')).toBe(retainedPanel);
+      retainedOverlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      retainedOverlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(onClose).toHaveBeenCalledTimes(1);
+
+      await rerender(
+        <div data-testid="consumer-host">
+          <button type="button">Outside</button>
+          <CommandPalette
+            inline
+            initialFocusTo={initialFocusTo}
+            returnFocusTo={returnFocusTo}
+            onSelect={onSelect}
+            groups={groups}
+          />
+        </div>,
+      );
+      const inlineItem = container.querySelector<HTMLButtonElement>('.lyra-cmdk__item')!;
+      const inlineOutside = container.querySelector<HTMLButtonElement>('button')!;
+      expect(inlineItem.closest('[inert]')).toBeNull();
+      expect(inlineItem.closest('[aria-modal="true"]')).toBeNull();
+      expect(inlineOutside.closest('[inert]')).toBeNull();
+      await userEvent.click(inlineItem);
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(initialFocusTo).not.toHaveBeenCalled();
+      expect(returnFocusTo).not.toHaveBeenCalled();
+    } finally {
+      exitStyle.remove();
+      vi.useRealTimers();
+    }
   });
 });

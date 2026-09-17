@@ -35,13 +35,101 @@ Reach for something else when:
 ## Accessibility
 
 - The panel is `role="dialog"` with `aria-modal`, named by `title` via `aria-labelledby`.
-- Focus moves into the panel on open, is trapped while open, and returns to the element that
-  opened it on close.
+- Focus moves to a safe initial destination in the panel on open and is trapped while open. For React,
+  declare `initialFocusTo` when the application owns the task meaning, and `returnFocusTo` when a
+  pointer-opened workflow needs an explicit return destination.
 - Every close path calls `onClose`: the × button, Escape, and a backdrop click. The × renders
   only when `onClose` is provided, so a dialog is never left without a visible way out.
 - The × button is named "Close" by default. Pass `closeLabel` to translate its accessible name.
 - Page scroll is locked while the dialog is open, and the panel is portaled to `document.body`
   so it escapes any `overflow: hidden` ancestor.
+
+## React initial focus
+
+`initialFocusTo` is optional and has the type `() => HTMLElement | null`. For each accepted opening
+of a visible modal panel, Lyra synchronously calls the read-only resolver once. Return a current,
+eligible member of that panel; the application chooses the meaning: the least-destructive Cancel
+action for a confirmation, a named reading heading for long content, or the intended field for an
+ordinary form. The DeleteProject snippet deliberately enters on Cancel; both footer actions close the
+demo dialog.
+
+An eligible target is an `HTMLElement` in the panel's document and current modal panel, connected,
+visible with rendered rectangles, enabled (including its fieldset), programmatically focusable, and
+outside hidden, inert, or `aria-hidden` ancestry. A named heading or reading container with
+`tabIndex={-1}` is valid. A null or invalid result focuses the named panel directly; it never falls
+through to another control. Omitting the option uses the first eligible task control, then the panel.
+The resolver is not replayed on rerenders; a later accepted opening reads the current resolver.
+
+Form composition owns focus after failed validation. Initial entry does not infer a validation failure
+from `aria-invalid`. The resolver must only read committed state and refs: do not focus, mutate, or
+start asynchronous work. If it throws, Lyra focuses the panel and propagates the same error through
+React's effect handling.
+
+## React return focus
+
+`returnFocusTo` is optional and has the type `() => HTMLElement | null`. It resolves freshly after
+an accepted close, so it can read the current workflow state and refs instead of preserving a stale
+element. Use it for a stable, eligible trigger; when that trigger can be removed, disabled, hidden,
+or no longer meaningful, return a logical successor instead.
+
+An eligible destination is connected in the same document, visible, enabled, programmatically
+focusable, and outside the closing panel and overlay. A composition must not return a target that it
+removes while closing. Omitting `returnFocusTo` retains only a valid captured opener that was already
+focused, such as after keyboard opening. Unprepared WebKit mouse usage without a usable explicit
+target remains unqualified: adding this optional prop does not repair unmigrated consumers.
+
+```tsx
+function DeleteProject({ canReturnToTrigger }: { canReturnToTrigger: boolean }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const successorRef = useRef<HTMLHeadingElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <>
+      <Button ref={triggerRef} disabled={!canReturnToTrigger} onClick={() => setOpen(true)}>
+        Delete project
+      </Button>
+      <h2 ref={successorRef} tabIndex={-1}>
+        Project overview
+      </h2>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        initialFocusTo={() => cancelRef.current}
+        returnFocusTo={() =>
+          canReturnToTrigger ? (triggerRef.current ?? successorRef.current) : successorRef.current
+        }
+        title="Delete project"
+        footer={
+          <>
+            <Button ref={cancelRef} variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={() => setOpen(false)}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        This action cannot be undone.
+      </Dialog>
+    </>
+  );
+}
+```
+
+`Project overview` is a named, meaningful `tabIndex={-1}` destination. The
+`canReturnToTrigger` state represents current availability; a non-null ref alone does not make a
+target eligible. A removed trigger also falls through its null ref to the successor.
+
+After an accepted close, Lyra prefers an eligible resolver result, then only a still-eligible
+captured opener. It never picks an arbitrary page control or `body` as a fallback. If neither is
+eligible, Lyra makes no invalid focus call and the controlled close still proceeds; the browser may
+land on `body`. This is an invalid composition, and the application must provide a logical successor.
+One development diagnostic reports the invalid composition for that close cycle; it is not successful
+focus restoration. The resolver must only read current state and refs: do not focus, mutate the DOM,
+or start asynchronous work in it.
 
 ## API and code
 
@@ -53,19 +141,58 @@ Reach for something else when:
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-Without React, compose the same classes — you own the open/close state, focus and Escape:
+After the existing Alpine plugin installation (`Alpine.plugin(lyra)`), use the registered
+`lyraDialog` binding; do not import its internal factory. The plugin owns opening and closing,
+focus trapping, scroll locking, Escape, and the guarded backdrop click. It does not portal this
+consumer-served composition automatically.
+
+`returnFocusTo` is initial binding configuration, not mutable callback data. On an accepted close
+it synchronously reads current state or refs once: Lyra prefers its eligible explicit target with
+`focus({ preventScroll: true })`, then an eligible captured opener with ordinary `focus()` and
+scroll behavior.
+The target must be connected, visible, enabled, focusable, in the same document, outside the closing
+overlay and panel, and outside hidden, inert, or `aria-hidden` content. There is no arbitrary
+`body` fallback. Return a meaningful successor when the trigger is removed or becomes unsafe; do
+not focus, mutate, or start asynchronous work from the resolver. This example treats an absent,
+disabled, or hidden trigger as unavailable and returns the named successor. Other application
+availability changes, including hidden or inert ancestry and a no-longer-meaningful trigger, must
+choose their meaningful successor from current state; this example covers its named simple states,
+not arbitrary automatic discovery. Initial closed state, opening, ignored close requests, exit, and
+destroy do not resolve it.
 
 ```html
-<div class="lyra-dialog-overlay">
-  <div class="lyra-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-    <div class="lyra-dialog__header">
-      <h2 class="lyra-dialog__title" id="dialog-title">Delete project</h2>
-      <button class="lyra-dialog__close" aria-label="Close">✕</button>
-    </div>
-    <div class="lyra-dialog__body">This action cannot be undone.</div>
-    <div class="lyra-dialog__footer">
-      <button class="lyra-btn lyra-btn--ghost lyra-btn--md">Cancel</button>
-      <button class="lyra-btn lyra-btn--danger lyra-btn--md">Delete</button>
+<div
+  x-data="lyraDialog({
+    returnFocusTo: () => {
+      const trigger = document.getElementById('open-project-details');
+      return trigger instanceof HTMLButtonElement && !trigger.disabled && !trigger.hidden
+        ? trigger
+        : document.getElementById('project-overview');
+    },
+  })"
+>
+  <button
+    id="open-project-details"
+    class="lyra-btn lyra-btn--primary lyra-btn--md"
+    type="button"
+    @click="open = true"
+  >
+    Open project details
+  </button>
+  <h2 id="project-overview" tabindex="-1">Project overview</h2>
+
+  <div class="lyra-dialog-overlay" x-bind="overlay" style="display: none">
+    <div class="lyra-dialog" x-bind="panel">
+      <div class="lyra-dialog__header">
+        <h2 class="lyra-dialog__title" x-bind="title">Project details</h2>
+        <button class="lyra-dialog__close" x-bind="close">✕</button>
+      </div>
+      <div class="lyra-dialog__body">Review the latest deployment before you continue.</div>
+      <div class="lyra-dialog__footer">
+        <button class="lyra-btn lyra-btn--primary lyra-btn--md" type="button" x-bind="close">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>

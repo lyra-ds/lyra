@@ -1,6 +1,25 @@
 import { Fragment, forwardRef, useState } from 'react';
-import type { IconName } from '../icon';
-import { Icon } from '../icon';
+import {
+  ChevronRight,
+  Download,
+  Ellipsis,
+  ExternalLink,
+  File,
+  FileArchive,
+  FileSpreadsheet,
+  FileText,
+  Film,
+  Folder,
+  FolderOpen,
+  Image,
+  LayoutGrid,
+  List,
+  Music,
+  Pencil,
+  Search,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import { Dropdown } from '../dropdown';
 import type { DropdownItem } from '../dropdown';
 import { cx } from '../internal/cx';
@@ -106,29 +125,57 @@ function fmFormatBytes(n: number | undefined): string {
   return `${(n / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
-function fmIconFor(file: ManagedFile): IconName {
-  if (file.type === 'folder') return 'folder';
+function FileManagerIcon({ file, size }: { file: ManagedFile; size: number }) {
+  if (file.type === 'folder') {
+    return <Folder className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+
   const ext = (file.name || '').split('.').pop()?.toLowerCase();
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')) return 'image';
-  if (['pdf', 'doc', 'docx', 'txt', 'md'].includes(ext ?? '')) return 'file-text';
-  if (['xls', 'xlsx', 'csv'].includes(ext ?? '')) return 'file-spreadsheet';
-  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext ?? '')) return 'file-archive';
-  if (['mp4', 'mov', 'webm'].includes(ext ?? '')) return 'film';
-  if (['mp3', 'wav', 'ogg'].includes(ext ?? '')) return 'music';
-  return 'file';
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')) {
+    return <Image className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+  if (['pdf', 'doc', 'docx', 'txt', 'md'].includes(ext ?? '')) {
+    return <FileText className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+  if (['xls', 'xlsx', 'csv'].includes(ext ?? '')) {
+    return <FileSpreadsheet className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext ?? '')) {
+    return <FileArchive className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+  if (['mp4', 'mov', 'webm'].includes(ext ?? '')) {
+    return <Film className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+  if (['mp3', 'wav', 'ogg'].includes(ext ?? '')) {
+    return <Music className="lyra-icon" size={size} aria-hidden="true" />;
+  }
+
+  return <File className="lyra-icon" size={size} aria-hidden="true" />;
 }
 
 function defaultActions(file: ManagedFile, labels: Required<FileManagerLabels>): DropdownItem[] {
   void file;
   return [
-    { id: 'open', label: labels.menuOpen, icon: <Icon name="external-link" size={15} /> },
-    { id: 'rename', label: labels.menuRename, icon: <Icon name="pencil" size={15} /> },
-    { id: 'download', label: labels.menuDownload, icon: <Icon name="download" size={15} /> },
+    {
+      id: 'open',
+      label: labels.menuOpen,
+      icon: <ExternalLink className="lyra-icon" size={15} aria-hidden="true" />,
+    },
+    {
+      id: 'rename',
+      label: labels.menuRename,
+      icon: <Pencil className="lyra-icon" size={15} aria-hidden="true" />,
+    },
+    {
+      id: 'download',
+      label: labels.menuDownload,
+      icon: <Download className="lyra-icon" size={15} aria-hidden="true" />,
+    },
     { type: 'separator' },
     {
       id: 'delete',
       label: labels.menuDelete,
-      icon: <Icon name="trash-2" size={15} />,
+      icon: <Trash2 className="lyra-icon" size={15} aria-hidden="true" />,
       danger: true,
     },
   ];
@@ -177,7 +224,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
         align="end"
         trigger={
           <span className="lyra-fm__more" aria-label={labels.itemActions(file.name)}>
-            <Icon name="ellipsis" size={17} />
+            <Ellipsis className="lyra-icon" size={17} aria-hidden="true" />
           </span>
         }
         items={actions ? actions(file) : defaultActions(file, labels)}
@@ -188,7 +235,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
       <div ref={ref} className={cx('lyra-fm', className)}>
         <div className="lyra-fm__toolbar">
           <div className="lyra-fm__search">
-            <Icon name="search" size={15} color="var(--text-faint)" />
+            <Search className="lyra-icon" size={15} color="var(--text-faint)" aria-hidden="true" />
             <input
               value={query}
               placeholder={searchPlaceholder}
@@ -203,7 +250,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
               aria-label={labels.listView}
               onClick={() => setCurrentView('list')}
             >
-              <Icon name="list" size={15} />
+              <List className="lyra-icon" size={15} aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -212,7 +259,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
               aria-label={labels.gridView}
               onClick={() => setCurrentView('grid')}
             >
-              <Icon name="layout-grid" size={15} />
+              <LayoutGrid className="lyra-icon" size={15} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -220,14 +267,21 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
           <nav className="lyra-fm__path" aria-label={labels.currentFolder}>
             {path.map((segment, index) => (
               <Fragment key={`${segment}-${index}`}>
-                {index > 0 && <Icon name="chevron-right" size={13} color="var(--text-faint)" />}
+                {index > 0 && (
+                  <ChevronRight
+                    className="lyra-icon"
+                    size={13}
+                    color="var(--text-faint)"
+                    aria-hidden="true"
+                  />
+                )}
                 <button
                   type="button"
                   className="lyra-fm__crumb"
                   onClick={() => onNavigate?.(index)}
                   disabled={index === path.length - 1}
                 >
-                  {index === 0 && <Icon name="folder-open" size={15} />}
+                  {index === 0 && <FolderOpen className="lyra-icon" size={15} aria-hidden="true" />}
                   {segment}
                 </button>
               </Fragment>
@@ -253,12 +307,12 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
                       file.type === 'folder' && 'lyra-fm__icon--folder',
                     )}
                   >
-                    <Icon name={fmIconFor(file)} size={17} />
+                    <FileManagerIcon file={file} size={17} />
                   </span>
                   <span className="lyra-fm__label">{file.name}</span>
                   {file.shared && (
                     <span className="lyra-fm__shared">
-                      <Icon name="users" size={13} />
+                      <Users className="lyra-icon" size={13} aria-hidden="true" />
                     </span>
                   )}
                 </button>
@@ -285,7 +339,7 @@ export const FileManager = /*#__PURE__*/ forwardRef<HTMLDivElement, FileManagerP
                       file.type === 'folder' && 'lyra-fm__icon--folder',
                     )}
                   >
-                    <Icon name={fmIconFor(file)} size={26} />
+                    <FileManagerIcon file={file} size={26} />
                   </span>
                   <span className="lyra-fm__label">{file.name}</span>
                   <span className="lyra-fm__card-meta">
