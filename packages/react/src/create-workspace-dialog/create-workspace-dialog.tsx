@@ -96,14 +96,17 @@ function hasResultStatus(
   );
 }
 
-function isNativePromise(
+function settleNativePromise(
   result: CreateWorkspaceResult | Promise<CreateWorkspaceResult> | undefined,
-): result is Promise<CreateWorkspaceResult> {
-  return (
-    result !== null &&
-    typeof result === 'object' &&
-    Object.prototype.toString.call(result) === '[object Promise]'
-  );
+  onFulfilled: (resolved: CreateWorkspaceResult) => void,
+  onRejected: () => void,
+): boolean {
+  try {
+    Promise.prototype.then.call(result, onFulfilled, onRejected);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** A composed Dialog for naming a new workspace and choosing its URL slug. */
@@ -307,11 +310,13 @@ export function CreateWorkspaceDialog({
       return;
     }
 
-    if (isNativePromise(result)) {
-      result.then(
+    if (
+      settleNativePromise(
+        result,
         (resolved) => settle(resolved, id),
         () => settle({ operationId: id, status: 'rejected', error: fallbackError }, id),
-      );
+      )
+    ) {
       return;
     }
     settle(result, id);
