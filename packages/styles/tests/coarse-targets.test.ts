@@ -11,6 +11,7 @@ const targets: Target[] = [
   { name: 'medium button', selector: '[data-probe="button"]', fixedHeight: 40 },
   { name: 'tab', selector: '[data-probe="tab"]' },
   { name: 'table sort button', selector: '[data-probe="sort"]' },
+  { name: 'table selection checkbox', selector: '[data-probe="table-check"]', fixedHeight: 18 },
   { name: 'Drawer close button', selector: '[data-probe="drawer-close"]', fixedHeight: 28 },
   { name: 'menu item', selector: '[data-probe="menu-item"]' },
   { name: 'command item', selector: '[data-probe="command-item"]' },
@@ -33,7 +34,7 @@ beforeAll(async () => {
     <main id="coarse-target-root">
       <button class="lyra-btn lyra-btn--md" data-probe="button">Go</button>
       <div class="lyra-tabs"><button class="lyra-tab" data-probe="tab">A</button></div>
-      <table class="lyra-table"><thead><tr><th><button class="lyra-table__sortbtn" data-probe="sort">A</button></th></tr></thead></table>
+      <table class="lyra-table"><thead><tr><th><button class="lyra-table__sortbtn" data-probe="sort">A</button></th><th class="lyra-table__check"><input type="checkbox" class="lyra-checkbox" data-probe="table-check" /></th></tr></thead></table>
       <button class="lyra-drawer__close" data-probe="drawer-close" aria-label="Close">×</button>
       <div class="lyra-menu"><button class="lyra-menu__item" data-probe="menu-item">A</button></div>
       <div class="lyra-cmdk">

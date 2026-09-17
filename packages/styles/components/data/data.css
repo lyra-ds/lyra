@@ -210,9 +210,15 @@
 }
 
 /* Additive a11y extension (parity ADDITIVE_EXTENSIONS): table headers stay compact for a fine
-   pointer, while each sort control gets an independently usable coarse-pointer target. */
+   pointer, while each sort control gets an independently usable coarse-pointer target. Selection
+   checkboxes render at the handoff's 18px, so their DataTable-owned hitbox grows to the same 44px
+   coarse-pointer minimum; fine-pointer geometry is untouched. */
 @media (pointer: coarse) {
   .lyra-table__sortbtn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .lyra-table__check .lyra-checkbox {
     min-width: 44px;
     min-height: 44px;
   }

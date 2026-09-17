@@ -523,7 +523,9 @@ const ADDITIVE_EXTENSIONS = {
   },
   'components/data/data.css': {
     // Contrast repair: the handoff's column headings sit at 4.34:1 on the sunken header band.
-    classes: ['lyra-table', 'lyra-table__sortbtn'],
+    // Touch-target extension: selection checkboxes keep the handoff's 18px fine geometry and grow
+    // to the 44px coarse-pointer minimum inside the DataTable's own check cells.
+    classes: ['lyra-table', 'lyra-table__check', 'lyra-table__sortbtn'],
     keyframes: [],
   },
   'components/files/files.css': {
