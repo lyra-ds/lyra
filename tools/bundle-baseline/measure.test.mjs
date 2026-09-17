@@ -321,7 +321,7 @@ function approvedBudgetCandidate() {
   candidate.environment.operatingSystem = 'darwin 25.0.0';
   candidate.environment.architecture = 'arm64';
   candidate.environment.lockfileSha256 =
-    '33e367f83f485e9235c99698fa43acb75f41c7b1ff715411c64d09c42754db4a';
+    '1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf';
   candidate.environment.exactCommand = 'pnpm baseline:bundles --check-budgets';
   candidate.environment.fixture.sourceSha256 = APPROVED_FIXTURE_SOURCE_SHA256;
   candidate.environment.packages = {

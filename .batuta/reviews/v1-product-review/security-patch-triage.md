@@ -27,3 +27,7 @@ Advisories: GHSA-c83g-rgw3-j3cx, GHSA-73wf-gq98-2v4g, GHSA-5jgf-p345-68v8, GHSA-
 - Codex/Terra medium implementation plus one bounded follow-up; OpenCode/GLM independent review reports three DONE criteria and no blocking findings. Reviewer notes on existing picomatch resolution, peer-key canonicalization and test coverage are informational; no additional unrelated edits warranted. Controller applied formatting.
 
 Raw evidence is retained in controller .batuta/runs/dependency-triage-20260917/: audit-fixed.json, audit-react18.json, audit-react19.json, lock-regression.json, common-tests.log, react-compat.log and security-review.log. Original audit is in controller .batuta/runs/pr223-followup/audit-current.json. Remote CI remains pending. This patch does not qualify or publish stable V1.
+
+## CI lock provenance follow-up
+
+First PR227 build rejected the authorized patched root lock because the native budget gate still pinned the previous root hash. OpenCode/GLM low changed only APPROVED_ROOT_LOCK and its synthetic candidate fixture to 1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf. Existing exact equality, historical reference, consumer fixture identity and every numerical cap remain unchanged. Controller full native budget gate passes72 entries/5 scenarios/4 CSS; all40 bundle-tool tests pass. No additional dependency change or baseline promotion. Raw budget-lock-check.log and budget-lock-tests.log retained in the controller triage run.
