@@ -61,20 +61,51 @@ function nonCanonicalGovernedKeys(lockfile, packageName) {
 
 const RULES = [
   {
+    packageName: 'browserslist',
+    vulnerable: (version) => compareTo(version, { major: 4, minor: 28, patch: 7 }) < 0,
+    requirement: 'require >=4.28.7',
+  },
+  {
     packageName: 'brace-expansion',
     vulnerable: (version) => compareTo(version, { major: 1, minor: 1, patch: 18 }) < 0,
     requirement: 'require >=1.1.18',
   },
   {
+    packageName: 'fast-uri',
+    vulnerable: (version) =>
+      version.major === 3 && compareTo(version, { major: 3, minor: 1, patch: 6 }) < 0,
+    requirement: 'require >=3.1.6 within the 3.x line',
+  },
+  {
     packageName: 'js-yaml',
     vulnerable: (version) =>
-      version.major === 3 && compareTo(version, { major: 3, minor: 15, patch: 1 }) < 0,
-    requirement: 'require 3.15.1 within the 3.x line',
+      (version.major === 3 && compareTo(version, { major: 3, minor: 15, patch: 2 }) < 0) ||
+      (version.major === 4 && compareTo(version, { major: 4, minor: 3, patch: 2 }) < 0),
+    requirement: 'require >=3.15.2 within the 3.x line and >=4.3.2 within the 4.x line',
   },
   {
     packageName: 'nanoid',
     vulnerable: (version) => compareTo(version, { major: 3, minor: 3, patch: 18 }) < 0,
     requirement: 'require >=3.3.18',
+  },
+  {
+    packageName: 'sharp',
+    vulnerable: (version) => compareTo(version, { major: 0, minor: 35, patch: 4 }) < 0,
+    requirement: 'require >=0.35.4',
+  },
+  {
+    packageName: 'vitest',
+    vulnerable: (version) =>
+      compareTo(version, { major: 2, minor: 1, patch: 0 }) >= 0 &&
+      compareTo(version, { major: 4, minor: 1, patch: 11 }) < 0,
+    requirement: 'require versions outside >=2.1.0 and <4.1.11',
+  },
+  {
+    packageName: '@vitest/mocker',
+    vulnerable: (version) =>
+      compareTo(version, { major: 2, minor: 1, patch: 0 }) >= 0 &&
+      compareTo(version, { major: 4, minor: 1, patch: 11 }) < 0,
+    requirement: 'require versions outside >=2.1.0 and <4.1.11',
   },
 ];
 
