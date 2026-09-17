@@ -629,7 +629,7 @@
 
 /* Additive a11y extension (parity ADDITIVE_EXTENSIONS): only the dense desktop Drawer close
    control needs a coarse-pointer target expansion; its fine-pointer geometry remains 28px. */
-@media (pointer: coarse) {
+@media (pointer: coarse), (any-pointer: coarse) {
   .lyra-drawer__close {
     min-width: 44px;
     min-height: 44px;

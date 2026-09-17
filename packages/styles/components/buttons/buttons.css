@@ -103,7 +103,7 @@
 /* Additive a11y extension (parity ADDITIVE_EXTENSIONS): retain the handoff's compact desktop
    buttons for fine pointers, while every button variant—including a constrained icon button—keeps
    a 44px target for a coarse pointer. */
-@media (pointer: coarse) {
+@media (pointer: coarse), (any-pointer: coarse) {
   .lyra-btn {
     min-width: 44px;
     min-height: 44px;

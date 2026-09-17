@@ -727,7 +727,7 @@
 
 /* Additive a11y extension (parity ADDITIVE_EXTENSIONS): leave the compact desktop navigation
    rhythm intact, but make the measured interactive owners usable by a coarse pointer. */
-@media (pointer: coarse) {
+@media (pointer: coarse), (any-pointer: coarse) {
   .lyra-tab,
   .lyra-menu__item,
   .lyra-cmdk__item {

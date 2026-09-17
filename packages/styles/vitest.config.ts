@@ -14,6 +14,11 @@ const coarsePointerEvidence = createBrowserEvidenceConfig(
   'chromium-coarse',
 );
 
+const hybridPointerEvidence = createBrowserEvidenceConfig(
+  resolve(import.meta.dirname, '.artifacts/browser'),
+  'chromium-hybrid',
+);
+
 const coarsePointerChromium = {
   browser: 'chromium',
   name: 'chromium-coarse',
@@ -27,6 +32,25 @@ const coarsePointerChromium = {
       hasTouch: true,
       viewport: { width: 390, height: 844 },
     },
+  }),
+};
+
+// Fine-primary device that also reports a coarse pointer (any-pointer: coarse), e.g. a touch
+// laptop: native Chromium blink settings validated to yield pointer: fine, pointer: coarse false,
+// any-pointer: coarse true, any-pointer: fine true. CDP setEmulatedMedia pointer features are
+// ignored by Chromium and must NOT be used here.
+const hybridPointerChromium = {
+  browser: 'chromium',
+  name: 'chromium-hybrid',
+  sequence: { groupOrder: PLAYWRIGHT_BROWSER_INSTANCES.length + 2 },
+  include: ['tests/coarse-targets.test.ts'],
+  screenshotFailures: hybridPointerEvidence.screenshotFailures,
+  screenshotDirectory: hybridPointerEvidence.screenshotDirectory,
+  provider: playwright({
+    launchOptions: {
+      args: ['--blink-settings=primaryPointerType=4,availablePointerTypes=6'],
+    },
+    contextOptions: hybridPointerEvidence.contextOptions,
   }),
 };
 
@@ -60,7 +84,7 @@ export default defineConfig({
       instances: PLAYWRIGHT_BROWSER_INSTANCES.map((instance, index) => ({
         ...instance,
         sequence: { groupOrder: index + 1 },
-      })).concat([coarsePointerChromium]),
+      })).concat([coarsePointerChromium, hybridPointerChromium]),
       screenshotFailures: browserEvidence.screenshotFailures,
       screenshotDirectory: browserEvidence.screenshotDirectory,
       trace: browserEvidence.trace,
