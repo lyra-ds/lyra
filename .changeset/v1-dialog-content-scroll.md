@@ -2,4 +2,4 @@
 '@lyra-ds/styles': patch
 ---
 
-Keep long Dialog content scrollable while its header, close control, and footer remain reachable.
+Keep long Dialog content and controls reachable through native overlay scrolling without clipping Dropdown menus.

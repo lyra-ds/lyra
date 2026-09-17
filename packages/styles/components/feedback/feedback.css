@@ -347,21 +347,12 @@
   margin: -8px;
 }
 
-/* Additive Dialog layout extension (parity ADDITIVE_EXTENSIONS): bound the panel to the
-   padded usable viewport so long body content scrolls without hiding its controls. */
-.lyra-dialog {
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100dvh - var(--space-12));
-}
-.lyra-dialog > .lyra-dialog__header,
-.lyra-dialog > .lyra-dialog__footer {
-  flex: 0 0 auto;
-}
-.lyra-dialog > .lyra-dialog__body {
-  min-height: 0;
+/* Additive Dialog layout extension (parity ADDITIVE_EXTENSIONS): the overlay owns native
+   scrolling. Safe centering keeps short panels centered while tall panels begin at the
+   reachable padded edge, without turning the body into a clipping scroll container. */
+.lyra-dialog-overlay {
   overflow-y: auto;
-  flex: 1 1 auto;
+  align-items: safe center;
 }
 
 @media (prefers-reduced-motion: reduce) {

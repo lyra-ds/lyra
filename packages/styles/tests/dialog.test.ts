@@ -63,6 +63,20 @@ const dialogLayoutFixture = (body: string): string => `
 </main>
 `;
 
+const dialogDropdownFixture = (): string =>
+  dialogLayoutFixture(`
+    <div class="lyra-dropdown">
+      <button type="button">Project actions</button>
+      <div class="lyra-menu lyra-menu--start" role="menu" aria-label="Project actions">
+        ${Array.from(
+          { length: 6 },
+          (_, index) =>
+            `<button type="button" class="lyra-menu__item" role="menuitem">Command ${index + 1}</button>`,
+        ).join('')}
+      </div>
+    </div>
+  `);
+
 const layoutElement = <T extends HTMLElement>(selector: string): T => {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Missing dialog layout element: ${selector}`);
@@ -177,7 +191,7 @@ describe('Dialog content layout', () => {
     document.body.innerHTML = '';
   });
 
-  it('keeps long public dialog content scrollable while its header, close control, and footer stay visible', async () => {
+  it('keeps long public dialog content reachable through native overlay scrolling', async () => {
     const paragraphs = Array.from(
       { length: 12 },
       (_, index) =>
@@ -188,20 +202,17 @@ describe('Dialog content layout', () => {
 
     const overlay = layoutElement<HTMLDivElement>('.lyra-dialog-overlay');
     const dialog = layoutElement<HTMLDivElement>('[role="dialog"]');
-    const header = layoutElement<HTMLDivElement>('.lyra-dialog__header');
-    const body = layoutElement<HTMLDivElement>('.lyra-dialog__body');
     const footer = layoutElement<HTMLDivElement>('.lyra-dialog__footer');
     const close = layoutElement<HTMLButtonElement>('button[aria-label="Close"]');
     const overlayRect = overlay.getBoundingClientRect();
     const dialogRect = dialog.getBoundingClientRect();
 
-    expect(getComputedStyle(body).overflowY).toMatch(/auto|scroll/);
-    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+    expect(getComputedStyle(overlay).overflowY).toMatch(/auto|scroll/);
+    expect(overlay.scrollHeight).toBeGreaterThan(overlay.clientHeight);
     expect(dialogRect.top).toBeGreaterThanOrEqual(overlayRect.top);
-    expect(dialogRect.bottom).toBeLessThanOrEqual(overlayRect.bottom);
-    expect(header.getBoundingClientRect().top).toBeGreaterThanOrEqual(overlayRect.top);
     expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(overlayRect.top);
-    expect(close.getBoundingClientRect().bottom).toBeLessThanOrEqual(overlayRect.bottom);
+    overlay.scrollTop = overlay.scrollHeight;
+    expect(overlay.scrollTop).toBeGreaterThan(0);
     expect(footer.getBoundingClientRect().bottom).toBeLessThanOrEqual(overlayRect.bottom);
   });
 
@@ -213,11 +224,28 @@ describe('Dialog content layout', () => {
 
     const overlay = layoutElement<HTMLDivElement>('.lyra-dialog-overlay');
     const dialog = layoutElement<HTMLDivElement>('[role="dialog"]');
-    const body = layoutElement<HTMLDivElement>('.lyra-dialog__body');
     const overlayRect = overlay.getBoundingClientRect();
     const dialogRect = dialog.getBoundingClientRect();
 
-    expect(body.scrollHeight).toBe(body.clientHeight);
+    expect(overlay.scrollHeight).toBe(overlay.clientHeight);
     expect(dialogRect.height).toBeLessThan(overlayRect.height - 48);
+  });
+
+  it('keeps a public Dropdown menu hit-testable beyond the Dialog body boundary', async () => {
+    document.body.innerHTML = dialogDropdownFixture();
+    await settleDialogLayoutEntrance();
+
+    const overlay = layoutElement<HTMLDivElement>('.lyra-dialog-overlay');
+    const body = layoutElement<HTMLDivElement>('.lyra-dialog__body');
+    const lastCommand = layoutElement<HTMLButtonElement>('[role="menuitem"]:last-child');
+    const bodyRect = body.getBoundingClientRect();
+    const commandRect = lastCommand.getBoundingClientRect();
+    const overlayRect = overlay.getBoundingClientRect();
+    const centerX = commandRect.left + commandRect.width / 2;
+    const centerY = commandRect.top + commandRect.height / 2;
+
+    expect(commandRect.top).toBeGreaterThan(bodyRect.bottom);
+    expect(commandRect.bottom).toBeLessThanOrEqual(overlayRect.bottom);
+    expect(document.elementFromPoint(centerX, centerY)).toBe(lastCommand);
   });
 });
