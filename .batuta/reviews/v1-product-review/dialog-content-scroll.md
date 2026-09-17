@@ -1,5 +1,7 @@
 # Dialog long-content repair — 2026-09-17
 
+Historical initial repair: the body-scroll layout below was superseded before merge by [overlay scrolling and popup visibility](dialog-overlay-scroll.md), after a reproduced Dropdown clipping regression. Retain these original observations with their original artifacts.
+
 The [native touch diagnosis](native-touch-scroll-diagnosis.md) found a public Dialog whose1226px body extended outside a390×844viewport, could not scroll and left Close unreachable. Shared CSS now bounds the panel to its padded viewport, lets the body scroll internally, and keeps header/footer outside that scroll region. Short dialogs retain natural sizing. Public classes, React/Alpine code, theme and motion behavior are unchanged. Child layout declarations stay explicitly owned by `.lyra-dialog`; no parity policy/baseline change.
 
 Controller verification on541ff844203dfae02f8c71327ace901f55247a6a:
