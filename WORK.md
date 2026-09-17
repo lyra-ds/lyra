@@ -839,4 +839,8 @@ remote or publication action is authorized.
 
 - PR223 Windows integration contention: OpenCode/opencode/glm-5.3-flash research and low execution,0 retries,no escalation. Same-head rerun moved timeout from ingest to real bundling; bound evidence file parallelism, no timeout/runtime/assertion changes.349/349 local PASS; remote pending.
 
+- Priority dependency security patch: Codex/Terra medium + one bounded follow-up; GLM independent 3 DONE/no blockers. Minimal patches remove 11 root audit records; root and React18/19 fixture audits zero. Security boundaries36 PASS, real old lock rejected/new accepted, common suite and packed React18/19 all phases PASS. See security-patch-triage.md; remote CI pending, no release or general Dependabot merge.
+
+- PR227 CI provenance follow-up: GLM low/0 retries registered already-authorized security root-lock hash in native bundle gate and synthetic candidate. Full72/5/4 budget gate and40 tool tests PASS; all limits/reference/fixture guards unchanged. User authorizes admin merge of PR227 once CI passes.
+
 - Post-merge Windows preview timeout: OpenCode/GLM5.3Flash low,0retry/no escalation. Existing120s child deadline shared with five real-build cases; old5500ms delay RED/fixed PASS,349/349 suite PASS. PR223 merged41a82e3 with explicit admin authorization; stable publication remains pending.

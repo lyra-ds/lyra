@@ -17,11 +17,24 @@ test('accepts each patched floor and unaffected newer majors', () => {
       lockWith(
         'brace-expansion@1.1.18',
         'brace-expansion@5.0.9',
+        'browserslist@4.28.7',
+        'browserslist@5.0.0',
+        'fast-uri@2.3.0',
+        'fast-uri@3.1.6',
+        'fast-uri@4.0.0',
         'js-yaml@2.1.0',
-        'js-yaml@3.15.1',
-        'js-yaml@4.3.1',
+        'js-yaml@3.15.2',
+        'js-yaml@4.3.2',
         'nanoid@3.3.18',
         'nanoid@5.1.16',
+        'sharp@0.35.4',
+        'sharp@1.0.0',
+        'vitest@2.0.0',
+        'vitest@4.1.11',
+        'vitest@5.0.0',
+        '@vitest/mocker@2.0.0',
+        '@vitest/mocker@4.1.11',
+        '@vitest/mocker@5.0.0',
       ),
     ),
     [],
@@ -34,10 +47,44 @@ for (const [packageKey, expected] of [
     'pnpm-lock.yaml resolves vulnerable brace-expansion@1.1.17; require >=1.1.18.',
   ],
   [
-    'js-yaml@3.15.0',
-    'pnpm-lock.yaml resolves vulnerable js-yaml@3.15.0; require 3.15.1 within the 3.x line.',
+    'browserslist@4.28.6',
+    'pnpm-lock.yaml resolves vulnerable browserslist@4.28.6; require >=4.28.7.',
+  ],
+  [
+    'fast-uri@3.1.5',
+    'pnpm-lock.yaml resolves vulnerable fast-uri@3.1.5; require >=3.1.6 within the 3.x line.',
+  ],
+  [
+    'js-yaml@3.15.1',
+    'pnpm-lock.yaml resolves vulnerable js-yaml@3.15.1; require >=3.15.2 within the 3.x line and >=4.3.2 within the 4.x line.',
+  ],
+  [
+    'js-yaml@4.3.1',
+    'pnpm-lock.yaml resolves vulnerable js-yaml@4.3.1; require >=3.15.2 within the 3.x line and >=4.3.2 within the 4.x line.',
   ],
   ['nanoid@3.3.17', 'pnpm-lock.yaml resolves vulnerable nanoid@3.3.17; require >=3.3.18.'],
+  ['sharp@0.35.2', 'pnpm-lock.yaml resolves vulnerable sharp@0.35.2; require >=0.35.4.'],
+  ['sharp@0.35.3', 'pnpm-lock.yaml resolves vulnerable sharp@0.35.3; require >=0.35.4.'],
+  [
+    'vitest@2.1.0',
+    'pnpm-lock.yaml resolves vulnerable vitest@2.1.0; require versions outside >=2.1.0 and <4.1.11.',
+  ],
+  [
+    'vitest@4.1.10',
+    'pnpm-lock.yaml resolves vulnerable vitest@4.1.10; require versions outside >=2.1.0 and <4.1.11.',
+  ],
+  [
+    'vitest@4.1.11-beta.1',
+    'pnpm-lock.yaml resolves vulnerable vitest@4.1.11-beta.1; require versions outside >=2.1.0 and <4.1.11.',
+  ],
+  [
+    '@vitest/mocker@2.1.0',
+    'pnpm-lock.yaml resolves vulnerable @vitest/mocker@2.1.0; require versions outside >=2.1.0 and <4.1.11.',
+  ],
+  [
+    '@vitest/mocker@4.1.10',
+    'pnpm-lock.yaml resolves vulnerable @vitest/mocker@4.1.10; require versions outside >=2.1.0 and <4.1.11.',
+  ],
 ]) {
   test(`rejects ${packageKey} from the resolved lock graph`, () => {
     assert.deepEqual(validateSecurityLock(lockWith(packageKey)), [expected]);
@@ -45,7 +92,7 @@ for (const [packageKey, expected] of [
 }
 
 test('inspects package snapshots and ignores importer declarations', () => {
-  const lock = lockWith('brace-expansion@1.1.18', 'js-yaml@3.15.1', 'nanoid@3.3.18');
+  const lock = lockWith('brace-expansion@1.1.18', 'js-yaml@3.15.2', 'nanoid@3.3.18');
   lock.importers = {
     '.': {
       dependencies: {
@@ -95,7 +142,7 @@ for (const section of ['packages', 'snapshots']) {
     ['an array', []],
   ]) {
     test(`rejects ${section} when it is ${shape}`, () => {
-      const lockfile = lockWith('brace-expansion@1.1.18', 'js-yaml@3.15.1', 'nanoid@3.3.18');
+      const lockfile = lockWith('brace-expansion@1.1.18', 'js-yaml@3.15.2', 'nanoid@3.3.18');
       if (value === undefined) delete lockfile[section];
       else lockfile[section] = value;
 
@@ -108,7 +155,12 @@ for (const section of ['packages', 'snapshots']) {
 
 for (const packageKey of [
   '/brace-expansion@1.1.17',
+  '/browserslist@4.28.6',
+  '/fast-uri@3.1.5',
   '/js-yaml@3.15.0',
+  '/sharp@0.35.3',
+  '/vitest@4.1.10',
+  '/@vitest/mocker@4.1.10',
   '/nanoid@3.3.17',
   '/nanoid@3.3.18',
 ]) {
