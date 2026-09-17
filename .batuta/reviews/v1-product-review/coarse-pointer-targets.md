@@ -15,3 +15,9 @@ The settled public packed React fixture exposed nine shared CSS owners below the
 `pnpm --filter @lyra-ds/styles run test:browser`; `pnpm --filter @lyra-ds/styles exec vitest run tests/coarse-targets.test.ts`; `pnpm --filter @lyra-ds/styles run lint:css`; `pnpm parity`; `node --test tools/phase1/browser-matrix.test.mjs tools/phase1/browser-config.test.mjs`; `pnpm baseline:bundles --check-budgets`.
 
 The controller checkout retains raw observations, the one-off probe binding, full command logs and failed intermediate fixture attempts under `.batuta/runs/pr223-followup/`. The SHA-256 index beside this report binds those retained local files. This report is bounded verification, not the immutable candidate acceptance record, whole-profile PASS, physical-device/manual touch proof, or release authorization. Modal touch scrolling, constrained anchored scrolling and composed-media acceptance retain their separate pending disposition.
+
+## Portable CI follow-up
+
+PR228's first Linux run exposed a test-only font assumption: a content-sized tab is40px there, versus39px on macOS. The regression now requires visible compact sizing below44px for fine pointers, with exact comparisons only for CSS-authored fixed heights; the strict44px coarse checks are unchanged. Browser contexts run in distinct Vitest sequence groups because Playwright temporary trace chunk names omit the project identity. Traces remain enabled.
+
+Controller reran all314 Styles tests, the four-context/eight-test regression,28 matrix/config tests and formatting: PASS. Making the coarse rules unconditional makes the fine-pointer test fail, confirming the portable check still detects desktop expansion. Exact shipped CSS bytes are unchanged, so the packed geometry and72/5/4budget proofs remain applicable. Failed CI and diagnostic attempts remain retained; updated CI must still pass before merge.

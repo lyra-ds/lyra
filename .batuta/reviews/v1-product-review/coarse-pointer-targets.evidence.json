@@ -12,6 +12,13 @@
     "coarse-targets-negative.json": "4d4bfcaa80f660883138940d121034d96cc8898ecabcfcb2c9a48d2b7ced8262",
     "coarse-targets-matrix-final.log": "33462583b2e53f7f85a60a35953bb486660d1a6a2a5421578e498d44f497ef6f",
     "coarse-targets-format.log": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
-    "coarse-targets-static.log": "cd7766c300f99f3c3c4b3d1ea66ca90d0ccccb4ef0651a31b1d3b12628c3e910"
+    "coarse-targets-static.log": "cd7766c300f99f3c3c4b3d1ea66ca90d0ccccb4ef0651a31b1d3b12628c3e910",
+    "coarse-targets-ci-failed.log": "09af4ffa50799d10104ad5c76bf0e15b295b184e87e8d0c8f9a9f71b1ee42f5f",
+    "coarse-targets-portable-serial-tests.log": "b900c871e8d2215f611b94e3d339eca6d2f813aae73b76dcfafe8047b2d08120",
+    "coarse-targets-portable-all-contexts.log": "f3ae1ff170cf9adf2666bf7548e270cf8356abfd797d7b24373c8cde965a64e2",
+    "coarse-targets-portable-matrix.log": "2baaa673fa98e40459759f82852f2a0bf966a3847c2062a01065fc858c711435",
+    "coarse-targets-portable-format.log": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    "coarse-targets-fine-leak-negative.log": "4e38b07174ad37f13a6e4f2295c73728b093de762a4ba717e3fd7a758452058c",
+    "coarse-targets-fine-leak-negative.json": "b5816fe24f50df05e8b1f7138d1a0f14b92356fb161cb426a670d4863c53a2af"
   }
 }

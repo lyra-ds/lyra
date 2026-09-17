@@ -17,6 +17,7 @@ const coarsePointerEvidence = createBrowserEvidenceConfig(
 const coarsePointerChromium = {
   browser: 'chromium',
   name: 'chromium-coarse',
+  sequence: { groupOrder: PLAYWRIGHT_BROWSER_INSTANCES.length + 1 },
   include: ['tests/coarse-targets.test.ts'],
   screenshotFailures: coarsePointerEvidence.screenshotFailures,
   screenshotDirectory: coarsePointerEvidence.screenshotDirectory,
@@ -55,7 +56,11 @@ export default defineConfig({
       provider: playwright({ contextOptions: browserEvidence.contextOptions }),
       headless: true,
       fileParallelism: false,
-      instances: PLAYWRIGHT_BROWSER_INSTANCES.concat([coarsePointerChromium]),
+      // Playwright's temporary trace chunk names omit the project; serialize shared test cases.
+      instances: PLAYWRIGHT_BROWSER_INSTANCES.map((instance, index) => ({
+        ...instance,
+        sequence: { groupOrder: index + 1 },
+      })).concat([coarsePointerChromium]),
       screenshotFailures: browserEvidence.screenshotFailures,
       screenshotDirectory: browserEvidence.screenshotDirectory,
       trace: browserEvidence.trace,
