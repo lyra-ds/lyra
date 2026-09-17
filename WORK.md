@@ -836,3 +836,5 @@ remote or publication action is authorized.
 - PR223 CommandPalette retained fixture: Codex/Terra medium0retry, GLM2DONE. Original350msdelayedreopen reproducesCIidentityFAIL; selectiveCSS/timerhold preservesallassertions andpasses31casesperengine plus350msreal-delay3/3. Types/format/scopePASS, no productchanges. See .batuta/reviews/v1-product-review/command-palette-retained-fixture.md. PushWindows+WebKitlotstogether; observeexactheadCI/formalreview beforeauthorizedmerge.
 
 - PR223 site header race: OpenCode/opencode/glm-5.3-flash, low, 0 implementation retries, no escalation. Isolated analytics generator fixture; controller site suite20/20, format/diff PASS. Windows revalidation pending; formal GitHub review still required.
+
+- PR223 Windows integration contention: OpenCode/opencode/glm-5.3-flash research and low execution,0 retries,no escalation. Same-head rerun moved timeout from ingest to real bundling; bound evidence file parallelism, no timeout/runtime/assertion changes.349/349 local PASS; remote pending.
