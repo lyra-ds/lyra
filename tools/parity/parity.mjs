@@ -481,6 +481,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-menu--start',
       'lyra-menu--end',
       'lyra-cmdk',
+      'lyra-cmdk__search',
+      'lyra-cmdk__item',
       'lyra-kbd',
       'lyra-cmdk__group-label',
       'lyra-cmdk__item-hint',
@@ -509,6 +511,7 @@ const ADDITIVE_EXTENSIONS = {
       // The metadata override keeps plan and member details readable on the item's hover surface.
       'lyra-wssw__meta',
       'lyra-wssw__trigger',
+      'lyra-wscreate__slug-input',
     ],
     keyframes: [],
   },
@@ -520,7 +523,9 @@ const ADDITIVE_EXTENSIONS = {
   },
   'components/data/data.css': {
     // Contrast repair: the handoff's column headings sit at 4.34:1 on the sunken header band.
-    classes: ['lyra-table', 'lyra-table__sortbtn'],
+    // Touch-target extension: selection checkboxes keep the handoff's 18px fine geometry and grow
+    // to the 44px coarse-pointer minimum inside the DataTable's own check cells.
+    classes: ['lyra-table', 'lyra-table__check', 'lyra-table__sortbtn'],
     keyframes: [],
   },
   'components/files/files.css': {

@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "8c67e23fc21c1f9aa1fc47be091118aa9afe9f74",
+  "productCommit": "0fcea80",
+  "scope": "Shared target sizing for coarse-primary and fine-primary/coarse-secondary profiles; bounded public React selection and Chromium table scroll",
+  "packages": {
+    "styles": "3888d2d15fb4e2c307fa41567e347a2753c34cd5871fde3663cecc97066c883d",
+    "react": "ae3cf0039dca3eea026de16b148a1e07572bcd15d66be90b1214cf2b7b987b54"
+  },
+  "evidence": {
+    "hybrid-touch-final-focused.log": "591bc261cd0fba624b4b99bff897cb5765fc7dd94f82276612180ad2b9a27679",
+    "hybrid-touch-styles-suite.log": "72d8fe677184e737449d1b9f44b34112c1a910e84b9be52b064f1309c022305f",
+    "hybrid-touch-static.log": "25546bd4512619044ef833987f234bbd1e4b988561ab377deba8058b0186c458",
+    "hybrid-touch-format.log": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    "hybrid-touch-matrix.log": "c1714ffc06aa0dba8090c6cd7f9e9e4d5dd567b2c6ac7b7bfe7af298f748197d",
+    "hybrid-negatives.json": "57aea92b29842b33bac8eb914889060fcb753c0c8fd4e1fc243914ac5b33c88b",
+    "hybrid-old-css-negative.log": "7841ada17b88cf4d5f815c65d9b4399683a41085924da22c34f7c18a6e519006",
+    "hybrid-coarse-profile-negative.log": "af21f359337b8238313b1262c350ffb26a52ebfefc588c3692bdbf14112976cf",
+    "hybrid-unknown-profile-negative.log": "6e4f52c1cbc7ce2ec2980162011c129fe91c66a69a2b6a521090417e80b0edc5",
+    "hybrid-touch-budgets.log": "97602a90f7c521dc411eea4bb80fd7220539fac2c16aaa7036f9c5c8d7fec03c",
+    "hybrid-package-binding.json": "a952406ec5a17ec4d0c53b9650180f13eab281d3106c6cfb88b1b124aaf255d4",
+    "hybrid-selection-fixed.json": "197f7ed7bf97a3c881bd6757cae031e56591865059eb8b6502491e9813d15591",
+    "hybrid-public-proof.json": "2d39c8eac49ae7c1b34b675f76210647e487a4cf601a15dca9cf89ccc4e14b33",
+    "hybrid-touch-final-review.log": "1fe6ebfe0163b4720129c91f84d188652e7b27ba2dd0edae9ed351a01efcfd24"
+  }
+}

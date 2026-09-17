@@ -1,0 +1,15 @@
+{
+  "scope": "Bounded DataTable selection behavior and shared coarse CSS target repair; not full candidate acceptance",
+  "sourceRevision": "460ba66",
+  "stylesArchiveSha256": "25eb42a2ddeaebcff76caf9ea957bc35d3cbba746b59863b15e78000dce0cb91",
+  "evidence": {
+    "selection-touch-observation.json": "a89b7d4ada6e04eea444c9e610ffac7d248e86f2e03c1cb6cbfd14e350eea2e9",
+    "selection-touch-fixed.json": "b60b2e9384dd03893429a7edc0f9227180b239f9389dbf73f11002c3b6a964a8",
+    "table-touch-package-binding.json": "266c34c2744d28bff0e441c86f5c2d6e5d636e72ccfbba7f2342693cd74e668a",
+    "table-touch-negative.json": "663a358d6ef1a5b6d65b898cc6c5a21193b2299bf75a2471f1c3b5bc024324b7",
+    "table-touch-negative.log": "e2a3097a53349a6ef7844bb4ad07b80617c4cab9d3db3bcd202592debadb12b8",
+    "table-touch-styles-tests.log": "81bbc16deebe64ca25da0c64f1876e488d7b6ff174fe15915a0f70cc1ff1c757",
+    "table-touch-static.log": "778651b67bbaeeccd28085e9dee9d00005a78f76e32b570a22398dee2d480237",
+    "table-touch-budgets.log": "c2ce62d0461c14e1e8b6bd1be4225bc66ce141f5462fc4e5e304fb2060d328b0"
+  }
+}

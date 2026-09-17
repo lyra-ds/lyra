@@ -438,3 +438,12 @@ button.lyra-datepicker__btn svg { color: var(--text-muted); flex: none; }
     outline-offset: 2px;
   }
 }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): inputs keep their dense desktop geometry
+   for fine pointers; coarse pointers need a 44px minimum target even in a constrained field. */
+@media (pointer: coarse), (any-pointer: coarse) {
+  .lyra-input {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

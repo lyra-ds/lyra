@@ -9,6 +9,50 @@ import {
 const browserEvidence = createBrowserEvidenceConfig(
   resolve(import.meta.dirname, '.artifacts/browser'),
 );
+const coarsePointerEvidence = createBrowserEvidenceConfig(
+  resolve(import.meta.dirname, '.artifacts/browser'),
+  'chromium-coarse',
+);
+
+const hybridPointerEvidence = createBrowserEvidenceConfig(
+  resolve(import.meta.dirname, '.artifacts/browser'),
+  'chromium-hybrid',
+);
+
+const coarsePointerChromium = {
+  browser: 'chromium',
+  name: 'chromium-coarse',
+  sequence: { groupOrder: PLAYWRIGHT_BROWSER_INSTANCES.length + 1 },
+  include: ['tests/coarse-targets.test.ts'],
+  screenshotFailures: coarsePointerEvidence.screenshotFailures,
+  screenshotDirectory: coarsePointerEvidence.screenshotDirectory,
+  provider: playwright({
+    contextOptions: {
+      ...coarsePointerEvidence.contextOptions,
+      hasTouch: true,
+      viewport: { width: 390, height: 844 },
+    },
+  }),
+};
+
+// Fine-primary device that also reports a coarse pointer (any-pointer: coarse), e.g. a touch
+// laptop: native Chromium blink settings validated to yield pointer: fine, pointer: coarse false,
+// any-pointer: coarse true, any-pointer: fine true. CDP setEmulatedMedia pointer features are
+// ignored by Chromium and must NOT be used here.
+const hybridPointerChromium = {
+  browser: 'chromium',
+  name: 'chromium-hybrid',
+  sequence: { groupOrder: PLAYWRIGHT_BROWSER_INSTANCES.length + 2 },
+  include: ['tests/coarse-targets.test.ts'],
+  screenshotFailures: hybridPointerEvidence.screenshotFailures,
+  screenshotDirectory: hybridPointerEvidence.screenshotDirectory,
+  provider: playwright({
+    launchOptions: {
+      args: ['--blink-settings=primaryPointerType=4,availablePointerTypes=6'],
+    },
+    contextOptions: hybridPointerEvidence.contextOptions,
+  }),
+};
 
 // Browser Mode (Playwright via @vitest/browser-playwright) is REQUIRED for @lyra-ds/styles:
 // jsdom applies zero CSS, so `color-mix()` and the [data-theme]/[data-brand] custom-property
@@ -36,7 +80,11 @@ export default defineConfig({
       provider: playwright({ contextOptions: browserEvidence.contextOptions }),
       headless: true,
       fileParallelism: false,
-      instances: PLAYWRIGHT_BROWSER_INSTANCES,
+      // Playwright's temporary trace chunk names omit the project; serialize shared test cases.
+      instances: PLAYWRIGHT_BROWSER_INSTANCES.map((instance, index) => ({
+        ...instance,
+        sequence: { groupOrder: index + 1 },
+      })).concat([coarsePointerChromium, hybridPointerChromium]),
       screenshotFailures: browserEvidence.screenshotFailures,
       screenshotDirectory: browserEvidence.screenshotDirectory,
       trace: browserEvidence.trace,
