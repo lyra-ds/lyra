@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "08336ec440e4d1fde4e5315e19d1e59ec9251610",
+  "scope": "Chromium native touch scroll on packed public React;3PASS1FAIL, overallFAIL",
+  "stylesArchiveSha256": "3888d2d15fb4e2c307fa41567e347a2753c34cd5871fde3663cecc97066c883d",
+  "reactArchiveSha256": "ae3cf0039dca3eea026de16b148a1e07572bcd15d66be90b1214cf2b7b987b54",
+  "logs": {
+    "native-touch-scroll-initial.json": "1629068904a3ac5cd619cd645eb5758fcfa33819b67d164f45cfdd1e5d5b5505",
+    "native-touch-scroll-isolated.json": "7bdf3e717b8bb1607fcbf5cbf3021a001b74a8f88f60484a1cf5a9965a919289",
+    "native-touch-scroll-independent-review.log": "20df4cba851c894ed316dd2cd954dcd89c7886f6921b2ee056943ded87f8a243"
+  },
+  "probeFiles": {
+    ".batuta/native-touch-consumer/p1.tsx": "9aa187c676c1eaa55ee018456ece053b3f1ce12891e00777da5b0d8a3f3f9b72",
+    ".batuta/native-touch-scroll.mjs": "c1b2932c065be64775bcfe4da09af6dfdd6f4641abef5bebc77412345f2f42b0"
+  }
+}
