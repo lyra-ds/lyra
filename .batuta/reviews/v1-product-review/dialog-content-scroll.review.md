@@ -1,5 +1,7 @@
 # Dialog content scroll review
 
+> Historical review of source revision `541ff844203dfae02f8c71327ace901f55247a6a`, superseded by product revision `50325fc0d1b5b9733a206822e5a586518cd7dbad` and [the overlay-scroll verification](dialog-overlay-scroll.md). Findings and adjudication below retain their original meaning and line references.
+
 OpenCode/glm-5.3-flash read-only independent review: all3criteria DONE.
 
 <<<FINDINGS

@@ -66,7 +66,7 @@ const dialogLayoutFixture = (body: string): string => `
 const dialogDropdownFixture = (): string =>
   dialogLayoutFixture(`
     <div class="lyra-dropdown">
-      <button type="button">Project actions</button>
+      <button type="button" class="lyra-dropdown__trigger" role="button">Project actions</button>
       <div class="lyra-menu lyra-menu--start" role="menu" aria-label="Project actions">
         ${Array.from(
           { length: 6 },
