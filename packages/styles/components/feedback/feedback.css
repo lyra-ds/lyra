@@ -347,6 +347,14 @@
   margin: -8px;
 }
 
+/* Additive Dialog layout extension (parity ADDITIVE_EXTENSIONS): the overlay owns native
+   scrolling. Safe centering keeps short panels centered while tall panels begin at the
+   reachable padded edge, without turning the body into a clipping scroll container. */
+.lyra-dialog-overlay {
+  overflow-y: auto;
+  align-items: safe center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lyra-dialog-overlay,
   .lyra-dialog,

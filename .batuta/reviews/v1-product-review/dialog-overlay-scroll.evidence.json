@@ -1,0 +1,28 @@
+{
+  "sourceRevision": "50325fc0d1b5b9733a206822e5a586518cd7dbad",
+  "stylesArchiveSha256": "f88b5ada8c154d45e824e243984a4c9bb880c465b57744ca507d9d253dec42bd",
+  "rawRoot": "controller .batuta/runs/pr223-followup",
+  "files": {
+    "dialog-overlay-static-negative.json": "ca16a81672475db417acd4a30e919c6733270753efb1c264db234072919f1560",
+    "dialog-overlay-package-binding.json": "17f90d57ee8d813d4d1146de5d730ca55d5c275a8cb32a1f2d810fc1cf44c6f2",
+    "dialog-overlay-static-format.log": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    "dialog-overlay-styles-full.log": "18fb4300512882538570910d2db5f9b2fdee893b2dd649f5fb05d24bca3c981c",
+    "dialog-overlay-zoom.log": "9c3e5cb605ec08316d06ff147560822066769eeaf9c43fd3c56cf88eee5d63c7",
+    "dialog-overlay-dropdown.json": "bcd680bd68921d9924cb9e70c7ce133a60511ece4656c8c7b5d715af02b80c9a",
+    "dialog-overlay-dropdown.png": "3bf892a66e59f757d4851bceab6c3e9e91f7bc565f59769810577482dfabc45e",
+    "dialog-overlay-static-stylelint.log": "ed65677f83bcdc26861885d2b230f93f07fb3a30249e5dd0862144c71eb92a77",
+    "dialog-overlay-focused.log": "440a08119a5c9e10d5b9ab4c6bb06c4f83fb556409c3831c7ed3441cc2c38d23",
+    "dialog-overlay-native-scroll.json": "c2e1a9319b2562a81fe534d07f70eeac3603526f76a7da58990d608d30bda201",
+    "dialog-overlay-zoom400.png": "668bda73494ac76762d9ea78277f8a6a2d8714445221cb9935d13bed5b4a030f",
+    "dialog-overlay-review.log": "f9ad236ec2b97466f3a449da32638539270e8614d149a342fe9d2452384d13d7",
+    "dialog-overlay-dropdown.log": "3440ced0dc4d5590e28f8028dd8714244d34e7d1f8fb7fb68396a1a1fd699bab",
+    "dialog-overlay-controller-proof.md": "ef614cd99fd07dac632c8f8a8b21af355b7caf23465da34e372dd95434479568",
+    "dialog-overlay-negative.log": "27dc6badb21ccffd2db197114b22698f8ab5b08943c9666b303135c324413f01",
+    "dialog-overlay-pack.log": "c67ddb3e2787388f80a031a37f587ebb62ac2ac9b737ac546ebbe758dcec4205",
+    "dialog-overlay-static-parity.log": "712c9e1ca12f652241baeba7363b0a581270ec0f21662f27688ef52f89cc6b30",
+    "dialog-overlay-native-scroll.log": "280f82b89cea810d3b7f086daaeefd62912694e42b59bd358a51236209506125",
+    "dialog-overlay-packed-results.json": "d2b57639ef408f6a6a3367729a4aaf3ce84cad74ef030ed60a3f7fbc9acbcc2c",
+    "dialog-overlay-zoom.json": "a1e8a887c40644cdc4464c0678404c48fbdc88fd3bfb299a98271fa51c97f2f0",
+    "dialog-overlay-budgets.log": "714637f8bb2378ea20f980543d0f2613e894cffd36636ea8cf1fd3e1b8ae284d"
+  }
+}

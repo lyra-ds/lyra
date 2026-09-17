@@ -1,0 +1,11 @@
+# Native touch scrolling diagnosis — 2026-09-17
+
+Public production packed React, Chromium151.0.7922.34 (exact observed browser version also retained in raw JSON),390×844, actual coarse-pointer media and trusted Chromium touch gestures. Exact package identities are in the adjacent evidence index; no source imports, forced product scrolling styles, synthetic DOM events or physical-device claim.
+
+The isolated probe reports overallFAIL: Dialog fails; Drawer, BottomSheet and DataTable pass. Drawer/BottomSheet each scroll from0to221px and preserve page offset240px across open, native internal scroll and close. Table scrolls0to221px, preserving offset240 and the selected project. Successful cases include trusted touchmove events and no page/console errors.
+
+Dialog's body is1226px tall with equal client/scroll heights and overflowYvisible. Its body extends fromy=-165toy=1061 in the844px viewport. The initial probe additionally cannot tap Close; the retained timeout records an unreachable control. Source feedback.css defines an unbounded panel/body, unlike the already bounded Drawer/BottomSheet. The shared OF-MODAL contract requires the panel's own content to remain scrollable. This is a concrete product defect to repair before qualifying that requirement.
+
+The first probe's failed cleanup left the Dialog open and blocked subsequent cases. Those collateral timeouts are not product verdicts. The corrected probe uses a fresh page per case, settles finite animations, measures visible gesture bounds, preserves a setup-only page baseline and rejects untrusted events/errors. Independent OpenCode/glm-5.3-flash review closes all3probe criteria with no findings; the actual Dialog failure remains visible.
+
+Preparation began in GLM low lane but was interrupted without delivery, then reclassified to Codex/gpt-5.6-terra medium for this stateful browser protocol. Terra delivered the two-file probe and one isolation/geometry/type retry; controller executed both attempts. The one-off scripts remain local evidence tools, not a new permanent test producer. This record covers these four cases only; nested modal ownership, anchored scrolling, composed media and full candidate qualification are not inferred from it.

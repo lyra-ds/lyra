@@ -1,0 +1,26 @@
+{
+  "sourceRevision": "541ff844203dfae02f8c71327ace901f55247a6a",
+  "identicalPreRebaseBudgetRevision": "f5e369d",
+  "stylesArchiveSha256": "45d9ef785a89d23236f4b6f75772ad899436ac0bbb28c718ac9591562a16be4b",
+  "evidence": {
+    "dialog-scroll-negative.json": "7850d7918b69c762d66228ec2e0cfe12a0067e2614f4b6fea05c0cb42cc28ee4",
+    "dialog-scroll-negative.log": "70c45e32a2bd969e6afe5419659ac1d677a0b29b319cd2ffddee8e1c1e9e8626",
+    "dialog-scroll-styles-suite.log": "9be4d4758fc9d3882fe7b8116a0a20747259d9d85fc44e5836aec92972530eae",
+    "dialog-scroll-parity-retry.log": "712c9e1ca12f652241baeba7363b0a581270ec0f21662f27688ef52f89cc6b30",
+    "dialog-scroll-lint-retry.log": "ed65677f83bcdc26861885d2b230f93f07fb3a30249e5dd0862144c71eb92a77",
+    "dialog-scroll-format-fixed.log": "18226e31bd70924c2ad2089cf158670af151a9396dbd01dde0d1f2cc710d3996",
+    "dialog-scroll-budgets.log": "c7b897496a16965ffed56afe78de0fedc3ab8970332bf0fb49f79d09926ad728",
+    "dialog-scroll-package-binding.json": "ac8ab858eb50408e5519f2b4990a360348c3e998577e6fbf8abd22a264a65579",
+    "native-touch-scroll-fixed.json": "fafe2c50041b6367b7438653f1cde4688e44ed5fb4fdadb12df368e49fb538e2",
+    "dialog-native-zoom.json": "5f8f9a12a51039c6e7659a08b36d0ef0a73983e33c099c10362bf5e87e3be522",
+    "dialog-native-zoom400.png": "381ad2e98fd0d9fc8db7c8422d78c3efe4184143f7e28fc72487abe65512e5b6",
+    "dialog-scroll-independent-review.log": "037ef0423208683d16a96160cfe81fbf7b76d63ac049672ff65ab12b1eb0eafd"
+  },
+  "probeFiles": {
+    ".batuta/dialog-scroll-proof.mjs": "179995bf1a019689d6c493191b47fe8e37fc2a7920ba7d659710aa95d4f393b6",
+    ".batuta/dialog-scroll-consumer/p1.tsx": "9aa187c676c1eaa55ee018456ece053b3f1ce12891e00777da5b0d8a3f3f9b72",
+    ".batuta/dialog-native-zoom.mjs": "adbc176c111b31b178c3a67909c0b0f67efd24af911c521e2485f1ddc95c0ab3",
+    ".batuta/dialog-zoom-consumer/p1.tsx": "348f63ae3b685e8af8ac2e877528d7e99b1a2d5e9e4031a619579ad85a80d758",
+    ".batuta/dialog-zoom-consumer/index.html": "a1178aee0f10c1d489744978adce280f3ae5d58692acd016987084d69c36b912"
+  }
+}

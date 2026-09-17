@@ -1539,7 +1539,10 @@ describe('ingestEvidence', () => {
     });
     const lockObserved = await Promise.race([
       locked.then(() => true),
-      new Promise((resolve) => setTimeout(() => resolve(false), 100)),
+      first.then(
+        () => false,
+        () => false,
+      ),
     ]);
     try {
       assert.equal(lockObserved, true, 'first writer did not acquire a transaction lock');
