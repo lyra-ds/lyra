@@ -481,6 +481,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-menu--start',
       'lyra-menu--end',
       'lyra-cmdk',
+      'lyra-cmdk__search',
+      'lyra-cmdk__item',
       'lyra-kbd',
       'lyra-cmdk__group-label',
       'lyra-cmdk__item-hint',
@@ -509,6 +511,7 @@ const ADDITIVE_EXTENSIONS = {
       // The metadata override keeps plan and member details readable on the item's hover surface.
       'lyra-wssw__meta',
       'lyra-wssw__trigger',
+      'lyra-wscreate__slug-input',
     ],
     keyframes: [],
   },

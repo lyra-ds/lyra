@@ -208,3 +208,12 @@
     outline-offset: 2px;
   }
 }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): table headers stay compact for a fine
+   pointer, while each sort control gets an independently usable coarse-pointer target. */
+@media (pointer: coarse) {
+  .lyra-table__sortbtn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

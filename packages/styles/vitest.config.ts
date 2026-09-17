@@ -9,6 +9,25 @@ import {
 const browserEvidence = createBrowserEvidenceConfig(
   resolve(import.meta.dirname, '.artifacts/browser'),
 );
+const coarsePointerEvidence = createBrowserEvidenceConfig(
+  resolve(import.meta.dirname, '.artifacts/browser'),
+  'chromium-coarse',
+);
+
+const coarsePointerChromium = {
+  browser: 'chromium',
+  name: 'chromium-coarse',
+  include: ['tests/coarse-targets.test.ts'],
+  screenshotFailures: coarsePointerEvidence.screenshotFailures,
+  screenshotDirectory: coarsePointerEvidence.screenshotDirectory,
+  provider: playwright({
+    contextOptions: {
+      ...coarsePointerEvidence.contextOptions,
+      hasTouch: true,
+      viewport: { width: 390, height: 844 },
+    },
+  }),
+};
 
 // Browser Mode (Playwright via @vitest/browser-playwright) is REQUIRED for @lyra-ds/styles:
 // jsdom applies zero CSS, so `color-mix()` and the [data-theme]/[data-brand] custom-property
@@ -36,7 +55,7 @@ export default defineConfig({
       provider: playwright({ contextOptions: browserEvidence.contextOptions }),
       headless: true,
       fileParallelism: false,
-      instances: PLAYWRIGHT_BROWSER_INSTANCES,
+      instances: PLAYWRIGHT_BROWSER_INSTANCES.concat([coarsePointerChromium]),
       screenshotFailures: browserEvidence.screenshotFailures,
       screenshotDirectory: browserEvidence.screenshotDirectory,
       trace: browserEvidence.trace,

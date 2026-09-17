@@ -1,0 +1,17 @@
+{
+  "scope": "Retained controller-local raw evidence; not candidate qualification",
+  "directory": ".batuta/runs/pr223-followup",
+  "sha256": {
+    "target-geometry-settled.json": "add6a00a6105e3e20ace88d08edaf41f4b58d60698cb2d5682bbaaa50b12304f",
+    "target-geometry-fixed.json": "80e44f0e516df11892d0201ffeefdbc65a73da2527d31e59b018a45d09fb4ba1",
+    "coarse-package-binding.json": "5fb2bb4a7b56a9d9c881ba6618591ab206fb4db57e16c79f96d9937678e11d90",
+    "coarse-targets-budgets.log": "c43d48685c99171de2260e612d9d8d71fbe689263697bf8e1fff0f5944cfcb01",
+    "coarse-targets-test-verified.log": "5d73b211769b38e4bfb053b54f1daf1beb4f184db9b99bc6435bf0885c8096f6",
+    "coarse-targets-styles-suite.log": "39de23474b5dc10ea36bd8be382b43f25541cdd9338b06311ea524e90492a135",
+    "coarse-targets-negative.log": "fbae10e900f1907ab5431c87e26e57e42a15a413e1663f93c067602ffec07cb1",
+    "coarse-targets-negative.json": "4d4bfcaa80f660883138940d121034d96cc8898ecabcfcb2c9a48d2b7ced8262",
+    "coarse-targets-matrix-final.log": "33462583b2e53f7f85a60a35953bb486660d1a6a2a5421578e498d44f497ef6f",
+    "coarse-targets-format.log": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    "coarse-targets-static.log": "cd7766c300f99f3c3c4b3d1ea66ca90d0ccccb4ef0651a31b1d3b12628c3e910"
+  }
+}
