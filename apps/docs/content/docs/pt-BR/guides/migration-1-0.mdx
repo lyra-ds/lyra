@@ -139,9 +139,11 @@ Blade precisa ser migrado por quem o produz.
 
 ## Seletores de `WorkspaceSwitcher`
 
-As opções de workspace agora ficam em um listbox interno, com um comando nativo “Create workspace”
-ao lado. Atualize seletores de filho direto: `.lyra-wssw__pop > button` não corresponde mais às opções de
-workspace; use `.lyra-wssw__pop .lyra-wssw__item` para alcançar as opções e o comando de criar.
+No React, as opções de workspace agora ficam em um listbox interno, com um comando nativo “Create
+workspace” ao lado. Atualize seletores de filho direto: `.lyra-wssw__pop > button` não corresponde
+mais às opções de workspace; use `.lyra-wssw__pop .lyra-wssw__item` para alcançar as opções e o
+comando de criar. O markup Alpine é renderizado por quem consome e não mudou: seu `.lyra-wssw__pop`
+continua sendo o listbox, sem comando de criar, e o seletor substituto também funciona ali.
 
 ```css
 /* Antes */

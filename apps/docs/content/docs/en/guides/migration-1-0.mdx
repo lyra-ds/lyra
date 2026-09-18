@@ -139,9 +139,11 @@ producer.
 
 ## `WorkspaceSwitcher` selectors
 
-Workspace options now live in an inner listbox, with a native “Create workspace” command beside it.
-Update direct-child selectors: `.lyra-wssw__pop > button` no longer matches the workspace options;
-use `.lyra-wssw__pop .lyra-wssw__item` to match options and the create command.
+In React, workspace options now live in an inner listbox, with a native “Create workspace”
+command beside it. Update direct-child selectors: `.lyra-wssw__pop > button` no longer matches the
+workspace options; use `.lyra-wssw__pop .lyra-wssw__item` to match options and the create command.
+Alpine markup is consumer-rendered and unchanged: its `.lyra-wssw__pop` is still the listbox and has
+no create command, and the replacement selector matches there too.
 
 ```css
 /* Before */
