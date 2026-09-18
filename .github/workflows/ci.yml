@@ -148,14 +148,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      # TEMPORARY DIAGNOSTIC (candidate PR only): cross-platform tarball identity.
-      - name: Pack identity diagnostic
-        run: |
-          mkdir -p /tmp/pk
-          for p in styles react alpine; do pnpm --filter @lyra-ds/$p pack --pack-destination /tmp/pk >/dev/null; done
-          for f in /tmp/pk/*.tgz; do
-            echo "== $f"; sha256sum "$f"; gunzip -c "$f" | sha256sum; xxd -l 10 -p "$f"; tar -tzvf "$f" | head -3
-          done
       - run: pnpm baseline:bundles --check-budgets
       # Phase 5, GEN-01..GEN-03: declaration-driven docs drift guard; consumes dist.
       - run: node tools/docgen/generate.mjs --check

@@ -2,6 +2,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import {
   cpSync,
   existsSync,
@@ -70,6 +71,11 @@ function readJson(path) {
 
 function sha256(source) {
   return createHash('sha256').update(source).digest('hex');
+}
+
+/** Packed artifact identity: SHA-256 of the decompressed tar stream (see tools/bundle-baseline/measure.mjs). */
+function artifactSha256(tarballBytes) {
+  return sha256(gunzipSync(tarballBytes));
 }
 
 export function percentile(samples, percentileValue) {
@@ -341,7 +347,7 @@ function packArtifact(tempRoot, packageKey) {
     metadata: {
       version: packageJson.version,
       tarball: basename(tarball),
-      sha256: sha256(readFileSync(tarball)),
+      sha256: artifactSha256(readFileSync(tarball)),
     },
   };
 }
