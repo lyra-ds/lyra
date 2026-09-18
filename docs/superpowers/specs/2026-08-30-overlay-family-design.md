@@ -290,9 +290,14 @@ WorkspaceSwitcher.
    requires a stable `aria-describedby` relationship.
 3. Preferred side and logical start/center/end alignment MUST be inputs, not
    promises that content may clip. Placement MUST first fit on the preferred
-   side, flip to the opposite side when necessary, then shift along that side
-   within the usable visual viewport. If neither side fits, the popup MUST use
-   a bounded scroll region and remain reachable rather than render offscreen.
+   side, flip to the opposite side when necessary, then keep the popup inside
+   the usable visual viewport along that side. For V1 the inline-axis
+   constraint is a measured logical alignment flip between `start` and `end`
+   against the visual viewport; a continuous inline shift is not required
+   (maintainer decision, 2026-09-18, recorded in
+   `.batuta/specs/2026-09-18-anchored-inline-placement-and-candidate-archives.md`).
+   If neither vertical side fits, the popup MUST use a bounded scroll region
+   and remain reachable rather than render offscreen.
 4. Placement MUST update after open, content or trigger resize, viewport resize,
    visual-viewport change, and scrolling of any relevant ancestor. Measurement
    MUST stop on logical close and teardown. Updates MUST NOT move keyboard focus

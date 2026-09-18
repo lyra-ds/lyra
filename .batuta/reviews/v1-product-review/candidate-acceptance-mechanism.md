@@ -45,6 +45,6 @@ Controller reran: `check.test.mjs` 116 pass, `measure.test.mjs` 42 pass, `pretti
 
 ## Open decisions and next steps
 
-1. Inline-axis placement disposition (see the composed/media reconciliation) — unchanged, maintainer decision.
-2. Whether to track candidate tarballs in `comparisons/core/<rev>/` (React ≈ 2.1 MB). The checker supports both; `path: null` relies on the bundle-gate cross-check.
+1. Inline-axis placement: resolved on 2026-09-18, discrete `start`/`end` alignment flip accepted as the V1 contract; see `.batuta/specs/2026-09-18-anchored-inline-placement-and-candidate-archives.md`.
+2. Candidate tarballs: resolved on 2026-09-18, not tracked (`path: null`); identity proved by ledger hashes plus the bundle-gate repack cross-check.
 3. Producing an actual candidate remains separate: 1.0.0 versions, refreshed evidence per the reconciliation's refresh obligations, FileUpload re-acceptance on the candidate pair, and a v2 ledger. None of that is authorized or started by this record; no push, Version Packages merge, versioning or publication.
