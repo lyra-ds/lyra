@@ -1,5 +1,41 @@
 # @lyra-ds/alpine
 
+## 1.0.0
+
+### Major Changes
+
+- [#235](https://github.com/lyra-ds/lyra/pull/235) [`81714a6`](https://github.com/lyra-ds/lyra/commit/81714a601ad657ad1d52768e7d16d324028dc142) Thanks [@franciscpd](https://github.com/franciscpd)! - This package reaches 1.0.0, and its public exports now follow standard SemVer. Contract changes
+  since the previous release are described in the 1.0 migration guide
+  (`apps/docs/content/docs/en/guides/migration-1-0.mdx`).
+
+### Minor Changes
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Correct the pre-1.0 Tabs contract: Tabs now requires native fallback links and
+  real headed section panels, then enhances only complete paired markup. This
+  unsafe-markup migration takes effect no earlier than 0.6.0 (and must be present
+  in stable 1.0.0); it is a project pre-1.0 SemVer exception. Existing Blade Tabs
+  markup must be migrated manually and is not compatible until its producer emits
+  the fallback structure. Use a Styles release at or after 0.5.1 that contains
+  the native hidden correction. On teardown, focus from an enhanced trigger or
+  focused panel container returns to its matching eligible fallback link, or the
+  first eligible fallback link; naturally focusable native descendants retain focus.
+
+### Patch Changes
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add printable-character typeahead to Alpine Dropdown menus.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add explicit `returnFocusTo` support for modal return-focus workflows.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Contain native Tab and Shift+Tab navigation within Alpine modal panels when browser navigation skips an implicit focusable control.
+
+- [#231](https://github.com/lyra-ds/lyra/pull/231) [`650b326`](https://github.com/lyra-ds/lyra/commit/650b326a20b0087652ca084a3a3cf5fd4f06794b) Thanks [@franciscpd](https://github.com/franciscpd)! - Bound long trigger-anchored popups to their available viewport side with native scrolling.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Make explicit Popover start and end alignment follow inherited writing direction.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep long pill tab lists within their consumer width and scroll focused tabs into view.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Open the WorkspaceSwitcher popover on the selected workspace for ArrowDown and ArrowUp trigger presses, matching Enter, Space, and click; falls back to the first workspace on ArrowDown and the last on ArrowUp when none is selected.
+
 ## 0.6.0
 
 ### Minor Changes

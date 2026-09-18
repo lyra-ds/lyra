@@ -1,5 +1,80 @@
 # @lyra-ds/react
 
+## 1.0.0
+
+### Major Changes
+
+- [#235](https://github.com/lyra-ds/lyra/pull/235) [`81714a6`](https://github.com/lyra-ds/lyra/commit/81714a601ad657ad1d52768e7d16d324028dc142) Thanks [@franciscpd](https://github.com/franciscpd)! - This package reaches 1.0.0, and its public exports now follow standard SemVer. Contract changes
+  since the previous release are described in the 1.0 migration guide
+  (`apps/docs/content/docs/en/guides/migration-1-0.mdx`).
+
+### Minor Changes
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Replace `CreateWorkspaceDialog`'s plain, void `onCreate` callback with an operation request and explicit result acknowledgement. Migrate handlers from `onCreate={({ name, slug }) => { ... }}` to `onCreate={(request) => { ...; return { operationId: request.operationId, status: 'accepted' }; }}`. Use `request.data` for the copied name and slug, honor `request.signal` to observe cancellation, and acknowledge every operation with a matching `accepted`, `rejected`, or `canceled` result. Accepted results request a controlled dialog close; rejected results keep entered values visible for retry.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Remove the unsafe `onRowClick` DataTable prop under the project's pre-1.0 compatibility exception
+  for unsafe contracts. Migrate row commands to named native buttons or links in action cells; the
+  earliest correction is 0.6.0 before stable release, or stable 1.0.0. Sorting, selection, optional
+  hover styling, and the Styles and Alpine contracts are unchanged.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Replace the unsafe `Tabs` `items` API, which generated empty labelled panels, with owned `TabsList`, `TabsTrigger`, and `TabsContent` parts. This pre-1.0 minor is an explicit project SemVer exception: the old contract cannot safely coexist because it leaves application content outside its tabpanel. Migrate each tab to explicit trigger and content nodes, select a stable nonempty value, and move tablist labels/classes to `TabsList`.
+
+  The earliest removal release is 0.6.0 (and the corrected API is required in 1.0.0). Invalid controlled values now render no selected panel until the application supplies a matching `active` value. User interactions request a value through `onChange`; the application still owns selection. The new React contract requires `@lyra-ds/styles` 0.5.1 or a later combined release for native hidden panel behavior.
+
+### Patch Changes
+
+- [#231](https://github.com/lyra-ds/lyra/pull/231) [`650b326`](https://github.com/lyra-ds/lyra/commit/650b326a20b0087652ca084a3a3cf5fd4f06794b) Thanks [@franciscpd](https://github.com/franciscpd)! - Bound long trigger-anchored popups to their available viewport side with native scrolling.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add explicit `returnFocusTo` support for BottomSheet return-focus workflows.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Prevent CommandPalette backdrop dismissal for gestures that cross its panel boundary.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add explicit `returnFocusTo` support for CommandPalette return-focus workflows.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Contain Escape dismissal within nested Dialog instances.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add roving command focus, label typeahead, and cancellable Dropdown command defaults.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add explicit `returnFocusTo` support for Dialog and Drawer return-focus workflows.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Avoid loading the global Icon registry for FileManager's private, finite Lucide glyphs.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Coordinate modal branches across package entries so only the active modal owns background isolation, focus containment, dismissal, stacking, and scroll locking.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Recover focus locally when an active modal's focused control becomes unavailable.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Contain Escape dismissal within nested Drawer and BottomSheet instances.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Add an `initialFocusTo` option to modal components for declaring a safe initial focus destination.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep retained React modal exit scopes inactive and prevent prior backdrop gestures from closing a reopened modal.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep native Tab navigation contained in modal panels when browsers skip ordinary button stops.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep Popover dismissal and focus restoration owned by its React branch.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Make explicit Popover start and end alignment follow inherited writing direction.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep long pill tab lists within their consumer width and scroll focused tabs into view.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Give TimePicker option buttons an explicit tab stop so native Tab reaches them in engines that skip implicit listbox option buttons.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Correct Tooltip hover timing, shared warm ownership, and pointer retention across its visible tip.
+
+- [#229](https://github.com/lyra-ds/lyra/pull/229) [`577e408`](https://github.com/lyra-ds/lyra/commit/577e408b0f3d92313f76b97d5fad8360d0d2dff5) Thanks [@franciscpd](https://github.com/franciscpd)! - Accept native workspace-creation Promises with customized branding.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Honor cancellable WorkspaceSwitcher root clicks before component defaults.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Move actual workspace options into an inner WorkspaceSwitcher listbox and expose Create workspace as a native command beside it. Workspace options retain roving native keyboard navigation while Tab reaches the create command and native forward/backward exits remain available.
+
+  Consumers using direct-child selectors such as `.lyra-wssw__pop > button` should target `.lyra-wssw__pop .lyra-wssw__item` to keep matching workspace options and the Create command.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Honor cancellable WorkspaceSwitcher root keyboard callbacks before component defaults.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Open the WorkspaceSwitcher popover on the selected workspace for ArrowDown and ArrowUp trigger presses, matching Enter, Space, and click; falls back to the first workspace when none is selected.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Avoid loading the global Icon registry for WorkspaceSwitcher’s private, finite Lucide glyphs.
+
 ## 0.5.0
 
 ### Minor Changes
