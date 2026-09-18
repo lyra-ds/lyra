@@ -125,5 +125,17 @@
     ],
     "onlyMetadataChange": "four approved size-limit values",
     "matchesOfficialGate": true
+  },
+  "reviewFollowUp": {
+    "comment": 4042767432,
+    "scope": "existing Alpine Dropdown test only",
+    "browserCases": 60,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "negativeProof": "preventScroll on keyboard command focus yields scrollTop 0; source restored",
+    "productChanged": false
   }
 }

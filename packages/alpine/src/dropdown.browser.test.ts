@@ -165,7 +165,7 @@ describe('lyraDropdown', () => {
   it('bounds a long menu with native scrolling and restores reused inline geometry on close', async () => {
     const host = document.createElement('div');
     host.innerHTML = `
-      <div x-data="lyraDropdown({ defaultOpen: true })" class="lyra-dropdown" style="left: 32px; position: fixed; top: 40vh">
+      <div x-data="lyraDropdown()" class="lyra-dropdown" style="left: 32px; position: fixed; top: 40vh">
         <button type="button" x-bind="trigger">Actions</button>
         <div x-bind="menu" style="max-height: 200vh; overflow-y: hidden">
           ${Array.from(
@@ -174,19 +174,38 @@ describe('lyraDropdown', () => {
           ).join('')}
         </div>
       </div>
+      <div style="height: 150vh"></div>
     `;
     document.body.appendChild(host);
     Alpine.initTree(host);
     mountedHosts.push(host);
-    await flush();
+    expect(document.documentElement.scrollHeight).toBeGreaterThan(window.innerHeight);
+    const scrollYBefore = window.scrollY;
+
+    const control = trigger(host);
     const popup = menu(host);
+    control.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await flush();
+    await waitForEntryAnimation(popup);
 
     expect(popup.style.overflowY).toBe('auto');
     expect(popup.scrollHeight).toBeGreaterThan(popup.clientHeight);
-    popup.scrollTop = popup.scrollHeight;
-    expect(popup.scrollTop).toBeGreaterThan(0);
 
-    await userEvent.click(trigger(host));
+    const commands = popup.querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
+    const lastCommand = commands[commands.length - 1];
+    if (!lastCommand) throw new Error('Expected dropdown commands');
+
+    await userEvent.keyboard('{End}');
+    expect(document.activeElement).toBe(lastCommand);
+    expect(popup.scrollTop).toBeGreaterThan(0);
+    const popupRect = popup.getBoundingClientRect();
+    const commandRect = lastCommand.getBoundingClientRect();
+    expect(commandRect.top).toBeGreaterThanOrEqual(popupRect.top);
+    expect(commandRect.bottom).toBeLessThanOrEqual(popupRect.bottom);
+    expect(window.scrollY).toBe(scrollYBefore);
+
+    await userEvent.click(control);
     await flush();
     expect(popup.style.maxHeight).toBe('200vh');
     expect(popup.style.overflowY).toBe('hidden');
