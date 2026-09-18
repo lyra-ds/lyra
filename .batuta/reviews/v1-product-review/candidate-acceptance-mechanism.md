@@ -39,7 +39,9 @@ All nine checks passed on `df1b3c4` (lint, typecheck, test, build, native Linux/
 - CodeRabbit major, failed FileUpload comparison accepted: `validateFileUploadBinding` requires `comparison.result === 'pass'`.
 - CodeRabbit minor, non-string immutable path reaching `node:path`: resolved by the core-directory rule, which type-checks before resolving; a numeric-path mutation is covered.
 
-Controller reran: `check.test.mjs` 115 pass, `measure.test.mjs` 42 pass, `prettier --check .`, `v1-release:check`, `v1-core:check` all pass. The follow-up commit requires its own CI on the new head before merge.
+A second CodeRabbit major on the follow-up head was also accepted: the FileUpload pointer/comparison revision must now equal `candidate.sourceRevision`, so stale FileUpload evidence with matching package hashes cannot bind a different candidate; one negative test covers it.
+
+Controller reran: `check.test.mjs` 116 pass, `measure.test.mjs` 42 pass, `prettier --check .`, `v1-release:check`, `v1-core:check` all pass. The follow-up commit requires its own CI on the new head before merge.
 
 ## Open decisions and next steps
 

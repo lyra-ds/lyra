@@ -904,7 +904,8 @@ export function validateFileUploadBinding({ candidate, pointer, comparison } = {
     revision.length === 0 ||
     !comparison ||
     comparison.result !== 'pass' ||
-    comparison.after?.revision !== revision
+    comparison.after?.revision !== revision ||
+    revision !== candidate?.sourceRevision
   ) {
     return ['FileUpload runtime evidence is not bound to the candidate artifacts'];
   }

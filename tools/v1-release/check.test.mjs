@@ -1593,3 +1593,23 @@ test('requires a passing FileUpload comparison and an ancestor source revision',
     ['candidate sourceRevision is not an ancestor of HEAD'],
   );
 });
+
+test('rejects FileUpload evidence accepted at a revision other than the candidate source', () => {
+  const candidate = candidateProgram().ledger.candidate;
+  const staleRevision = 'b'.repeat(40);
+  const packages = {
+    '@lyra-ds/react': { sha256: candidate.packages.react.sha256 },
+    '@lyra-ds/styles': { sha256: candidate.packages.styles.sha256 },
+  };
+  assert.deepEqual(
+    validateFileUploadBinding({
+      candidate,
+      pointer: { schemaVersion: 1, fileUpload: { revision: staleRevision } },
+      comparison: {
+        result: 'pass',
+        after: { revision: staleRevision, environment: { packages } },
+      },
+    }),
+    ['FileUpload runtime evidence is not bound to the candidate artifacts'],
+  );
+});
