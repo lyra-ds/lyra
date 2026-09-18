@@ -1,5 +1,42 @@
 # @lyra-ds/styles
 
+## 1.0.0
+
+### Major Changes
+
+- [#235](https://github.com/lyra-ds/lyra/pull/235) [`81714a6`](https://github.com/lyra-ds/lyra/commit/81714a601ad657ad1d52768e7d16d324028dc142) Thanks [@franciscpd](https://github.com/franciscpd)! - This package reaches 1.0.0, and its public exports now follow standard SemVer. Contract changes
+  since the previous release are described in the 1.0 migration guide
+  (`apps/docs/content/docs/en/guides/migration-1-0.mdx`).
+
+### Patch Changes
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Give the CommandPalette's selected option a system-color outline under forced colors, where the active and idle surfaces otherwise become indistinguishable inside the panel.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Make Dropdown start and end alignment follow inherited writing direction.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Restore visible system-color keyboard focus outlines for Button, Input, Tabs, and DataTable sort controls when forced colors is active.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Make explicit Popover start and end alignment follow inherited writing direction.
+
+- [#234](https://github.com/lyra-ds/lyra/pull/234) [`c397575`](https://github.com/lyra-ds/lyra/commit/c397575733583ce7208c8007d2823c34ab859918) Thanks [@franciscpd](https://github.com/franciscpd)! - Remove the page-model gap from `Shell scroll="content"` and stretch its rails to the full shell height so the sidebar and top bar touch as application chrome.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Restore native `hidden` visibility for Tabs controls and owned content when consumer display rules use flex or grid.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep long pill tab lists within their consumer width and scroll focused tabs into view.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Correct Tooltip hover timing, shared warm ownership, and pointer retention across its visible tip.
+
+- [#228](https://github.com/lyra-ds/lyra/pull/228) [`818dbac`](https://github.com/lyra-ds/lyra/commit/818dbac2b2390a5b40d5cc5e7509cb7c12973254) Thanks [@franciscpd](https://github.com/franciscpd)! - Expand the measured interactive control targets to 44px for coarse pointers, including
+  fine-primary devices that also report a coarse pointer (`any-pointer: coarse`, such as hybrid
+  touch devices), while preserving their compact fine-pointer geometry.
+
+- [#230](https://github.com/lyra-ds/lyra/pull/230) [`56f3a63`](https://github.com/lyra-ds/lyra/commit/56f3a637b7a72171997db3a2badedec6a384cd7c) Thanks [@franciscpd](https://github.com/franciscpd)! - Keep long Dialog content and controls reachable through native overlay scrolling without clipping Dropdown menus.
+
+- [#228](https://github.com/lyra-ds/lyra/pull/228) [`818dbac`](https://github.com/lyra-ds/lyra/commit/818dbac2b2390a5b40d5cc5e7509cb7c12973254) Thanks [@franciscpd](https://github.com/franciscpd)! - Grow the DataTable's own selection-checkbox hitboxes to the 44px coarse-pointer minimum while
+  preserving the handoff's 18px fine-pointer geometry.
+
+- [#223](https://github.com/lyra-ds/lyra/pull/223) [`41a82e3`](https://github.com/lyra-ds/lyra/commit/41a82e3f09877d3df5634757e2a63246e8186135) Thanks [@franciscpd](https://github.com/franciscpd)! - Restore WCAG AA contrast for WorkspaceSwitcher metadata on hovered workspace rows.
+
 ## 0.5.0
 
 ### Minor Changes
