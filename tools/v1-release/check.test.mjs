@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, win32 } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -8,7 +9,13 @@ import test from 'node:test';
 
 import * as releaseCheck from './check.mjs';
 
-const { validateV1Entry, validateV1Program, validateV1ReleaseWiring } = releaseCheck;
+const {
+  validateCandidateRevision,
+  validateFileUploadBinding,
+  validateV1Entry,
+  validateV1Program,
+  validateV1ReleaseWiring,
+} = releaseCheck;
 
 const execFileAsync = promisify(execFile);
 const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
@@ -278,6 +285,91 @@ function qualifiedProgram() {
     'evidence/summary.json': '{}',
     ...Object.fromEntries(ACCEPTANCE_CELLS.map((cell) => [`evidence/${cell}.json`, '{}'])),
   });
+  return input;
+}
+
+const CANDIDATE_REVISION = '0123456789abcdef0123456789abcdef01234567';
+const CORE_EVIDENCE_ROOT = `docs/superpowers/baselines/lyra-v1/comparisons/core/${CANDIDATE_REVISION}`;
+const RUNTIME_DECISION = '.batuta/specs/2026-09-15-v1-runtime-scope-proposal.md';
+
+function hash(source) {
+  return createHash('sha256').update(source).digest('hex');
+}
+
+function candidateProgram() {
+  const input = validProgram();
+  input.ledger.schemaVersion = 2;
+  input.ledger.releaseStatus = 'candidate';
+  input.ledger.candidate = {
+    sourceRevision: CANDIDATE_REVISION,
+    packages: Object.fromEntries(
+      ['styles', 'react', 'alpine'].map((key) => [
+        key,
+        {
+          name: `@lyra-ds/${key}`,
+          version: '1.0.0',
+          tarball: `lyra-ds-${key}-1.0.0.tgz`,
+          sha256: 'a'.repeat(64),
+          path: null,
+        },
+      ]),
+    ),
+  };
+  input.documents[OVERLAY_SPEC_PATH] = structurallyCompleteOverlaySpecification().replace(
+    '**Status:** Draft — awaiting written review',
+    '**Status:** Implemented',
+  );
+  input.documents[RUNTIME_DECISION] = '# Runtime scope\n';
+  for (const [index, entry] of input.ledger.components.entries()) {
+    entry.governingSpecification = OVERLAY_IDS.includes(entry.id)
+      ? { path: OVERLAY_SPEC_PATH, status: 'implemented' }
+      : { path: `docs/spec-${entry.id}.md`, status: 'implemented' };
+    entry.implementationStatus = 'qualified';
+    entry.migrationGuides = {
+      en: `docs/migration-${entry.id}-en.md`,
+      ptBR: `docs/migration-${entry.id}-pt-BR.md`,
+    };
+    entry.compatibility = { styles: '^1.0.0', react: '^1.0.0', alpine: '^1.0.0' };
+    if (!OVERLAY_IDS.includes(entry.id)) {
+      input.documents[entry.governingSpecification.path] = '**Status:** Implemented';
+    }
+    input.documents[entry.migrationGuides.en] = '# Migration';
+    input.documents[entry.migrationGuides.ptBR] = '# Migração';
+    const immutablePath = `${CORE_EVIDENCE_ROOT}/${entry.id}-immutable.md`;
+    input.documents[immutablePath] = `${entry.id} immutable evidence`;
+    entry.immutableEvidence = [
+      { path: immutablePath, sha256: hash(input.documents[immutablePath]) },
+    ];
+    entry.acceptanceEvidence = Object.fromEntries(
+      ACCEPTANCE_CELLS.map((cell) => {
+        const artifact = `${CORE_EVIDENCE_ROOT}/${entry.id}-${cell}.json`;
+        input.documents[artifact] = `${entry.id}:${cell}`;
+        return [
+          cell,
+          {
+            result: 'PASS',
+            revision: CANDIDATE_REVISION,
+            artifact,
+            sha256: hash(input.documents[artifact]),
+          },
+        ];
+      }),
+    );
+    if (index === 0) {
+      const artifact = `${CORE_EVIDENCE_ROOT}/${entry.id}-runtime.json`;
+      input.documents[artifact] = `${entry.id}:runtime`;
+      entry.runtimeEvidence = { result: 'PASS', artifact, sha256: hash(input.documents[artifact]) };
+    } else {
+      entry.runtimeEvidence = {
+        result: 'deferred',
+        basis: 'numerical-runtime',
+        decision: RUNTIME_DECISION,
+      };
+    }
+  }
+  input.hashes = Object.fromEntries(
+    Object.entries(input.documents).map(([path, source]) => [path, hash(source)]),
+  );
   return input;
 }
 
@@ -899,7 +991,11 @@ test('accepts a structurally complete tracked overlay family draft', () => {
 
 for (const [name, mutate, expected] of [
   ['null root', (input) => (input.ledger = null), 'ledger must be a plain object'],
-  ['wrong schema', (input) => (input.ledger.schemaVersion = 2), 'schemaVersion must equal 1'],
+  [
+    'wrong schema',
+    (input) => (input.ledger.schemaVersion = 2),
+    'schemaVersion 2 requires releaseStatus candidate',
+  ],
   [
     'wrong target',
     (input) => (input.ledger.targetRelease = '0.9.0'),
@@ -975,6 +1071,207 @@ test('refuses qualified claims while the release program is planning', () => {
       error.includes('planning release cannot contain qualified components'),
     ),
   );
+});
+
+test('accepts a complete schemaVersion 2 candidate program and rejects invalid bindings', () => {
+  assert.deepEqual(validateV1Program(candidateProgram()), []);
+
+  for (const [name, mutate, expected] of [
+    [
+      'planning status',
+      (input) => (input.ledger.releaseStatus = 'planning'),
+      'schemaVersion 2 requires releaseStatus candidate',
+    ],
+    [
+      'missing candidate key',
+      (input) => delete input.ledger.candidate.packages,
+      'candidate keys must be exactly sourceRevision, packages',
+    ],
+    [
+      'wrong package name',
+      (input) => (input.ledger.candidate.packages.react.name = '@lyra-ds/styles'),
+      'candidate react name must equal @lyra-ds/react',
+    ],
+    [
+      'invalid package hash',
+      (input) => (input.ledger.candidate.packages.react.sha256 = 'not-a-hash'),
+      'candidate react sha256 must be a lowercase SHA-256',
+    ],
+    [
+      'wrong package version',
+      (input) => (input.ledger.candidate.packages.react.version = '2.0.0'),
+      'candidate react version must equal 1.0.0',
+    ],
+    [
+      'wrong package tarball',
+      (input) => (input.ledger.candidate.packages.react.tarball = 'wrong.tgz'),
+      'candidate react tarball must equal lyra-ds-react-1.0.0.tgz',
+    ],
+    [
+      'archive path escape',
+      (input) =>
+        (input.ledger.candidate.packages.react.path = `${CORE_EVIDENCE_ROOT}/../../outside.tgz`),
+      'candidate react path must be under the candidate core directory',
+    ],
+    [
+      'wrong cell revision',
+      (input) => (input.ledger.components[0].acceptanceEvidence.chromium.revision = 'b'.repeat(40)),
+      'dialog: qualified component evidence chromium revision must equal candidate sourceRevision',
+    ],
+    [
+      'cell artifact outside core',
+      (input) =>
+        (input.ledger.components[0].acceptanceEvidence.chromium.artifact = 'evidence/outside.json'),
+      'dialog: qualified component evidence chromium is invalid',
+    ],
+    [
+      'cell artifact hash mismatch',
+      (input) => (input.ledger.components[0].acceptanceEvidence.chromium.sha256 = 'b'.repeat(64)),
+      'dialog: qualified component evidence chromium is invalid',
+    ],
+    [
+      'deferred cell',
+      (input) => (input.ledger.components[0].acceptanceEvidence.chromium.result = 'deferred'),
+      'dialog: qualified component evidence chromium is invalid',
+    ],
+    [
+      'string immutable evidence',
+      (input) => (input.ledger.components[0].immutableEvidence = ['evidence.json']),
+      'dialog: qualified component requires immutable evidence',
+    ],
+    [
+      'immutable evidence hash mismatch',
+      (input) => (input.ledger.components[0].immutableEvidence[0].sha256 = 'b'.repeat(64)),
+      'dialog: qualified component requires immutable evidence',
+    ],
+    [
+      'immutable evidence outside core',
+      (input) => {
+        const path = '.batuta/reviews/outside.md';
+        input.documents[path] = 'outside';
+        input.hashes[path] = hash('outside');
+        input.ledger.components[0].immutableEvidence = [{ path, sha256: hash('outside') }];
+      },
+      'dialog: qualified component requires immutable evidence',
+    ],
+    [
+      'numeric immutable evidence path',
+      (input) => (input.ledger.components[0].immutableEvidence[0].path = 1),
+      'dialog: qualified component requires immutable evidence',
+    ],
+    [
+      'missing runtime evidence',
+      (input) => delete input.ledger.components[0].runtimeEvidence,
+      'dialog: runtimeEvidence is required',
+    ],
+    [
+      'invalid runtime deferral basis',
+      (input) => (input.ledger.components[1].runtimeEvidence.basis = 'release-profile'),
+      'drawer: runtimeEvidence deferred basis must equal numerical-runtime',
+    ],
+    [
+      'runtime PASS decision',
+      (input) => (input.ledger.components[0].runtimeEvidence.decision = RUNTIME_DECISION),
+      'dialog: runtimeEvidence PASS is invalid',
+    ],
+    [
+      'runtime deferred decision',
+      (input) => (input.ledger.components[1].runtimeEvidence.decision = 'docs/decision.md'),
+      'drawer: runtimeEvidence deferred decision is invalid',
+    ],
+    [
+      'unqualified component',
+      (input) => (input.ledger.components[0].implementationStatus = 'specified'),
+      'dialog: candidate ledger requires every component to be qualified',
+    ],
+  ]) {
+    const input = candidateProgram();
+    mutate(input);
+    assert.ok(validateV1Program(input).includes(expected), name);
+  }
+});
+
+test('reports malformed candidate blocks without throwing', () => {
+  const missing = candidateProgram();
+  delete missing.ledger.candidate;
+  assert.ok(validateV1Program(missing).includes('schemaVersion 2 requires a candidate block'));
+
+  const malformedRevision = candidateProgram();
+  malformedRevision.ledger.candidate.sourceRevision = 123;
+  malformedRevision.ledger.candidate.packages.react.path = `${CORE_EVIDENCE_ROOT}/lyra-ds-react-1.0.0.tgz`;
+  const errors = validateV1Program(malformedRevision);
+  assert.ok(errors.includes('candidate sourceRevision must be a 40-hex string'));
+  assert.ok(errors.includes('candidate react path must be under the candidate core directory'));
+
+  const hashMismatch = candidateProgram();
+  const path = `${CORE_EVIDENCE_ROOT}/lyra-ds-react-1.0.0.tgz`;
+  hashMismatch.ledger.candidate.packages.react.path = path;
+  hashMismatch.hashes[path] = hash(Buffer.from([1, 2, 3]));
+  assert.ok(
+    validateV1Program(hashMismatch).includes('candidate react path hash must match sha256'),
+  );
+});
+
+test('accepts a non-null binary archive through the hash map without decoding it as text', () => {
+  const input = candidateProgram();
+  const path = `${CORE_EVIDENCE_ROOT}/lyra-ds-react-1.0.0.tgz`;
+  const bytes = Buffer.from([0, 255, 4, 8]);
+  input.ledger.candidate.packages.react.path = path;
+  input.ledger.candidate.packages.react.sha256 = hash(bytes);
+  input.hashes[path] = hash(bytes);
+  delete input.documents[path];
+
+  assert.deepEqual(validateV1Program(input), []);
+});
+
+test('schemaVersion 1 rejects candidate-only fields', () => {
+  const program = validProgram();
+  program.ledger.candidate = {};
+  program.ledger.components[0].runtimeEvidence = {};
+  const errors = validateV1Program(program);
+  assert.ok(errors.includes('unknown field candidate'));
+  assert.ok(errors.includes('dialog: unknown field runtimeEvidence'));
+});
+
+test('validates FileUpload candidate artifact bindings', () => {
+  const candidate = candidateProgram().ledger.candidate;
+  const pointer = { schemaVersion: 1, fileUpload: { revision: CANDIDATE_REVISION } };
+  const comparison = {
+    result: 'pass',
+    after: {
+      revision: CANDIDATE_REVISION,
+      environment: {
+        packages: {
+          '@lyra-ds/react': { sha256: candidate.packages.react.sha256 },
+          '@lyra-ds/styles': { sha256: candidate.packages.styles.sha256 },
+        },
+      },
+    },
+  };
+  assert.deepEqual(validateFileUploadBinding({ candidate, pointer, comparison }), []);
+  assert.deepEqual(validateFileUploadBinding({ candidate, pointer: {}, comparison }), [
+    'FileUpload runtime evidence is not bound to the candidate artifacts',
+  ]);
+  assert.deepEqual(
+    validateFileUploadBinding({
+      candidate,
+      pointer: { schemaVersion: 2, fileUpload: { revision: CANDIDATE_REVISION } },
+      comparison,
+    }),
+    ['FileUpload runtime evidence is not bound to the candidate artifacts'],
+  );
+  assert.deepEqual(
+    validateFileUploadBinding({
+      candidate,
+      pointer: { schemaVersion: 1, fileUpload: { revision: 'other' } },
+      comparison,
+    }),
+    ['FileUpload runtime evidence is not bound to the candidate artifacts'],
+  );
+  comparison.after.environment.packages['@lyra-ds/react'].sha256 = 'b'.repeat(64);
+  assert.deepEqual(validateFileUploadBinding({ candidate, pointer, comparison }), [
+    'FileUpload runtime evidence is not bound to the candidate artifacts',
+  ]);
 });
 
 test('recognizes repository descendants with Windows path separators', () => {
@@ -1123,6 +1420,57 @@ test('CLI rejects readable but untracked referenced documents', async () => {
   }
 });
 
+test('CLI rejects an untracked candidate archive binding', async () => {
+  const originalLedger = await readFile(LEDGER_PATH, 'utf8');
+  const ledger = JSON.parse(originalLedger);
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'lyra-v1-ledger-'));
+  const temporaryLedger = join(temporaryDirectory, 'program.json');
+  const untrackedDirectory = await mkdtemp('tools/v1-release/.candidate-untracked-test-');
+  const archivePath = join(untrackedDirectory, 'candidate.tgz');
+  ledger.schemaVersion = 2;
+  ledger.releaseStatus = 'candidate';
+  ledger.candidate = {
+    sourceRevision: CANDIDATE_REVISION,
+    packages: {
+      styles: {
+        name: '@lyra-ds/styles',
+        version: '1.0.0',
+        tarball: 'lyra-ds-styles-1.0.0.tgz',
+        sha256: 'a'.repeat(64),
+        path: null,
+      },
+      react: {
+        name: '@lyra-ds/react',
+        version: '1.0.0',
+        tarball: 'lyra-ds-react-1.0.0.tgz',
+        sha256: 'a'.repeat(64),
+        path: archivePath,
+      },
+      alpine: {
+        name: '@lyra-ds/alpine',
+        version: '1.0.0',
+        tarball: 'lyra-ds-alpine-1.0.0.tgz',
+        sha256: 'a'.repeat(64),
+        path: null,
+      },
+    },
+  };
+  await writeFile(archivePath, 'candidate archive');
+  await writeFile(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`);
+  try {
+    await assert.rejects(
+      execFileAsync(process.execPath, ['tools/v1-release/check.mjs', '--ledger', temporaryLedger]),
+      (error) =>
+        error.code === 1 &&
+        error.stderr.includes(`referenced path is not Git-tracked: ${archivePath}`) &&
+        error.stderr.includes('candidate sourceRevision is not an ancestor of HEAD'),
+    );
+  } finally {
+    await rm(temporaryDirectory, { recursive: true, force: true });
+    await rm(untrackedDirectory, { recursive: true, force: true });
+  }
+});
+
 test('CLI rejects wholesale demotion after the overlay checkpoint is tracked', async () => {
   const originalLedger = await readFile(LEDGER_PATH, 'utf8');
   const ledger = JSON.parse(originalLedger);
@@ -1211,3 +1559,57 @@ for (const [name, mutate, expected] of [
     assert.ok(validateV1Program(input).some((error) => error.includes(expected)));
   });
 }
+
+test('requires a passing FileUpload comparison and an ancestor source revision', () => {
+  const candidate = candidateProgram().ledger.candidate;
+  const packages = {
+    '@lyra-ds/react': { sha256: candidate.packages.react.sha256 },
+    '@lyra-ds/styles': { sha256: candidate.packages.styles.sha256 },
+  };
+  const pointer = { schemaVersion: 1, fileUpload: { revision: CANDIDATE_REVISION } };
+  const comparison = {
+    result: 'pass',
+    after: { revision: CANDIDATE_REVISION, environment: { packages } },
+  };
+  assert.deepEqual(validateFileUploadBinding({ candidate, pointer, comparison }), []);
+  assert.deepEqual(
+    validateFileUploadBinding({
+      candidate,
+      pointer,
+      comparison: { ...comparison, result: 'fail' },
+    }),
+    ['FileUpload runtime evidence is not bound to the candidate artifacts'],
+  );
+  assert.deepEqual(
+    validateCandidateRevision(CANDIDATE_REVISION, () => true),
+    [],
+  );
+  assert.deepEqual(
+    validateCandidateRevision(CANDIDATE_REVISION, () => false),
+    ['candidate sourceRevision is not an ancestor of HEAD'],
+  );
+  assert.deepEqual(
+    validateCandidateRevision(123, () => true),
+    ['candidate sourceRevision is not an ancestor of HEAD'],
+  );
+});
+
+test('rejects FileUpload evidence accepted at a revision other than the candidate source', () => {
+  const candidate = candidateProgram().ledger.candidate;
+  const staleRevision = 'b'.repeat(40);
+  const packages = {
+    '@lyra-ds/react': { sha256: candidate.packages.react.sha256 },
+    '@lyra-ds/styles': { sha256: candidate.packages.styles.sha256 },
+  };
+  assert.deepEqual(
+    validateFileUploadBinding({
+      candidate,
+      pointer: { schemaVersion: 1, fileUpload: { revision: staleRevision } },
+      comparison: {
+        result: 'pass',
+        after: { revision: staleRevision, environment: { packages } },
+      },
+    }),
+    ['FileUpload runtime evidence is not bound to the candidate artifacts'],
+  );
+});

@@ -387,6 +387,18 @@ function approvedBudgetCandidate() {
   return candidate;
 }
 
+function ledgerCandidateFor(candidate) {
+  return {
+    sourceRevision: 'a'.repeat(40),
+    packages: Object.fromEntries(
+      ['styles', 'react', 'alpine'].map((key) => {
+        const artifact = candidate.environment.packages[`@lyra-ds/${key}`];
+        return [key, { name: `@lyra-ds/${key}`, ...artifact, path: null }];
+      }),
+    ),
+  };
+}
+
 test('native budget check accepts the approved historical migration on a different architecture', () => {
   const result = checkBundleBudgets(budgetReferenceFixture(), approvedBudgetCandidate());
 
@@ -399,6 +411,58 @@ test('native budget check accepts the approved historical migration on a differe
     4004,
   );
   assert.equal(result.entries.css.length, 4);
+});
+
+test('native budget check binds packed artifacts to a candidate ledger only when requested', () => {
+  const candidate = approvedBudgetCandidate();
+  const ledgerCandidate = ledgerCandidateFor(candidate);
+  const withoutBinding = checkBundleBudgets(budgetReferenceFixture(), candidate);
+  assert.deepEqual(
+    checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate: null }),
+    withoutBinding,
+  );
+  const result = checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate });
+
+  assert.equal(withoutBinding.candidateBinding, null);
+  assert.deepEqual(result.candidateBinding, {
+    result: 'pass',
+    sourceRevision: ledgerCandidate.sourceRevision,
+    packages: Object.fromEntries(
+      ['styles', 'react', 'alpine'].map((key) => [
+        key,
+        (({ name, version, tarball, sha256 }) => ({ name, version, tarball, sha256 }))(
+          ledgerCandidate.packages[key],
+        ),
+      ]),
+    ),
+  });
+
+  ledgerCandidate.packages.react.sha256 = 'f'.repeat(64);
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate }),
+    /candidate artifact binding mismatch for @lyra-ds\/react/,
+  );
+
+  ledgerCandidate.packages.react.sha256 = candidate.environment.packages['@lyra-ds/react'].sha256;
+  ledgerCandidate.packages.react.version = '2.0.0';
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate }),
+    /candidate artifact binding mismatch for @lyra-ds\/react/,
+  );
+
+  ledgerCandidate.packages.react.version = candidate.environment.packages['@lyra-ds/react'].version;
+  ledgerCandidate.packages.react.tarball = 'wrong.tgz';
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate }),
+    /candidate artifact binding mismatch for @lyra-ds\/react/,
+  );
+
+  ledgerCandidate.packages.react.tarball = candidate.environment.packages['@lyra-ds/react'].tarball;
+  ledgerCandidate.packages.react.name = '@lyra-ds/styles';
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate }),
+    /candidate artifact binding mismatch for @lyra-ds\/react/,
+  );
 });
 
 test('native budget check rejects migration and absolute-cap breaches without trusting Size Limit passed', () => {
@@ -1279,6 +1343,43 @@ test('bundle CLI --check-budgets returns the native budget result without writin
   assert.ok(Array.isArray(report.entries.react[0].modules.after));
   assert.equal(readFileSync(paths.currentJson, 'utf8'), originalPointer);
   assert.equal(readFileSync(paths.baselineJson, 'utf8'), originalBaseline);
+});
+
+test('bundle CLI reads a candidate ledger only for the budget gate', async () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'lyra-candidate-ledger-'));
+  const measured = approvedBudgetCandidate();
+  const ledgerJson = join(fixture, 'program.json');
+  writeFileSync(
+    ledgerJson,
+    `${JSON.stringify(
+      {
+        schemaVersion: 2,
+        releaseStatus: 'candidate',
+        candidate: ledgerCandidateFor(measured),
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  try {
+    const report = await runBundleBaselineCli(['--check-budgets'], {
+      paths: { ledgerJson },
+      collect: async () => measured,
+      isAncestorOfHead: () => true,
+    });
+    assert.equal(report.candidateBinding.result, 'pass');
+    assert.deepEqual(Object.keys(report.candidateBinding.packages), ['styles', 'react', 'alpine']);
+    await assert.rejects(
+      runBundleBaselineCli(['--check-budgets'], {
+        paths: { ledgerJson },
+        collect: async () => measured,
+        isAncestorOfHead: () => false,
+      }),
+      /candidate sourceRevision is not an ancestor of HEAD/,
+    );
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test('measureScenario builds a CSS library entry', async () => {
