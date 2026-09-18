@@ -1,0 +1,1036 @@
+{
+  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on an earlier commit of the candidate branch whose three package archives are byte-identical (same SHA-256) to the candidate source revision; only documentation and baseline files changed in between.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "scope": "P1 existing fixture media behavioral and axe screening; not full contract qualification",
+  "assets": {
+    "assets/index-CXtwNcDn.js": "b81c059e6317810e778e3e7d452696b74c4e9a8a2a69cf6387a5650d398bc7fb",
+    "assets/index-CsniSfCp.css": "fb24c5d19841690aae55216fb918ec2fd6349fea6d3ebf962b98a82c74bf1e09",
+    "index.html": "47efd57743627c7610180ebed2aa47d62857ecc6d55682c31b2c72a7ffb8d2eb"
+  },
+  "profiles": ["axe-light", "axe-dark", "forced-colors", "reduced-motion", "rtl", "coarse-pointer"],
+  "engines": ["chromium", "firefox", "webkit"],
+  "totals": {
+    "cases": 18,
+    "scenarioObservations": 195,
+    "pageErrors": 0,
+    "axeViolations": 0
+  },
+  "cases": [
+    {
+      "engine": "chromium",
+      "profile": "axe-light",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "profile": "axe-dark",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "profile": "forced-colors",
+      "media": {
+        "forced": true,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "profile": "reduced-motion",
+      "media": {
+        "forced": false,
+        "reduced": true,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "profile": "rtl",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "rtl"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "profile": "coarse-pointer",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": true,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "firefox",
+      "profile": "axe-light",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "firefox",
+      "profile": "axe-dark",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "firefox",
+      "profile": "forced-colors",
+      "media": {
+        "forced": true,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "firefox",
+      "profile": "reduced-motion",
+      "media": {
+        "forced": false,
+        "reduced": true,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "firefox",
+      "profile": "rtl",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "rtl"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "firefox",
+      "profile": "coarse-pointer",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": true,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "profile": "axe-light",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "profile": "axe-dark",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "profile": "forced-colors",
+      "media": {
+        "forced": true,
+        "reduced": false,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "profile": "reduced-motion",
+      "media": {
+        "forced": false,
+        "reduced": true,
+        "coarse": false,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "profile": "rtl",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": false,
+        "dir": "rtl"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "tooltip",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "profile": "coarse-pointer",
+      "media": {
+        "forced": false,
+        "reduced": false,
+        "coarse": true,
+        "dir": "ltr"
+      },
+      "errors": [],
+      "scenarios": [
+        {
+          "name": "dialog",
+          "violations": []
+        },
+        {
+          "name": "drawer",
+          "violations": []
+        },
+        {
+          "name": "bottom sheet",
+          "violations": []
+        },
+        {
+          "name": "popover",
+          "violations": []
+        },
+        {
+          "name": "dropdown",
+          "violations": []
+        },
+        {
+          "name": "command-palette",
+          "violations": []
+        },
+        {
+          "name": "workspace-switcher",
+          "violations": []
+        },
+        {
+          "name": "create-workspace-dialog",
+          "violations": []
+        },
+        {
+          "name": "tabs",
+          "violations": []
+        },
+        {
+          "name": "data-table",
+          "violations": []
+        }
+      ]
+    }
+  ]
+}

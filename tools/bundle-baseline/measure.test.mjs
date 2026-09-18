@@ -309,7 +309,7 @@ function budgetReferenceFixture() {
         'lyra-v1',
         'comparisons',
         'file-upload',
-        '0003123e22ec57d21946b3f6f383fd2da7d1bd0a.json',
+        'f688716c16bf6f3f1584ae618f926d0376e65d44.json',
       ),
       'utf8',
     ),
@@ -318,40 +318,12 @@ function budgetReferenceFixture() {
 
 function approvedBudgetCandidate() {
   const candidate = structuredClone(budgetReferenceFixture());
-  candidate.environment.operatingSystem = 'darwin 25.0.0';
-  candidate.environment.architecture = 'arm64';
+  candidate.environment.operatingSystem = 'linux 6.11.0-1018-azure Ubuntu';
+  candidate.environment.architecture = 'x64';
   candidate.environment.lockfileSha256 =
     '1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf';
   candidate.environment.exactCommand = 'pnpm baseline:bundles --check-budgets';
   candidate.environment.fixture.sourceSha256 = APPROVED_FIXTURE_SOURCE_SHA256;
-  candidate.environment.packages = {
-    '@lyra-ds/react': {
-      version: '0.5.0',
-      tarball: 'lyra-ds-react-0.5.0.tgz',
-      sha256: '658d9faf2987c5401baf2e665b92ad9b12d7b2f507d6385035006cd06c18a5da',
-    },
-    '@lyra-ds/styles': {
-      version: '0.5.0',
-      tarball: 'lyra-ds-styles-0.5.0.tgz',
-      sha256: '74fd16fc24d58345b4fccdf30681b37218079dea0646f09c765727aa570489f3',
-    },
-    '@lyra-ds/alpine': {
-      version: '0.6.0',
-      tarball: 'lyra-ds-alpine-0.6.0.tgz',
-      sha256: 'de296884efffe7bcad7f74af9a93595a74ce763edb8bb8e21587559cac09e8aa',
-    },
-  };
-  const standaloneExceptions = {
-    '@lyra-ds/react/drawer': 4004,
-    '@lyra-ds/react/bottom-sheet': 3966,
-    '@lyra-ds/react/create-workspace-dialog': 5008,
-    '@lyra-ds/react/time-picker': 4591,
-    '@lyra-ds/react/date-picker': 4616,
-    '@lyra-ds/react/date-range-picker': 4621,
-    '@lyra-ds/react/command-palette': 4251,
-    '@lyra-ds/react/recurrence-selector': 4622,
-    '@lyra-ds/react/weekly-schedule-editor': 4618,
-  };
   for (const entries of Object.values(candidate.standalone)) {
     for (const entry of entries) {
       const cap = APPROVED_ABSOLUTE_CAPS[entry.publicEntry];
@@ -360,29 +332,7 @@ function approvedBudgetCandidate() {
         entry.sizeLimit.sizeLimit = cap.bytes;
         entry.sizeLimit.size = Math.min(entry.sizeLimit.size, cap.bytes);
       }
-      if (standaloneExceptions[entry.publicEntry] !== undefined) {
-        const reference = budgetReferenceFixture().standalone.react.find(
-          (item) => item.publicEntry === entry.publicEntry,
-        );
-        entry.assets.javascript.brotliBytes =
-          reference.assets.javascript.brotliBytes + standaloneExceptions[entry.publicEntry];
-      }
     }
-  }
-  const tabs = candidate.standalone.react.find(
-    (entry) => entry.publicEntry === '@lyra-ds/react/tabs',
-  );
-  tabs.name = "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'";
-  tabs.sizeLimit.name = tabs.name;
-  tabs.sizeLimit.size = 1452;
-  tabs.assets.javascript.brotliBytes = 1780;
-  candidate.standalone.alpine[0].assets.javascript.brotliBytes = 26329;
-  for (const [name, increase] of Object.entries({
-    overlays: 6642,
-    'application-shell': 4747,
-    scheduling: 4976,
-  })) {
-    candidate.scenarios[name].assets.javascript.brotliBytes += increase;
   }
   return candidate;
 }
@@ -399,17 +349,18 @@ function ledgerCandidateFor(candidate) {
   };
 }
 
-test('native budget check accepts the approved historical migration on a different architecture', () => {
+test('native budget check accepts the 1.0.0 candidate reference on a different platform', () => {
   const result = checkBundleBudgets(budgetReferenceFixture(), approvedBudgetCandidate());
 
   assert.equal(result.result, 'pass');
-  assert.equal(result.environment.architecture, 'arm64');
-  assert.equal(result.artifacts['@lyra-ds/react'].version, '0.5.0');
-  assert.equal(
-    result.entries.react.find((entry) => entry.publicEntry === '@lyra-ds/react/drawer').migration
-      .approvedException,
-    4004,
+  assert.equal(result.environment.architecture, 'x64');
+  assert.equal(result.artifacts['@lyra-ds/react'].version, '1.0.0');
+  const drawer = result.entries.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/drawer',
   );
+  assert.equal(drawer.migration.approvedException, null);
+  assert.equal(drawer.migration.limitBytes, 3000);
+  assert.equal(drawer.deltas.brotliBytes, 0);
   assert.equal(result.entries.css.length, 4);
 });
 
@@ -470,27 +421,27 @@ test('native budget check rejects migration and absolute-cap breaches without tr
   const drawer = candidate.standalone.react.find(
     (entry) => entry.publicEntry === '@lyra-ds/react/drawer',
   );
-  drawer.assets.javascript.brotliBytes += 1;
+  drawer.assets.javascript.brotliBytes += 3001;
   drawer.sizeLimit.passed = true;
   assert.throws(
     () => checkBundleBudgets(budgetReferenceFixture(), candidate),
-    /drawer Brotli increase exceeds approved exception/,
+    /drawer Brotli increase exceeds migration ceiling/,
   );
 
   const cappedGrowth = approvedBudgetCandidate();
   cappedGrowth.standalone.react.find(
     (entry) => entry.publicEntry === '@lyra-ds/react/time-picker',
-  ).assets.javascript.brotliBytes += 1;
+  ).assets.javascript.brotliBytes += 3001;
   assert.throws(
     () => checkBundleBudgets(budgetReferenceFixture(), cappedGrowth),
-    /time-picker Brotli increase exceeds approved exception/,
+    /time-picker Brotli increase exceeds migration ceiling/,
   );
 
   const cappedScenario = approvedBudgetCandidate();
-  cappedScenario.scenarios.overlays.assets.javascript.brotliBytes += 1;
+  cappedScenario.scenarios.overlays.assets.javascript.brotliBytes += 3001;
   assert.throws(
     () => checkBundleBudgets(budgetReferenceFixture(), cappedScenario),
-    /scenario overlays Brotli increase exceeds approved exception/,
+    /scenario overlays Brotli increase exceeds migration ceiling/,
   );
 
   const overCap = approvedBudgetCandidate();

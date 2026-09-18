@@ -1,6 +1,6 @@
 # Lyra V1 Overlay Family Design
 
-**Status:** Approved
+**Status:** Implemented
 
 **Date:** 2026-08-30
 

@@ -1,0 +1,45 @@
+{
+  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on an earlier commit of the candidate branch whose three package archives are byte-identical (same SHA-256) to the candidate source revision; only documentation and baseline files changed in between.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "method": "Existing @lyra-ds/alpine browser suites executed against the extracted 1.0.0 Alpine and Styles archives through a controller Vitest config that redirects ./index and @lyra-ds/styles/styles.css to the extracted files and refuses production source modules; seven source-only internal suites excluded.",
+  "extracted": [
+    {
+      "file": "node_modules/@lyra-ds/alpine/dist/index.js",
+      "sha256": "ec161c2818a63a0eb4f8ed00e11889d95677311e6e25c69e4794c8517fafe3d3"
+    },
+    {
+      "file": "node_modules/@lyra-ds/styles/styles.css",
+      "sha256": "3dd7ba037d829139ed960886c983d48623f612e56abd6e2cc74637811f17a3ed"
+    }
+  ],
+  "negativeControl": {
+    "description": "Extracted ESM replaced by a no-op plugin for one Dropdown case, then restored byte-for-byte",
+    "numFailedTests": 1,
+    "numPassedTests": 0
+  },
+  "engines": {
+    "chromium": {
+      "total": 341,
+      "passed": 341,
+      "failed": 0,
+      "loadedPackedEsm": true,
+      "loadedProductionSourceIndex": false
+    },
+    "firefox": {
+      "total": 341,
+      "passed": 341,
+      "failed": 0,
+      "loadedPackedEsm": true,
+      "loadedProductionSourceIndex": false
+    },
+    "webkit": {
+      "total": 341,
+      "passed": 341,
+      "failed": 0,
+      "loadedPackedEsm": true,
+      "loadedProductionSourceIndex": false
+    }
+  }
+}

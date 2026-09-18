@@ -1,0 +1,86 @@
+{
+  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on an earlier commit of the candidate branch whose three package archives are byte-identical (same SHA-256) to the candidate source revision; only documentation and baseline files changed in between.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "package": "styles",
+  "engine": "firefox",
+  "success": true,
+  "numTotalTests": 107,
+  "numPassedTests": 107,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "files": [
+    {
+      "file": "packages/styles/tests/active-hover.test.ts",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/brand-theme.test.ts",
+      "total": 49,
+      "passed": 49,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/coarse-targets.test.ts",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/compat-shadcn.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/contrast-regressions.test.ts",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/dialog.test.ts",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/file-upload.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/focus-indicators.test.ts",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/layout.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/styles/tests/popover.test.ts",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    }
+  ],
+  "nonPassing": []
+}

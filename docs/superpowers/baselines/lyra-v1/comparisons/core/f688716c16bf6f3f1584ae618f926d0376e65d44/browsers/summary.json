@@ -1,0 +1,53 @@
+{
+  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on an earlier commit of the candidate branch whose three package archives are byte-identical (same SHA-256) to the candidate source revision; only documentation and baseline files changed in between.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "suites": {
+    "alpine-chromium": {
+      "total": 348,
+      "passed": 348,
+      "failed": 0
+    },
+    "alpine-firefox": {
+      "total": 348,
+      "passed": 348,
+      "failed": 0
+    },
+    "alpine-webkit": {
+      "total": 348,
+      "passed": 348,
+      "failed": 0
+    },
+    "react-chromium": {
+      "total": 848,
+      "passed": 848,
+      "failed": 0
+    },
+    "react-firefox": {
+      "total": 848,
+      "passed": 848,
+      "failed": 0
+    },
+    "react-webkit": {
+      "total": 848,
+      "passed": 848,
+      "failed": 0
+    },
+    "styles-chromium": {
+      "total": 111,
+      "passed": 111,
+      "failed": 0
+    },
+    "styles-firefox": {
+      "total": 107,
+      "passed": 107,
+      "failed": 0
+    },
+    "styles-webkit": {
+      "total": 107,
+      "passed": 107,
+      "failed": 0
+    }
+  }
+}

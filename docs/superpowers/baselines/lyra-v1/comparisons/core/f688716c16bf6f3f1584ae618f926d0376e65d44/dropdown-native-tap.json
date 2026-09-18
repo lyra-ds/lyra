@@ -1,0 +1,124 @@
+{
+  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on an earlier commit of the candidate branch whose three package archives are byte-identical (same SHA-256) to the candidate source revision; only documentation and baseline files changed in between.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "candidate": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "node": "v24.18.0",
+  "assets": {
+    "assets/index-BqXl3HW6.js": "cede3c24e49ffd60bfcafd8a4d3e622d552e5bb9cb30a57e626fc102a25cb8b8",
+    "assets/index-CsniSfCp.css": "fb24c5d19841690aae55216fb918ec2fd6349fea6d3ebf962b98a82c74bf1e09",
+    "index.html": "91b87744da2b505f69de0d3e950dc8d7b4ec8e2a884fced6b0125ca6ee914b74",
+    ".vite/manifest.json": "a124a2ec237392b54efaf3801b5b5d53c00874bef09bd6de479a0eb4b2cd2dcd"
+  },
+  "cases": [
+    {
+      "engine": "chromium",
+      "adapter": "react",
+      "browserVersion": "151.0.7922.34",
+      "errors": [],
+      "opened": {
+        "expanded": "true",
+        "triggerFocused": true,
+        "trustedTouchEvents": true
+      },
+      "outside": {
+        "expanded": "false",
+        "selections": ["choose"],
+        "outside": 1,
+        "trustedTouchEvents": true
+      },
+      "pass": true
+    },
+    {
+      "engine": "chromium",
+      "adapter": "alpine",
+      "browserVersion": "151.0.7922.34",
+      "errors": [],
+      "opened": {
+        "expanded": "true",
+        "triggerFocused": true,
+        "trustedTouchEvents": true
+      },
+      "outside": {
+        "expanded": "false",
+        "selections": ["choose"],
+        "outside": 1,
+        "trustedTouchEvents": true
+      },
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "adapter": "react",
+      "browserVersion": "153.0",
+      "errors": [],
+      "opened": {
+        "expanded": "true",
+        "triggerFocused": true,
+        "trustedTouchEvents": true
+      },
+      "outside": {
+        "expanded": "false",
+        "selections": ["choose"],
+        "outside": 1,
+        "trustedTouchEvents": true
+      },
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "adapter": "alpine",
+      "browserVersion": "153.0",
+      "errors": [],
+      "opened": {
+        "expanded": "true",
+        "triggerFocused": true,
+        "trustedTouchEvents": true
+      },
+      "outside": {
+        "expanded": "false",
+        "selections": ["choose"],
+        "outside": 1,
+        "trustedTouchEvents": true
+      },
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "adapter": "react",
+      "browserVersion": "26.5",
+      "errors": [],
+      "opened": {
+        "expanded": "true",
+        "triggerFocused": true,
+        "trustedTouchEvents": true
+      },
+      "outside": {
+        "expanded": "false",
+        "selections": ["choose"],
+        "outside": 1,
+        "trustedTouchEvents": true
+      },
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "adapter": "alpine",
+      "browserVersion": "26.5",
+      "errors": [],
+      "opened": {
+        "expanded": "true",
+        "triggerFocused": true,
+        "trustedTouchEvents": true
+      },
+      "outside": {
+        "expanded": "false",
+        "selections": ["choose"],
+        "outside": 1,
+        "trustedTouchEvents": true
+      },
+      "pass": true
+    }
+  ]
+}
