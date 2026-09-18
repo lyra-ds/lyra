@@ -1,7 +1,7 @@
 // The accepted reference is the 1.0.0 candidate (maintainer decision, 2026-09-18). The one-time
 // migration exceptions approved against the Core Beta reference are realized in it and no longer
 // apply; every entry is measured against the release itself under the default ceilings.
-const REFERENCE_REVISION = 'f688716c16bf6f3f1584ae618f926d0376e65d44';
+const REFERENCE_REVISION = 'aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0';
 const APPROVED_ROOT_LOCK = '1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf';
 export const APPROVED_FIXTURE_SOURCE_SHA256 =
   '07a32c9a76696fd88efdb0ab9aa16017fe3b6f3023e8d9f64c02e42a69b2c85e';

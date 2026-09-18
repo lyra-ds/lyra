@@ -75,7 +75,13 @@ function sha256(source) {
 
 /** Packed artifact identity: SHA-256 of the decompressed tar stream (see tools/bundle-baseline/measure.mjs). */
 function artifactSha256(tarballBytes) {
-  return sha256(gunzipSync(tarballBytes));
+  try {
+    return sha256(gunzipSync(tarballBytes));
+  } catch {
+    // A corrupted or non-gzip archive still gets a deterministic identity distinct from any valid
+    // archive, so identity comparisons report a mismatch instead of a decompression failure.
+    return sha256(Buffer.concat([Buffer.from('lyra-invalid-gzip:'), tarballBytes]));
+  }
 }
 
 export function percentile(samples, percentileValue) {

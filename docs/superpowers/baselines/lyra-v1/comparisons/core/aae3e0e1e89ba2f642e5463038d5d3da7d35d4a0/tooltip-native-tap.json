@@ -1,7 +1,7 @@
 {
-  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
-  "measuredRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
-  "note": "Measured on the candidate archives extracted from the 1.0.0 tarballs.",
+  "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on the candidate archives extracted from the 1.0.0 tarballs (identical decompressed tar streams at the source revision).",
   "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
   "method": "Retained native coarse-pointer proof: Playwright touchscreen.tap on a production Vite consumer of the extracted React Tooltip, Alpine plugin and Styles; the tap keeps the native action (exactly-once submit), no hover tooltip is emulated, interception control detected. The media screening skips Tooltip under the coarse-pointer profile by contract (no hover).",
   "candidate": "f688716c16bf6f3f1584ae618f926d0376e65d44",

@@ -14,6 +14,12 @@ Decision: promote the reference to the release itself. The producer refuses to o
 
 Decision: amend `tools/v1-core/check.mjs` so `**Status:** Implemented` is a second accepted promoted state, still requiring the exact passing Automated Core evidence that the FileUpload wave status requires; `tools/v1-core/check.test.mjs` covers acceptance with evidence, rejection without evidence and rejection of any other wording. No product, dependency or numerical change.
 
+## Decision 3 — packed artifact identity is the decompressed tar stream
+
+The candidate PR's build job failed with `candidate artifact binding mismatch for @lyra-ds/styles` although the archives were reproduced from the same commit: `pnpm pack` writes a gzip header whose OS byte differs by platform (macOS `0x13`, Linux `0x03`, zlib ≥ 1.2.12), so the `.tgz` SHA-256 differs between the native evidence host and Linux CI while the decompressed tar streams are identical for all three packages (CI diagnostic on 2026-09-18: Styles `9deeccbe…`, React `a86150e8…`, Alpine `dfef3509…` on both platforms; only the header byte differs).
+
+Decision (maintainer, 2026-09-18, conditional on that confirmation): the identity of a packed artifact in the bundle reference, the FileUpload evidence, the program ledger and the bundle gate is the SHA-256 of the decompressed tar stream (`artifactSha256` in `tools/bundle-baseline/measure.mjs`, mirrored in `tools/file-upload-performance/measure.mjs`). The published npm tarball keeps its own registry integrity; post-publication verification decompresses the downloaded tarball and compares the tar stream hash with the ledger. The bundle reference and the FileUpload evidence were regenerated under the new identity; the acceptance mechanism record of PR #232 is amended by this decision.
+
 ## Boundaries
 
 Neither decision versions, merges the Version Packages PR or publishes. Publication remains the maintainer's merge of the candidate PR after CI passes on its exact head.

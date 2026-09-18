@@ -35,6 +35,7 @@ import {
   validateComparisonArtifacts,
   writeBaselineArtifacts,
   writeComparisonArtifacts,
+  artifactSha256,
 } from './measure.mjs';
 import {
   APPROVED_ABSOLUTE_CAPS,
@@ -309,7 +310,7 @@ function budgetReferenceFixture() {
         'lyra-v1',
         'comparisons',
         'file-upload',
-        'f688716c16bf6f3f1584ae618f926d0376e65d44.json',
+        'aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0.json',
       ),
       'utf8',
     ),
@@ -1425,6 +1426,16 @@ test('changed Lyra tarballs install independently of the external lock', () => {
       '9.9.9',
     );
     assert.match(readFileSync(join(installed, 'index.js'), 'utf8'), /artifactMarker = 'changed'/);
+    // Identity is the decompressed tar stream: flipping the gzip header OS byte (macOS 0x13 vs
+    // Linux 0x03) must not change it, while any change to the packed contents must.
+    const original = readFileSync(tarball);
+    const otherPlatform = Buffer.from(original);
+    otherPlatform[9] = otherPlatform[9] === 0x03 ? 0x13 : 0x03;
+    assert.notDeepEqual(otherPlatform, original);
+    assert.equal(artifactSha256(otherPlatform), artifactSha256(original));
+    assert.equal(artifacts['@lyra-ds/react'].sha256, artifactSha256(original));
+    assert.notEqual(artifactSha256(Buffer.from('not a gzip archive')), artifactSha256(original));
+
     writeFileSync(tarball, `${readFileSync(tarball)}mutated`);
     assert.throws(
       () => installPackedArtifacts(fixture, { react: tarball }, { expectedArtifacts: artifacts }),

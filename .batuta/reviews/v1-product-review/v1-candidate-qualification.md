@@ -1,17 +1,20 @@
 # Lyra 1.0.0 release candidate — qualification record (2026-09-18)
 
-Candidate `sourceRevision`: `f688716c16bf6f3f1584ae618f926d0376e65d44` on branch `release/1.0.0-candidate` (from merged main `81714a6`, PR #235). Package archives: React `56ef23c0f2e10fc3d9c6d4be832adf169d1633cb1f92b6f7241a54c895535f32`, Alpine `eda54b2e0e92cda17b3011a3002e861b51bff6a9abc2658b7e73882b14d70969`, Styles `91289e91ebb4a801ed45da3d901bb6c95b3370fd899a4923c66cd534ebcd8558`, all `1.0.0`, reproduced by the bundle gate, an independent `pnpm pack`, the FileUpload evidence producer and the Alpine/media/Dropdown consumers. Plan: `.batuta/plans/v1-release-candidate.md`. Raw evidence: MAIN `.batuta/runs/v1-candidate-20260918/`. Native macOS arm64; Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1 (Chromium 151.0.7922.34, Firefox 153.0, WebKit 26.5), Vite 8.2.1.
+Candidate `sourceRevision`: `aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0` on branch `release/1.0.0-candidate` (from merged main `81714a6`, PR #235). Package archives (identity = SHA-256 of the decompressed tar stream, decision 3): React `a86150e8f3c922073abc5e6e835b780e5604537d28b209815b2c1a44b96b99c2`, Alpine `dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969`, Styles `9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff`, all `1.0.0`; the same tar-stream hashes were produced on the native macOS host and by the Linux CI diagnostic, while the `.tgz` bytes differ only in the gzip header platform byte. The `.tgz` hashes measured locally (React `56ef23c0…`, Alpine `eda54b2e…`, Styles `91289e91…`) identify the same archives. Plan: `.batuta/plans/v1-release-candidate.md`. Raw evidence: MAIN `.batuta/runs/v1-candidate-20260918/`. Native macOS arm64; Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1 (Chromium 151.0.7922.34, Firefox 153.0, WebKit 26.5), Vite 8.2.1.
 
 ## Branch composition
 
 | Commit | Content |
 | --- | --- |
-| `812e92f` | `changeset version`: 46 changesets consumed, Styles/React/Alpine 1.0.0, CHANGELOGs regenerated. Gates, suites and reruns below were measured here; the three archives are byte-identical at every later commit (no package file changed). |
+| `812e92f` | `changeset version`: 46 changesets consumed, Styles/React/Alpine 1.0.0, CHANGELOGs regenerated. Gates, suites and reruns below were measured here; the three archives are identical (same decompressed tar SHA-256) at every later commit (no package file changed). |
 | `a40caeb` | Compatibility guide tables at 1.0.0 (en, pt-BR). |
-| `cde21a0` | Core Beta bundle reference (`6b26a35`, React/Styles 0.4.2, Alpine 0.5.0) retired. |
-| `f688716` | Candidate bundle reference written (`pnpm baseline:bundles --write`). **Candidate source revision.** |
-| `9898b5e` | FileUpload evidence (`pnpm evidence:file-upload`) and accepted pointer. |
-| this record | `budgets.mjs` re-pin, V1 Core policy amendment, specification status flips, `schemaVersion: 2` ledger, core evidence artifacts. |
+| `cde21a0`, `f688716`, `9898b5e` | First reference promotion and FileUpload evidence under the `.tgz` identity (superseded below; kept in history). |
+| `3bbe868`, `3d242a5` | First qualification and review fix under the `.tgz` identity (ledger since regenerated). |
+| `496506b`, `5178dbb` | CI: full-history checkout (`fetch-depth: 0`) for the ancestry checks; `safe.directory` in the Playwright container job. |
+| `171944c` | Tar-stream artifact identity in the tools (decision 3); `.tgz`-hash reference retired; CI diagnostic removed. |
+| `aae3e0e` | Candidate bundle reference written under the tar-stream identity. **Candidate source revision.** |
+| `3588aa8` | FileUpload evidence (`pnpm evidence:file-upload`) and accepted pointer under the tar-stream identity. |
+| this record | `budgets.mjs` re-pinned to `aae3e0e`, ledger regenerated with tar-stream hashes, core evidence moved to `comparisons/core/aae3e0e…/`. |
 
 ## Evidence
 
@@ -30,9 +33,12 @@ Candidate `sourceRevision`: `f688716c16bf6f3f1584ae618f926d0376e65d44` on branch
 
 ## Ledger
 
-`docs/superpowers/baselines/lyra-v1/program.json` is `schemaVersion: 2`, `releaseStatus: candidate`, `path: null` archives. Eleven components `qualified`, each with 23 `PASS` cells bound to `f688716…` and to hash-verified artifacts under `comparisons/core/f688716c16bf6f3f1584ae618f926d0376e65d44/` (`component-suites.json` for the three engines, `keyboard-focus` and `ltr`; `package-gates.md` for React 18/19, SSR, hydration, packed and consumer cells; `bundle-budgets.json` with the ledger binding for the bundle cells; `media-screening.json` for axe, forced-colors, reduced-motion, RTL and coarse-pointer; `dropdown-native-tap.json` and `tooltip-native-tap.json` for those two components' `coarse-pointer`; `alpine-packed.json`, `browsers/*.json` and the `README.md` hash index as immutable evidence). The core `README.md` states the cell mapping, including that Dialog has no standalone Size Limit entry of its own (its bytes are measured through `create-workspace-dialog`, the shared modal core of `drawer`/`bottom-sheet` and the `overlays` composition) — a standalone Dialog budget is a post-1.0 follow-up. Migration guides: `apps/docs/content/docs/{en,pt-BR}/guides/migration-1-0.mdx`. Compatibility: `@lyra-ds/styles =1.0.0`, `@lyra-ds/react =1.0.0` (peer `react >=18 <20`), `@lyra-ds/alpine =1.0.0` (peer `alpinejs >=3.13 <4`). Governing specifications read `**Status:** Implemented` (overlay family, Tabs owned-content, Data and Files). `pnpm v1-release:check`: consistent; `pnpm v1-core:check`: consistent.
+`docs/superpowers/baselines/lyra-v1/program.json` is `schemaVersion: 2`, `releaseStatus: candidate`, `path: null` archives. Eleven components `qualified`, each with 23 `PASS` cells bound to `aae3e0e…` and to hash-verified artifacts under `comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/` (`component-suites.json` for the three engines, `keyboard-focus` and `ltr`; `package-gates.md` for React 18/19, SSR, hydration, packed and consumer cells; `bundle-budgets.json` with the ledger binding for the bundle cells; `media-screening.json` for axe, forced-colors, reduced-motion, RTL and coarse-pointer; `dropdown-native-tap.json` and `tooltip-native-tap.json` for those two components' `coarse-pointer`; `alpine-packed.json`, `browsers/*.json` and the `README.md` hash index as immutable evidence). The core `README.md` states the cell mapping, including that Dialog has no standalone Size Limit entry of its own (its bytes are measured through `create-workspace-dialog`, the shared modal core of `drawer`/`bottom-sheet` and the `overlays` composition) — a standalone Dialog budget is a post-1.0 follow-up. Migration guides: `apps/docs/content/docs/{en,pt-BR}/guides/migration-1-0.mdx`. Compatibility: `@lyra-ds/styles =1.0.0`, `@lyra-ds/react =1.0.0` (peer `react >=18 <20`), `@lyra-ds/alpine =1.0.0` (peer `alpinejs >=3.13 <4`). Governing specifications read `**Status:** Implemented` (overlay family, Tabs owned-content, Data and Files). `pnpm v1-release:check`: consistent; `pnpm v1-core:check`: consistent.
 
 ## Tool changes in this candidate
+
+- `tools/bundle-baseline/measure.mjs` and `tools/file-upload-performance/measure.mjs`: packed artifact identity is `artifactSha256` = SHA-256 of the decompressed tar stream (a corrupted or non-gzip archive gets a distinct deterministic identity); test proves the gzip OS-byte flip leaves the identity unchanged while content changes do not.
+- `.github/workflows/ci.yml`, `.github/workflows/native-contributors.yml`: `fetch-depth: 0` on every checkout and `safe.directory` in the container job, so the ancestry checks can run in CI.
 
 - `tools/bundle-baseline/budgets.mjs`: accepted reference revision is the candidate; the one-time standalone/scenario exceptions approved against the Core Beta reference are removed (realized in the reference); the complex entry list is explicit so ceilings stay 3000/1500 bytes. Tests updated to the candidate fixture (42/42).
 - `tools/v1-core/check.mjs`: `**Status:** Implemented` accepted for the Data and Files family with the same exact Automated Core evidence requirement (16/16 tests).
@@ -41,7 +47,7 @@ Both follow `.batuta/specs/2026-09-18-v1-candidate-reference-and-policy-decision
 
 ## Independent review
 
-OpenCode GLM 5.3 Flash read-only review of the tool/spec diff, ledger and core artifacts: budget-gate policy DONE, V1 Core policy DONE; two findings accepted and closed here (engine/keyboard/ltr cells now bind per-component suite evidence; Tooltip `coarse-pointer` binds a fresh native tap proof; the bound bundle report now carries the ledger binding; Dialog standalone coverage disclosed in the core README). One finding declined with evidence: the gate's accepted reference is the pointer's comparison `after` (`resolveBaselineReference`), so `REFERENCE_REVISION` = `f688716…` is correct while `bundles.json` records the retirement commit `cde21a0` as the FileUpload comparison's `before`; `pnpm baseline:bundles --check-budgets` passed twice on this branch.
+OpenCode GLM 5.3 Flash read-only review of the tool/spec diff, ledger and core artifacts: budget-gate policy DONE, V1 Core policy DONE; two findings accepted and closed here (engine/keyboard/ltr cells now bind per-component suite evidence; Tooltip `coarse-pointer` binds a fresh native tap proof; the bound bundle report now carries the ledger binding; Dialog standalone coverage disclosed in the core README). One finding declined with evidence: the gate's accepted reference is the pointer's comparison `after` (`resolveBaselineReference`), so `REFERENCE_REVISION` = `aae3e0e…` is correct while `bundles.json` records the retirement commit `cde21a0` as the FileUpload comparison's `before`; `pnpm baseline:bundles --check-budgets` passed twice on this branch.
 
 ## Limits and boundary
 

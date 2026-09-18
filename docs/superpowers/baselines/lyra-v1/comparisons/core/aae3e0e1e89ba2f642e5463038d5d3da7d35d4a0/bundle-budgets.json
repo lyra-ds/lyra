@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "kind": "bundle-budget",
   "result": "pass",
-  "referenceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
-  "candidateRevision": "9898b5ec8e94522136d3539763af589bfe0421cc",
+  "referenceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+  "candidateRevision": "3588aa8b079bf74fbec0cf1c4ef4e00d80a19387",
   "environment": {
     "operatingSystem": "darwin 25.6.0",
     "architecture": "arm64",
@@ -422,40 +422,40 @@
     "@lyra-ds/react": {
       "version": "1.0.0",
       "tarball": "lyra-ds-react-1.0.0.tgz",
-      "sha256": "56ef23c0f2e10fc3d9c6d4be832adf169d1633cb1f92b6f7241a54c895535f32"
+      "sha256": "a86150e8f3c922073abc5e6e835b780e5604537d28b209815b2c1a44b96b99c2"
     },
     "@lyra-ds/alpine": {
       "version": "1.0.0",
       "tarball": "lyra-ds-alpine-1.0.0.tgz",
-      "sha256": "eda54b2e0e92cda17b3011a3002e861b51bff6a9abc2658b7e73882b14d70969"
+      "sha256": "dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969"
     },
     "@lyra-ds/styles": {
       "version": "1.0.0",
       "tarball": "lyra-ds-styles-1.0.0.tgz",
-      "sha256": "91289e91ebb4a801ed45da3d901bb6c95b3370fd899a4923c66cd534ebcd8558"
+      "sha256": "9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff"
     }
   },
   "candidateBinding": {
     "result": "pass",
-    "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+    "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
     "packages": {
       "styles": {
         "name": "@lyra-ds/styles",
         "version": "1.0.0",
         "tarball": "lyra-ds-styles-1.0.0.tgz",
-        "sha256": "91289e91ebb4a801ed45da3d901bb6c95b3370fd899a4923c66cd534ebcd8558"
+        "sha256": "9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff"
       },
       "react": {
         "name": "@lyra-ds/react",
         "version": "1.0.0",
         "tarball": "lyra-ds-react-1.0.0.tgz",
-        "sha256": "56ef23c0f2e10fc3d9c6d4be832adf169d1633cb1f92b6f7241a54c895535f32"
+        "sha256": "a86150e8f3c922073abc5e6e835b780e5604537d28b209815b2c1a44b96b99c2"
       },
       "alpine": {
         "name": "@lyra-ds/alpine",
         "version": "1.0.0",
         "tarball": "lyra-ds-alpine-1.0.0.tgz",
-        "sha256": "eda54b2e0e92cda17b3011a3002e861b51bff6a9abc2658b7e73882b14d70969"
+        "sha256": "dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969"
       }
     }
   },
