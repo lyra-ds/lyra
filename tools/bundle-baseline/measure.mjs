@@ -1093,13 +1093,25 @@ async function readBaselineArtifacts(options) {
   return expected;
 }
 
-function ledgerCandidate(paths) {
+function gitIsAncestorOfHead(revision) {
+  if (!/^[0-9a-f]{40}$/.test(revision ?? '')) return false;
+  const result = spawnSync('git', ['merge-base', '--is-ancestor', revision, 'HEAD'], {
+    cwd: REPO,
+    encoding: 'utf8',
+  });
+  return result.status === 0;
+}
+
+function ledgerCandidate(paths, isAncestorOfHead = gitIsAncestorOfHead) {
   const ledgerPath = paths?.ledgerJson ?? PROGRAM_JSON;
   if (!existsSync(ledgerPath)) return null;
   const ledger = readJson(ledgerPath);
   if (ledger.schemaVersion !== 2 || ledger.releaseStatus !== 'candidate') return null;
   if (!ledger.candidate)
     throw new Error('candidate program ledger is missing candidate artifact binding');
+  if (!isAncestorOfHead(ledger.candidate.sourceRevision)) {
+    throw new Error('candidate sourceRevision is not an ancestor of HEAD');
+  }
   return ledger.candidate;
 }
 
@@ -1228,7 +1240,12 @@ export async function checkBaselineArtifacts(actual, options) {
 
 export async function runBundleBaselineCli(
   args,
-  { paths, collect = collectBaseline, ensureClean = assertCleanForWrite } = {},
+  {
+    paths,
+    collect = collectBaseline,
+    ensureClean = assertCleanForWrite,
+    isAncestorOfHead = gitIsAncestorOfHead,
+  } = {},
 ) {
   const mode = args[0];
   const acceptsComparison = mode === '--accept-comparison' && args.length === 2;
@@ -1248,7 +1265,7 @@ export async function runBundleBaselineCli(
     assertBaselineArtifactsWritable(paths);
   }
 
-  const candidate = mode === '--check-budgets' ? ledgerCandidate(paths) : null;
+  const candidate = mode === '--check-budgets' ? ledgerCandidate(paths, isAncestorOfHead) : null;
   const expected =
     mode === '--check' || mode === '--check-budgets' ? await resolveBaselineReference(paths) : null;
   const current = await collect({

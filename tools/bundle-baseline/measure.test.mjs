@@ -456,6 +456,13 @@ test('native budget check binds packed artifacts to a candidate ledger only when
     () => checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate }),
     /candidate artifact binding mismatch for @lyra-ds\/react/,
   );
+
+  ledgerCandidate.packages.react.tarball = candidate.environment.packages['@lyra-ds/react'].tarball;
+  ledgerCandidate.packages.react.name = '@lyra-ds/styles';
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate, { ledgerCandidate }),
+    /candidate artifact binding mismatch for @lyra-ds\/react/,
+  );
 });
 
 test('native budget check rejects migration and absolute-cap breaches without trusting Size Limit passed', () => {
@@ -1358,9 +1365,18 @@ test('bundle CLI reads a candidate ledger only for the budget gate', async () =>
     const report = await runBundleBaselineCli(['--check-budgets'], {
       paths: { ledgerJson },
       collect: async () => measured,
+      isAncestorOfHead: () => true,
     });
     assert.equal(report.candidateBinding.result, 'pass');
     assert.deepEqual(Object.keys(report.candidateBinding.packages), ['styles', 'react', 'alpine']);
+    await assert.rejects(
+      runBundleBaselineCli(['--check-budgets'], {
+        paths: { ledgerJson },
+        collect: async () => measured,
+        isAncestorOfHead: () => false,
+      }),
+      /candidate sourceRevision is not an ancestor of HEAD/,
+    );
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

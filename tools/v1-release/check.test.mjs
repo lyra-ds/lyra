@@ -9,8 +9,13 @@ import test from 'node:test';
 
 import * as releaseCheck from './check.mjs';
 
-const { validateFileUploadBinding, validateV1Entry, validateV1Program, validateV1ReleaseWiring } =
-  releaseCheck;
+const {
+  validateCandidateRevision,
+  validateFileUploadBinding,
+  validateV1Entry,
+  validateV1Program,
+  validateV1ReleaseWiring,
+} = releaseCheck;
 
 const execFileAsync = promisify(execFile);
 const LEDGER_PATH = 'docs/superpowers/baselines/lyra-v1/program.json';
@@ -330,7 +335,7 @@ function candidateProgram() {
     }
     input.documents[entry.migrationGuides.en] = '# Migration';
     input.documents[entry.migrationGuides.ptBR] = '# Migração';
-    const immutablePath = `.batuta/reviews/${entry.id}.md`;
+    const immutablePath = `${CORE_EVIDENCE_ROOT}/${entry.id}-immutable.md`;
     input.documents[immutablePath] = `${entry.id} immutable evidence`;
     entry.immutableEvidence = [
       { path: immutablePath, sha256: hash(input.documents[immutablePath]) },
@@ -1140,6 +1145,21 @@ test('accepts a complete schemaVersion 2 candidate program and rejects invalid b
       'dialog: qualified component requires immutable evidence',
     ],
     [
+      'immutable evidence outside core',
+      (input) => {
+        const path = '.batuta/reviews/outside.md';
+        input.documents[path] = 'outside';
+        input.hashes[path] = hash('outside');
+        input.ledger.components[0].immutableEvidence = [{ path, sha256: hash('outside') }];
+      },
+      'dialog: qualified component requires immutable evidence',
+    ],
+    [
+      'numeric immutable evidence path',
+      (input) => (input.ledger.components[0].immutableEvidence[0].path = 1),
+      'dialog: qualified component requires immutable evidence',
+    ],
+    [
       'missing runtime evidence',
       (input) => delete input.ledger.components[0].runtimeEvidence,
       'dialog: runtimeEvidence is required',
@@ -1217,6 +1237,7 @@ test('validates FileUpload candidate artifact bindings', () => {
   const candidate = candidateProgram().ledger.candidate;
   const pointer = { schemaVersion: 1, fileUpload: { revision: CANDIDATE_REVISION } };
   const comparison = {
+    result: 'pass',
     after: {
       revision: CANDIDATE_REVISION,
       environment: {
@@ -1441,7 +1462,8 @@ test('CLI rejects an untracked candidate archive binding', async () => {
       execFileAsync(process.execPath, ['tools/v1-release/check.mjs', '--ledger', temporaryLedger]),
       (error) =>
         error.code === 1 &&
-        error.stderr.includes(`referenced path is not Git-tracked: ${archivePath}`),
+        error.stderr.includes(`referenced path is not Git-tracked: ${archivePath}`) &&
+        error.stderr.includes('candidate sourceRevision is not an ancestor of HEAD'),
     );
   } finally {
     await rm(temporaryDirectory, { recursive: true, force: true });
@@ -1537,3 +1559,37 @@ for (const [name, mutate, expected] of [
     assert.ok(validateV1Program(input).some((error) => error.includes(expected)));
   });
 }
+
+test('requires a passing FileUpload comparison and an ancestor source revision', () => {
+  const candidate = candidateProgram().ledger.candidate;
+  const packages = {
+    '@lyra-ds/react': { sha256: candidate.packages.react.sha256 },
+    '@lyra-ds/styles': { sha256: candidate.packages.styles.sha256 },
+  };
+  const pointer = { schemaVersion: 1, fileUpload: { revision: CANDIDATE_REVISION } };
+  const comparison = {
+    result: 'pass',
+    after: { revision: CANDIDATE_REVISION, environment: { packages } },
+  };
+  assert.deepEqual(validateFileUploadBinding({ candidate, pointer, comparison }), []);
+  assert.deepEqual(
+    validateFileUploadBinding({
+      candidate,
+      pointer,
+      comparison: { ...comparison, result: 'fail' },
+    }),
+    ['FileUpload runtime evidence is not bound to the candidate artifacts'],
+  );
+  assert.deepEqual(
+    validateCandidateRevision(CANDIDATE_REVISION, () => true),
+    [],
+  );
+  assert.deepEqual(
+    validateCandidateRevision(CANDIDATE_REVISION, () => false),
+    ['candidate sourceRevision is not an ancestor of HEAD'],
+  );
+  assert.deepEqual(
+    validateCandidateRevision(123, () => true),
+    ['candidate sourceRevision is not an ancestor of HEAD'],
+  );
+});

@@ -548,7 +548,7 @@ function validateQualifiedEntry(entry, profile, documents, hashes, errors, label
     entry.immutableEvidence.every((evidence) =>
       candidate
         ? exactKeys(evidence, ['path', 'sha256']) &&
-          isRepositoryRelativePath(evidence.path) &&
+          isCoreEvidencePath(evidence.path, candidate.sourceRevision) &&
           hasMatchingHash(evidence.path, evidence.sha256, hashes)
         : hasTrackedDocument(evidence, documents),
     );
@@ -903,6 +903,7 @@ export function validateFileUploadBinding({ candidate, pointer, comparison } = {
     typeof revision !== 'string' ||
     revision.length === 0 ||
     !comparison ||
+    comparison.result !== 'pass' ||
     comparison.after?.revision !== revision
   ) {
     return ['FileUpload runtime evidence is not bound to the candidate artifacts'];
@@ -918,6 +919,25 @@ export function validateFileUploadBinding({ candidate, pointer, comparison } = {
       return ['FileUpload runtime evidence is not bound to the candidate artifacts'];
   }
   return [];
+}
+
+export function validateCandidateRevision(sourceRevision, isAncestorOfHead) {
+  if (!/^[0-9a-f]{40}$/u.test(sourceRevision ?? '') || !isAncestorOfHead(sourceRevision)) {
+    return ['candidate sourceRevision is not an ancestor of HEAD'];
+  }
+  return [];
+}
+
+async function isAncestorOfHead(revision) {
+  try {
+    await execFileAsync('git', ['cat-file', '-e', `${revision}^{commit}`], { cwd: repositoryRoot });
+    await execFileAsync('git', ['merge-base', '--is-ancestor', revision, 'HEAD'], {
+      cwd: repositoryRoot,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function collectFileUploadBinding(candidate) {
@@ -966,6 +986,9 @@ async function main(args = process.argv.slice(2)) {
   const { documents, hashes, errors: documentErrors } = await collectDocuments(ledger);
   const errors = [...documentErrors, ...validateV1Program({ ledger, documents, hashes })];
   if (ledger.schemaVersion === 2) {
+    const sourceRevision = ledger.candidate?.sourceRevision;
+    const ancestor = await isAncestorOfHead(sourceRevision);
+    errors.push(...validateCandidateRevision(sourceRevision, () => ancestor));
     errors.push(...(await collectFileUploadBinding(ledger.candidate)));
   }
   if (errors.length === 0) {

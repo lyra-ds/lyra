@@ -399,6 +399,7 @@ function verifyCandidateBinding(packages, ledgerCandidate) {
     );
     const packedArtifact = packages[packageName];
     if (
+      ledgerArtifact.name !== packageName ||
       ledgerArtifact.version !== packedArtifact.version ||
       ledgerArtifact.tarball !== packedArtifact.tarball ||
       ledgerArtifact.sha256 !== packedArtifact.sha256

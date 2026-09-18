@@ -29,6 +29,18 @@ Not run here: the full root `pnpm test` and browser suites; the change touches n
 
 Codex/`gpt-5.6-terra` medium implemented the brief in one round (its own verification failed only on sandbox limits: `ERR_PNPM_PNPM_ENGINE_IDENTITY_UNVERIFIABLE` and missing `dist`, both reproduced as environment-only). Controller corrections before verification: removed a misleading `schemaVersion must equal 1` message for a missing candidate block (now `schemaVersion 2 requires a candidate block`), removed a no-op `entryId` helper, and added a 40-hex guard in `isCoreEvidencePath` so a malformed `sourceRevision` with a non-null archive path reports an error instead of throwing from `path.resolve`; one regression test covers these. Independent OpenCode/`glm-5.3-flash` review of the final diff: 3/3 DONE, no findings (first invocation misparsed the attached-file argument and produced no verdict; the retry read the working tree). Raw logs: `.batuta/v1-candidate-acceptance-{brief,executor.log,review.log,budgets.log}` in this checkout (untracked).
 
+## PR #232 review follow-up
+
+All nine checks passed on `df1b3c4` (lint, typecheck, test, build, native Linux/Windows/macOS, CodeRabbit, Greptile). Five review findings were adjudicated and all accepted as real gaps in the binding contract:
+
+- Greptile P1, unverified source revision: the CLI now requires `candidate.sourceRevision` to name an existing commit that is an ancestor of `HEAD` (`git cat-file -e`, `git merge-base --is-ancestor`), reported as `candidate sourceRevision is not an ancestor of HEAD`; `validateCandidateRevision` is the pure form. The bundle gate applies the same ancestry rule before using a candidate ledger (`isAncestorOfHead` injectable in `runBundleBaselineCli`).
+- Greptile P1, immutable evidence without revision binding: v2 `immutableEvidence` entries must now live under `comparisons/core/<sourceRevision>/` like cell and runtime artifacts; historical records are referenced from the binding report rather than bound directly.
+- Greptile P2, package `name` ignored by the bundle binding: `verifyCandidateBinding` now compares `name` as well as version, tarball and sha256.
+- CodeRabbit major, failed FileUpload comparison accepted: `validateFileUploadBinding` requires `comparison.result === 'pass'`.
+- CodeRabbit minor, non-string immutable path reaching `node:path`: resolved by the core-directory rule, which type-checks before resolving; a numeric-path mutation is covered.
+
+Controller reran: `check.test.mjs` 115 pass, `measure.test.mjs` 42 pass, `prettier --check .`, `v1-release:check`, `v1-core:check` all pass. The follow-up commit requires its own CI on the new head before merge.
+
 ## Open decisions and next steps
 
 1. Inline-axis placement disposition (see the composed/media reconciliation) — unchanged, maintainer decision.
