@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -218,6 +219,18 @@ const REQUIRED_ENTRY_KEYS = new Set([
   'immutableEvidence',
   'manualEvidence',
 ]);
+const V1_PROGRAM_KEYS = new Set([
+  'schemaVersion',
+  'targetRelease',
+  'programSpecification',
+  'releaseStatus',
+  'acceptanceProfiles',
+  'components',
+]);
+const V2_PROGRAM_KEYS = new Set([...V1_PROGRAM_KEYS, 'candidate']);
+const V2_ENTRY_KEYS = new Set([...REQUIRED_ENTRY_KEYS, 'runtimeEvidence']);
+const RUNTIME_DECISION_PATH = '.batuta/specs/2026-09-15-v1-runtime-scope-proposal.md';
+const CORE_COMPARISON_ROOT = 'docs/superpowers/baselines/lyra-v1/comparisons/core/';
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -424,7 +437,37 @@ function validateOverlaySpecification(document, entries, errors) {
   }
 }
 
-function validateQualifiedEntry(entry, profile, documents, errors, label) {
+function isSha256(value) {
+  return /^[0-9a-f]{64}$/u.test(value ?? '');
+}
+
+function isCoreEvidencePath(path, sourceRevision) {
+  if (!/^[0-9a-f]{40}$/u.test(sourceRevision ?? '')) return false;
+  if (typeof path !== 'string' || !isRepositoryRelativePath(path)) return false;
+  const coreDirectory = resolve(repositoryRoot, CORE_COMPARISON_ROOT, sourceRevision);
+  const resolvedPath = resolve(repositoryRoot, path);
+  const descendant = relative(coreDirectory, resolvedPath);
+  return (
+    descendant !== '' &&
+    descendant !== '..' &&
+    !descendant.startsWith(`..${sep}`) &&
+    !isAbsolute(descendant)
+  );
+}
+
+function hasMatchingHash(path, expected, hashes) {
+  return Object.hasOwn(hashes, path) && isSha256(expected) && hashes[path] === expected;
+}
+
+function exactKeys(value, expected) {
+  return (
+    isPlainObject(value) &&
+    Object.keys(value).length === expected.length &&
+    expected.every((key) => Object.hasOwn(value, key))
+  );
+}
+
+function validateQualifiedEntry(entry, profile, documents, hashes, errors, label, candidate) {
   const specification = entry.governingSpecification;
   if (specification?.status !== 'implemented') {
     errors.push(`${label}: qualified component requires an implemented specification`);
@@ -463,47 +506,104 @@ function validateQualifiedEntry(entry, profile, documents, errors, label) {
     if (!profile?.includes(cell)) {
       errors.push(`${label}: acceptanceEvidence contains unknown cell ${cell}`);
     }
-    if (
-      !isPlainObject(evidence) ||
-      evidence.result !== 'PASS' ||
-      !/^[0-9a-f]{40}$/u.test(evidence.revision ?? '') ||
-      !hasTrackedDocument(evidence.artifact, documents)
-    ) {
+    const validEvidence = candidate
+      ? exactKeys(evidence, ['result', 'revision', 'artifact', 'sha256']) &&
+        evidence.result === 'PASS' &&
+        evidence.revision === candidate.sourceRevision &&
+        isCoreEvidencePath(evidence.artifact, candidate.sourceRevision) &&
+        hasMatchingHash(evidence.artifact, evidence.sha256, hashes)
+      : isPlainObject(evidence) &&
+        evidence.result === 'PASS' &&
+        /^[0-9a-f]{40}$/u.test(evidence.revision ?? '') &&
+        hasTrackedDocument(evidence.artifact, documents);
+    if (!validEvidence) {
       errors.push(`${label}: qualified component evidence ${cell} is invalid`);
+    }
+    if (candidate && evidence?.revision !== candidate.sourceRevision) {
+      errors.push(
+        `${label}: qualified component evidence ${cell} revision must equal candidate sourceRevision`,
+      );
     }
   }
   for (const cell of profile ?? []) {
     if (excluded.has(cell)) continue;
     const evidence = entry.acceptanceEvidence?.[cell];
-    if (
-      !isPlainObject(evidence) ||
-      evidence.result !== 'PASS' ||
-      !/^[0-9a-f]{40}$/u.test(evidence.revision ?? '') ||
-      !hasTrackedDocument(evidence.artifact, documents)
-    ) {
+    const validEvidence = candidate
+      ? exactKeys(evidence, ['result', 'revision', 'artifact', 'sha256']) &&
+        evidence.result === 'PASS' &&
+        evidence.revision === candidate.sourceRevision &&
+        isCoreEvidencePath(evidence.artifact, candidate.sourceRevision) &&
+        hasMatchingHash(evidence.artifact, evidence.sha256, hashes)
+      : isPlainObject(evidence) &&
+        evidence.result === 'PASS' &&
+        /^[0-9a-f]{40}$/u.test(evidence.revision ?? '') &&
+        hasTrackedDocument(evidence.artifact, documents);
+    if (!validEvidence) {
       errors.push(`${label}: qualified component requires passing ${cell} evidence`);
     }
   }
-  if (
-    !Array.isArray(entry.immutableEvidence) ||
-    entry.immutableEvidence.length === 0 ||
-    entry.immutableEvidence.some((path) => !hasTrackedDocument(path, documents))
-  ) {
+  const validImmutableEvidence =
+    Array.isArray(entry.immutableEvidence) &&
+    entry.immutableEvidence.length > 0 &&
+    entry.immutableEvidence.every((evidence) =>
+      candidate
+        ? exactKeys(evidence, ['path', 'sha256']) &&
+          isRepositoryRelativePath(evidence.path) &&
+          hasMatchingHash(evidence.path, evidence.sha256, hashes)
+        : hasTrackedDocument(evidence, documents),
+    );
+  if (!validImmutableEvidence) {
     errors.push(`${label}: qualified component requires immutable evidence`);
   }
+  if (candidate)
+    validateRuntimeEvidence(entry.runtimeEvidence, documents, hashes, errors, label, candidate);
 }
 
-export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
+function validateRuntimeEvidence(evidence, documents, hashes, errors, label, candidate) {
+  if (!isPlainObject(evidence)) return errors.push(`${label}: runtimeEvidence is required`);
+  if (evidence.result === 'PASS') {
+    if (
+      !exactKeys(evidence, ['result', 'artifact', 'sha256']) ||
+      !isCoreEvidencePath(evidence.artifact, candidate.sourceRevision) ||
+      !hasMatchingHash(evidence.artifact, evidence.sha256, hashes)
+    )
+      errors.push(`${label}: runtimeEvidence PASS is invalid`);
+    return;
+  }
+  if (evidence.result === 'deferred') {
+    if (evidence.basis !== 'numerical-runtime') {
+      errors.push(`${label}: runtimeEvidence deferred basis must equal numerical-runtime`);
+    }
+    if (
+      !exactKeys(evidence, ['result', 'basis', 'decision']) ||
+      evidence.decision !== RUNTIME_DECISION_PATH ||
+      !hasTrackedDocument(evidence.decision, documents)
+    )
+      errors.push(`${label}: runtimeEvidence deferred decision is invalid`);
+    if (!P1_IDS.has(label)) errors.push(`${label}: runtimeEvidence deferred is not allowed`);
+    return;
+  }
+  errors.push(`${label}: runtimeEvidence result is invalid`);
+}
+
+export function validateV1Entry(
+  entry,
+  acceptanceProfiles,
+  documents = {},
+  hashes = {},
+  options = {},
+) {
   const errors = [];
   if (!isPlainObject(entry)) return ['component entry must be a plain object'];
 
   const label = typeof entry.id === 'string' ? entry.id : '<unknown>';
   const keys = new Set(Object.keys(entry));
-  for (const key of REQUIRED_ENTRY_KEYS) {
+  const requiredKeys = options.schemaVersion === 2 ? V2_ENTRY_KEYS : REQUIRED_ENTRY_KEYS;
+  for (const key of requiredKeys) {
     if (!keys.has(key)) errors.push(`${label}: ${key} is required`);
   }
   for (const key of keys) {
-    if (!REQUIRED_ENTRY_KEYS.has(key)) errors.push(`${label}: unknown field ${key}`);
+    if (!requiredKeys.has(key)) errors.push(`${label}: unknown field ${key}`);
   }
   if (typeof entry.stream !== 'string' || !entry.stream)
     errors.push(`${label}: stream must be a non-empty string`);
@@ -596,18 +696,73 @@ export function validateV1Entry(entry, acceptanceProfiles, documents = {}) {
     errors.push(`${label}: absent manual evidence must be deferred-by-release-profile`);
   }
   if (entry.implementationStatus === 'qualified') {
-    validateQualifiedEntry(entry, profile, documents, errors, label);
+    validateQualifiedEntry(entry, profile, documents, hashes, errors, label, options.candidate);
   }
   return errors;
 }
 
-export function validateV1Program({ ledger, documents = {} } = {}) {
+function validateCandidate(candidate, documents, hashes, errors) {
+  if (candidate === undefined) {
+    errors.push('schemaVersion 2 requires a candidate block');
+    return;
+  }
+  if (!exactKeys(candidate, ['sourceRevision', 'packages'])) {
+    errors.push('candidate keys must be exactly sourceRevision, packages');
+    return;
+  }
+  if (!/^[0-9a-f]{40}$/u.test(candidate.sourceRevision)) {
+    errors.push('candidate sourceRevision must be a 40-hex string');
+  }
+  if (!exactKeys(candidate.packages, ['styles', 'react', 'alpine'])) {
+    errors.push('candidate packages keys must be exactly styles, react, alpine');
+    return;
+  }
+  for (const key of ['styles', 'react', 'alpine']) {
+    const artifact = candidate.packages[key];
+    const name = `@lyra-ds/${key}`;
+    const tarball = `lyra-ds-${key}-1.0.0.tgz`;
+    if (!exactKeys(artifact, ['name', 'version', 'tarball', 'sha256', 'path'])) {
+      errors.push(`candidate ${key} keys are invalid`);
+      continue;
+    }
+    if (artifact.name !== name) errors.push(`candidate ${key} name must equal ${name}`);
+    if (artifact.version !== '1.0.0') errors.push(`candidate ${key} version must equal 1.0.0`);
+    if (artifact.tarball !== tarball) errors.push(`candidate ${key} tarball must equal ${tarball}`);
+    if (!isSha256(artifact.sha256)) {
+      errors.push(`candidate ${key} sha256 must be a lowercase SHA-256`);
+    }
+    if (artifact.path !== null) {
+      if (!isCoreEvidencePath(artifact.path, candidate.sourceRevision)) {
+        errors.push(`candidate ${key} path must be under the candidate core directory`);
+      } else if (!hasMatchingHash(artifact.path, artifact.sha256, hashes)) {
+        errors.push(`candidate ${key} path hash must match sha256`);
+      }
+    }
+  }
+}
+
+export function validateV1Program({ ledger, documents = {}, hashes = {} } = {}) {
   const errors = [];
   if (!isPlainObject(ledger)) return ['ledger must be a plain object'];
   if (!isPlainObject(documents)) return ['documents must be a plain object'];
-  if (ledger.schemaVersion !== 1) errors.push('schemaVersion must equal 1');
+  if (!isPlainObject(hashes)) return ['hashes must be a plain object'];
+  const isCandidate = ledger.schemaVersion === 2;
+  const programKeys = isCandidate ? V2_PROGRAM_KEYS : V1_PROGRAM_KEYS;
+  for (const key of Object.keys(ledger)) {
+    if (!programKeys.has(key)) errors.push(`unknown field ${key}`);
+  }
+  if (ledger.schemaVersion !== 1 && ledger.schemaVersion !== 2) {
+    errors.push('schemaVersion must equal 1 or 2');
+  }
   if (ledger.targetRelease !== '1.0.0') errors.push('targetRelease must equal 1.0.0');
-  if (ledger.releaseStatus !== 'planning') errors.push('releaseStatus must equal planning');
+  if (isCandidate) {
+    if (ledger.releaseStatus !== 'candidate') {
+      errors.push('schemaVersion 2 requires releaseStatus candidate');
+    }
+    validateCandidate(ledger.candidate, documents, hashes, errors);
+  } else if (ledger.releaseStatus !== 'planning') {
+    errors.push('releaseStatus must equal planning');
+  }
   if (
     ledger.releaseStatus === 'planning' &&
     Array.isArray(ledger.components) &&
@@ -643,7 +798,17 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
   }
   if (new Set(ids).size !== ids.length) errors.push('component IDs must be unique');
   for (const entry of ledger.components) {
-    errors.push(...validateV1Entry(entry, ledger.acceptanceProfiles, documents));
+    if (isCandidate && entry?.implementationStatus !== 'qualified') {
+      errors.push(
+        `${entry?.id ?? '<unknown>'}: candidate ledger requires every component to be qualified`,
+      );
+    }
+    errors.push(
+      ...validateV1Entry(entry, ledger.acceptanceProfiles, documents, hashes, {
+        schemaVersion: ledger.schemaVersion,
+        candidate: isCandidate ? ledger.candidate : undefined,
+      }),
+    );
   }
   validateOverlayProgramEntries(ledger.components, errors);
   if (hasTrackedDocument(OVERLAY_SPEC_PATH, documents)) {
@@ -658,16 +823,23 @@ export function validateV1Program({ ledger, documents = {} } = {}) {
 
 function referencedPaths(ledger) {
   const paths = new Set([ledger?.programSpecification, OVERLAY_SPEC_PATH]);
+  for (const artifact of Object.values(ledger?.candidate?.packages ?? {})) {
+    if (artifact?.path !== null) paths.add(artifact?.path);
+  }
   for (const entry of ledger?.components ?? []) {
     paths.add(entry?.governingSpecification?.path);
     paths.add(entry?.migrationGuides?.en);
     paths.add(entry?.migrationGuides?.ptBR);
     if (Array.isArray(entry?.immutableEvidence)) {
-      for (const path of entry.immutableEvidence) paths.add(path);
+      for (const evidence of entry.immutableEvidence) {
+        paths.add(isPlainObject(evidence) ? evidence.path : evidence);
+      }
     }
     if (isPlainObject(entry?.acceptanceEvidence)) {
       for (const evidence of Object.values(entry.acceptanceEvidence)) paths.add(evidence?.artifact);
     }
+    paths.add(entry?.runtimeEvidence?.artifact);
+    paths.add(entry?.runtimeEvidence?.decision);
   }
   return [...paths].filter((path) => path !== null && path !== undefined);
 }
@@ -693,7 +865,13 @@ function isInsideRepository(path) {
 
 async function collectDocuments(ledger) {
   const documents = {};
+  const hashes = {};
   const errors = [];
+  const binaryPaths = new Set(
+    Object.values(ledger?.candidate?.packages ?? {})
+      .map((artifact) => artifact?.path)
+      .filter((path) => path !== null),
+  );
   for (const path of referencedPaths(ledger)) {
     if (typeof path !== 'string' || !path || !isInsideRepository(path)) {
       errors.push(`referenced path must be a non-empty repository-relative path: ${String(path)}`);
@@ -708,12 +886,62 @@ async function collectDocuments(ledger) {
       continue;
     }
     try {
-      documents[path] = await readFile(resolve(repositoryRoot, path), 'utf8');
+      const bytes = await readFile(resolve(repositoryRoot, path));
+      hashes[path] = createHash('sha256').update(bytes).digest('hex');
+      if (!binaryPaths.has(path)) documents[path] = bytes.toString('utf8');
     } catch {
       errors.push(`referenced path is not a tracked readable file: ${path}`);
     }
   }
-  return { documents, errors };
+  return { documents, hashes, errors };
+}
+
+export function validateFileUploadBinding({ candidate, pointer, comparison } = {}) {
+  const revision = pointer?.fileUpload?.revision;
+  if (
+    pointer?.schemaVersion !== 1 ||
+    typeof revision !== 'string' ||
+    revision.length === 0 ||
+    !comparison ||
+    comparison.after?.revision !== revision
+  ) {
+    return ['FileUpload runtime evidence is not bound to the candidate artifacts'];
+  }
+  for (const [key, packageName] of [
+    ['react', '@lyra-ds/react'],
+    ['styles', '@lyra-ds/styles'],
+  ]) {
+    if (
+      comparison.after?.environment?.packages?.[packageName]?.sha256 !==
+      candidate?.packages?.[key]?.sha256
+    )
+      return ['FileUpload runtime evidence is not bound to the candidate artifacts'];
+  }
+  return [];
+}
+
+async function collectFileUploadBinding(candidate) {
+  try {
+    const pointer = JSON.parse(
+      await readFile(
+        resolve(repositoryRoot, 'docs/superpowers/baselines/lyra-v1/current.json'),
+        'utf8',
+      ),
+    );
+    const revision = pointer?.fileUpload?.revision;
+    const comparison = JSON.parse(
+      await readFile(
+        resolve(
+          repositoryRoot,
+          `docs/superpowers/baselines/lyra-v1/comparisons/file-upload/${revision}.json`,
+        ),
+        'utf8',
+      ),
+    );
+    return validateFileUploadBinding({ candidate, pointer, comparison });
+  } catch {
+    return ['FileUpload runtime evidence is not bound to the candidate artifacts'];
+  }
 }
 
 function ledgerPathFromArgs(args) {
@@ -735,8 +963,11 @@ async function main(args = process.argv.slice(2)) {
     process.exitCode = 1;
     return;
   }
-  const { documents, errors: documentErrors } = await collectDocuments(ledger);
-  const errors = [...documentErrors, ...validateV1Program({ ledger, documents })];
+  const { documents, hashes, errors: documentErrors } = await collectDocuments(ledger);
+  const errors = [...documentErrors, ...validateV1Program({ ledger, documents, hashes })];
+  if (ledger.schemaVersion === 2) {
+    errors.push(...(await collectFileUploadBinding(ledger.candidate)));
+  }
   if (errors.length === 0) {
     console.log('Lyra V1 program ledger is internally consistent.');
     return;

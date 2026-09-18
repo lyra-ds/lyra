@@ -387,10 +387,48 @@ function verifyCss(referenceCss, candidateCss) {
   });
 }
 
-export function checkBundleBudgets(reference, candidate) {
+function verifyCandidateBinding(packages, ledgerCandidate) {
+  if (ledgerCandidate === null || ledgerCandidate === undefined) return null;
+  const candidatePackages = requiredObject(ledgerCandidate.packages, 'candidate ledger packages');
+  const verified = {};
+  for (const key of ['styles', 'react', 'alpine']) {
+    const packageName = `@lyra-ds/${key}`;
+    const ledgerArtifact = requiredObject(
+      candidatePackages[key],
+      `candidate ledger ${packageName}`,
+    );
+    const packedArtifact = packages[packageName];
+    if (
+      ledgerArtifact.version !== packedArtifact.version ||
+      ledgerArtifact.tarball !== packedArtifact.tarball ||
+      ledgerArtifact.sha256 !== packedArtifact.sha256
+    ) {
+      fail(
+        `candidate artifact binding mismatch for ${packageName}: ledger=${ledgerArtifact.sha256}, packed=${packedArtifact.sha256}`,
+      );
+    }
+    verified[key] = {
+      name: packageName,
+      version: packedArtifact.version,
+      tarball: packedArtifact.tarball,
+      sha256: packedArtifact.sha256,
+    };
+  }
+  return {
+    result: 'pass',
+    sourceRevision: requiredString(
+      ledgerCandidate.sourceRevision,
+      'candidate ledger sourceRevision',
+    ),
+    packages: verified,
+  };
+}
+
+export function checkBundleBudgets(reference, candidate, options = {}) {
   requiredObject(reference, 'reference');
   requiredObject(candidate, 'candidate');
   const packages = verifyComparableProtocol(reference, candidate);
+  const candidateBinding = verifyCandidateBinding(packages, options.ledgerCandidate);
   const standalone = requiredObject(reference.standalone, 'reference standalone');
   const candidateStandalone = requiredObject(candidate.standalone, 'candidate standalone');
   exactObjectKeys(standalone, ['react', 'alpine'], 'reference standalone');
@@ -425,6 +463,7 @@ export function checkBundleBudgets(reference, candidate) {
     },
     externals: candidate.externals,
     artifacts: packages,
+    candidateBinding,
     entries: { react, alpine, scenarios, css },
   };
 }

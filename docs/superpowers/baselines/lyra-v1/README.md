@@ -14,6 +14,19 @@ contracts. A `planned`, `specified`, `evaluating`, or `implementing` entry is
 not complete. Only `qualified` with complete immutable evidence can satisfy the
 V1 exit gate.
 
+### Candidate acceptance (schemaVersion 2)
+
+The ledger supports `schemaVersion: 1` planning and `schemaVersion: 2` candidate shapes.
+A candidate supplies its source revision and exact Styles, React, and Alpine package artifacts.
+Each passing acceptance cell binds `{ result, revision, artifact, sha256 }` to that revision.
+Cell evidence lives below `comparisons/core/<sourceRevision>/` and is hash-verified.
+Each qualified entry records `runtimeEvidence`: a verified PASS artifact or an explicit
+`numerical-runtime` deferral backed by the runtime-scope decision.
+The accepted FileUpload pointer must bind its React and Styles archives to the candidate hashes.
+The bundle gate independently rebuilds the three packages and cross-checks their identities.
+The current ledger remains `schemaVersion: 1` with `releaseStatus: planning`.
+This subsection documents the mechanism only; it does not make a candidate claim.
+
 ## Approved product and foundational specifications
 
 - [Lyra v1.0 roadmap PRD](../../specs/2026-08-12-lyra-v1-roadmap-prd.md)
