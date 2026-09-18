@@ -411,6 +411,8 @@
    Shell class family vary by mode. */
 .lyra-shell--content {
   display: flex;
+  gap: 0;
+  align-items: stretch;
   height: 100%;
   min-height: 0;
   padding: 0;
@@ -420,11 +422,12 @@
 .lyra-shell--content .lyra-shell__aside {
   position: static;
   flex: none;
+  align-self: stretch;
   display: flex;
   min-height: 0;
   max-height: none;
 }
-.lyra-shell--content .lyra-shell__sidebar { width: var(--shell-sidebar); }
+.lyra-shell--content .lyra-shell__sidebar { width: var(--shell-sidebar); padding-right: 0; }
 .lyra-shell--content .lyra-shell__aside { width: var(--shell-aside); }
 .lyra-shell--content .lyra-shell__main {
   flex: 1;
