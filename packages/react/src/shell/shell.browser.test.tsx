@@ -201,4 +201,32 @@ describe('Shell', () => {
     expect(getComputedStyle(main).display).toBe('flex');
     expect(getComputedStyle(content).overflowY).toBe('auto');
   });
+
+  it('lays out content-scroll chrome with touching rails that fill the shell height', async () => {
+    const { container } = await render(
+      <div style={{ height: '300px' }}>
+        <Shell scroll="content" sidebar="Navigation" topbar="Toolbar" aside="Context">
+          Document
+        </Shell>
+      </div>,
+    );
+    const shell = container.querySelector<HTMLElement>('.lyra-shell')!;
+    const sidebar = container.querySelector<HTMLElement>('.lyra-shell__sidebar')!;
+    const main = container.querySelector<HTMLElement>('.lyra-shell__main')!;
+    const aside = container.querySelector<HTMLElement>('.lyra-shell__aside')!;
+
+    const shellRect = shell.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+    const mainRect = main.getBoundingClientRect();
+    const asideRect = aside.getBoundingClientRect();
+
+    expect(sidebarRect.right).toBeCloseTo(mainRect.left, 1);
+    expect(mainRect.right).toBeCloseTo(asideRect.left, 1);
+    expect(sidebarRect.height).toBeCloseTo(shellRect.height, 1);
+    expect(mainRect.height).toBeCloseTo(shellRect.height, 1);
+    expect(asideRect.height).toBeCloseTo(shellRect.height, 1);
+    expect(shellRect.height).toBeCloseTo(300, 1);
+    expect(getComputedStyle(shell).columnGap).toBe('0px');
+    expect(getComputedStyle(sidebar).paddingRight).toBe('0px');
+  });
 });
