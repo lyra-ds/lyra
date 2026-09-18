@@ -3,7 +3,7 @@ import type { HTMLAttributes, KeyboardEvent } from 'react';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { Avatar } from '../avatar';
 import { cx } from '../internal/cx';
-import { useFlipPlacement } from '../internal/use-flip-placement';
+import { focusPopupItem, useFlipPlacement } from '../internal/use-flip-placement';
 
 /** A workspace listed in {@link WorkspaceSwitcher}. */
 export interface Workspace {
@@ -61,7 +61,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
     const rootRef = useRef<HTMLDivElement | null>(null);
     const triggerRef = useRef<HTMLButtonElement | null>(null);
     const popoverRef = useRef<HTMLDivElement | null>(null);
-    const placement = useFlipPlacement(open, triggerRef, popoverRef);
+    const placement = useFlipPlacement(open, triggerRef, popoverRef, 6, undefined, true);
     const selected = workspaces.find((workspace) => workspace.id === current) ?? workspaces[0];
     const rovingWorkspaceId = workspaces.some((workspace) => workspace.id === focusedWorkspaceId)
       ? focusedWorkspaceId
@@ -88,12 +88,14 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
         const selectedIndex = options.findIndex(
           (option) => option.getAttribute('aria-selected') === 'true',
         );
-        // preventScroll: the popover is already placed to fit; focusing an option must not scroll.
-        options[Math.max(selectedIndex, 0)]?.focus({ preventScroll: true });
+        // Placement has already run; do not let opening focus reposition the document before the
+        // flipped class is committed.
+        focusPopupItem(popoverRef.current, options[Math.max(selectedIndex, 0)]);
       } else if (pendingFocus === 'create') {
-        popoverRef.current?.querySelector<HTMLButtonElement>('.lyra-wssw__create')?.focus({
-          preventScroll: true,
-        });
+        focusPopupItem(
+          popoverRef.current,
+          popoverRef.current?.querySelector<HTMLButtonElement>('.lyra-wssw__create'),
+        );
       }
       setPendingFocus(null);
     }, [open, pendingFocus]);

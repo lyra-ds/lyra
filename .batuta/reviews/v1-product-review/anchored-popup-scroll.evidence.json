@@ -1,0 +1,141 @@
+{
+  "status": "local-verification-pass-ci-pending",
+  "baseRevision": "9207dac0eda59f5d82c4e4c1ad6a1a47fc4c00e1",
+  "sourceDiffSha256": "cfac868ea8997652e710aab57a00796ae8fade231608a66e7e70ac1d0348e33d",
+  "browserChecks": [
+    {
+      "adapter": "react",
+      "engine": "chromium",
+      "exit": 0
+    },
+    {
+      "adapter": "alpine",
+      "engine": "chromium",
+      "exit": 0
+    },
+    {
+      "adapter": "react",
+      "engine": "firefox",
+      "exit": 0
+    },
+    {
+      "adapter": "alpine",
+      "engine": "firefox",
+      "exit": 0
+    },
+    {
+      "adapter": "react",
+      "engine": "webkit",
+      "exit": 0
+    },
+    {
+      "adapter": "alpine",
+      "engine": "webkit",
+      "exit": 0
+    }
+  ],
+  "initialPackedArtifacts": [
+    {
+      "package": "react",
+      "archive": ".batuta/anchored-critical-pack/lyra-ds-react-0.5.0.tgz",
+      "sha256": "4240060ad234d030c00fd5cb0556a53307c504014361c31fe94180e5a8c75ef3",
+      "files": 453
+    },
+    {
+      "package": "alpine",
+      "archive": ".batuta/anchored-critical-pack/lyra-ds-alpine-0.6.0.tgz",
+      "sha256": "324c2adc2bc25c77ad34d857baa3aef195017d01f31e8018e5b4ed50c15998a8",
+      "files": 6
+    }
+  ],
+  "nativeCases": [
+    {
+      "adapter": "react",
+      "kind": "dropdown",
+      "pass": true
+    },
+    {
+      "adapter": "react",
+      "kind": "popover",
+      "pass": true
+    },
+    {
+      "adapter": "react",
+      "kind": "workspace",
+      "pass": true
+    },
+    {
+      "adapter": "alpine",
+      "kind": "dropdown",
+      "pass": true
+    },
+    {
+      "adapter": "alpine",
+      "kind": "popover",
+      "pass": true
+    },
+    {
+      "adapter": "alpine",
+      "kind": "workspace",
+      "pass": true
+    }
+  ],
+  "selectedLast": {
+    "browser": "151.0.7922.34",
+    "errors": [],
+    "observed": {
+      "focused": true,
+      "hit": true,
+      "page": 0,
+      "scrollTop": 1161,
+      "offsetParent": true
+    },
+    "pass": true
+  },
+  "approval": "Maintainer: aprovo sim, quais os novos limites? (2026-09-17)",
+  "releaseQualification": false,
+  "officialBudgets": {
+    "result": "pass",
+    "artifacts": {
+      "@lyra-ds/react": {
+        "version": "0.5.0",
+        "tarball": "lyra-ds-react-0.5.0.tgz",
+        "sha256": "9d07d9ddfbefc4841de0da490c085d51cf4a333f8ecdd3df88a59c3148687cc2"
+      },
+      "@lyra-ds/alpine": {
+        "version": "0.6.0",
+        "tarball": "lyra-ds-alpine-0.6.0.tgz",
+        "sha256": "324c2adc2bc25c77ad34d857baa3aef195017d01f31e8018e5b4ed50c15998a8"
+      },
+      "@lyra-ds/styles": {
+        "version": "0.5.0",
+        "tarball": "lyra-ds-styles-0.5.0.tgz",
+        "sha256": "f88b5ada8c154d45e824e243984a4c9bb880c465b57744ca507d9d253dec42bd"
+      }
+    },
+    "standaloneEntries": 72,
+    "scenarios": 5,
+    "cssEntries": 4
+  },
+  "reactArtifactRebinding": {
+    "sha256": "9d07d9ddfbefc4841de0da490c085d51cf4a333f8ecdd3df88a59c3148687cc2",
+    "sameRuntimeFiles": 452,
+    "changedFiles": [
+      "package/package.json"
+    ],
+    "onlyMetadataChange": "four approved size-limit values",
+    "matchesOfficialGate": true
+  },
+  "reviewFollowUp": {
+    "comment": 4042767432,
+    "scope": "existing Alpine Dropdown test only",
+    "browserCases": 60,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "negativeProof": "preventScroll on keyboard command focus yields scrollTop 0; source restored",
+    "productChanged": false
+  }
+}

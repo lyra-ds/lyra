@@ -2,7 +2,7 @@ import { forwardRef, isValidElement, useEffect, useId, useRef, useState } from '
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../internal/cx';
 import { Slot } from '../internal/slot';
-import { useFlipPlacement } from '../internal/use-flip-placement';
+import { focusPopupItem, useFlipPlacement } from '../internal/use-flip-placement';
 
 /** A command, separator, or non-interactive label rendered in a {@link Dropdown}. */
 export type DropdownItem =
@@ -78,7 +78,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
     prefix: '',
     timeout: null,
   });
-  const placement = useFlipPlacement(open, triggerRef, menuRef);
+  const placement = useFlipPlacement(open, triggerRef, menuRef, 6, undefined, true);
   const commandCount = items.filter(isDropdownCommand).length;
   const activeIndex = Math.min(rovingIndex, commandCount - 1);
 
@@ -88,6 +88,10 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
   const commandForTarget = (target: EventTarget | null): HTMLButtonElement | null => {
     const command = (target as Element).closest<HTMLButtonElement>('[role="menuitem"]');
     return command && menuRef.current?.contains(command) ? command : null;
+  };
+
+  const focusCommand = (command: HTMLElement | undefined): void => {
+    focusPopupItem(menuRef.current, command);
   };
 
   const restoreTriggerFocus = (): void => {
@@ -125,8 +129,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
       setPendingFocus(null);
       return;
     }
-    // preventScroll: the menu is already placed to fit; focusing an item must not scroll the page.
-    commands[Math.min(pendingFocus, commands.length - 1)]?.focus({ preventScroll: true });
+    focusCommand(commands[Math.min(pendingFocus, commands.length - 1)]);
     setPendingFocus(null);
   }, [items, open, pendingFocus]);
 
@@ -193,7 +196,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
         typeaheadRef.current = { prefix: '', timeout: null };
       }, 500),
     };
-    if (matchingIndex !== undefined) commands[matchingIndex]?.focus({ preventScroll: true });
+    if (matchingIndex !== undefined) focusCommand(commands[matchingIndex]);
   };
 
   const handleMenuItemKeyDown = (event: KeyboardEvent<HTMLSpanElement>): void => {
@@ -211,7 +214,7 @@ export const Dropdown = /*#__PURE__*/ forwardRef<HTMLSpanElement, DropdownProps>
     if (event.key === 'End') nextIndex = commands.length - 1;
     if (nextIndex !== undefined) {
       event.preventDefault();
-      commands[nextIndex]?.focus({ preventScroll: true });
+      focusCommand(commands[nextIndex]);
       return;
     }
     if (event.key === 'Escape') {

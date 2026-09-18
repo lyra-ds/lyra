@@ -601,6 +601,28 @@ describe('WorkspaceSwitcher', () => {
     expect(window.scrollY).toBe(scrollBefore);
   });
 
+  it('reveals the selected last workspace inside a bounded popup without scrolling the page', async () => {
+    const many = Array.from({ length: 40 }, (_, index) => ({
+      id: String(index),
+      name: `Workspace ${index}`,
+    }));
+    const { container } = await render(
+      <div style={{ position: 'fixed', top: '40vh', left: 32 }}>
+        <WorkspaceSwitcher workspaces={many} current="39" />
+      </div>,
+    );
+    const scrollBefore = window.scrollY;
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!);
+    const popup = container.querySelector<HTMLElement>('.lyra-wssw__pop')!;
+    const selected = popup.querySelector<HTMLElement>('[aria-selected="true"]')!;
+    expect(document.activeElement).toBe(selected);
+    expect(popup.scrollTop).toBeGreaterThan(0);
+    expect(selected.offsetTop + selected.offsetHeight).toBeLessThanOrEqual(
+      popup.scrollTop + popup.clientHeight + 1,
+    );
+    expect(window.scrollY).toBe(scrollBefore);
+  });
+
   it('keeps the popover below the trigger when it fits', async () => {
     const { container } = await render(
       <>

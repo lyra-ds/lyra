@@ -145,7 +145,7 @@ export function lyraDropdown({
       const commands = this.commandItems();
       if (commands.length === 0) return;
       const index = this.pendingFocus < 0 ? commands.length - 1 : this.pendingFocus;
-      commands[Math.min(index, commands.length - 1)]?.focus({ preventScroll: true });
+      commands[Math.min(index, commands.length - 1)]?.focus();
       this.pendingFocus = null;
     },
 
@@ -171,9 +171,16 @@ export function lyraDropdown({
       const trigger = this.triggerElement();
       const menu = this.menuElement();
       if (!trigger || !menu) return;
-      this.stopMeasuring = observeFlipPlacement(trigger, menu, (placement) => {
-        this.placement = placement;
-      });
+      this.stopMeasuring = observeFlipPlacement(
+        trigger,
+        menu,
+        (placement) => {
+          this.placement = placement;
+        },
+        6,
+        undefined,
+        true,
+      );
     },
 
     stopPlacement() {
@@ -235,7 +242,7 @@ export function lyraDropdown({
       if (this.typeaheadTimeout !== null) clearTimeout(this.typeaheadTimeout);
       this.typeaheadPrefix = prefix;
       this.typeaheadTimeout = setTimeout(() => this.clearTypeahead(), 500);
-      if (matchingIndex !== undefined) commands[matchingIndex]?.focus({ preventScroll: true });
+      if (matchingIndex !== undefined) commands[matchingIndex]?.focus();
     },
 
     handleMenuItemKeyDown(event) {

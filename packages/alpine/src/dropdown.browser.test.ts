@@ -162,6 +162,76 @@ describe('lyraDropdown', () => {
     expect(menu(host).classList).toContain('lyra-menu--up');
   });
 
+  it('bounds a long menu with native scrolling and restores reused inline geometry on close', async () => {
+    const host = document.createElement('div');
+    host.innerHTML = `
+      <div x-data="lyraDropdown()" class="lyra-dropdown" style="left: 32px; position: fixed; top: 40vh">
+        <button type="button" x-bind="trigger">Actions</button>
+        <div x-bind="menu" style="max-height: 200vh; overflow-y: hidden">
+          ${Array.from(
+            { length: 40 },
+            (_, index) => `<button type="button" x-bind="item">Command ${index + 1}</button>`,
+          ).join('')}
+        </div>
+      </div>
+      <div style="height: 150vh"></div>
+    `;
+    document.body.appendChild(host);
+    Alpine.initTree(host);
+    mountedHosts.push(host);
+    expect(document.documentElement.scrollHeight).toBeGreaterThan(window.innerHeight);
+    const scrollYBefore = window.scrollY;
+
+    const control = trigger(host);
+    const popup = menu(host);
+    control.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await flush();
+    await waitForEntryAnimation(popup);
+
+    expect(popup.style.overflowY).toBe('auto');
+    expect(popup.scrollHeight).toBeGreaterThan(popup.clientHeight);
+
+    const commands = popup.querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
+    const lastCommand = commands[commands.length - 1];
+    if (!lastCommand) throw new Error('Expected dropdown commands');
+
+    await userEvent.keyboard('{End}');
+    expect(document.activeElement).toBe(lastCommand);
+    expect(popup.scrollTop).toBeGreaterThan(0);
+    const popupRect = popup.getBoundingClientRect();
+    const commandRect = lastCommand.getBoundingClientRect();
+    expect(commandRect.top).toBeGreaterThanOrEqual(popupRect.top);
+    expect(commandRect.bottom).toBeLessThanOrEqual(popupRect.bottom);
+    expect(window.scrollY).toBe(scrollYBefore);
+
+    await userEvent.click(control);
+    await flush();
+    expect(popup.style.maxHeight).toBe('200vh');
+    expect(popup.style.overflowY).toBe('hidden');
+  });
+
+  it('keeps fitting consumer-provided inline geometry while open', async () => {
+    const host = document.createElement('div');
+    host.innerHTML = `
+      <div x-data="lyraDropdown({ defaultOpen: true })" class="lyra-dropdown" style="left: 32px; position: fixed; top: 40vh">
+        <button type="button" x-bind="trigger">Actions</button>
+        <div x-bind="menu" style="box-sizing: content-box; max-height: 200px; overflow-y: hidden">
+          <button type="button" x-bind="item">Command</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(host);
+    Alpine.initTree(host);
+    mountedHosts.push(host);
+    await flush();
+    const popup = menu(host);
+
+    expect(popup.style.boxSizing).toBe('content-box');
+    expect(popup.style.maxHeight).toBe('200px');
+    expect(popup.style.overflowY).toBe('hidden');
+  });
+
   it.each([
     { name: 'inherited LTR default start', direction: 'ltr', edge: 'left' },
     { name: 'inherited RTL default start', direction: 'rtl', edge: 'right' },

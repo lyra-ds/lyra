@@ -290,6 +290,26 @@ describe('lyraPopover', () => {
     expect(popup.classList).toContain('lyra-popover--align-center');
   });
 
+  it('bounds a long panel on its explicit top side', async () => {
+    const host = mountPopover({
+      options: "{ defaultOpen: true, side: 'top' }",
+      position: 'left: 32px; top: 40vh;',
+    });
+    const popup = panel(host);
+    popup.innerHTML = '<div style="height: 200vh">Long panel</div>';
+    window.dispatchEvent(new Event('resize'));
+    await flush();
+
+    await vi.waitFor(() => {
+      expect(popup.classList).toContain('lyra-popover--top');
+      expect(popup.style.overflowY).toBe('auto');
+      expect(popup.scrollHeight).toBeGreaterThan(popup.clientHeight);
+      expect(popup.getBoundingClientRect().height).toBeLessThanOrEqual(
+        root(host).getBoundingClientRect().top - 7,
+      );
+    });
+  });
+
   it('sets the requested inline panel width', () => {
     const host = mountPopover({ options: '{ width: 280 }' });
     expect(panel(host).style.width).toBe('280px');
