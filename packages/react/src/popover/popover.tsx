@@ -106,7 +106,8 @@ export const Popover = /*#__PURE__*/ forwardRef<HTMLSpanElement, PopoverProps>(f
   const insideMouseDownsRef = useRef(new WeakSet<MouseEvent>());
   const pendingFocusIntentRef = useRef<ReturnFocusIntent | null>(null);
   const previousOpenRef = useRef(open);
-  const placement = useFlipPlacement(open, triggerRef, panelRef, 8);
+  const explicitSide = side === 'auto' ? undefined : side === 'bottom' ? 'down' : 'up';
+  const placement = useFlipPlacement(open, triggerRef, panelRef, 8, explicitSide, true);
   const resolvedSide = side === 'auto' ? placement.side : side === 'bottom' ? 'down' : 'up';
   const resolvedAlign = align ?? placement.align;
   const automaticAlignmentStyle =

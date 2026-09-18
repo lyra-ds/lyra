@@ -126,6 +126,8 @@ export function lyraPopover({
           this.placement = placement;
         },
         8,
+        this.side === 'auto' ? undefined : this.side === 'bottom' ? 'down' : 'up',
+        true,
       );
     },
 

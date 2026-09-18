@@ -118,7 +118,7 @@ export function lyraWorkspaceSwitcher({
       } else {
         target = this.pendingFocus;
       }
-      options[Math.min(target, options.length - 1)]?.focus({ preventScroll: true });
+      options[Math.min(target, options.length - 1)]?.focus();
       this.pendingFocus = null;
     },
 
@@ -142,9 +142,16 @@ export function lyraWorkspaceSwitcher({
       const trigger = this.triggerElement();
       const popover = this.popoverElement();
       if (!trigger || !popover) return;
-      this.stopMeasuring = observeFlipPlacement(trigger, popover, (placement) => {
-        this.placement = placement;
-      });
+      this.stopMeasuring = observeFlipPlacement(
+        trigger,
+        popover,
+        (placement) => {
+          this.placement = placement;
+        },
+        6,
+        undefined,
+        true,
+      );
     },
 
     stopPlacement() {

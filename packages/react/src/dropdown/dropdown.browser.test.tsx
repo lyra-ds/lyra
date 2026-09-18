@@ -577,6 +577,61 @@ describe('Dropdown', () => {
     expect(window.scrollY).toBe(scrollBefore);
   });
 
+  it('bounds a long menu to its resolved side with native vertical scrolling', async () => {
+    const longItems = Array.from({ length: 40 }, (_, index) => ({
+      id: `command-${index}`,
+      label: `Command ${index + 1}`,
+    }));
+    const { container } = await render(
+      <Dropdown
+        defaultOpen
+        trigger="Actions"
+        items={longItems}
+        style={{ left: 32, position: 'fixed', top: '40vh' }}
+      />,
+    );
+    const root = container.querySelector<HTMLElement>('.lyra-dropdown')!;
+    const menu = container.querySelector<HTMLElement>('[role="menu"]')!;
+
+    await vi.waitFor(() => {
+      expect(menu.style.overflowY).toBe('auto');
+      expect(menu.scrollHeight).toBeGreaterThan(menu.clientHeight);
+      expect(menu.getBoundingClientRect().height).toBeLessThanOrEqual(
+        window.innerHeight - root.getBoundingClientRect().bottom - 5,
+      );
+    });
+
+    menu.scrollTop = menu.scrollHeight;
+    expect(menu.scrollTop).toBeGreaterThan(0);
+
+    menu.scrollTop = 0;
+    const pageBeforeKeyboardNavigation = window.scrollY;
+    container.querySelector<HTMLButtonElement>('[role="menuitem"]')!.focus();
+    await userEvent.keyboard('{ArrowDown}{End}');
+    const lastCommand = container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')[39]!;
+    expect(document.activeElement).toBe(lastCommand);
+    expect(lastCommand.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      menu.getBoundingClientRect().bottom,
+    );
+    expect(window.scrollY).toBe(pageBeforeKeyboardNavigation);
+
+    const firstMaxHeight = Number.parseFloat(menu.style.maxHeight);
+    root.querySelector<HTMLElement>('.lyra-dropdown__trigger')!.style.height = '100px';
+    await vi.waitFor(() => {
+      expect(Number.parseFloat(menu.style.maxHeight)).toBeLessThan(firstMaxHeight);
+    });
+  });
+
+  it('leaves a fitting menu at its recipe size', async () => {
+    const { container } = await render(<Dropdown defaultOpen trigger="Actions" items={items} />);
+    const menu = container.querySelector<HTMLElement>('[role="menu"]')!;
+
+    await vi.waitFor(() => {
+      expect(menu.style.maxHeight).toBe('');
+      expect(menu.style.overflowY).toBe('');
+    });
+  });
+
   it('keeps the menu below the trigger when it fits', async () => {
     const { container } = await render(
       <>

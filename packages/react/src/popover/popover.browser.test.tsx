@@ -526,6 +526,30 @@ describe('Popover', () => {
     focusSpy.mockRestore();
   });
 
+  it('uses an explicit top side as the bounded scroll region', async () => {
+    const { container } = await render(
+      <Popover
+        defaultOpen
+        side="top"
+        trigger={<button type="button">Options</button>}
+        style={{ left: 32, position: 'fixed', top: '40vh' }}
+      >
+        <div style={{ height: '200vh' }}>Long panel</div>
+      </Popover>,
+    );
+    const anchor = container.querySelector<HTMLElement>('.lyra-popover-anchor')!;
+    const panel = container.querySelector<HTMLElement>('[role="dialog"]')!;
+
+    await vi.waitFor(() => {
+      expect(panel.classList).toContain('lyra-popover--top');
+      expect(panel.style.overflowY).toBe('auto');
+      expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight);
+      expect(panel.getBoundingClientRect().height).toBeLessThanOrEqual(
+        anchor.getBoundingClientRect().top - 7,
+      );
+    });
+  });
+
   it.each(['disabled', 'hidden', 'inert'] as const)(
     'does not focus a current %s trigger after the original disconnects',
     async (state) => {

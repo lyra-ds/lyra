@@ -345,12 +345,12 @@ function approvedBudgetCandidate() {
     '@lyra-ds/react/drawer': 4004,
     '@lyra-ds/react/bottom-sheet': 3966,
     '@lyra-ds/react/create-workspace-dialog': 5008,
-    '@lyra-ds/react/time-picker': 4173,
-    '@lyra-ds/react/date-picker': 4200,
-    '@lyra-ds/react/date-range-picker': 4193,
+    '@lyra-ds/react/time-picker': 4591,
+    '@lyra-ds/react/date-picker': 4616,
+    '@lyra-ds/react/date-range-picker': 4621,
     '@lyra-ds/react/command-palette': 4251,
-    '@lyra-ds/react/recurrence-selector': 4202,
-    '@lyra-ds/react/weekly-schedule-editor': 4165,
+    '@lyra-ds/react/recurrence-selector': 4622,
+    '@lyra-ds/react/weekly-schedule-editor': 4618,
   };
   for (const entries of Object.values(candidate.standalone)) {
     for (const entry of entries) {
@@ -376,11 +376,11 @@ function approvedBudgetCandidate() {
   tabs.sizeLimit.name = tabs.name;
   tabs.sizeLimit.size = 1452;
   tabs.assets.javascript.brotliBytes = 1780;
-  candidate.standalone.alpine[0].assets.javascript.brotliBytes = 25730;
+  candidate.standalone.alpine[0].assets.javascript.brotliBytes = 26329;
   for (const [name, increase] of Object.entries({
-    overlays: 6118,
-    'application-shell': 4310,
-    scheduling: 4490,
+    overlays: 6642,
+    'application-shell': 4747,
+    scheduling: 4976,
   })) {
     candidate.scenarios[name].assets.javascript.brotliBytes += increase;
   }
@@ -413,6 +413,22 @@ test('native budget check rejects migration and absolute-cap breaches without tr
     /drawer Brotli increase exceeds approved exception/,
   );
 
+  const cappedGrowth = approvedBudgetCandidate();
+  cappedGrowth.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/time-picker',
+  ).assets.javascript.brotliBytes += 1;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), cappedGrowth),
+    /time-picker Brotli increase exceeds approved exception/,
+  );
+
+  const cappedScenario = approvedBudgetCandidate();
+  cappedScenario.scenarios.overlays.assets.javascript.brotliBytes += 1;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), cappedScenario),
+    /scenario overlays Brotli increase exceeds approved exception/,
+  );
+
   const overCap = approvedBudgetCandidate();
   overCap.standalone.react.find(
     (entry) => entry.publicEntry === '@lyra-ds/react/tooltip',
@@ -420,6 +436,15 @@ test('native budget check rejects migration and absolute-cap breaches without tr
   assert.throws(
     () => checkBundleBudgets(budgetReferenceFixture(), overCap),
     /tooltip exceeds absolute cap/,
+  );
+
+  const newAbsoluteCap = approvedBudgetCandidate();
+  newAbsoluteCap.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/dropdown',
+  ).sizeLimit.size = 2441;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), newAbsoluteCap),
+    /dropdown exceeds absolute cap/,
   );
 });
 

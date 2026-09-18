@@ -1045,7 +1045,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "7.9 kB"
+      "limit": "7.912 kB"
     },
     {
       "name": "import { TimeInput } from '@lyra-ds/react/time-input'",
@@ -1325,7 +1325,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2 kB"
+      "limit": "2.44 kB"
     },
     {
       "name": "import { Popover } from '@lyra-ds/react/popover'",
@@ -1345,7 +1345,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "8.5 kB"
+      "limit": "8.678 kB"
     },
     {
       "name": "TimeZonePicker (Combobox composition)",
@@ -1355,7 +1355,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "10 kB"
+      "limit": "10.219 kB"
     },
     {
       "name": "import { Table } from '@lyra-ds/react/table'",
