@@ -34,6 +34,7 @@
   "plainHtml": "Plain HTML",
   "compatShadcn": "shadcn/ui compatibility",
   "prose": "Prose",
+  "migration": "Migrating to 1.0",
   "getStarted": "Get started",
   "footerNote": "Open source under the MIT license. Built by the community, for the community.",
   "cancel": "Cancel",

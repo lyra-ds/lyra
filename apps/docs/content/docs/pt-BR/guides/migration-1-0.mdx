@@ -1,0 +1,187 @@
+---
+title: Migração para a 1.0
+description: Mudanças de contrato para quem usa Styles, React e Alpine ao migrar para o Lyra 1.0.
+---
+
+# Migração para a 1.0
+
+O Lyra 1.0.0 inicia o SemVer padrão para exports públicos: uma quebra de contrato público agora
+exige uma versão major. Rótulos de ciclo de vida `Beta` descrevem a maturidade da evidência de
+suporte; eles não permitem mudanças incompatíveis. Este guia cobre Styles `0.5.0` para `1.0.0`,
+React `0.5.0` para `1.0.0` e Alpine `0.6.0` para `1.0.0`.
+
+Instale os três pacotes juntos quando seu produto usar todos eles e, depois, use a tupla testada no
+[guia de Compatibilidade](/pt-BR/guides/compatibility).
+
+```bash
+pnpm add @lyra-ds/styles@1.0.0 @lyra-ds/react@1.0.0 @lyra-ds/alpine@1.0.0
+```
+
+## React `Tabs`
+
+`Tabs` não aceita mais a prop `items`. Em vez disso, componha as partes próprias `TabsList`,
+`TabsTrigger` e `TabsContent`. A aplicação controla `active` e o atualiza com `onChange`; um valor
+controlado inválido intencionalmente não renderiza painel selecionado. Styles `0.5.1` ou posterior
+é necessário para o comportamento nativo de painel `hidden`; `1.0.0` atende a isso.
+
+```tsx
+// Antes
+<Tabs items={[{ id: 'overview', label: 'Overview' }]} />;
+
+// Depois
+const [active, setActive] = useState('overview');
+
+<Tabs active={active} onChange={setActive}>
+  <TabsList aria-label="Project views">
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+    <TabsTrigger value="activity">Activity</TabsTrigger>
+  </TabsList>
+  <TabsContent value="overview">Project summary</TabsContent>
+  <TabsContent value="activity">Recent activity</TabsContent>
+</Tabs>;
+```
+
+A navegação por setas ainda ativa automaticamente a aba que recebe foco. Em uma lista de pílulas,
+a aba com foco é mantida visível quando a lista transborda.
+
+## React `DataTable`
+
+`onRowClick` foi removida. Linhas e células simples não são comandos: coloque um botão ou link
+nativo nomeado em uma célula de ação. Ordenação e seleção não mudaram. As áreas de clique dos
+checkboxes de seleção passam a ter 44px somente quando um ponteiro grosso estiver disponível.
+
+```tsx
+// Antes
+<DataTable columns={columns} rows={projects} onRowClick={(project) => open(project.id)} />;
+
+// Depois
+const columns = [
+  { key: 'name', label: 'Project' },
+  { key: 'actions', label: 'Actions' },
+];
+const rows = projects.map((project) => ({
+  ...project,
+  actions: (
+    <button type="button" onClick={() => open(project.id)}>
+      Open {project.name}
+    </button>
+  ),
+}));
+
+<DataTable columns={columns} rows={rows} />;
+```
+
+## React `CreateWorkspaceDialog`
+
+`onCreate` agora recebe um `CreateWorkspaceRequest`: `operationId`, `data` copiado e `signal`.
+Retorne um `CreateWorkspaceResult` com o mesmo `operationId`: `accepted`, `rejected` com `error` ou
+`canceled`. Um resultado aceito fecha o diálogo; um rejeitado mantém os valores para nova tentativa.
+Uma `Promise` nativa é aceita. Não há adaptador Alpine para este componente.
+
+```tsx
+// Antes
+<CreateWorkspaceDialog onCreate={({ name, slug }) => saveWorkspace({ name, slug })} />
+
+// Depois
+<CreateWorkspaceDialog
+  onCreate={async (request) => {
+    try {
+      await saveWorkspace(request.data, { signal: request.signal });
+      return { operationId: request.operationId, status: 'accepted' };
+    } catch (error) {
+      if (request.signal.aborted) {
+        return { operationId: request.operationId, status: 'canceled' };
+      }
+      return {
+        operationId: request.operationId,
+        status: 'rejected',
+        error: error instanceof Error ? error.message : 'Could not create workspace.',
+      };
+    }
+  }}
+/>
+```
+
+## Alpine `Tabs`
+
+Alpine Tabs agora exige markup de aprimoramento progressivo: links de fallback nativos e painéis
+`section` reais com cabeçalho. Alpine aprimora apenas markup completo e pareado. No teardown, o foco
+de um gatilho ou painel aprimorado volta ao link de fallback correspondente. O markup de Tabs do
+Blade precisa ser migrado por quem o produz.
+
+```html
+<!-- Antes -->
+<div x-data="lyraTabs({ active: 'overview' })">
+  <button>Overview</button>
+  <div>Project summary</div>
+</div>
+
+<!-- Depois -->
+<div id="project-tabs" data-lyra-tabs x-data="lyraTabs({ active: 'overview' })">
+  <nav aria-label="Project views" data-lyra-tabs-fallback x-bind="fallback">
+    <a href="#overview">Overview</a>
+    <a href="#activity">Activity</a>
+  </nav>
+  <div class="lyra-tabs" aria-label="Project views" data-lyra-tabs-enhanced x-bind="list" hidden>
+    <button type="button" class="lyra-tab" data-value="overview" x-bind="tab">Overview</button>
+    <button type="button" class="lyra-tab" data-value="activity" x-bind="tab">Activity</button>
+  </div>
+  <section id="overview" data-value="overview" x-bind="panel">
+    <h2>Overview</h2>
+    Project summary
+  </section>
+  <section id="activity" data-value="activity" x-bind="panel">
+    <h2>Activity</h2>
+    Recent activity
+  </section>
+</div>
+```
+
+## Seletores de `WorkspaceSwitcher`
+
+As opções de workspace agora ficam em um listbox interno, com um comando nativo “Create workspace”
+ao lado. Atualize seletores de filho direto: `.lyra-wssw__pop > button` não corresponde mais às opções de
+workspace; use `.lyra-wssw__pop .lyra-wssw__item` para alcançar as opções e o comando de criar.
+
+```css
+/* Antes */
+.lyra-wssw__pop > button {
+  /* estilo da opção */
+}
+
+/* Depois */
+.lyra-wssw__pop .lyra-wssw__item {
+  /* estilo da opção e do comando de criar */
+}
+```
+
+No React e no Alpine, ArrowDown e ArrowUp no gatilho abrem no workspace selecionado.
+
+## Overlays
+
+Dialog, Drawer, BottomSheet, Popover, Dropdown, Tooltip e CommandPalette não têm mudança
+incompatível. React Dialog, Drawer, BottomSheet e CommandPalette, além dos modais Alpine, adicionam
+`returnFocusTo` opcional; superfícies modais também suportam `initialFocusTo`. Escape aninhado é
+contido, e a contenção nativa de Tab é preservada. Popups ancorados longos ficam vinculados ao lado
+disponível da viewport e rolam nativamente. O alinhamento explícito `start` e `end` segue a direção
+de escrita.
+
+O overflow inline de Popover, Dropdown e WorkspaceSwitcher é resolvido por uma inversão discreta de
+alinhamento `start`/`end`, não por deslocamento contínuo; este é o contrato V1. Hover de Tooltip abre
+após 500 ms e compartilha um estado aquecido. Ponteiros grossos mantêm a ação nativa e nunca veem um
+tooltip de hover; portanto, informação essencial também precisa existir fora do tooltip. Dropdown
+oferece foco móvel, typeahead e padrões de comando canceláveis.
+
+## Styles
+
+As mudanças de Styles são apenas aditivas. Elas incluem alvos de 44px sob `pointer: coarse` e
+`any-pointer: coarse`, contornos de foco em cores forçadas, rolagem do overlay de Dialog, chrome de
+rolagem de conteúdo de Shell com trilhos encostando em altura total, seleção de CommandPalette em
+cores forçadas e contraste de metadados de WorkspaceSwitcher. Nenhuma classe foi renomeada ou
+removida.
+
+## Problemas conhecidos e momento das remoções
+
+A qualificação de Popover com Tab simples no WebKit permanece aberta; Option+Tab foi verificado.
+`items` de `Tabs`, `onRowClick` de `DataTable` e `onCreate` sem retorno foram removidos em `1.0.0`,
+sem shim. O satélite Blade não é afetado por esta tupla npm.
