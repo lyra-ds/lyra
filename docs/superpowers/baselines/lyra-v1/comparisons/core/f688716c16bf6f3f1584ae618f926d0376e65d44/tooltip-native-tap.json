@@ -1,0 +1,149 @@
+{
+  "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "measuredRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "note": "Measured on the candidate archives extracted from the 1.0.0 tarballs.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "method": "Retained native coarse-pointer proof: Playwright touchscreen.tap on a production Vite consumer of the extracted React Tooltip, Alpine plugin and Styles; the tap keeps the native action (exactly-once submit), no hover tooltip is emulated, interception control detected. The media screening skips Tooltip under the coarse-pointer profile by contract (no hover).",
+  "candidate": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+  "node": "v24.18.0",
+  "assets": {
+    "assets/index-DjCXgIsz.js": "74411b87961ca6b15cc29fd86f7e3eba0191ec0441a57e2cc14816a92ff626af",
+    "assets/index-CsniSfCp.css": "fb24c5d19841690aae55216fb918ec2fd6349fea6d3ebf962b98a82c74bf1e09",
+    "index.html": "416ade9c7da03fe93b88b15bf49b7aa4c7b4cd7a4f913fd5c426d81a0fe192e6",
+    ".vite/manifest.json": "4f964fc45b9c5f38c903f2de266a008ab0fbef22d97c3a2a578ae4fe7e42014d"
+  },
+  "cases": [
+    {
+      "engine": "chromium",
+      "adapter": "react",
+      "browserVersion": "151.0.7922.34",
+      "errors": [],
+      "media": {
+        "coarse": true,
+        "hoverNone": true,
+        "touchPoints": 1,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36"
+      },
+      "positive": {
+        "submits": 2
+      },
+      "negative": {
+        "submits": 2
+      },
+      "restored": {
+        "submits": 3
+      },
+      "pass": true
+    },
+    {
+      "engine": "chromium",
+      "adapter": "alpine",
+      "browserVersion": "151.0.7922.34",
+      "errors": [],
+      "media": {
+        "coarse": true,
+        "hoverNone": true,
+        "touchPoints": 1,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36"
+      },
+      "positive": {
+        "submits": 2
+      },
+      "negative": {
+        "submits": 2
+      },
+      "restored": {
+        "submits": 3
+      },
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "adapter": "react",
+      "browserVersion": "153.0",
+      "errors": [],
+      "media": {
+        "coarse": true,
+        "hoverNone": true,
+        "touchPoints": 0,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0"
+      },
+      "positive": {
+        "submits": 2
+      },
+      "negative": {
+        "submits": 2
+      },
+      "restored": {
+        "submits": 3
+      },
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "adapter": "alpine",
+      "browserVersion": "153.0",
+      "errors": [],
+      "media": {
+        "coarse": true,
+        "hoverNone": true,
+        "touchPoints": 0,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0"
+      },
+      "positive": {
+        "submits": 2
+      },
+      "negative": {
+        "submits": 2
+      },
+      "restored": {
+        "submits": 3
+      },
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "adapter": "react",
+      "browserVersion": "26.5",
+      "errors": [],
+      "media": {
+        "coarse": true,
+        "hoverNone": true,
+        "touchPoints": 0,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15"
+      },
+      "positive": {
+        "submits": 2
+      },
+      "negative": {
+        "submits": 2
+      },
+      "restored": {
+        "submits": 3
+      },
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "adapter": "alpine",
+      "browserVersion": "26.5",
+      "errors": [],
+      "media": {
+        "coarse": true,
+        "hoverNone": true,
+        "touchPoints": 0,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15"
+      },
+      "positive": {
+        "submits": 2
+      },
+      "negative": {
+        "submits": 2
+      },
+      "restored": {
+        "submits": 3
+      },
+      "pass": true
+    }
+  ]
+}

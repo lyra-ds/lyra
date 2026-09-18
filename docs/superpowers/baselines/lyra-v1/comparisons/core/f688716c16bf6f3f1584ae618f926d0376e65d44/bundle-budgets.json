@@ -435,7 +435,30 @@
       "sha256": "91289e91ebb4a801ed45da3d901bb6c95b3370fd899a4923c66cd534ebcd8558"
     }
   },
-  "candidateBinding": null,
+  "candidateBinding": {
+    "result": "pass",
+    "sourceRevision": "f688716c16bf6f3f1584ae618f926d0376e65d44",
+    "packages": {
+      "styles": {
+        "name": "@lyra-ds/styles",
+        "version": "1.0.0",
+        "tarball": "lyra-ds-styles-1.0.0.tgz",
+        "sha256": "91289e91ebb4a801ed45da3d901bb6c95b3370fd899a4923c66cd534ebcd8558"
+      },
+      "react": {
+        "name": "@lyra-ds/react",
+        "version": "1.0.0",
+        "tarball": "lyra-ds-react-1.0.0.tgz",
+        "sha256": "56ef23c0f2e10fc3d9c6d4be832adf169d1633cb1f92b6f7241a54c895535f32"
+      },
+      "alpine": {
+        "name": "@lyra-ds/alpine",
+        "version": "1.0.0",
+        "tarball": "lyra-ds-alpine-1.0.0.tgz",
+        "sha256": "eda54b2e0e92cda17b3011a3002e861b51bff6a9abc2658b7e73882b14d70969"
+      }
+    }
+  },
   "entries": {
     "react": [
       {
