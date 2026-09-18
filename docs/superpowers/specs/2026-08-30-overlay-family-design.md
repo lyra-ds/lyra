@@ -290,11 +290,13 @@ WorkspaceSwitcher.
    requires a stable `aria-describedby` relationship.
 3. Preferred side and logical start/center/end alignment MUST be inputs, not
    promises that content may clip. Placement MUST first fit on the preferred
-   side, flip to the opposite side when necessary, then keep the popup inside
-   the usable visual viewport along that side. For V1 the inline-axis
-   constraint is a measured logical alignment flip between `start` and `end`
-   against the visual viewport; a continuous inline shift is not required
-   (maintainer decision, 2026-09-18, recorded in
+   side and flip to the opposite side when necessary. On the inline axis, V1
+   MUST measure the visual viewport and choose the logical `start` or `end`
+   alignment that fits; when one alignment fits, the popup stays inside the
+   usable visual viewport. When neither alignment fits, V1 selects the
+   alignment with more room and the popup MAY overflow the inline edge; a
+   continuous inline shift or width clamp is not a V1 requirement (maintainer
+   decision, 2026-09-18, recorded in
    `.batuta/specs/2026-09-18-anchored-inline-placement-and-candidate-archives.md`).
    If neither vertical side fits, the popup MUST use a bounded scroll region
    and remain reachable rather than render offscreen.
