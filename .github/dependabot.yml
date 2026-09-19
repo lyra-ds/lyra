@@ -17,6 +17,19 @@ updates:
       # @types/node tracks the engines pin (node >=24 <25).
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
+      # Qualification toolchain held until a coordinated evidence/image migration (2026-09-19):
+      # the V1 evidence, the pinned Playwright container and the bundle fixture identity depend
+      # on these exact versions. Lift after re-measuring under the new toolchain.
+      - dependency-name: playwright
+      - dependency-name: vite
+      - dependency-name: tsdown
+      - dependency-name: lucide-react
+      - dependency-name: alpinejs
+      - dependency-name: '@alpinejs/csp'
+      - dependency-name: react
+      - dependency-name: react-dom
+      - dependency-name: '@types/react'
+      - dependency-name: '@types/react-dom'
   - package-ecosystem: github-actions
     directory: /
     schedule:

@@ -322,7 +322,7 @@ function approvedBudgetCandidate() {
   candidate.environment.operatingSystem = 'linux 6.11.0-1018-azure Ubuntu';
   candidate.environment.architecture = 'x64';
   candidate.environment.lockfileSha256 =
-    '1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf';
+    '86f83145b01f7f923f0c87d1c6223b1e0f21d32b317297ba0c4e92c08b7a7e81';
   candidate.environment.exactCommand = 'pnpm baseline:bundles --check-budgets';
   candidate.environment.fixture.sourceSha256 = APPROVED_FIXTURE_SOURCE_SHA256;
   for (const entries of Object.values(candidate.standalone)) {
