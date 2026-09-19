@@ -1,6 +1,6 @@
 # Package, consumer and compatibility gates
 
-- Source revision: `aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0`
+- Source revision: `cd282f198151a7901aad86ff837c4367e9f163cd`
 - Measured revision: `812e92f341decf6c9b51da47ee0a729f576ca74d` (Measured on an earlier commit of the candidate branch whose three package archives are identical (same decompressed tar SHA-256) to the candidate source revision; only documentation, baseline and tooling files changed in between.)
 - Platform: macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1
 

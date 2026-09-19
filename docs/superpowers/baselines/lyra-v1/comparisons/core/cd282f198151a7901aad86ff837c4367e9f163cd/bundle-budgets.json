@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "kind": "bundle-budget",
   "result": "pass",
-  "referenceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
-  "candidateRevision": "3588aa8b079bf74fbec0cf1c4ef4e00d80a19387",
+  "referenceRevision": "cd282f198151a7901aad86ff837c4367e9f163cd",
+  "candidateRevision": "11d0966fb7ec57af9180a569d9e0aa139939516c",
   "environment": {
     "operatingSystem": "darwin 25.6.0",
     "architecture": "arm64",
@@ -437,7 +437,7 @@
   },
   "candidateBinding": {
     "result": "pass",
-    "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+    "sourceRevision": "cd282f198151a7901aad86ff837c4367e9f163cd",
     "packages": {
       "styles": {
         "name": "@lyra-ds/styles",

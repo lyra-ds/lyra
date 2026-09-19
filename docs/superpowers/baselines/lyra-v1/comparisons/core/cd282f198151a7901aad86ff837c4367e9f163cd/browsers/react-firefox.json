@@ -1,10 +1,10 @@
 {
-  "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+  "sourceRevision": "cd282f198151a7901aad86ff837c4367e9f163cd",
   "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
   "note": "Measured on an earlier commit of the candidate branch whose three package archives are identical (same decompressed tar SHA-256) to the candidate source revision; only documentation, baseline and tooling files changed in between.",
   "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
   "package": "react",
-  "engine": "webkit",
+  "engine": "firefox",
   "success": true,
   "numTotalTests": 848,
   "numPassedTests": 848,
@@ -26,6 +26,20 @@
       "pending": 0
     },
     {
+      "file": "packages/react/src/app-sidebar/app-sidebar.browser.test.tsx",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/avatar/avatar.browser.test.tsx",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
       "file": "packages/react/src/alert/alert.browser.test.tsx",
       "total": 8,
       "passed": 8,
@@ -33,9 +47,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/app-sidebar/app-sidebar.browser.test.tsx",
-      "total": 6,
-      "passed": 6,
+      "file": "packages/react/src/badge/badge.browser.test.tsx",
+      "total": 12,
+      "passed": 12,
       "failed": 0,
       "pending": 0
     },
@@ -68,13 +82,6 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/badge/badge.browser.test.tsx",
-      "total": 12,
-      "passed": 12,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/button/button.browser.test.tsx",
       "total": 49,
       "passed": 49,
@@ -82,9 +89,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/avatar/avatar.browser.test.tsx",
-      "total": 10,
-      "passed": 10,
+      "file": "packages/react/src/checkbox/checkbox.browser.test.tsx",
+      "total": 6,
+      "passed": 6,
       "failed": 0,
       "pending": 0
     },
@@ -99,13 +106,6 @@
       "file": "packages/react/src/checkbox-group/checkbox-group.browser.test.tsx",
       "total": 4,
       "passed": 4,
-      "failed": 0,
-      "pending": 0
-    },
-    {
-      "file": "packages/react/src/checkbox/checkbox.browser.test.tsx",
-      "total": 6,
-      "passed": 6,
       "failed": 0,
       "pending": 0
     },
@@ -131,16 +131,16 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/command-palette/command-palette.browser.test.tsx",
-      "total": 31,
-      "passed": 31,
+      "file": "packages/react/src/container/container.browser.test.tsx",
+      "total": 2,
+      "passed": 2,
       "failed": 0,
       "pending": 0
     },
     {
-      "file": "packages/react/src/container/container.browser.test.tsx",
-      "total": 2,
-      "passed": 2,
+      "file": "packages/react/src/command-palette/command-palette.browser.test.tsx",
+      "total": 31,
+      "passed": 31,
       "failed": 0,
       "pending": 0
     },
@@ -159,14 +159,14 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/create-workspace-dialog/create-workspace-dialog.browser.test.tsx",
+      "file": "packages/react/src/cookie-banner/cookie-banner.browser.test.tsx",
       "total": 12,
       "passed": 12,
       "failed": 0,
       "pending": 0
     },
     {
-      "file": "packages/react/src/cookie-banner/cookie-banner.browser.test.tsx",
+      "file": "packages/react/src/create-workspace-dialog/create-workspace-dialog.browser.test.tsx",
       "total": 12,
       "passed": 12,
       "failed": 0,
@@ -201,6 +201,13 @@
       "pending": 0
     },
     {
+      "file": "packages/react/src/empty-state/empty-state.browser.test.tsx",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
       "file": "packages/react/src/fieldset/fieldset.browser.test.tsx",
       "total": 3,
       "passed": 3,
@@ -215,13 +222,6 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/drawer/drawer.browser.test.tsx",
-      "total": 20,
-      "passed": 20,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/file-manager/file-manager.browser.test.tsx",
       "total": 40,
       "passed": 40,
@@ -229,9 +229,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/empty-state/empty-state.browser.test.tsx",
-      "total": 2,
-      "passed": 2,
+      "file": "packages/react/src/drawer/drawer.browser.test.tsx",
+      "total": 20,
+      "passed": 20,
       "failed": 0,
       "pending": 0
     },
@@ -264,9 +264,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/input/input.browser.test.tsx",
-      "total": 29,
-      "passed": 29,
+      "file": "packages/react/src/icon/icon.browser.test.tsx",
+      "total": 13,
+      "passed": 13,
       "failed": 0,
       "pending": 0
     },
@@ -274,6 +274,20 @@
       "file": "packages/react/src/icon-button/icon-button.browser.test.tsx",
       "total": 10,
       "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/input/input.browser.test.tsx",
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/navbar/navbar.browser.test.tsx",
+      "total": 4,
+      "passed": 4,
       "failed": 0,
       "pending": 0
     },
@@ -327,23 +341,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/navbar/navbar.browser.test.tsx",
-      "total": 4,
-      "passed": 4,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/page-header/page-header.browser.test.tsx",
       "total": 3,
       "passed": 3,
-      "failed": 0,
-      "pending": 0
-    },
-    {
-      "file": "packages/react/src/icon/icon.browser.test.tsx",
-      "total": 13,
-      "passed": 13,
       "failed": 0,
       "pending": 0
     },
@@ -355,9 +355,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/person-cell/person-cell.browser.test.tsx",
-      "total": 2,
-      "passed": 2,
+      "file": "packages/react/src/progress/progress.browser.test.tsx",
+      "total": 6,
+      "passed": 6,
       "failed": 0,
       "pending": 0
     },
@@ -365,6 +365,13 @@
       "file": "packages/react/src/popover/popover.browser.test.tsx",
       "total": 36,
       "passed": 36,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/person-cell/person-cell.browser.test.tsx",
+      "total": 2,
+      "passed": 2,
       "failed": 0,
       "pending": 0
     },
@@ -383,23 +390,16 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/recurrence-selector/recurrence-selector.browser.test.tsx",
-      "total": 3,
-      "passed": 3,
-      "failed": 0,
-      "pending": 0
-    },
-    {
-      "file": "packages/react/src/progress/progress.browser.test.tsx",
-      "total": 6,
-      "passed": 6,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/segmented-control/segmented-control.browser.test.tsx",
       "total": 9,
       "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/recurrence-selector/recurrence-selector.browser.test.tsx",
+      "total": 3,
+      "passed": 3,
       "failed": 0,
       "pending": 0
     },
@@ -418,13 +418,6 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/sidebar-group/sidebar-group.browser.test.tsx",
-      "total": 7,
-      "passed": 7,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/shell/shell.browser.test.tsx",
       "total": 10,
       "passed": 10,
@@ -432,14 +425,21 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/skeleton/skeleton.browser.test.tsx",
+      "file": "packages/react/src/separator/separator.browser.test.tsx",
       "total": 2,
       "passed": 2,
       "failed": 0,
       "pending": 0
     },
     {
-      "file": "packages/react/src/separator/separator.browser.test.tsx",
+      "file": "packages/react/src/sidebar-group/sidebar-group.browser.test.tsx",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/skeleton/skeleton.browser.test.tsx",
       "total": 2,
       "passed": 2,
       "failed": 0,
@@ -453,13 +453,6 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/stack/stack.browser.test.tsx",
-      "total": 9,
-      "passed": 9,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/spinner/spinner.browser.test.tsx",
       "total": 8,
       "passed": 8,
@@ -467,16 +460,16 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/stat/stat.browser.test.tsx",
-      "total": 6,
-      "passed": 6,
+      "file": "packages/react/src/stack/stack.browser.test.tsx",
+      "total": 9,
+      "passed": 9,
       "failed": 0,
       "pending": 0
     },
     {
-      "file": "packages/react/src/table/table.browser.test.tsx",
-      "total": 7,
-      "passed": 7,
+      "file": "packages/react/src/stat/stat.browser.test.tsx",
+      "total": 6,
+      "passed": 6,
       "failed": 0,
       "pending": 0
     },
@@ -495,6 +488,13 @@
       "pending": 0
     },
     {
+      "file": "packages/react/src/table/table.browser.test.tsx",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
       "file": "packages/react/src/tabs/tabs.browser.test.tsx",
       "total": 18,
       "passed": 18,
@@ -502,9 +502,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/textarea/textarea.browser.test.tsx",
-      "total": 3,
-      "passed": 3,
+      "file": "packages/react/src/table-of-contents/table-of-contents.browser.test.tsx",
+      "total": 5,
+      "passed": 5,
       "failed": 0,
       "pending": 0
     },
@@ -512,6 +512,13 @@
       "file": "packages/react/src/tag/tag.browser.test.tsx",
       "total": 4,
       "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/textarea/textarea.browser.test.tsx",
+      "total": 3,
+      "passed": 3,
       "failed": 0,
       "pending": 0
     },
@@ -530,23 +537,16 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/table-of-contents/table-of-contents.browser.test.tsx",
-      "total": 5,
-      "passed": 5,
-      "failed": 0,
-      "pending": 0
-    },
-    {
-      "file": "packages/react/src/time-picker/time-picker.browser.test.tsx",
-      "total": 6,
-      "passed": 6,
-      "failed": 0,
-      "pending": 0
-    },
-    {
       "file": "packages/react/src/toast/toast.browser.test.tsx",
       "total": 11,
       "passed": 11,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/react/src/tooltip/tooltip.browser.test.tsx",
+      "total": 13,
+      "passed": 13,
       "failed": 0,
       "pending": 0
     },
@@ -572,9 +572,9 @@
       "pending": 0
     },
     {
-      "file": "packages/react/src/tooltip/tooltip.browser.test.tsx",
-      "total": 13,
-      "passed": 13,
+      "file": "packages/react/src/time-picker/time-picker.browser.test.tsx",
+      "total": 6,
+      "passed": 6,
       "failed": 0,
       "pending": 0
     },

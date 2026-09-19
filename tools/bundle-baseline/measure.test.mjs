@@ -310,7 +310,7 @@ function budgetReferenceFixture() {
         'lyra-v1',
         'comparisons',
         'file-upload',
-        'aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0.json',
+        'cd282f198151a7901aad86ff837c4367e9f163cd.json',
       ),
       'utf8',
     ),
