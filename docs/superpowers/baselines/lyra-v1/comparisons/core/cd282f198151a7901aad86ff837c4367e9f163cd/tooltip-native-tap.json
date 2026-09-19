@@ -1,5 +1,5 @@
 {
-  "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+  "sourceRevision": "cd282f198151a7901aad86ff837c4367e9f163cd",
   "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
   "note": "Measured on the candidate archives extracted from the 1.0.0 tarballs (identical decompressed tar streams at the source revision).",
   "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
