@@ -1080,7 +1080,7 @@ test('accepts a complete schemaVersion 2 candidate program and rejects invalid b
     [
       'planning status',
       (input) => (input.ledger.releaseStatus = 'planning'),
-      'schemaVersion 2 requires releaseStatus candidate',
+      'schemaVersion 2 requires releaseStatus candidate or released',
     ],
     [
       'missing candidate key',
@@ -1188,6 +1188,80 @@ test('accepts a complete schemaVersion 2 candidate program and rejects invalid b
     const input = candidateProgram();
     mutate(input);
     assert.ok(validateV1Program(input).includes(expected), name);
+  }
+});
+
+test('accepts a released schemaVersion 2 program only with a complete publication record', () => {
+  const publication = {
+    releaseCommit: candidateProgram().ledger.candidate.sourceRevision,
+    releaseRun: '35460259331',
+    publishedAt: '2026-09-19T18:10:49.000Z',
+    registry: 'https://registry.npmjs.org',
+    versions: { styles: '1.0.0', react: '1.0.0', alpine: '1.0.0' },
+  };
+  const released = candidateProgram();
+  released.ledger.releaseStatus = 'released';
+  released.ledger.publication = structuredClone(publication);
+  assert.deepEqual(validateV1Program(released), []);
+
+  const candidateWithPublication = candidateProgram();
+  candidateWithPublication.ledger.publication = structuredClone(publication);
+  assert.deepEqual(validateV1Program(candidateWithPublication), [
+    'publication is only allowed when releaseStatus is released',
+  ]);
+
+  for (const [name, mutate, expected] of [
+    [
+      'missing publication',
+      (input) => delete input.ledger.publication,
+      'publication keys must be exactly releaseCommit, releaseRun, publishedAt, registry, versions',
+    ],
+    [
+      'wrong release commit',
+      (input) => (input.ledger.publication.releaseCommit = 'b'.repeat(40)),
+      'publication releaseCommit must equal candidate sourceRevision',
+    ],
+    [
+      'bad run id',
+      (input) => (input.ledger.publication.releaseRun = 'run'),
+      'publication releaseRun must be a workflow run id',
+    ],
+    [
+      'bad date',
+      (input) => (input.ledger.publication.publishedAt = 'yesterday'),
+      'publication publishedAt must be an ISO 8601 UTC timestamp',
+    ],
+    [
+      'numeric run id',
+      (input) => (input.ledger.publication.releaseRun = 35460259331),
+      'publication releaseRun must be a workflow run id',
+    ],
+    [
+      'non-ISO date',
+      (input) => (input.ledger.publication.publishedAt = '2026/09/19 18:10'),
+      'publication publishedAt must be an ISO 8601 UTC timestamp',
+    ],
+    [
+      'local-offset date',
+      (input) => (input.ledger.publication.publishedAt = '2026-09-19T15:10:49-03:00'),
+      'publication publishedAt must be an ISO 8601 UTC timestamp',
+    ],
+    [
+      'other registry',
+      (input) => (input.ledger.publication.registry = 'https://example.com'),
+      'publication registry must equal https://registry.npmjs.org',
+    ],
+    [
+      'wrong version',
+      (input) => (input.ledger.publication.versions.react = '1.0.1'),
+      'publication react version must equal 1.0.0',
+    ],
+  ]) {
+    const input = candidateProgram();
+    input.ledger.releaseStatus = 'released';
+    input.ledger.publication = structuredClone(publication);
+    mutate(input);
+    assert.deepEqual(validateV1Program(input), [expected], name);
   }
 });
 
