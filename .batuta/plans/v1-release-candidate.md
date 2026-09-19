@@ -1,6 +1,6 @@
 # Plan — Lyra 1.0.0 release candidate
 **Goal:** Produce, bind and qualify the exact 1.0.0 candidate for `@lyra-ds/styles`, `@lyra-ds/react` and `@lyra-ds/alpine`, so that one explicit maintainer merge publishes it.
-**Created:** 2026-09-18 · **Status:** in progress — tasks 1–11 done on 2026-09-18; task 12 (PR B qualification) next; task 13 is the maintainer merge
+**Created:** 2026-09-18 · **Status:** complete — 1.0.0 published on 2026-09-19 by the maintainer-authorized merge of PR #236
 **Base:** origin/main `c397575` (PR #234). Worktree `../lyra-v1-acceptance`.
 
 ## Release mechanics that shape this plan
@@ -66,12 +66,12 @@ Two PRs, in order:
       Depends on: 10
       Scope: `docs/superpowers/baselines/lyra-v1/program.json` (candidate block with `path: null`, 11 components `qualified`, 23 cells each `{result:'PASS', revision:R, artifact, sha256}`, `migrationGuides` en/ptBR paths, `compatibility` strings, `immutableEvidence` `{path, sha256}`, `runtimeEvidence` deferred `numerical-runtime`); `docs/superpowers/specs/2026-08-30-overlay-family-design.md` and `.batuta/specs/2026-09-10-tabs-owned-content-design.md` gain `**Status:** Implemented`; `apps/docs/content/docs/{en,pt-BR}/guides/compatibility.mdx` current versions and tested row at 1.0.0; `docs/superpowers/baselines/lyra-v1/README.md` candidate note; `.batuta/reviews/v1-product-review/v1-candidate-qualification.md`
       Accept: `pnpm v1-release:check` prints the consistent message → gate; `pnpm baseline:bundles --check-budgets` reports `candidateBinding` matched for the three packages → gate; `pnpm v1-core:check`, `pnpm lint`, `node --test tools/v1-release/check.test.mjs` pass → controller proof.
-- [ ] 12. Open PR B and qualify the exact head — release/critical
+- [x] 12. Open PR B and qualify the exact head — release/critical
       Depends on: 11
       Scope: PR `release/1.0.0-candidate` → `main`, labels `pkg: styles`, `pkg: react`, `pkg: alpine`, `documentation`; body lists the three hashes, R, and the evidence directory
       Accept: 9/9 checks on the exact head including native Linux/Windows/macOS → CI; review findings adjudicated with any fix followed by a fresh 9/9 → controller. **Stop here.** Report to the maintainer; do not merge.
 
-- [ ] 13. Publication (maintainer only) — release/critical
+- [x] 13. Publication (maintainer only) — release/critical
       Depends on: 12
       The maintainer merges PR B. Release workflow publishes Styles, React and Alpine 1.0.0 with provenance, pushes tags and creates GitHub Releases. Controller then verifies `npm view @lyra-ds/<pkg> version` = 1.0.0, attaches the exact tarballs and ledger hashes to the GitHub Release if the maintainer wants durable copies, confirms PR #224 closed, and records the outcome in `WORK.md`.
 
@@ -88,3 +88,5 @@ Two PRs, in order:
 - PR A merged as `81714a6` (#235). Version commit R = `812e92f`; compatibility docs `a40caeb`; reference retired `cde21a0`; reference written `f688716` = candidate `sourceRevision`; FileUpload evidence accepted `9898b5e`.
 - Two maintainer decisions taken during execution are recorded in `.batuta/specs/2026-09-18-v1-candidate-reference-and-policy-decisions.md`: bundle reference promotion (with the `budgets.mjs` re-pin and exception retirement it entails) and the V1 Core policy amendment accepting `**Status:** Implemented` for the Data and Files family.
 - Gates, suites and reruns were measured on `812e92f`; the three package archives are byte-identical (same SHA-256) at the source revision because only documentation and baseline files changed in between. Raw evidence: MAIN `.batuta/runs/v1-candidate-20260918/`.
+- PR #236 (`release/1.0.0-candidate`) exposed two mechanism gaps fixed on the branch: depth-1 checkouts cannot answer the ancestry checks (`fetch-depth: 0` on lint/test/build and the native workflow, `safe.directory` in the container job) and `.tgz` hashes differ across platforms because of the gzip header OS byte (decision 3: identity = decompressed tar stream). Final candidate `sourceRevision` `aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0`; 9/9 checks on head `4e6cab0`; squash-merged as `cd282f1` on 2026-09-19 with the maintainer's explicit authorization.
+- Release run 35460259331 published `@lyra-ds/styles`, `@lyra-ds/react` and `@lyra-ds/alpine` 1.0.0 (OIDC), pushed tags and created GitHub Releases. Downloaded tarballs' decompressed tar SHA-256 equal the ledger. PR #224 closed as obsolete. `starter-next` and `starter-vite` install and build against the published 1.0.0 (`--config.minimum-release-age=0`). Follow-ups: standalone Dialog Size Limit entry; starter repositories still pin `^0.4.0` and need their own bump.
