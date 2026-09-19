@@ -26,7 +26,7 @@
     "@types/alpinejs": "3.13.11",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
-    "@vitest/browser-playwright": "4.1.11",
+    "@vitest/browser-playwright": "5.0.1",
     "typescript": "5.9.3",
     "vite": "8.2.1",
     "vitest": "4.1.11"
