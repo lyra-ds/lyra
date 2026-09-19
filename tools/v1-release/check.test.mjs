@@ -1229,7 +1229,22 @@ test('accepts a released schemaVersion 2 program only with a complete publicatio
     [
       'bad date',
       (input) => (input.ledger.publication.publishedAt = 'yesterday'),
-      'publication publishedAt must be an ISO 8601 date',
+      'publication publishedAt must be an ISO 8601 UTC timestamp',
+    ],
+    [
+      'numeric run id',
+      (input) => (input.ledger.publication.releaseRun = 35460259331),
+      'publication releaseRun must be a workflow run id',
+    ],
+    [
+      'non-ISO date',
+      (input) => (input.ledger.publication.publishedAt = '2026/09/19 18:10'),
+      'publication publishedAt must be an ISO 8601 UTC timestamp',
+    ],
+    [
+      'local-offset date',
+      (input) => (input.ledger.publication.publishedAt = '2026-09-19T15:10:49-03:00'),
+      'publication publishedAt must be an ISO 8601 UTC timestamp',
     ],
     [
       'other registry',
