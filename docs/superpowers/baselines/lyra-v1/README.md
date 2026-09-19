@@ -16,7 +16,10 @@ V1 exit gate.
 
 ### Candidate acceptance (schemaVersion 2)
 
-The ledger supports `schemaVersion: 1` planning and `schemaVersion: 2` candidate shapes.
+The ledger supports `schemaVersion: 1` planning and `schemaVersion: 2` candidate and released shapes;
+a released ledger keeps every candidate binding and adds a `publication` record (release commit, run,
+date, registry, versions). The bundle gate cross-checks freshly packed archives against the ledger only
+while the ledger is a candidate.
 A candidate supplies its source revision and exact Styles, React, and Alpine package artifacts.
 Each passing acceptance cell binds `{ result, revision, artifact, sha256 }` to that revision.
 Cell evidence lives below `comparisons/core/<sourceRevision>/` and is hash-verified.
@@ -24,8 +27,7 @@ Each qualified entry records `runtimeEvidence`: a verified PASS artifact or an e
 `numerical-runtime` deferral backed by the runtime-scope decision.
 The accepted FileUpload pointer must bind its React and Styles archives to the candidate hashes.
 The bundle gate independently rebuilds the three packages and cross-checks their identities.
-The current ledger is `schemaVersion: 2` with `releaseStatus: candidate` for the 1.0.0 release
-candidate (`candidate.sourceRevision` names the exact commit; archives are not tracked, `path: null`).
+The current ledger is `schemaVersion: 2` with `releaseStatus: released` for the published 1.0.0 release (`candidate.sourceRevision` names the exact commit; archives are not tracked, `path: null`).
 Its evidence lives under `comparisons/core/<sourceRevision>/`; `bundles.json` is the candidate
 reference and `current.json` points at the candidate FileUpload comparison.
 

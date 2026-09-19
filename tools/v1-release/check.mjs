@@ -227,7 +227,8 @@ const V1_PROGRAM_KEYS = new Set([
   'acceptanceProfiles',
   'components',
 ]);
-const V2_PROGRAM_KEYS = new Set([...V1_PROGRAM_KEYS, 'candidate']);
+const V2_PROGRAM_KEYS = new Set([...V1_PROGRAM_KEYS, 'candidate', 'publication']);
+const RELEASE_STATUSES_V2 = new Set(['candidate', 'released']);
 const V2_ENTRY_KEYS = new Set([...REQUIRED_ENTRY_KEYS, 'runtimeEvidence']);
 const RUNTIME_DECISION_PATH = '.batuta/specs/2026-09-15-v1-runtime-scope-proposal.md';
 const CORE_COMPARISON_ROOT = 'docs/superpowers/baselines/lyra-v1/comparisons/core/';
@@ -741,6 +742,49 @@ function validateCandidate(candidate, documents, hashes, errors) {
   }
 }
 
+/**
+ * A released ledger keeps every candidate binding and adds the publication record: the main commit
+ * the Release workflow built, the workflow run that published, and the published versions. A
+ * candidate ledger must not carry a publication block; a released ledger must.
+ */
+function validatePublication(ledger, errors) {
+  const publication = ledger.publication;
+  if (ledger.releaseStatus !== 'released') {
+    if (publication !== undefined)
+      errors.push('publication is only allowed when releaseStatus is released');
+    return;
+  }
+  if (
+    !exactKeys(publication, ['releaseCommit', 'releaseRun', 'publishedAt', 'registry', 'versions'])
+  ) {
+    errors.push(
+      'publication keys must be exactly releaseCommit, releaseRun, publishedAt, registry, versions',
+    );
+    return;
+  }
+  if (publication.releaseCommit !== ledger.candidate?.sourceRevision) {
+    errors.push('publication releaseCommit must equal candidate sourceRevision');
+  }
+  if (!/^[0-9]+$/u.test(String(publication.releaseRun))) {
+    errors.push('publication releaseRun must be a workflow run id');
+  }
+  if (Number.isNaN(Date.parse(publication.publishedAt))) {
+    errors.push('publication publishedAt must be an ISO 8601 date');
+  }
+  if (publication.registry !== 'https://registry.npmjs.org') {
+    errors.push('publication registry must equal https://registry.npmjs.org');
+  }
+  if (!exactKeys(publication.versions, ['styles', 'react', 'alpine'])) {
+    errors.push('publication versions keys must be exactly styles, react, alpine');
+  } else {
+    for (const key of ['styles', 'react', 'alpine']) {
+      if (publication.versions[key] !== '1.0.0') {
+        errors.push(`publication ${key} version must equal 1.0.0`);
+      }
+    }
+  }
+}
+
 export function validateV1Program({ ledger, documents = {}, hashes = {} } = {}) {
   const errors = [];
   if (!isPlainObject(ledger)) return ['ledger must be a plain object'];
@@ -756,10 +800,11 @@ export function validateV1Program({ ledger, documents = {}, hashes = {} } = {}) 
   }
   if (ledger.targetRelease !== '1.0.0') errors.push('targetRelease must equal 1.0.0');
   if (isCandidate) {
-    if (ledger.releaseStatus !== 'candidate') {
-      errors.push('schemaVersion 2 requires releaseStatus candidate');
+    if (!RELEASE_STATUSES_V2.has(ledger.releaseStatus)) {
+      errors.push('schemaVersion 2 requires releaseStatus candidate or released');
     }
     validateCandidate(ledger.candidate, documents, hashes, errors);
+    validatePublication(ledger, errors);
   } else if (ledger.releaseStatus !== 'planning') {
     errors.push('releaseStatus must equal planning');
   }

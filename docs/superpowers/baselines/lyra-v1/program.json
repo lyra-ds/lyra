@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "targetRelease": "1.0.0",
   "programSpecification": "docs/superpowers/specs/2026-08-30-lyra-v1-deliberate-release-design.md",
-  "releaseStatus": "candidate",
+  "releaseStatus": "released",
   "candidate": {
     "sourceRevision": "cd282f198151a7901aad86ff837c4367e9f163cd",
     "packages": {
@@ -27,6 +27,17 @@
         "sha256": "dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969",
         "path": null
       }
+    }
+  },
+  "publication": {
+    "releaseCommit": "cd282f198151a7901aad86ff837c4367e9f163cd",
+    "releaseRun": "35460259331",
+    "publishedAt": "2026-09-19T18:10:49.000Z",
+    "registry": "https://registry.npmjs.org",
+    "versions": {
+      "styles": "1.0.0",
+      "react": "1.0.0",
+      "alpine": "1.0.0"
     }
   },
   "acceptanceProfiles": {
