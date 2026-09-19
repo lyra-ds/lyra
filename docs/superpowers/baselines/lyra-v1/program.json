@@ -1,8 +1,34 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "targetRelease": "1.0.0",
   "programSpecification": "docs/superpowers/specs/2026-08-30-lyra-v1-deliberate-release-design.md",
-  "releaseStatus": "planning",
+  "releaseStatus": "candidate",
+  "candidate": {
+    "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+    "packages": {
+      "styles": {
+        "name": "@lyra-ds/styles",
+        "version": "1.0.0",
+        "tarball": "lyra-ds-styles-1.0.0.tgz",
+        "sha256": "9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff",
+        "path": null
+      },
+      "react": {
+        "name": "@lyra-ds/react",
+        "version": "1.0.0",
+        "tarball": "lyra-ds-react-1.0.0.tgz",
+        "sha256": "a86150e8f3c922073abc5e6e835b780e5604537d28b209815b2c1a44b96b99c2",
+        "path": null
+      },
+      "alpine": {
+        "name": "@lyra-ds/alpine",
+        "version": "1.0.0",
+        "tarball": "lyra-ds-alpine-1.0.0.tgz",
+        "sha256": "dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969",
+        "path": null
+      }
+    }
+  },
   "acceptanceProfiles": {
     "v1-interactive": [
       "chromium",
@@ -38,18 +64,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/dialog/dialog.tsx"],
       "targetContracts": ["OF-MODAL"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "drawer",
@@ -58,18 +272,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/drawer/drawer.tsx"],
       "targetContracts": ["OF-MODAL"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "bottom-sheet",
@@ -78,18 +480,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/bottom-sheet/bottom-sheet.tsx"],
       "targetContracts": ["OF-MODAL"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "popover",
@@ -98,18 +688,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/popover/popover.tsx"],
       "targetContracts": ["OF-ANCHORED"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "dropdown",
@@ -118,18 +896,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/dropdown/dropdown.tsx"],
       "targetContracts": ["OF-ANCHORED", "OF-MENU"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "tooltip",
@@ -138,18 +1104,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/tooltip/tooltip.tsx"],
       "targetContracts": ["OF-ANCHORED", "OF-TOOLTIP"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "command-palette",
@@ -158,18 +1312,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/command-palette/command-palette.tsx"],
       "targetContracts": ["OF-COMPOSED", "OF-MODAL"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "workspace-switcher",
@@ -178,18 +1520,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/workspace-switcher/workspace-switcher.tsx"],
       "targetContracts": ["OF-COMPOSED", "OF-ANCHORED"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "create-workspace-dialog",
@@ -198,18 +1728,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": "docs/superpowers/specs/2026-08-30-overlay-family-design.md",
-        "status": "approved"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/create-workspace-dialog/create-workspace-dialog.tsx"],
       "targetContracts": ["OF-COMPOSED", "OF-MODAL"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (tested tuple; this component has no Alpine adapter)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "tabs",
@@ -218,18 +1936,206 @@
       "priority": "P1",
       "governingSpecification": {
         "path": ".batuta/specs/2026-09-10-tabs-owned-content-design.md",
-        "status": "draft"
+        "status": "implemented"
       },
       "currentContract": ["packages/react/src/tabs/tabs.tsx"],
       "targetContracts": ["v1-tabs"],
-      "implementationStatus": "specified",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     },
     {
       "id": "data-table",
@@ -242,14 +2148,202 @@
       },
       "currentContract": ["packages/react/src/data-table/data-table.tsx"],
       "targetContracts": ["v1-data-table"],
-      "implementationStatus": "planned",
+      "implementationStatus": "qualified",
       "acceptanceProfile": "v1-interactive",
       "notApplicable": [],
-      "acceptanceEvidence": {},
-      "migrationGuides": { "en": null, "ptBR": null },
-      "compatibility": { "styles": null, "react": null, "alpine": null },
-      "immutableEvidence": [],
-      "manualEvidence": "deferred-by-release-profile"
+      "acceptanceEvidence": {
+        "chromium": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "firefox": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "webkit": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "react-18": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "react-19": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "ssr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "hydration": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "keyboard-focus": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "axe-light": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "axe-dark": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "forced-colors": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "reduced-motion": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "ltr": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        "rtl": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "coarse-pointer": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        "bundle-standalone": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "bundle-composition": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        "packed-esm": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-cjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "packed-types": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-vite": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-next": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        "consumer-commonjs": {
+          "result": "PASS",
+          "revision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+          "artifact": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        }
+      },
+      "migrationGuides": {
+        "en": "apps/docs/content/docs/en/guides/migration-1-0.mdx",
+        "ptBR": "apps/docs/content/docs/pt-BR/guides/migration-1-0.mdx"
+      },
+      "compatibility": {
+        "styles": "@lyra-ds/styles =1.0.0",
+        "react": "@lyra-ds/react =1.0.0 (peer react >=18 <20, react-dom >=18 <20; verified on 18.3.1 and 19.2.8)",
+        "alpine": "@lyra-ds/alpine =1.0.0 (peer alpinejs >=3.13 <4)"
+      },
+      "immutableEvidence": [
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/bundle-budgets.json",
+          "sha256": "d0f958f0d7dac007e6aab678d09e93b070656f1266e2477c5b9429921e9c4068"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/package-gates.md",
+          "sha256": "d46045dddc1b458fd09bc1dbdb6719483ccabfbdf016870a187946dcc2b3adea"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/browsers/summary.json",
+          "sha256": "9feddb61c8e66777a8b454cd42533e51c9fec51fd0daff8a33797c0494751fd5"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/alpine-packed.json",
+          "sha256": "175db79b633bb0b84a380433946551ca75bf7694cefb21a41de60d391c806ca6"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/media-screening.json",
+          "sha256": "d93efdf6213e5b1380e216e09289be2bed4a64c2d64a17076c31364bf0ae0714"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/dropdown-native-tap.json",
+          "sha256": "f5b81d0fba6e67ac39ba7516f101bb9e49f2bc50a7eaf9b170626a0a2db2316c"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/component-suites.json",
+          "sha256": "f74b0ebbcda97ad5d49c233d6ded5845f727abf0ba09a5dc73d63b69e360005b"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/tooltip-native-tap.json",
+          "sha256": "35e94596e1412de2baec50f93173bf35517b6360c2da9f9aa83328a996117595"
+        },
+        {
+          "path": "docs/superpowers/baselines/lyra-v1/comparisons/core/aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0/README.md",
+          "sha256": "6c905d14ecb8bd83f7eedd5b085d98134c1d70a3597bfa08a5530b15a9d5802c"
+        }
+      ],
+      "manualEvidence": "deferred-by-release-profile",
+      "runtimeEvidence": {
+        "result": "deferred",
+        "basis": "numerical-runtime",
+        "decision": ".batuta/specs/2026-09-15-v1-runtime-scope-proposal.md"
+      }
     }
   ]
 }

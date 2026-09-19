@@ -24,8 +24,10 @@ Each qualified entry records `runtimeEvidence`: a verified PASS artifact or an e
 `numerical-runtime` deferral backed by the runtime-scope decision.
 The accepted FileUpload pointer must bind its React and Styles archives to the candidate hashes.
 The bundle gate independently rebuilds the three packages and cross-checks their identities.
-The current ledger remains `schemaVersion: 1` with `releaseStatus: planning`.
-This subsection documents the mechanism only; it does not make a candidate claim.
+The current ledger is `schemaVersion: 2` with `releaseStatus: candidate` for the 1.0.0 release
+candidate (`candidate.sourceRevision` names the exact commit; archives are not tracked, `path: null`).
+Its evidence lives under `comparisons/core/<sourceRevision>/`; `bundles.json` is the candidate
+reference and `current.json` points at the candidate FileUpload comparison.
 
 ## Approved product and foundational specifications
 

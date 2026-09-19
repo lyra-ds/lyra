@@ -173,6 +173,49 @@ test('accepts the promoted family status only with exact Automated Core evidence
   assert.deepEqual(validateV1CorePolicy(inputs), []);
 });
 
+test('accepts the V1 candidate Implemented status only with exact Automated Core evidence', () => {
+  const report = `
+# FileUpload accessibility evidence
+- Revision: \`52151c200972f3741eecb0761565f3569e81f267\`
+- Release profile: **Automated Core**
+- Overall automated result: **PASS**
+- Manual assistive-technology evidence: \`deferred-by-release-profile\`
+| \`DF-FU-17\` | Automated | en | route | **PASS** |
+| \`DF-FU-18\` | Automated | en | route | **PASS** |
+`;
+  const accepted = repositoryPolicyInputs();
+  accepted.documents.family = accepted.documents.family.replace(
+    '**Status:** Approved',
+    '**Status:** Implemented',
+  );
+  accepted.documents.familyEvidence = {
+    revision: '52151c200972f3741eecb0761565f3569e81f267',
+    report,
+  };
+  assert.deepEqual(validateV1CorePolicy(accepted), []);
+
+  const unproven = repositoryPolicyInputs();
+  unproven.documents.family = unproven.documents.family.replace(
+    '**Status:** Approved',
+    '**Status:** Implemented',
+  );
+  unproven.documents.familyEvidence = {
+    revision: '52151c200972f3741eecb0761565f3569e81f267',
+    report: '',
+  };
+  assert.deepEqual(validateV1CorePolicy(unproven), [
+    'The promoted Data and Files family status requires exact passing Automated Core evidence.',
+  ]);
+
+  const unrelated = repositoryPolicyInputs();
+  unrelated.documents.family = unrelated.documents.family.replace(
+    '**Status:** Approved',
+    '**Status:** Implemented elsewhere',
+  );
+  assert.deepEqual(validateV1CorePolicy(unrelated), [
+    'The Data and Files family status must remain `Approved` until exact evidence ingestion.',
+  ]);
+});
 test('rejects FAIL, malformed, or missing Automated Core scenario evidence', () => {
   const report = `
 # FileUpload accessibility evidence

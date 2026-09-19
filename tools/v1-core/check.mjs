@@ -152,8 +152,11 @@ export function validateV1CorePolicy(inputs) {
 
     const family = text(documents.family);
     const approved = /^\*\*Status:\*\* Approved$/mu.test(family);
+    // The FileUpload wave promotion and the V1 candidate closure (`Implemented`, once
+    // DataTable qualifies in the release ledger) are the two accepted promoted states.
     const implemented =
-      /^\*\*Status:\*\* Implemented under Automated Core — FileUpload wave$/mu.test(family);
+      /^\*\*Status:\*\* Implemented under Automated Core — FileUpload wave$/mu.test(family) ||
+      /^\*\*Status:\*\* Implemented$/mu.test(family);
     if (!approved && !implemented) {
       errors.push(
         'The Data and Files family status must remain `Approved` until exact evidence ingestion.',

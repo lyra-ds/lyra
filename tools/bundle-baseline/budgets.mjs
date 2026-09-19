@@ -1,4 +1,7 @@
-const REFERENCE_REVISION = '0003123e22ec57d21946b3f6f383fd2da7d1bd0a';
+// The accepted reference is the 1.0.0 candidate (maintainer decision, 2026-09-18). The one-time
+// migration exceptions approved against the Core Beta reference are realized in it and no longer
+// apply; every entry is measured against the release itself under the default ceilings.
+const REFERENCE_REVISION = 'aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0';
 const APPROVED_ROOT_LOCK = '1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf';
 export const APPROVED_FIXTURE_SOURCE_SHA256 =
   '07a32c9a76696fd88efdb0ab9aa16017fe3b6f3023e8d9f64c02e42a69b2c85e';
@@ -23,24 +26,21 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/alpine': { configuredLimit: '24.2 kB', bytes: 24200 },
 };
 
-const STANDALONE_EXCEPTIONS = {
-  '@lyra-ds/react/drawer': 4004,
-  '@lyra-ds/react/bottom-sheet': 3966,
-  '@lyra-ds/react/create-workspace-dialog': 5008,
-  '@lyra-ds/react/time-picker': 4591,
-  '@lyra-ds/react/date-picker': 4616,
-  '@lyra-ds/react/date-range-picker': 4621,
-  '@lyra-ds/react/command-palette': 4251,
-  '@lyra-ds/react/recurrence-selector': 4622,
-  '@lyra-ds/react/weekly-schedule-editor': 4618,
-  '@lyra-ds/alpine': 3023,
-};
-const SCENARIO_EXCEPTIONS = {
-  overlays: 6642,
-  'application-shell': 4747,
-  scheduling: 4976,
-};
-const COMPLEX_STANDALONE = new Set([...Object.keys(STANDALONE_EXCEPTIONS), '@lyra-ds/alpine']);
+const STANDALONE_EXCEPTIONS = {};
+const SCENARIO_EXCEPTIONS = {};
+// Complex-or-composition entries keep the 3000-byte migration ceiling; every other entry is simple (1500).
+const COMPLEX_STANDALONE = new Set([
+  '@lyra-ds/react/drawer',
+  '@lyra-ds/react/bottom-sheet',
+  '@lyra-ds/react/create-workspace-dialog',
+  '@lyra-ds/react/time-picker',
+  '@lyra-ds/react/date-picker',
+  '@lyra-ds/react/date-range-picker',
+  '@lyra-ds/react/command-palette',
+  '@lyra-ds/react/recurrence-selector',
+  '@lyra-ds/react/weekly-schedule-editor',
+  '@lyra-ds/alpine',
+]);
 const REQUIRED_ENVIRONMENT_FIELDS = ['node', 'pnpm', 'vite', 'sizeLimit'];
 const REQUIRED_FIXTURE_FIELDS = [
   'artifactInstallation',

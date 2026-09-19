@@ -1,5 +1,7 @@
 # Tabs owned-content contract — selected design, 2026-09-10
 
+**Status:** Implemented
+
 Status: critical/controller selected after two independent GLM technical reviews and recorded adjudication. This is the exact contract for the bounded React high brief; Alpine implementation is a separate cycle. Task27 current actual example baseline is RED in all3 engines. The maintainer's incumbent V1 direction authorizes designing the correction; this document does not claim a separate human API approval or final family qualification. Batuta owns planning. Historical architecture03/04/05 remain normative references, not a Superpowers workflow.
 
 ## Problem, users and minimum scope

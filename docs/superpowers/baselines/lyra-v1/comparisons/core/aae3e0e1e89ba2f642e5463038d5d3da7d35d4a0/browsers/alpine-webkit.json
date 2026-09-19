@@ -1,0 +1,254 @@
+{
+  "sourceRevision": "aae3e0e1e89ba2f642e5463038d5d3da7d35d4a0",
+  "measuredRevision": "812e92f341decf6c9b51da47ee0a729f576ca74d",
+  "note": "Measured on an earlier commit of the candidate branch whose three package archives are identical (same decompressed tar SHA-256) to the candidate source revision; only documentation, baseline and tooling files changed in between.",
+  "platform": "macOS arm64, Node 24.18.0, pnpm 11.13.1, Playwright 1.62.1",
+  "package": "alpine",
+  "engine": "webkit",
+  "success": true,
+  "numTotalTests": 348,
+  "numPassedTests": 348,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "files": [
+    {
+      "file": "packages/alpine/src/accordion.browser.test.ts",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/app-sidebar.browser.test.ts",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/bottom-sheet.browser.test.ts",
+      "total": 13,
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/calendar.browser.test.ts",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/code-block.browser.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/combobox.browser.test.ts",
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/command-palette.browser.test.ts",
+      "total": 15,
+      "passed": 15,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/cookie-banner.browser.test.ts",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/data-table.browser.test.ts",
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/date-picker.browser.test.ts",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/date-range-picker.browser.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/dialog.browser.test.ts",
+      "total": 16,
+      "passed": 16,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/drawer.browser.test.ts",
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/dropdown.browser.test.ts",
+      "total": 20,
+      "passed": 20,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/file-manager.browser.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/file-upload.browser.test.ts",
+      "total": 22,
+      "passed": 22,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/index.browser.test.ts",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/popover.browser.test.ts",
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/recurrence-selector.browser.test.ts",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/segmented-control.browser.test.ts",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/sidebar-group.browser.test.ts",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/slot-picker.browser.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/table-of-contents.browser.test.ts",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/tabs.browser.test.ts",
+      "total": 24,
+      "passed": 24,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/theme.browser.test.ts",
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/time-input.browser.test.ts",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/time-picker.browser.test.ts",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/time-zone-picker.browser.test.ts",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/toasts.browser.test.ts",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/tooltip.browser.test.ts",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/weekly-schedule-editor.browser.test.ts",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/workspace-switcher.browser.test.ts",
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/internal/focus-trap.browser.test.ts",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "packages/alpine/src/internal/return-focus.browser.test.ts",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    }
+  ],
+  "nonPassing": []
+}

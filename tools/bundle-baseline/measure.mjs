@@ -2,6 +2,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import {
   cpSync,
   existsSync,
@@ -122,6 +123,23 @@ export function resolvePnpmInvocation(
 
 function sha256(source) {
   return createHash('sha256').update(source).digest('hex');
+}
+
+/**
+ * Identity of a packed artifact: the SHA-256 of its decompressed tar stream. The gzip container
+ * written by `pnpm pack` carries a platform byte in its header (macOS 0x13, Linux 0x03), so the
+ * `.tgz` bytes differ between operating systems while the packed contents are identical. Hashing
+ * the tar stream keeps the identity exact for contents and portable across the platforms that
+ * produce evidence (native macOS) and verify it (Linux CI).
+ */
+export function artifactSha256(tarballBytes) {
+  try {
+    return sha256(gunzipSync(tarballBytes));
+  } catch {
+    // A corrupted or non-gzip archive still gets a deterministic identity distinct from any valid
+    // archive, so identity comparisons report a mismatch instead of a decompression failure.
+    return sha256(Buffer.concat([Buffer.from('lyra-invalid-gzip:'), tarballBytes]));
+  }
 }
 
 function readJson(path) {
@@ -303,7 +321,10 @@ function selectedArtifactIdentities(tarballs) {
     Object.entries(tarballs).map(([key, tarball]) => {
       const packageName = packages[key];
       if (!packageName) throw new Error(`unknown packed artifact: ${key}`);
-      return [packageName, { tarball: basename(tarball), sha256: sha256(readFileSync(tarball)) }];
+      return [
+        packageName,
+        { tarball: basename(tarball), sha256: artifactSha256(readFileSync(tarball)) },
+      ];
     }),
   );
 }
@@ -382,7 +403,7 @@ export function installPackedArtifacts(fixture, tarballs, { expectedArtifacts } 
     if (!packageName) throw new Error(`unknown packed artifact: ${key}`);
     const artifact = {
       tarball: basename(tarball),
-      sha256: sha256(readFileSync(tarball)),
+      sha256: artifactSha256(readFileSync(tarball)),
     };
     const expected = expectedArtifacts?.[packageName];
     if (
@@ -398,7 +419,7 @@ export function installPackedArtifacts(fixture, tarballs, { expectedArtifacts } 
     const destination = join(fixture, 'node_modules', ...packageName.split('/'));
     mkdirSync(destination, { recursive: true });
     run('tar', ['-xzf', tarball, '--strip-components=1', '-C', destination]);
-    if (sha256(readFileSync(tarball)) !== artifact.sha256) {
+    if (artifactSha256(readFileSync(tarball)) !== artifact.sha256) {
       throw new Error(`${key} tarball changed while being extracted for measurement`);
     }
     const installedPackage = readJson(join(destination, 'package.json'));
