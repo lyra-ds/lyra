@@ -1,7 +1,7 @@
 // The accepted reference is the 1.0.0 candidate (maintainer decision, 2026-09-18). The one-time
 // migration exceptions approved against the Core Beta reference are realized in it and no longer
 // apply; every entry is measured against the release itself under the default ceilings.
-const REFERENCE_REVISION = 'cd282f198151a7901aad86ff837c4367e9f163cd';
+const REFERENCE_REVISION = 'fb4e100a4293eb619a6b76b148140bfdd41eed06';
 const APPROVED_ROOT_LOCK = '86f83145b01f7f923f0c87d1c6223b1e0f21d32b317297ba0c4e92c08b7a7e81';
 export const APPROVED_FIXTURE_SOURCE_SHA256 =
   '07a32c9a76696fd88efdb0ab9aa16017fe3b6f3023e8d9f64c02e42a69b2c85e';
@@ -9,6 +9,7 @@ const TABS_IMPORT =
   "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'";
 
 export const APPROVED_ABSOLUTE_CAPS = {
+  '@lyra-ds/react/dialog': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/drawer': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/bottom-sheet': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/create-workspace-dialog': { configuredLimit: '7.9 kB', bytes: 7900 },
@@ -438,9 +439,9 @@ export function checkBundleBudgets(reference, candidate, options = {}) {
   const alpine = verifyStandalone(standalone.alpine, candidateStandalone.alpine, 'Alpine');
   const scenarios = verifyScenarios(reference.scenarios, candidate.scenarios);
   const css = verifyCss(reference.css, candidate.css);
-  if (react.length + alpine.length !== 72 || scenarios.length !== 5 || css.length !== 4) {
+  if (react.length + alpine.length !== 73 || scenarios.length !== 5 || css.length !== 4) {
     fail(
-      `expected 72 standalone, 5 scenario, and 4 CSS measurements; found ${react.length + alpine.length}, ${scenarios.length}, ${css.length}`,
+      `expected 73 standalone, 5 scenario, and 4 CSS measurements; found ${react.length + alpine.length}, ${scenarios.length}, ${css.length}`,
     );
   }
   return {

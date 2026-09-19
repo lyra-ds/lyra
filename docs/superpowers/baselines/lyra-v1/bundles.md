@@ -1,7 +1,7 @@
 # Lyra v1 bundle baseline
 
-- Revision: `171944c180b95e063699e1751e10fc8372dbace7`
-- Measured at: `2026-09-18T22:43:10.355Z`
+- Revision: `eafc92dafc6fc4f54c319a2e93c3447bd4cf85c7`
+- Measured at: `2026-09-19T21:53:45.668Z`
 - Owner: Lyra maintainers
 - Exact command: `pnpm baseline:bundles --write`
 - Environment: darwin 25.6.0, arm64, Node v24.18.0, pnpm 11.13.1
@@ -13,13 +13,13 @@
 - Lyra artifact installation: offline tar extraction after frozen external install
 - Externals: `react`, `react-dom`, `react-dom/client`
 - Brotli: mode=text, quality=11
-- Repository lockfile SHA-256: `1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf`
+- Repository lockfile SHA-256: `86f83145b01f7f923f0c87d1c6223b1e0f21d32b317297ba0c4e92c08b7a7e81`
 
 ## Packed artifacts
 
 | Package         | Version | Tarball                    | SHA-256                                                            |
 | --------------- | ------- | -------------------------- | ------------------------------------------------------------------ |
-| @lyra-ds/react  | 1.0.0   | `lyra-ds-react-1.0.0.tgz`  | `a86150e8f3c922073abc5e6e835b780e5604537d28b209815b2c1a44b96b99c2` |
+| @lyra-ds/react  | 1.0.0   | `lyra-ds-react-1.0.0.tgz`  | `e759d870ae1370d53827755ac0438fed1f6f2ac86e9494654f1ad89854f101ea` |
 | @lyra-ds/alpine | 1.0.0   | `lyra-ds-alpine-1.0.0.tgz` | `dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969` |
 | @lyra-ds/styles | 1.0.0   | `lyra-ds-styles-1.0.0.tgz` | `9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff` |
 
@@ -32,6 +32,7 @@
 | react   | `@lyra-ds/react/nav-link`                |   3,468 B |     1,664 B |     681 B |      494 B |      2 kB |
 | react   | `@lyra-ds/react/footer`                  |   2,374 B |     1,242 B |     428 B |      265 B |      2 kB |
 | react   | `@lyra-ds/react/brand`                   |   4,700 B |     2,635 B |     894 B |      662 B |      2 kB |
+| react   | `@lyra-ds/react/dialog`                  |  43,208 B |    22,660 B |   5,815 B |    5,040 B |    5.3 kB |
 | react   | `@lyra-ds/react/drawer`                  |  41,628 B |    22,443 B |   5,762 B |    4,989 B |    5.3 kB |
 | react   | `@lyra-ds/react/bottom-sheet`            |  41,894 B |    22,456 B |   5,788 B |    5,030 B |    5.3 kB |
 | react   | `@lyra-ds/react/create-workspace-dialog` |  61,931 B |    34,287 B |   8,668 B |    7,476 B |    7.9 kB |

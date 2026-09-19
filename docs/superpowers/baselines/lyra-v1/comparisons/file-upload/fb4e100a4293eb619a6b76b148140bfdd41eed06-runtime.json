@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "scenario": "DF-FU-15",
+  "revision": "fb4e100a4293eb619a6b76b148140bfdd41eed06",
+  "measuredAt": "2026-09-19T21:55:15.371Z",
+  "environment": {
+    "operatingSystem": "darwin 25.6.0",
+    "architecture": "arm64",
+    "node": "v24.18.0",
+    "playwright": "1.62.1",
+    "vite": "8.2.1",
+    "chromium": {
+      "version": "151.0.7922.34",
+      "executablePath": "/Volumes/Home/francisross/Library/Caches/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+    },
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1
+    },
+    "locale": "en-US",
+    "colorScheme": "light",
+    "warmupIterations": 3,
+    "recordedIterations": 30,
+    "itemCount": 100,
+    "activeAttemptCount": 20,
+    "exactCommand": "pnpm evidence:file-upload",
+    "reactArtifact": {
+      "version": "1.0.0",
+      "tarball": "lyra-ds-react-1.0.0.tgz",
+      "sha256": "e759d870ae1370d53827755ac0438fed1f6f2ac86e9494654f1ad89854f101ea"
+    },
+    "stylesArtifact": {
+      "version": "1.0.0",
+      "tarball": "lyra-ds-styles-1.0.0.tgz",
+      "sha256": "9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff"
+    }
+  },
+  "thresholds": {
+    "p95Ms": 100,
+    "worstMsExclusive": 250,
+    "longTaskMsExclusive": 50
+  },
+  "operations": {
+    "selectionIntentDispatch": {
+      "iterations": 30,
+      "medianMs": 0.19999992847442627,
+      "p95Ms": 0.20000004768371582,
+      "worstMs": 0.2999999523162842,
+      "longestTaskMs": 0
+    },
+    "controlledProgressReconciliation": {
+      "iterations": 30,
+      "medianMs": 0.7000000476837158,
+      "p95Ms": 0.8000000715255737,
+      "worstMs": 1.2999999523162842,
+      "longestTaskMs": 0
+    },
+    "cancelIntent": {
+      "iterations": 30,
+      "medianMs": 0.40000009536743164,
+      "p95Ms": 0.5,
+      "worstMs": 0.5,
+      "longestTaskMs": 0
+    },
+    "retryIntent": {
+      "iterations": 30,
+      "medianMs": 0.3999999761581421,
+      "p95Ms": 0.5,
+      "worstMs": 0.6000000238418579,
+      "longestTaskMs": 0
+    },
+    "confirmedRemovalFocusRecovery": {
+      "iterations": 30,
+      "medianMs": 0.7000000476837158,
+      "p95Ms": 0.8999999761581421,
+      "worstMs": 1,
+      "longestTaskMs": 0
+    },
+    "teardown": {
+      "iterations": 30,
+      "medianMs": 0.20000004768371582,
+      "p95Ms": 0.3999999761581421,
+      "worstMs": 0.3999999761581421,
+      "longestTaskMs": 0
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-09-18T22:43:10.355Z",
-  "revision": "171944c180b95e063699e1751e10fc8372dbace7",
+  "measuredAt": "2026-09-19T21:53:45.668Z",
+  "revision": "eafc92dafc6fc4f54c319a2e93c3447bd4cf85c7",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "darwin 25.6.0",
@@ -10,7 +10,7 @@
     "pnpm": "11.13.1",
     "vite": "8.2.1",
     "sizeLimit": "12.1.0",
-    "lockfileSha256": "1dd543e240aa7038cc2db2267c87d668ad9ebe8ffcb8f6c2001279beba4c4ecf",
+    "lockfileSha256": "86f83145b01f7f923f0c87d1c6223b1e0f21d32b317297ba0c4e92c08b7a7e81",
     "fixture": {
       "artifactInstallation": "offline tar extraction after frozen external install",
       "packageManager": "pnpm@11.13.1",
@@ -418,7 +418,7 @@
       "@lyra-ds/react": {
         "version": "1.0.0",
         "tarball": "lyra-ds-react-1.0.0.tgz",
-        "sha256": "a86150e8f3c922073abc5e6e835b780e5604537d28b209815b2c1a44b96b99c2"
+        "sha256": "e759d870ae1370d53827755ac0438fed1f6f2ac86e9494654f1ad89854f101ea"
       },
       "@lyra-ds/alpine": {
         "version": "1.0.0",
@@ -581,6 +581,35 @@
         ]
       },
       {
+        "name": "import { Dialog } from '@lyra-ds/react/dialog'",
+        "publicEntry": "@lyra-ds/react/dialog",
+        "configuredLimit": "5.3 kB",
+        "sizeLimit": {
+          "name": "import { Dialog } from '@lyra-ds/react/dialog'",
+          "passed": true,
+          "size": 5040,
+          "sizeLimit": 5300
+        },
+        "assets": {
+          "javascript": {
+            "rawBytes": 43208,
+            "minifiedBytes": 22660,
+            "brotliBytes": 5815,
+            "files": ["react-06.js"]
+          }
+        },
+        "modules": [
+          {
+            "module": "<fixture>/node_modules/@lyra-ds/react/dist/dialog.js",
+            "renderedBytes": 34724
+          },
+          {
+            "module": "<fixture>/standalone/react-06.ts",
+            "renderedBytes": 0
+          }
+        ]
+      },
+      {
         "name": "import { Drawer } from '@lyra-ds/react/drawer'",
         "publicEntry": "@lyra-ds/react/drawer",
         "configuredLimit": "5.3 kB",
@@ -595,7 +624,7 @@
             "rawBytes": 41628,
             "minifiedBytes": 22443,
             "brotliBytes": 5762,
-            "files": ["react-06.js"]
+            "files": ["react-07.js"]
           }
         },
         "modules": [
@@ -604,7 +633,7 @@
             "renderedBytes": 34409
           },
           {
-            "module": "<fixture>/standalone/react-06.ts",
+            "module": "<fixture>/standalone/react-07.ts",
             "renderedBytes": 0
           }
         ]
@@ -624,7 +653,7 @@
             "rawBytes": 41894,
             "minifiedBytes": 22456,
             "brotliBytes": 5788,
-            "files": ["react-07.js"]
+            "files": ["react-08.js"]
           }
         },
         "modules": [
@@ -633,7 +662,7 @@
             "renderedBytes": 34661
           },
           {
-            "module": "<fixture>/standalone/react-07.ts",
+            "module": "<fixture>/standalone/react-08.ts",
             "renderedBytes": 0
           }
         ]
@@ -653,7 +682,7 @@
             "rawBytes": 61931,
             "minifiedBytes": 34287,
             "brotliBytes": 8668,
-            "files": ["react-08.js"]
+            "files": ["react-09.js"]
           }
         },
         "modules": [
@@ -662,7 +691,7 @@
             "renderedBytes": 49818
           },
           {
-            "module": "<fixture>/standalone/react-08.ts",
+            "module": "<fixture>/standalone/react-09.ts",
             "renderedBytes": 0
           }
         ]
@@ -682,7 +711,7 @@
             "rawBytes": 23363,
             "minifiedBytes": 12518,
             "brotliBytes": 3637,
-            "files": ["react-09.js"]
+            "files": ["react-10.js"]
           }
         },
         "modules": [
@@ -739,7 +768,7 @@
             "renderedBytes": 14042
           },
           {
-            "module": "<fixture>/standalone/react-09.ts",
+            "module": "<fixture>/standalone/react-10.ts",
             "renderedBytes": 0
           }
         ]
@@ -759,7 +788,7 @@
             "rawBytes": 4838,
             "minifiedBytes": 2346,
             "brotliBytes": 895,
-            "files": ["react-10.js"]
+            "files": ["react-11.js"]
           }
         },
         "modules": [
@@ -768,7 +797,7 @@
             "renderedBytes": 3112
           },
           {
-            "module": "<fixture>/standalone/react-10.ts",
+            "module": "<fixture>/standalone/react-11.ts",
             "renderedBytes": 0
           }
         ]
@@ -788,7 +817,7 @@
             "rawBytes": 44456,
             "minifiedBytes": 24507,
             "brotliBytes": 6457,
-            "files": ["react-11.js"]
+            "files": ["react-12.js"]
           }
         },
         "modules": [
@@ -1145,7 +1174,7 @@
             "renderedBytes": 2858
           },
           {
-            "module": "<fixture>/standalone/react-11.ts",
+            "module": "<fixture>/standalone/react-12.ts",
             "renderedBytes": 0
           }
         ]
@@ -1165,7 +1194,7 @@
             "rawBytes": 1531,
             "minifiedBytes": 514,
             "brotliBytes": 270,
-            "files": ["react-12.js"]
+            "files": ["react-13.js"]
           }
         },
         "modules": [
@@ -1174,7 +1203,7 @@
             "renderedBytes": 613
           },
           {
-            "module": "<fixture>/standalone/react-12.ts",
+            "module": "<fixture>/standalone/react-13.ts",
             "renderedBytes": 0
           }
         ]
@@ -1194,7 +1223,7 @@
             "rawBytes": 4491,
             "minifiedBytes": 1635,
             "brotliBytes": 665,
-            "files": ["react-13.js"]
+            "files": ["react-14.js"]
           }
         },
         "modules": [
@@ -1203,7 +1232,7 @@
             "renderedBytes": 2205
           },
           {
-            "module": "<fixture>/standalone/react-13.ts",
+            "module": "<fixture>/standalone/react-14.ts",
             "renderedBytes": 0
           }
         ]
@@ -1223,7 +1252,7 @@
             "rawBytes": 3624,
             "minifiedBytes": 1036,
             "brotliBytes": 491,
-            "files": ["react-14.js"]
+            "files": ["react-15.js"]
           }
         },
         "modules": [
@@ -1232,7 +1261,7 @@
             "renderedBytes": 1461
           },
           {
-            "module": "<fixture>/standalone/react-14.ts",
+            "module": "<fixture>/standalone/react-15.ts",
             "renderedBytes": 0
           }
         ]
@@ -1252,7 +1281,7 @@
             "rawBytes": 3598,
             "minifiedBytes": 1027,
             "brotliBytes": 492,
-            "files": ["react-15.js"]
+            "files": ["react-16.js"]
           }
         },
         "modules": [
@@ -1261,7 +1290,7 @@
             "renderedBytes": 1434
           },
           {
-            "module": "<fixture>/standalone/react-15.ts",
+            "module": "<fixture>/standalone/react-16.ts",
             "renderedBytes": 0
           }
         ]
@@ -1281,7 +1310,7 @@
             "rawBytes": 5588,
             "minifiedBytes": 2645,
             "brotliBytes": 899,
-            "files": ["react-16.js"]
+            "files": ["react-17.js"]
           }
         },
         "modules": [
@@ -1290,7 +1319,7 @@
             "renderedBytes": 3312
           },
           {
-            "module": "<fixture>/standalone/react-16.ts",
+            "module": "<fixture>/standalone/react-17.ts",
             "renderedBytes": 0
           }
         ]
@@ -1310,7 +1339,7 @@
             "rawBytes": 5743,
             "minifiedBytes": 2680,
             "brotliBytes": 914,
-            "files": ["react-17.js"]
+            "files": ["react-18.js"]
           }
         },
         "modules": [
@@ -1319,7 +1348,7 @@
             "renderedBytes": 3465
           },
           {
-            "module": "<fixture>/standalone/react-17.ts",
+            "module": "<fixture>/standalone/react-18.ts",
             "renderedBytes": 0
           }
         ]
@@ -1339,7 +1368,7 @@
             "rawBytes": 2268,
             "minifiedBytes": 1129,
             "brotliBytes": 415,
-            "files": ["react-18.js"]
+            "files": ["react-19.js"]
           }
         },
         "modules": [
@@ -1348,7 +1377,7 @@
             "renderedBytes": 1217
           },
           {
-            "module": "<fixture>/standalone/react-18.ts",
+            "module": "<fixture>/standalone/react-19.ts",
             "renderedBytes": 0
           }
         ]
@@ -1368,7 +1397,7 @@
             "rawBytes": 1807,
             "minifiedBytes": 731,
             "brotliBytes": 291,
-            "files": ["react-19.js"]
+            "files": ["react-20.js"]
           }
         },
         "modules": [
@@ -1377,7 +1406,7 @@
             "renderedBytes": 863
           },
           {
-            "module": "<fixture>/standalone/react-19.ts",
+            "module": "<fixture>/standalone/react-20.ts",
             "renderedBytes": 0
           }
         ]
@@ -1397,7 +1426,7 @@
             "rawBytes": 3667,
             "minifiedBytes": 1170,
             "brotliBytes": 516,
-            "files": ["react-20.js"]
+            "files": ["react-21.js"]
           }
         },
         "modules": [
@@ -1406,7 +1435,7 @@
             "renderedBytes": 1513
           },
           {
-            "module": "<fixture>/standalone/react-20.ts",
+            "module": "<fixture>/standalone/react-21.ts",
             "renderedBytes": 0
           }
         ]
@@ -1426,7 +1455,7 @@
             "rawBytes": 24249,
             "minifiedBytes": 16704,
             "brotliBytes": 4332,
-            "files": ["react-21.js"]
+            "files": ["react-22.js"]
           }
         },
         "modules": [
@@ -1435,7 +1464,7 @@
             "renderedBytes": 23339
           },
           {
-            "module": "<fixture>/standalone/react-21.ts",
+            "module": "<fixture>/standalone/react-22.ts",
             "renderedBytes": 0
           }
         ]
@@ -1455,7 +1484,7 @@
             "rawBytes": 42541,
             "minifiedBytes": 26399,
             "brotliBytes": 6536,
-            "files": ["react-22.js"]
+            "files": ["react-23.js"]
           }
         },
         "modules": [
@@ -1576,7 +1605,7 @@
             "renderedBytes": 23104
           },
           {
-            "module": "<fixture>/standalone/react-22.ts",
+            "module": "<fixture>/standalone/react-23.ts",
             "renderedBytes": 0
           }
         ]
@@ -1596,7 +1625,7 @@
             "rawBytes": 13856,
             "minifiedBytes": 9092,
             "brotliBytes": 2413,
-            "files": ["react-23.js"]
+            "files": ["react-24.js"]
           }
         },
         "modules": [
@@ -1605,7 +1634,7 @@
             "renderedBytes": 11497
           },
           {
-            "module": "<fixture>/standalone/react-23.ts",
+            "module": "<fixture>/standalone/react-24.ts",
             "renderedBytes": 0
           }
         ]
@@ -1625,7 +1654,7 @@
             "rawBytes": 62507,
             "minifiedBytes": 35025,
             "brotliBytes": 8993,
-            "files": ["react-24.js"]
+            "files": ["react-25.js"]
           }
         },
         "modules": [
@@ -1634,7 +1663,7 @@
             "renderedBytes": 52274
           },
           {
-            "module": "<fixture>/standalone/react-24.ts",
+            "module": "<fixture>/standalone/react-25.ts",
             "renderedBytes": 0
           }
         ]
@@ -1654,7 +1683,7 @@
             "rawBytes": 9392,
             "minifiedBytes": 5045,
             "brotliBytes": 1782,
-            "files": ["react-25.js"]
+            "files": ["react-26.js"]
           }
         },
         "modules": [
@@ -1663,7 +1692,7 @@
             "renderedBytes": 6777
           },
           {
-            "module": "<fixture>/standalone/react-25.ts",
+            "module": "<fixture>/standalone/react-26.ts",
             "renderedBytes": 0
           }
         ]
@@ -1683,7 +1712,7 @@
             "rawBytes": 72243,
             "minifiedBytes": 42588,
             "brotliBytes": 10300,
-            "files": ["react-26.js"]
+            "files": ["react-27.js"]
           }
         },
         "modules": [
@@ -1692,7 +1721,7 @@
             "renderedBytes": 61647
           },
           {
-            "module": "<fixture>/standalone/react-26.ts",
+            "module": "<fixture>/standalone/react-27.ts",
             "renderedBytes": 0
           }
         ]
@@ -1712,7 +1741,7 @@
             "rawBytes": 72630,
             "minifiedBytes": 42873,
             "brotliBytes": 10410,
-            "files": ["react-27.js"]
+            "files": ["react-28.js"]
           }
         },
         "modules": [
@@ -1721,7 +1750,7 @@
             "renderedBytes": 62019
           },
           {
-            "module": "<fixture>/standalone/react-27.ts",
+            "module": "<fixture>/standalone/react-28.ts",
             "renderedBytes": 0
           }
         ]
@@ -1741,7 +1770,7 @@
             "rawBytes": 1528,
             "minifiedBytes": 540,
             "brotliBytes": 287,
-            "files": ["react-28.js"]
+            "files": ["react-29.js"]
           }
         },
         "modules": [
@@ -1750,7 +1779,7 @@
             "renderedBytes": 620
           },
           {
-            "module": "<fixture>/standalone/react-28.ts",
+            "module": "<fixture>/standalone/react-29.ts",
             "renderedBytes": 0
           }
         ]
@@ -1770,7 +1799,7 @@
             "rawBytes": 45010,
             "minifiedBytes": 24981,
             "brotliBytes": 6608,
-            "files": ["react-29.js"]
+            "files": ["react-30.js"]
           }
         },
         "modules": [
@@ -2127,7 +2156,7 @@
             "renderedBytes": 3339
           },
           {
-            "module": "<fixture>/standalone/react-29.ts",
+            "module": "<fixture>/standalone/react-30.ts",
             "renderedBytes": 0
           }
         ]
@@ -2147,7 +2176,7 @@
             "rawBytes": 4171,
             "minifiedBytes": 2444,
             "brotliBytes": 829,
-            "files": ["react-30.js"]
+            "files": ["react-31.js"]
           }
         },
         "modules": [
@@ -2156,7 +2185,7 @@
             "renderedBytes": 2980
           },
           {
-            "module": "<fixture>/standalone/react-30.ts",
+            "module": "<fixture>/standalone/react-31.ts",
             "renderedBytes": 0
           }
         ]
@@ -2176,7 +2205,7 @@
             "rawBytes": 1589,
             "minifiedBytes": 514,
             "brotliBytes": 298,
-            "files": ["react-31.js"]
+            "files": ["react-32.js"]
           }
         },
         "modules": [
@@ -2185,7 +2214,7 @@
             "renderedBytes": 667
           },
           {
-            "module": "<fixture>/standalone/react-31.ts",
+            "module": "<fixture>/standalone/react-32.ts",
             "renderedBytes": 0
           }
         ]
@@ -2205,7 +2234,7 @@
             "rawBytes": 3226,
             "minifiedBytes": 1836,
             "brotliBytes": 679,
-            "files": ["react-32.js"]
+            "files": ["react-33.js"]
           }
         },
         "modules": [
@@ -2214,7 +2243,7 @@
             "renderedBytes": 2093
           },
           {
-            "module": "<fixture>/standalone/react-32.ts",
+            "module": "<fixture>/standalone/react-33.ts",
             "renderedBytes": 0
           }
         ]
@@ -2234,7 +2263,7 @@
             "rawBytes": 3469,
             "minifiedBytes": 1810,
             "brotliBytes": 742,
-            "files": ["react-33.js"]
+            "files": ["react-34.js"]
           }
         },
         "modules": [
@@ -2243,7 +2272,7 @@
             "renderedBytes": 2517
           },
           {
-            "module": "<fixture>/standalone/react-33.ts",
+            "module": "<fixture>/standalone/react-34.ts",
             "renderedBytes": 0
           }
         ]
@@ -2263,7 +2292,7 @@
             "rawBytes": 1915,
             "minifiedBytes": 797,
             "brotliBytes": 393,
-            "files": ["react-34.js"]
+            "files": ["react-35.js"]
           }
         },
         "modules": [
@@ -2272,7 +2301,7 @@
             "renderedBytes": 1012
           },
           {
-            "module": "<fixture>/standalone/react-34.ts",
+            "module": "<fixture>/standalone/react-35.ts",
             "renderedBytes": 0
           }
         ]
@@ -2292,7 +2321,7 @@
             "rawBytes": 2160,
             "minifiedBytes": 1152,
             "brotliBytes": 364,
-            "files": ["react-35.js"]
+            "files": ["react-36.js"]
           }
         },
         "modules": [
@@ -2301,7 +2330,7 @@
             "renderedBytes": 1219
           },
           {
-            "module": "<fixture>/standalone/react-35.ts",
+            "module": "<fixture>/standalone/react-36.ts",
             "renderedBytes": 0
           }
         ]
@@ -2321,7 +2350,7 @@
             "rawBytes": 1984,
             "minifiedBytes": 805,
             "brotliBytes": 397,
-            "files": ["react-36.js"]
+            "files": ["react-37.js"]
           }
         },
         "modules": [
@@ -2330,7 +2359,7 @@
             "renderedBytes": 1069
           },
           {
-            "module": "<fixture>/standalone/react-36.ts",
+            "module": "<fixture>/standalone/react-37.ts",
             "renderedBytes": 0
           }
         ]
@@ -2350,7 +2379,7 @@
             "rawBytes": 1951,
             "minifiedBytes": 931,
             "brotliBytes": 442,
-            "files": ["react-37.js"]
+            "files": ["react-38.js"]
           }
         },
         "modules": [
@@ -2359,7 +2388,7 @@
             "renderedBytes": 1031
           },
           {
-            "module": "<fixture>/standalone/react-37.ts",
+            "module": "<fixture>/standalone/react-38.ts",
             "renderedBytes": 0
           }
         ]
@@ -2379,7 +2408,7 @@
             "rawBytes": 1723,
             "minifiedBytes": 774,
             "brotliBytes": 326,
-            "files": ["react-38.js"]
+            "files": ["react-39.js"]
           }
         },
         "modules": [
@@ -2388,7 +2417,7 @@
             "renderedBytes": 839
           },
           {
-            "module": "<fixture>/standalone/react-38.ts",
+            "module": "<fixture>/standalone/react-39.ts",
             "renderedBytes": 0
           }
         ]
@@ -2408,7 +2437,7 @@
             "rawBytes": 1443,
             "minifiedBytes": 451,
             "brotliBytes": 261,
-            "files": ["react-39.js"]
+            "files": ["react-40.js"]
           }
         },
         "modules": [
@@ -2417,7 +2446,7 @@
             "renderedBytes": 559
           },
           {
-            "module": "<fixture>/standalone/react-39.ts",
+            "module": "<fixture>/standalone/react-40.ts",
             "renderedBytes": 0
           }
         ]
@@ -2437,7 +2466,7 @@
             "rawBytes": 1510,
             "minifiedBytes": 534,
             "brotliBytes": 293,
-            "files": ["react-40.js"]
+            "files": ["react-41.js"]
           }
         },
         "modules": [
@@ -2446,7 +2475,7 @@
             "renderedBytes": 628
           },
           {
-            "module": "<fixture>/standalone/react-40.ts",
+            "module": "<fixture>/standalone/react-41.ts",
             "renderedBytes": 0
           }
         ]
@@ -2466,7 +2495,7 @@
             "rawBytes": 1643,
             "minifiedBytes": 653,
             "brotliBytes": 333,
-            "files": ["react-41.js"]
+            "files": ["react-42.js"]
           }
         },
         "modules": [
@@ -2475,7 +2504,7 @@
             "renderedBytes": 756
           },
           {
-            "module": "<fixture>/standalone/react-41.ts",
+            "module": "<fixture>/standalone/react-42.ts",
             "renderedBytes": 0
           }
         ]
@@ -2495,7 +2524,7 @@
             "rawBytes": 5724,
             "minifiedBytes": 3825,
             "brotliBytes": 1123,
-            "files": ["react-42.js"]
+            "files": ["react-43.js"]
           }
         },
         "modules": [
@@ -2504,7 +2533,7 @@
             "renderedBytes": 4529
           },
           {
-            "module": "<fixture>/standalone/react-42.ts",
+            "module": "<fixture>/standalone/react-43.ts",
             "renderedBytes": 0
           }
         ]
@@ -2524,7 +2553,7 @@
             "rawBytes": 1851,
             "minifiedBytes": 879,
             "brotliBytes": 364,
-            "files": ["react-43.js"]
+            "files": ["react-44.js"]
           }
         },
         "modules": [
@@ -2533,7 +2562,7 @@
             "renderedBytes": 930
           },
           {
-            "module": "<fixture>/standalone/react-43.ts",
+            "module": "<fixture>/standalone/react-44.ts",
             "renderedBytes": 0
           }
         ]
@@ -2553,7 +2582,7 @@
             "rawBytes": 1834,
             "minifiedBytes": 844,
             "brotliBytes": 311,
-            "files": ["react-44.js"]
+            "files": ["react-45.js"]
           }
         },
         "modules": [
@@ -2562,7 +2591,7 @@
             "renderedBytes": 913
           },
           {
-            "module": "<fixture>/standalone/react-44.ts",
+            "module": "<fixture>/standalone/react-45.ts",
             "renderedBytes": 0
           }
         ]
@@ -2582,7 +2611,7 @@
             "rawBytes": 1986,
             "minifiedBytes": 925,
             "brotliBytes": 376,
-            "files": ["react-45.js"]
+            "files": ["react-46.js"]
           }
         },
         "modules": [
@@ -2591,7 +2620,7 @@
             "renderedBytes": 1023
           },
           {
-            "module": "<fixture>/standalone/react-45.ts",
+            "module": "<fixture>/standalone/react-46.ts",
             "renderedBytes": 0
           }
         ]
@@ -2611,7 +2640,7 @@
             "rawBytes": 9340,
             "minifiedBytes": 5863,
             "brotliBytes": 1903,
-            "files": ["react-46.js"]
+            "files": ["react-47.js"]
           }
         },
         "modules": [
@@ -2620,7 +2649,7 @@
             "renderedBytes": 8189
           },
           {
-            "module": "<fixture>/standalone/react-46.ts",
+            "module": "<fixture>/standalone/react-47.ts",
             "renderedBytes": 0
           }
         ]
@@ -2640,7 +2669,7 @@
             "rawBytes": 2898,
             "minifiedBytes": 1698,
             "brotliBytes": 627,
-            "files": ["react-47.js"]
+            "files": ["react-48.js"]
           }
         },
         "modules": [
@@ -2649,7 +2678,7 @@
             "renderedBytes": 1945
           },
           {
-            "module": "<fixture>/standalone/react-47.ts",
+            "module": "<fixture>/standalone/react-48.ts",
             "renderedBytes": 0
           }
         ]
@@ -2669,7 +2698,7 @@
             "rawBytes": 2341,
             "minifiedBytes": 1354,
             "brotliBytes": 518,
-            "files": ["react-48.js"]
+            "files": ["react-49.js"]
           }
         },
         "modules": [
@@ -2678,7 +2707,7 @@
             "renderedBytes": 1427
           },
           {
-            "module": "<fixture>/standalone/react-48.ts",
+            "module": "<fixture>/standalone/react-49.ts",
             "renderedBytes": 0
           }
         ]
@@ -2698,7 +2727,7 @@
             "rawBytes": 2958,
             "minifiedBytes": 1768,
             "brotliBytes": 639,
-            "files": ["react-49.js"]
+            "files": ["react-50.js"]
           }
         },
         "modules": [
@@ -2707,7 +2736,7 @@
             "renderedBytes": 2000
           },
           {
-            "module": "<fixture>/standalone/react-49.ts",
+            "module": "<fixture>/standalone/react-50.ts",
             "renderedBytes": 0
           }
         ]
@@ -2727,7 +2756,7 @@
             "rawBytes": 13454,
             "minifiedBytes": 7959,
             "brotliBytes": 2291,
-            "files": ["react-50.js"]
+            "files": ["react-51.js"]
           }
         },
         "modules": [
@@ -2736,7 +2765,7 @@
             "renderedBytes": 11411
           },
           {
-            "module": "<fixture>/standalone/react-50.ts",
+            "module": "<fixture>/standalone/react-51.ts",
             "renderedBytes": 0
           }
         ]
@@ -2756,7 +2785,7 @@
             "rawBytes": 4517,
             "minifiedBytes": 1819,
             "brotliBytes": 705,
-            "files": ["react-51.js"]
+            "files": ["react-52.js"]
           }
         },
         "modules": [
@@ -2765,7 +2794,7 @@
             "renderedBytes": 2353
           },
           {
-            "module": "<fixture>/standalone/react-51.ts",
+            "module": "<fixture>/standalone/react-52.ts",
             "renderedBytes": 0
           }
         ]
@@ -2785,7 +2814,7 @@
             "rawBytes": 16256,
             "minifiedBytes": 9179,
             "brotliBytes": 2904,
-            "files": ["react-52.js"]
+            "files": ["react-53.js"]
           }
         },
         "modules": [
@@ -2794,7 +2823,7 @@
             "renderedBytes": 13482
           },
           {
-            "module": "<fixture>/standalone/react-52.ts",
+            "module": "<fixture>/standalone/react-53.ts",
             "renderedBytes": 0
           }
         ]
@@ -2814,7 +2843,7 @@
             "rawBytes": 15796,
             "minifiedBytes": 8028,
             "brotliBytes": 2584,
-            "files": ["react-53.js"]
+            "files": ["react-54.js"]
           }
         },
         "modules": [
@@ -2823,7 +2852,7 @@
             "renderedBytes": 12065
           },
           {
-            "module": "<fixture>/standalone/react-53.ts",
+            "module": "<fixture>/standalone/react-54.ts",
             "renderedBytes": 0
           }
         ]
@@ -2843,7 +2872,7 @@
             "rawBytes": 59482,
             "minifiedBytes": 33732,
             "brotliBytes": 8958,
-            "files": ["react-54.js"]
+            "files": ["react-55.js"]
           }
         },
         "modules": [
@@ -3200,7 +3229,7 @@
             "renderedBytes": 15193
           },
           {
-            "module": "<fixture>/standalone/react-54.ts",
+            "module": "<fixture>/standalone/react-55.ts",
             "renderedBytes": 0
           }
         ]
@@ -3220,7 +3249,7 @@
             "rawBytes": 65929,
             "minifiedBytes": 39744,
             "brotliBytes": 10581,
-            "files": ["react-55.js"]
+            "files": ["react-56.js"]
           }
         },
         "modules": [
@@ -3577,7 +3606,7 @@
             "renderedBytes": 21536
           },
           {
-            "module": "<fixture>/standalone/react-55.ts",
+            "module": "<fixture>/standalone/react-56.ts",
             "renderedBytes": 0
           }
         ]
@@ -3597,7 +3626,7 @@
             "rawBytes": 2256,
             "minifiedBytes": 1162,
             "brotliBytes": 453,
-            "files": ["react-56.js"]
+            "files": ["react-57.js"]
           }
         },
         "modules": [
@@ -3606,7 +3635,7 @@
             "renderedBytes": 1337
           },
           {
-            "module": "<fixture>/standalone/react-56.ts",
+            "module": "<fixture>/standalone/react-57.ts",
             "renderedBytes": 0
           }
         ]
@@ -3626,7 +3655,7 @@
             "rawBytes": 10609,
             "minifiedBytes": 6760,
             "brotliBytes": 2023,
-            "files": ["react-57.js"]
+            "files": ["react-58.js"]
           }
         },
         "modules": [
@@ -3635,7 +3664,7 @@
             "renderedBytes": 8174
           },
           {
-            "module": "<fixture>/standalone/react-57.ts",
+            "module": "<fixture>/standalone/react-58.ts",
             "renderedBytes": 0
           }
         ]
@@ -3655,7 +3684,7 @@
             "rawBytes": 2721,
             "minifiedBytes": 1566,
             "brotliBytes": 572,
-            "files": ["react-58.js"]
+            "files": ["react-59.js"]
           }
         },
         "modules": [
@@ -3664,7 +3693,7 @@
             "renderedBytes": 1703
           },
           {
-            "module": "<fixture>/standalone/react-58.ts",
+            "module": "<fixture>/standalone/react-59.ts",
             "renderedBytes": 0
           }
         ]
@@ -3684,7 +3713,7 @@
             "rawBytes": 2406,
             "minifiedBytes": 1488,
             "brotliBytes": 548,
-            "files": ["react-59.js"]
+            "files": ["react-60.js"]
           }
         },
         "modules": [
@@ -3693,7 +3722,7 @@
             "renderedBytes": 1485
           },
           {
-            "module": "<fixture>/standalone/react-59.ts",
+            "module": "<fixture>/standalone/react-60.ts",
             "renderedBytes": 0
           }
         ]
@@ -3713,7 +3742,7 @@
             "rawBytes": 3242,
             "minifiedBytes": 2168,
             "brotliBytes": 699,
-            "files": ["react-60.js"]
+            "files": ["react-61.js"]
           }
         },
         "modules": [
@@ -3722,7 +3751,7 @@
             "renderedBytes": 2286
           },
           {
-            "module": "<fixture>/standalone/react-60.ts",
+            "module": "<fixture>/standalone/react-61.ts",
             "renderedBytes": 0
           }
         ]
@@ -3742,7 +3771,7 @@
             "rawBytes": 8134,
             "minifiedBytes": 4979,
             "brotliBytes": 1458,
-            "files": ["react-61.js"]
+            "files": ["react-62.js"]
           }
         },
         "modules": [
@@ -3751,7 +3780,7 @@
             "renderedBytes": 5717
           },
           {
-            "module": "<fixture>/standalone/react-61.ts",
+            "module": "<fixture>/standalone/react-62.ts",
             "renderedBytes": 0
           }
         ]
@@ -3771,7 +3800,7 @@
             "rawBytes": 1915,
             "minifiedBytes": 911,
             "brotliBytes": 376,
-            "files": ["react-62.js"]
+            "files": ["react-63.js"]
           }
         },
         "modules": [
@@ -3780,7 +3809,7 @@
             "renderedBytes": 997
           },
           {
-            "module": "<fixture>/standalone/react-62.ts",
+            "module": "<fixture>/standalone/react-63.ts",
             "renderedBytes": 0
           }
         ]
@@ -3800,7 +3829,7 @@
             "rawBytes": 1804,
             "minifiedBytes": 850,
             "brotliBytes": 367,
-            "files": ["react-63.js"]
+            "files": ["react-64.js"]
           }
         },
         "modules": [
@@ -3809,7 +3838,7 @@
             "renderedBytes": 901
           },
           {
-            "module": "<fixture>/standalone/react-63.ts",
+            "module": "<fixture>/standalone/react-64.ts",
             "renderedBytes": 0
           }
         ]
@@ -3829,7 +3858,7 @@
             "rawBytes": 5206,
             "minifiedBytes": 3484,
             "brotliBytes": 1139,
-            "files": ["react-64.js"]
+            "files": ["react-65.js"]
           }
         },
         "modules": [
@@ -3838,7 +3867,7 @@
             "renderedBytes": 3876
           },
           {
-            "module": "<fixture>/standalone/react-64.ts",
+            "module": "<fixture>/standalone/react-65.ts",
             "renderedBytes": 0
           }
         ]
@@ -3858,7 +3887,7 @@
             "rawBytes": 8770,
             "minifiedBytes": 4322,
             "brotliBytes": 1502,
-            "files": ["react-65.js"]
+            "files": ["react-66.js"]
           }
         },
         "modules": [
@@ -3867,7 +3896,7 @@
             "renderedBytes": 5511
           },
           {
-            "module": "<fixture>/standalone/react-65.ts",
+            "module": "<fixture>/standalone/react-66.ts",
             "renderedBytes": 0
           }
         ]
@@ -3887,7 +3916,7 @@
             "rawBytes": 93422,
             "minifiedBytes": 53853,
             "brotliBytes": 13686,
-            "files": ["react-66.js"]
+            "files": ["react-67.js"]
           }
         },
         "modules": [
@@ -4244,7 +4273,7 @@
             "renderedBytes": 45409
           },
           {
-            "module": "<fixture>/standalone/react-66.ts",
+            "module": "<fixture>/standalone/react-67.ts",
             "renderedBytes": 0
           }
         ]
@@ -4264,7 +4293,7 @@
             "rawBytes": 4358,
             "minifiedBytes": 1641,
             "brotliBytes": 664,
-            "files": ["react-67.js"]
+            "files": ["react-68.js"]
           }
         },
         "modules": [
@@ -4273,7 +4302,7 @@
             "renderedBytes": 2329
           },
           {
-            "module": "<fixture>/standalone/react-67.ts",
+            "module": "<fixture>/standalone/react-68.ts",
             "renderedBytes": 0
           }
         ]
@@ -4293,7 +4322,7 @@
             "rawBytes": 83758,
             "minifiedBytes": 53429,
             "brotliBytes": 12345,
-            "files": ["react-68.js"]
+            "files": ["react-69.js"]
           }
         },
         "modules": [
@@ -4302,7 +4331,7 @@
             "renderedBytes": 72809
           },
           {
-            "module": "<fixture>/standalone/react-68.ts",
+            "module": "<fixture>/standalone/react-69.ts",
             "renderedBytes": 0
           }
         ]
@@ -4322,7 +4351,7 @@
             "rawBytes": 134076,
             "minifiedBytes": 81427,
             "brotliBytes": 19705,
-            "files": ["react-69.js"]
+            "files": ["react-70.js"]
           }
         },
         "modules": [
@@ -4679,7 +4708,7 @@
             "renderedBytes": 81315
           },
           {
-            "module": "<fixture>/standalone/react-69.ts",
+            "module": "<fixture>/standalone/react-70.ts",
             "renderedBytes": 0
           }
         ]
@@ -4699,7 +4728,7 @@
             "rawBytes": 88466,
             "minifiedBytes": 56805,
             "brotliBytes": 14338,
-            "files": ["react-70.js"]
+            "files": ["react-71.js"]
           }
         },
         "modules": [
@@ -5056,7 +5085,7 @@
             "renderedBytes": 42500
           },
           {
-            "module": "<fixture>/standalone/react-70.ts",
+            "module": "<fixture>/standalone/react-71.ts",
             "renderedBytes": 0
           }
         ]
@@ -5076,7 +5105,7 @@
             "rawBytes": 59971,
             "minifiedBytes": 35988,
             "brotliBytes": 9242,
-            "files": ["react-71.js"]
+            "files": ["react-72.js"]
           }
         },
         "modules": [
@@ -5433,7 +5462,7 @@
             "renderedBytes": 16645
           },
           {
-            "module": "<fixture>/standalone/react-71.ts",
+            "module": "<fixture>/standalone/react-72.ts",
             "renderedBytes": 0
           }
         ]

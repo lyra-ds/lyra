@@ -1039,7 +1039,11 @@ async function main(args = process.argv.slice(2)) {
     const sourceRevision = ledger.candidate?.sourceRevision;
     const ancestor = await isAncestorOfHead(sourceRevision);
     errors.push(...validateCandidateRevision(sourceRevision, () => ancestor));
-    errors.push(...(await collectFileUploadBinding(ledger.candidate)));
+    // The FileUpload pointer must bind the candidate while it is being qualified; after release the
+    // binding is part of the immutable record and the pointer follows later maintenance.
+    if (ledger.releaseStatus === 'candidate') {
+      errors.push(...(await collectFileUploadBinding(ledger.candidate)));
+    }
   }
   if (errors.length === 0) {
     console.log('Lyra V1 program ledger is internally consistent.');
