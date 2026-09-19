@@ -439,9 +439,9 @@ export function checkBundleBudgets(reference, candidate, options = {}) {
   const alpine = verifyStandalone(standalone.alpine, candidateStandalone.alpine, 'Alpine');
   const scenarios = verifyScenarios(reference.scenarios, candidate.scenarios);
   const css = verifyCss(reference.css, candidate.css);
-  if (react.length + alpine.length !== 72 || scenarios.length !== 5 || css.length !== 4) {
+  if (react.length + alpine.length !== 73 || scenarios.length !== 5 || css.length !== 4) {
     fail(
-      `expected 72 standalone, 5 scenario, and 4 CSS measurements; found ${react.length + alpine.length}, ${scenarios.length}, ${css.length}`,
+      `expected 73 standalone, 5 scenario, and 4 CSS measurements; found ${react.length + alpine.length}, ${scenarios.length}, ${css.length}`,
     );
   }
   return {

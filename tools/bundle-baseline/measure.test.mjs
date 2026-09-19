@@ -1291,7 +1291,7 @@ test('bundle CLI --check-budgets returns the native budget result without writin
   assert.equal(report.environment.fixture.sourceSha256, APPROVED_FIXTURE_SOURCE_SHA256);
   assert.deepEqual(report.environment.brotli, { mode: 'text', quality: 11 });
   assert.equal(report.externals[0], 'react');
-  assert.equal(report.entries.react.length + report.entries.alpine.length, 72);
+  assert.equal(report.entries.react.length + report.entries.alpine.length, 73);
   assert.ok(Array.isArray(report.entries.react[0].modules.after));
   assert.equal(readFileSync(paths.currentJson, 'utf8'), originalPointer);
   assert.equal(readFileSync(paths.baselineJson, 'utf8'), originalBaseline);
