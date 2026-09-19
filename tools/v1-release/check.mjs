@@ -765,11 +765,15 @@ function validatePublication(ledger, errors) {
   if (publication.releaseCommit !== ledger.candidate?.sourceRevision) {
     errors.push('publication releaseCommit must equal candidate sourceRevision');
   }
-  if (!/^[0-9]+$/u.test(String(publication.releaseRun))) {
+  if (typeof publication.releaseRun !== 'string' || !/^[0-9]+$/u.test(publication.releaseRun)) {
     errors.push('publication releaseRun must be a workflow run id');
   }
-  if (Number.isNaN(Date.parse(publication.publishedAt))) {
-    errors.push('publication publishedAt must be an ISO 8601 date');
+  if (
+    typeof publication.publishedAt !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/u.test(publication.publishedAt) ||
+    Number.isNaN(Date.parse(publication.publishedAt))
+  ) {
+    errors.push('publication publishedAt must be an ISO 8601 UTC timestamp');
   }
   if (publication.registry !== 'https://registry.npmjs.org') {
     errors.push('publication registry must equal https://registry.npmjs.org');
