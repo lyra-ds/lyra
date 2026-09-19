@@ -2,7 +2,7 @@
 // migration exceptions approved against the Core Beta reference are realized in it and no longer
 // apply; every entry is measured against the release itself under the default ceilings.
 const REFERENCE_REVISION = 'fb4e100a4293eb619a6b76b148140bfdd41eed06';
-const APPROVED_ROOT_LOCK = '86f83145b01f7f923f0c87d1c6223b1e0f21d32b317297ba0c4e92c08b7a7e81';
+const APPROVED_ROOT_LOCK = 'ca91cb5f3739e2b64e5513df5538c20036d03e729b6823da0d2e3100cea27f6f';
 export const APPROVED_FIXTURE_SOURCE_SHA256 =
   '07a32c9a76696fd88efdb0ab9aa16017fe3b6f3023e8d9f64c02e42a69b2c85e';
 const TABS_IMPORT =
