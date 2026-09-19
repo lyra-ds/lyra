@@ -9,6 +9,7 @@ const TABS_IMPORT =
   "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'";
 
 export const APPROVED_ABSOLUTE_CAPS = {
+  '@lyra-ds/react/dialog': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/drawer': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/bottom-sheet': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/create-workspace-dialog': { configuredLimit: '7.9 kB', bytes: 7900 },

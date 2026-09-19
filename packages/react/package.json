@@ -1,7 +1,7 @@
 {
   "name": "@lyra-ds/react",
   "version": "1.0.0",
-  "description": "Lyra DS — thin, tree-shakable React wrappers over @lyra-ds/styles. All appearance comes from .lyra-* classes; zero runtime CSS-in-JS.",
+  "description": "Lyra DS \u2014 thin, tree-shakable React wrappers over @lyra-ds/styles. All appearance comes from .lyra-* classes; zero runtime CSS-in-JS.",
   "keywords": [
     "design-system",
     "react",
@@ -856,6 +856,16 @@
         "react-dom"
       ],
       "limit": "2 kB"
+    },
+    {
+      "name": "import { Dialog } from '@lyra-ds/react/dialog'",
+      "path": "dist/dialog.js",
+      "import": "{ Dialog }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "5.3 kB"
     },
     {
       "name": "import { Drawer } from '@lyra-ds/react/drawer'",
