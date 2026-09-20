@@ -1,5 +1,11 @@
 # @lyra-ds/styles
 
+## 1.0.1
+
+### Patch Changes
+
+- [#247](https://github.com/lyra-ds/lyra/pull/247) [`73c1375`](https://github.com/lyra-ds/lyra/commit/73c1375bce4ff13b961ddb645480a8603f0d9e56) Thanks [@franciscpd](https://github.com/franciscpd)! - Let a content-scroll `Shell` rail follow an `AppSidebar`'s own width (expanded and icon rail) instead of clipping it to the page-model track, and let a `WorkspaceSwitcher` placed in the sidebar's brand slot fill that column instead of overflowing it.
+
 ## 1.0.0
 
 ### Major Changes
