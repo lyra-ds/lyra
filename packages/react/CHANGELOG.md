@@ -1,5 +1,11 @@
 # @lyra-ds/react
 
+## 1.0.1
+
+### Patch Changes
+
+- [#246](https://github.com/lyra-ds/lyra/pull/246) [`b4966a0`](https://github.com/lyra-ds/lyra/commit/b4966a05ccb14724ff642d00f412890bc12f48b0) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the standalone Size Limit budget for `Dialog` (5.3 kB), closing the gap disclosed in the 1.0.0 evidence.
+
 ## 1.0.0
 
 ### Major Changes
