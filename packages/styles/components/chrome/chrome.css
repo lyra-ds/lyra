@@ -429,6 +429,15 @@
 }
 .lyra-shell--content .lyra-shell__sidebar { width: var(--shell-sidebar); padding-right: 0; }
 .lyra-shell--content .lyra-shell__aside { width: var(--shell-aside); }
+
+/* An AppSidebar owns its width (260px expanded, 64px rail, set inline through --appsidebar-width);
+   the content-scroll rail follows it instead of clipping it to the page-model track. */
+.lyra-shell--content .lyra-shell__sidebar:has(> .lyra-appsidebar) { width: auto; }
+.lyra-shell--content .lyra-appsidebar {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
 .lyra-shell--content .lyra-shell__main {
   flex: 1;
   display: flex;

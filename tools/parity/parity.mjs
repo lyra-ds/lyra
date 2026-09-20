@@ -511,6 +511,10 @@ const ADDITIVE_EXTENSIONS = {
       // The metadata override keeps plan and member details readable on the item's hover surface.
       'lyra-wssw__meta',
       'lyra-wssw__trigger',
+      // WorkspaceSwitcher inside AppSidebar fills the brand column instead of overflowing it.
+      'lyra-appsidebar',
+      'lyra-appsidebar__brand',
+      'lyra-wssw',
       'lyra-wscreate__slug-input',
     ],
     keyframes: [],

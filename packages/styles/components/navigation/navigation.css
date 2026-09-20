@@ -741,3 +741,25 @@
     min-height: 44px;
   }
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): AppSidebar's brand slot is where WorkspaceSwitcher
+   actually lives in application chrome. The standalone switcher keeps the handoff's 220px min-width;
+   inside the padded 260px rail that min-width overflows (and clips harder when a content Shell still
+   used the page-model 220px track). Fill the brand column instead. */
+.lyra-appsidebar__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+/* The rail keeps the handoff's horizontally centered brand. */
+.lyra-appsidebar--rail .lyra-appsidebar__brand { flex-direction: row; }
+.lyra-appsidebar .lyra-wssw {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  align-self: stretch;
+  box-sizing: border-box;
+}

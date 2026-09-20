@@ -5,6 +5,8 @@ import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { AppSidebar } from './index';
 import { SidebarGroup } from '../sidebar-group';
+import { Shell } from '../shell';
+import { WorkspaceSwitcher } from '../workspace-switcher';
 
 const groups = [
   {
@@ -91,6 +93,56 @@ describe('AppSidebar', () => {
       container.querySelector('.lyra-sbgroup__item + .lyra-sbgroup__item')?.getAttribute('title'),
     ).toBe('Settings');
     await expectNoAxeViolations(container);
+  });
+
+  it('sizes a content-scroll Shell rail to the sidebar and keeps a brand WorkspaceSwitcher inside it', async () => {
+    const workspaces = [
+      { id: 'acme', name: 'Acme', plan: 'Pro', members: 5 },
+      { id: 'lyra', name: 'Lyra', plan: 'Free', members: 2 },
+    ];
+    const { container } = await render(
+      <div style={{ height: '400px' }}>
+        <Shell
+          scroll="content"
+          sidebar={
+            <AppSidebar
+              brand={<WorkspaceSwitcher workspaces={workspaces} current="acme" />}
+              groups={groups}
+              collapsible
+            />
+          }
+          sidebarAs="nav"
+          sidebarLabel="Application navigation"
+          topbar="Toolbar"
+        >
+          Document
+        </Shell>
+      </div>,
+    );
+    const shell = container.querySelector<HTMLElement>('.lyra-shell')!;
+    const rail = container.querySelector<HTMLElement>('.lyra-shell__sidebar')!;
+    const sidebar = container.querySelector<HTMLElement>('.lyra-appsidebar')!;
+    const brand = container.querySelector<HTMLElement>('.lyra-appsidebar__brand')!;
+    const switcher = container.querySelector<HTMLElement>('.lyra-wssw')!;
+
+    expect(sidebar.getBoundingClientRect().width).toBeCloseTo(260, 1);
+    expect(rail.getBoundingClientRect().width).toBeCloseTo(
+      sidebar.getBoundingClientRect().width,
+      1,
+    );
+    expect(sidebar.getBoundingClientRect().height).toBeCloseTo(
+      shell.getBoundingClientRect().height,
+      1,
+    );
+    expect(switcher.getBoundingClientRect().right).toBeLessThanOrEqual(
+      brand.getBoundingClientRect().right + 0.5,
+    );
+    expect(brand.scrollWidth).toBeLessThanOrEqual(brand.clientWidth);
+
+    await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-appsidebar__toggle')!);
+    await vi.waitFor(() => expect(getComputedStyle(sidebar).width).toBe('64px'));
+    expect(rail.getBoundingClientRect().width).toBeCloseTo(64, 1);
+    expect(getComputedStyle(brand).flexDirection).toBe('row');
   });
 
   it('reports a controlled toggle without changing its own collapsed state', async () => {
