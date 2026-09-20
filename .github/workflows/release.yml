@@ -87,9 +87,14 @@ jobs:
         with:
           # With changesets pending: open/refresh the Version Packages PR.
           # No `publish` input — see the npm/cli#8976 note in the header.
-          version: pnpm exec changeset version
-          commit: 'chore(release): version packages'
-          title: 'chore(release): version packages'
+          # changesets/action 2.x input names; the token is an input too. Tags and GitHub Releases
+          # stay with the explicit step below, so the action's own helpers are off.
+          github-token: ${{ secrets.CHANGESETS_PAT || secrets.GITHUB_TOKEN }}
+          version-script: pnpm exec changeset version
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
+          create-github-releases: false
+          push-git-tags: false
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESETS_PAT || secrets.GITHUB_TOKEN }}
       # Cheap guard so ordinary pushes to main (docs, site, CI) skip the
@@ -98,7 +103,7 @@ jobs:
       # only saves the pointless adapter builds on every unrelated push.
       - name: Check for unpublished versions
         id: unpublished
-        if: steps.changesets.outputs.hasChangesets == 'false'
+        if: steps.changesets.outputs.has-changesets == 'false'
         # Checks every publishable package: a release of any independently
         # versioned package must flip the guard.
         run: |
