@@ -1,5 +1,14 @@
 # @lyra-ds/styles
 
+## 1.0.2
+
+### Patch Changes
+
+- [#250](https://github.com/lyra-ds/lyra/pull/250) [`2b4731f`](https://github.com/lyra-ds/lyra/commit/2b4731f01445ca1bfe58c3447a7eced52a203fde) Thanks [@franciscpd](https://github.com/franciscpd)! - Restore the CSS-only AppSidebar width defaults, provide an accessible compact WorkspaceSwitcher
+  brand presentation in icon rails, and respect reduced-motion preferences for sidebar width changes.
+  Document AppSidebar ownership of direct content-scroll Shell rails and the corresponding
+  `Shell.sidebarWidth` precedence.
+
 ## 1.0.1
 
 ### Patch Changes
