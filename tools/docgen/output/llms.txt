@@ -211,7 +211,10 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   asideLabel?: string;
   /** Whether the document or the main region is the scroll container. Default: `"page"`. */
   scroll?: 'page' | 'content';
-  /** Sidebar rail width in pixels. Sets `--shell-sidebar`. */
+  /**
+   * Sidebar rail width in pixels. Sets `--shell-sidebar` for ordinary rails and page-scroll
+   * Shells; a direct AppSidebar in a content-scroll rail owns its width instead.
+  */
   sidebarWidth?: number;
   /** Complementary aside rail width in pixels. Sets `--shell-aside`. */
   asideWidth?: number;
@@ -1237,7 +1240,10 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   groups?: AppSidebarGroup[];
   /** Optional utility links or user content separated below the navigation groups. */
   footer?: ReactNode;
-  /** Sidebar width in pixels while expanded. Default: `260`. */
+  /**
+   * Sidebar width in pixels while expanded. Default: `260`. In a content-scroll {@link Shell}
+   * where AppSidebar is the direct sidebar child, this width owns that rail.
+  */
   width?: number;
   /** Whether to render a control that switches between expanded and icon-rail modes. */
   collapsible?: boolean;

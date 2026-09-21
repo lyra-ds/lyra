@@ -40,6 +40,10 @@ página pode ficar escondido sob o cabeçalho. Em `1100px` o aside desaparece; e
 então a ficar acima do documento. Esses breakpoints são fixos porque media queries não leem propriedades
 customizadas.
 
+`sidebarWidth` controla conteúdo comum de barra lateral e trilhos de Shell com scroll de página. Em um
+Shell com scroll de conteúdo, um AppSidebar filho direto é dono do trilho com `AppSidebar.width` ou
+`--appsidebar-width`, portanto os dois controles de largura não competem.
+
 Prefira outro componente quando:
 
 - **A página só precisa de uma medida de conteúdo centralizada** — use Container.

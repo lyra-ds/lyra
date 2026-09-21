@@ -41,19 +41,30 @@ macOS; Linux and Windows native runs remain pending actual execution.
 
 ## Browser-tested changes
 
-When a change affects browser-tested behavior, install the Playwright engines
-locally and run the separate browser check:
+When a change affects browser-tested behavior, run the complete pinned Playwright
+matrix through Docker on Linux:
+
+```bash
+pnpm test:browsers:docker
+```
+
+The command uses `compose.playwright.yml`, the digest-pinned Playwright image from
+CI, the invoking user's UID/GID, and temporary package-manager state outside the
+bind-mounted repository. It installs from the frozen lockfile inside the container,
+then runs Chromium, Firefox, and WebKit for Styles, React, and Alpine.
+
+A native run remains available when Docker is unavailable:
 
 ```bash
 pnpm exec playwright install chromium firefox webkit
 pnpm test:browsers
 ```
 
-This is separate from `pnpm test`; do not silently skip an engine that fails to
-install or run. Record the command, engine, exit code, and missing requirement
-instead. The pinned Linux Playwright-container matrix in CI remains the reference
-qualification for browser, accessibility, compatibility, and release obligations;
-it is CI infrastructure, not a Docker or WSL prerequisite for contributors.
+Browser tests are separate from `pnpm test`; do not silently skip an engine that
+fails to install or run. Record the command, engine, exit code, and missing
+requirement instead. The pinned Linux Playwright-container matrix in CI and
+`pnpm test:browsers:docker` are the reference qualification for browser,
+accessibility, compatibility, and release obligations.
 
 ## Changesets
 

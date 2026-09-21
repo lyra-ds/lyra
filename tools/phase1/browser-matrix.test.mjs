@@ -15,9 +15,35 @@ const validCompose = `services:
     image: ${PLAYWRIGHT_IMAGE_REFERENCE}
     init: true
     ipc: host
+    user: '\${UID:?Set UID with id -u}:\${GID:?Set GID with id -g}'
+    working_dir: /workspace
+    environment:
+      CI: 'true'
+      HOME: /tmp
+      COREPACK_HOME: /tmp/corepack
+    volumes:
+      - .:/workspace
+    tmpfs:
+      - /workspace/node_modules:rw,exec,mode=1777
+      - /workspace/packages/styles/node_modules:rw,exec,mode=1777
+      - /workspace/packages/react/node_modules:rw,exec,mode=1777
+      - /workspace/packages/alpine/node_modules:rw,exec,mode=1777
+    command:
+      - sh
+      - -lc
+      - |
+        export PATH="/tmp/corepack-shims:$$PATH"
+        corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
+        corepack pnpm@11.13.1 run test:browsers
 `;
 
-const validScripts = '{"scripts":{"test:browsers":"pnpm -r run test:browser"}}';
+const validScripts = JSON.stringify({
+  scripts: {
+    'test:browsers': 'pnpm -r run test:browser',
+    'test:browsers:docker':
+      'env UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm browser-tests',
+  },
+});
 
 const validConfigs = {
   styles: 'instances: PLAYWRIGHT_BROWSER_INSTANCES',
@@ -132,6 +158,173 @@ test('validates the local browser matrix entry point', () => {
   assert.deepEqual(errors, []);
 });
 
+test('requires a root Docker entry point for the browser matrix', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose,
+    scripts: '{"scripts":{"test:browsers":"pnpm -r run test:browser"}}',
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Root scripts must define test:browsers:docker through compose.playwright.yml.',
+  ]);
+});
+
+test('requires non-root checkout wiring for the local container', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose
+      .replace("    user: '${UID:?Set UID with id -u}:${GID:?Set GID with id -g}'\n", '')
+      .replace('    working_dir: /workspace\n', '')
+      .replace("      CI: 'true'\n", '')
+      .replace('    volumes:\n      - .:/workspace\n', ''),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must run as the invoking UID/GID with the checkout mounted at /workspace in CI mode.',
+  ]);
+});
+
+test('preserves the container PATH instead of interpolating the host PATH', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replace('$$PATH', '$PATH'),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
+  ]);
+});
+
+test('requires the pinned frozen install and the complete browser command', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose
+      .replace('pnpm@11.13.1 install --frozen-lockfile', 'pnpm install')
+      .replace('corepack pnpm@11.13.1 run test:browsers', 'pnpm test'),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
+    'Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.',
+  ]);
+});
+
+test('rejects browser commands that appear only in shell comments', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replace(
+      `    command:
+      - sh
+      - -lc
+      - |
+        export PATH="/tmp/corepack-shims:$$PATH"
+        corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
+        corepack pnpm@11.13.1 run test:browsers
+`,
+      `    command:
+      - sh
+      - -lc
+      - |
+        # export PATH="/tmp/corepack-shims:$$PATH"
+        # corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
+        # corepack pnpm@11.13.1 run test:browsers
+        true
+`,
+    ),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
+    'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
+    'Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.',
+    'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
+    'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
+  ]);
+});
+
+test('keeps container package-manager state outside the bind-mounted workspace', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose
+      .replace(
+        `    environment:
+      HOME: /tmp
+      COREPACK_HOME: /tmp/corepack
+`,
+        '',
+      )
+      .replace(' --store-dir=/tmp/pnpm-store', ''),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
+  ]);
+});
+
+test('keeps the non-interactive container install from prompting to purge node_modules', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replace(' --config.confirmModulesPurge=false', ''),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
+  ]);
+});
+
+test('isolates browser-workspace node_modules from the bind-mounted checkout', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replace(
+      `    tmpfs:
+      - /workspace/node_modules:rw,exec,mode=1777
+      - /workspace/packages/styles/node_modules:rw,exec,mode=1777
+      - /workspace/packages/react/node_modules:rw,exec,mode=1777
+      - /workspace/packages/alpine/node_modules:rw,exec,mode=1777
+`,
+      '',
+    ),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must isolate root and browser-package node_modules with tmpfs.',
+    'Compose service "browser-tests" tmpfs mounts must use mode=1777 for the non-root user.',
+    'Compose service "browser-tests" tmpfs mounts must allow package executables.',
+  ]);
+});
+
+test('makes isolated node_modules writable by the invoking non-root user', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replaceAll(',mode=1777', ''),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" tmpfs mounts must use mode=1777 for the non-root user.',
+  ]);
+});
+
+test('keeps executables runnable from isolated node_modules', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replaceAll('exec,', ''),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" tmpfs mounts must allow package executables.',
+  ]);
+});
+
 test('requires browser infrastructure settings in the browser-tests service', () => {
   const errors = validateBrowserMatrix({
     compose: `services:
@@ -150,6 +343,15 @@ test('requires browser infrastructure settings in the browser-tests service', ()
     'Compose service "browser-tests" must use the pinned Playwright image.',
     'Compose service "browser-tests" must set init: true.',
     'Compose service "browser-tests" must set ipc: host.',
+    'Compose service "browser-tests" must run as the invoking UID/GID with the checkout mounted at /workspace in CI mode.',
+    'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
+    'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
+    'Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.',
+    'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
+    'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
+    'Compose service "browser-tests" must isolate root and browser-package node_modules with tmpfs.',
+    'Compose service "browser-tests" tmpfs mounts must use mode=1777 for the non-root user.',
+    'Compose service "browser-tests" tmpfs mounts must allow package executables.',
   ]);
 });
 
@@ -365,5 +567,14 @@ test('rejects a pinned image reference that appears only in a service comment', 
 
   assert.deepEqual(errors, [
     'Compose service "browser-tests" must use the pinned Playwright image.',
+    'Compose service "browser-tests" must run as the invoking UID/GID with the checkout mounted at /workspace in CI mode.',
+    'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
+    'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
+    'Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.',
+    'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
+    'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
+    'Compose service "browser-tests" must isolate root and browser-package node_modules with tmpfs.',
+    'Compose service "browser-tests" tmpfs mounts must use mode=1777 for the non-root user.',
+    'Compose service "browser-tests" tmpfs mounts must allow package executables.',
   ]);
 });

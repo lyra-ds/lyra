@@ -98,7 +98,10 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   groups?: AppSidebarGroup[];
   /** Optional utility links or user content separated below the navigation groups. */
   footer?: ReactNode;
-  /** Sidebar width in pixels while expanded. Default: `260`. */
+  /**
+   * Sidebar width in pixels while expanded. Default: `260`. In a content-scroll {@link Shell}
+   * where AppSidebar is the direct sidebar child, this width owns that rail.
+   */
   width?: number;
   /** Whether to render a control that switches between expanded and icon-rail modes. */
   collapsible?: boolean;

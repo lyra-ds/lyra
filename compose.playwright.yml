@@ -7,14 +7,21 @@ services:
     working_dir: /workspace
     environment:
       CI: 'true'
+      HOME: /tmp
+      COREPACK_HOME: /tmp/corepack
     volumes:
       - .:/workspace
+    tmpfs:
+      - /workspace/node_modules:rw,exec,mode=1777
+      - /workspace/packages/styles/node_modules:rw,exec,mode=1777
+      - /workspace/packages/react/node_modules:rw,exec,mode=1777
+      - /workspace/packages/alpine/node_modules:rw,exec,mode=1777
     command:
       - sh
       - -lc
       - |
         mkdir -p /tmp/corepack-shims
         corepack enable --install-directory /tmp/corepack-shims
-        export PATH="/tmp/corepack-shims:$PATH"
-        corepack pnpm@11.13.1 install --frozen-lockfile
+        export PATH="/tmp/corepack-shims:$$PATH"
+        corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
         corepack pnpm@11.13.1 run test:browsers

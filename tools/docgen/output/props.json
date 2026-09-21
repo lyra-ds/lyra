@@ -376,7 +376,7 @@
         "name": "sidebarWidth",
         "type": "number",
         "optional": true,
-        "description": "Sidebar rail width in pixels. Sets `--shell-sidebar`."
+        "description": "Sidebar rail width in pixels. Sets `--shell-sidebar` for ordinary rails and page-scroll\nShells; a direct AppSidebar in a content-scroll rail owns its width instead."
       },
       {
         "name": "asideWidth",
@@ -2590,7 +2590,7 @@
         "name": "width",
         "type": "number",
         "optional": true,
-        "description": "Sidebar width in pixels while expanded. Default: `260`."
+        "description": "Sidebar width in pixels while expanded. Default: `260`. In a content-scroll {@link Shell}\nwhere AppSidebar is the direct sidebar child, this width owns that rail."
       },
       {
         "name": "collapsible",
