@@ -32,6 +32,33 @@ Prefira outro componente quando:
 - **Os destinos são visualizações pares na página atual** — use Tabs.
 - **Você precisa de apenas uma seção de navegação** — use SidebarGroup.
 
+## Largura e propriedade do Shell
+
+A marcação CSS-only de AppSidebar usa `260px` por padrão; adicione `lyra-appsidebar--rail` para o
+padrão de trilho de `64px`. Defina `--appsidebar-width` quando a aplicação precisar de outra largura.
+Quando AppSidebar for filho direto da barra lateral de um Shell com scroll de conteúdo, AppSidebar é
+dona desse trilho; `Shell.sidebarWidth` continua dimensionando conteúdo comum de barra lateral e
+trilhos de Shell com scroll de página.
+
+```html
+<!-- O padrão é 260px. -->
+<nav class="lyra-appsidebar" aria-label="Navegação do espaço de trabalho"></nav>
+
+<!-- O padrão é 64px; esta propriedade explícita também é suportada. -->
+<nav
+  class="lyra-appsidebar lyra-appsidebar--rail"
+  style="--appsidebar-width: 64px"
+  aria-label="Navegação do espaço de trabalho"
+></nav>
+
+<!-- Uma substituição do consumidor para a barra lateral expandida. -->
+<nav
+  class="lyra-appsidebar"
+  style="--appsidebar-width: 296px"
+  aria-label="Navegação do espaço de trabalho"
+></nav>
+```
+
 ## Acessibilidade
 
 - AppSidebar renderiza um `<nav>` nativo. Passe `aria-label` para ele quando a página tiver mais de
@@ -44,6 +71,9 @@ Prefira outro componente quando:
 - O controle de recolhimento é um botão nativo cujo nome acessível e tooltip vêm de `labels`. No modo
   trilho, rótulos de grupo, texto de item e badges ficam visualmente ocultos, enquanto os nomes dos
   controles e itens continuam disponíveis.
+- Um WorkspaceSwitcher no espaço da marca vira um gatilho compacto de avatar no modo trilho. O nome
+  do workspace continua disponível para tecnologia assistiva; o popover mantém largura utilizável e
+  fica dentro de um viewport estreito.
 
 ## API e código
 

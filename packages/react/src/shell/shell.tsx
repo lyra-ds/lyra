@@ -28,7 +28,10 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   asideLabel?: string;
   /** Whether the document or the main region is the scroll container. Default: `"page"`. */
   scroll?: 'page' | 'content';
-  /** Sidebar rail width in pixels. Sets `--shell-sidebar`. */
+  /**
+   * Sidebar rail width in pixels. Sets `--shell-sidebar` for ordinary rails and page-scroll
+   * Shells; a direct AppSidebar in a content-scroll rail owns its width instead.
+   */
   sidebarWidth?: number;
   /** Complementary aside rail width in pixels. Sets `--shell-aside`. */
   asideWidth?: number;

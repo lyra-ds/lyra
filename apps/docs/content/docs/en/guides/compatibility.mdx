@@ -14,15 +14,15 @@ with a shared compatibility and migration record.
 
 | Package           | Current version | Peers                                  |
 | ----------------- | --------------- | -------------------------------------- |
-| `@lyra-ds/styles` | 1.0.0           | none                                   |
-| `@lyra-ds/react`  | 1.0.0           | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/styles` | 1.0.1           | none                                   |
+| `@lyra-ds/react`  | 1.0.1           | `react >=18 <20`, `react-dom >=18 <20` |
 | `@lyra-ds/alpine` | 1.0.0           | `alpinejs >=3.13 <4`                   |
 
 ## Tested compatibility
 
 | Styles range | React range | Alpine range | Status                               |
 | ------------ | ----------- | ------------ | ------------------------------------ |
-| `=1.0.0`     | `=1.0.0`    | `=1.0.0`     | Tested together in the 1.0.0 release |
+| `=1.0.1`     | `=1.0.1`    | `=1.0.0`     | Tested together in the 1.0.1 release |
 
 These exact ranges are deliberately narrow: they record combinations the project has tested, not
 every combination an npm resolver can install. A later package release expands or replaces the row
@@ -39,9 +39,9 @@ only after the shared contract has been verified.
 
 ## Lyra v1.0 suite
 
-The Lyra v1.0 suite is declared only after Styles, React, and Alpine have each independently
-published `1.0.0` and a tested compatibility row records their mutual contract. One package reaching
-`1.0.0` early does not declare the suite complete.
+The Lyra v1.0 suite is recorded by the published Styles `1.0.1`, React `1.0.1`, and Alpine `1.0.0`
+tuple above. Later package releases expand or replace the tested row only after the shared contract
+has been verified.
 
 ## Blade compatibility
 

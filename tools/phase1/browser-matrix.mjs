@@ -9,6 +9,9 @@ export const PLAYWRIGHT_BROWSER_INSTANCES = [
   { browser: 'webkit' },
 ];
 
+export const PLAYWRIGHT_DOCKER_COMMAND =
+  'env UID="$(id -u)" GID="$(id -g)" docker compose -f compose.playwright.yml run --rm browser-tests';
+
 export function createBrowserEvidenceConfig(artifactRoot, browser) {
   const evidenceRoot = browser === undefined ? artifactRoot : resolve(artifactRoot, browser);
   const screenshotDirectory = resolve(evidenceRoot, 'screenshots');
@@ -184,6 +187,91 @@ export function validateBrowserMatrix({ compose, scripts, configs, workflow }) {
     errors.push('Compose service "browser-tests" must set ipc: host.');
   }
 
+  if (
+    !/^    user: '\$\{UID:\?Set UID with id -u\}:\$\{GID:\?Set GID with id -g\}'\s*$/m.test(
+      browserTestsService,
+    ) ||
+    !/^    working_dir: \/workspace\s*$/m.test(browserTestsService) ||
+    !/^      CI: ['"]true['"]\s*$/m.test(browserTestsService) ||
+    !/^      - \.:\/workspace\s*$/m.test(browserTestsService)
+  ) {
+    errors.push(
+      'Compose service "browser-tests" must run as the invoking UID/GID with the checkout mounted at /workspace in CI mode.',
+    );
+  }
+
+  if (!/export PATH="\/tmp\/corepack-shims:\$\$PATH"/m.test(browserTestsService)) {
+    errors.push(
+      'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
+    );
+  }
+
+  if (!/corepack pnpm@11\.13\.1 install[^\n]*--frozen-lockfile/m.test(browserTestsService)) {
+    errors.push(
+      'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
+    );
+  }
+
+  if (!/corepack pnpm@11\.13\.1 run test:browsers\s*$/m.test(browserTestsService)) {
+    errors.push('Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.');
+  }
+
+  if (
+    !/^      HOME: \/tmp\s*$/m.test(browserTestsService) ||
+    !/^      COREPACK_HOME: \/tmp\/corepack\s*$/m.test(browserTestsService) ||
+    !/--store-dir=\/tmp\/pnpm-store(?:\s|$)/m.test(browserTestsService)
+  ) {
+    errors.push(
+      'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
+    );
+  }
+
+  if (!/--config\.confirmModulesPurge=false(?:\s|$)/m.test(browserTestsService)) {
+    errors.push(
+      'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
+    );
+  }
+
+  const isolatedNodeModules = [
+    '/workspace/node_modules',
+    '/workspace/packages/styles/node_modules',
+    '/workspace/packages/react/node_modules',
+    '/workspace/packages/alpine/node_modules',
+  ];
+  const tmpfsOptions = new Map(
+    isolatedNodeModules.map((path) => {
+      const escapedPath = path.replaceAll('/', '\\/');
+      const options = new RegExp(`^      - ${escapedPath}:([^\\s]+)\\s*$`, 'm').exec(
+        browserTestsService,
+      )?.[1];
+
+      return [path, options?.split(',') ?? []];
+    }),
+  );
+
+  if (
+    isolatedNodeModules.some(
+      (path) =>
+        !new RegExp(`^      - ${path.replaceAll('/', '\\/')}(?::[^\\s]+)?\\s*$`, 'm').test(
+          browserTestsService,
+        ),
+    )
+  ) {
+    errors.push(
+      'Compose service "browser-tests" must isolate root and browser-package node_modules with tmpfs.',
+    );
+  }
+
+  if (isolatedNodeModules.some((path) => !tmpfsOptions.get(path).includes('mode=1777'))) {
+    errors.push(
+      'Compose service "browser-tests" tmpfs mounts must use mode=1777 for the non-root user.',
+    );
+  }
+
+  if (isolatedNodeModules.some((path) => !tmpfsOptions.get(path).includes('exec'))) {
+    errors.push('Compose service "browser-tests" tmpfs mounts must allow package executables.');
+  }
+
   for (const [name, config] of Object.entries(configs)) {
     if (!includesBrowserMatrix(config)) {
       errors.push(`Vitest config "${name}" must run chromium, firefox, and webkit.`);
@@ -192,6 +280,18 @@ export function validateBrowserMatrix({ compose, scripts, configs, workflow }) {
 
   if (!/"test:browsers"\s*:/.test(scripts)) {
     errors.push('Root scripts must define test:browsers.');
+  }
+
+  let rootScripts;
+
+  try {
+    rootScripts = JSON.parse(scripts).scripts;
+  } catch {
+    rootScripts = undefined;
+  }
+
+  if (rootScripts?.['test:browsers:docker'] !== PLAYWRIGHT_DOCKER_COMMAND) {
+    errors.push('Root scripts must define test:browsers:docker through compose.playwright.yml.');
   }
 
   if (workflow !== undefined) {

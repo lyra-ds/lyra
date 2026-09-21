@@ -14,15 +14,15 @@ em uma mesma janela documentada, com um registro conjunto de compatibilidade e m
 
 | Pacote            | Versão atual | Peers                                  |
 | ----------------- | ------------ | -------------------------------------- |
-| `@lyra-ds/styles` | 1.0.0        | nenhum                                 |
-| `@lyra-ds/react`  | 1.0.0        | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/styles` | 1.0.1        | nenhum                                 |
+| `@lyra-ds/react`  | 1.0.1        | `react >=18 <20`, `react-dom >=18 <20` |
 | `@lyra-ds/alpine` | 1.0.0        | `alpinejs >=3.13 <4`                   |
 
 ## Compatibilidade testada
 
 | Faixa do Styles | Faixa do React | Faixa do Alpine | Status                                  |
 | --------------- | -------------- | --------------- | --------------------------------------- |
-| `=1.0.0`        | `=1.0.0`       | `=1.0.0`        | Testadas juntas na versão 1.0.0 do Lyra |
+| `=1.0.1`        | `=1.0.1`       | `=1.0.0`        | Testadas juntas na versão 1.0.1 do Lyra |
 
 Essas faixas exatas são intencionalmente estreitas: elas registram combinações testadas pelo
 projeto, não toda combinação que um resolvedor npm consegue instalar. Uma versão posterior de um
@@ -39,9 +39,9 @@ pacote só amplia ou substitui a linha depois da verificação do contrato compa
 
 ## Suíte Lyra v1.0
 
-A suíte Lyra v1.0 só é declarada depois que Styles, React e Alpine publicarem `1.0.0` de forma
-independente e uma linha de compatibilidade testada registrar o contrato mútuo. Um pacote chegar a
-`1.0.0` antes dos outros não conclui a suíte.
+A suíte Lyra v1.0 é registrada pela tupla publicada Styles `1.0.1`, React `1.0.1` e Alpine `1.0.0`
+acima. Lançamentos posteriores de pacote só ampliam ou substituem a linha testada depois que o
+contrato compartilhado for verificado.
 
 ## Compatibilidade do Blade
 

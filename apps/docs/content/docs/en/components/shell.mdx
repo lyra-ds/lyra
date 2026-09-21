@@ -39,6 +39,10 @@ Set `top` (or `--shell-top`) to the height of a sticky header. Without it, a pag
 hide underneath that header. At `1100px` the aside disappears; at `900px` the sidebar then stacks
 above the document. These breakpoints are fixed because media queries cannot read custom properties.
 
+`sidebarWidth` controls ordinary sidebar content and page-scroll Shell rails. In a content-scroll
+Shell, a direct AppSidebar owns its rail with `AppSidebar.width` or `--appsidebar-width`, so the two
+width controls never compete.
+
 Reach for something else when:
 
 - **The page only needs a centered content measure** — use Container.

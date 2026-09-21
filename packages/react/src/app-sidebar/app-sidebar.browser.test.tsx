@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { AppSidebar } from './index';
@@ -29,7 +29,9 @@ function setTheme(theme: 'light' | 'dark'): void {
 
 afterEach(async () => {
   await cleanup();
+  await page.viewport(1200, 800);
   setTheme('light');
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('AppSidebar', () => {
@@ -144,6 +146,60 @@ describe('AppSidebar', () => {
     expect(rail.getBoundingClientRect().width).toBeCloseTo(64, 1);
     expect(getComputedStyle(brand).flexDirection).toBe('row');
   });
+
+  for (const theme of ['light', 'dark'] as const) {
+    for (const dir of ['ltr', 'rtl'] as const) {
+      it(`keeps a WorkspaceSwitcher compact, operable, and in the 320px viewport in ${theme} ${dir}`, async () => {
+        await page.viewport(320, 640);
+        setTheme(theme);
+        document.documentElement.dir = dir;
+        const workspaces = [
+          { id: 'acme', name: 'Acme', plan: 'Pro', members: 5 },
+          { id: 'lyra', name: 'Lyra', plan: 'Free', members: 2 },
+        ];
+        const { container } = await render(
+          <div style={{ height: '400px' }}>
+            <Shell
+              scroll="content"
+              sidebar={
+                <AppSidebar
+                  collapsed
+                  brand={<WorkspaceSwitcher workspaces={workspaces} current="acme" />}
+                />
+              }
+            >
+              Document
+            </Shell>
+          </div>,
+        );
+        const rail = container.querySelector<HTMLElement>('.lyra-shell__sidebar')!;
+        const brand = container.querySelector<HTMLElement>('.lyra-appsidebar__brand')!;
+        const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+
+        expect(rail.getBoundingClientRect().width).toBeCloseTo(64, 1);
+        expect(brand.scrollWidth).toBeLessThanOrEqual(brand.clientWidth);
+        expect(trigger.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
+        expect(trigger.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+        expect(
+          getComputedStyle(container.querySelector<HTMLElement>('.lyra-wssw__id')!).position,
+        ).toBe('absolute');
+        await expect.element(trigger).toHaveAccessibleName(/Acme/);
+
+        trigger.focus();
+        await userEvent.keyboard('{Enter}');
+        const popover = container.querySelector<HTMLElement>('.lyra-wssw__pop')!;
+        const popoverRect = popover.getBoundingClientRect();
+        expect(popoverRect.width).toBeGreaterThanOrEqual(200);
+        expect(popoverRect.left).toBeGreaterThanOrEqual(0);
+        expect(popoverRect.right).toBeLessThanOrEqual(320);
+        expect(popover.scrollWidth).toBeLessThanOrEqual(popover.clientWidth);
+
+        await userEvent.keyboard('{Escape}');
+        expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
+        expect(document.activeElement).toBe(trigger);
+      });
+    }
+  }
 
   it('reports a controlled toggle without changing its own collapsed state', async () => {
     const onCollapsedChange = vi.fn();

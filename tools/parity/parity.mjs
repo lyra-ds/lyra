@@ -513,6 +513,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-wssw__trigger',
       // WorkspaceSwitcher inside AppSidebar fills the brand column instead of overflowing it.
       'lyra-appsidebar',
+      'lyra-appsidebar--rail',
       'lyra-appsidebar__brand',
       'lyra-wssw',
       'lyra-wscreate__slug-input',

@@ -763,3 +763,60 @@
   align-self: stretch;
   box-sizing: border-box;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): CSS-only AppSidebar markup has the same width
+   contract as the React wrapper. An inline consumer custom property remains the final cascade. */
+.lyra-appsidebar {
+  --appsidebar-width: 260px;
+
+  width: var(--appsidebar-width);
+  flex: none;
+}
+.lyra-appsidebar--rail { --appsidebar-width: 64px; }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): an AppSidebar brand becomes an icon-rail
+   trigger, not a clipped full WorkspaceSwitcher. Its name remains in the native button's
+   accessibility tree while the avatar stays the visible owner. */
+.lyra-appsidebar--rail {
+  padding-inline: var(--space-2);
+}
+.lyra-appsidebar--rail .lyra-appsidebar__brand {
+  padding-inline: 0;
+}
+.lyra-appsidebar--rail .lyra-wssw {
+  width: 44px;
+  max-width: 44px;
+}
+.lyra-appsidebar--rail .lyra-wssw__trigger {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  gap: 0;
+  padding: var(--space-2);
+}
+.lyra-appsidebar--rail .lyra-wssw__id {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lyra-appsidebar--rail .lyra-wssw__trigger > svg { display: none; }
+.lyra-appsidebar--rail .lyra-wssw__pop {
+  width: min(220px, calc(100vw - var(--space-6)));
+  min-width: min(220px, calc(100vw - var(--space-6)));
+  max-width: calc(100vw - var(--space-6));
+  right: auto;
+}
+:root[dir="rtl"] .lyra-appsidebar--rail .lyra-wssw__pop {
+  right: 0;
+  left: auto;
+}
+
+/* Additive accessibility extension (parity ADDITIVE_EXTENSIONS): the rail state still changes
+   immediately, but reduced-motion users do not see the Shell column interpolate with its width. */
+@media (prefers-reduced-motion: reduce) {
+  .lyra-appsidebar { transition-duration: 0s; }
+}

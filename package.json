@@ -10,6 +10,7 @@
     "format": "prettier --write .",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test:browsers": "pnpm --filter @lyra-ds/styles run test:browser && pnpm --filter @lyra-ds/react run test:browser && pnpm --filter @lyra-ds/alpine run test:browser",
+    "test:browsers:docker": "env UID=\"$(id -u)\" GID=\"$(id -g)\" docker compose -f compose.playwright.yml run --rm browser-tests",
     "test:react-compat": "node tools/react-compat/file-upload.mjs",
     "test": "pnpm security:check && node --test --test-name-pattern=\"^keeps experimental foundations out of workspace manifests$\" tools/overlay-foundation-evaluation/repository-policy.test.mjs && pnpm --filter @lyra-ds/react run build && pnpm --filter @lyra-ds/alpine run build && node --test tools/security/check-lock.test.mjs tools/phase0/check-artifacts.test.mjs tools/bundle-baseline/measure.test.mjs tools/file-upload-performance/measure.test.mjs tools/phase1/browser-matrix.test.mjs tools/phase1/browser-config.test.mjs tools/v1-release/check.test.mjs && pnpm -r --workspace-concurrency=1 --if-present run test",
     "overlay:evaluate:core:test": "node --test tools/overlay-foundation-evaluation/*.test.mjs tools/overlay-foundation-evaluation/*/*.test.mjs",

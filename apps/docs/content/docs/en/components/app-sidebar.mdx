@@ -30,6 +30,32 @@ Reach for something else when:
 - **The destinations are peer views inside the current page** — use Tabs.
 - **You only need one navigation section** — use SidebarGroup.
 
+## Width and Shell ownership
+
+CSS-only AppSidebar markup defaults to `260px`; add `lyra-appsidebar--rail` for its `64px` rail
+default. Set `--appsidebar-width` when your application needs a different width. When AppSidebar is
+the direct sidebar child of a content-scroll Shell, AppSidebar owns that rail; `Shell.sidebarWidth`
+continues to size ordinary sidebar content and page-scroll Shell rails.
+
+```html
+<!-- Defaults to 260px. -->
+<nav class="lyra-appsidebar" aria-label="Workspace navigation"></nav>
+
+<!-- Defaults to 64px; this explicit property is also supported. -->
+<nav
+  class="lyra-appsidebar lyra-appsidebar--rail"
+  style="--appsidebar-width: 64px"
+  aria-label="Workspace navigation"
+></nav>
+
+<!-- A consumer override for an expanded sidebar. -->
+<nav
+  class="lyra-appsidebar"
+  style="--appsidebar-width: 296px"
+  aria-label="Workspace navigation"
+></nav>
+```
+
 ## Accessibility
 
 - AppSidebar renders a native `<nav>`. Pass `aria-label` through to it when the page has more than
@@ -42,6 +68,9 @@ Reach for something else when:
 - The collapse control is a native button whose accessible name and tooltip come from `labels`. In
   rail mode, group labels, item text and badges are visually hidden, while the control and item names
   remain available.
+- A WorkspaceSwitcher in the brand slot becomes a compact avatar trigger in rail mode. Its workspace
+  name remains available to assistive technology; its popover keeps a usable width and stays within a
+  narrow viewport.
 
 ## API and code
 
