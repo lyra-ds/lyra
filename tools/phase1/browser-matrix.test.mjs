@@ -28,10 +28,13 @@ const validCompose = `services:
       - /workspace/packages/styles/node_modules:rw,exec,mode=1777
       - /workspace/packages/react/node_modules:rw,exec,mode=1777
       - /workspace/packages/alpine/node_modules:rw,exec,mode=1777
-    command: |
-      export PATH="/tmp/corepack-shims:$$PATH"
-      corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
-      corepack pnpm@11.13.1 run test:browsers
+    command:
+      - sh
+      - -lc
+      - |
+        export PATH="/tmp/corepack-shims:$$PATH"
+        corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
+        corepack pnpm@11.13.1 run test:browsers
 `;
 
 const validScripts = JSON.stringify({
@@ -207,6 +210,40 @@ test('requires the pinned frozen install and the complete browser command', () =
   assert.deepEqual(errors, [
     'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
     'Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.',
+  ]);
+});
+
+test('rejects browser commands that appear only in shell comments', () => {
+  const errors = validateBrowserMatrix({
+    compose: validCompose.replace(
+      `    command:
+      - sh
+      - -lc
+      - |
+        export PATH="/tmp/corepack-shims:$$PATH"
+        corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
+        corepack pnpm@11.13.1 run test:browsers
+`,
+      `    command:
+      - sh
+      - -lc
+      - |
+        # export PATH="/tmp/corepack-shims:$$PATH"
+        # corepack pnpm@11.13.1 install --frozen-lockfile --config.confirmModulesPurge=false --store-dir=/tmp/pnpm-store
+        # corepack pnpm@11.13.1 run test:browsers
+        true
+`,
+    ),
+    scripts: validScripts,
+    configs: validConfigs,
+  });
+
+  assert.deepEqual(errors, [
+    'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
+    'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
+    'Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.',
+    'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
+    'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
   ]);
 });
 

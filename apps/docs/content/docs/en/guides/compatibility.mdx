@@ -10,19 +10,22 @@ own public surface requires; an unchanged package keeps its version. When a shar
 state, or behavior contract changes, the affected packages still release in one documented window
 with a shared compatibility and migration record.
 
-## Current versions
+## Release target
 
-| Package           | Current version | Peers                                  |
+The pending patch changeset produces the release-facing versions below. Package manifests remain at
+their previously published versions until release automation applies that changeset.
+
+| Package           | Release version | Peers                                  |
 | ----------------- | --------------- | -------------------------------------- |
-| `@lyra-ds/styles` | 1.0.1           | none                                   |
-| `@lyra-ds/react`  | 1.0.1           | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/styles` | 1.0.2           | none                                   |
+| `@lyra-ds/react`  | 1.0.2           | `react >=18 <20`, `react-dom >=18 <20` |
 | `@lyra-ds/alpine` | 1.0.0           | `alpinejs >=3.13 <4`                   |
 
 ## Tested compatibility
 
-| Styles range | React range | Alpine range | Status                               |
-| ------------ | ----------- | ------------ | ------------------------------------ |
-| `=1.0.1`     | `=1.0.1`    | `=1.0.0`     | Tested together in the 1.0.1 release |
+| Styles range | React range | Alpine range | Status                          |
+| ------------ | ----------- | ------------ | ------------------------------- |
+| `=1.0.2`     | `=1.0.2`    | `=1.0.0`     | Qualified for the 1.0.2 release |
 
 These exact ranges are deliberately narrow: they record combinations the project has tested, not
 every combination an npm resolver can install. A later package release expands or replaces the row
@@ -39,7 +42,7 @@ only after the shared contract has been verified.
 
 ## Lyra v1.0 suite
 
-The Lyra v1.0 suite is recorded by the published Styles `1.0.1`, React `1.0.1`, and Alpine `1.0.0`
+The Lyra v1.0 suite release target is the qualified Styles `1.0.2`, React `1.0.2`, and Alpine `1.0.0`
 tuple above. Later package releases expand or replace the tested row only after the shared contract
 has been verified.
 

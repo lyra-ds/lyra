@@ -5,10 +5,10 @@
 **Worktree:** `/home/francisross/Projects/lyra-ds/lyra-v1-0-1-release-follow-up`  
 **Branch:** `feat/v1-0-1-release-follow-up`  
 **Base commit:** `0b76f55d2f6f972e4e6a863cf9b53984727ff296`  
-**Current HEAD:** `0b76f55d2f6f972e4e6a863cf9b53984727ff296`  
-**`origin/main`:** `0b76f55d2f6f972e4e6a863cf9b53984727ff296`
+**Initial implementation commit:** `67a32e1eddae381f4c8c014ec69ed51e72919c9e`
+**Pull request:** `#250`
 
-The base, current HEAD, and `origin/main` are identical because this handoff intentionally stops with an uncommitted working tree. No commit, push, pull request, merge, versioning command, publication, or remote workflow dispatch was performed.
+The implementation and subsequent review adjustments are maintained on the dedicated branch and pull request. No merge, package version command, publication, or release workflow dispatch has been performed.
 
 ## Delivered package surfaces
 
@@ -72,7 +72,7 @@ The base, current HEAD, and `origin/main` are identical because this handoff int
 5. A WorkspaceSwitcher in an AppSidebar icon rail becomes a 44×44 compact avatar trigger. Its text remains in the accessibility tree, its chevron does not consume layout, and its opened popover remains usable within a 320px LTR or RTL viewport.
 6. `prefers-reduced-motion: reduce` removes AppSidebar width interpolation while preserving immediate final geometry.
 7. React source JSDoc, generated API artifacts, and both documentation locales describe the width precedence and compact brand contract.
-8. Compatibility documentation records the published and tested tuple Styles `1.0.1`, React `1.0.1`, Alpine `1.0.0`; historical migration-to-1.0.0 material remains historical.
+8. Compatibility documentation records the release-candidate tuple Styles `1.0.2`, React `1.0.2`, Alpine `1.0.0`, matching the pending patch changeset; historical migration-to-1.0.0 material remains historical.
 
 ## Focused browser regressions
 
@@ -149,7 +149,7 @@ React ESLint retains one pre-existing non-blocking warning in `packages/react/sr
 
 - `pnpm run test`
 - `node --test tools/phase1/browser-matrix.test.mjs`
-  - 29/29 Docker/browser-matrix contract tests passed, including non-root checkout wiring, Compose-safe `$$PATH`, pinned frozen installation, matrix execution, tmpfs isolation, writable mode, and executable mounts.
+  - 30/30 Docker/browser-matrix contract tests passed, including non-root checkout wiring, Compose-safe `$$PATH`, pinned frozen installation, matrix execution, rejection of commands present only in shell comments, tmpfs isolation, writable mode, and executable mounts.
 - `pnpm test:browsers:docker`
   - complete Styles/React/Alpine Chromium, Firefox, and WebKit matrix passed in the pinned CI image; exit `0`.
 - `pnpm run test:react-compat`
@@ -201,7 +201,7 @@ Independent read-only review used the configured low/research lane (`opencode/gl
 3. The reduced-motion rule sets AppSidebar's complete transition duration to zero; AppSidebar currently transitions only width.
 4. This handoff must retain the browser totals and rollback proofs so evidence does not live only in the conducting session; those details are recorded above.
 
-A second independent review covered only the newly added local Docker entry point. Its first pass correctly blocked on host-side `$PATH` interpolation and incomplete contract enforcement. Both findings were fixed by preserving `$$PATH` in Compose and expanding the validator/tests to require the invoking UID/GID, `/workspace` bind mount and working directory, `CI=true`, pinned pnpm `11.13.1`, `--frozen-lockfile`, and `test:browsers` execution. The bounded correction review then approved the five infrastructure files with no blocking or non-blocking findings.
+A second independent review covered only the newly added local Docker entry point. Its first pass correctly blocked on host-side `$PATH` interpolation and incomplete contract enforcement. Both findings were fixed by preserving `$$PATH` in Compose and expanding the validator/tests to require the invoking UID/GID, `/workspace` bind mount and working directory, `CI=true`, pinned pnpm `11.13.1`, `--frozen-lockfile`, and `test:browsers` execution. The bounded correction review then approved the five infrastructure files with no blocking or non-blocking findings. CodeRabbit later identified that command checks could still match shell-comment lines; the validator now extracts the Compose `command` value, excludes comment-only lines, and has a dedicated regression test.
 
 ## Operational notes and remaining limitations
 
@@ -213,4 +213,4 @@ A second independent review covered only the newly added local Docker entry poin
 
 ## Final authorization boundary
 
-The implementation and verification are complete in the dedicated worktree. Stop here. A separate maintainer authorization is required before any commit, push, pull request, merge, package version change, publication, or remote workflow action.
+The implementation and verification are committed and pushed to PR #250 for maintainer review. No merge, package version command, publication, or release action has been performed; each still requires separate maintainer authorization.

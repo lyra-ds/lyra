@@ -49,6 +49,20 @@ function getComposeServiceBlock(compose, serviceName) {
   return nextService ? content.slice(0, nextService.index) : content;
 }
 
+function getComposeCommand(service) {
+  const command = /^    command:(?:\s*[|>][+-]?)?\s*$/m.exec(service);
+
+  if (!command) {
+    return '';
+  }
+
+  const content = service.slice(command.index + command[0].length);
+  const nextProperty = /^    [^\s#][^\n]*:\s*/m.exec(content);
+  const commandBlock = nextProperty ? content.slice(0, nextProperty.index) : content;
+
+  return commandBlock.replace(/^\s*#.*$/gm, '');
+}
+
 function getWorkflowJobBlock(workflow, jobName) {
   const job = new RegExp(`^  ${jobName}:\\s*$`, 'm').exec(workflow);
 
@@ -173,6 +187,8 @@ export function validateBrowserMatrix({ compose, scripts, configs, workflow }) {
     return ['Compose service "browser-tests" is missing.'];
   }
 
+  const browserTestsCommand = getComposeCommand(browserTestsService);
+
   if (
     !new RegExp(`^    image: ${PLAYWRIGHT_IMAGE_REFERENCE}\\s*$`, 'm').test(browserTestsService)
   ) {
@@ -200,33 +216,33 @@ export function validateBrowserMatrix({ compose, scripts, configs, workflow }) {
     );
   }
 
-  if (!/export PATH="\/tmp\/corepack-shims:\$\$PATH"/m.test(browserTestsService)) {
+  if (!/export PATH="\/tmp\/corepack-shims:\$\$PATH"/m.test(browserTestsCommand)) {
     errors.push(
       'Compose service "browser-tests" must prepend Corepack shims to the container PATH with $$PATH.',
     );
   }
 
-  if (!/corepack pnpm@11\.13\.1 install[^\n]*--frozen-lockfile/m.test(browserTestsService)) {
+  if (!/corepack pnpm@11\.13\.1 install[^\n]*--frozen-lockfile/m.test(browserTestsCommand)) {
     errors.push(
       'Compose service "browser-tests" must install with pinned pnpm 11.13.1 and a frozen lockfile.',
     );
   }
 
-  if (!/corepack pnpm@11\.13\.1 run test:browsers\s*$/m.test(browserTestsService)) {
+  if (!/corepack pnpm@11\.13\.1 run test:browsers\s*$/m.test(browserTestsCommand)) {
     errors.push('Compose service "browser-tests" must run test:browsers with pinned pnpm 11.13.1.');
   }
 
   if (
     !/^      HOME: \/tmp\s*$/m.test(browserTestsService) ||
     !/^      COREPACK_HOME: \/tmp\/corepack\s*$/m.test(browserTestsService) ||
-    !/--store-dir=\/tmp\/pnpm-store(?:\s|$)/m.test(browserTestsService)
+    !/--store-dir=\/tmp\/pnpm-store(?:\s|$)/m.test(browserTestsCommand)
   ) {
     errors.push(
       'Compose service "browser-tests" must keep HOME, Corepack, and the pnpm store under /tmp.',
     );
   }
 
-  if (!/--config\.confirmModulesPurge=false(?:\s|$)/m.test(browserTestsService)) {
+  if (!/--config\.confirmModulesPurge=false(?:\s|$)/m.test(browserTestsCommand)) {
     errors.push(
       'Compose service "browser-tests" must disable the interactive pnpm modules-purge prompt.',
     );
