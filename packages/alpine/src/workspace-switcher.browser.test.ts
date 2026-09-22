@@ -111,6 +111,7 @@ describe('lyraWorkspaceSwitcher', () => {
         await userEvent.click(control);
         await flush();
         const listbox = popover(host);
+        await Promise.all(listbox.getAnimations().map((animation) => animation.finished));
         const triggerRect = control.getBoundingClientRect();
         const popoverRect = listbox.getBoundingClientRect();
 
