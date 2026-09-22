@@ -45,4 +45,17 @@ describe('AppSidebar collapse toggle — CSS-only fallback glyph', () => {
     const before = getComputedStyle(probe('withicon'), '::before');
     expect(before.content).toBe('none');
   });
+
+  it('flips the fallback chevron horizontally in the rail variant', () => {
+    document.body.innerHTML = `
+      <nav class="lyra-appsidebar lyra-appsidebar--rail" id="appsidebar-rail-root">
+        <button class="lyra-appsidebar__toggle" data-probe="rail-empty" type="button"
+                aria-label="Expand sidebar"></button>
+      </nav>`;
+    const railRoot = document.querySelector<HTMLElement>('#appsidebar-rail-root')!;
+    const railEmpty = railRoot.querySelector<HTMLButtonElement>('.lyra-appsidebar__toggle')!;
+    const before = getComputedStyle(railEmpty, '::before');
+    // scaleX(-1) resolves to the matrix form matrix(-1, 0, 0, 1, 0, 0).
+    expect(before.transform).toBe('matrix(-1, 0, 0, 1, 0, 0)');
+  });
 });
