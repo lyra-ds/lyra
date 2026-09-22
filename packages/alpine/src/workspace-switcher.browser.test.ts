@@ -22,10 +22,10 @@ function mountWorkspaceSwitcher({
   const host = document.createElement('div');
   const id = `workspace-switcher-${++nextWorkspaceSwitcherId}`;
   const railStart = inRail
-    ? '<div style="width: 320px; height: 400px"><div class="lyra-shell lyra-shell--content lyra-shell--has-sidebar"><aside class="lyra-shell__sidebar"><nav class="lyra-appsidebar lyra-appsidebar--rail" style="--appsidebar-width: 64px"><div class="lyra-appsidebar__brand">'
+    ? '<div style="width: 320px; height: 400px"><div class="lyra-shell lyra-shell--content lyra-shell--has-sidebar"><aside class="lyra-shell__sidebar"><div class="lyra-appsidebar lyra-appsidebar--rail" style="--appsidebar-width: 64px"><div class="lyra-appsidebar__brand">'
     : '';
   const railEnd = inRail
-    ? '</div></nav></aside><main class="lyra-shell__main">Document</main></div></div>'
+    ? '</div></div></aside><main class="lyra-shell__main">Document</main></div></div>'
     : '';
   host.innerHTML = `
     ${railStart}

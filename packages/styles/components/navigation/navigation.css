@@ -540,6 +540,10 @@
 .lyra-bottomnav__item--active { color: var(--accent); }
 .lyra-bottomnav__item--active .lyra-bottomnav__label { font-weight: var(--weight-extrabold); }
 
+@media (prefers-reduced-motion: reduce) {
+  .lyra-wssw__pop { animation: none; }
+}
+
 .lyra-dropdown__trigger { display: inline-flex; }
 
 /* stylelint-disable no-duplicate-selectors -- Every rule below this line is a documented additive
@@ -820,5 +824,4 @@
 @media (prefers-reduced-motion: reduce) {
   .lyra-appsidebar { transition-duration: 0s; }
   .lyra-wssw__trigger { transition-duration: 0s; }
-  .lyra-wssw__pop { animation: none; }
 }
