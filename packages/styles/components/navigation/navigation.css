@@ -825,3 +825,18 @@
   .lyra-appsidebar { transition-duration: 0s; }
   .lyra-wssw__trigger { transition-duration: 0s; }
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the collapse toggle's glyph is normally
+   supplied by a wrapper — React, Alpine and Blade each inject a chevron <svg> into the button. A
+   CSS-only consumer that leaves the button empty would otherwise render a bare bordered box with no
+   affordance, so ship a fallback chevron that appears ONLY when no icon was injected.
+   `:not(:has(svg))` keeps every wrapper-rendered toggle from showing a duplicate mark; the chevron
+   points inward (collapse) when expanded and flips in the rail (expand) to mirror the wrappers. */
+.lyra-appsidebar__toggle:not(:has(svg))::before {
+  content: "";
+  width: 15px; height: 15px;
+  background: currentColor;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>') no-repeat center / 100%;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>') no-repeat center / 100%;
+}
+.lyra-appsidebar--rail .lyra-appsidebar__toggle:not(:has(svg))::before { transform: scaleX(-1); }

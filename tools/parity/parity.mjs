@@ -516,6 +516,9 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-appsidebar--rail',
       'lyra-appsidebar__brand',
       'lyra-wssw',
+      // CSS-only fallback chevron on the collapse toggle, shown only when no wrapper injected an
+      // <svg> (`:not(:has(svg))`), so a stylesheet-only consumer sees an affordance not a blank box.
+      'lyra-appsidebar__toggle',
       'lyra-wscreate__slug-input',
     ],
     keyframes: [],
