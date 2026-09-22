@@ -59,11 +59,11 @@
     "@types/react-dom": "19.2.7",
     "@vitest/browser-playwright": "4.1.11",
     "axe-core": "4.13.0",
-    "eslint": "10.10.0",
+    "eslint": "10.11.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react-hooks": "7.1.1",
     "playwright": "1.62.1",
-    "prettier": "3.9.7",
+    "prettier": "3.9.8",
     "publint": "0.3.24",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -76,7 +76,7 @@
     "vite": "8.2.1",
     "vitest": "4.1.11",
     "vitest-browser-react": "2.3.0",
-    "wrangler": "4.133.0",
+    "wrangler": "4.135.0",
     "yaml": "2.9.1"
   }
 }
