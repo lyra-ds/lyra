@@ -31,6 +31,10 @@ const fixture = (): void => {
         </div>
       </div>
     </nav>
+    <div class="lyra-wssw" data-probe="workspace-switcher">
+      <button class="lyra-wssw__trigger">Acme</button>
+      <div class="lyra-wssw__pop">Workspaces</div>
+    </div>
     <nav class="lyra-appsidebar" style="--appsidebar-width: 296px" data-probe="custom-sidebar"></nav>`;
 };
 
@@ -96,5 +100,21 @@ describe('CSS-only AppSidebar width and motion contract', () => {
     await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
     expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
     expect(getComputedStyle(sidebar).transitionDuration).toBe('0s');
+  });
+
+  it('removes WorkspaceSwitcher motion under reduced motion', async () => {
+    fixture();
+    const workspaceSwitcher = probe('workspace-switcher');
+    const trigger = workspaceSwitcher.querySelector<HTMLElement>('.lyra-wssw__trigger');
+    const popover = workspaceSwitcher.querySelector<HTMLElement>('.lyra-wssw__pop');
+    if (!trigger || !popover) throw new Error('Missing WorkspaceSwitcher controls');
+
+    expect(Number.parseFloat(getComputedStyle(trigger).transitionDuration)).toBeGreaterThan(0);
+    expect(Number.parseFloat(getComputedStyle(popover).animationDuration)).toBeGreaterThan(0);
+
+    await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
+    expect(getComputedStyle(trigger).transitionDuration).toBe('0s');
+    expect(getComputedStyle(popover).animationDuration).toBe('0s');
+    expect(getComputedStyle(popover).animationName).toBe('none');
   });
 });

@@ -819,4 +819,6 @@
    immediately, but reduced-motion users do not see the Shell column interpolate with its width. */
 @media (prefers-reduced-motion: reduce) {
   .lyra-appsidebar { transition-duration: 0s; }
+  .lyra-wssw__trigger { transition-duration: 0s; }
+  .lyra-wssw__pop { animation: none; }
 }
