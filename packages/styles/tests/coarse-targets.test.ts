@@ -44,6 +44,11 @@ beforeAll(async () => {
       </div>
       <input class="lyra-input" data-probe="input" value="A" />
       <div class="lyra-wscreate__slug"><input class="lyra-wscreate__slug-input" data-probe="slug-input" value="a" /></div>
+      <nav class="lyra-appsidebar lyra-appsidebar--rail">
+        <div class="lyra-appsidebar__brand">
+          <div class="lyra-wssw"><button class="lyra-wssw__trigger" data-probe="rail-workspace">Acme</button></div>
+        </div>
+      </nav>
     </main>`;
 
   await waitForFiniteAnimations();
@@ -112,5 +117,15 @@ describe('coarse-pointer target sizes', () => {
         expect(height, `${target.name} fixed height`).toBe(fixedHeight);
       }
     }
+  });
+
+  it('keeps the rail WorkspaceSwitcher trigger at its usable target size for every pointer profile', () => {
+    const { width, height } = box({
+      name: 'rail WorkspaceSwitcher trigger',
+      selector: '[data-probe="rail-workspace"]',
+    });
+
+    expect(width).toBeGreaterThanOrEqual(44);
+    expect(height).toBeGreaterThanOrEqual(44);
   });
 });

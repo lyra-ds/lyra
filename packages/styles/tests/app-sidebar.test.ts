@@ -23,7 +23,18 @@ const fixture = (): void => {
       <aside class="lyra-shell__sidebar" data-probe="ordinary-rail">Navigation</aside>
       <main class="lyra-shell__main">Content</main>
     </div>
-    <nav class="lyra-appsidebar lyra-appsidebar--rail" data-probe="rail-sidebar"></nav>
+    <nav class="lyra-appsidebar lyra-appsidebar--rail" data-probe="rail-sidebar">
+      <div class="lyra-appsidebar__brand" data-probe="rail-brand">
+        <div class="lyra-wssw">
+          <button class="lyra-wssw__trigger">Acme</button>
+          <div class="lyra-wssw__pop" data-probe="rail-popover">Workspaces</div>
+        </div>
+      </div>
+    </nav>
+    <div class="lyra-wssw" data-probe="workspace-switcher">
+      <button class="lyra-wssw__trigger">Acme</button>
+      <div class="lyra-wssw__pop">Workspaces</div>
+    </div>
     <nav class="lyra-appsidebar" style="--appsidebar-width: 296px" data-probe="custom-sidebar"></nav>`;
 };
 
@@ -54,6 +65,31 @@ describe('CSS-only AppSidebar width and motion contract', () => {
     expect(probe('ordinary-rail').getBoundingClientRect().width).toBeCloseTo(312, 1);
   });
 
+  it('lets a rail WorkspaceSwitcher popover extend beyond its brand without clipping', () => {
+    fixture();
+    const brand = probe('rail-brand');
+    const popover = probe('rail-popover');
+
+    expect(getComputedStyle(brand).overflowX).toBe('visible');
+    expect(popover.getBoundingClientRect().width).toBeGreaterThanOrEqual(200);
+    expect(popover.getBoundingClientRect().right).toBeGreaterThan(
+      brand.getBoundingClientRect().right,
+    );
+    expect(Number.parseInt(getComputedStyle(popover).zIndex, 10)).toBeGreaterThan(0);
+  });
+
+  it('preserves rail WorkspaceSwitcher geometry in forced colors', async () => {
+    fixture();
+    await commands.emulateFileUploadMedia({ forcedColors: 'active' });
+    const trigger = probe('rail-sidebar').querySelector<HTMLElement>('.lyra-wssw__trigger');
+    if (!trigger) throw new Error('Missing rail WorkspaceSwitcher trigger');
+
+    expect(window.matchMedia('(forced-colors: active)').matches).toBe(true);
+    expect(trigger.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
+    expect(trigger.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    expect(getComputedStyle(probe('rail-brand')).overflowX).toBe('visible');
+  });
+
   it('removes only the AppSidebar width transition under reduced motion', async () => {
     fixture();
     const sidebar = probe('app-sidebar');
@@ -64,5 +100,21 @@ describe('CSS-only AppSidebar width and motion contract', () => {
     await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
     expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
     expect(getComputedStyle(sidebar).transitionDuration).toBe('0s');
+  });
+
+  it('removes WorkspaceSwitcher motion under reduced motion', async () => {
+    fixture();
+    const workspaceSwitcher = probe('workspace-switcher');
+    const trigger = workspaceSwitcher.querySelector<HTMLElement>('.lyra-wssw__trigger');
+    const popover = workspaceSwitcher.querySelector<HTMLElement>('.lyra-wssw__pop');
+    if (!trigger || !popover) throw new Error('Missing WorkspaceSwitcher controls');
+
+    expect(Number.parseFloat(getComputedStyle(trigger).transitionDuration)).toBeGreaterThan(0);
+    expect(Number.parseFloat(getComputedStyle(popover).animationDuration)).toBeGreaterThan(0);
+
+    await commands.emulateFileUploadMedia({ reducedMotion: 'reduce' });
+    expect(getComputedStyle(trigger).transitionDuration).toBe('0s');
+    expect(getComputedStyle(popover).animationDuration).toBe('0s');
+    expect(getComputedStyle(popover).animationName).toBe('none');
   });
 });
