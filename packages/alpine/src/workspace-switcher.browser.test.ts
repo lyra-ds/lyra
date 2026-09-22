@@ -1,7 +1,7 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
 
@@ -12,14 +12,23 @@ Alpine.plugin(lyra);
 
 function mountWorkspaceSwitcher({
   defaultOpen = false,
+  inRail = false,
   position,
 }: {
   defaultOpen?: boolean;
+  inRail?: boolean;
   position?: string;
 } = {}): HTMLElement {
   const host = document.createElement('div');
   const id = `workspace-switcher-${++nextWorkspaceSwitcherId}`;
+  const railStart = inRail
+    ? '<div style="width: 320px; height: 400px"><div class="lyra-shell lyra-shell--content lyra-shell--has-sidebar"><aside class="lyra-shell__sidebar"><nav class="lyra-appsidebar lyra-appsidebar--rail" style="--appsidebar-width: 64px"><div class="lyra-appsidebar__brand">'
+    : '';
+  const railEnd = inRail
+    ? '</div></nav></aside><main class="lyra-shell__main">Document</main></div></div>'
+    : '';
   host.innerHTML = `
+    ${railStart}
     <div
       id="${id}"
       x-data="lyraWorkspaceSwitcher({ defaultOpen: ${defaultOpen} })"
@@ -42,6 +51,7 @@ function mountWorkspaceSwitcher({
         <button class="lyra-wssw__item" role="option" aria-selected="false" data-id="orbit" x-bind="option">Orbit</button>
       </div>
     </div>
+    ${railEnd}
   `;
   document.body.appendChild(host);
   Alpine.initTree(host);
@@ -75,14 +85,53 @@ function options(host: HTMLElement): HTMLButtonElement[] {
   return Array.from(popover(host).querySelectorAll<HTMLButtonElement>('[role="option"]'));
 }
 
-afterEach(() => {
+afterEach(async () => {
   for (const host of mountedHosts.splice(0)) {
     Alpine.destroyTree(host);
     host.remove();
   }
+  await page.viewport(1200, 800);
+  document.documentElement.removeAttribute('data-theme');
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('lyraWorkspaceSwitcher', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    for (const dir of ['ltr', 'rtl'] as const) {
+      it(`keeps a rail popover visible, anchored, and in the 320px viewport in ${theme} ${dir}`, async () => {
+        await page.viewport(320, 640);
+        document.documentElement.toggleAttribute('data-theme', theme === 'dark');
+        document.documentElement.dir = dir;
+        const host = mountWorkspaceSwitcher({ inRail: true });
+        const sidebar = host.querySelector<HTMLElement>('.lyra-appsidebar')!;
+        const brand = host.querySelector<HTMLElement>('.lyra-appsidebar__brand')!;
+        const control = trigger(host);
+
+        expect(sidebar.getBoundingClientRect().width).toBeCloseTo(64, 1);
+        await userEvent.click(control);
+        await flush();
+        const listbox = popover(host);
+        const triggerRect = control.getBoundingClientRect();
+        const popoverRect = listbox.getBoundingClientRect();
+
+        expect(control.getAttribute('aria-expanded')).toBe('true');
+        expect(getComputedStyle(listbox).display).not.toBe('none');
+        expect(getComputedStyle(brand).overflowX).toBe('visible');
+        expect(popoverRect.width).toBeGreaterThanOrEqual(200);
+        expect(popoverRect.left).toBeGreaterThanOrEqual(0);
+        expect(popoverRect.right).toBeLessThanOrEqual(320);
+        expect(popoverRect.bottom).toBeGreaterThan(triggerRect.bottom);
+        expect(
+          Math.min(
+            Math.abs(popoverRect.left - triggerRect.left),
+            Math.abs(popoverRect.right - triggerRect.right),
+          ),
+        ).toBeLessThanOrEqual(1);
+        expect(Number.parseInt(getComputedStyle(listbox).zIndex, 10)).toBeGreaterThan(0);
+      });
+    }
+  }
+
   it('toggles from click and binds the trigger to the served listbox', async () => {
     const host = mountWorkspaceSwitcher();
     const control = trigger(host);

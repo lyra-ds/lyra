@@ -432,7 +432,10 @@
 
 /* An AppSidebar owns its width (260px expanded, 64px rail, set inline through --appsidebar-width);
    the content-scroll rail follows it instead of clipping it to the page-model track. */
-.lyra-shell--content .lyra-shell__sidebar:has(> .lyra-appsidebar) { width: auto; }
+.lyra-shell--content .lyra-shell__sidebar:has(> .lyra-appsidebar) {
+  width: auto;
+  overflow: visible;
+}
 .lyra-shell--content .lyra-appsidebar {
   height: 100%;
   min-height: 0;

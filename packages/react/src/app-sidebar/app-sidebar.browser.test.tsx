@@ -27,6 +27,36 @@ function setTheme(theme: 'light' | 'dark'): void {
   document.documentElement.toggleAttribute('data-theme', theme === 'dark');
 }
 
+function expectPopoverEdgesOutsideSidebarClipping(popover: HTMLElement): void {
+  const popoverRect = popover.getBoundingClientRect();
+  let ancestor = popover.parentElement;
+
+  while (ancestor) {
+    if (
+      ancestor.matches(
+        '.lyra-appsidebar__brand, .lyra-appsidebar, .lyra-shell__sidebar, .lyra-shell',
+      )
+    ) {
+      const ancestorRect = ancestor.getBoundingClientRect();
+      const style = getComputedStyle(ancestor);
+      const exceedsInlineEdge =
+        popoverRect.left < ancestorRect.left - 0.5 || popoverRect.right > ancestorRect.right + 0.5;
+      const exceedsBlockEdge =
+        popoverRect.top < ancestorRect.top - 0.5 || popoverRect.bottom > ancestorRect.bottom + 0.5;
+
+      expect(
+        exceedsInlineEdge && style.overflowX !== 'visible',
+        `${ancestor.className} clips the popover inline edge: popover ${popoverRect.left},${popoverRect.right}; ancestor ${ancestorRect.left},${ancestorRect.right}; overflow-x ${style.overflowX}`,
+      ).toBe(false);
+      expect(
+        exceedsBlockEdge && style.overflowY !== 'visible',
+        `${ancestor.className} clips the popover block edge: popover ${popoverRect.top},${popoverRect.bottom}; ancestor ${ancestorRect.top},${ancestorRect.bottom}; overflow-y ${style.overflowY}`,
+      ).toBe(false);
+    }
+    ancestor = ancestor.parentElement;
+  }
+}
+
 afterEach(async () => {
   await cleanup();
   await page.viewport(1200, 800);
@@ -86,7 +116,7 @@ describe('AppSidebar', () => {
     expect(sidebar.style.getPropertyValue('--appsidebar-width')).toBe('64px');
     // width transitions (transition: width in the additive rule) — the custom
     // property flips instantly, the computed width animates to it.
-    await vi.waitFor(() => expect(getComputedStyle(sidebar).width).toBe('64px'));
+    await vi.waitFor(() => expect(sidebar.getBoundingClientRect().width).toBeCloseTo(64, 1));
     expect(
       getComputedStyle(container.querySelector<HTMLElement>('.lyra-sbgroup__item-label')!).display,
     ).toBe('none');
@@ -142,7 +172,7 @@ describe('AppSidebar', () => {
     expect(brand.scrollWidth).toBeLessThanOrEqual(brand.clientWidth);
 
     await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-appsidebar__toggle')!);
-    await vi.waitFor(() => expect(getComputedStyle(sidebar).width).toBe('64px'));
+    await vi.waitFor(() => expect(sidebar.getBoundingClientRect().width).toBeCloseTo(64, 1));
     expect(rail.getBoundingClientRect().width).toBeCloseTo(64, 1);
     expect(getComputedStyle(brand).flexDirection).toBe('row');
   });
@@ -163,7 +193,7 @@ describe('AppSidebar', () => {
               scroll="content"
               sidebar={
                 <AppSidebar
-                  collapsed
+                  collapsible
                   brand={<WorkspaceSwitcher workspaces={workspaces} current="acme" />}
                 />
               }
@@ -173,9 +203,15 @@ describe('AppSidebar', () => {
           </div>,
         );
         const rail = container.querySelector<HTMLElement>('.lyra-shell__sidebar')!;
+        const sidebar = container.querySelector<HTMLElement>('.lyra-appsidebar')!;
         const brand = container.querySelector<HTMLElement>('.lyra-appsidebar__brand')!;
         const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
 
+        expect(sidebar.getBoundingClientRect().width).toBeCloseTo(260, 1);
+        await userEvent.click(
+          container.querySelector<HTMLButtonElement>('.lyra-appsidebar__toggle')!,
+        );
+        await vi.waitFor(() => expect(sidebar.getBoundingClientRect().width).toBeCloseTo(64, 1));
         expect(rail.getBoundingClientRect().width).toBeCloseTo(64, 1);
         expect(brand.scrollWidth).toBeLessThanOrEqual(brand.clientWidth);
         expect(trigger.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
@@ -193,6 +229,7 @@ describe('AppSidebar', () => {
         expect(popoverRect.left).toBeGreaterThanOrEqual(0);
         expect(popoverRect.right).toBeLessThanOrEqual(320);
         expect(popover.scrollWidth).toBeLessThanOrEqual(popover.clientWidth);
+        expectPopoverEdgesOutsideSidebarClipping(popover);
 
         await userEvent.keyboard('{Escape}');
         expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
