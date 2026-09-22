@@ -497,7 +497,7 @@
 
 /* app sidebar — modo rail (colapsada) */
 .lyra-appsidebar { transition: width var(--duration-base) var(--ease-out); }
-.lyra-appsidebar--rail .lyra-appsidebar__brand { display: flex; justify-content: center; overflow: hidden; }
+.lyra-appsidebar--rail .lyra-appsidebar__brand { display: flex; justify-content: center; overflow: visible; }
 .lyra-appsidebar--rail .lyra-sbgroup__label { display: none; }
 .lyra-appsidebar--rail .lyra-sbgroup__item { justify-content: center; padding-inline: 0; }
 .lyra-appsidebar--rail .lyra-sbgroup__item-label,
@@ -548,3 +548,7 @@
 .lyra-bottomnav__label { font-size: 10px; font-weight: var(--weight-semibold); letter-spacing: 0.01em; }
 .lyra-bottomnav__item--active { color: var(--accent); }
 .lyra-bottomnav__item--active .lyra-bottomnav__label { font-weight: var(--weight-extrabold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lyra-wssw__pop { animation: none; }
+}

@@ -100,7 +100,11 @@ describe('lyraWorkspaceSwitcher', () => {
     for (const dir of ['ltr', 'rtl'] as const) {
       it(`keeps a rail popover visible, anchored, and in the 320px viewport in ${theme} ${dir}`, async () => {
         await page.viewport(320, 640);
-        document.documentElement.toggleAttribute('data-theme', theme === 'dark');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
         document.documentElement.dir = dir;
         const host = mountWorkspaceSwitcher({ inRail: true });
         const sidebar = host.querySelector<HTMLElement>('.lyra-appsidebar')!;
@@ -108,6 +112,7 @@ describe('lyraWorkspaceSwitcher', () => {
         const control = trigger(host);
 
         expect(sidebar.getBoundingClientRect().width).toBeCloseTo(64, 1);
+        expect(sidebar.parentElement).toHaveClass('lyra-shell__sidebar');
         await userEvent.click(control);
         await flush();
         const listbox = popover(host);
@@ -122,12 +127,11 @@ describe('lyraWorkspaceSwitcher', () => {
         expect(popoverRect.left).toBeGreaterThanOrEqual(0);
         expect(popoverRect.right).toBeLessThanOrEqual(320);
         expect(popoverRect.bottom).toBeGreaterThan(triggerRect.bottom);
-        expect(
-          Math.min(
-            Math.abs(popoverRect.left - triggerRect.left),
-            Math.abs(popoverRect.right - triggerRect.right),
-          ),
-        ).toBeLessThanOrEqual(1);
+        if (dir === 'ltr') {
+          expect(Math.abs(popoverRect.left - triggerRect.left)).toBeLessThanOrEqual(1);
+        } else {
+          expect(Math.abs(popoverRect.right - triggerRect.right)).toBeLessThanOrEqual(1);
+        }
         expect(Number.parseInt(getComputedStyle(listbox).zIndex, 10)).toBeGreaterThan(0);
       });
     }
