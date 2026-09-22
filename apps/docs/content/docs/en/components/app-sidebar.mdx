@@ -83,7 +83,10 @@ continues to size ordinary sidebar content and page-scroll Shell rails.
     <StackApi stack="alpine" />
 
 The composed-link door is ordinary navigation markup. Supply the collapse behavior, rail labels and
-selection handling yourself outside React:
+selection handling yourself outside React. Render the collapse control as a native button with an
+`aria-label`; inject a chevron `<svg>` and flip it between the expanded and rail states. If you leave
+the button empty, the stylesheet supplies a fallback chevron so the control never renders as a blank
+box, but an injected icon lets you reflect collapse state:
 
 ```html
 <nav class="lyra-appsidebar" aria-label="Workspace navigation">
@@ -102,6 +105,22 @@ selection handling yourself outside React:
       </div>
     </div>
   </div>
+  <button class="lyra-appsidebar__toggle" type="button" aria-label="Collapse sidebar">
+    <svg
+      aria-hidden="true"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <!-- expanded: chevron points inward; swap to m9 18 6-6-6-6 in the rail -->
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  </button>
 </nav>
 ```
 
