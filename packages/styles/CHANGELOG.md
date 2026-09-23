@@ -1,5 +1,11 @@
 # @lyra-ds/styles
 
+## 1.0.3
+
+### Patch Changes
+
+- [#254](https://github.com/lyra-ds/lyra/pull/254) [`9f8ef8e`](https://github.com/lyra-ds/lyra/commit/9f8ef8e5699fbab490664d10b60fe9f5b3a83b1f) Thanks [@franciscpd](https://github.com/franciscpd)! - Draw a fallback chevron on the AppSidebar collapse toggle for CSS-only consumers. The glyph was previously supplied only by the React/Alpine/Blade wrappers, so a stylesheet-only page rendered the toggle as an empty bordered box. The fallback appears only when no icon was injected (`:not(:has(svg))`), so wrapper-rendered toggles never show a duplicate mark.
+
 ## 1.0.2
 
 ### Patch Changes
