@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
@@ -63,6 +64,17 @@ describe('ToastProvider', () => {
 
     await expect.element(screen.getByText('Information saved')).toBeInTheDocument();
     await vi.waitFor(() => expect(document.querySelector('.lyra-toast')).toBeNull());
+  });
+
+  it('still renders pushed toasts under React StrictMode (effect double-invoke)', async () => {
+    const screen = await render(
+      <StrictMode>
+        <ToastHarness duration={0} />
+      </StrictMode>,
+    );
+    await userEvent.click(screen.container.querySelectorAll<HTMLButtonElement>('button')[1]!);
+
+    await expect.element(screen.getByRole('status')).toHaveTextContent('Changes saved');
   });
 
   it('lets a notification override the provider auto-dismiss duration', async () => {

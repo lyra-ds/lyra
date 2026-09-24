@@ -136,14 +136,17 @@ export function ToastProvider({
     [dismiss, duration],
   );
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // Reset on setup: StrictMode runs setup, cleanup, setup again, and the
+    // cleanup below must not leave the provider permanently "unmounted".
+    unmounted.current = false;
+    const pending = timers.current;
+    return () => {
       unmounted.current = true;
-      for (const timer of timers.current.values()) clearTimeout(timer);
-      timers.current.clear();
-    },
-    [],
-  );
+      for (const timer of pending.values()) clearTimeout(timer);
+      pending.clear();
+    };
+  }, []);
 
   const api = useMemo<ToastApi>(
     () => ({
