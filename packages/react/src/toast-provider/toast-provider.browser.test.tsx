@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
@@ -75,6 +75,52 @@ describe('ToastProvider', () => {
     await userEvent.click(screen.container.querySelectorAll<HTMLButtonElement>('button')[1]!);
 
     await expect.element(screen.getByRole('status')).toHaveTextContent('Changes saved');
+  });
+
+  it('keeps the id from a child mount effect valid under StrictMode replay', async () => {
+    const ids: number[] = [];
+    function Child() {
+      const { success, dismiss } = useToast();
+      useEffect(() => {
+        const id = success('Mounted toast', { duration: 0 });
+        ids.push(id);
+        return () => dismiss(id);
+      }, [success, dismiss]);
+      return null;
+    }
+    await render(
+      <StrictMode>
+        <ToastProvider>
+          <Child />
+        </ToastProvider>
+      </StrictMode>,
+    );
+
+    // The replayed effect must add a toast rather than no-op against an "unmounted" provider.
+    await vi.waitFor(() => expect(document.querySelectorAll('[role="status"]')).toHaveLength(1));
+    expect(ids.length).toBeGreaterThan(1);
+  });
+
+  it('still auto-dismisses a toast pushed from a child effect under StrictMode', async () => {
+    function Child() {
+      const { info } = useToast();
+      useEffect(() => {
+        info('Effect toast');
+      }, [info]);
+      return null;
+    }
+    await render(
+      <StrictMode>
+        <ToastProvider duration={300}>
+          <Child />
+        </ToastProvider>
+      </StrictMode>,
+    );
+
+    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).not.toBeNull());
+    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).toBeNull(), {
+      timeout: 3000,
+    });
   });
 
   it('lets a notification override the provider auto-dismiss duration', async () => {
