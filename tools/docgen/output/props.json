@@ -2396,9 +2396,9 @@
     "props": [
       {
         "name": "max",
-        "type": "number",
+        "type": "number | ContainerSize | (string & {})",
         "optional": true,
-        "description": "Maximum content width in pixels. Sets `--container-max`, which cascades to nested containers."
+        "description": "Maximum content width: a number of pixels or a size keyword (`sm` 640, `md` 768, `lg` 1024,\n`xl` 1280). Sets `--container-max`, which cascades to nested containers. Unrecognised values are\nignored so the container keeps its inherited maximum."
       }
     ]
   },
