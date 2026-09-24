@@ -82,8 +82,11 @@ export declare function IconButton(props: IconButtonProps): JSX.Element;
 ```ts
 /** Props for {@link Brand}. */
 export interface BrandProps {
-  /** Image source used for the light theme mark. */
-  mark: string;
+  /**
+   * Image source used for the light theme mark. When omitted, the mark falls back to the initial
+   * of the wordmark text (or of `aria-label` for a mark-only brand).
+  */
+  mark?: string;
   /** Optional image source used for the dark theme mark. */
   markDark?: string;
   /** Mark edge length in pixels. Sets `--brand-mark-size`. */
