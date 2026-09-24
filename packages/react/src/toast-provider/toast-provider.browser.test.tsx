@@ -61,16 +61,16 @@ describe('ToastProvider', () => {
     const screen = await render(<ToastHarness duration={300} />);
     await userEvent.click(screen.container.querySelector<HTMLButtonElement>('button')!);
 
-    await expect.element(screen.getByRole('status')).toHaveTextContent('Information saved');
-    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).toBeNull());
+    await expect.element(screen.getByText('Information saved')).toBeInTheDocument();
+    await vi.waitFor(() => expect(document.querySelector('.lyra-toast')).toBeNull());
   });
 
   it('lets a notification override the provider auto-dismiss duration', async () => {
     const screen = await render(<ToastHarness duration={0} />);
     await userEvent.click(screen.container.querySelectorAll<HTMLButtonElement>('button')[3]!);
 
-    await expect.element(screen.getByRole('status')).toHaveTextContent('Per-toast timeout');
-    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).toBeNull());
+    await expect.element(screen.getByText('Per-toast timeout')).toBeInTheDocument();
+    await vi.waitFor(() => expect(document.querySelector('.lyra-toast')).toBeNull());
   });
 
   it('dismisses a toast from its translated close button', async () => {
@@ -80,7 +80,7 @@ describe('ToastProvider', () => {
     const close = screen.getByRole('button', { name: 'Fechar notificação' });
     await expect.element(close).toBeInTheDocument();
     await userEvent.click(close);
-    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).toBeNull());
+    await vi.waitFor(() => expect(document.querySelector('.lyra-toast')).toBeNull());
   });
 
   it('stacks info, success, and error notifications with their default tone icons', async () => {
@@ -90,7 +90,7 @@ describe('ToastProvider', () => {
     await userEvent.click(buttons[1]!);
     await userEvent.click(buttons[2]!);
 
-    expect(document.querySelectorAll('.lyra-toast-stack [role="status"]')).toHaveLength(3);
+    expect(document.querySelectorAll('.lyra-toast-stack .lyra-toast')).toHaveLength(3);
     expect(document.querySelector('.lyra-toast__icon--info svg')).not.toBeNull();
     expect(document.querySelector('.lyra-toast__icon--success svg')).not.toBeNull();
     expect(document.querySelector('.lyra-toast__icon--danger svg')).not.toBeNull();
@@ -100,11 +100,32 @@ describe('ToastProvider', () => {
     const screen = await render(<ToastHarness duration={0} />);
     await userEvent.click(screen.container.querySelectorAll<HTMLButtonElement>('button')[4]!);
 
-    await expect.element(screen.getByRole('status')).toHaveTextContent('Custom notification');
+    await expect.element(screen.getByText('Custom notification').last()).toBeInTheDocument();
     expect(
       document.querySelector('.lyra-toast__icon--danger [data-testid="custom-toast-icon"]'),
     ).not.toBeNull();
     expect(document.querySelector('.lyra-toast__icon--danger svg')).toBeNull();
+  });
+
+  it('mounts persistent live regions before any toast and announces text inside them', async () => {
+    const { container } = await render(<ToastHarness duration={0} />);
+    const polite = document.querySelector<HTMLElement>('[aria-live="polite"]')!;
+    const assertive = document.querySelector<HTMLElement>('[aria-live="assertive"]')!;
+    expect(polite).not.toBeNull();
+    expect(assertive).not.toBeNull();
+    expect(document.querySelectorAll('.lyra-toast')).toHaveLength(0);
+    const buttons = container.querySelectorAll<HTMLButtonElement>('button');
+
+    await userEvent.click(buttons[1]!);
+    await expect.element(polite).toHaveTextContent('Changes saved');
+    expect(document.querySelector('[aria-live="polite"]')).toBe(polite);
+
+    await userEvent.click(buttons[2]!);
+    await expect.element(assertive).toHaveTextContent('Save failed');
+    expect(document.querySelector('[aria-live="assertive"]')).toBe(assertive);
+    expect(polite).not.toHaveTextContent('Save failed');
+    // toasts inside the regions carry no role of their own
+    expect(document.querySelector('.lyra-toast[role]')).toBeNull();
   });
 
   for (const theme of ['light', 'dark'] as const) {

@@ -1,6 +1,10 @@
-import { forwardRef } from 'react';
+import { createContext, forwardRef, useContext } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../internal/cx';
+
+// Toasts inside a ToastStack are announced by the stack's persistent live region, so they must not
+// carry their own role: a role="status" node inserted together with its text is often not spoken.
+const InsideStack = createContext(false);
 
 /** Props for {@link Toast}. */
 export interface ToastProps extends HTMLAttributes<HTMLDivElement> {
@@ -22,13 +26,22 @@ export interface ToastStackProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
-/** A polite, non-focus-moving status notification. */
+/**
+ * A non-focus-moving status notification. Inside a {@link ToastStack} it is announced by the
+ * stack's live region; standalone it falls back to `role="status"`.
+ */
 export const Toast = /*#__PURE__*/ forwardRef<HTMLDivElement, ToastProps>(function Toast(
   { tone = 'info', icon, onClose, closeLabel = 'Close notification', className, children, ...rest },
   ref,
 ) {
+  const insideStack = useContext(InsideStack);
   return (
-    <div {...rest} ref={ref} className={cx('lyra-toast', className)} role="status">
+    <div
+      role={insideStack ? undefined : 'status'}
+      {...rest}
+      ref={ref}
+      className={cx('lyra-toast', className)}
+    >
       {icon && <span className={cx('lyra-toast__icon', `lyra-toast__icon--${tone}`)}>{icon}</span>}
       <span>{children}</span>
       {onClose && (
@@ -45,12 +58,21 @@ export const Toast = /*#__PURE__*/ forwardRef<HTMLDivElement, ToastProps>(functi
   );
 });
 
-/** A fixed container that visually stacks status notifications. */
+/**
+ * A fixed container that visually stacks status notifications. It is a persistent polite live
+ * region (`aria-live="polite"`), so mount it before adding toasts; override `aria-live` via props.
+ */
 export const ToastStack = /*#__PURE__*/ forwardRef<HTMLDivElement, ToastStackProps>(
   function ToastStack({ className, children, ...rest }, ref) {
     return (
-      <div {...rest} ref={ref} className={cx('lyra-toast-stack', className)}>
-        {children}
+      <div
+        aria-live="polite"
+        aria-relevant="additions"
+        {...rest}
+        ref={ref}
+        className={cx('lyra-toast-stack', className)}
+      >
+        <InsideStack.Provider value={true}>{children}</InsideStack.Provider>
       </div>
     );
   },
