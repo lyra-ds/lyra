@@ -8,8 +8,11 @@ type BrandStyle = CSSProperties & {
 };
 
 type BrandBaseProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'aria-label'> & {
-  /** Image source used for the light theme mark. */
-  mark: string;
+  /**
+   * Image source used for the light theme mark. When omitted, the mark falls back to the initial
+   * of the wordmark text (or of `aria-label` for a mark-only brand).
+   */
+  mark?: string;
   /** Optional image source used for the dark theme mark. */
   markDark?: string;
   /** Mark edge length in pixels. Sets `--brand-mark-size`. */
@@ -51,10 +54,27 @@ export type BrandProps = BrandBaseProps &
   (BrandWithWordmarkProps | BrandMarkOnlyProps) &
   (BrandStandardElementProps | BrandSlottedElementProps);
 
-function brandContents(mark: string, markDark: string | undefined, wordmark: ReactNode): ReactNode {
+function brandInitial(wordmark: ReactNode, accessibleName: string | undefined): string {
+  const source = typeof wordmark === 'string' ? wordmark : accessibleName;
+  return source == null ? '' : (Array.from(source.trim())[0] ?? '').toUpperCase();
+}
+
+function brandContents(
+  mark: string | undefined,
+  markDark: string | undefined,
+  wordmark: ReactNode,
+  accessibleName: string | undefined,
+): ReactNode {
+  const initial = mark == null ? brandInitial(wordmark, accessibleName) : '';
   return (
     <>
-      {markDark == null ? (
+      {mark == null ? (
+        initial !== '' && (
+          <span className="lyra-brand__mark lyra-brand__mark--initial" aria-hidden="true">
+            {initial}
+          </span>
+        )
+      ) : markDark == null ? (
         <img className="lyra-brand__mark" src={mark} alt="" />
       ) : (
         <>
@@ -103,12 +123,16 @@ export const Brand = /*#__PURE__*/ forwardRef<HTMLElement, BrandProps>(function 
         style={mergedStyle}
         aria-label={accessibleName}
       >
-        {cloneElement(child, undefined, brandContents(mark, markDark, childProps.children))}
+        {cloneElement(
+          child,
+          undefined,
+          brandContents(mark, markDark, childProps.children, accessibleName),
+        )}
       </Slot>
     );
   }
 
-  const contents = brandContents(mark, markDark, children);
+  const contents = brandContents(mark, markDark, children, accessibleName);
   if (href != null) {
     return (
       <a

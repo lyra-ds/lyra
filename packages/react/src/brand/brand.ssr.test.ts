@@ -15,4 +15,14 @@ describe('Brand SSR', () => {
         }),
       ),
     ).toContain('lyra-brand'));
+
+  it('renders without a mark, falling back to the wordmark initial', () => {
+    const html = renderToString(createElement(Brand, { children: 'Lyra' }));
+    expect(html).toContain('lyra-brand__mark--initial');
+    expect(html).toContain('>L</span>');
+    expect(html).not.toContain('<img');
+  });
+
+  it('falls back to the aria-label initial for a mark-only brand without a mark', () =>
+    expect(renderToString(createElement(Brand, { 'aria-label': 'Acme' }))).toContain('>A</span>'));
 });

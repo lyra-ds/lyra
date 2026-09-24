@@ -211,7 +211,7 @@ git commit -m "feat: liga o Lyra DS e remove o Tailwind do scaffold"
 
 ### Task 2: As sete views do Fortify
 
-Escritas **só com componentes do catálogo** — cobertura já verificada: `input`, `checkbox`, `button`, `alert`, `card`, `brand`, `separator`, `form-row`, `fieldset`, `spinner`, `icon`, `stack`, `container` existem todos no `lyra-ds/blade` 0.10.0. Atenção ao contrato do `brand`: a prop `mark` é **obrigatória** (sem default) — `<lyra:brand />` sem ela quebra a renderização.
+Escritas **só com componentes do catálogo** — cobertura já verificada: `input`, `checkbox`, `button`, `alert`, `card`, `brand`, `separator`, `form-row`, `fieldset`, `spinner`, `icon`, `stack`, `container` existem todos no `lyra-ds/blade` 0.10.0. Atenção ao contrato do `brand`: a prop `mark` era obrigatória no blade 0.10.0 (`<lyra:brand />` sem ela quebrava a renderização, lyra-ds/lyra#188); agora é opcional e cai para a inicial do wordmark — os snippets seguem passando `mark` para exibir o logo.
 
 **Files:**
 
