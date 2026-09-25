@@ -89,4 +89,19 @@ describe('Toast', () => {
     );
     expect(container.querySelector('.lyra-toast-stack')!.className).toBe('lyra-toast-stack');
   });
+
+  it('is a persistent polite live region and its toasts drop their own role', async () => {
+    const { container, rerender } = await render(<ToastStack>{null}</ToastStack>);
+    const stack = container.querySelector('.lyra-toast-stack')!;
+    expect(stack.getAttribute('aria-live')).toBe('polite');
+    expect(stack.getAttribute('aria-relevant')).toBe('additions');
+    await rerender(
+      <ToastStack>
+        <Toast>Saved</Toast>
+      </ToastStack>,
+    );
+    expect(container.querySelector('.lyra-toast-stack')).toBe(stack);
+    expect(stack.querySelector('.lyra-toast')!.hasAttribute('role')).toBe(false);
+    expect(stack).toHaveTextContent('Saved');
+  });
 });

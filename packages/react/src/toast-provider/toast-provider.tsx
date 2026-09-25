@@ -159,17 +159,31 @@ export function ToastProvider({
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <ToastStack>
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            tone={toast.tone}
-            icon={toast.icon !== undefined ? toast.icon : <ToneIcon tone={toast.tone} />}
-            closeLabel={closeLabel}
-            onClose={() => dismiss(toast.id)}
+      {/* The stack itself is not live: two persistent regions (mounted before any toast) split the
+          announcements by urgency. display:contents keeps the visual stacking unchanged. */}
+      <ToastStack aria-live={undefined} aria-relevant={undefined}>
+        {(['polite', 'assertive'] as const).map((politeness) => (
+          <div
+            key={politeness}
+            data-lyra-toast-region={politeness}
+            aria-live={politeness}
+            aria-relevant="additions"
+            style={{ display: 'contents' }}
           >
-            {toast.message}
-          </Toast>
+            {toasts
+              .filter((toast) => (toast.tone === 'danger') === (politeness === 'assertive'))
+              .map((toast) => (
+                <Toast
+                  key={toast.id}
+                  tone={toast.tone}
+                  icon={toast.icon !== undefined ? toast.icon : <ToneIcon tone={toast.tone} />}
+                  closeLabel={closeLabel}
+                  onClose={() => dismiss(toast.id)}
+                >
+                  {toast.message}
+                </Toast>
+              ))}
+          </div>
         ))}
       </ToastStack>
     </ToastContext.Provider>
