@@ -43,6 +43,10 @@ Prefira outro componente quando:
 - A busca remove diacríticos de labels e keywords: `cafe` encontra `café`. As opções também encontram o
   identificador IANA e o offset exibido, ainda que esses termos não precisem ficar visíveis.
 
+## Hook de estilo
+
+`.lyra-tzpicker` é um hook de seleção, sem estilo próprio. Ela marca a raiz do seletor (junto de `.lyra-combobox`, que carrega toda a aparência) para que o seu CSS e scripts possam mirá-la, como o `SlotPicker` faz internamente. Use `className` para estendê-la em vez de reestilizar `.lyra-combobox`.
+
 ## API e código
 
 <StackTabs>
