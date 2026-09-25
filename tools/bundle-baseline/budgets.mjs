@@ -9,6 +9,7 @@ const TABS_IMPORT =
   "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'";
 
 export const APPROVED_ABSOLUTE_CAPS = {
+  '@lyra-ds/react/otp-input': { configuredLimit: '1.2 kB', bytes: 1200 },
   '@lyra-ds/react/dialog': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/drawer': { configuredLimit: '5.3 kB', bytes: 5300 },
   '@lyra-ds/react/bottom-sheet': { configuredLimit: '5.3 kB', bytes: 5300 },
@@ -439,9 +440,9 @@ export function checkBundleBudgets(reference, candidate, options = {}) {
   const alpine = verifyStandalone(standalone.alpine, candidateStandalone.alpine, 'Alpine');
   const scenarios = verifyScenarios(reference.scenarios, candidate.scenarios);
   const css = verifyCss(reference.css, candidate.css);
-  if (react.length + alpine.length !== 73 || scenarios.length !== 5 || css.length !== 4) {
+  if (react.length + alpine.length !== 74 || scenarios.length !== 5 || css.length !== 4) {
     fail(
-      `expected 73 standalone, 5 scenario, and 4 CSS measurements; found ${react.length + alpine.length}, ${scenarios.length}, ${css.length}`,
+      `expected 74 standalone, 5 scenario, and 4 CSS measurements; found ${react.length + alpine.length}, ${scenarios.length}, ${css.length}`,
     );
   }
   return {

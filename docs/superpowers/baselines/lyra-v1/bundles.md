@@ -32,6 +32,7 @@
 | react   | `@lyra-ds/react/nav-link`                |   3,468 B |     1,664 B |     681 B |      494 B |      2 kB |
 | react   | `@lyra-ds/react/footer`                  |   2,374 B |     1,242 B |     428 B |      265 B |      2 kB |
 | react   | `@lyra-ds/react/brand`                   |   4,700 B |     2,635 B |     894 B |      662 B |      2 kB |
+| react   | `@lyra-ds/react/otp-input`               |   6,941 B |     3,861 B |   1,352 B |    1,071 B |    1.2 kB |
 | react   | `@lyra-ds/react/dialog`                  |  43,208 B |    22,660 B |   5,815 B |    5,040 B |    5.3 kB |
 | react   | `@lyra-ds/react/drawer`                  |  41,628 B |    22,443 B |   5,762 B |    4,989 B |    5.3 kB |
 | react   | `@lyra-ds/react/bottom-sheet`            |  41,894 B |    22,456 B |   5,788 B |    5,030 B |    5.3 kB |
