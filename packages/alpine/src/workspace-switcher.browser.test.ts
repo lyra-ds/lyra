@@ -97,6 +97,81 @@ afterEach(async () => {
   document.documentElement.removeAttribute('dir');
 });
 
+function mountLegacyWorkspaceSwitcher({ inForm = false }: { inForm?: boolean } = {}): HTMLElement {
+  const host = document.createElement('div');
+  const id = `workspace-switcher-legacy-${++nextWorkspaceSwitcherId}`;
+  host.innerHTML = `
+    ${inForm ? '<form>' : ''}
+    <div id="${id}" x-data="lyraWorkspaceSwitcher()" class="lyra-wssw">
+      <button class="lyra-wssw__trigger" x-bind="trigger">Acme</button>
+      <div class="lyra-wssw__pop" role="listbox" x-bind="popover">
+        <button class="lyra-wssw__item" role="option" data-id="acme" x-bind="option">Acme</button>
+        <button class="lyra-wssw__item" role="option" aria-selected="true" data-id="lyra" x-bind="option">Lyra</button>
+        <button class="lyra-wssw__item" role="option" data-id="orbit" x-bind="option">Orbit</button>
+      </div>
+    </div>
+    ${inForm ? '</form>' : ''}
+  `;
+  document.body.appendChild(host);
+  Alpine.initTree(host);
+  mountedHosts.push(host);
+  return host;
+}
+
+describe('lyraWorkspaceSwitcher legacy markup', () => {
+  it('focuses the aria-selected option when opening (deprecated alias)', async () => {
+    const host = mountLegacyWorkspaceSwitcher();
+    await userEvent.click(trigger(host));
+    await flush();
+    const items = Array.from(host.querySelectorAll<HTMLElement>('[role="option"]'));
+    expect(document.activeElement).toBe(items[1]);
+  });
+
+  it('prefers aria-current over aria-selected when both are present', async () => {
+    const host = mountLegacyWorkspaceSwitcher();
+    const items = Array.from(host.querySelectorAll<HTMLElement>('[role="option"]'));
+    items[2].setAttribute('aria-current', 'true');
+    await userEvent.click(trigger(host));
+    await flush();
+    expect(document.activeElement).toBe(items[2]);
+  });
+
+  it('finds role-only legacy options and listbox without lyra classes', async () => {
+    const host = document.createElement('div');
+    host.innerHTML = `
+      <div x-data="lyraWorkspaceSwitcher()" class="lyra-wssw">
+        <button class="lyra-wssw__trigger" x-bind="trigger">Acme</button>
+        <div role="listbox" x-bind="popover">
+          <button role="option" data-id="a" x-bind="option">A</button>
+          <button role="option" aria-selected="true" data-id="b" x-bind="option">B</button>
+        </div>
+      </div>`;
+    document.body.appendChild(host);
+    Alpine.initTree(host);
+    mountedHosts.push(host);
+    await userEvent.click(trigger(host));
+    await flush();
+    expect(document.activeElement).toBe(host.querySelector('[data-id="b"]'));
+    const pop = host.querySelector<HTMLElement>('[role="listbox"]')!;
+    expect(pop.style.display).not.toBe('none');
+  });
+
+  it('does not submit an enclosing form when a button option is clicked', async () => {
+    const host = mountLegacyWorkspaceSwitcher({ inForm: true });
+    let submits = 0;
+    host.querySelector('form')!.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits += 1;
+    });
+    await userEvent.click(trigger(host));
+    await flush();
+    await userEvent.click(host.querySelector<HTMLElement>('[data-id="orbit"]')!);
+    await flush();
+    expect(submits).toBe(0);
+    expect(host.querySelector('[data-id="orbit"]')!.getAttribute('type')).toBe('button');
+  });
+});
+
 describe('lyraWorkspaceSwitcher', () => {
   it('keeps links native and reachable with arrow navigation', async () => {
     const host = mountWorkspaceSwitcher({ link: true });

@@ -89,7 +89,9 @@ export function lyraWorkspaceSwitcher({
 
     optionElements() {
       return Array.from(
-        this.root?.querySelectorAll<HTMLElement>('.lyra-wssw__item[data-id]') ?? [],
+        // Deprecated: [role="option"] is still matched for markup served before 0.x native links.
+        this.root?.querySelectorAll<HTMLElement>('.lyra-wssw__item[data-id], [role="option"]') ??
+          [],
       );
     },
 
@@ -98,16 +100,22 @@ export function lyraWorkspaceSwitcher({
     },
 
     popoverElement() {
-      return this.root?.querySelector<HTMLElement>('.lyra-wssw__pop') ?? null;
+      return this.root?.querySelector<HTMLElement>('.lyra-wssw__pop, [role="listbox"]') ?? null;
     },
 
     focusPendingOption() {
       if (!this.open || this.pendingFocus === null) return;
       const options = this.optionElements();
       if (options.length === 0) return;
-      const selectedIndex = options.findIndex(
+      let selectedIndex = options.findIndex(
         (option) => option.getAttribute('aria-current') === 'true',
       );
+      // Deprecated: aria-selected is honored only when no option carries aria-current.
+      if (selectedIndex < 0) {
+        selectedIndex = options.findIndex(
+          (option) => option.getAttribute('aria-selected') === 'true',
+        );
+      }
       // Open sentinels: -2 prefers the served selected option, falling back to the
       // first option; -3 prefers it with a last-option fallback (trigger ArrowUp).
       let target: number;
@@ -241,6 +249,10 @@ export function lyraWorkspaceSwitcher({
     },
 
     option: {
+      // Buttons must not submit an enclosing form; links keep native behavior.
+      [':type']() {
+        return this.$el instanceof HTMLButtonElement ? 'button' : null;
+      },
       ['@keydown'](event: KeyboardEvent) {
         this.handleOptionKeyDown(event);
       },

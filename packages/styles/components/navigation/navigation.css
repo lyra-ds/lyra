@@ -309,10 +309,8 @@
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
   cursor: pointer;
-  color: inherit;
-  text-decoration: none;
 }
-.lyra-wssw__item:hover { background: var(--surface-sunken); text-decoration: none; }
+.lyra-wssw__item:hover { background: var(--surface-sunken); }
 .lyra-wssw__sep { border: 0; border-top: 1px solid var(--border-default); margin: var(--space-1) calc(-1 * var(--space-1)); }
 .lyra-wssw__create-label {
   font-size: var(--text-base);
@@ -842,3 +840,7 @@
   mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>') no-repeat center / 100%;
 }
 .lyra-appsidebar--rail .lyra-appsidebar__toggle:not(:has(svg))::before { transform: scaleX(-1); }
+
+/* Links (a.lyra-wssw__item) must look like the button items: no link color or underline. */
+.lyra-wssw__item { color: inherit; text-decoration: none; }
+.lyra-wssw__item:hover { text-decoration: none; }
