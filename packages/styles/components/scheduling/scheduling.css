@@ -1,6 +1,7 @@
 /* @lyra-ds/styles — scheduling · MIT */
 
 /* ---- TimeZonePicker ---- */
+
 /* The TimeZonePicker root carries the class `lyra-tzpicker` next to `lyra-combobox`. It is a
    selection hook with no rule of its own (all appearance comes from the Combobox): consumers and
    SlotPicker use it to target the picker. Intentionally undefined here; documented on the component page. */
