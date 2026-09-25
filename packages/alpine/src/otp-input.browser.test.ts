@@ -26,6 +26,13 @@ function mount(): HTMLElement {
   return host;
 }
 
+// Firefox ignores `clipboardData` in the ClipboardEvent constructor.
+function paste(target: HTMLElement, clipboardData: DataTransfer): void {
+  const event = new Event('paste', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'clipboardData', { value: clipboardData });
+  target.dispatchEvent(event);
+}
+
 afterEach(() => {
   for (const host of hosts.splice(0)) {
     Alpine.destroyTree(host);
@@ -46,15 +53,38 @@ describe('lyraOtpInput', () => {
     expect(document.activeElement).toBe(inputs[2]);
     const clipboard = new DataTransfer();
     clipboard.setData('text', '9-8 76');
-    inputs[2].dispatchEvent(
-      new ClipboardEvent('paste', { bubbles: true, clipboardData: clipboard }),
-    );
+    paste(inputs[2], clipboard);
     await Alpine.nextTick();
     expect(inputs.map((input) => input.value).join('')).toBe('9876');
     expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('9876');
     await userEvent.keyboard('{Backspace}');
     await Alpine.nextTick();
     expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('987');
+  });
+
+  it('replaces one digit when typing into a filled box', async () => {
+    const host = mount();
+    const inputs = Array.from(host.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'));
+    const clipboard = new DataTransfer();
+    clipboard.setData('text', '1234');
+    paste(inputs[0], clipboard);
+    await Alpine.nextTick();
+    inputs[1].focus();
+    inputs[1].setSelectionRange(1, 1);
+    await userEvent.keyboard('9');
+    await Alpine.nextTick();
+    expect(inputs.map((input) => input.value).join('')).toBe('1934');
+    expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('1934');
+  });
+
+  it('restores the box after an invalid character', async () => {
+    const host = mount();
+    const inputs = Array.from(host.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'));
+    inputs[0].focus();
+    await userEvent.keyboard('a');
+    await Alpine.nextTick();
+    expect(inputs[0].value).toBe('');
+    expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('');
   });
 
   it('passes axe for the labelled group', async () => {

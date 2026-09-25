@@ -101,8 +101,23 @@ export function lyraOtpInput({
       '@input'(this: LyraOtpInputState, event: Event) {
         const input = event.currentTarget as HTMLInputElement;
         const index = Number(input.dataset.index);
-        if (input.value) this.write(index, input.value);
-        else {
+        if (input.value.length === 2 && this.code[index]) {
+          // Typing into an already filled box replaces that one digit.
+          const typed = input.value[(input.selectionStart ?? 2) - 1] ?? '';
+          if (/^[0-9]$/.test(typed)) {
+            const next = Array.from(
+              { length: this.length },
+              (_, position) => this.code[position] ?? '',
+            );
+            next[index] = typed;
+            this.code = next.join('');
+            this.$dispatch('lyra:change', { value: this.code });
+            this.focus(Math.min(index + 1, this.length - 1));
+          } else input.value = this.code[index] ?? '';
+        } else if (input.value) {
+          this.write(index, input.value);
+          if (!numeric(input.value, this.length)) input.value = this.code[index] ?? '';
+        } else {
           const next = this.code.split('');
           next.splice(index, 1);
           this.code = next.join('');

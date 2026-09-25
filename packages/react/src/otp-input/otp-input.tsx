@@ -88,6 +88,16 @@ export function OtpInput({
       setCode(next.join(''));
       return;
     }
+    if (slots[index] && raw.length === 2) {
+      // Typing into an already filled box replaces that one digit.
+      const typed = raw[(event.currentTarget.selectionStart ?? raw.length) - 1] ?? '';
+      if (!/^[0-9]$/.test(typed)) return;
+      const next = [...slots];
+      next[index] = typed;
+      setCode(next.join(''));
+      focus(Math.min(index + 1, count - 1));
+      return;
+    }
     write(index, raw);
   };
 
