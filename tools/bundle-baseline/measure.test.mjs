@@ -310,7 +310,7 @@ function budgetReferenceFixture() {
         'lyra-v1',
         'comparisons',
         'file-upload',
-        '0fd20ab5c6b0894f60b54f036ca828935d0ad605.json',
+        'fb4e100a4293eb619a6b76b148140bfdd41eed06.json',
       ),
       'utf8',
     ),
@@ -355,7 +355,7 @@ test('native budget check accepts the 1.0.0 candidate reference on a different p
 
   assert.equal(result.result, 'pass');
   assert.equal(result.environment.architecture, 'x64');
-  assert.equal(result.artifacts['@lyra-ds/react'].version, '1.0.2');
+  assert.equal(result.artifacts['@lyra-ds/react'].version, '1.0.0');
   const drawer = result.entries.react.find(
     (entry) => entry.publicEntry === '@lyra-ds/react/drawer',
   );

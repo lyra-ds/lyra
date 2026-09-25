@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-09-25T19:24:40.345Z",
-  "revision": "ca034e7ca17f2a20a803257655236d16034f05a4",
+  "measuredAt": "2026-09-19T21:53:45.668Z",
+  "revision": "eafc92dafc6fc4f54c319a2e93c3447bd4cf85c7",
   "owner": "Lyra maintainers",
   "environment": {
     "operatingSystem": "darwin 25.6.0",
     "architecture": "arm64",
-    "node": "v24.21.0",
+    "node": "v24.18.0",
     "pnpm": "11.13.1",
     "vite": "8.2.1",
     "sizeLimit": "12.1.0",
-    "lockfileSha256": "204ad5137996d68239a9263d490c7052e48ca0c5cbae44c36b03b295d9952210",
+    "lockfileSha256": "86f83145b01f7f923f0c87d1c6223b1e0f21d32b317297ba0c4e92c08b7a7e81",
     "fixture": {
       "artifactInstallation": "offline tar extraction after frozen external install",
       "packageManager": "pnpm@11.13.1",
@@ -416,19 +416,19 @@
     },
     "packages": {
       "@lyra-ds/react": {
-        "version": "1.0.2",
-        "tarball": "lyra-ds-react-1.0.2.tgz",
-        "sha256": "b18ce85c93e6d70a18357168005ab1445f27fc2d73f0df668b3c1883347278b7"
+        "version": "1.0.0",
+        "tarball": "lyra-ds-react-1.0.0.tgz",
+        "sha256": "e759d870ae1370d53827755ac0438fed1f6f2ac86e9494654f1ad89854f101ea"
       },
       "@lyra-ds/alpine": {
         "version": "1.0.0",
         "tarball": "lyra-ds-alpine-1.0.0.tgz",
-        "sha256": "9e8e8a440789534e32a369a86db68c6c6b41e19bbbd8d6bfc259122058b3b4d8"
+        "sha256": "dfef35092b979441e1399c71368ec973c45974124c6f1495800e7a12b93d9969"
       },
       "@lyra-ds/styles": {
-        "version": "1.0.3",
-        "tarball": "lyra-ds-styles-1.0.3.tgz",
-        "sha256": "1cec40dc94d6789ac373a3898833a781abe82359d4525525aee6f1640b583c1a"
+        "version": "1.0.0",
+        "tarball": "lyra-ds-styles-1.0.0.tgz",
+        "sha256": "9deeccbe16a532a8dfb3d60cd41e9a2627802d07cf38d90aebd0b28547a7e6ff"
       }
     }
   },
@@ -442,21 +442,21 @@
         "sizeLimit": {
           "name": "import { Shell } from '@lyra-ds/react/shell'",
           "passed": true,
-          "size": 639,
+          "size": 363,
           "sizeLimit": 1000
         },
         "assets": {
           "javascript": {
-            "rawBytes": 4076,
-            "minifiedBytes": 2414,
-            "brotliBytes": 833,
+            "rawBytes": 2716,
+            "minifiedBytes": 1526,
+            "brotliBytes": 529,
             "files": ["react-01.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/shell.js",
-            "renderedBytes": 2923
+            "renderedBytes": 1770
           },
           {
             "module": "<fixture>/standalone/react-01.ts",
@@ -471,21 +471,21 @@
         "sizeLimit": {
           "name": "import { Navbar } from '@lyra-ds/react/navbar'",
           "passed": true,
-          "size": 410,
+          "size": 290,
           "sizeLimit": 2000
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2886,
-            "minifiedBytes": 1582,
-            "brotliBytes": 588,
+            "rawBytes": 2433,
+            "minifiedBytes": 1288,
+            "brotliBytes": 453,
             "files": ["react-02.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/navbar.js",
-            "renderedBytes": 1838
+            "renderedBytes": 1427
           },
           {
             "module": "<fixture>/standalone/react-02.ts",
@@ -529,21 +529,21 @@
         "sizeLimit": {
           "name": "import { Footer } from '@lyra-ds/react/footer'",
           "passed": true,
-          "size": 405,
+          "size": 265,
           "sizeLimit": 2000
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2827,
-            "minifiedBytes": 1536,
-            "brotliBytes": 559,
+            "rawBytes": 2374,
+            "minifiedBytes": 1242,
+            "brotliBytes": 428,
             "files": ["react-04.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/footer.js",
-            "renderedBytes": 1787
+            "renderedBytes": 1376
           },
           {
             "module": "<fixture>/standalone/react-04.ts",
@@ -558,21 +558,21 @@
         "sizeLimit": {
           "name": "import { Brand } from '@lyra-ds/react/brand'",
           "passed": true,
-          "size": 758,
+          "size": 662,
           "sizeLimit": 2000
         },
         "assets": {
           "javascript": {
-            "rawBytes": 5206,
-            "minifiedBytes": 2981,
-            "brotliBytes": 996,
+            "rawBytes": 4700,
+            "minifiedBytes": 2635,
+            "brotliBytes": 894,
             "files": ["react-05.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/brand.js",
-            "renderedBytes": 3968
+            "renderedBytes": 3462
           },
           {
             "module": "<fixture>/standalone/react-05.ts",
@@ -732,14 +732,14 @@
         "sizeLimit": {
           "name": "WorkspaceSwitcher (curated icon registry)",
           "passed": true,
-          "size": 3469,
+          "size": 3335,
           "sizeLimit": 8250
         },
         "assets": {
           "javascript": {
-            "rawBytes": 23963,
-            "minifiedBytes": 12968,
-            "brotliBytes": 3805,
+            "rawBytes": 23363,
+            "minifiedBytes": 12518,
+            "brotliBytes": 3637,
             "files": ["react-11.js"]
           }
         },
@@ -794,7 +794,7 @@
           },
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js",
-            "renderedBytes": 14621
+            "renderedBytes": 14042
           },
           {
             "module": "<fixture>/standalone/react-11.ts",
@@ -1758,25 +1758,25 @@
       {
         "name": "import { DateRangePicker } from '@lyra-ds/react/date-range-picker'",
         "publicEntry": "@lyra-ds/react/date-range-picker",
-        "configuredLimit": "9.35 kB",
+        "configuredLimit": "9.2 kB",
         "sizeLimit": {
           "name": "import { DateRangePicker } from '@lyra-ds/react/date-range-picker'",
           "passed": true,
-          "size": 9307,
-          "sizeLimit": 9350
+          "size": 9125,
+          "sizeLimit": 9200
         },
         "assets": {
           "javascript": {
-            "rawBytes": 73585,
-            "minifiedBytes": 43561,
-            "brotliBytes": 10574,
+            "rawBytes": 72630,
+            "minifiedBytes": 42873,
+            "brotliBytes": 10410,
             "files": ["react-29.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/date-range-picker.js",
-            "renderedBytes": 62974
+            "renderedBytes": 62019
           },
           {
             "module": "<fixture>/standalone/react-29.ts",
@@ -2226,21 +2226,21 @@
         "sizeLimit": {
           "name": "import { Container } from '@lyra-ds/react/container'",
           "passed": true,
-          "size": 271,
+          "size": 153,
           "sizeLimit": 300
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2042,
-            "minifiedBytes": 808,
-            "brotliBytes": 416,
+            "rawBytes": 1589,
+            "minifiedBytes": 514,
+            "brotliBytes": 298,
             "files": ["react-33.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/container.js",
-            "renderedBytes": 1078
+            "renderedBytes": 667
           },
           {
             "module": "<fixture>/standalone/react-33.ts",
@@ -3676,21 +3676,21 @@
         "sizeLimit": {
           "name": "import { DataTable } from '@lyra-ds/react/data-table'",
           "passed": true,
-          "size": 1853,
+          "size": 1638,
           "sizeLimit": 2250
         },
         "assets": {
           "javascript": {
-            "rawBytes": 11702,
-            "minifiedBytes": 7826,
-            "brotliBytes": 2303,
+            "rawBytes": 10609,
+            "minifiedBytes": 6760,
+            "brotliBytes": 2023,
             "files": ["react-59.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/data-table.js",
-            "renderedBytes": 9258
+            "renderedBytes": 8174
           },
           {
             "module": "<fixture>/standalone/react-59.ts",
@@ -3850,21 +3850,21 @@
         "sizeLimit": {
           "name": "import { Toast } from '@lyra-ds/react/toast'",
           "passed": true,
-          "size": 257,
+          "size": 229,
           "sizeLimit": 700
         },
         "assets": {
           "javascript": {
-            "rawBytes": 2053,
-            "minifiedBytes": 929,
-            "brotliBytes": 411,
+            "rawBytes": 1804,
+            "minifiedBytes": 850,
+            "brotliBytes": 367,
             "files": ["react-65.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/toast.js",
-            "renderedBytes": 1010
+            "renderedBytes": 901
           },
           {
             "module": "<fixture>/standalone/react-65.ts",
@@ -3879,21 +3879,21 @@
         "sizeLimit": {
           "name": "import { ToastProvider } from '@lyra-ds/react/toast-provider'",
           "passed": true,
-          "size": 1073,
+          "size": 882,
           "sizeLimit": 1500
         },
         "assets": {
           "javascript": {
-            "rawBytes": 6546,
-            "minifiedBytes": 4332,
-            "brotliBytes": 1369,
+            "rawBytes": 5206,
+            "minifiedBytes": 3484,
+            "brotliBytes": 1139,
             "files": ["react-66.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/react/dist/toast-provider.js",
-            "renderedBytes": 4942
+            "renderedBytes": 3876
           },
           {
             "module": "<fixture>/standalone/react-66.ts",
@@ -5501,25 +5501,25 @@
       {
         "name": "import lyra from '@lyra-ds/alpine'",
         "publicEntry": "@lyra-ds/alpine",
-        "configuredLimit": "24.75 kB",
+        "configuredLimit": "24.2 kB",
         "sizeLimit": {
           "name": "import lyra from '@lyra-ds/alpine'",
           "passed": true,
-          "size": 24686,
-          "sizeLimit": 24750
+          "size": 23852,
+          "sizeLimit": 24200
         },
         "assets": {
           "javascript": {
-            "rawBytes": 236742,
-            "minifiedBytes": 143932,
-            "brotliBytes": 27249,
+            "rawBytes": 228933,
+            "minifiedBytes": 139161,
+            "brotliBytes": 26329,
             "files": ["alpine-01.js"]
           }
         },
         "modules": [
           {
             "module": "<fixture>/node_modules/@lyra-ds/alpine/dist/index.js",
-            "renderedBytes": 166394
+            "renderedBytes": 161083
           },
           {
             "module": "<fixture>/standalone/alpine-01.ts",
@@ -5605,9 +5605,9 @@
     "application-shell": {
       "assets": {
         "javascript": {
-          "rawBytes": 124939,
-          "minifiedBytes": 73277,
-          "brotliBytes": 17935,
+          "rawBytes": 122533,
+          "minifiedBytes": 71652,
+          "brotliBytes": 17391,
           "files": ["application-shell.js"]
         }
       },
@@ -5970,15 +5970,15 @@
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/navbar.js",
-          "renderedBytes": 1844
+          "renderedBytes": 1433
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/shell.js",
-          "renderedBytes": 2927
+          "renderedBytes": 1774
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/workspace-switcher.js",
-          "renderedBytes": 14621
+          "renderedBytes": 14042
         },
         {
           "module": "<fixture>/scenarios/application-shell.ts",
@@ -6369,9 +6369,9 @@
     "files-data": {
       "assets": {
         "javascript": {
-          "rawBytes": 78247,
-          "minifiedBytes": 50679,
-          "brotliBytes": 12058,
+          "rawBytes": 77161,
+          "minifiedBytes": 49637,
+          "brotliBytes": 11815,
           "files": ["files-data.js"]
         }
       },
@@ -6490,7 +6490,7 @@
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/data-table.js",
-          "renderedBytes": 9276
+          "renderedBytes": 8192
         },
         {
           "module": "<fixture>/node_modules/@lyra-ds/react/dist/file-manager.js",
@@ -6510,17 +6510,17 @@
   "css": {
     "root": {
       "publicEntry": "@lyra-ds/styles",
-      "rawBytes": 166501,
-      "minifiedBytes": 114626,
-      "brotliBytes": 14561,
+      "rawBytes": 157079,
+      "minifiedBytes": 108845,
+      "brotliBytes": 13945,
       "files": ["css-1.css"],
       "modules": []
     },
     "styles.css": {
       "publicEntry": "@lyra-ds/styles/styles.css",
-      "rawBytes": 166501,
-      "minifiedBytes": 114626,
-      "brotliBytes": 14561,
+      "rawBytes": 157079,
+      "minifiedBytes": 108845,
+      "brotliBytes": 13945,
       "files": ["css-2.css"],
       "modules": []
     },
