@@ -1,6 +1,6 @@
 ---
-'@lyra-ds/react': patch
-'@lyra-ds/alpine': patch
+'@lyra-ds/react': minor
+'@lyra-ds/alpine': minor
 '@lyra-ds/styles': patch
 ---
 

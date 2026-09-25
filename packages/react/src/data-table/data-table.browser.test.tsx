@@ -63,6 +63,25 @@ describe('DataTable', () => {
     await expectNoAxeViolations(screen.container);
   });
 
+  it('paints a selected row header with the same selection background as its cells', async () => {
+    const screen = await render(
+      <DataTable
+        aria-label="Regions"
+        columns={[
+          { key: 'name', label: 'Name', rowHeader: true },
+          { key: 'total', label: 'Total' },
+        ]}
+        rows={[{ id: 'north', name: 'North', total: 1 }]}
+        selected={['north']}
+      />,
+    );
+    const header = screen.container.querySelector('tbody th[scope="row"]') as HTMLElement;
+    const cell = screen.container.querySelector('tbody td') as HTMLElement;
+    const headerBg = getComputedStyle(header).backgroundColor;
+    expect(headerBg).not.toBe('rgba(0, 0, 0, 0)');
+    expect(headerBg).toBe(getComputedStyle(cell).backgroundColor);
+  });
+
   it('forwards table labels, names the scroll region, and announces loading', async () => {
     const screen = await render(
       <DataTable

@@ -219,7 +219,7 @@
 .lyra-table--compact tbody th[scope="row"] { padding: var(--space-2) var(--space-3); }
 .lyra-table--compact tbody th[scope="row"]:first-child { padding-left: var(--space-4); }
 .lyra-table--compact tbody th[scope="row"]:last-child { padding-right: var(--space-4); }
-.lyra-table__row--selected th[scope="row"] {
+.lyra-table tbody .lyra-table__row--selected th[scope="row"] {
   background: color-mix(in oklab, var(--accent-soft) 55%, transparent);
 }
 .lyra-table-scroll:focus-visible {
