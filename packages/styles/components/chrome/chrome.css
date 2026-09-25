@@ -263,6 +263,11 @@
   border-radius: var(--radius-sm);
   padding: 2px 8px;
   cursor: pointer;
+
+  /* 44px target on every pointer (WCAG 2.5.5, as Dialog close); the negative block margin keeps
+     the code bar from growing by the full difference. */
+  min-height: 44px;
+  margin-block: calc(-1 * var(--space-2));
   transition:
     background var(--duration-fast) var(--ease-out),
     color var(--duration-fast) var(--ease-out);
@@ -329,6 +334,11 @@
   border: 0;
   cursor: pointer;
   padding: 4px 8px;
+
+  /* 44px target on every pointer (WCAG 2.5.5). */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   transition:
     background var(--duration-fast) var(--ease-out),
     color var(--duration-fast) var(--ease-out);
@@ -356,13 +366,7 @@
 }
 
 @media (pointer: coarse), (any-pointer: coarse), (max-width: 1180px) {
-  .lyra-code__copy,
   .lyra-segmented__option {
-    min-height: 44px;
-  }
-  .lyra-segmented__option {
-    display: inline-flex;
-    align-items: center;
     padding-inline: var(--space-3);
   }
 }
