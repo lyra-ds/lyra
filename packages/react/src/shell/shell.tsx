@@ -1,5 +1,5 @@
 import { forwardRef, useId } from 'react';
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
+import type { CSSProperties, HTMLAttributes, MouseEvent, ReactNode } from 'react';
 import { cx } from '../internal/cx';
 
 type ShellStyle = CSSProperties & {
@@ -43,6 +43,16 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   asideWidth?: number;
   /** Sticky rail offset in pixels. Sets `--shell-top`. */
   top?: number;
+}
+
+/** Move focus to the fragment target explicitly; Firefox does not focus it on programmatic activation. */
+function focusSkipTarget(event: MouseEvent<HTMLAnchorElement>) {
+  const hash = event.currentTarget.hash;
+  if (!hash) return;
+  const target = event.currentTarget.ownerDocument.getElementById(
+    decodeURIComponent(hash.slice(1)),
+  );
+  target?.focus();
 }
 
 /** A three-rail page or application frame with optional navigation, topbar, and context slots. */
@@ -96,7 +106,11 @@ export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(functi
       style={mergedStyle}
     >
       {skipLink && (
-        <a className="lyra-shell__skip-link" href={skipLink.href ?? `#${resolvedMainId}`}>
+        <a
+          className="lyra-shell__skip-link"
+          href={skipLink.href ?? `#${resolvedMainId}`}
+          onClick={focusSkipTarget}
+        >
           {skipLink.label}
         </a>
       )}
