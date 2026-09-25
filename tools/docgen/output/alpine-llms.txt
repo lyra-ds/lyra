@@ -17,6 +17,7 @@ Documented as `app-sidebar`. Mount with `x-data="lyraAppSidebar({ … })"`.
 - `defaultCollapsed?: boolean` — Whether the sidebar starts in its icon-rail state. Default: `false`.
 - `width?: number` — Sidebar width in pixels while expanded. Default: `260`.
 - `labels?: LyraAppSidebarLabels` — Localized labels for the collapse control.
+- `locale?: 'en' | 'pt-BR'` — Language for built-in collapse labels. Explicit `labels` take precedence.
 ### lyraBottomSheet
 
 Documented as `bottom-sheet`. Mount with `x-data="lyraBottomSheet({ … })"`.

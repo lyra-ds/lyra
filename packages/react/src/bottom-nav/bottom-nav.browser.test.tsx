@@ -72,4 +72,38 @@ describe('BottomNav', () => {
     );
     expect(calls).toEqual(['item', 'search']);
   });
+
+  it('uses anchors for destinations and preserves router link attributes', async () => {
+    const screen = await render(
+      <BottomNav
+        items={[
+          { id: 'home', icon: 'H', label: 'Home', href: '/home', target: '_blank', active: true },
+          {
+            id: 'router',
+            icon: 'R',
+            label: 'Router',
+            asChild: (
+              <a href="/router" target="_blank">
+                Router
+              </a>
+            ),
+          },
+          { id: 'action', icon: 'A', label: 'Action' },
+        ]}
+      />,
+    );
+    await expect
+      .element(screen.getByRole('link', { name: 'H Home' }))
+      .toHaveAttribute('href', '/home');
+    await expect
+      .element(screen.getByRole('link', { name: 'H Home' }))
+      .toHaveAttribute('aria-current', 'page');
+    await expect
+      .element(screen.getByRole('link', { name: 'H Home' }))
+      .toHaveAttribute('target', '_blank');
+    await expect
+      .element(screen.getByRole('link', { name: 'R Router' }))
+      .toHaveAttribute('href', '/router');
+    await expect.element(screen.getByRole('button', { name: 'A Action' })).toBeInTheDocument();
+  });
 });

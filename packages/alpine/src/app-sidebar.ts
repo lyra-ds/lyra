@@ -14,6 +14,8 @@ export interface LyraAppSidebarOptions {
   width?: number;
   /** Localized labels for the collapse control. */
   labels?: LyraAppSidebarLabels;
+  /** Language for built-in collapse labels. Explicit `labels` take precedence. */
+  locale?: 'en' | 'pt-BR';
 }
 
 type Binding = Record<string, unknown>;
@@ -70,9 +72,12 @@ export function lyraAppSidebar({
   defaultCollapsed = false,
   width = 260,
   labels = {},
+  locale = 'en',
 }: LyraAppSidebarOptions = {}): LyraAppSidebarData {
-  const collapseLabel = labels.collapse ?? 'Collapse sidebar';
-  const expandLabel = labels.expand ?? 'Expand sidebar';
+  const collapseLabel =
+    labels.collapse ?? (locale === 'pt-BR' ? 'Recolher barra lateral' : 'Collapse sidebar');
+  const expandLabel =
+    labels.expand ?? (locale === 'pt-BR' ? 'Expandir barra lateral' : 'Expand sidebar');
   const state: LyraAppSidebarData & ThisType<LyraAppSidebarState> = {
     collapsed: defaultCollapsed,
 

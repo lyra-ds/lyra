@@ -2695,7 +2695,7 @@
         "name": "groups",
         "type": "AppSidebarGroup[]",
         "optional": true,
-        "description": "Convenience data mode. Each group is composed through {@link SidebarGroup} and renders its\nitems as buttons."
+        "description": "Convenience data mode. Each group is composed through {@link SidebarGroup}; destinations\nrender as links, while items without destinations remain buttons."
       },
       {
         "name": "footer",
@@ -2746,10 +2746,16 @@
         "description": "Localized labels for the collapse control."
       },
       {
+        "name": "locale",
+        "type": "'en' | 'pt-BR'",
+        "optional": true,
+        "description": "Language for built-in collapse labels. Explicit `labels` take precedence."
+      },
+      {
         "name": "children",
         "type": "ReactNode",
         "optional": true,
-        "description": "Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve\ntheir original element type and routing behavior instead of using data-mode buttons."
+        "description": "Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve\ntheir original element type and routing behavior."
       }
     ]
   },
@@ -2792,6 +2798,12 @@
         "type": "BreadcrumbItem[]",
         "optional": false,
         "description": "Navigation items; the final item is rendered as the current page."
+      },
+      {
+        "name": "locale",
+        "type": "'en' | 'pt-BR'",
+        "optional": true,
+        "description": "Language for the built-in landmark name. Explicit `aria-label` takes precedence."
       }
     ]
   },

@@ -1,13 +1,13 @@
 ---
 title: AppSidebar
-description: Uma barra lateral de navegação da aplicação, com links compostos ou grupos convenientes baseados em botões.
+description: Uma barra lateral de navegação da aplicação, com links compostos ou grupos de dados com destinos reais.
 ---
 
 # AppSidebar
 
 AppSidebar mantém os destinos de uma aplicação à vista. Escolha a porta de `children` quando os links
 precisarem preservar o comportamento do router; escolha `groups` para uma interface rápida de seleção
-baseada em botões.
+com links ou ações.
 
 ## Exemplos
 
@@ -18,8 +18,9 @@ baseada em botões.
 </Example>
 
 <Example id="groups" title="Grupos convenientes" layout="block">
-  `groups` transforma cada item em botão e informa seu `id` por `onSelect`. Seu `label` é uma string
-  de propósito, para que o trilho sempre possa nomear o botão e mostrar um tooltip nativo.
+  `groups` usa links para itens com destino e botão para ações e informa seu `id` por `onSelect`.
+  Seu `label` é uma string de propósito, para que o trilho sempre possa nomear o item e mostrar um
+  tooltip nativo.
 </Example>
 
 ## Quando usar
@@ -63,17 +64,36 @@ trilhos de Shell com scroll de página.
 
 - AppSidebar renderiza um `<nav>` nativo. Passe `aria-label` para ele quando a página tiver mais de
   um landmark de navegação.
-- No modo `groups`, os itens são botões nativos; um item ativo recebe `aria-current="page"`. O
-  callback do item roda antes do callback `onSelect(id, item)` da barra lateral.
+- No modo `groups`, `href` gera um link nativo, `asChild` preserva o link do router e itens de ação
+  continuam botões. O item ativo recebe `aria-current="page"`. O callback do item roda antes de
+  `onSelect(id, item)`. Use `target="_blank"` para abrir um link nativo em outra aba.
 - No modo de composição, os filhos permanecem seus elementos originais. Use âncoras reais para rotas;
   no modo trilho, descendentes de link recebem `title` e `aria-label` de um rótulo explícito, título
   ou de seu conteúdo textual.
-- O controle de recolhimento é um botão nativo cujo nome acessível e tooltip vêm de `labels`. No modo
+- O controle de recolhimento é um botão nativo cujo nome acessível e tooltip vêm de `labels` ou do
+  padrão de `locale` (`en` ou `pt-BR`). No modo
   trilho, rótulos de grupo, texto de item e badges ficam visualmente ocultos, enquanto os nomes dos
   controles e itens continuam disponíveis.
 - Um WorkspaceSwitcher no espaço da marca vira um gatilho compacto de avatar no modo trilho. O nome
   do workspace continua disponível para tecnologia assistiva; o popover mantém largura utilizável e
   fica dentro de um viewport estreito.
+
+### Destinos com React Router e Next.js
+
+```tsx
+// React Router mantém a navegação no cliente.
+<AppSidebar groups={[{ items: [{ id: 'relatorios', label: 'Relatórios', active: true,
+  asChild: <Link to="/relatorios" /> }] }]} locale="pt-BR" />
+
+// Next.js usa o mesmo contrato.
+<AppSidebar groups={[{ items: [{ id: 'cobranca', label: 'Cobrança',
+  asChild: <Link href="/cobranca" /> }] }]} locale="pt-BR" />
+```
+
+Para um link nativo, use `href: '/relatorios'`. Para nova aba, acrescente
+`target: '_blank'` e `rel: 'noopener noreferrer'`. `asChild` substitui o conteúdo do Link
+pelo ícone e rótulo do item. `locale="pt-BR"` localiza os rótulos padrão do controle;
+`labels` ainda permite personalizá-los.
 
 ## API e código
 
