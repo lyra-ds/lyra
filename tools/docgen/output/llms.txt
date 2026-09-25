@@ -1143,9 +1143,11 @@ export declare function ActionBar(props: ActionBarProps): JSX.Element;
 /** Props for {@link Container}. */
 export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
   /**
-   * Maximum content width in pixels. Sets `--container-max`, which cascades to nested containers.
+   * Maximum content width: a number of pixels or a size keyword (`sm` 640, `md` 768, `lg` 1024,
+   * `xl` 1280). Sets `--container-max`, which cascades to nested containers. Unrecognised values are
+   * ignored so the container keeps its inherited maximum.
   */
-  max?: number;
+  max?: number | ContainerSize | (string & {});
 }
 export declare function Container(props: ContainerProps): JSX.Element;
 ```

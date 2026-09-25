@@ -22,4 +22,12 @@ describe('Container', () => {
     expect(Array.from(content.style)).toEqual(['--container-max']);
     expect(content.style.getPropertyValue('--container-max')).toBe('960px');
   });
+
+  it('maps size keywords to a valid pixel width', async () => {
+    const { container } = await render(<Container max="lg">Content</Container>);
+    const content = container.querySelector<HTMLElement>('.lyra-container')!;
+
+    expect(content.style.getPropertyValue('--container-max')).toBe('1024px');
+    expect(getComputedStyle(content).maxWidth).toBe('1024px');
+  });
 });
