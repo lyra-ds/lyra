@@ -3148,6 +3148,12 @@
         "description": "Create-action label. Default `\"Create workspace\"`."
       },
       {
+        "name": "labels",
+        "type": "WorkspaceSwitcherLabels",
+        "optional": true,
+        "description": "Translatable text merged over English defaults."
+      },
+      {
         "name": "defaultOpen",
         "type": "boolean",
         "optional": true,

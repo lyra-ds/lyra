@@ -1,61 +1,49 @@
 ---
 title: WorkspaceSwitcher
-description: A listbox-style workspace picker with current selection, creation action and keyboard navigation.
+description: A workspace disclosure with localized labels, selectable workspaces and navigation links.
 ---
 
 # WorkspaceSwitcher
 
-WorkspaceSwitcher changes the current workspace and reports that selected state. Choose it over Dropdown
-when the choice is an account or tenant, not an action performed on the current context.
+WorkspaceSwitcher opens a labelled disclosure of workspaces. Supply `href` on a workspace when changing tenant navigates to a URL, including a tenant and environment route. The workspace is then a native link that can be copied or opened in a new tab. Without `href`, it is a button; handle `onChange` and update `current` in application state.
 
 ## Examples
 
 <Example id="selection" title="Controlled current workspace">
-  Pass `current` with `onChange` when the application owns the active workspace. Without `current`,
-  the first workspace is shown, which is suitable only when that default matches the surrounding
-  state.
+  Pass `current` with `onChange` when application state owns the current workspace. Without
+  `current`, the first workspace is shown.
 </Example>
 
 <Example id="create" title="Create action">
-  Providing `onCreate` renders a separate create action after the workspace list — a native button
-  inside the popover but outside the listbox. Activating it calls `onCreate` and closes the popover,
-  restoring trigger focus; it never fires `onChange`. `createLabel` should name the next workflow,
-  not repeat the current workspace's name. `defaultOpen` exists for visual demos; keep it out of
-  ordinary examples and application flows.
+  `onCreate` adds a separate create button. `createLabel` names its action. `defaultOpen` is
+  intended for visual demos.
 </Example>
 
-## When to use
+## Localization and navigation
 
-Use WorkspaceSwitcher when a person selects the workspace, account or tenant that frames the page.
+`labels` is merged over English defaults. Supply `listLabel`, `placeholder` and a `members(count)` formatter for your locale, including plural forms. `createLabel` remains a separate prop.
 
-Reach for something else when:
+```tsx
+<WorkspaceSwitcher
+  current="acme"
+  workspaces={[
+    { id: 'acme', name: 'Acme', members: 1, href: '/acme/production' },
+    { id: 'studio', name: 'Studio', members: 3, href: '/studio/staging' },
+  ]}
+  labels={{
+    listLabel: 'Espaços de trabalho',
+    placeholder: 'Escolha um espaço',
+    members: (count) => `${count} membro${count === 1 ? '' : 's'}`,
+  }}
+  createLabel="Criar espaço"
+/>
+```
 
-- **The list contains commands for the current context** — use Dropdown, which is a menu.
-- **The choice is one of a few peer views** — use Tabs.
-- **The person needs to find a destination or command across the product** — use CommandPalette.
+For Alpine, the application serves the visible text and link destinations. Use `<a href="..." class="lyra-wssw__item" data-id="..." x-bind="option">` for navigation, or `<button type="button" ...>` for selection. Buttons dispatch `lyra:change` with the `data-id`; links use native navigation. Keep the current item marked `aria-current="true"` and update the trigger text when application state changes. Replace older `role="listbox"`, `role="option"`, `aria-selected` and `aria-haspopup="listbox"` markup with the disclosure pattern shown below.
 
 ## Accessibility
 
-- In React, the trigger has `aria-haspopup="listbox"`, `aria-expanded` and `aria-controls`. Its
-  popup holds a `role="listbox"` labelled by a visible "Workspaces" label, and each workspace is a
-  `role="option"` with `aria-selected`; when present, the create action is a native button after the
-  listbox, separated by an `<hr role="presentation">` — a command, not an option.
-- In React, Enter, Space, ArrowDown and ArrowUp prefer the selected workspace when opening and
-  fall back to the first option whenever workspaces exist. An empty list with `onCreate` focuses
-  the create action; an entirely empty list retains trigger focus. In the list, ArrowDown and
-  ArrowUp wrap among workspace options, Home and End jump to the ends, and Escape restores trigger
-  focus. Arrows, Home and End skip the create action: native Tab moves from the roving option to
-  it, Shift+Tab returns to the roving option, and Tab from the create action exits forward. Tab
-  closes the popover when there is no create action, always without preventing native sequential
-  focus.
-- The component moves real DOM focus among options, unlike CommandPalette's active-descendant model.
-  It also flips upward when there is no room below the trigger.
-- When used as an AppSidebar brand, the icon rail presents a compact avatar trigger. The workspace
-  name stays accessible, and the opened popover remains usable within a narrow LTR or RTL viewport.
-- In React, `onChange` receives both the selected id and workspace record. Update the surrounding
-  application state there; `current` is how a controlled switcher announces that state on the next
-  render.
-  `onCreate` is a separate callback; activating the create action never fires `onChange`.
+The trigger is a button with `aria-expanded` and `aria-controls`; the popup is a labelled `role="group"`. Each destination retains its native link or button semantics. Enter, Space and arrow keys open and focus the current workspace. Arrow keys, Home and End move focus among workspaces; Escape returns to the trigger. Tab follows native order, including the create button when present. The popup flips upward when needed.
 
 ## API and code
 
@@ -63,74 +51,37 @@ Reach for something else when:
   <StackPanel stack="react">
     <StackApi stack="react" />
   </StackPanel>
-
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-The Alpine integration supports selecting among consumer-served workspaces only: there is no create
-binding or create event, and creation stays outside this component. Your markup serves the trigger
-and listbox IDs, the visible label and each option's `aria-selected`; the binding never rewrites
-that served `aria-selected` or the visible current-workspace content — your application code owns
-those updates. Enter, Space, ArrowDown and ArrowUp all open onto the served selection when one is
-available; when none is served, ArrowDown opens onto the first option and ArrowUp onto the last.
-Selecting emits `lyra:change` with the activated workspace's `data-id`, closes the popover and
-returns focus to the trigger; Tab closes without blocking native sequential focus.
-
 ```html
 <div id="workspace-switcher" class="lyra-wssw" x-data="lyraWorkspaceSwitcher()">
-  <button
-    id="workspace-switcher-trigger"
-    class="lyra-wssw__trigger"
-    type="button"
-    tabindex="0"
-    aria-haspopup="listbox"
-    aria-expanded="false"
-    aria-controls="workspace-list"
-    x-bind="trigger"
-  >
-    <span class="lyra-wssw__id">
-      <span class="lyra-wssw__name">Atlas</span>
-      <span class="lyra-wssw__plan">Pro</span>
-    </span>
+  <button class="lyra-wssw__trigger" type="button" aria-controls="workspace-list" x-bind="trigger">
+    Atlas
   </button>
   <div
     id="workspace-list"
     class="lyra-wssw__pop"
-    role="listbox"
+    role="group"
     aria-labelledby="workspace-label"
     style="display: none"
     x-bind="popover"
   >
-    <span class="lyra-wssw__pop-label" id="workspace-label">Workspaces</span>
-    <button
+    <span id="workspace-label" class="lyra-wssw__pop-label">Workspaces</span>
+    <a
       class="lyra-wssw__item"
-      type="button"
-      role="option"
-      aria-selected="true"
+      href="/atlas/production"
       data-id="atlas"
+      aria-current="true"
       x-bind="option"
+      >Atlas</a
     >
-      <span class="lyra-wssw__id">
-        <span class="lyra-wssw__name">Atlas</span>
-        <span class="lyra-wssw__meta">Pro · 12 members</span>
-      </span>
-    </button>
-    <button
-      class="lyra-wssw__item"
-      type="button"
-      role="option"
-      aria-selected="false"
-      data-id="northstar"
-      x-bind="option"
-    >
-      <span class="lyra-wssw__id"><span class="lyra-wssw__name">Northstar Studio</span></span>
-    </button>
+    <a class="lyra-wssw__item" href="/studio/staging" data-id="studio" x-bind="option">Studio</a>
   </div>
 </div>
 ```
 
   </StackPanel>
-
   <StackPanel stack="blade">
     <StackApi stack="blade" />
   </StackPanel>

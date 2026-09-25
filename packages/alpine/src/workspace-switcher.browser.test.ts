@@ -13,10 +13,12 @@ Alpine.plugin(lyra);
 function mountWorkspaceSwitcher({
   defaultOpen = false,
   inRail = false,
+  link = false,
   position,
 }: {
   defaultOpen?: boolean;
   inRail?: boolean;
+  link?: boolean;
   position?: string;
 } = {}): HTMLElement {
   const host = document.createElement('div');
@@ -41,14 +43,14 @@ function mountWorkspaceSwitcher({
       <div
         id="${id}-listbox"
         class="lyra-wssw__pop"
-        role="listbox"
+        role="group"
         aria-labelledby="${id}-listbox-label"
         x-bind="popover"
       >
         <span id="${id}-listbox-label" class="lyra-wssw__pop-label">Workspaces</span>
-        <button class="lyra-wssw__item" role="option" aria-selected="false" data-id="acme" x-bind="option">Acme</button>
-        <button class="lyra-wssw__item" role="option" aria-selected="true" data-id="lyra" x-bind="option">Lyra</button>
-        <button class="lyra-wssw__item" role="option" aria-selected="false" data-id="orbit" x-bind="option">Orbit</button>
+        <button class="lyra-wssw__item" data-id="acme" x-bind="option">Acme</button>
+        <button class="lyra-wssw__item" aria-current="true" data-id="lyra" x-bind="option">Lyra</button>
+        ${link ? '<a class="lyra-wssw__item" href="/orbit/staging" data-id="orbit" x-bind="option">Orbit</a>' : '<button type="button" class="lyra-wssw__item" data-id="orbit" x-bind="option">Orbit</button>'}
       </div>
     </div>
     ${railEnd}
@@ -76,13 +78,13 @@ function trigger(host: HTMLElement): HTMLButtonElement {
 }
 
 function popover(host: HTMLElement): HTMLElement {
-  const element = host.querySelector<HTMLElement>('[role="listbox"]');
+  const element = host.querySelector<HTMLElement>('[role="group"]');
   if (!element) throw new Error('Expected workspace switcher popover');
   return element;
 }
 
 function options(host: HTMLElement): HTMLButtonElement[] {
-  return Array.from(popover(host).querySelectorAll<HTMLButtonElement>('[role="option"]'));
+  return Array.from(popover(host).querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]'));
 }
 
 afterEach(async () => {
@@ -96,6 +98,34 @@ afterEach(async () => {
 });
 
 describe('lyraWorkspaceSwitcher', () => {
+  it('keeps links native and reachable with arrow navigation', async () => {
+    const host = mountWorkspaceSwitcher({ link: true });
+    const destination = options(host)[2];
+    expect(destination.tagName).toBe('A');
+    expect(destination.getAttribute('href')).toBe('/orbit/staging');
+    expect(destination.hasAttribute('type')).toBe(false);
+    expect(destination.hasAttribute('role')).toBe(false);
+    await userEvent.click(trigger(host));
+    await flush();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(destination);
+    await expectNoAxeViolations(host);
+  });
+
+  it('follows a workspace link using the browser default action', async () => {
+    const host = mountWorkspaceSwitcher({ link: true });
+    const destination = popover(host).querySelector<HTMLAnchorElement>('a[data-id="orbit"]')!;
+    destination.href = '#workspace-orbit';
+    try {
+      await userEvent.click(trigger(host));
+      await flush();
+      await userEvent.click(destination);
+      expect(window.location.hash).toBe('#workspace-orbit');
+    } finally {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  });
+
   for (const theme of ['light', 'dark'] as const) {
     for (const dir of ['ltr', 'rtl'] as const) {
       it(`keeps a rail popover visible, anchored, and in the 320px viewport in ${theme} ${dir}`, async () => {
@@ -143,7 +173,7 @@ describe('lyraWorkspaceSwitcher', () => {
     const listbox = popover(host);
 
     expect(control.type).toBe('button');
-    expect(control.getAttribute('aria-haspopup')).toBe('listbox');
+    expect(control.hasAttribute('aria-haspopup')).toBe(false);
     expect(control.getAttribute('aria-expanded')).toBe('false');
     expect(control.getAttribute('aria-controls')).toBe(listbox.id);
     expect(listbox.getAttribute('aria-labelledby')).toBe(`${root(host).id}-listbox-label`);
@@ -191,7 +221,7 @@ describe('lyraWorkspaceSwitcher', () => {
   it('falls back to the first or last option on arrows when no option is served as selected', async () => {
     const host = mountWorkspaceSwitcher();
     const control = trigger(host);
-    for (const option of options(host)) option.setAttribute('aria-selected', 'false');
+    for (const option of options(host)) option.removeAttribute('aria-current');
 
     control.focus();
     await userEvent.keyboard('{Enter}');
@@ -222,8 +252,8 @@ describe('lyraWorkspaceSwitcher', () => {
 
     await userEvent.keyboard('{Escape}');
     await flush();
-    options(host)[1].setAttribute('aria-selected', 'false');
-    options(host)[2].setAttribute('aria-selected', 'true');
+    options(host)[1].removeAttribute('aria-current');
+    options(host)[2].setAttribute('aria-current', 'true');
 
     await userEvent.keyboard('{ArrowUp}');
     await flush();
@@ -305,10 +335,10 @@ describe('lyraWorkspaceSwitcher', () => {
     expect(received).toEqual([{ id: 'orbit' }]);
     expect(control.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(control);
-    expect(options(host).map((option) => option.getAttribute('aria-selected'))).toEqual([
-      'false',
+    expect(options(host).map((option) => option.getAttribute('aria-current'))).toEqual([
+      null,
       'true',
-      'false',
+      null,
     ]);
   });
 
@@ -338,11 +368,11 @@ describe('lyraWorkspaceSwitcher', () => {
       <div x-data="{ outer: false }">
         <div id="modelable-workspace-switcher" x-data="lyraWorkspaceSwitcher()" x-modelable="open" x-model="outer" class="lyra-wssw">
           <button class="lyra-wssw__trigger" aria-controls="modelable-workspace-switcher-listbox" x-bind="trigger">Current workspace</button>
-          <div id="modelable-workspace-switcher-listbox" class="lyra-wssw__pop" role="listbox" aria-labelledby="modelable-workspace-switcher-listbox-label" x-bind="popover">
+          <div id="modelable-workspace-switcher-listbox" class="lyra-wssw__pop" role="group" aria-labelledby="modelable-workspace-switcher-listbox-label" x-bind="popover">
             <span id="modelable-workspace-switcher-listbox-label" class="lyra-wssw__pop-label">Workspaces</span>
-            <button class="lyra-wssw__item" role="option" aria-selected="false" data-id="acme" x-bind="option">Acme</button>
-            <button class="lyra-wssw__item" role="option" aria-selected="true" data-id="lyra" x-bind="option">Lyra</button>
-            <button class="lyra-wssw__item" role="option" aria-selected="false" data-id="orbit" x-bind="option">Orbit</button>
+            <button class="lyra-wssw__item" data-id="acme" x-bind="option">Acme</button>
+            <button class="lyra-wssw__item" aria-current="true" data-id="lyra" x-bind="option">Lyra</button>
+            <button class="lyra-wssw__item" data-id="orbit" x-bind="option">Orbit</button>
           </div>
         </div>
         <button type="button" data-testid="external-open" x-on:click="outer = true">Open externally</button>

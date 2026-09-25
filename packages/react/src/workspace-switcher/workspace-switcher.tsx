@@ -15,7 +15,25 @@ export interface Workspace {
   plan?: string;
   /** Optional member count shown in the popover. */
   members?: number;
+  /** Destination for navigation. When set, this workspace renders as a native link. */
+  href?: string;
 }
+
+/** Translatable text, merged over the English defaults. */
+export interface WorkspaceSwitcherLabels {
+  /** Heading for the workspace choices. */
+  listLabel?: string;
+  /** Trigger text when there is no workspace. */
+  placeholder?: string;
+  /** Formats the member count with the correct locale and plural form. */
+  members?: (count: number) => string;
+}
+
+const DEFAULT_LABELS: Required<WorkspaceSwitcherLabels> = {
+  listLabel: 'Workspaces',
+  placeholder: 'Select workspace',
+  members: (count) => `${count} ${count === 1 ? 'member' : 'members'}`,
+};
 
 /** Props for {@link WorkspaceSwitcher}. */
 export interface WorkspaceSwitcherProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
@@ -29,11 +47,13 @@ export interface WorkspaceSwitcherProps extends Omit<HTMLAttributes<HTMLDivEleme
   onCreate?: () => void;
   /** Create-action label. Default `"Create workspace"`. */
   createLabel?: string;
+  /** Translatable text merged over English defaults. */
+  labels?: WorkspaceSwitcherLabels;
   /** Whether the popover starts open. Useful for demos. */
   defaultOpen?: boolean;
 }
 
-/** A listbox-style workspace chooser with real-focus keyboard navigation. */
+/** A disclosure of workspace buttons and navigation links with real-focus keyboard navigation. */
 export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, WorkspaceSwitcherProps>(
   function WorkspaceSwitcher(
     {
@@ -42,6 +62,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       onChange,
       onCreate,
       createLabel = 'Create workspace',
+      labels: labelsProp,
       defaultOpen = false,
       id,
       className,
@@ -53,8 +74,9 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
   ) {
     const generatedId = useId();
     const rootId = id ?? generatedId;
-    const listboxId = `${rootId}-listbox`;
-    const listboxLabelId = `${rootId}-listbox-label`;
+    const popoverId = `${rootId}-popover`;
+    const popoverLabelId = `${rootId}-popover-label`;
+    const labels = { ...DEFAULT_LABELS, ...labelsProp };
     const [open, setOpen] = useState(defaultOpen);
     const [pendingFocus, setPendingFocus] = useState<'workspace' | 'create' | null>(null);
     const [focusedWorkspaceId, setFocusedWorkspaceId] = useState<string | null>(null);
@@ -67,8 +89,10 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       ? focusedWorkspaceId
       : selected?.id;
 
-    const optionButtons = (): HTMLButtonElement[] =>
-      Array.from(popoverRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? []);
+    const optionElements = (): HTMLElement[] =>
+      Array.from(
+        popoverRef.current?.querySelectorAll<HTMLElement>('.lyra-wssw__item[data-id]') ?? [],
+      );
 
     const close = (restoreFocus = false): void => {
       setOpen(false);
@@ -83,10 +107,10 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
 
     useEffect(() => {
       if (!open || pendingFocus === null) return;
-      const options = optionButtons();
+      const options = optionElements();
       if (pendingFocus === 'workspace' && options.length > 0) {
         const selectedIndex = options.findIndex(
-          (option) => option.getAttribute('aria-selected') === 'true',
+          (option) => option.getAttribute('aria-current') === 'true',
         );
         // Placement has already run; do not let opening focus reposition the document before the
         // flipped class is committed.
@@ -127,9 +151,9 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
       }
     };
 
-    const optionForTarget = (target: EventTarget | null): HTMLButtonElement | null => {
+    const optionForTarget = (target: EventTarget | null): HTMLElement | null => {
       if (!(target instanceof Element)) return null;
-      const option = target.closest<HTMLButtonElement>('[role="option"]');
+      const option = target.closest<HTMLElement>('.lyra-wssw__item[data-id]');
       return option && popoverRef.current?.contains(option) ? option : null;
     };
 
@@ -142,14 +166,14 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
     const workspaceForTarget = (target: EventTarget | null): Workspace | undefined => {
       const option = optionForTarget(target);
       if (!option) return undefined;
-      return workspaces[optionButtons().indexOf(option)];
+      return workspaces.find((workspace) => workspace.id === option.dataset.id);
     };
 
     const handleOptionKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.defaultPrevented) return;
       const option = optionForTarget(event.target);
       if (!option) return;
-      const options = optionButtons();
+      const options = optionElements();
       const currentIndex = options.indexOf(option);
       if (currentIndex < 0 || options.length === 0) return;
       let nextIndex: number | undefined;
@@ -174,7 +198,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
         event.preventDefault();
         close(true);
       } else if (event.key === 'Tab') {
-        if (!event.shiftKey || optionButtons().length === 0) close();
+        if (!event.shiftKey || optionElements().length === 0) close();
       }
     };
 
@@ -201,6 +225,7 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
         }}
         onClick={(event) => {
           const workspace = workspaceForTarget(event.target);
+          const isLink = optionForTarget(event.target)?.tagName === 'A';
           const isCreate = createForTarget(event.target) !== null;
           const isTrigger = triggerRef.current?.contains(event.target as Node);
           onClick?.(event);
@@ -209,8 +234,17 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
             if (open) close();
             else openWithFocus();
           } else if (workspace) {
-            onChange?.(workspace.id, workspace);
-            close(true);
+            if (
+              isLink &&
+              (event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                event.button !== 0)
+            )
+              return;
+            if (!isLink) onChange?.(workspace.id, workspace);
+            close(!isLink);
           } else if (isCreate) {
             onCreate?.();
             close(true);
@@ -222,13 +256,12 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
           type="button"
           tabIndex={0}
           className="lyra-wssw__trigger"
-          aria-haspopup="listbox"
           aria-expanded={open}
-          aria-controls={listboxId}
+          aria-controls={popoverId}
         >
           <Avatar name={selected?.name ?? '?'} size="sm" shape="square" />
           <span className="lyra-wssw__id">
-            <span className="lyra-wssw__name">{selected?.name ?? 'Select workspace'}</span>
+            <span className="lyra-wssw__name">{selected?.name ?? labels.placeholder}</span>
             {selected?.plan && <span className="lyra-wssw__plan">{selected.plan}</span>}
           </span>
           <ChevronsUpDown
@@ -241,46 +274,54 @@ export const WorkspaceSwitcher = /*#__PURE__*/ forwardRef<HTMLDivElement, Worksp
         {open && (
           <div
             ref={popoverRef}
+            id={popoverId}
+            role="group"
+            aria-labelledby={popoverLabelId}
             className={cx('lyra-wssw__pop', placement.side === 'up' && 'lyra-wssw__pop--up')}
           >
-            <span id={listboxLabelId} className="lyra-wssw__pop-label">
-              Workspaces
+            <span id={popoverLabelId} className="lyra-wssw__pop-label">
+              {labels.listLabel}
             </span>
-            <div id={listboxId} role="listbox" aria-labelledby={listboxLabelId}>
-              {workspaces.map((workspace) => (
-                <button
-                  key={workspace.id}
-                  type="button"
-                  role="option"
-                  aria-selected={workspace.id === selected?.id}
-                  tabIndex={workspace.id === rovingWorkspaceId ? 0 : -1}
-                  className="lyra-wssw__item"
-                  onFocus={() => setFocusedWorkspaceId(workspace.id)}
-                >
-                  <Avatar name={workspace.name} size="sm" shape="square" />
-                  <span className="lyra-wssw__id">
-                    <span className="lyra-wssw__name">{workspace.name}</span>
-                    {(workspace.plan || workspace.members !== undefined) && (
-                      <span className="lyra-wssw__meta">
-                        {[
-                          workspace.plan,
-                          workspace.members !== undefined ? `${workspace.members} members` : null,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </span>
+            <div>
+              {workspaces.map((workspace) => {
+                const Item = workspace.href ? 'a' : 'button';
+                return (
+                  <Item
+                    key={workspace.id}
+                    {...(workspace.href ? { href: workspace.href } : { type: 'button' as const })}
+                    data-id={workspace.id}
+                    aria-current={workspace.id === selected?.id ? 'true' : undefined}
+                    tabIndex={workspace.id === rovingWorkspaceId ? 0 : -1}
+                    className="lyra-wssw__item"
+                    onFocus={() => setFocusedWorkspaceId(workspace.id)}
+                  >
+                    <Avatar name={workspace.name} size="sm" shape="square" />
+                    <span className="lyra-wssw__id">
+                      <span className="lyra-wssw__name">{workspace.name}</span>
+                      {(workspace.plan || workspace.members !== undefined) && (
+                        <span className="lyra-wssw__meta">
+                          {[
+                            workspace.plan,
+                            workspace.members !== undefined
+                              ? labels.members(workspace.members)
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </span>
+                      )}
+                    </span>
+                    {workspace.id === selected?.id && (
+                      <Check
+                        className="lyra-icon"
+                        size={15}
+                        color="var(--accent)"
+                        aria-hidden="true"
+                      />
                     )}
-                  </span>
-                  {workspace.id === selected?.id && (
-                    <Check
-                      className="lyra-icon"
-                      size={15}
-                      color="var(--accent)"
-                      aria-hidden="true"
-                    />
-                  )}
-                </button>
-              ))}
+                  </Item>
+                );
+              })}
             </div>
             {onCreate && (
               <>

@@ -2,7 +2,7 @@ import { observeFlipPlacement, type FlipPlacement } from './internal/flip-placem
 
 /** Initial configuration accepted by `x-data="lyraWorkspaceSwitcher(...)"`. */
 export interface LyraWorkspaceSwitcherOptions {
-  /** Whether the workspace listbox starts open. Default: `false`. */
+  /** Whether the workspace disclosure starts open. Default: `false`. */
   defaultOpen?: boolean;
 }
 
@@ -44,7 +44,7 @@ interface LyraWorkspaceSwitcherMagics {
 
 type LyraWorkspaceSwitcherState = LyraWorkspaceSwitcherData & LyraWorkspaceSwitcherMagics;
 
-/** A listbox-style workspace chooser over consumer-rendered markup. */
+/** A workspace disclosure over consumer-rendered buttons and links. */
 export function lyraWorkspaceSwitcher({
   defaultOpen = false,
 }: LyraWorkspaceSwitcherOptions = {}): LyraWorkspaceSwitcherData {
@@ -88,7 +88,9 @@ export function lyraWorkspaceSwitcher({
     },
 
     optionElements() {
-      return Array.from(this.root?.querySelectorAll<HTMLElement>('[role="option"]') ?? []);
+      return Array.from(
+        this.root?.querySelectorAll<HTMLElement>('.lyra-wssw__item[data-id]') ?? [],
+      );
     },
 
     triggerElement() {
@@ -96,7 +98,7 @@ export function lyraWorkspaceSwitcher({
     },
 
     popoverElement() {
-      return this.root?.querySelector<HTMLElement>('[role="listbox"]') ?? null;
+      return this.root?.querySelector<HTMLElement>('.lyra-wssw__pop') ?? null;
     },
 
     focusPendingOption() {
@@ -104,7 +106,7 @@ export function lyraWorkspaceSwitcher({
       const options = this.optionElements();
       if (options.length === 0) return;
       const selectedIndex = options.findIndex(
-        (option) => option.getAttribute('aria-selected') === 'true',
+        (option) => option.getAttribute('aria-current') === 'true',
       );
       // Open sentinels: -2 prefers the served selected option, falling back to the
       // first option; -3 prefers it with a last-option fallback (trigger ArrowUp).
@@ -216,7 +218,6 @@ export function lyraWorkspaceSwitcher({
 
     trigger: {
       type: 'button',
-      'aria-haspopup': 'listbox',
       [':aria-expanded']() {
         return String(this.open);
       },
@@ -230,7 +231,6 @@ export function lyraWorkspaceSwitcher({
     },
 
     popover: {
-      role: 'listbox',
       [':class']() {
         // Object syntax removes a server-rendered up modifier again after placement changes.
         return { 'lyra-wssw__pop--up': this.placement.side === 'up' };
@@ -241,14 +241,19 @@ export function lyraWorkspaceSwitcher({
     },
 
     option: {
-      type: 'button',
-      role: 'option',
       ['@keydown'](event: KeyboardEvent) {
         this.handleOptionKeyDown(event);
       },
-      ['@click']() {
-        this.$dispatch('lyra:change', { id: this.$el.dataset.id ?? '' });
-        this.closePopover(true);
+      ['@click'](event: MouseEvent) {
+        if (event.defaultPrevented) return;
+        const link = this.$el instanceof HTMLAnchorElement;
+        if (
+          link &&
+          (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
+        )
+          return;
+        if (!link) this.$dispatch('lyra:change', { id: this.$el.dataset.id ?? '' });
+        this.closePopover(!link);
       },
     },
   };
