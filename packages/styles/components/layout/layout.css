@@ -27,8 +27,8 @@
 .lyra-pageheader__eyebrow {
   font-size: var(--text-xs);
   font-weight: var(--weight-extrabold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
+  text-transform: var(--overline-transform);
+  letter-spacing: var(--overline-tracking, var(--tracking-caps));
   color: var(--accent);
 }
 .lyra-pageheader__title { font: var(--h1-font); letter-spacing: var(--tracking-heading); color: var(--text-primary); margin: 0; }

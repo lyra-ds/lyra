@@ -45,6 +45,24 @@ ou `--text-muted` conforme a importância do conteúdo.
   alta, peso e cor. Assim, a mesma hierarquia se adapta ao tema.
 </Example>
 
+## Rótulos overline
+
+`--overline-transform` tem o padrão `uppercase`. `--overline-tracking` tem o padrão `initial`,
+que preserva o espaçamento atual de cada rótulo: `--tracking-caps` (0,08em) para a maioria,
+0,06em para grupos do combobox e 0,04em para rótulos de calendário e agendamento. Esses tokens
+controlam cabeçalhos de tabela, grupos da barra lateral e de menus, sobrancelhas de título de
+página, nomes de linguagem em blocos de código e outros metadados em estilo overline. O botão
+de ordenação herda a caixa e o espaçamento do cabeçalho da tabela.
+
+Para usar caixa de frase, defina ambos os tokens no escopo do aplicativo ou da marca:
+
+```css
+[data-brand='harbor'] {
+  --overline-transform: none;
+  --overline-tracking: normal;
+}
+```
+
 ## Mono
 
 `--font-mono` usa JetBrains Mono e fica reservado para código, nomes de tokens e dados técnicos. O

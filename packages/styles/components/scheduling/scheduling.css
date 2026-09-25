@@ -72,7 +72,7 @@
   color: var(--text-link);
 }
 .lyra-sched__copy { display: flex; flex-direction: column; gap: var(--space-2); min-width: 180px; }
-.lyra-sched__copy-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.lyra-sched__copy-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: var(--overline-transform); letter-spacing: var(--overline-tracking, 0.04em); }
 .lyra-sched__error { font-size: var(--text-xs); color: var(--danger-text); }
 .lyra-sched__exc { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4); }
 .lyra-sched__exc-row { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-base); color: var(--text-secondary); }
@@ -149,7 +149,7 @@
 .lyra-calview__nav:hover { background: var(--surface-sunken); color: var(--text-primary); }
 .lyra-calview__nav:focus-visible, .lyra-calview__seg button:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
 .lyra-calview__head { display: grid; border-bottom: 1px solid var(--border-default); }
-.lyra-calview__head-cell { padding: var(--space-2); text-align: center; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.lyra-calview__head-cell { padding: var(--space-2); text-align: center; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: var(--overline-transform); letter-spacing: var(--overline-tracking, 0.04em); }
 .lyra-calview__head-cell strong { display: block; font-family: var(--font-display); font-size: var(--text-md); color: var(--text-primary); letter-spacing: 0; }
 .lyra-calview__head-cell--today strong { color: var(--accent-soft-text); }
 .lyra-calview__scroll { overflow-y: auto; max-height: 520px; position: relative; }

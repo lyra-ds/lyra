@@ -15,8 +15,8 @@
   text-align: left;
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  letter-spacing: var(--overline-tracking, var(--tracking-caps));
+  text-transform: var(--overline-transform);
   color: var(--text-muted);
   padding: var(--space-3) var(--space-4);
   background: var(--surface-sunken);
@@ -143,7 +143,7 @@
 }
 .lyra-diff__block--current { background: var(--surface-sunken); border: 1px solid var(--border-default); }
 .lyra-diff__block--proposed { background: var(--accent-soft); border: 1px solid var(--border-accent); }
-.lyra-diff__overline { font-size: 10px; font-weight: var(--weight-extrabold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--text-muted); }
+.lyra-diff__overline { font-size: 10px; font-weight: var(--weight-extrabold); text-transform: var(--overline-transform); letter-spacing: var(--overline-tracking, var(--tracking-caps)); color: var(--text-muted); }
 .lyra-diff__block--proposed .lyra-diff__overline { color: var(--accent-soft-text); }
 .lyra-diff__value { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); overflow-wrap: anywhere; }
 .lyra-diff__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
