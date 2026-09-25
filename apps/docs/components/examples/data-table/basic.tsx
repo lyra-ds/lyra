@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Badge, Button, DataTable, type DataTableColumn } from '@lyra-ds/react';
 
 const columns: DataTableColumn[] = [
-  { key: 'project', label: 'Project' },
+  { key: 'project', label: 'Project', rowHeader: true },
   { key: 'owner', label: 'Owner' },
   { key: 'status', label: 'Status' },
   { key: 'actions', label: 'Actions' },
@@ -52,7 +52,7 @@ export function DataTableBasic() {
 
   return (
     <div>
-      <DataTable columns={columns} rows={rows} hover />
+      <DataTable caption="Projects" columns={columns} rows={rows} hover />
       <p aria-live="polite">
         {opened
           ? `Showing details for ${opened.project}. Owner: ${opened.owner}.`

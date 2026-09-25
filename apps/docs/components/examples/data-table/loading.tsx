@@ -7,5 +7,5 @@ const columns: DataTableColumn[] = [
 ];
 
 export function DataTableLoading() {
-  return <DataTable columns={columns} rows={[]} loading={3} selectable />;
+  return <DataTable caption="Projects" columns={columns} rows={[]} loading={3} selectable />;
 }

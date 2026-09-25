@@ -14,6 +14,8 @@ export interface LyraDataTableOptions {
   selected?: string[];
   /** Reorder served rows in the browser after sorting. Default: `false`. */
   clientSort?: boolean;
+  /** Accessible name for the focusable scroll region; defaults to the table caption or label. */
+  scrollLabel?: string;
 }
 
 type Binding = Record<string, unknown>;
@@ -42,6 +44,8 @@ interface LyraDataTableData {
   rowCheckbox: Binding;
   row: Binding;
   header: Binding;
+  rowHeader: Binding;
+  scrollRegion: Binding;
   sortButton: Binding;
 }
 
@@ -77,18 +81,19 @@ function compareValues(left: string | null, right: string | null): number {
  * ```html
  * <div x-data="lyraDataTable({ selected: [], sorting: null, clientSort: false })"
  *   x-modelable="selected" x-model="selectedIds">
- *   <table class="lyra-table">
+ *   <div class="lyra-table-scroll" x-bind="scrollRegion">
+ *   <table class="lyra-table"><caption>Projects</caption>
  *     <thead><tr>
- *       <th class="lyra-table__check"><input class="lyra-checkbox" type="checkbox" x-bind="selectAll"></th>
+ *       <th scope="col" class="lyra-table__check"><input class="lyra-checkbox" type="checkbox" x-bind="selectAll"></th>
  *       <th data-sort-key="name" x-bind="header"><button class="lyra-table__sortbtn" x-bind="sortButton">
  *         Name <svg x-show="sortDir('name') === null"></svg><svg x-show="sortDir('name') === 'asc'"></svg><svg x-show="sortDir('name') === 'desc'"></svg>
  *       </button></th>
  *     </tr></thead>
  *     <tbody><tr data-row-id="north" x-bind="row">
  *       <td class="lyra-table__check"><input class="lyra-checkbox" type="checkbox" x-bind="rowCheckbox"></td>
- *       <td data-sort-value="North">North</td>
+ *       <th scope="row" x-bind="rowHeader" data-sort-value="North">North</th>
  *     </tr></tbody>
- *   </table>
+ *   </table></div>
  * </div>
  * ```
  */
@@ -96,6 +101,7 @@ export function lyraDataTable({
   sorting = null,
   selected = [],
   clientSort = false,
+  scrollLabel,
 }: LyraDataTableOptions = {}): LyraDataTableData {
   const state: LyraDataTableData & ThisType<LyraDataTableState> = {
     sorting,
@@ -241,10 +247,27 @@ export function lyraDataTable({
     },
 
     header: {
+      scope: 'col',
       [':aria-sort']() {
         const key = this.headerKeyFor(this.$el);
         if (key === null || this.sorting?.key !== key) return undefined;
         return this.sorting.dir === 'asc' ? 'ascending' : 'descending';
+      },
+    },
+
+    rowHeader: { scope: 'row' },
+
+    scrollRegion: {
+      role: 'region',
+      tabindex: 0,
+      [':aria-label']() {
+        const table = this.root?.querySelector('table');
+        return (
+          scrollLabel ??
+          table?.caption?.textContent?.trim() ??
+          table?.getAttribute('aria-label') ??
+          'Data table'
+        );
       },
     },
 

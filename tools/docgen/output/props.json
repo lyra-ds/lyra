@@ -439,6 +439,24 @@
         "description": "Row records whose values may be any renderable React node. An `id` value is used for keys and selection."
       },
       {
+        "name": "caption",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Table caption. Supply a meaningful name for each data set."
+      },
+      {
+        "name": "captionHidden",
+        "type": "boolean",
+        "optional": true,
+        "description": "Visually hide the caption while keeping it available to assistive technology."
+      },
+      {
+        "name": "scrollLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the focusable scroll region when it differs from the table name."
+      },
+      {
         "name": "sorting",
         "type": "DataTableSorting | null",
         "optional": true,

@@ -58,6 +58,10 @@ Prefira outro componente quando:
 - Set `hover` to `true` only when a visual scanning affordance is useful. It is not implied by a
   consumer action.
 
+- Dê a cada tabela um `caption` descritivo (use `captionHidden` quando ele deve aparecer apenas para tecnologias assistivas). `aria-label` e `aria-labelledby` são encaminhados à tabela.
+- Marque a coluna de identificação com `rowHeader: true`; as células do corpo serão `<th scope="row">`. Os cabeçalhos de coluna usam `scope="col"`.
+- A área de rolagem é uma região focável e nomeada. O nome vem do caption, ou pode ser definido com `scrollLabel`. Durante o carregamento, a tabela expõe `aria-busy` e `labels.loading` fornece um anúncio oculto.
+
 ## React cell actions
 
 Move each former row command into an explicit action cell during manual migration. The old
@@ -71,7 +75,7 @@ import { useState } from 'react';
 import { Badge, Button, DataTable, type DataTableColumn } from '@lyra-ds/react';
 
 const columns: DataTableColumn[] = [
-  { key: 'project', label: 'Project' },
+  { key: 'project', label: 'Project', rowHeader: true },
   { key: 'owner', label: 'Owner' },
   { key: 'status', label: 'Status' },
   { key: 'actions', label: 'Actions' },
@@ -118,7 +122,7 @@ export function ProjectTable() {
 
   return (
     <div>
-      <DataTable columns={columns} rows={rows} hover />
+      <DataTable caption="Projetos" columns={columns} rows={rows} hover />
       <p aria-live="polite">
         {opened
           ? `Showing details for ${opened.project}. Owner: ${opened.owner}.`
@@ -139,24 +143,29 @@ export function ProjectTable() {
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
+Com o binding Alpine, sirva um `<caption>` e `<th scope="row">` para cada célula de identificação. Adicione `x-bind="header"` aos `<th>` de colunas ordenáveis, `x-bind="rowHeader"` aos `<th>` de linhas e `x-bind="scrollRegion"` a `.lyra-table-scroll`; use `lyraDataTable({ scrollLabel: "…" })` para alterar o nome da região. Cabeçalhos de colunas não ordenáveis precisam de `scope="col"` no HTML servido.
+
 Sem React, componha as classes da tabela — estado de ordenação e seleção, rótulos dos checkboxes e
 a transição de carregamento ficam com você:
 
 ```html
 <div class="lyra-table-wrap">
-  <div class="lyra-table-scroll">
+  <div class="lyra-table-scroll" role="region" tabindex="0" aria-label="Projetos">
     <table class="lyra-table lyra-table--hover">
+      <caption>
+        Projetos
+      </caption>
       <thead>
         <tr>
-          <th class="lyra-table__check">
+          <th scope="col" class="lyra-table__check">
             <input class="lyra-checkbox" type="checkbox" aria-label="Selecionar todos" />
           </th>
-          <th aria-sort="ascending">
+          <th scope="col" aria-sort="ascending">
             <button class="lyra-table__sortbtn lyra-table__sortbtn--active" type="button">
               Projeto
             </button>
           </th>
-          <th>Status</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -164,7 +173,7 @@ a transição de carregamento ficam com você:
           <td class="lyra-table__check">
             <input class="lyra-checkbox" type="checkbox" aria-label="Selecionar Atlas" checked />
           </td>
-          <td class="lyra-table__primary">Atlas</td>
+          <th scope="row" class="lyra-table__primary">Atlas</th>
           <td>Saudável</td>
         </tr>
       </tbody>

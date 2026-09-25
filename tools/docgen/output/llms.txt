@@ -251,6 +251,12 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   columns: DataTableColumn[];
   /** Row records whose values may be any renderable React node. An `id` value is used for keys and selection. */
   rows: RowShape[];
+  /** Table caption. Supply a meaningful name for each data set. */
+  caption?: ReactNode;
+  /** Visually hide the caption while keeping it available to assistive technology. */
+  captionHidden?: boolean;
+  /** Accessible name for the focusable scroll region when it differs from the table name. */
+  scrollLabel?: string;
   /** Controlled sorting state. Pass `null` for unsorted rows. */
   sorting?: DataTableSorting | null;
   /** Initial sorting state when uncontrolled. Default: `null`. */
