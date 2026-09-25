@@ -868,6 +868,16 @@
       "limit": "2 kB"
     },
     {
+      "name": "import { OtpInput } from '@lyra-ds/react/otp-input'",
+      "path": "dist/otp-input.js",
+      "import": "{ OtpInput }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "1.2 kB"
+    },
+    {
       "name": "import { Dialog } from '@lyra-ds/react/dialog'",
       "path": "dist/dialog.js",
       "import": "{ Dialog }",
