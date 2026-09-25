@@ -93,8 +93,8 @@
       {
         "name": "mark",
         "type": "string",
-        "optional": false,
-        "description": "Image source used for the light theme mark."
+        "optional": true,
+        "description": "Image source used for the light theme mark. When omitted, the mark falls back to the initial\nof the wordmark text (or of `aria-label` for a mark-only brand)."
       },
       {
         "name": "markDark",
