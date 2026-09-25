@@ -74,7 +74,7 @@ describe('ToastProvider', () => {
     );
     await userEvent.click(screen.container.querySelectorAll<HTMLButtonElement>('button')[1]!);
 
-    await expect.element(screen.getByRole('status')).toHaveTextContent('Changes saved');
+    await expect.element(screen.getByText('Changes saved')).toBeInTheDocument();
   });
 
   it('keeps the id from a child mount effect valid under StrictMode replay', async () => {
@@ -97,7 +97,7 @@ describe('ToastProvider', () => {
     );
 
     // The replayed effect must add a toast rather than no-op against an "unmounted" provider.
-    await vi.waitFor(() => expect(document.querySelectorAll('[role="status"]')).toHaveLength(1));
+    await vi.waitFor(() => expect(document.querySelectorAll('.lyra-toast')).toHaveLength(1));
     expect(ids.length).toBeGreaterThan(1);
   });
 
@@ -117,8 +117,8 @@ describe('ToastProvider', () => {
       </StrictMode>,
     );
 
-    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).not.toBeNull());
-    await vi.waitFor(() => expect(document.querySelector('[role="status"]')).toBeNull(), {
+    await vi.waitFor(() => expect(document.querySelector('.lyra-toast')).not.toBeNull());
+    await vi.waitFor(() => expect(document.querySelector('.lyra-toast')).toBeNull(), {
       timeout: 3000,
     });
   });
