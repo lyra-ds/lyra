@@ -32,6 +32,8 @@ export interface DateRangePickerLabels {
   calendar?: CalendarLabels;
   /** Text between the formatted start and end dates. Default: `" – "`. */
   rangeSeparator?: string;
+  /** Accessible name for a complete range, including both formatted dates. Default: `"X to Y"`. */
+  rangeAnnouncement?: (start: string, end: string) => string;
 }
 
 const DEFAULT_LABELS: Required<Omit<DateRangePickerLabels, 'calendar'>> = {
@@ -41,6 +43,7 @@ const DEFAULT_LABELS: Required<Omit<DateRangePickerLabels, 'calendar'>> = {
   sheetTitle: 'Select period',
   close: 'Close',
   rangeSeparator: ' – ',
+  rangeAnnouncement: (start, end) => `${start} to ${end}`,
 };
 
 /** Props for {@link DateRangePicker}. */
@@ -139,6 +142,14 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
         id={triggerId}
         className={cx('lyra-input', 'lyra-datepicker__btn', error && 'lyra-input--error')}
         disabled={disabled}
+        aria-label={
+          selected.start && selected.end
+            ? labels.rangeAnnouncement(
+                dateFormatter.format(selected.start),
+                dateFormatter.format(selected.end),
+              )
+            : undefined
+        }
         onClick={mobile ? () => setOpen(true) : undefined}
       >
         <svg

@@ -388,6 +388,12 @@
         "type": "string",
         "optional": true,
         "description": "Text after the separator while the range has no end. Default: `\"…\"`."
+      },
+      {
+        "name": "rangeAnnouncement",
+        "type": "(start: string, end: string) => string",
+        "optional": true,
+        "description": "Accessible name for a complete range, including both formatted dates. Default: `\"X to Y\"`."
       }
     ]
   },

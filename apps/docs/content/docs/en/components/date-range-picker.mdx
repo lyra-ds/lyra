@@ -17,8 +17,8 @@ date describe one period; choose two DatePickers only when the dates have separa
 
 <Example id="labels" title="Translated range text">
   `labels.rangeSeparator` and `labels.incompleteRange` control the text between a start and end date
-  and the marker shown while only the start exists. They keep this visible range state in the same
-  i18n-by-props model as the other picker labels.
+  and the marker shown while only the start exists. `labels.rangeAnnouncement(start, end)` controls
+  the accessible name for a complete range; include both formatted dates in its result.
 </Example>
 
 ## When to use
@@ -39,7 +39,10 @@ Reach for something else when:
 - The composed Calendar runs in range mode. It retains roving day focus and keyboard navigation;
   the first selection starts a range, the next finishes it, and a completed range closes the picker.
 - The trigger's visible value is a single formatted string: start date, `labels.rangeSeparator`, then
-  the end date or `labels.incompleteRange`. Supply both labels when translating the range state.
+  the end date or `labels.incompleteRange`. A complete range has an accessible name of “X to Y” by
+  default. Customize it with `labels.rangeAnnouncement(start, end)` in React or the
+  `rangeAnnouncement` Alpine option. Keep both visible dates in the announcement. Empty and
+  incomplete ranges retain their existing names.
 - `error` replaces `hint`; `disabled` disables the trigger.
 - At viewports of 640px or less, the Popover path becomes a BottomSheet containing Calendar. Its
   title and close name come from `label`/`labels.sheetTitle` and `labels.close`. It is prose only in
@@ -68,6 +71,7 @@ focus movement and the mobile sheet alternative yourself:
       type="button"
       aria-haspopup="dialog"
       aria-expanded="true"
+      aria-label="08/11/2026 to 08/15/2026"
     >
       <span>08/11/2026 – 08/15/2026</span>
     </button>

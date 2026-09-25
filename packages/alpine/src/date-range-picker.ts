@@ -12,6 +12,8 @@ export interface LyraDateRangePickerOptions {
   rangeSeparator?: string;
   /** Text after the separator while the range has no end. Default: `"…"`. */
   incompleteRange?: string;
+  /** Accessible name for a complete range, including both formatted dates. Default: `"X to Y"`. */
+  rangeAnnouncement?: (start: string, end: string) => string;
 }
 
 interface LyraDateRangePickerData {
@@ -22,6 +24,7 @@ interface LyraDateRangePickerData {
   placeholder: string;
   rangeSeparator: string;
   incompleteRange: string;
+  rangeAnnouncement: (start: string, end: string) => string;
   root: HTMLElement | null;
   media: MediaQueryList | null;
   onMediaChange: ((event: MediaQueryListEvent) => void) | null;
@@ -29,6 +32,7 @@ interface LyraDateRangePickerData {
   init(): void;
   destroy(): void;
   triggerText(): string;
+  triggerAnnouncement(): string | null;
   hasSelection(): boolean;
 }
 
@@ -52,7 +56,7 @@ type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMag
  *          getter/setter proxies the picker's property under a non-colliding name. -->
  *     <div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
  *       <div class="lyra-popover-anchor lyra-datepicker" x-data="lyraPopover({ ariaLabel: 'Date range picker' })" x-modelable="open" x-model="pickerOpen">
- *       <button class="lyra-input lyra-datepicker__btn" x-bind="trigger">
+ *       <button class="lyra-input lyra-datepicker__btn" x-bind="trigger" :aria-label="triggerAnnouncement()">
  *         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
  *           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
  *           <path d="M8 2v4M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" />
@@ -102,7 +106,7 @@ type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMag
  *   <template x-if="mobile">
  *     <div>
  *       <div class="lyra-datepicker">
- *       <button class="lyra-input lyra-datepicker__btn" type="button" @click="open = true">
+ *       <button class="lyra-input lyra-datepicker__btn" type="button" @click="open = true" :aria-label="triggerAnnouncement()">
  *         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
  *           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
  *           <path d="M8 2v4M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" />
@@ -172,6 +176,7 @@ export function lyraDateRangePicker({
   placeholder = 'Select period',
   rangeSeparator = ' – ',
   incompleteRange = '…',
+  rangeAnnouncement = (start, end) => `${start} to ${end}`,
 }: LyraDateRangePickerOptions = {}): LyraDateRangePickerData {
   const normalizeRange = (value: unknown): { start: Date | null; end: Date | null } => {
     const range = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
@@ -186,6 +191,7 @@ export function lyraDateRangePicker({
     placeholder,
     rangeSeparator,
     incompleteRange,
+    rangeAnnouncement,
     root: null,
     media: null,
     onMediaChange: null,
@@ -227,6 +233,13 @@ export function lyraDateRangePicker({
       if (!start) return this.placeholder;
       const format = new Intl.DateTimeFormat(this.locale);
       return `${format.format(start)}${this.rangeSeparator}${end ? format.format(end) : this.incompleteRange}`;
+    },
+
+    triggerAnnouncement() {
+      const { start, end } = normalizeRange(this.selected);
+      if (!start || !end) return null;
+      const format = new Intl.DateTimeFormat(this.locale);
+      return this.rangeAnnouncement(format.format(start), format.format(end));
     },
 
     hasSelection() {
