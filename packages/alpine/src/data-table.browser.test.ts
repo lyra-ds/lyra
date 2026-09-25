@@ -19,10 +19,11 @@ function dataTableTemplate(
   return `
     <div ${wrapperAttributes}>
       <div class="lyra-data-table" x-data='lyraDataTable(${options})' ${componentAttributes}>
-        <table class="lyra-table">
+        <div class="lyra-table-scroll" x-bind="scrollRegion" style="max-width: 220px">
+        <table class="lyra-table" style="min-width: 500px"><caption>Projects</caption>
           <thead>
             <tr>
-              <th class="lyra-table__check">
+              <th scope="col" class="lyra-table__check">
                 <input class="lyra-checkbox" type="checkbox" aria-label="Select all" x-bind="selectAll">
               </th>
               <th data-sort-key="name" x-bind="header">
@@ -44,18 +45,19 @@ function dataTableTemplate(
           <tbody>
             <tr data-row-id="north" class="lyra-table__row--selected" x-bind="row">
               <td class="lyra-table__check"><input class="lyra-checkbox" type="checkbox" aria-label="Select North" x-bind="rowCheckbox"></td>
-              <td data-sort-value="North">North</td><td data-sort-value="10">10</td>
+              <th class="lyra-table__primary" data-sort-value="North" x-bind="rowHeader">North</th><td data-sort-value="10">10</td>
             </tr>
             <tr data-row-id="south" x-bind="row">
               <td class="lyra-table__check"><input class="lyra-checkbox" type="checkbox" aria-label="Select South" x-bind="rowCheckbox"></td>
-              <td data-sort-value="South">South</td><td data-sort-value="2">2</td>
+              <th class="lyra-table__primary" data-sort-value="South" x-bind="rowHeader">South</th><td data-sort-value="2">2</td>
             </tr>
             <tr data-row-id="west" x-bind="row">
               <td class="lyra-table__check"><input class="lyra-checkbox" type="checkbox" aria-label="Select West" x-bind="rowCheckbox"></td>
-              <td>West</td><td>—</td>
+              <th class="lyra-table__primary" x-bind="rowHeader">West</th><td>—</td>
             </tr>
           </tbody>
         </table>
+        </div>
         ${controls}
       </div>
     </div>
@@ -129,6 +131,22 @@ afterEach(() => {
 });
 
 describe('lyraDataTable', () => {
+  it('binds a named, focusable scroll region and both header scopes on served markup', async () => {
+    const host = mountDataTable();
+    await flush();
+    const region = host.querySelector<HTMLElement>('.lyra-table-scroll')!;
+    expect(region.getAttribute('role')).toBe('region');
+    expect(region.getAttribute('tabindex')).toBe('0');
+    expect(region.getAttribute('aria-label')).toBe('Projects');
+    expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
+    region.focus();
+    expect(document.activeElement).toBe(region);
+    expect(host.querySelector('caption')?.textContent).toBe('Projects');
+    expect(header(host, 'name').getAttribute('scope')).toBe('col');
+    expect(row(host, 'north').querySelector('th')?.getAttribute('scope')).toBe('row');
+    await expectNoAxeViolations(host);
+  });
+
   it('selects original row ids, clears them, and sets select-all indeterminate imperatively', async () => {
     const host = mountDataTable();
     const selections: string[][] = [];

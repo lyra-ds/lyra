@@ -316,6 +316,12 @@
         "type": "boolean",
         "optional": true,
         "description": "Reorder served rows in the browser after sorting. Default: `false`."
+      },
+      {
+        "name": "scrollLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the focusable scroll region; defaults to the table caption or label."
       }
     ]
   },

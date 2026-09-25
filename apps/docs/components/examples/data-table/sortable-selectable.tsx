@@ -4,7 +4,7 @@ import { DataTable, type DataTableColumn, type DataTableSorting } from '@lyra-ds
 import { useState } from 'react';
 
 const columns: DataTableColumn[] = [
-  { key: 'name', label: 'Name', sortable: true },
+  { key: 'name', label: 'Name', sortable: true, rowHeader: true },
   { key: 'team', label: 'Team', sortable: true },
   { key: 'tasks', label: 'Open tasks', align: 'right', sortable: true },
 ];
@@ -21,6 +21,7 @@ export function DataTableSortableSelectable() {
 
   return (
     <DataTable
+      caption="Team members"
       columns={columns}
       rows={rows}
       sorting={sorting}

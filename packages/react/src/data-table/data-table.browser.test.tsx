@@ -33,6 +33,75 @@ afterEach(async () => {
 });
 
 describe('DataTable', () => {
+  it('names a wide table and its keyboard-scrollable region and scopes both header axes', async () => {
+    const wideColumns = [
+      { key: 'name', label: 'Name', rowHeader: true },
+      ...Array.from({ length: 12 }, (_, index) => ({
+        key: `metric${index}`,
+        label: `Metric ${index}`,
+        width: 180,
+      })),
+    ];
+    const screen = await render(
+      <DataTable
+        caption="Project metrics"
+        captionHidden
+        columns={wideColumns}
+        rows={[{ id: 'north', name: 'North' }]}
+        selectable
+        maxHeight={120}
+      />,
+    );
+    const table = screen.getByRole('table', { name: 'Project metrics' }).element();
+    const region = screen.getByRole('region', { name: 'Project metrics' }).element() as HTMLElement;
+    expect(table.querySelector('caption')?.className).toBe('lyra-visually-hidden');
+    expect(table.querySelectorAll('thead th:not([scope="col"])')).toHaveLength(0);
+    expect(table.querySelector('tbody th[scope="row"]')?.textContent).toBe('North');
+    expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
+    region.focus();
+    expect(document.activeElement).toBe(region);
+    await expectNoAxeViolations(screen.container);
+  });
+
+  it('paints a selected row header with the same selection background as its cells', async () => {
+    const screen = await render(
+      <DataTable
+        aria-label="Regions"
+        columns={[
+          { key: 'name', label: 'Name', rowHeader: true },
+          { key: 'total', label: 'Total' },
+        ]}
+        rows={[{ id: 'north', name: 'North', total: 1 }]}
+        selected={['north']}
+      />,
+    );
+    const header = screen.container.querySelector('tbody th[scope="row"]') as HTMLElement;
+    const cell = screen.container.querySelector('tbody td') as HTMLElement;
+    const headerBg = getComputedStyle(header).backgroundColor;
+    expect(headerBg).not.toBe('rgba(0, 0, 0, 0)');
+    expect(headerBg).toBe(getComputedStyle(cell).backgroundColor);
+  });
+
+  it('forwards table labels, names the scroll region, and announces loading', async () => {
+    const screen = await render(
+      <DataTable
+        columns={columns}
+        rows={[]}
+        aria-label="Projects"
+        scrollLabel="Scrollable projects"
+        loading
+        labels={{ loading: 'Carregando dados…' }}
+      />,
+    );
+    await expect.element(screen.getByRole('table', { name: 'Projects' })).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole('region', { name: 'Scrollable projects' }))
+      .toBeInTheDocument();
+    expect(screen.container.querySelector('table')?.getAttribute('aria-busy')).toBe('true');
+    await expect.element(screen.getByRole('status')).toHaveTextContent('Carregando dados…');
+    await expectNoAxeViolations(screen.container);
+  });
+
   for (const theme of themes) {
     it(`renders a selectable, sortable table and is axe clean in ${theme}`, async () => {
       setTheme(theme);

@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo, useRef } from 'react';
+import { forwardRef, useEffect, useId, useMemo, useRef } from 'react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../internal/cx';
 import { useControllableState } from '../internal/use-controllable-state';
@@ -16,6 +16,8 @@ export interface DataTableColumn {
   align?: 'left' | 'center' | 'right';
   /** Whether this heading cycles through ascending, descending, and unsorted states. */
   sortable?: boolean;
+  /** Render this column's body cells as row headers (`<th scope="row">`). */
+  rowHeader?: boolean;
   /** Value used for sorting rich cell content. */
   sortValue?: (row: RowShape) => string | number | null;
   /** CSS width for this column. */
@@ -42,12 +44,15 @@ export interface DataTableLabels {
   selectRow?: string | ((row: RowShape) => string);
   /** Content shown when there are no rows. Default: `"No records."`. */
   empty?: ReactNode;
+  /** Loading announcement. Default: `"Loading data…"`. */
+  loading?: string;
 }
 
 const DEFAULT_DATA_TABLE_LABELS: Required<DataTableLabels> = {
   selectAll: 'Select all',
   selectRow: 'Select row',
   empty: 'No records.',
+  loading: 'Loading data…',
 };
 
 /** Props for {@link DataTable}. */
@@ -56,6 +61,12 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   columns: DataTableColumn[];
   /** Row records whose values may be any renderable React node. An `id` value is used for keys and selection. */
   rows: RowShape[];
+  /** Table caption. Supply a meaningful name for each data set. */
+  caption?: ReactNode;
+  /** Visually hide the caption while keeping it available to assistive technology. */
+  captionHidden?: boolean;
+  /** Accessible name for the focusable scroll region when it differs from the table name. */
+  scrollLabel?: string;
   /** Controlled sorting state. Pass `null` for unsorted rows. */
   sorting?: DataTableSorting | null;
   /** Initial sorting state when uncontrolled. Default: `null`. */
@@ -145,6 +156,11 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
     {
       columns,
       rows,
+      caption,
+      captionHidden = false,
+      scrollLabel,
+      'aria-label': tableAriaLabel,
+      'aria-labelledby': tableAriaLabelledBy,
       sorting: sortingProp,
       defaultSorting = null,
       onSortChange,
@@ -176,6 +192,7 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
       onChange: onSelectionChange,
     });
     const selectAllRef = useRef<HTMLInputElement>(null);
+    const captionId = useId();
     const labels = { ...DEFAULT_DATA_TABLE_LABELS, ...labelsProp };
     // Fallback ids must come from the ORIGINAL rows order: deriving them from the
     // sorted display index makes selection toggle the wrong row after a sort.
@@ -225,8 +242,23 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
 
     return (
       <div {...rest} ref={ref} className={cx('lyra-table-wrap', className)}>
-        <div className="lyra-table-scroll" style={maxHeight == null ? undefined : { maxHeight }}>
+        <div
+          className="lyra-table-scroll"
+          style={maxHeight == null ? undefined : { maxHeight }}
+          role="region"
+          // The scrollable region needs keyboard focus to satisfy WCAG 2.1.1.
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+          aria-label={
+            scrollLabel ??
+            (caption || tableAriaLabelledBy ? undefined : (tableAriaLabel ?? 'Data table'))
+          }
+          aria-labelledby={scrollLabel ? undefined : caption ? captionId : tableAriaLabelledBy}
+        >
           <table
+            aria-label={tableAriaLabel}
+            aria-labelledby={tableAriaLabelledBy}
+            aria-busy={loading ? true : undefined}
             className={cx(
               'lyra-table',
               hover && 'lyra-table--hover',
@@ -234,10 +266,18 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
               stickyHeader && 'lyra-table--sticky',
             )}
           >
+            {caption && (
+              <caption
+                id={captionId}
+                className={captionHidden ? 'lyra-visually-hidden' : undefined}
+              >
+                {caption}
+              </caption>
+            )}
             <thead>
               <tr>
                 {selectable && (
-                  <th className="lyra-table__check">
+                  <th scope="col" className="lyra-table__check">
                     <input
                       ref={selectAllRef}
                       type="checkbox"
@@ -254,6 +294,7 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
                   return (
                     <th
                       key={column.key}
+                      scope="col"
                       style={columnStyle(column)}
                       aria-sort={
                         active ? (sorting.dir === 'asc' ? 'ascending' : 'descending') : undefined
@@ -332,21 +373,30 @@ export const DataTable = /*#__PURE__*/ forwardRef<HTMLDivElement, DataTableProps
                           />
                         </td>
                       )}
-                      {columns.map((column, columnIndex) => (
-                        <td
-                          key={column.key}
-                          className={columnIndex === 0 ? 'lyra-table__primary' : undefined}
-                          style={columnStyle(column)}
-                        >
-                          {row[column.key]}
-                        </td>
-                      ))}
+                      {columns.map((column, columnIndex) => {
+                        const Cell = column.rowHeader ? 'th' : 'td';
+                        return (
+                          <Cell
+                            key={column.key}
+                            scope={column.rowHeader ? 'row' : undefined}
+                            className={columnIndex === 0 ? 'lyra-table__primary' : undefined}
+                            style={columnStyle(column)}
+                          >
+                            {row[column.key]}
+                          </Cell>
+                        );
+                      })}
                     </tr>
                   );
                 })
               )}
             </tbody>
           </table>
+          {loading && (
+            <span role="status" className="lyra-visually-hidden">
+              {labels.loading}
+            </span>
+          )}
         </div>
         {footer && <div className="lyra-table__footer">{footer}</div>}
       </div>

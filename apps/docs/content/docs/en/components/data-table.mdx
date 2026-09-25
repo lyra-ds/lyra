@@ -54,6 +54,10 @@ Reach for something else when:
 - Set `hover` to `true` only when a visual scanning affordance is useful. It is not implied by a
   consumer action.
 
+- Give every table a descriptive `caption` (use `captionHidden` when it should only be read by assistive technology). `aria-label` and `aria-labelledby` are forwarded to the table.
+- Mark the identifying column with `rowHeader: true`; it renders body cells as `<th scope="row">`. Column headings use `scope="col"`.
+- The scroll area is a focusable, named region. Its name comes from the caption, or you can set `scrollLabel`. While loading, the table exposes `aria-busy` and `labels.loading` supplies a hidden status announcement.
+
 ## React cell actions
 
 Move each former row command into an explicit action cell during manual migration. The old
@@ -67,7 +71,7 @@ import { useState } from 'react';
 import { Badge, Button, DataTable, type DataTableColumn } from '@lyra-ds/react';
 
 const columns: DataTableColumn[] = [
-  { key: 'project', label: 'Project' },
+  { key: 'project', label: 'Project', rowHeader: true },
   { key: 'owner', label: 'Owner' },
   { key: 'status', label: 'Status' },
   { key: 'actions', label: 'Actions' },
@@ -114,7 +118,7 @@ export function ProjectTable() {
 
   return (
     <div>
-      <DataTable columns={columns} rows={rows} hover />
+      <DataTable caption="Projects" columns={columns} rows={rows} hover />
       <p aria-live="polite">
         {opened
           ? `Showing details for ${opened.project}. Owner: ${opened.owner}.`
@@ -135,24 +139,29 @@ export function ProjectTable() {
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
+For the Alpine binding, serve a `<caption>` and `<th scope="row">` for each identifying cell. Add `x-bind="header"` to sortable column `<th>` elements, `x-bind="rowHeader"` to row `<th>` elements, and `x-bind="scrollRegion"` to `.lyra-table-scroll`; use `lyraDataTable({ scrollLabel: "…" })` to override its name. Non-sortable column headers need `scope="col"` in served HTML.
+
 Without React, compose the table classes — you own sorting, selected-row state, checkbox labels and
 the loading transition:
 
 ```html
 <div class="lyra-table-wrap">
-  <div class="lyra-table-scroll">
+  <div class="lyra-table-scroll" role="region" tabindex="0" aria-label="Projects">
     <table class="lyra-table lyra-table--hover">
+      <caption>
+        Projects
+      </caption>
       <thead>
         <tr>
-          <th class="lyra-table__check">
+          <th scope="col" class="lyra-table__check">
             <input class="lyra-checkbox" type="checkbox" aria-label="Select all" />
           </th>
-          <th aria-sort="ascending">
+          <th scope="col" aria-sort="ascending">
             <button class="lyra-table__sortbtn lyra-table__sortbtn--active" type="button">
               Project
             </button>
           </th>
-          <th>Status</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -160,7 +169,7 @@ the loading transition:
           <td class="lyra-table__check">
             <input class="lyra-checkbox" type="checkbox" aria-label="Select Atlas" checked />
           </td>
-          <td class="lyra-table__primary">Atlas</td>
+          <th scope="row" class="lyra-table__primary">Atlas</th>
           <td>Healthy</td>
         </tr>
       </tbody>

@@ -199,6 +199,33 @@
 .lyra-table th {
   color: var(--text-secondary);
 }
+.lyra-table caption:not(.lyra-visually-hidden) {
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  text-align: left;
+}
+
+/* Body row headers use the body-cell geometry instead of the column-header band. */
+.lyra-table tbody th[scope="row"] {
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.lyra-table--compact tbody th[scope="row"] { padding: var(--space-2) var(--space-3); }
+.lyra-table--compact tbody th[scope="row"]:first-child { padding-left: var(--space-4); }
+.lyra-table--compact tbody th[scope="row"]:last-child { padding-right: var(--space-4); }
+.lyra-table tbody .lyra-table__row--selected th[scope="row"] {
+  background: color-mix(in oklab, var(--accent-soft) 55%, transparent);
+}
+.lyra-table-scroll:focus-visible {
+  outline: none;
+  box-shadow: inset var(--shadow-focus);
+}
 
 /* Additive a11y extension (parity ADDITIVE_EXTENSIONS): forced colors suppresses the
    shadow-only focus treatment, so retain a native system-color ring for keyboard focus. */
@@ -206,6 +233,10 @@
   .lyra-table__sortbtn:focus-visible {
     outline: 2px solid CanvasText;
     outline-offset: 2px;
+  }
+  .lyra-table-scroll:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
   }
 }
 

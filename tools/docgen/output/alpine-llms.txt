@@ -84,6 +84,7 @@ Documented as `data-table`. Mount with `x-data="lyraDataTable({ … })"`.
 - `sorting?: LyraDataTableSorting | null` — Controlled sort state. Modelable with `x-modelable="sorting"`. Default: `null`.
 - `selected?: string[]` — Controlled selected served row ids. Modelable with `x-modelable="selected"`. Default: `[]`.
 - `clientSort?: boolean` — Reorder served rows in the browser after sorting. Default: `false`.
+- `scrollLabel?: string` — Accessible name for the focusable scroll region; defaults to the table caption or label.
 ### lyraDatePicker
 
 Documented as `date-picker`. Mount with `x-data="lyraDatePicker({ … })"`.
