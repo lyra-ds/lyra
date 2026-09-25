@@ -35,7 +35,7 @@ Prefira outro componente quando:
 
 ## Acessibilidade
 
-- Renderiza um landmark `<nav>` plano, não uma lista de `<ol>` ou `<li>`. O nome padrão é "Breadcrumb"; `locale="pt-BR"` usa "Navegação estrutural".
+- Renderiza um landmark `<nav>` plano, não uma lista de `<ol>` ou `<li>`. O nome padrão é "Breadcrumb" (inglês); passe `aria-label="Navegação estrutural"` para traduzi-lo.
   Passe `aria-label` quando houver mais de uma trilha na página.
 - Cada item anterior com `href` ou `asChild` é um link; itens sem destino são texto simples. O último é um
   `<span class="lyra-breadcrumb__current" aria-current="page">`, mesmo quando seus dados têm `href`.
@@ -47,11 +47,11 @@ Prefira outro componente quando:
 
 ```tsx
 // React Router
-<Breadcrumb locale="pt-BR" items={[{ label: 'Projetos', asChild: <Link to="/projetos" /> },
+<Breadcrumb aria-label="Navegação estrutural" items={[{ label: 'Projetos', asChild: <Link to="/projetos" /> },
   { label: 'Projeto atual' }]} />
 
 // Next.js
-<Breadcrumb locale="pt-BR" items={[{ label: 'Projetos', asChild: <Link href="/projetos" /> },
+<Breadcrumb aria-label="Navegação estrutural" items={[{ label: 'Projetos', asChild: <Link href="/projetos" /> },
   { label: 'Projeto atual' }]} />
 ```
 

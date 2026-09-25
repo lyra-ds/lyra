@@ -35,7 +35,7 @@ Reach for something else when:
 
 ## Accessibility
 
-- Renders a flat `<nav>` landmark, not an `<ol>` or `<li>` list. It is named "Breadcrumb" by default; `locale="pt-BR"` uses "Navegação estrutural".
+- Renders a flat `<nav>` landmark, not an `<ol>` or `<li>` list. It is named "Breadcrumb" by default; pass `aria-label` to translate or rename it.
   Pass `aria-label` when a page holds more than one trail.
 - Every item before the last with `href` or `asChild` is a link; missing destinations are plain text. The last is a
   `<span class="lyra-breadcrumb__current" aria-current="page">`, even when its data has an `href`.

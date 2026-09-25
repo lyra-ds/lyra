@@ -44,12 +44,6 @@
         "type": "LyraAppSidebarLabels",
         "optional": true,
         "description": "Localized labels for the collapse control."
-      },
-      {
-        "name": "locale",
-        "type": "'en' | 'pt-BR'",
-        "optional": true,
-        "description": "Language for built-in collapse labels. Explicit `labels` take precedence."
       }
     ]
   },

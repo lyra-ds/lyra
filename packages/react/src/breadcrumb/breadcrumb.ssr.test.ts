@@ -9,10 +9,10 @@ describe('Breadcrumb SSR', () => {
         createElement(Breadcrumb, { items: [{ label: 'Home', href: '/' }, { label: 'Current' }] }),
       ),
     ).toContain('aria-current="page"'));
-  it('renders router links, native targets and a localized landmark without placeholder links', () => {
+  it('renders router links, native targets and a consumer-supplied landmark name without placeholder links', () => {
     const html = renderToString(
       createElement(Breadcrumb, {
-        locale: 'pt-BR',
+        'aria-label': 'Navegação estrutural',
         items: [
           { label: 'Início', href: '/', target: '_blank' },
           { label: 'Projetos', asChild: createElement('a', { href: '/projetos' }) },

@@ -2746,12 +2746,6 @@
         "description": "Localized labels for the collapse control."
       },
       {
-        "name": "locale",
-        "type": "'en' | 'pt-BR'",
-        "optional": true,
-        "description": "Language for built-in collapse labels. Explicit `labels` take precedence."
-      },
-      {
         "name": "children",
         "type": "ReactNode",
         "optional": true,
@@ -2798,12 +2792,6 @@
         "type": "BreadcrumbItem[]",
         "optional": false,
         "description": "Navigation items; the final item is rendered as the current page."
-      },
-      {
-        "name": "locale",
-        "type": "'en' | 'pt-BR'",
-        "optional": true,
-        "description": "Language for the built-in landmark name. Explicit `aria-label` takes precedence."
       }
     ]
   },

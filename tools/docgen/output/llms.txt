@@ -1309,8 +1309,6 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   onSelect?: (id: string, item: AppSidebarGroupItem) => void;
   /** Localized labels for the collapse control. */
   labels?: AppSidebarLabels;
-  /** Language for built-in collapse labels. Explicit `labels` take precedence. */
-  locale?: 'en' | 'pt-BR';
   /**
    * Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve
    * their original element type and routing behavior.
@@ -1340,8 +1338,6 @@ export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
   'aria-label'?: string;
   /** Navigation items; the final item is rendered as the current page. */
   items: BreadcrumbItem[];
-  /** Language for the built-in landmark name. Explicit `aria-label` takes precedence. */
-  locale?: 'en' | 'pt-BR';
 }
 export declare function Breadcrumb(props: BreadcrumbProps): JSX.Element;
 ```

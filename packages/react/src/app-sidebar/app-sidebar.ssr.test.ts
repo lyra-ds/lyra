@@ -46,7 +46,7 @@ describe('AppSidebar — SSR', () => {
     const html = renderToString(
       createElement(AppSidebar, {
         collapsed: true,
-        locale: 'pt-BR',
+        labels: { collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' },
         collapsible: true,
         groups: [
           {

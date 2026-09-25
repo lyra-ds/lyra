@@ -30,10 +30,10 @@ describe('Breadcrumb', () => {
     );
     expect(container.querySelector('nav')!.getAttribute('aria-label')).toBe('Documentation');
   });
-  it('renders router and new-tab links with a localized landmark', async () => {
+  it('renders router and new-tab links with a consumer-supplied landmark name', async () => {
     const screen = await render(
       <Breadcrumb
-        locale="pt-BR"
+        aria-label="Navegação estrutural"
         items={[
           { label: 'Início', href: '/', target: '_blank' },
           { label: 'Projetos', asChild: <a href="/projetos">Projetos</a> },

@@ -70,8 +70,7 @@ trilhos de Shell com scroll de página.
 - No modo de composição, os filhos permanecem seus elementos originais. Use âncoras reais para rotas;
   no modo trilho, descendentes de link recebem `title` e `aria-label` de um rótulo explícito, título
   ou de seu conteúdo textual.
-- O controle de recolhimento é um botão nativo cujo nome acessível e tooltip vêm de `labels` ou do
-  padrão de `locale` (`en` ou `pt-BR`). No modo
+- O controle de recolhimento é um botão nativo cujo nome acessível e tooltip vêm de `labels` (em inglês por padrão). No modo
   trilho, rótulos de grupo, texto de item e badges ficam visualmente ocultos, enquanto os nomes dos
   controles e itens continuam disponíveis.
 - Um WorkspaceSwitcher no espaço da marca vira um gatilho compacto de avatar no modo trilho. O nome
@@ -83,17 +82,16 @@ trilhos de Shell com scroll de página.
 ```tsx
 // React Router mantém a navegação no cliente.
 <AppSidebar groups={[{ items: [{ id: 'relatorios', label: 'Relatórios', active: true,
-  asChild: <Link to="/relatorios" /> }] }]} locale="pt-BR" />
+  asChild: <Link to="/relatorios" /> }] }]} labels={{ collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' }} />
 
 // Next.js usa o mesmo contrato.
 <AppSidebar groups={[{ items: [{ id: 'cobranca', label: 'Cobrança',
-  asChild: <Link href="/cobranca" /> }] }]} locale="pt-BR" />
+  asChild: <Link href="/cobranca" /> }] }]} labels={{ collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' }} />
 ```
 
 Para um link nativo, use `href: '/relatorios'`. Para nova aba, acrescente
 `target: '_blank'` e `rel: 'noopener noreferrer'`. `asChild` substitui o conteúdo do Link
-pelo ícone e rótulo do item. `locale="pt-BR"` localiza os rótulos padrão do controle;
-`labels` ainda permite personalizá-los.
+pelo ícone e rótulo do item. Os rótulos padrão do controle são em inglês; passe `labels` para traduzi-los, como nos exemplos acima.
 
 ## API e código
 

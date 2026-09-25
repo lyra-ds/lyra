@@ -288,7 +288,7 @@ describe('AppSidebar', () => {
     const screen = await render(
       <AppSidebar
         collapsed
-        locale="pt-BR"
+        labels={{ collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' }}
         collapsible
         onSelect={selected}
         groups={[

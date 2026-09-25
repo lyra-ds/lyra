@@ -23,19 +23,17 @@ export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
   'aria-label'?: string;
   /** Navigation items; the final item is rendered as the current page. */
   items: BreadcrumbItem[];
-  /** Language for the built-in landmark name. Explicit `aria-label` takes precedence. */
-  locale?: 'en' | 'pt-BR';
 }
 
 /** A hierarchical navigation trail. Its landmark is named "Breadcrumb" unless you supply a name. */
 export const Breadcrumb = /*#__PURE__*/ forwardRef<HTMLElement, BreadcrumbProps>(
-  function Breadcrumb({ items, locale = 'en', className, 'aria-label': ariaLabel, ...rest }, ref) {
+  function Breadcrumb({ items, className, 'aria-label': ariaLabel, ...rest }, ref) {
     return (
       <nav
         {...rest}
         ref={ref}
         className={cx('lyra-breadcrumb', className)}
-        aria-label={ariaLabel ?? (locale === 'pt-BR' ? 'Navegação estrutural' : 'Breadcrumb')}
+        aria-label={ariaLabel ?? 'Breadcrumb'}
       >
         {items.map((item, index) => {
           const last = index === items.length - 1;

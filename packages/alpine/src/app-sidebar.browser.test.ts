@@ -14,7 +14,6 @@ type SidebarOptions = {
   width?: number;
   labels?: { collapse: string; expand: string };
   serverRenderedRail?: boolean;
-  locale?: 'en' | 'pt-BR';
 };
 
 function sidebarMarkup({
@@ -22,13 +21,12 @@ function sidebarMarkup({
   width = 260,
   labels = { collapse: 'Collapse sidebar', expand: 'Expand sidebar' },
   serverRenderedRail = false,
-  locale = 'en',
 }: SidebarOptions = {}): string {
   return `
     <nav
       class="lyra-appsidebar${serverRenderedRail ? ' lyra-appsidebar--rail' : ''}"
       aria-label="Application navigation"
-      x-data="lyraAppSidebar({ defaultCollapsed: ${defaultCollapsed}, width: ${width}, locale: '${locale}', ${locale === 'pt-BR' ? '' : `labels: { collapse: '${labels.collapse}', expand: '${labels.expand}' }`} })"
+      x-data="lyraAppSidebar({ defaultCollapsed: ${defaultCollapsed}, width: ${width}, labels: { collapse: '${labels.collapse}', expand: '${labels.expand}' } })"
       x-bind="root"
     >
       <div class="lyra-appsidebar__brand"><a href="/" aria-label="Lyra home">Lyra</a></div>
@@ -168,8 +166,10 @@ describe('lyraAppSidebar', () => {
     expect(toggle(customHost).title).toBe('Restore navigation');
   });
 
-  it('keeps served destinations as links and localizes default toggle labels', async () => {
-    const host = mountAppSidebar({ locale: 'pt-BR' });
+  it('keeps served destinations as links and uses consumer-supplied toggle labels', async () => {
+    const host = mountAppSidebar({
+      labels: { collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' },
+    });
     await flush();
     const current = host.querySelector<HTMLAnchorElement>('a[href="/overview"]')!;
     expect(current.getAttribute('aria-current')).toBe('page');

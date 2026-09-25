@@ -123,8 +123,6 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   onSelect?: (id: string, item: AppSidebarGroupItem) => void;
   /** Localized labels for the collapse control. */
   labels?: AppSidebarLabels;
-  /** Language for built-in collapse labels. Explicit `labels` take precedence. */
-  locale?: 'en' | 'pt-BR';
   /**
    * Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve
    * their original element type and routing behavior.
@@ -149,7 +147,6 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
       onCollapsedChange,
       onSelect,
       labels,
-      locale = 'en',
       className,
       style,
       children,
@@ -163,8 +160,8 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
       onChange: onCollapsedChange,
     });
     const controlLabel = isCollapsed
-      ? (labels?.expand ?? (locale === 'pt-BR' ? 'Expandir barra lateral' : 'Expand sidebar'))
-      : (labels?.collapse ?? (locale === 'pt-BR' ? 'Recolher barra lateral' : 'Collapse sidebar'));
+      ? (labels?.expand ?? 'Expand sidebar')
+      : (labels?.collapse ?? 'Collapse sidebar');
     const sidebarStyle: AppSidebarStyle = {
       '--appsidebar-width': `${isCollapsed ? 64 : width}px`,
       width: 'var(--appsidebar-width)',
