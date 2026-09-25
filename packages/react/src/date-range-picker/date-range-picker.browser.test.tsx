@@ -62,7 +62,7 @@ describe('DateRangePicker', () => {
     const screen = await render(
       <DateRangePicker
         label="Travel dates"
-        value={{ start: new Date(2024, 4, 15), end: null }}
+        defaultValue={{ start: new Date(2024, 4, 15), end: null }}
         onChange={onChange}
         locale="en-US"
       />,
@@ -90,6 +90,68 @@ describe('DateRangePicker', () => {
       end: new Date(2024, 4, 15),
     });
     expect(screen.container.querySelector('.lyra-popover')).toBeNull();
+    await expect
+      .element(screen.getByRole('button', { name: 'Travel dates' }))
+      .toHaveAccessibleDescription('5/10/2024 to 5/15/2024');
+    // Focus returns to the trigger after a complete selection, and the live region carries the range.
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Travel dates' }).element(),
+    );
+    const live = screen.container.querySelector('[role="status"]');
+    expect(live?.getAttribute('aria-live')).toBe('polite');
+    expect(live?.textContent).toBe('5/10/2024 to 5/15/2024');
+  });
+
+  it('describes a complete range without a label, default and custom', async () => {
+    const screen = await render(
+      <DateRangePicker
+        value={{ start: new Date(2024, 4, 10), end: new Date(2024, 4, 15) }}
+        locale="en-US"
+      />,
+    );
+    await expect
+      .element(screen.getByRole('button'))
+      .toHaveAccessibleDescription('5/10/2024 to 5/15/2024');
+
+    await screen.rerender(
+      <DateRangePicker
+        value={{ start: new Date(2024, 4, 10), end: new Date(2024, 4, 15) }}
+        locale="pt-BR"
+        labels={{ rangeAnnouncement: (start, end) => `de ${start} até ${end}` }}
+      />,
+    );
+    await expect
+      .element(screen.getByRole('button'))
+      .toHaveAccessibleDescription('de 10/05/2024 até 15/05/2024');
+  });
+
+  it('keeps the label as the name and describes complete ranges with a translated announcement', async () => {
+    const labels = {
+      rangeAnnouncement: (start: string, end: string) => `de ${start} até ${end}`,
+    };
+    const screen = await render(
+      <DateRangePicker
+        label="Travel dates"
+        value={{ start: new Date(2024, 4, 10), end: null }}
+        locale="pt-BR"
+        labels={labels}
+      />,
+    );
+    const incomplete = screen.getByRole('button', { name: 'Travel dates' });
+    await expect.element(incomplete).toHaveTextContent('10/05/2024 – …');
+    await expect.element(incomplete).toHaveAccessibleDescription('');
+
+    await screen.rerender(
+      <DateRangePicker
+        label="Travel dates"
+        value={{ start: new Date(2024, 4, 10), end: new Date(2024, 4, 15) }}
+        locale="pt-BR"
+        labels={labels}
+      />,
+    );
+    const complete = screen.getByRole('button', { name: 'Travel dates' });
+    await expect.element(complete).toHaveTextContent('10/05/2024 – 15/05/2024');
+    await expect.element(complete).toHaveAccessibleDescription('de 10/05/2024 até 15/05/2024');
   });
 
   it('opens its range Calendar inside BottomSheet at the mobile breakpoint', async () => {

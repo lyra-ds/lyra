@@ -104,6 +104,7 @@ Documented as `date-range-picker`. Mount with `x-data="lyraDateRangePicker({ …
 - `placeholder?: string` — Trigger text when no range has started. Default: `"Select period"`.
 - `rangeSeparator?: string` — Text between formatted range bounds. Default: `" – "`.
 - `incompleteRange?: string` — Text after the separator while the range has no end. Default: `"…"`.
+- `rangeAnnouncement?: (start: string, end: string) => string` — Accessible description of a complete range, referenced by `aria-describedby`. Includes both formatted dates. Default: `"X to Y"`.
 ### lyraDialog
 
 Documented as `dialog`. Mount with `x-data="lyraDialog({ … })"`.

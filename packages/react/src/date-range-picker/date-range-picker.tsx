@@ -1,4 +1,4 @@
-import { forwardRef, useId, useMemo, useState } from 'react';
+import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes } from 'react';
 import { BottomSheet } from '../bottom-sheet';
 import { Calendar } from '../calendar';
@@ -32,6 +32,8 @@ export interface DateRangePickerLabels {
   calendar?: CalendarLabels;
   /** Text between the formatted start and end dates. Default: `" – "`. */
   rangeSeparator?: string;
+  /** Accessible description of a complete range, announced after the field label. Includes both formatted dates. Default: `"X to Y"`. */
+  rangeAnnouncement?: (start: string, end: string) => string;
 }
 
 const DEFAULT_LABELS: Required<Omit<DateRangePickerLabels, 'calendar'>> = {
@@ -41,6 +43,7 @@ const DEFAULT_LABELS: Required<Omit<DateRangePickerLabels, 'calendar'>> = {
   sheetTitle: 'Select period',
   close: 'Close',
   rangeSeparator: ' – ',
+  rangeAnnouncement: (start, end) => `${start} to ${end}`,
 };
 
 /** Props for {@link DateRangePicker}. */
@@ -112,15 +115,38 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
     const mobile = useMobilePicker();
     const generatedId = useId();
     const triggerId = id ?? generatedId;
+    const announcementId = `${triggerId}-range`;
     const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale), [locale]);
     const text = selected.start
       ? `${dateFormatter.format(selected.start)}${labels.rangeSeparator}${selected.end ? dateFormatter.format(selected.end) : labels.incompleteRange}`
       : null;
+    // Announce a complete range as a description, not a name: the visible label stays the name.
+    const announcement =
+      selected.start && selected.end
+        ? labels.rangeAnnouncement(
+            dateFormatter.format(selected.start),
+            dateFormatter.format(selected.end),
+          )
+        : null;
+    const triggerRef = useRef<HTMLButtonElement | null>(null);
+    const returnFocusRef = useRef(false);
+    // A complete selection closes the panel; hand focus back to the trigger so it is not lost to <body>.
+    useEffect(() => {
+      if (open || !returnFocusRef.current) return;
+      returnFocusRef.current = false;
+      const active = document.activeElement;
+      if (!active || active === document.body || active === document.documentElement) {
+        triggerRef.current?.focus({ preventScroll: true });
+      }
+    }, [open]);
     const handleRangeChange = (next: Date | CalendarRange): void => {
       if (next instanceof Date) return;
       const range = normalizeRange(next);
       setSelected(range);
-      if (range.start && range.end) setOpen(false);
+      if (range.start && range.end) {
+        returnFocusRef.current = true;
+        setOpen(false);
+      }
     };
     const calendar = (
       <Calendar
@@ -137,8 +163,10 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
       <button
         type="button"
         id={triggerId}
+        ref={triggerRef}
         className={cx('lyra-input', 'lyra-datepicker__btn', error && 'lyra-input--error')}
         disabled={disabled}
+        aria-describedby={announcement ? announcementId : undefined}
         onClick={mobile ? () => setOpen(true) : undefined}
       >
         <svg
@@ -195,6 +223,15 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
           </label>
         )}
         {control}
+        <span
+          id={announcementId}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="lyra-visually-hidden"
+        >
+          {announcement}
+        </span>
         {error ? (
           <span className="lyra-hint lyra-hint--error">{error}</span>
         ) : hint ? (

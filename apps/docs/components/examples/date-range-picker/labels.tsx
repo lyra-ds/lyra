@@ -12,7 +12,11 @@ export function DateRangePickerLabels() {
       label="Travel dates"
       value={value}
       onChange={setValue}
-      labels={{ rangeSeparator: ' through ', incompleteRange: 'end date' }}
+      labels={{
+        rangeSeparator: ' through ',
+        incompleteRange: 'end date',
+        rangeAnnouncement: (start, end) => `from ${start} through ${end}`,
+      }}
     />
   );
 }
