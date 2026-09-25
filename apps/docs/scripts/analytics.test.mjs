@@ -1,18 +1,23 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
-import test from 'node:test';
+import { join, resolve } from 'node:path';
+import test, { after } from 'node:test';
 
 const appRoot = resolve(import.meta.dirname, '..');
 const templatePath = resolve(appRoot, 'scripts', '_headers.template');
-const headerPath = resolve(appRoot, 'public', '_headers');
+// Generated into a temp dir so parallel test files never see this file's rewrites.
+const outputDir = mkdtempSync(join(tmpdir(), 'lyra-docs-headers-'));
+const headerPath = join(outputDir, '_headers');
 const generatorPath = resolve(appRoot, 'scripts', 'generate-headers.mjs');
 const analyticsPath = resolve(appRoot, 'components', 'consent-analytics.tsx');
 const configuredOrigin = 'https://metrics.example.test';
 
+after(() => rmSync(outputDir, { recursive: true, force: true }));
+
 function generate(environment = {}) {
-  const env = { ...process.env, ...environment };
+  const env = { ...process.env, ...environment, LYRA_HEADERS_OUTPUT: headerPath };
   if (!('NEXT_PUBLIC_OPENPANEL_URL' in environment)) delete env.NEXT_PUBLIC_OPENPANEL_URL;
   if (!('NEXT_PUBLIC_OPENPANEL_CLIENT_ID' in environment))
     delete env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID;
@@ -71,10 +76,4 @@ test('the consent owner loads OpenPanel once after all consent without replay or
   assert.match(source, /initialized\.current/);
   assert.doesNotMatch(source, /onLoad=/);
   assert.doesNotMatch(source, /identify|trackOutgoingLinks|trackAttributes/);
-});
-
-test('restores unconfigured headers for subsequent local commands', () => {
-  const result = generate();
-  assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(readFileSync(headerPath), readFileSync(templatePath));
 });

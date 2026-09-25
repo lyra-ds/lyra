@@ -4,7 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const templatePath = resolve(appRoot, 'scripts', '_headers.template');
-const outputPath = resolve(appRoot, 'public', '_headers');
+// LYRA_HEADERS_OUTPUT lets tests write to an isolated path instead of public/_headers.
+const outputPath = process.env.LYRA_HEADERS_OUTPUT
+  ? resolve(process.env.LYRA_HEADERS_OUTPUT)
+  : resolve(appRoot, 'public', '_headers');
 const url = process.env.NEXT_PUBLIC_OPENPANEL_URL;
 const clientId = process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID;
 

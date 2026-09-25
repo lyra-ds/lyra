@@ -1,11 +1,33 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 const repoRoot = resolve(import.meta.dirname, '../../..');
 const docsRoot = resolve(repoRoot, 'apps/docs');
 const outRoot = resolve(docsRoot, 'out');
+
+// Unconfigured headers, generated into a temp dir so no other test file can rewrite them mid-run.
+function generateDefaultHeaders() {
+  const dir = mkdtempSync(join(tmpdir(), 'lyra-docs-consent-headers-'));
+  const output = join(dir, '_headers');
+  const env = { ...process.env, LYRA_HEADERS_OUTPUT: output };
+  delete env.NEXT_PUBLIC_OPENPANEL_URL;
+  delete env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID;
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [resolve(docsRoot, 'scripts/generate-headers.mjs')],
+      { encoding: 'utf8', env },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    return readFileSync(output, 'utf8');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
 
 function readExport(path) {
   return readFileSync(resolve(outRoot, path), 'utf8');
@@ -46,7 +68,7 @@ test('keeps consent in one docs-specific key and reserves analytics behind the g
 });
 
 test('keeps docs self-contained while allowing local iframe previews and data URI images', () => {
-  const headers = readFileSync(resolve(docsRoot, 'public/_headers'), 'utf8');
+  const headers = generateDefaultHeaders();
   const deploy = readFileSync(resolve(docsRoot, 'DEPLOY.md'), 'utf8');
 
   assert.match(headers, /Content-Security-Policy: default-src 'self'/);
