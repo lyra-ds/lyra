@@ -45,8 +45,12 @@ type Binding = Record<string, unknown>;
 
 /** State exposed by `x-data="lyraToastStack()"`. */
 export interface LyraToastStackData {
-  /** The singleton queue, exposed for `template x-for="toast in toasts"`. */
+  /** The singleton queue, in the order notifications were added. */
   readonly toasts: QueuedToast[];
+  /** Non-danger toasts, rendered inside the persistent `aria-live="polite"` region. */
+  readonly politeToasts: QueuedToast[];
+  /** Danger toasts, rendered inside the persistent `aria-live="assertive"` region. */
+  readonly assertiveToasts: QueuedToast[];
   /** The singleton close label, exposed for the served close-button binding. */
   readonly closeLabel: string;
   /** Returns the exact tone modifier class for a served icon wrapper. */
@@ -152,25 +156,50 @@ export function lyraToasts(): LyraToastsStore {
  *
  * ```html
  * <div class="lyra-toast-stack" x-data="lyraToastStack()">
- *   <template x-for="toast in toasts" :key="toast.id">
- *     <div class="lyra-toast" role="status">
- *       <span class="lyra-toast__icon" :class="toneClass(toast.tone)">
- *         <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
- *           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
- *           x-show="toast.tone === 'success'"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
- *         <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
- *           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
- *           x-show="toast.tone === 'danger'"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>
- *         <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
- *           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
- *           x-show="toast.tone === 'info'"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
- *       </span>
- *       <span x-text="toast.message"></span>
- *       <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
- *     </div>
- *   </template>
+ *   <div data-lyra-toast-region="polite" aria-live="polite" aria-relevant="additions" style="display: contents">
+ *      <template x-for="toast in politeToasts" :key="toast.id">
+ *        <div class="lyra-toast">
+ *          <span class="lyra-toast__icon" :class="toneClass(toast.tone)">
+ *            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+ *              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+ *              x-show="toast.tone === 'success'"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+ *            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+ *              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+ *              x-show="toast.tone === 'danger'"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>
+ *            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+ *              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+ *              x-show="toast.tone === 'info'"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+ *          </span>
+ *          <span x-text="toast.message"></span>
+ *          <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+ *        </div>
+ *      </template>
+ *   </div>
+ *   <div data-lyra-toast-region="assertive" aria-live="assertive" aria-relevant="additions" style="display: contents">
+ *      <template x-for="toast in assertiveToasts" :key="toast.id">
+ *        <div class="lyra-toast">
+ *          <span class="lyra-toast__icon" :class="toneClass(toast.tone)">
+ *            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+ *              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+ *              x-show="toast.tone === 'success'"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+ *            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+ *              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+ *              x-show="toast.tone === 'danger'"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>
+ *            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+ *              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+ *              x-show="toast.tone === 'info'"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+ *          </span>
+ *          <span x-text="toast.message"></span>
+ *          <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+ *        </div>
+ *      </template>
+ *   </div>
  * </div>
  * ```
+ *
+ * The stack is deliberately not live: the two persistent regions exist before any toast, so
+ * assistive tech registers them and announces each addition (danger toasts assertively). Rows carry
+ * no `role` of their own, and `display: contents` keeps the visual stacking unchanged.
  *
  * The three inlined Lucide icon variants avoid importing React's 79-icon registry; `x-show`
  * selects the matching one. Unlike React's `ReactNode` messages, store messages render with
@@ -181,6 +210,14 @@ export function lyraToastStack(): LyraToastStackData {
   const state: LyraToastStackData & ThisType<LyraToastStackState> = {
     get toasts() {
       return this.$store.lyraToasts.items;
+    },
+
+    get politeToasts() {
+      return this.toasts.filter((toast) => toast.tone !== 'danger');
+    },
+
+    get assertiveToasts() {
+      return this.toasts.filter((toast) => toast.tone === 'danger');
     },
 
     get closeLabel() {
