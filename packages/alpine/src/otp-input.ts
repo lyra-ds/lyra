@@ -101,28 +101,32 @@ export function lyraOtpInput({
       '@input'(this: LyraOtpInputState, event: Event) {
         const input = event.currentTarget as HTMLInputElement;
         const index = Number(input.dataset.index);
-        if (input.value.length === 2 && this.code[index]) {
-          // Typing into an already filled box replaces that one digit.
-          const typed = input.value[(input.selectionStart ?? 2) - 1] ?? '';
-          if (/^[0-9]$/.test(typed)) {
+        const native = event as InputEvent;
+        if (native.inputType === 'insertText' && native.data?.length === 1 && this.code[index]) {
+          // One typed character into an already filled box replaces that one digit.
+          if (/^[0-9]$/.test(native.data)) {
             const next = Array.from(
               { length: this.length },
               (_, position) => this.code[position] ?? '',
             );
-            next[index] = typed;
+            next[index] = native.data;
             this.code = next.join('');
             this.$dispatch('lyra:change', { value: this.code });
             this.focus(Math.min(index + 1, this.length - 1));
-          } else input.value = this.code[index] ?? '';
+          }
         } else if (input.value) {
+          // Autofill, replacement, drop and multi-digit input arrive as a block.
           this.write(index, input.value);
-          if (!numeric(input.value, this.length)) input.value = this.code[index] ?? '';
         } else {
           const next = this.code.split('');
           next.splice(index, 1);
           this.code = next.join('');
           this.$dispatch('lyra:change', { value: this.code });
         }
+        // Assigning an unchanged code triggers no reactivity, so normalize every box explicitly.
+        this.inputs().forEach((box, position) => {
+          box.value = this.code[position] ?? '';
+        });
       },
       '@paste'(this: LyraOtpInputState, event: ClipboardEvent) {
         event.preventDefault();

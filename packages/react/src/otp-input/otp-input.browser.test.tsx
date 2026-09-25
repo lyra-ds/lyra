@@ -58,6 +58,43 @@ describe('OtpInput', () => {
     expect(inputs.map((input) => input.value).join('')).toBe('1937');
   });
 
+  it('distributes a two-digit autofill over two boxes', async () => {
+    const onChange = vi.fn();
+    const screen = await render(
+      <OtpInput label="Verification code" length={2} defaultValue="12" onChange={onChange} />,
+    );
+    const inputs = Array.from(
+      screen.container.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'),
+    );
+    await userEvent.fill(inputs[0], '98');
+    expect(inputs.map((input) => input.value).join('')).toBe('98');
+    expect(onChange).toHaveBeenLastCalledWith('98');
+  });
+
+  it('keeps one digit per box when retyping the same digit', async () => {
+    const screen = await render(
+      <OtpInput label="Verification code" length={4} defaultValue="1234" />,
+    );
+    const inputs = Array.from(
+      screen.container.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'),
+    );
+    inputs[1].focus();
+    inputs[1].setSelectionRange(1, 1);
+    await userEvent.keyboard('2');
+    expect(inputs.map((input) => input.value)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('keeps one digit per box when refilling the same code', async () => {
+    const screen = await render(
+      <OtpInput label="Verification code" length={4} defaultValue="1234" />,
+    );
+    const inputs = Array.from(
+      screen.container.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'),
+    );
+    await userEvent.fill(inputs[0], '1234');
+    expect(inputs.map((input) => input.value)).toEqual(['1', '2', '3', '4']);
+  });
+
   it('ignores an invalid character', async () => {
     const screen = await render(<OtpInput label="Verification code" length={4} />);
     const inputs = Array.from(

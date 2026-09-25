@@ -88,16 +88,17 @@ export function OtpInput({
       setCode(next.join(''));
       return;
     }
-    if (slots[index] && raw.length === 2) {
-      // Typing into an already filled box replaces that one digit.
-      const typed = raw[(event.currentTarget.selectionStart ?? raw.length) - 1] ?? '';
-      if (!/^[0-9]$/.test(typed)) return;
+    const native = event.nativeEvent as InputEvent;
+    if (native.inputType === 'insertText' && native.data?.length === 1 && slots[index]) {
+      // One typed character into an already filled box replaces that one digit.
+      if (!/^[0-9]$/.test(native.data)) return;
       const next = [...slots];
-      next[index] = typed;
+      next[index] = native.data;
       setCode(next.join(''));
       focus(Math.min(index + 1, count - 1));
       return;
     }
+    // Anything else (autofill, replacement, drop, multi-digit) is a block of digits.
     write(index, raw);
   };
 

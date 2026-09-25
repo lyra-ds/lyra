@@ -8,9 +8,9 @@ import lyra from './index';
 Alpine.plugin(lyra);
 const hosts: HTMLElement[] = [];
 
-function mount(): HTMLElement {
+function mount(length = 4): HTMLElement {
   const host = document.createElement('div');
-  host.innerHTML = `<div class="lyra-field" x-data="lyraOtpInput({ length: 4 })" x-modelable="code">
+  host.innerHTML = `<div class="lyra-field" x-data="lyraOtpInput({ length: ${length} })" x-modelable="code">
     <span id="otp-label" class="lyra-label">Verification code</span>
     <div class="lyra-otp" role="group" aria-labelledby="otp-label">
       <template x-for="index in positions" :key="index">
@@ -75,6 +75,47 @@ describe('lyraOtpInput', () => {
     await Alpine.nextTick();
     expect(inputs.map((input) => input.value).join('')).toBe('1934');
     expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('1934');
+  });
+
+  it('distributes a two-digit autofill over two boxes', async () => {
+    const host = mount(2);
+    const inputs = Array.from(host.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'));
+    const clipboard = new DataTransfer();
+    clipboard.setData('text', '12');
+    paste(inputs[0], clipboard);
+    await Alpine.nextTick();
+    await userEvent.fill(inputs[0], '98');
+    await Alpine.nextTick();
+    expect(inputs.map((input) => input.value).join('')).toBe('98');
+    expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('98');
+  });
+
+  it('keeps one digit per box when retyping the same digit', async () => {
+    const host = mount();
+    const inputs = Array.from(host.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'));
+    const clipboard = new DataTransfer();
+    clipboard.setData('text', '1234');
+    paste(inputs[0], clipboard);
+    await Alpine.nextTick();
+    inputs[1].focus();
+    inputs[1].setSelectionRange(1, 1);
+    await userEvent.keyboard('2');
+    await Alpine.nextTick();
+    expect(inputs.map((input) => input.value)).toEqual(['1', '2', '3', '4']);
+    expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('1234');
+  });
+
+  it('keeps one digit per box when refilling the same code', async () => {
+    const host = mount();
+    const inputs = Array.from(host.querySelectorAll<HTMLInputElement>('.lyra-otp__digit'));
+    const clipboard = new DataTransfer();
+    clipboard.setData('text', '1234');
+    paste(inputs[0], clipboard);
+    await Alpine.nextTick();
+    await userEvent.fill(inputs[0], '1234');
+    await Alpine.nextTick();
+    expect(inputs.map((input) => input.value)).toEqual(['1', '2', '3', '4']);
+    expect(host.querySelector<HTMLInputElement>('[name="code"]')?.value).toBe('1234');
   });
 
   it('restores the box after an invalid character', async () => {
