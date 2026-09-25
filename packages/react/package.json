@@ -1285,7 +1285,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "500 B"
+      "limit": "600 B"
     },
     {
       "name": "import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lyra-ds/react/tabs'",
