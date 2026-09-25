@@ -40,6 +40,7 @@ const entries = {
   calendar: 'src/calendar/index.ts',
   'time-picker': 'src/time-picker/index.ts',
   'time-input': 'src/time-input/index.ts',
+  'otp-input': 'src/otp-input/index.ts',
   'date-picker': 'src/date-picker/index.ts',
   'date-range-picker': 'src/date-range-picker/index.ts',
   dialog: 'src/dialog/index.ts',

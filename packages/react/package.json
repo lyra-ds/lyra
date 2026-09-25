@@ -177,6 +177,16 @@
         "default": "./dist/time-picker.cjs"
       }
     },
+    "./otp-input": {
+      "import": {
+        "types": "./dist/otp-input.d.ts",
+        "default": "./dist/otp-input.js"
+      },
+      "require": {
+        "types": "./dist/otp-input.d.cts",
+        "default": "./dist/otp-input.cjs"
+      }
+    },
     "./time-input": {
       "import": {
         "types": "./dist/time-input.d.ts",
@@ -1056,6 +1066,16 @@
         "react-dom"
       ],
       "limit": "7.912 kB"
+    },
+    {
+      "name": "import { OtpInput } from '@lyra-ds/react/otp-input'",
+      "path": "dist/otp-input.js",
+      "import": "{ OtpInput }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "3 kB"
     },
     {
       "name": "import { TimeInput } from '@lyra-ds/react/time-input'",

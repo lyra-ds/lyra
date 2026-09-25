@@ -508,6 +508,13 @@ const manifest: ComponentEntry[] = [
     stacks: ['react', 'html', 'blade'],
   },
   {
+    slug: 'otp-input',
+    name: 'OtpInput',
+    group: 'form',
+    stability: 'beta',
+    stacks: ['react', 'alpine'],
+  },
+  {
     slug: 'time-input',
     name: 'TimeInput',
     group: 'form',

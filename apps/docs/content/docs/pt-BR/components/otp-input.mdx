@@ -1,0 +1,71 @@
+---
+title: OtpInput
+description: Campo numérico segmentado para códigos de uso único.
+---
+
+# OtpInput
+
+Use OtpInput quando a pessoa informar um código numérico curto, como na verificação em duas etapas.
+Cada dígito tem sua caixa; o valor completo sai por `onChange` e, com `name`, por um único campo
+oculto no formulário.
+
+## Exemplos
+
+<Example id="basic" title="Código de seis dígitos">
+  A digitação avança para a próxima caixa. Colar o código inteiro distribui os dígitos, mesmo com
+  espaços ou hífens no texto.
+</Example>
+
+<Example id="error" title="Código inválido ou expirado">
+  `error` substitui `hint`, marca os dígitos como inválidos e associa a mensagem ao grupo.
+</Example>
+
+## Acessibilidade
+
+- O label visível nomeia o grupo; cada dígito anuncia sua posição. Use `digitLabel` para traduzir
+  a palavra “Digit”.
+- O primeiro campo tem `autocomplete="one-time-code"`; todos usam teclado numérico. Um código
+  preenchido automaticamente no primeiro campo é distribuído pelas caixas.
+- As setas esquerda e direita movem o foco. Home e End vão ao primeiro e último dígito. Backspace
+  apaga o dígito atual ou volta quando ele está vazio. Tab mantém a ordem normal dos campos.
+- `error` é associado por `aria-describedby` e marca cada dígito com `aria-invalid`.
+
+## API e código
+
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+```html
+<div
+  class="lyra-field"
+  x-data="lyraOtpInput({ length: 6, digitLabel: 'Dígito' })"
+  x-modelable="code"
+>
+  <span id="code-label" class="lyra-label">Código de verificação</span>
+  <div class="lyra-otp" role="group" aria-labelledby="code-label">
+    <template x-for="index in positions" :key="index">
+      <input
+        class="lyra-input lyra-otp__digit"
+        type="text"
+        :data-index="index"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        :autocomplete="index === 0 ? 'one-time-code' : 'off'"
+        x-bind="digit"
+      />
+    </template>
+  </div>
+  <input type="hidden" name="code" x-bind:value="code" />
+</div>
+```
+
+Sirva o label e a mensagem de erro no HTML. Na falha de validação, defina `invalid: true`,
+`aria-describedby` no grupo e mostre uma mensagem com esse id. Ouça `lyra:change` na raiz ou
+vincule `code` com `x-model`.
+
+  </StackPanel>
+</StackTabs>

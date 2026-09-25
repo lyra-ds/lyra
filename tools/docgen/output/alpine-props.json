@@ -563,6 +563,39 @@
     ]
   },
   {
+    "binding": "lyraOtpInput",
+    "kind": "data",
+    "slug": "otp-input",
+    "optionsType": "LyraOtpInputOptions",
+    "description": "Initial configuration accepted by `x-data=\"lyraOtpInput(...)\"`.",
+    "props": [
+      {
+        "name": "length",
+        "type": "number",
+        "optional": true,
+        "description": "Number of numeric digits. Default: 6."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial code."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "optional": true,
+        "description": "Adds an invalid state; serve an error message and aria-describedby in the markup."
+      },
+      {
+        "name": "digitLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Localized word for each digit's accessible name. Default: \"Digit\"."
+      }
+    ]
+  },
+  {
     "binding": "lyraPopover",
     "kind": "data",
     "slug": "popover",

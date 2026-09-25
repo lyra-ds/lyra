@@ -958,6 +958,38 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 export declare function Input(props: InputProps): JSX.Element;
 ```
 
+### OtpInput
+```ts
+/** Props for the numeric, segmented one-time-code input. */
+export interface OtpInputProps {
+  /** Visible and accessible label for the whole code. */
+  label: string;
+  /** Number of digits. Default: 6. */
+  length?: number;
+  /** Controlled code, containing only digits. */
+  value?: string;
+  /** Initial code in uncontrolled mode. */
+  defaultValue?: string;
+  /** Called with the complete current code after each edit. */
+  onChange?: (value: string) => void;
+  /** Name of a hidden input that submits the combined code. */
+  name?: string;
+  /** Hint shown below the group, replaced by error. */
+  hint?: string;
+  /** Visible error, connected to the group and every digit. */
+  error?: string;
+  /** Disables all digit inputs. */
+  disabled?: boolean;
+  /** Additional class on the group. */
+  className?: string;
+  /** Optional stable id for the group. */
+  id?: string;
+  /** Localized word used in each digit's accessible name. Default: "Digit". */
+  digitLabel?: string;
+}
+export declare function OtpInput(props: OtpInputProps): JSX.Element;
+```
+
 ### Radio
 ```ts
 /** Props for {@link Radio}. */

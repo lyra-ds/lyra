@@ -27,6 +27,8 @@ import { lyraWorkspaceSwitcher } from './workspace-switcher';
 import type { LyraWorkspaceSwitcherOptions } from './workspace-switcher';
 import { lyraTableOfContents } from './table-of-contents';
 import type { LyraTableOfContentsOptions } from './table-of-contents';
+import { lyraOtpInput } from './otp-input';
+import type { LyraOtpInputOptions } from './otp-input';
 import { lyraTimeInput } from './time-input';
 import type { LyraTimeInputOptions } from './time-input';
 import { lyraTimePicker } from './time-picker';
@@ -129,6 +131,7 @@ export type { LyraSidebarGroupOptions } from './sidebar-group';
 export type { LyraTableOfContentsOptions } from './table-of-contents';
 export type { LyraTabsChangeDetail, LyraTabsOptions } from './tabs';
 export type { LyraThemeStore } from './theme';
+export type { LyraOtpInputOptions } from './otp-input';
 export type { LyraTimeInputOptions } from './time-input';
 export type { LyraTimePickerLabels, LyraTimePickerOptions } from './time-picker';
 export type { LyraTooltipOptions } from './tooltip';
@@ -256,6 +259,11 @@ export default function lyra(alpine: LyraAlpine): void {
         string,
         unknown
       >,
+  );
+  alpine.data(
+    'lyraOtpInput',
+    (...args) =>
+      lyraOtpInput((args[0] ?? {}) as LyraOtpInputOptions) as unknown as Record<string, unknown>,
   );
   alpine.data(
     'lyraTimeInput',

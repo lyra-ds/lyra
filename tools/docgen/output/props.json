@@ -1989,6 +1989,87 @@
     ]
   },
   {
+    "name": "OtpInput",
+    "category": "Forms",
+    "extends": "",
+    "description": "Props for the numeric, segmented one-time-code input.",
+    "signature": "export declare function OtpInput(props: OtpInputProps): JSX.Element;",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "optional": false,
+        "description": "Visible and accessible label for the whole code."
+      },
+      {
+        "name": "length",
+        "type": "number",
+        "optional": true,
+        "description": "Number of digits. Default: 6."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "optional": true,
+        "description": "Controlled code, containing only digits."
+      },
+      {
+        "name": "defaultValue",
+        "type": "string",
+        "optional": true,
+        "description": "Initial code in uncontrolled mode."
+      },
+      {
+        "name": "onChange",
+        "type": "(value: string) => void",
+        "optional": true,
+        "description": "Called with the complete current code after each edit."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "Name of a hidden input that submits the combined code."
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "optional": true,
+        "description": "Hint shown below the group, replaced by error."
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "optional": true,
+        "description": "Visible error, connected to the group and every digit."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "optional": true,
+        "description": "Disables all digit inputs."
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "optional": true,
+        "description": "Additional class on the group."
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "optional": true,
+        "description": "Optional stable id for the group."
+      },
+      {
+        "name": "digitLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Localized word used in each digit's accessible name. Default: \"Digit\"."
+      }
+    ]
+  },
+  {
     "name": "Radio",
     "category": "Forms",
     "extends": "InputHTMLAttributes<HTMLInputElement>",

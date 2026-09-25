@@ -145,6 +145,14 @@ Documented as `file-upload`. Mount with `x-data="lyraFileUpload({ … })"`.
 - `disabled?: boolean`
 - `required?: boolean`
 - `messages?: LyraFileUploadMessages`
+### lyraOtpInput
+
+Documented as `otp-input`. Mount with `x-data="lyraOtpInput({ … })"`.
+
+- `length?: number` — Number of numeric digits. Default: 6.
+- `defaultValue?: string` — Initial code.
+- `invalid?: boolean` — Adds an invalid state; serve an error message and aria-describedby in the markup.
+- `digitLabel?: string` — Localized word for each digit's accessible name. Default: "Digit".
 ### lyraPopover
 
 Documented as `popover`. Mount with `x-data="lyraPopover({ … })"`.

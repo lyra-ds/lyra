@@ -123,6 +123,8 @@ import { FieldsetColumns } from './fieldset/columns';
 import { SeparatorBasic } from './separator/basic';
 import { SeparatorLabel } from './separator/label';
 import { SeparatorVertical } from './separator/vertical';
+import { OtpInputBasic } from './otp-input/basic';
+import { OtpInputError } from './otp-input/error';
 import { TimeInputBasic } from './time-input/basic';
 import { TimeInputRange } from './time-input/range';
 import { TimeInputLabels } from './time-input/labels';
@@ -484,6 +486,10 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     basic: SeparatorBasic,
     label: SeparatorLabel,
     vertical: SeparatorVertical,
+  },
+  'otp-input': {
+    basic: OtpInputBasic,
+    error: OtpInputError,
   },
   'time-input': {
     basic: TimeInputBasic,
