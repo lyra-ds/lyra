@@ -35,7 +35,9 @@ continuam expressando finalidade mesmo se o primitivo de origem mudar.
 
 Success, warning, danger e info oferecem um token forte para ênfase, um token soft para fundo
 sutil e um token de texto para tinta legível sobre esse fundo. Esse conjunto mantém estados de
-status consistentes entre componentes.
+status consistentes entre componentes. O texto sobre um preenchimento `--danger` sólido (por exemplo
+`.lyra-btn--danger`) usa `--on-danger`, `#FFFFFF` por padrão. Sobrescreva-o quando um `--danger`
+personalizado for claro demais para branco.
 
 <Example id="semantic" title="Tokens de intenção" layout="block">
   Combine `--*-soft` com o `--*-text` correspondente; use `--success`, `--warning`, `--danger` ou

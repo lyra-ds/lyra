@@ -263,6 +263,13 @@ const APPROVED_DECLARATION_DIVERGENCES = [
     package: 'color-mix(in oklab, var(--brand), white 30%)',
   },
   {
+    file: 'components/buttons/buttons.css',
+    selector: '.lyra-btn--danger',
+    property: 'color',
+    handoff: '#fff',
+    package: 'var(--on-danger)',
+  },
+  {
     file: 'components/scheduling/scheduling.css',
     selector: '.lyra-calview__evt--session',
     property: 'color',
@@ -316,6 +323,16 @@ const BRAND_ON_ACCENT_CONTRAST_DIVERGENCE = {
   derivation:
     'var(--brand-contrast, oklch(from var(--accent) clamp(0, (l / 0.58 - 1) * -infinity, 1) 0 h))',
   supports: '@supports (color: oklch(from red l c h))',
+};
+
+// Additive `--on-danger` ink token (lyra-ds/lyra#263): the handoff hardcodes `#fff` on the solid
+// danger button. The package declares the token once per theme layer (light + dark) with the same
+// white default, and `.lyra-btn--danger` consumes it (see APPROVED_DECLARATION_DIVERGENCES).
+const ON_DANGER_ADDITION = {
+  file: 'tokens/colors.css',
+  property: '--on-danger',
+  value: '#FFFFFF',
+  selectors: [':root', '[data-theme="dark"]'],
 };
 
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
@@ -955,6 +972,14 @@ function tokenCheck(baseline) {
   }
   for (const name of pMap.keys()) {
     if (!hMap.has(name)) {
+      const pVals = pMap.get(name);
+      if (
+        name === ON_DANGER_ADDITION.property &&
+        pVals.length === ON_DANGER_ADDITION.selectors.length &&
+        pVals.every((value) => value === ON_DANGER_ADDITION.value)
+      ) {
+        continue;
+      }
       fail(
         `Token ${name}: present in package but not in canonical handoff — handoff/ is canonical`,
       );
@@ -998,6 +1023,15 @@ function isAllowedDivergence(relPath, hd, pd) {
 }
 
 function isAllowedPackageAddition(relPath, decl) {
+  if (
+    relPath === ON_DANGER_ADDITION.file &&
+    decl.prop === ON_DANGER_ADDITION.property &&
+    decl.val === ON_DANGER_ADDITION.value &&
+    decl.blockPath.length === 1 &&
+    ON_DANGER_ADDITION.selectors.includes(decl.blockPath[0])
+  ) {
+    return true;
+  }
   return (
     relPath === 'tokens/brand.css' &&
     decl.prop === '--on-accent' &&

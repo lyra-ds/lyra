@@ -233,6 +233,15 @@ describe('STY-03 — dark theming (no rebuild, read resolved longhands)', () => 
     expect(contrast(onAccent, bg('accent'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(onAccent, bg('danger'))).toBeGreaterThanOrEqual(4.5);
   });
+
+  it('--on-danger is an opaque ink that keeps solid danger fills at WCAG AA in both themes', () => {
+    for (const theme of ['light', 'dark'] as const) {
+      setPermutation(theme, 'none');
+      const onDanger = fg('on-danger');
+      expect(onDanger.a, `${theme} --on-danger must be opaque`).toBeGreaterThan(0.99);
+      expect(contrast(onDanger, bg('danger'))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
 });
 
 // --- STY-04: white-label acme color-mix derivation, light + dark ----------------------------------

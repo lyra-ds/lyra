@@ -80,6 +80,9 @@ Use `--brand-contrast` only to pin a specific ink. In browsers that support rela
 the automatic rule meets AA-large (3.0:1) for all supported brand/theme combinations. The known light-mode crossover is `#E11D48`, which reaches
 4.47:1 rather than normal-text AA's 4.5:1; check a custom override before shipping it.
 
+If you also customise `--danger` to a light colour, set `--on-danger` to a darker ink: solid danger
+fills such as `.lyra-btn--danger` use it and default to `#FFFFFF`.
+
 ## What this contract does not change
 
 The contract does not re-derive `--surface-*` tokens, text colors, spacing, or radii other than

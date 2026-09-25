@@ -83,6 +83,7 @@
   --danger:       var(--red-600);
   --danger-soft:  var(--red-100);
   --danger-text:  var(--red-700);
+  --on-danger:    #FFFFFF;
   --info:         var(--blue-600);
   --info-soft:    var(--blue-100);
   --info-text:    var(--blue-700);
@@ -124,6 +125,7 @@
   --danger:       var(--red-600);
   --danger-soft:  rgba(239, 68, 68, 0.16);
   --danger-text:  #F87171;
+  --on-danger:    #FFFFFF;
   --info:         #3B82F6;
   --info-soft:    rgba(59, 130, 246, 0.16);
   --info-text:    #60A5FA;
