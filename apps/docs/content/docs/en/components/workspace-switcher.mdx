@@ -41,6 +41,8 @@ WorkspaceSwitcher opens a labelled disclosure of workspaces. Supply `href` on a 
 
 For Alpine, the application serves the visible text and link destinations. Use `<a href="..." class="lyra-wssw__item" data-id="..." x-bind="option">` for navigation, or `<button type="button" ...>` for selection. Buttons dispatch `lyra:change` with the `data-id`; links use native navigation. Keep the current item marked `aria-current="true"` and update the trigger text when application state changes. Replace older `role="listbox"`, `role="option"`, `aria-selected` and `aria-haspopup="listbox"` markup with the disclosure pattern shown below.
 
+**Migration:** `@lyra-ds/react` no longer renders `role="listbox"`, `role="option"` or `aria-selected`; the panel now uses `-popover` ids and items are buttons or links marked with `aria-current`. Update tests, CSS and scripts that select items by those roles to use `.lyra-wssw__item[data-id]` and `.lyra-wssw__pop`, and read the current item from `aria-current`. Alpine still accepts the legacy markup, but it is deprecated.
+
 ## Accessibility
 
 The trigger is a button with `aria-expanded` and `aria-controls`; the popup is a labelled `role="group"`. Each destination retains its native link or button semantics. Enter, Space and arrow keys open and focus the current workspace. Arrow keys, Home and End move focus among workspaces; Escape returns to the trigger. Tab follows native order, including the create button when present. The popup flips upward when needed.

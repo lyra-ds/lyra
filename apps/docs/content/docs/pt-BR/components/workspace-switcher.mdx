@@ -41,6 +41,8 @@ WorkspaceSwitcher abre um painel identificado com os workspaces disponíveis. De
 
 No Alpine, a aplicação fornece os textos visíveis e as URLs. Use `<a href="..." class="lyra-wssw__item" data-id="..." x-bind="option">` para navegar, ou `<button type="button" ...>` para selecionar. Botões emitem `lyra:change` com o `data-id`; links navegam normalmente. Marque o item atual com `aria-current="true"` e atualize o texto do gatilho quando o estado mudar. Substitua os atributos antigos `role="listbox"`, `role="option"`, `aria-selected` e `aria-haspopup="listbox"` pelo padrão de painel mostrado abaixo.
 
+**Migração:** `@lyra-ds/react` não renderiza mais `role="listbox"`, `role="option"` nem `aria-selected`; o painel agora usa ids `-popover` e os itens são botões ou links marcados com `aria-current`. Atualize testes, CSS e scripts que selecionam itens por esses roles para usar `.lyra-wssw__item[data-id]` e `.lyra-wssw__pop`, e leia o item atual em `aria-current`. O Alpine ainda aceita o markup legado, mas ele está deprecado.
+
 ## Acessibilidade
 
 O gatilho é um botão com `aria-expanded` e `aria-controls`; o painel é um `role="group"` identificado por um rótulo visível. Cada destino mantém a semântica nativa de link ou botão. Enter, Espaço e setas abrem o painel e focam o workspace atual. As setas, Home e End movem o foco entre workspaces; Escape devolve o foco ao gatilho. Tab segue a ordem nativa, incluindo o botão de criar quando existir. O painel abre para cima se faltar espaço abaixo.
