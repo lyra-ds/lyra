@@ -1,5 +1,5 @@
-import { forwardRef } from 'react';
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
+import { forwardRef, useId } from 'react';
+import type { CSSProperties, HTMLAttributes, MouseEvent, ReactNode } from 'react';
 import { cx } from '../internal/cx';
 
 type ShellStyle = CSSProperties & {
@@ -13,11 +13,17 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   /** Optional navigation or complementary rail content. */
   sidebar?: ReactNode;
   /** Semantic element for the sidebar rail. Use `"nav"` when it contains primary navigation. */
-  sidebarAs?: 'aside' | 'nav';
+  sidebarAs?: 'aside' | 'nav' | 'div';
   /** Accessible name for the sidebar landmark. */
   sidebarLabel?: string;
   /** Optional top region placed before the main content. */
   topbar?: ReactNode;
+  /** Page-level banner rendered before the navigation and outside the main landmark. */
+  banner?: ReactNode;
+  /** Optional keyboard skip link. Its href defaults to the main region's id. */
+  skipLink?: { label: string; href?: string };
+  /** Id of the main region; generated when a skip link is provided without one. */
+  mainId?: string;
   /** Semantic element for the main content. Use `"div"` when the shell is nested or embedded inside a page that already owns the `<main>` landmark. */
   mainAs?: 'main' | 'div';
   /** Optional complementary context rail content. */
@@ -39,6 +45,27 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   top?: number;
 }
 
+/**
+ * Move focus to the fragment target explicitly; Firefox does not focus it on programmatic activation.
+ * Leaves modified or non-primary clicks and links to other documents to native navigation.
+ */
+function focusSkipTarget(event: MouseEvent<HTMLAnchorElement>) {
+  if (event.defaultPrevented || event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const anchor = event.currentTarget;
+  if (!anchor.hash) return;
+  const destination = new URL(anchor.href);
+  const current = window.location;
+  if (
+    destination.origin !== current.origin ||
+    destination.pathname !== current.pathname ||
+    destination.search !== current.search
+  ) {
+    return;
+  }
+  anchor.ownerDocument.getElementById(decodeURIComponent(anchor.hash.slice(1)))?.focus();
+}
+
 /** A three-rail page or application frame with optional navigation, topbar, and context slots. */
 export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(function Shell(
   {
@@ -46,6 +73,9 @@ export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(functi
     sidebarAs: SidebarElement = 'aside',
     sidebarLabel,
     topbar,
+    banner,
+    skipLink,
+    mainId,
     mainAs: MainElement = 'main',
     aside,
     asideAs: AsideElement = 'aside',
@@ -61,6 +91,8 @@ export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(functi
   },
   ref,
 ) {
+  const generatedMainId = useId();
+  const resolvedMainId = mainId ?? (skipLink ? `lyra-shell-main-${generatedMainId}` : undefined);
   const variableStyle: ShellStyle = {};
 
   if (sidebarWidth !== undefined) variableStyle['--shell-sidebar'] = `${sidebarWidth}px`;
@@ -79,16 +111,34 @@ export const Shell = /*#__PURE__*/ forwardRef<HTMLDivElement, ShellProps>(functi
         `lyra-shell--${scroll}`,
         sidebar != null && 'lyra-shell--has-sidebar',
         aside != null && 'lyra-shell--has-aside',
+        banner != null && 'lyra-shell--has-banner',
         className,
       )}
       style={mergedStyle}
     >
+      {skipLink && (
+        <a
+          className="lyra-shell__skip-link"
+          href={skipLink.href ?? `#${resolvedMainId}`}
+          onClick={focusSkipTarget}
+        >
+          {skipLink.label}
+        </a>
+      )}
+      {banner != null && <header className="lyra-shell__banner">{banner}</header>}
       {sidebar != null && (
-        <SidebarElement className="lyra-shell__sidebar" aria-label={sidebarLabel}>
+        <SidebarElement
+          className="lyra-shell__sidebar"
+          aria-label={SidebarElement === 'div' ? undefined : sidebarLabel}
+        >
           {sidebar}
         </SidebarElement>
       )}
-      <MainElement className="lyra-shell__main">
+      <MainElement
+        className="lyra-shell__main"
+        id={resolvedMainId}
+        tabIndex={skipLink ? -1 : undefined}
+      >
         {topbar != null && <div className="lyra-shell__topbar">{topbar}</div>}
         <div className="lyra-shell__content">{children}</div>
       </MainElement>

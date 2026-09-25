@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
@@ -32,12 +32,131 @@ function setViewport(width: number, height: number) {
   });
 }
 
+/** Drop any fragment a skip link click left behind so URL state never leaks between cases. */
+function clearHash() {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+beforeEach(clearHash);
+
 afterEach(async () => {
   await setViewport(1200, 800);
   cleanup();
+  clearHash();
 });
 
 describe('Shell', () => {
+  it.each(['page', 'content'] as const)(
+    'keeps the %s banner outside main and the skip link keyboard accessible',
+    async (scroll) => {
+      const { container } = await render(
+        <div style={{ height: '300px' }}>
+          <Shell
+            scroll={scroll}
+            banner="Tenant: Acme"
+            sidebar={<nav aria-label="Primary">Navigation</nav>}
+            sidebarAs="div"
+            skipLink={{ label: 'Skip to content' }}
+            mainId="events"
+            topbar="Filters"
+          >
+            Events
+          </Shell>
+        </div>,
+      );
+      const shell = container.querySelector<HTMLElement>('.lyra-shell')!;
+      const banner = shell.querySelector<HTMLElement>('.lyra-shell__banner')!;
+      const main = shell.querySelector<HTMLElement>('main')!;
+      const link = shell.querySelector<HTMLAnchorElement>('.lyra-shell__skip-link')!;
+
+      expect(banner.parentElement).toBe(shell);
+      expect(banner.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(main.contains(banner)).toBe(false);
+      expect(shell.querySelector('aside')).toBeNull();
+      expect(shell.querySelectorAll('nav')).toHaveLength(1);
+      expect(link.getAttribute('href')).toBe('#events');
+      expect(getComputedStyle(link).clipPath).toBe('inset(50%)');
+      link.focus();
+      expect(getComputedStyle(link).position).toBe('fixed');
+      link.click();
+      expect(document.activeElement).toBe(main);
+      expect(main.querySelector('.lyra-shell__topbar')?.textContent).toBe('Filters');
+      if (scroll === 'content') {
+        expect(getComputedStyle(shell).display).toBe('grid');
+        expect(main.getBoundingClientRect().top).toBeCloseTo(
+          shell.querySelector('.lyra-shell__sidebar')!.getBoundingClientRect().top,
+          1,
+        );
+        expect(main.getBoundingClientRect().top).toBeGreaterThan(
+          banner.getBoundingClientRect().top,
+        );
+      }
+      await expectNoAxeViolations(container);
+    },
+  );
+
+  describe('skip link activation', () => {
+    async function renderSkip(href?: string) {
+      const { container } = await render(
+        <Shell skipLink={{ label: 'Skip', href }} mainId="events">
+          Events
+        </Shell>,
+      );
+      const link = container.querySelector<HTMLAnchorElement>('.lyra-shell__skip-link')!;
+      const main = container.querySelector<HTMLElement>('main')!;
+      link.focus();
+      return { link, main };
+    }
+
+    /** Dispatch a click and cancel it afterwards so the test page never navigates. */
+    function click(link: HTMLAnchorElement, init: MouseEventInit = {}) {
+      const cancel = (event: Event) => event.preventDefault();
+      document.addEventListener('click', cancel);
+      link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ...init }));
+      document.removeEventListener('click', cancel);
+    }
+
+    it('focuses the target on a plain click and updates nothing else', async () => {
+      const { link, main } = await renderSkip();
+      link.click();
+      expect(document.activeElement).toBe(main);
+      await expect.poll(() => window.location.hash).toBe('#events');
+    });
+
+    it('focuses the target on Enter', async () => {
+      const { link, main } = await renderSkip();
+      link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      link.click();
+      expect(document.activeElement).toBe(main);
+    });
+
+    it.each([{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }])(
+      'does not move focus or scroll on a modified click %o',
+      async (init) => {
+        const { link, main } = await renderSkip();
+        const scrollY = window.scrollY;
+        click(link, init);
+        expect(document.activeElement).toBe(link);
+        expect(document.activeElement).not.toBe(main);
+        expect(window.scrollY).toBe(scrollY);
+      },
+    );
+
+    it('does not move focus on a non-primary button click', async () => {
+      const { link, main } = await renderSkip();
+      click(link, { button: 1 });
+      expect(document.activeElement).not.toBe(main);
+    });
+
+    it('leaves a link to another document to native navigation', async () => {
+      const { link, main } = await renderSkip('/different#events');
+      const scrollY = window.scrollY;
+      click(link);
+      expect(document.activeElement).not.toBe(main);
+      expect(window.scrollY).toBe(scrollY);
+    });
+  });
+
   it('renders a main landmark by default and omits empty rail and topbar elements', async () => {
     const screen = await render(<Shell>Document</Shell>);
     const { container } = screen;

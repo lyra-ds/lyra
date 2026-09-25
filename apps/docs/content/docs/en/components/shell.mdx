@@ -53,12 +53,31 @@ Reach for something else when:
 
 - Shell renders one native `<main>` by default. For a nested or embedded shell, use `mainAs="div"`;
   the page must still have exactly one `<main>` landmark somewhere.
+- Use `banner` for page-level context above the navigation and outside `<main>`. It renders in a
+  `<header>`; `topbar` remains inside the main region for local controls.
+- Set `sidebarAs="div"` when the sidebar content already renders a `<nav>`, such as AppSidebar.
+  This leaves one navigation landmark instead of nesting it in a complementary landmark.
+- Set `skipLink={{ label: 'Skip to content' }}` to show a link on keyboard focus. Shell targets
+  the main region with a generated id, or use `mainId` to supply a stable id. Set `href` in
+  `skipLink` only when targeting a different element.
 - `sidebarAs` and `asideAs` choose `nav` or `aside`. Give each rail a distinct `sidebarLabel` or
   `asideLabel`; a navigation rail should use `sidebarAs="nav"`, as the documentation recipe does.
 - Shell adds no keyboard shortcuts or focus trap. Links and controls in the rails retain native
   keyboard behavior, and their DOM order stays sidebar, main, aside at every breakpoint.
 - In `scroll="content"`, ensure the main content contains focusable controls or a managed focus
   target so keyboard users can enter and discover the scrollable region.
+
+```tsx
+<Shell
+  banner="Tenant: Acme · Sandbox"
+  sidebar={<AppSidebar aria-label="Primary" groups={groups} />}
+  sidebarAs="div"
+  skipLink={{ label: 'Skip to content' }}
+  mainId="events"
+>
+  <h1>Events</h1>
+</Shell>
+```
 
 ## API and code
 

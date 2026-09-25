@@ -54,12 +54,31 @@ Prefira outro componente quando:
 
 - Shell renderiza um único `<main>` nativo por padrão. Para uma Shell aninhada ou incorporada, use
   `mainAs="div"`; a página ainda deve ter exatamente um landmark `<main>` em algum lugar.
+- Use `banner` para o contexto da página acima da navegação e fora de `<main>`. Ele renderiza em
+  `<header>`; `topbar` continua dentro da região principal para controles locais.
+- Defina `sidebarAs="div"` quando o conteúdo lateral já renderiza um `<nav>`, como AppSidebar.
+  Assim há um único landmark de navegação, sem um landmark complementar envolvendo-o.
+- Defina `skipLink={{ label: 'Ir para o conteúdo' }}` para exibir um link ao receber foco pelo
+  teclado. Shell gera um id para a região principal; use `mainId` para fornecer um id estável.
+  Defina `href` em `skipLink` somente se o destino for outro elemento.
 - `sidebarAs` e `asideAs` escolhem `nav` ou `aside`. Dê a cada trilho um `sidebarLabel` ou
   `asideLabel` distinto; um trilho de navegação deve usar `sidebarAs="nav"`, como na receita de docs.
 - Shell não adiciona atalhos de teclado nem armadilha de foco. Links e controles nos trilhos preservam
   o comportamento nativo, e sua ordem no DOM continua sidebar, main, aside em todo breakpoint.
 - Em `scroll="content"`, garanta que o conteúdo principal tenha controles focalizáveis ou um alvo de
   foco gerenciado para que usuários de teclado entrem e descubram a região rolável.
+
+```tsx
+<Shell
+  banner="Organização: Acme · Sandbox"
+  sidebar={<AppSidebar aria-label="Navegação principal" groups={groups} />}
+  sidebarAs="div"
+  skipLink={{ label: 'Ir para o conteúdo' }}
+  mainId="eventos"
+>
+  <h1>Eventos</h1>
+</Shell>
+```
 
 ## API e código
 
