@@ -635,8 +635,19 @@
   }
 }
 
-/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): only the dense desktop Drawer close
-   control needs a coarse-pointer target expansion; its fine-pointer geometry remains 28px. */
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): the Drawer close keeps its 28px visual on
+   fine pointers, but an invisible ::after extends the hit area to 44px (same pattern as the Toast
+   close). Under coarse pointers the control itself grows, below. */
+.lyra-drawer__close {
+  position: relative;
+}
+.lyra-drawer__close::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): coarse pointers get the real 44px box. */
 @media (pointer: coarse), (any-pointer: coarse) {
   .lyra-drawer__close {
     min-width: 44px;

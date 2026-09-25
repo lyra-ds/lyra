@@ -36,7 +36,10 @@ beforeAll(async () => {
       <button class="lyra-btn lyra-btn--md" data-probe="button">Go</button>
       <div class="lyra-tabs"><button class="lyra-tab" data-probe="tab">A</button></div>
       <table class="lyra-table"><thead><tr><th><button class="lyra-table__sortbtn" data-probe="sort">A</button></th><th class="lyra-table__check"><input type="checkbox" class="lyra-checkbox" data-probe="table-check" /></th></tr></thead></table>
-      <button class="lyra-drawer__close" data-probe="drawer-close" aria-label="Close">×</button>
+      <button class="lyra-drawer__close" style="margin: 40px" data-probe="drawer-close" aria-label="Close">×</button>
+      <div class="lyra-code"><div class="lyra-code__bar"><span class="lyra-code__lang">ts</span><button class="lyra-code__copy" data-probe="code-copy">Copy</button><button class="lyra-code__copy" data-probe="code-copy-pt">Copiar</button><button class="lyra-code__copy" data-probe="code-copy-done">✓</button></div></div>
+      <div class="lyra-segmented" role="radiogroup"><button class="lyra-segmented__option" data-probe="segmented-option">Production</button><button class="lyra-segmented__option" data-probe="segmented-other">Sandbox</button></div>
+      <div class="lyra-segmented" role="radiogroup"><button class="lyra-segmented__option" data-probe="segmented-en">EN</button><button class="lyra-segmented__option" data-probe="segmented-pt">PT</button></div>
       <div class="lyra-menu"><button class="lyra-menu__item" data-probe="menu-item">A</button></div>
       <div class="lyra-cmdk">
         <label class="lyra-cmdk__search"><input data-probe="command-search" value="A" /></label>
@@ -127,5 +130,40 @@ describe('coarse-pointer target sizes', () => {
 
     expect(width).toBeGreaterThanOrEqual(44);
     expect(height).toBeGreaterThanOrEqual(44);
+  });
+
+  it('keeps a 44px hit area on every pointer for the Drawer close, code copy and segmented options', () => {
+    // Drawer close: visual box stays 28px on fine pointers; the ::after hit area must reach 44px.
+    const close = document.querySelector<HTMLElement>('[data-probe="drawer-close"]');
+    if (!close) throw new Error('Missing Drawer close probe');
+    close.scrollIntoView({ block: 'center' });
+    const rect = close.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    for (const [dx, dy] of [
+      [-21, 0],
+      [21, 0],
+      [0, -21],
+      [0, 21],
+    ]) {
+      expect(document.elementFromPoint(cx + dx, cy + dy), `Drawer close hit ${dx},${dy}`).toBe(
+        close,
+      );
+    }
+
+    // Short labels (EN/PT) and the copied check icon must still reach 44x44 in both axes.
+    for (const probe of [
+      'code-copy',
+      'code-copy-pt',
+      'code-copy-done',
+      'segmented-option',
+      'segmented-other',
+      'segmented-en',
+      'segmented-pt',
+    ]) {
+      const { width, height } = box({ name: probe, selector: `[data-probe="${probe}"]` });
+      expect(width, `${probe} width`).toBeGreaterThanOrEqual(44);
+      expect(height, `${probe} height`).toBeGreaterThanOrEqual(44);
+    }
   });
 });
