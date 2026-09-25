@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from 'vitest-browser-react';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
@@ -32,9 +32,17 @@ function setViewport(width: number, height: number) {
   });
 }
 
+/** Drop any fragment a skip link click left behind so URL state never leaks between cases. */
+function clearHash() {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+beforeEach(clearHash);
+
 afterEach(async () => {
   await setViewport(1200, 800);
   cleanup();
+  clearHash();
 });
 
 describe('Shell', () => {
@@ -112,8 +120,7 @@ describe('Shell', () => {
       const { link, main } = await renderSkip();
       link.click();
       expect(document.activeElement).toBe(main);
-      expect(window.location.hash).toBe('#events');
-      history.replaceState(null, '', window.location.pathname + window.location.search);
+      await expect.poll(() => window.location.hash).toBe('#events');
     });
 
     it('focuses the target on Enter', async () => {
@@ -121,7 +128,6 @@ describe('Shell', () => {
       link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       link.click();
       expect(document.activeElement).toBe(main);
-      history.replaceState(null, '', window.location.pathname + window.location.search);
     });
 
     it.each([{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }])(
