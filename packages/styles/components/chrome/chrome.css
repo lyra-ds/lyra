@@ -267,6 +267,7 @@
   /* 44px target on every pointer (WCAG 2.5.5, as Dialog close); the negative block margin keeps
      the code bar from growing by the full difference. */
   min-height: 44px;
+  min-width: 44px;
   margin-block: calc(-1 * var(--space-2));
   transition:
     background var(--duration-fast) var(--ease-out),
@@ -337,8 +338,10 @@
 
   /* 44px target on every pointer (WCAG 2.5.5). */
   min-height: 44px;
+  min-width: 44px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   transition:
     background var(--duration-fast) var(--ease-out),
     color var(--duration-fast) var(--ease-out);

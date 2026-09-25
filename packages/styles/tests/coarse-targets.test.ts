@@ -37,8 +37,9 @@ beforeAll(async () => {
       <div class="lyra-tabs"><button class="lyra-tab" data-probe="tab">A</button></div>
       <table class="lyra-table"><thead><tr><th><button class="lyra-table__sortbtn" data-probe="sort">A</button></th><th class="lyra-table__check"><input type="checkbox" class="lyra-checkbox" data-probe="table-check" /></th></tr></thead></table>
       <button class="lyra-drawer__close" style="margin: 40px" data-probe="drawer-close" aria-label="Close">×</button>
-      <div class="lyra-code"><div class="lyra-code__bar"><span class="lyra-code__lang">ts</span><button class="lyra-code__copy" data-probe="code-copy">Copy</button></div></div>
+      <div class="lyra-code"><div class="lyra-code__bar"><span class="lyra-code__lang">ts</span><button class="lyra-code__copy" data-probe="code-copy">Copy</button><button class="lyra-code__copy" data-probe="code-copy-pt">Copiar</button><button class="lyra-code__copy" data-probe="code-copy-done">✓</button></div></div>
       <div class="lyra-segmented" role="radiogroup"><button class="lyra-segmented__option" data-probe="segmented-option">Production</button><button class="lyra-segmented__option" data-probe="segmented-other">Sandbox</button></div>
+      <div class="lyra-segmented" role="radiogroup"><button class="lyra-segmented__option" data-probe="segmented-en">EN</button><button class="lyra-segmented__option" data-probe="segmented-pt">PT</button></div>
       <div class="lyra-menu"><button class="lyra-menu__item" data-probe="menu-item">A</button></div>
       <div class="lyra-cmdk">
         <label class="lyra-cmdk__search"><input data-probe="command-search" value="A" /></label>
@@ -150,8 +151,18 @@ describe('coarse-pointer target sizes', () => {
       );
     }
 
-    for (const probe of ['code-copy', 'segmented-option', 'segmented-other']) {
-      const { height } = box({ name: probe, selector: `[data-probe="${probe}"]` });
+    // Short labels (EN/PT) and the copied check icon must still reach 44x44 in both axes.
+    for (const probe of [
+      'code-copy',
+      'code-copy-pt',
+      'code-copy-done',
+      'segmented-option',
+      'segmented-other',
+      'segmented-en',
+      'segmented-pt',
+    ]) {
+      const { width, height } = box({ name: probe, selector: `[data-probe="${probe}"]` });
+      expect(width, `${probe} width`).toBeGreaterThanOrEqual(44);
       expect(height, `${probe} height`).toBeGreaterThanOrEqual(44);
     }
   });
