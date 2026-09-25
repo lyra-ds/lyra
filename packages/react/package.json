@@ -1068,16 +1068,6 @@
       "limit": "7.912 kB"
     },
     {
-      "name": "import { OtpInput } from '@lyra-ds/react/otp-input'",
-      "path": "dist/otp-input.js",
-      "import": "{ OtpInput }",
-      "ignore": [
-        "react",
-        "react-dom"
-      ],
-      "limit": "3 kB"
-    },
-    {
       "name": "import { TimeInput } from '@lyra-ds/react/time-input'",
       "path": "dist/time-input.js",
       "import": "{ TimeInput }",
