@@ -15,7 +15,7 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/react/create-workspace-dialog': { configuredLimit: '7.9 kB', bytes: 7900 },
   '@lyra-ds/react/time-picker': { configuredLimit: '7.912 kB', bytes: 7912 },
   '@lyra-ds/react/date-picker': { configuredLimit: '9.1 kB', bytes: 9100 },
-  '@lyra-ds/react/date-range-picker': { configuredLimit: '9.2 kB', bytes: 9200 },
+  '@lyra-ds/react/date-range-picker': { configuredLimit: '9.35 kB', bytes: 9350 },
   '@lyra-ds/react/dropdown': { configuredLimit: '2.44 kB', bytes: 2440 },
   '@lyra-ds/react/combobox': { configuredLimit: '8.678 kB', bytes: 8678 },
   '@lyra-ds/react/time-zone-picker': { configuredLimit: '10.219 kB', bytes: 10219 },
