@@ -35,7 +35,8 @@ to express purpose even if their underlying primitive changes.
 
 Success, warning, danger and info each provide a strong token for emphasis, a soft token for a
 subtle background, and a text token for readable ink on that background. This pairing keeps status
-states consistent across components.
+states consistent across components. Text on a solid `--danger` fill (for example `.lyra-btn--danger`)
+uses `--on-danger`, `#FFFFFF` by default. Override it when a custom `--danger` is too light for white.
 
 <Example id="semantic" title="Intent tokens" layout="block">
   Pair `--*-soft` with its matching `--*-text`; use `--success`, `--warning`, `--danger` or `--info`

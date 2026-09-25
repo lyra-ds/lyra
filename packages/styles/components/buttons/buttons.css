@@ -49,7 +49,7 @@
 .lyra-btn--ghost { background: transparent; color: var(--text-secondary); }
 .lyra-btn--ghost:hover:not(:disabled) { background: var(--surface-sunken); color: var(--text-primary); }
 
-.lyra-btn--danger { background: var(--danger); color: #fff; }
+.lyra-btn--danger { background: var(--danger); color: var(--on-danger); }
 .lyra-btn--danger:hover:not(:disabled) { background: color-mix(in oklab, var(--danger), black 12%); }
 
 .lyra-btn--icon { padding: 0; }
