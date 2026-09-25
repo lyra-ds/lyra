@@ -38,6 +38,55 @@ afterEach(async () => {
 });
 
 describe('Shell', () => {
+  it.each(['page', 'content'] as const)(
+    'keeps the %s banner outside main and the skip link keyboard accessible',
+    async (scroll) => {
+      const { container } = await render(
+        <div style={{ height: '300px' }}>
+          <Shell
+            scroll={scroll}
+            banner="Tenant: Acme"
+            sidebar={<nav aria-label="Primary">Navigation</nav>}
+            sidebarAs="div"
+            skipLink={{ label: 'Skip to content' }}
+            mainId="events"
+            topbar="Filters"
+          >
+            Events
+          </Shell>
+        </div>,
+      );
+      const shell = container.querySelector<HTMLElement>('.lyra-shell')!;
+      const banner = shell.querySelector<HTMLElement>('.lyra-shell__banner')!;
+      const main = shell.querySelector<HTMLElement>('main')!;
+      const link = shell.querySelector<HTMLAnchorElement>('.lyra-shell__skip-link')!;
+
+      expect(banner.parentElement).toBe(shell);
+      expect(banner.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(main.contains(banner)).toBe(false);
+      expect(shell.querySelector('aside')).toBeNull();
+      expect(shell.querySelectorAll('nav')).toHaveLength(1);
+      expect(link.getAttribute('href')).toBe('#events');
+      expect(getComputedStyle(link).clipPath).toBe('inset(50%)');
+      link.focus();
+      expect(getComputedStyle(link).position).toBe('fixed');
+      link.click();
+      expect(document.activeElement).toBe(main);
+      expect(main.querySelector('.lyra-shell__topbar')?.textContent).toBe('Filters');
+      if (scroll === 'content') {
+        expect(getComputedStyle(shell).display).toBe('grid');
+        expect(main.getBoundingClientRect().top).toBeCloseTo(
+          shell.querySelector('.lyra-shell__sidebar')!.getBoundingClientRect().top,
+          1,
+        );
+        expect(main.getBoundingClientRect().top).toBeGreaterThan(
+          banner.getBoundingClientRect().top,
+        );
+      }
+      await expectNoAxeViolations(container);
+    },
+  );
+
   it('renders a main landmark by default and omits empty rail and topbar elements', async () => {
     const screen = await render(<Shell>Document</Shell>);
     const { container } = screen;

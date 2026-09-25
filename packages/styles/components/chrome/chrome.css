@@ -396,6 +396,26 @@
 .lyra-shell--has-sidebar.lyra-shell--has-aside {
   grid-template-columns: var(--shell-sidebar) minmax(0, 1fr) var(--shell-aside);
 }
+.lyra-shell__skip-link:not(:focus-visible) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lyra-shell__skip-link:focus-visible {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: var(--z-sticky);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-focus);
+}
+.lyra-shell__banner { grid-column: 1 / -1; min-width: 0; }
 .lyra-shell__sidebar,
 .lyra-shell__aside {
   position: sticky;
@@ -434,6 +454,22 @@
   min-height: 0;
   padding: 0;
   background: var(--surface-page);
+}
+
+/* A banner takes its own row while the existing content-scroll rails keep the second row. */
+.lyra-shell--content.lyra-shell--has-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.lyra-shell--content.lyra-shell--has-banner.lyra-shell--has-sidebar {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+.lyra-shell--content.lyra-shell--has-banner.lyra-shell--has-aside {
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+.lyra-shell--content.lyra-shell--has-banner.lyra-shell--has-sidebar.lyra-shell--has-aside {
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
 }
 .lyra-shell--content .lyra-shell__sidebar,
 .lyra-shell--content .lyra-shell__aside {
