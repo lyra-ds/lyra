@@ -631,6 +631,12 @@ const ADDITIVE_EXTENSIONS = {
     ],
     keyframes: [],
   },
+  'components/scheduling/scheduling.css': {
+    // Narrow-container reflow (lyra-ds/lyra#97): the row wraps and the slot column's 232px
+    // minimum is capped to the container so SlotPicker no longer overflows 320-375px viewports.
+    classes: ['lyra-slotpicker', 'lyra-slotpicker__side', 'lyra-slotpicker__main'],
+    keyframes: [],
+  },
   'components/files/files.css': {
     // Touch-feedback extension: suppressing the iOS tap highlight and replacing it with a press.
     // `lyra-fm__head` re-colors the column headings the handoff left at 2.56:1 in light; `lyra-fm__name`
