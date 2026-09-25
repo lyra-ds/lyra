@@ -44,6 +44,10 @@ Reach for something else when:
 - Search folds diacritics in both labels and keywords: `cafe` can find `café`. Options also match their
   IANA identifier and displayed offset even though those search terms need not be visible.
 
+## Styling hook
+
+`.lyra-tzpicker` is a selection hook with no styling of its own. It marks the picker root (next to `.lyra-combobox`, which carries all appearance) so your CSS and scripts can target it, as `SlotPicker` does internally. Use `className` to extend it rather than restyling `.lyra-combobox`.
+
 ## API and code
 
 <StackTabs>
