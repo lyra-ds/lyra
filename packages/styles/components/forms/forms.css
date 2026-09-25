@@ -202,22 +202,6 @@
   background: var(--accent);
   border-color: var(--accent);
 }
-.lyra-checkbox { position: relative; }
-.lyra-checkbox::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: var(--on-accent);
-  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center / 12px 12px no-repeat;
-  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center / 12px 12px no-repeat;
-  opacity: 0;
-  pointer-events: none;
-}
-.lyra-checkbox:checked::after { opacity: 1; }
-.lyra-radio:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
 .lyra-checkbox:checked {
   -webkit-mask: none;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>');
@@ -463,3 +447,20 @@ button.lyra-datepicker__btn svg { color: var(--text-muted); flex: none; }
     min-height: 44px;
   }
 }
+
+/* Additive a11y extension (parity ADDITIVE_EXTENSIONS): the handoff paints the checked check mark
+   as a hardcoded white background-image, which fails 3:1 against light white-label accents. Draw it
+   with a mask filled by --on-accent instead, and drop the old image so the mark is painted once. */
+.lyra-checkbox { position: relative; }
+.lyra-checkbox::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--on-accent);
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center / 12px 12px no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center / 12px 12px no-repeat;
+  opacity: 0;
+  pointer-events: none;
+}
+.lyra-checkbox:checked::after { opacity: 1; }
+.lyra-checkbox:checked { background-image: none; }

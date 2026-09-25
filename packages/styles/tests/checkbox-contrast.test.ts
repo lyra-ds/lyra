@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 import '../styles.css';
 
 type RGB = { r: number; g: number; b: number };
@@ -103,5 +104,39 @@ describe('checkbox / radio / switch non-text contrast (WCAG 1.4.11)', () => {
       const mark = color(getComputedStyle(checkbox, '::after').backgroundColor);
       expect(contrast(mark, accent), brand).toBeGreaterThanOrEqual(3);
     }
+  });
+
+  it('paints the check mark once, with --on-accent, and no leftover background image', async () => {
+    setup('light', '#7FD8CE');
+    checkbox.checked = true;
+    expect(getComputedStyle(checkbox).backgroundImage).toBe('none');
+    const shot = await page.screenshot({ element: checkbox, save: false, base64: true });
+    const b64 = typeof shot === 'string' ? shot : (shot as { base64: string }).base64;
+    const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+    const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+    const c = document.createElement('canvas');
+    c.width = bitmap.width;
+    c.height = bitmap.height;
+    const ctx = c.getContext('2d', { willReadFrequently: true })!;
+    ctx.drawImage(bitmap, 0, 0);
+    const data = ctx.getImageData(0, 0, c.width, c.height).data;
+    const accent = color(getComputedStyle(checkbox).backgroundColor);
+    const ink = color(getComputedStyle(root).getPropertyValue('--on-accent').trim());
+    let markPixels = 0;
+    let whitePixels = 0;
+    const margin = Math.round(c.width / 6); // skip the border and rounded corners
+    for (let i = 0; i < data.length; i += 4) {
+      const pixel = i / 4;
+      const x = pixel % c.width;
+      const y = Math.floor(pixel / c.width);
+      if (x < margin || y < margin || x >= c.width - margin || y >= c.height - margin) continue;
+      const px = { r: data[i], g: data[i + 1], b: data[i + 2] };
+      if (contrast(px, ink) < 1.3) markPixels++;
+      if (px.r > 245 && px.g > 245 && px.b > 245) whitePixels++;
+    }
+    expect(markPixels).toBeGreaterThan(3);
+    // light aqua accent: a leftover white SVG would paint white pixels inside the box
+    expect(whitePixels).toBe(0);
+    expect(contrast(ink, accent)).toBeGreaterThanOrEqual(3);
   });
 });

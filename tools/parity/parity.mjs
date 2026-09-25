@@ -238,9 +238,46 @@ const APPROVED_TOKEN_DIVERGENCES = [
     handoff: 'var(--slate-400)',
     package: 'var(--slate-500)',
   },
+  {
+    file: 'tokens/colors.css',
+    selector: ':root',
+    property: '--border-input',
+    handoff: 'var(--slate-400)',
+    package: '#7C8CA3',
+  },
+  {
+    file: 'tokens/colors.css',
+    selector: '[data-theme="dark"]',
+    property: '--border-input',
+    handoff: '#575E9B',
+    package: '#707AB8',
+  },
 ];
 
 const APPROVED_DECLARATION_DIVERGENCES = [
+  // Non-text contrast (WCAG 1.4.11, #264): unchecked checkbox/radio edges and the switch track
+  // move from --border-strong to the darker --border-input (3:1); the radio dot uses --on-accent.
+  {
+    file: 'components/forms/forms.css',
+    selector: '.lyra-checkbox, .lyra-radio',
+    property: 'border',
+    handoff: '1.5px solid var(--border-strong)',
+    package: '1.5px solid var(--border-input)',
+  },
+  {
+    file: 'components/forms/forms.css',
+    selector: '.lyra-radio:checked',
+    property: 'box-shadow',
+    handoff: 'inset 0 0 0 3.5px var(--surface-raised)',
+    package: 'inset 0 0 0 3.5px var(--on-accent)',
+  },
+  {
+    file: 'components/forms/forms.css',
+    selector: '.lyra-switch__track',
+    property: 'background',
+    handoff: 'var(--border-strong)',
+    package: 'var(--border-input)',
+  },
   {
     file: 'tokens/brand.css',
     selector: '[data-brand]',
@@ -489,6 +526,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-input--sm',
       'lyra-formrow',
       'lyra-cal__day',
+      // Check mark drawn as an --on-accent mask (::after) instead of a hardcoded white image.
+      'lyra-checkbox',
     ],
     keyframes: [],
   },
