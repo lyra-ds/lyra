@@ -45,14 +45,25 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   top?: number;
 }
 
-/** Move focus to the fragment target explicitly; Firefox does not focus it on programmatic activation. */
+/**
+ * Move focus to the fragment target explicitly; Firefox does not focus it on programmatic activation.
+ * Leaves modified or non-primary clicks and links to other documents to native navigation.
+ */
 function focusSkipTarget(event: MouseEvent<HTMLAnchorElement>) {
-  const hash = event.currentTarget.hash;
-  if (!hash) return;
-  const target = event.currentTarget.ownerDocument.getElementById(
-    decodeURIComponent(hash.slice(1)),
-  );
-  target?.focus();
+  if (event.defaultPrevented || event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const anchor = event.currentTarget;
+  if (!anchor.hash) return;
+  const destination = new URL(anchor.href);
+  const current = window.location;
+  if (
+    destination.origin !== current.origin ||
+    destination.pathname !== current.pathname ||
+    destination.search !== current.search
+  ) {
+    return;
+  }
+  anchor.ownerDocument.getElementById(decodeURIComponent(anchor.hash.slice(1)))?.focus();
 }
 
 /** A three-rail page or application frame with optional navigation, topbar, and context slots. */
