@@ -1,6 +1,8 @@
 
 ## Project
 
+For local code review, follow [docs/review-rules.md](../docs/review-rules.md).
+
 **Lyra Design System (lyra-ds)**
 
 Lyra DS é um design system open source, CSS-first e white-label para produtos SaaS, criado para facilitar a vida de desenvolvedores dos mais variados frameworks. Este projeto converte o design handoff completo (protótipos de alta fidelidade em HTML/JSX, 209 tokens, 40 componentes — em `handoff/`) em uma biblioteca real publicável no npm, sob uma nova org GitHub (`lyra-ds`), com monorepo pnpm, site de documentação bilíngue e pipeline de releases.
