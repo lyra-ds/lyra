@@ -218,3 +218,16 @@
 .lyra-calview__mcell--today .lyra-calview__mday { color: var(--accent-soft-text); }
 .lyra-calview__mevt { border-radius: var(--radius-xs); padding: 1px var(--space-1); font-size: 10px; font-weight: var(--weight-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lyra-calview__more { font-size: 10px; color: var(--text-muted); padding: 0 var(--space-1); }
+
+/* stylelint-disable no-duplicate-selectors -- Documented additive extension (tools/parity/parity.mjs,
+   ADDITIVE_EXTENSIONS): the handoff rules above stay verbatim, so overrides restate the selector. */
+
+/* ---- SlotPicker: narrow-container reflow (package-only, lyra-ds/lyra#97) ----
+   The handoff row (calendar + 232px slot column) needs ~516px. Below that the slot column wraps
+   under the calendar instead of overflowing, and the calendar shrinks into containers narrower
+   than its own 252px. Slot buttons keep their 44px height. */
+.lyra-slotpicker { flex-wrap: wrap; row-gap: var(--space-4); }
+.lyra-slotpicker__side { max-width: 100%; }
+.lyra-slotpicker__side .lyra-cal { max-width: 100%; }
+.lyra-slotpicker__main { min-width: min(232px, 100%); }
+/* stylelint-enable no-duplicate-selectors */
