@@ -15,7 +15,8 @@ describe('DateRangePicker — SSR', () => {
 
     expect(html).toContain('lyra-datepicker');
     expect(html).toContain('Travel dates');
-    expect(html).toContain('aria-label="5/10/2024 to 5/15/2024"');
+    expect(html).toContain('aria-describedby=');
+    expect(html).toContain('lyra-visually-hidden">5/10/2024 to 5/15/2024');
   });
 
   it('keeps the placeholder and incomplete trigger names unchanged', () => {
@@ -28,8 +29,8 @@ describe('DateRangePicker — SSR', () => {
     );
 
     expect(empty).toContain('Select period');
-    expect(empty).not.toContain('aria-label=');
+    expect(empty).not.toContain('aria-describedby=');
     expect(incomplete).toContain('5/10/2024 – …');
-    expect(incomplete).not.toContain('aria-label=');
+    expect(incomplete).not.toContain('aria-describedby=');
   });
 });

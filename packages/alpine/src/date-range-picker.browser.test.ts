@@ -58,7 +58,7 @@ function calendarMarkup(): string {
 
 function triggerMarkup(binding = ''): string {
   return `
-    <button class="lyra-input lyra-datepicker__btn" ${binding} :aria-label="triggerAnnouncement()" data-testid="date-range-trigger">
+    <button class="lyra-input lyra-datepicker__btn" ${binding} :aria-describedby="triggerAnnouncement() ? 'range-announcement' : null" id="range-trigger" data-testid="date-range-trigger">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M8 2v4M16 2v4" />
@@ -74,6 +74,7 @@ function triggerMarkup(binding = ''): string {
 function dateRangePickerTemplate(options = '{}', outer = '', model = '', controls = ''): string {
   return `
     <div ${outer}>
+      <label class="lyra-label" for="range-trigger">Travel dates</label>
       <div class="lyra-date-range-picker-root" x-data="lyraDateRangePicker(${options})" ${model}>
         <template x-if="!mobile"><div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
           <div class="lyra-popover-anchor lyra-datepicker" x-data="lyraPopover({ ariaLabel: 'Date range picker' })" x-modelable="open" x-model="pickerOpen">
@@ -97,6 +98,7 @@ function dateRangePickerTemplate(options = '{}', outer = '', model = '', control
           </div>
           </div>
         </div></template>
+        <span id="range-announcement" class="lyra-visually-hidden" x-text="triggerAnnouncement()"></span>
       </div>
       ${controls}
     </div>
@@ -122,6 +124,16 @@ function trigger(host: HTMLElement): HTMLButtonElement {
   const element = host.querySelector<HTMLButtonElement>('[data-testid="date-range-trigger"]');
   if (!element) throw new Error('Expected date-range-picker trigger');
   return element;
+}
+
+/** Name from the associated visible label (label-in-name), not the announcement. */
+function accessibleName(host: HTMLElement): string {
+  return trigger(host).labels?.[0]?.textContent ?? '';
+}
+
+function describedText(host: HTMLElement): string {
+  const id = trigger(host).getAttribute('aria-describedby');
+  return (id && host.querySelector(`#${id}`)?.textContent) || '';
 }
 
 function popover(host: HTMLElement): HTMLElement {
@@ -205,7 +217,8 @@ describe('lyraDateRangePicker', () => {
 
     expect(label?.textContent).toBe('Select period');
     expect(label?.classList).toContain('lyra-datepicker__ph');
-    expect(trigger(host).hasAttribute('aria-label')).toBe(false);
+    expect(trigger(host).hasAttribute('aria-describedby')).toBe(false);
+    expect(accessibleName(host)).toBe('Travel dates');
   });
 
   it('seeds the trigger from defaultValue', () => {
@@ -215,15 +228,17 @@ describe('lyraDateRangePicker', () => {
     );
 
     expect(trigger(host).textContent).toContain('5/1/2024 – 5/5/2024');
-    expect(trigger(host).getAttribute('aria-label')).toBe('5/1/2024 to 5/5/2024');
+    expect(describedText(host)).toBe('5/1/2024 to 5/5/2024');
+    expect(accessibleName(host)).toBe('Travel dates');
   });
 
-  it('uses a configurable range announcement and leaves incomplete ranges unnamed', async () => {
+  it('describes complete ranges with a configurable announcement and keeps the label as the name', async () => {
     setViewport(false);
     const host = mountDateRangePicker(
       "{ locale: 'pt-BR', defaultValue: { start: '2024-05-01', end: '2024-05-05' }, rangeAnnouncement: (start, end) => `de ${start} até ${end}` }",
     );
-    expect(trigger(host).getAttribute('aria-label')).toBe('de 01/05/2024 até 05/05/2024');
+    expect(describedText(host)).toBe('de 01/05/2024 até 05/05/2024');
+    expect(accessibleName(host)).toBe('Travel dates');
     expect(trigger(host).textContent).toContain('01/05/2024 – 05/05/2024');
 
     (Alpine.$data(picker(host)) as { selected: unknown }).selected = {
@@ -231,8 +246,16 @@ describe('lyraDateRangePicker', () => {
       end: null,
     };
     await flush();
-    expect(trigger(host).hasAttribute('aria-label')).toBe(false);
+    expect(trigger(host).hasAttribute('aria-describedby')).toBe(false);
+    expect(accessibleName(host)).toBe('Travel dates');
     expect(trigger(host).textContent).toContain('01/05/2024 – …');
+    (Alpine.$data(picker(host)) as { selected: unknown }).selected = {
+      start: '2024-05-01',
+      end: '2024-05-07',
+    };
+    await flush();
+    expect(accessibleName(host)).toBe('Travel dates');
+    expect(describedText(host)).toBe('de 01/05/2024 até 07/05/2024');
   });
 
   it('keeps an incomplete desktop range open, closes a complete one, and reopens for a restart', async () => {
@@ -255,9 +278,8 @@ describe('lyraDateRangePicker', () => {
     await flush();
     await vi.waitFor(() => expect(popover(host).style.display).toBe('none'), { timeout: 3000 });
     expect(control.textContent).toContain(`${formatter.format(start)} – ${formatter.format(end)}`);
-    expect(control.getAttribute('aria-label')).toBe(
-      `${formatter.format(start)} to ${formatter.format(end)}`,
-    );
+    expect(describedText(host)).toBe(`${formatter.format(start)} to ${formatter.format(end)}`);
+    expect(accessibleName(host)).toBe('Travel dates');
 
     await userEvent.click(control);
     await flush();

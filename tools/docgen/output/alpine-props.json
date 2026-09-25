@@ -393,7 +393,7 @@
         "name": "rangeAnnouncement",
         "type": "(start: string, end: string) => string",
         "optional": true,
-        "description": "Accessible name for a complete range, including both formatted dates. Default: `\"X to Y\"`."
+        "description": "Accessible description of a complete range, referenced by `aria-describedby`. Includes both formatted dates. Default: `\"X to Y\"`."
       }
     ]
   },

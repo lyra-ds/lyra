@@ -32,7 +32,7 @@ export interface DateRangePickerLabels {
   calendar?: CalendarLabels;
   /** Text between the formatted start and end dates. Default: `" – "`. */
   rangeSeparator?: string;
-  /** Accessible name for a complete range, including both formatted dates. Default: `"X to Y"`. */
+  /** Accessible description of a complete range, announced after the field label. Includes both formatted dates. Default: `"X to Y"`. */
   rangeAnnouncement?: (start: string, end: string) => string;
 }
 
@@ -115,10 +115,19 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
     const mobile = useMobilePicker();
     const generatedId = useId();
     const triggerId = id ?? generatedId;
+    const announcementId = `${triggerId}-range`;
     const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale), [locale]);
     const text = selected.start
       ? `${dateFormatter.format(selected.start)}${labels.rangeSeparator}${selected.end ? dateFormatter.format(selected.end) : labels.incompleteRange}`
       : null;
+    // Announce a complete range as a description, not a name: the visible label stays the name.
+    const announcement =
+      label && selected.start && selected.end
+        ? labels.rangeAnnouncement(
+            dateFormatter.format(selected.start),
+            dateFormatter.format(selected.end),
+          )
+        : null;
     const handleRangeChange = (next: Date | CalendarRange): void => {
       if (next instanceof Date) return;
       const range = normalizeRange(next);
@@ -142,14 +151,7 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
         id={triggerId}
         className={cx('lyra-input', 'lyra-datepicker__btn', error && 'lyra-input--error')}
         disabled={disabled}
-        aria-label={
-          selected.start && selected.end
-            ? labels.rangeAnnouncement(
-                dateFormatter.format(selected.start),
-                dateFormatter.format(selected.end),
-              )
-            : undefined
-        }
+        aria-describedby={announcement ? announcementId : undefined}
         onClick={mobile ? () => setOpen(true) : undefined}
       >
         <svg
@@ -206,6 +208,11 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
           </label>
         )}
         {control}
+        {announcement && (
+          <span id={announcementId} className="lyra-visually-hidden">
+            {announcement}
+          </span>
+        )}
         {error ? (
           <span className="lyra-hint lyra-hint--error">{error}</span>
         ) : hint ? (

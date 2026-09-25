@@ -19,7 +19,8 @@ significados ou regras distintos.
 <Example id="labels" title="Texto de intervalo traduzido">
   `labels.rangeSeparator` e `labels.incompleteRange` controlam o texto entre data inicial e final e
   o marcador mostrado quando só existe a inicial. `labels.rangeAnnouncement(start, end)` controla o
-  nome acessível de um intervalo completo; inclua as duas datas formatadas no resultado.
+  descrição acessível de um intervalo completo, anunciada após o rótulo do campo; inclua as duas
+  datas formatadas no resultado.
 </Example>
 
 ## Quando usar
@@ -41,10 +42,11 @@ Prefira outro componente quando:
   teclado; a primeira seleção inicia o intervalo, a seguinte o conclui, e um intervalo completo
   fecha o picker.
 - O valor visível do trigger é uma única string formatada: data inicial, `labels.rangeSeparator` e a
-  data final ou `labels.incompleteRange`. Por padrão, o nome acessível de um intervalo completo é
-  “X to Y”. Personalize com `labels.rangeAnnouncement(start, end)` em React ou com a opção
-  `rangeAnnouncement` em Alpine, por exemplo `de ${start} até ${end}`. Preserve as duas datas
-  visíveis no anúncio. Os nomes dos estados vazio e incompleto continuam iguais.
+  data final ou `labels.incompleteRange`. O rótulo do campo continua sendo o nome acessível. Com `label`, um
+  intervalo completo também é descrito como “X to Y” por padrão, por um elemento visualmente oculto
+  ligado via `aria-describedby`. Personalize com `labels.rangeAnnouncement(start, end)` em React ou
+  com a opção `rangeAnnouncement` em Alpine, por exemplo `de ${start} até ${end}`. Estados vazio e
+  incompleto não têm descrição.
 - `error` substitui `hint`; `disabled` desabilita o trigger.
 - Em viewports de 640px ou menos, o caminho de Popover passa a BottomSheet com Calendar. Título e
   nome de fechar vêm de `label`/`labels.sheetTitle` e `labels.close`. Aqui é apenas texto porque o
@@ -73,10 +75,11 @@ movimento de foco e a alternativa de folha mobile:
       type="button"
       aria-haspopup="dialog"
       aria-expanded="true"
-      aria-label="de 11/08/2026 até 15/08/2026"
+      aria-describedby="range-announcement"
     >
       <span>11/08/2026 – 15/08/2026</span>
     </button>
+    <span id="range-announcement" class="lyra-visually-hidden">de 11/08/2026 até 15/08/2026</span>
     <div
       class="lyra-popover lyra-popover--bottom lyra-popover--align-start"
       role="dialog"

@@ -12,7 +12,7 @@ export interface LyraDateRangePickerOptions {
   rangeSeparator?: string;
   /** Text after the separator while the range has no end. Default: `"…"`. */
   incompleteRange?: string;
-  /** Accessible name for a complete range, including both formatted dates. Default: `"X to Y"`. */
+  /** Accessible description of a complete range, referenced by `aria-describedby`. Includes both formatted dates. Default: `"X to Y"`. */
   rangeAnnouncement?: (start: string, end: string) => string;
 }
 
@@ -56,7 +56,7 @@ type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMag
  *          getter/setter proxies the picker's property under a non-colliding name. -->
  *     <div x-data="{ get pickerOpen() { return open }, set pickerOpen(v) { open = v } }">
  *       <div class="lyra-popover-anchor lyra-datepicker" x-data="lyraPopover({ ariaLabel: 'Date range picker' })" x-modelable="open" x-model="pickerOpen">
- *       <button class="lyra-input lyra-datepicker__btn" x-bind="trigger" :aria-label="triggerAnnouncement()">
+ *       <button class="lyra-input lyra-datepicker__btn" x-bind="trigger" :aria-describedby="triggerAnnouncement() ? 'range-announcement' : null">
  *         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
  *           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
  *           <path d="M8 2v4M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" />
@@ -106,7 +106,7 @@ type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMag
  *   <template x-if="mobile">
  *     <div>
  *       <div class="lyra-datepicker">
- *       <button class="lyra-input lyra-datepicker__btn" type="button" @click="open = true" :aria-label="triggerAnnouncement()">
+ *       <button class="lyra-input lyra-datepicker__btn" type="button" @click="open = true" :aria-describedby="triggerAnnouncement() ? 'range-announcement' : null">
  *         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
  *           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
  *           <path d="M8 2v4M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" />
@@ -167,6 +167,7 @@ type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMag
  *     </div>
  *     </div>
  *   </template>
+ *   <span id="range-announcement" class="lyra-visually-hidden" x-text="triggerAnnouncement()"></span>
  * </div>
  * ```
  */
