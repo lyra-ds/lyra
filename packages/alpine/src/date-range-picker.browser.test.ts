@@ -98,7 +98,7 @@ function dateRangePickerTemplate(options = '{}', outer = '', model = '', control
           </div>
           </div>
         </div></template>
-        <span id="range-announcement" class="lyra-visually-hidden" x-text="triggerAnnouncement()"></span>
+        <span id="range-announcement" class="lyra-visually-hidden" role="status" aria-live="polite" aria-atomic="true" x-text="triggerAnnouncement()"></span>
       </div>
       ${controls}
     </div>
@@ -280,6 +280,11 @@ describe('lyraDateRangePicker', () => {
     expect(control.textContent).toContain(`${formatter.format(start)} – ${formatter.format(end)}`);
     expect(describedText(host)).toBe(`${formatter.format(start)} to ${formatter.format(end)}`);
     expect(accessibleName(host)).toBe('Travel dates');
+    await vi.waitFor(() => expect(document.activeElement).toBe(control));
+    const live = host.querySelector('#range-announcement');
+    expect(live?.getAttribute('role')).toBe('status');
+    expect(live?.getAttribute('aria-live')).toBe('polite');
+    expect(live?.textContent).toBe(`${formatter.format(start)} to ${formatter.format(end)}`);
 
     await userEvent.click(control);
     await flush();

@@ -38,6 +38,7 @@ interface LyraDateRangePickerData {
 
 interface LyraDateRangePickerMagics {
   $el: HTMLElement;
+  $nextTick(callback: () => void): Promise<void>;
 }
 
 type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMagics;
@@ -167,7 +168,7 @@ type LyraDateRangePickerState = LyraDateRangePickerData & LyraDateRangePickerMag
  *     </div>
  *     </div>
  *   </template>
- *   <span id="range-announcement" class="lyra-visually-hidden" x-text="triggerAnnouncement()"></span>
+ *   <span id="range-announcement" class="lyra-visually-hidden" role="status" aria-live="polite" aria-atomic="true" x-text="triggerAnnouncement()"></span>
  * </div>
  * ```
  */
@@ -205,7 +206,18 @@ export function lyraDateRangePicker({
         const value = (detail as { value?: unknown } | null)?.value;
         const range =
           value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
-        if (range && normalizeDay(range.end)) this.open = false;
+        if (range && normalizeDay(range.end)) {
+          this.open = false;
+          // Hand focus back to the trigger so the range announcement is not lost to <body>.
+          this.$nextTick(() => {
+            const active = document.activeElement;
+            const lost = !active || active === document.body || active === document.documentElement;
+            if (!lost && !this.root?.contains(active)) return;
+            this.root
+              ?.querySelector<HTMLElement>('.lyra-datepicker__btn')
+              ?.focus({ preventScroll: true });
+          });
+        }
       };
       this.root.addEventListener('lyra:change', this.onCalendarChange);
 

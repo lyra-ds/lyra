@@ -1,4 +1,4 @@
-import { forwardRef, useId, useMemo, useState } from 'react';
+import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes } from 'react';
 import { BottomSheet } from '../bottom-sheet';
 import { Calendar } from '../calendar';
@@ -122,17 +122,31 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
       : null;
     // Announce a complete range as a description, not a name: the visible label stays the name.
     const announcement =
-      label && selected.start && selected.end
+      selected.start && selected.end
         ? labels.rangeAnnouncement(
             dateFormatter.format(selected.start),
             dateFormatter.format(selected.end),
           )
         : null;
+    const triggerRef = useRef<HTMLButtonElement | null>(null);
+    const returnFocusRef = useRef(false);
+    // A complete selection closes the panel; hand focus back to the trigger so it is not lost to <body>.
+    useEffect(() => {
+      if (open || !returnFocusRef.current) return;
+      returnFocusRef.current = false;
+      const active = document.activeElement;
+      if (!active || active === document.body || active === document.documentElement) {
+        triggerRef.current?.focus({ preventScroll: true });
+      }
+    }, [open]);
     const handleRangeChange = (next: Date | CalendarRange): void => {
       if (next instanceof Date) return;
       const range = normalizeRange(next);
       setSelected(range);
-      if (range.start && range.end) setOpen(false);
+      if (range.start && range.end) {
+        returnFocusRef.current = true;
+        setOpen(false);
+      }
     };
     const calendar = (
       <Calendar
@@ -149,6 +163,7 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
       <button
         type="button"
         id={triggerId}
+        ref={triggerRef}
         className={cx('lyra-input', 'lyra-datepicker__btn', error && 'lyra-input--error')}
         disabled={disabled}
         aria-describedby={announcement ? announcementId : undefined}
@@ -208,11 +223,15 @@ export const DateRangePicker = /*#__PURE__*/ forwardRef<HTMLDivElement, DateRang
           </label>
         )}
         {control}
-        {announcement && (
-          <span id={announcementId} className="lyra-visually-hidden">
-            {announcement}
-          </span>
-        )}
+        <span
+          id={announcementId}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="lyra-visually-hidden"
+        >
+          {announcement}
+        </span>
         {error ? (
           <span className="lyra-hint lyra-hint--error">{error}</span>
         ) : hint ? (
