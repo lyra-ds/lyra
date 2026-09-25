@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -51,6 +52,7 @@ interface QueuedToast {
 }
 
 const ToastContext = createContext<ToastApi | null>(null);
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 function ToneIcon({ tone }: { tone: QueuedToast['tone'] }) {
   // Lucide's circle-check, circle-alert, and info paths are deliberately inlined here. Importing
@@ -100,6 +102,9 @@ export function ToastProvider({
   const nextId = useRef(0);
   const unmounted = useRef(false);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  // Auto-dismiss delay per live toast, kept so StrictMode's simulated remount can restart the
+  // timers its cleanup cleared.
+  const delays = useRef(new Map<number, number>());
 
   const dismiss = useCallback((id: number) => {
     const timer = timers.current.get(id);
@@ -107,6 +112,7 @@ export function ToastProvider({
       clearTimeout(timer);
       timers.current.delete(id);
     }
+    delays.current.delete(id);
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
@@ -126,24 +132,36 @@ export function ToastProvider({
       setToasts((current) => [...current, toast]);
 
       const timeout = options.duration ?? duration;
-      if (timeout > 0)
+      if (timeout > 0) {
+        delays.current.set(id, timeout);
         timers.current.set(
           id,
           setTimeout(() => dismiss(id), timeout),
         );
+      }
       return id;
     },
     [dismiss, duration],
   );
 
-  useEffect(
-    () => () => {
+  // Layout effect: StrictMode replays cleanup then setup, and children's replayed passive effects
+  // (which may call toast()) run before this provider's passive setup would reset the flag.
+  useIsomorphicLayoutEffect(() => {
+    unmounted.current = false;
+    const pending = timers.current;
+    // Restart timers that the previous cleanup cleared for toasts still on screen.
+    for (const [id, delay] of delays.current)
+      if (!pending.has(id))
+        pending.set(
+          id,
+          setTimeout(() => dismiss(id), delay),
+        );
+    return () => {
       unmounted.current = true;
-      for (const timer of timers.current.values()) clearTimeout(timer);
-      timers.current.clear();
-    },
-    [],
-  );
+      for (const timer of pending.values()) clearTimeout(timer);
+      pending.clear();
+    };
+  }, [dismiss]);
 
   const api = useMemo<ToastApi>(
     () => ({
