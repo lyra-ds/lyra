@@ -60,6 +60,54 @@ afterEach(async () => {
 });
 
 describe('WorkspaceSwitcher', () => {
+  it('renders localized text and keyboard-focusable tenant links with native destinations', async () => {
+    const { container } = await render(
+      <WorkspaceSwitcher
+        current="acme"
+        workspaces={[
+          { id: 'acme', name: 'Acme', members: 1, href: '/acme/production' },
+          { id: 'lyra', name: 'Lyra', members: 2, href: '/lyra/staging' },
+        ]}
+        labels={{
+          listLabel: 'Espaços',
+          placeholder: 'Escolha um espaço',
+          members: (count) => `${count} membro${count === 1 ? '' : 's'}`,
+        }}
+      />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
+    expect(trigger.hasAttribute('aria-haspopup')).toBe(false);
+    await userEvent.click(trigger);
+    const popup = container.querySelector<HTMLElement>('.lyra-wssw__pop')!;
+    expect(popup.getAttribute('role')).toBe('group');
+    expect(popup.querySelector('.lyra-wssw__pop-label')?.textContent).toBe('Espaços');
+    const links = popup.querySelectorAll<HTMLAnchorElement>('a.lyra-wssw__item[data-id]');
+    expect(links).toHaveLength(2);
+    expect(links[0].getAttribute('href')).toBe('/acme/production');
+    expect(links[0].getAttribute('aria-current')).toBe('true');
+    expect(links[1].getAttribute('href')).toBe('/lyra/staging');
+    expect(links[0].textContent).toContain('1 membro');
+    expect(links[1].textContent).toContain('2 membros');
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(links[1]);
+    await expectNoAxeViolations(container);
+  });
+
+  it('follows a workspace link using the browser default action', async () => {
+    const { container } = await render(
+      <WorkspaceSwitcher
+        defaultOpen
+        workspaces={[{ id: 'acme', name: 'Acme', href: '#workspace-acme' }]}
+      />,
+    );
+    try {
+      await userEvent.click(container.querySelector<HTMLAnchorElement>('a.lyra-wssw__item')!);
+      expect(window.location.hash).toBe('#workspace-acme');
+    } finally {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  });
+
   for (const theme of themes) {
     it(`emits exact classes and is axe clean in ${theme}`, async () => {
       setTheme(theme);
@@ -107,12 +155,12 @@ describe('WorkspaceSwitcher', () => {
       expect(popoverBackground).toBe(theme === 'dark' ? 'rgb(18, 20, 48)' : 'rgb(255, 255, 255)');
 
       const workspaceOptions = Array.from(
-        container.querySelectorAll<HTMLButtonElement>('[role=option]'),
+        container.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]'),
       ).filter((option) => option.querySelector('.lyra-wssw__meta') != null);
       expect(workspaceOptions).toHaveLength(2);
-      expect(workspaceOptions.map((option) => option.getAttribute('aria-selected'))).toEqual([
+      expect(workspaceOptions.map((option) => option.getAttribute('aria-current'))).toEqual([
         'true',
-        'false',
+        null,
       ]);
 
       for (const option of workspaceOptions) {
@@ -158,9 +206,9 @@ describe('WorkspaceSwitcher', () => {
     const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
     trigger.focus();
     await userEvent.keyboard('{ArrowDown}');
-    let options = container.querySelectorAll<HTMLButtonElement>('[role=option]');
+    let options = container.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]');
     expect(document.activeElement).toBe(options[0]);
-    expect(options[0].getAttribute('aria-selected')).toBe('true');
+    expect(options[0].getAttribute('aria-current')).toBe('true');
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(options[1]);
     await userEvent.keyboard('{Home}');
@@ -173,11 +221,11 @@ describe('WorkspaceSwitcher', () => {
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
     expect(document.activeElement).toBe(options[1]);
     await userEvent.keyboard('{Escape}');
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
     expect(document.activeElement).toBe(trigger);
 
     await userEvent.keyboard('{Enter}');
-    options = container.querySelectorAll<HTMLButtonElement>('[role=option]');
+    options = container.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]');
     await userEvent.click(options[1]);
     expect(onChange).toHaveBeenCalledWith('lyra', workspaces[1]);
     expect(document.activeElement).toBe(trigger);
@@ -190,7 +238,7 @@ describe('WorkspaceSwitcher', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('keeps Create outside the labelled listbox with one roving workspace tab stop', async () => {
+  it('keeps Create separate from workspace choices with one roving workspace tab stop', async () => {
     const { container } = await render(
       <WorkspaceSwitcher workspaces={workspaces} onCreate={() => {}} />,
     );
@@ -198,8 +246,10 @@ describe('WorkspaceSwitcher', () => {
 
     trigger.focus();
     await userEvent.keyboard('{ArrowDown}');
-    const listbox = container.querySelector<HTMLElement>('[role=listbox]')!;
-    const options = Array.from(listbox.querySelectorAll<HTMLButtonElement>('[role=option]'));
+    const listbox = container.querySelector<HTMLElement>('.lyra-wssw__pop')!;
+    const options = Array.from(
+      listbox.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]'),
+    );
     const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
 
     expect(listbox.getAttribute('aria-labelledby')).toBeTruthy();
@@ -209,8 +259,8 @@ describe('WorkspaceSwitcher', () => {
     expect(trigger.getAttribute('tabindex')).toBe('0');
     expect(create.getAttribute('tabindex')).toBe('0');
     expect(create.getAttribute('role')).toBeNull();
-    expect(create.getAttribute('aria-selected')).toBeNull();
-    expect(listbox.contains(create)).toBe(false);
+    expect(create.getAttribute('aria-current')).toBeNull();
+    expect(listbox.contains(create)).toBe(true);
 
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(options[1]);
@@ -263,12 +313,12 @@ describe('WorkspaceSwitcher', () => {
     await userEvent.keyboard('{Tab}');
     expect(document.activeElement).toBe(container.querySelector('.lyra-wssw__create'));
     await userEvent.keyboard('{Tab}');
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
     expect(document.activeElement).toBe(after);
 
     await userEvent.click(trigger);
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
     expect(document.activeElement).toBe(trigger);
 
     await cleanup();
@@ -278,7 +328,7 @@ describe('WorkspaceSwitcher', () => {
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(empty.container.querySelector('.lyra-wssw__create'));
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
-    expect(empty.container.querySelector('[role=listbox]')).toBeNull();
+    expect(empty.container.querySelector('.lyra-wssw__pop')).toBeNull();
     expect(document.activeElement).toBe(emptyTrigger);
 
     await userEvent.keyboard('{ArrowDown}');
@@ -293,7 +343,7 @@ describe('WorkspaceSwitcher', () => {
     noCreateTrigger.focus();
     await userEvent.keyboard('{ArrowDown}');
     await userEvent.keyboard('{Tab}');
-    expect(noCreate.container.querySelector('[role=listbox]')).toBeNull();
+    expect(noCreate.container.querySelector('.lyra-wssw__pop')).toBeNull();
   });
 
   it('keeps focus on the trigger when an entirely empty popover opens and closes', async () => {
@@ -302,10 +352,10 @@ describe('WorkspaceSwitcher', () => {
 
     trigger.focus();
     await userEvent.keyboard('{ArrowDown}');
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     expect(document.activeElement).toBe(trigger);
     await userEvent.keyboard('{Escape}');
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
 
@@ -317,7 +367,9 @@ describe('WorkspaceSwitcher', () => {
 
     trigger.focus();
     await userEvent.keyboard('{ArrowDown}');
-    const originalOptions = container.querySelectorAll<HTMLButtonElement>('[role=option]');
+    const originalOptions = container.querySelectorAll<HTMLButtonElement>(
+      '.lyra-wssw__item[data-id]',
+    );
     await userEvent.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(originalOptions[1]);
     expect(Array.from(originalOptions, (option) => option.tabIndex)).toEqual([-1, 0]);
@@ -327,7 +379,7 @@ describe('WorkspaceSwitcher', () => {
     );
 
     const reorderedOptions = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('[role=option]'),
+      container.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]'),
     );
     expect(reorderedOptions[0]).toBe(originalOptions[1]);
     expect(document.activeElement).toBe(reorderedOptions[0]);
@@ -355,22 +407,22 @@ describe('WorkspaceSwitcher', () => {
     for (const key of ['{Enter}', '{Space}', '{ArrowDown}', '{ArrowUp}'] as const) {
       trigger.focus();
       await userEvent.keyboard(key);
-      const options = container.querySelectorAll<HTMLButtonElement>('[role=option]');
+      const options = container.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]');
       expect(options).toHaveLength(3);
-      expect(Array.from(options, (option) => option.getAttribute('aria-selected'))).toEqual([
-        'false',
+      expect(Array.from(options, (option) => option.getAttribute('aria-current'))).toEqual([
+        null,
         'true',
-        'false',
+        null,
       ]);
       const selectedOption = container.querySelector<HTMLButtonElement>(
-        '[role=option][aria-selected="true"]',
+        '.lyra-wssw__item[data-id][aria-current="true"]',
       )!;
       expect(selectedOption.querySelector('.lyra-wssw__name')!.textContent).toBe('Beta');
       expect(document.activeElement).toBe(selectedOption);
       expect(onChange).not.toHaveBeenCalled();
       expect(onCreate).not.toHaveBeenCalled();
       await userEvent.keyboard('{Escape}');
-      expect(container.querySelector('[role=listbox]')).toBeNull();
+      expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
       expect(document.activeElement).toBe(trigger);
     }
     expect(onChange).not.toHaveBeenCalled();
@@ -409,13 +461,13 @@ describe('WorkspaceSwitcher', () => {
     for (const key of ['{Enter}', '{Space}', '{ArrowDown}', '{ArrowUp}'] as const) {
       trigger.focus();
       await userEvent.keyboard(key);
-      expect(container.querySelector('[role=listbox]')).toBeNull();
+      expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
       expect(document.activeElement).toBe(trigger);
     }
 
     await userEvent.click(trigger);
     const selected = container.querySelector<HTMLButtonElement>(
-      '[role=option][aria-selected="true"]',
+      '.lyra-wssw__item[data-id][aria-current="true"]',
     )!;
     expect(document.activeElement).toBe(selected);
     for (const key of [
@@ -427,21 +479,21 @@ describe('WorkspaceSwitcher', () => {
       '{Tab}',
     ] as const) {
       await userEvent.keyboard(key);
-      expect(container.querySelector('[role=listbox]')).not.toBeNull();
+      expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
       expect(document.activeElement).toBe(selected);
     }
 
     cancelDefaults = false;
     await userEvent.keyboard('{End}');
     expect(document.activeElement).toBe(
-      container.querySelector<HTMLButtonElement>('[role=option]:last-of-type'),
+      container.querySelector<HTMLButtonElement>('.lyra-wssw__item[data-id]:last-of-type'),
     );
     await userEvent.keyboard('{Tab}');
     const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
     expect(document.activeElement).toBe(create);
     cancelDefaults = true;
     await userEvent.keyboard('{Space}');
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     expect(document.activeElement).toBe(create);
 
     expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual([
@@ -478,7 +530,7 @@ describe('WorkspaceSwitcher', () => {
     expect(onKeyDown).toHaveBeenCalledOnce();
     expect(onAncestorKeyDown).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(
-      container.querySelector<HTMLButtonElement>('[role=option][aria-selected="true"]'),
+      container.querySelector<HTMLButtonElement>('.lyra-wssw__item[data-id][aria-current="true"]'),
     );
   });
 
@@ -506,31 +558,33 @@ describe('WorkspaceSwitcher', () => {
     const trigger = container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!;
 
     await userEvent.click(trigger);
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
     cancelDefaults = false;
     await userEvent.click(trigger);
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     cancelDefaults = true;
     await userEvent.click(trigger);
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
-    const workspace = container.querySelectorAll<HTMLButtonElement>('[role=option]')[1]!;
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
+    const workspace = container.querySelectorAll<HTMLButtonElement>(
+      '.lyra-wssw__item[data-id]',
+    )[1]!;
     const create = container.querySelector<HTMLButtonElement>('.lyra-wssw__create')!;
     await userEvent.click(workspace);
     expect(onChange).not.toHaveBeenCalled();
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     await userEvent.click(create);
     expect(onCreate).not.toHaveBeenCalled();
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
     expect(document.activeElement).toBe(workspace);
     await userEvent.keyboard('{Enter}');
     expect(onChange).not.toHaveBeenCalled();
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     await userEvent.keyboard('{Tab}');
     expect(document.activeElement).toBe(create);
     await userEvent.keyboard('{Space}');
     expect(onCreate).not.toHaveBeenCalled();
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     expect(events).toHaveLength(7);
   });
 
@@ -548,19 +602,21 @@ describe('WorkspaceSwitcher', () => {
         />
       </div>,
     );
-    const workspace = container.querySelectorAll<HTMLButtonElement>('[role=option]')[1]!;
+    const workspace = container.querySelectorAll<HTMLButtonElement>(
+      '.lyra-wssw__item[data-id]',
+    )[1]!;
     workspace.addEventListener('click', (event) => event.preventDefault(), { once: true });
 
     await userEvent.click(workspace);
     expect(onChange).not.toHaveBeenCalled();
-    expect(container.querySelector('[role=listbox]')).not.toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).not.toBeNull();
     expect(onClick).toHaveBeenCalledOnce();
     expect(onOuterClick).not.toHaveBeenCalled();
 
     await userEvent.click(workspace);
     expect(onChange).toHaveBeenCalledOnce();
     expect(onChange).toHaveBeenCalledWith('lyra', workspaces[1]);
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
     expect(onClick).toHaveBeenCalledTimes(2);
     expect(onOuterClick).not.toHaveBeenCalled();
   });
@@ -580,10 +636,12 @@ describe('WorkspaceSwitcher', () => {
     }
 
     const { container } = await render(<Example />);
-    await userEvent.click(container.querySelectorAll<HTMLButtonElement>('[role=option]')[1]!);
+    await userEvent.click(
+      container.querySelectorAll<HTMLButtonElement>('.lyra-wssw__item[data-id]')[1]!,
+    );
     expect(onChange).toHaveBeenCalledOnce();
     expect(onChange).toHaveBeenCalledWith('lyra', workspaces[1]);
-    expect(container.querySelector('[role=listbox]')).toBeNull();
+    expect(container.querySelector('.lyra-wssw__pop')).toBeNull();
   });
 
   it('flips the popover above the trigger instead of scrolling the page when there is no room below', async () => {
@@ -614,7 +672,7 @@ describe('WorkspaceSwitcher', () => {
     const scrollBefore = window.scrollY;
     await userEvent.click(container.querySelector<HTMLButtonElement>('.lyra-wssw__trigger')!);
     const popup = container.querySelector<HTMLElement>('.lyra-wssw__pop')!;
-    const selected = popup.querySelector<HTMLElement>('[aria-selected="true"]')!;
+    const selected = popup.querySelector<HTMLElement>('[aria-current="true"]')!;
     expect(document.activeElement).toBe(selected);
     expect(popup.scrollTop).toBeGreaterThan(0);
     expect(selected.offsetTop + selected.offsetHeight).toBeLessThanOrEqual(

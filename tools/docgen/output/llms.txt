@@ -1514,6 +1514,8 @@ export interface WorkspaceSwitcherProps extends Omit<HTMLAttributes<HTMLDivEleme
   onCreate?: () => void;
   /** Create-action label. Default `"Create workspace"`. */
   createLabel?: string;
+  /** Translatable text merged over English defaults. */
+  labels?: WorkspaceSwitcherLabels;
   /** Whether the popover starts open. Useful for demos. */
   defaultOpen?: boolean;
 }

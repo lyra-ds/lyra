@@ -185,7 +185,7 @@ describe('packed P1 browser compatibility', () => {
         await userEvent.click(trigger!);
       });
       const south = Array.from(
-        container.querySelectorAll<HTMLButtonElement>('[role="option"]'),
+        container.querySelectorAll<HTMLButtonElement>('button.lyra-wssw__item[data-id]'),
       ).find((option) => option.textContent?.includes('South workspace'));
       expect(south).toBeDefined();
       await act(async () => {

@@ -279,4 +279,4 @@ Documented as `weekly-schedule-editor`. Mount with `x-data="lyraWeeklyScheduleEd
 
 Documented as `workspace-switcher`. Mount with `x-data="lyraWorkspaceSwitcher({ … })"`.
 
-- `defaultOpen?: boolean` — Whether the workspace listbox starts open. Default: `false`.
+- `defaultOpen?: boolean` — Whether the workspace disclosure starts open. Default: `false`.

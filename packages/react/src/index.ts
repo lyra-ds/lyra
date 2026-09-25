@@ -87,7 +87,11 @@ export type {
 } from './create-workspace-dialog';
 
 export { WorkspaceSwitcher } from './workspace-switcher';
-export type { Workspace, WorkspaceSwitcherProps } from './workspace-switcher';
+export type {
+  Workspace,
+  WorkspaceSwitcherLabels,
+  WorkspaceSwitcherProps,
+} from './workspace-switcher';
 
 export { Icon } from './icon';
 export type { IconProps, IconName } from './icon';
