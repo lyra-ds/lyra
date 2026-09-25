@@ -53,6 +53,16 @@
   height: var(--brand-mark-size, 24px);
   flex: none;
 }
+.lyra-brand__mark--initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: calc(var(--brand-mark-size, 24px) * 0.55);
+  line-height: 1;
+}
 .lyra-brand__mark--dark { display: none; }
 [data-theme='dark'] .lyra-brand__mark--light { display: none; }
 [data-theme='dark'] .lyra-brand__mark--dark { display: inline; }

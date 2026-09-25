@@ -24,6 +24,9 @@ brand; a mark-only Brand needs an explicit accessible name instead.
   an accessible name.
 </Example>
 
+Omit `mark` and Brand draws an initial-letter mark from the wordmark text (or from `aria-label` for
+a mark-only brand), so a bare `<Brand>Lyra</Brand>` renders without an image.
+
 <Example id="as-child" title="Rendering through a link">
   `asChild` keeps your routing link as the rendered element. It and `href` are mutually exclusive:
   the child owns the destination.

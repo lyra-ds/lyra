@@ -361,6 +361,7 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-brand__mark',
       'lyra-brand__mark--light',
       'lyra-brand__mark--dark',
+      'lyra-brand__mark--initial',
       'lyra-brand__word',
       'lyra-navlink',
       'lyra-navlink--active',
