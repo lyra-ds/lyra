@@ -28,8 +28,10 @@ Reach for something else when:
 
 ## Accessibility
 
-- The region announces politely: a toast is supplementary information, and interrupting a screen
-  reader mid-sentence for one is the wrong trade.
+- The stack itself is not live. Two persistent regions inside it exist before any toast: polite for
+  info and success, assertive for danger. Errors interrupt; everything else waits its turn.
+- Rows carry no `role` of their own — a `role="status"` node inserted together with its text is
+  often not spoken.
 - Dismissal is reachable by keyboard on every toast — a timer is a convenience, never the only way
   out.
 - Toasts stack in queue order, so the reading order matches the visual order.
@@ -45,13 +47,34 @@ push toasts from anywhere with `$store.lyraToasts`:
 
 ```html
 <div class="lyra-toast-stack" x-data="lyraToastStack()">
-  <template x-for="toast in toasts" :key="toast.id">
-    <div class="lyra-toast" role="status">
-      <span class="lyra-toast__icon" :class="toneClass(toast.tone)"></span>
-      <span x-text="toast.message"></span>
-      <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
-    </div>
-  </template>
+  <div
+    data-lyra-toast-region="polite"
+    aria-live="polite"
+    aria-relevant="additions"
+    style="display: contents"
+  >
+    <template x-for="toast in politeToasts" :key="toast.id">
+      <div class="lyra-toast">
+        <span class="lyra-toast__icon" :class="toneClass(toast.tone)"></span>
+        <span x-text="toast.message"></span>
+        <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+      </div>
+    </template>
+  </div>
+  <div
+    data-lyra-toast-region="assertive"
+    aria-live="assertive"
+    aria-relevant="additions"
+    style="display: contents"
+  >
+    <template x-for="toast in assertiveToasts" :key="toast.id">
+      <div class="lyra-toast">
+        <span class="lyra-toast__icon" :class="toneClass(toast.tone)"></span>
+        <span x-text="toast.message"></span>
+        <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+      </div>
+    </template>
+  </div>
 </div>
 ```
 

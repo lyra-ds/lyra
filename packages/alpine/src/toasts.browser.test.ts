@@ -17,34 +17,66 @@ function mountToastStack(): HTMLElement {
   const host = document.createElement('div');
   host.innerHTML = `
     <div class="lyra-toast-stack" x-data="lyraToastStack()">
-      <template x-for="toast in toasts" :key="toast.id">
-        <div class="lyra-toast" role="status">
-          <span class="lyra-toast__icon" :class="toneClass(toast.tone)">
-            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              x-show="toast.tone === 'success'">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="m9 12 2 2 4-4"></path>
-            </svg>
-            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              x-show="toast.tone === 'danger'">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" x2="12" y1="8" y2="12"></line>
-              <line x1="12" x2="12.01" y1="16" y2="16"></line>
-            </svg>
-            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              x-show="toast.tone === 'info'">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M12 16v-4"></path>
-              <path d="M12 8h.01"></path>
-            </svg>
-          </span>
-          <span x-text="toast.message"></span>
-          <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
-        </div>
-      </template>
+      <div data-lyra-toast-region="polite" aria-live="polite" aria-relevant="additions" style="display: contents">
+        <template x-for="toast in politeToasts" :key="toast.id">
+          <div class="lyra-toast">
+            <span class="lyra-toast__icon" :class="toneClass(toast.tone)">
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                x-show="toast.tone === 'success'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m9 12 2 2 4-4"></path>
+              </svg>
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                x-show="toast.tone === 'danger'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" x2="12" y1="8" y2="12"></line>
+                <line x1="12" x2="12.01" y1="16" y2="16"></line>
+              </svg>
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                x-show="toast.tone === 'info'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg>
+            </span>
+            <span x-text="toast.message"></span>
+            <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+          </div>
+        </template>
+      </div>
+      <div data-lyra-toast-region="assertive" aria-live="assertive" aria-relevant="additions" style="display: contents">
+        <template x-for="toast in assertiveToasts" :key="toast.id">
+          <div class="lyra-toast">
+            <span class="lyra-toast__icon" :class="toneClass(toast.tone)">
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                x-show="toast.tone === 'success'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m9 12 2 2 4-4"></path>
+              </svg>
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                x-show="toast.tone === 'danger'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" x2="12" y1="8" y2="12"></line>
+                <line x1="12" x2="12.01" y1="16" y2="16"></line>
+              </svg>
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                x-show="toast.tone === 'info'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg>
+            </span>
+            <span x-text="toast.message"></span>
+            <button class="lyra-toast__close" :data-toast-id="toast.id" x-bind="closeButton">×</button>
+          </div>
+        </template>
+      </div>
     </div>
   `;
   document.body.appendChild(host);
@@ -172,7 +204,7 @@ describe('lyraToasts and lyraToastStack', () => {
       tone: 'success',
     });
 
-    const row = host.querySelector<HTMLElement>('[role="status"]');
+    const row = host.querySelector<HTMLElement>('.lyra-toast');
     const message = row?.querySelectorAll<HTMLSpanElement>('span')[1];
     if (!row || !message) throw new Error('Expected rendered toast message');
     expect(message.textContent).toBe('<strong data-event-markup="true">Livewire saved</strong>');
@@ -198,18 +230,48 @@ describe('lyraToasts and lyraToastStack', () => {
     expect(store.items).toHaveLength(0);
   });
 
-  it('renders a polite row with the matching tone class and visible icon', async () => {
+  it('mounts persistent live regions before any toast and leaves the stack itself non-live', () => {
+    const host = mountToastStack();
+    const stack = host.querySelector<HTMLElement>('.lyra-toast-stack');
+    const polite = host.querySelector<HTMLElement>('[data-lyra-toast-region="polite"]');
+    const assertive = host.querySelector<HTMLElement>('[data-lyra-toast-region="assertive"]');
+
+    expect(stack?.hasAttribute('aria-live')).toBe(false);
+    expect(polite?.getAttribute('aria-live')).toBe('polite');
+    expect(assertive?.getAttribute('aria-live')).toBe('assertive');
+    expect(host.querySelectorAll('.lyra-toast')).toHaveLength(0);
+  });
+
+  it('routes danger toasts to the assertive region and the rest to the polite one', async () => {
+    const host = mountToastStack();
+    const polite = host.querySelector<HTMLElement>('[data-lyra-toast-region="polite"]')!;
+    const assertive = host.querySelector<HTMLElement>('[data-lyra-toast-region="assertive"]')!;
+    const store = toastStore();
+    store.info('Info notification', { duration: 0 });
+    store.success('Success notification', { duration: 0 });
+    store.error('Danger notification', { duration: 0 });
+    await flush();
+
+    expect(polite.querySelectorAll('.lyra-toast')).toHaveLength(2);
+    expect(polite.textContent).not.toContain('Danger notification');
+    expect(assertive.querySelectorAll('.lyra-toast')).toHaveLength(1);
+    expect(assertive.textContent).toContain('Danger notification');
+    expect(host.querySelector('.lyra-toast[role]')).toBeNull();
+    expect(host.querySelector('[data-lyra-toast-region="polite"]')).toBe(polite);
+  });
+
+  it('renders a row with the matching tone class and visible icon', async () => {
     const host = mountToastStack();
     toastStore().toast('Danger notification', { tone: 'danger', duration: 0 });
     await flush();
 
-    const row = host.querySelector<HTMLElement>('[role="status"]');
+    const row = host.querySelector<HTMLElement>('.lyra-toast');
     const icon = row?.querySelector<HTMLElement>('.lyra-toast__icon');
     const icons = row?.querySelectorAll<SVGSVGElement>('.lyra-toast__icon svg');
     if (!row || !icon || !icons) throw new Error('Expected rendered toast row and icons');
 
     expect(row.classList).toContain('lyra-toast');
-    expect(row.getAttribute('role')).toBe('status');
+    expect(row.hasAttribute('role')).toBe(false);
     expect(icon.classList).toContain('lyra-toast__icon--danger');
     expect(icons).toHaveLength(3);
     expect(icons[0].style.display).toBe('none');
@@ -235,8 +297,8 @@ describe('lyraToasts and lyraToastStack', () => {
     close.click();
     await flush();
     expect(store.items.map((toast) => toast.message)).toEqual(['First notification']);
-    expect(host.querySelectorAll('[role="status"]')).toHaveLength(1);
-    expect(host.querySelector('[role="status"]')?.textContent).toContain('First notification');
+    expect(host.querySelectorAll('.lyra-toast')).toHaveLength(1);
+    expect(host.querySelector('.lyra-toast')?.textContent).toContain('First notification');
   });
 
   it('auto-dismisses a toast queued while no stack is mounted', () => {
