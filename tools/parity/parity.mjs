@@ -528,6 +528,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-input',
       'lyra-input--sm',
       'lyra-formrow',
+      'lyra-otp',
+      'lyra-otp__digit',
       'lyra-cal__day',
       // Check mark drawn as an --on-accent mask (::after) instead of a hardcoded white image.
       'lyra-checkbox',

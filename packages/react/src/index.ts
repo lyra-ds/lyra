@@ -63,6 +63,8 @@ export { Calendar } from './calendar';
 export type { CalendarLabels, CalendarProps, CalendarRange } from './calendar';
 export { TimePicker } from './time-picker';
 export type { TimePickerLabels, TimePickerProps } from './time-picker';
+export { OtpInput } from './otp-input';
+export type { OtpInputProps } from './otp-input';
 export { TimeInput } from './time-input';
 export type { TimeInputLabels, TimeInputProps } from './time-input';
 export { DatePicker } from './date-picker';

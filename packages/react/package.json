@@ -177,6 +177,16 @@
         "default": "./dist/time-picker.cjs"
       }
     },
+    "./otp-input": {
+      "import": {
+        "types": "./dist/otp-input.d.ts",
+        "default": "./dist/otp-input.js"
+      },
+      "require": {
+        "types": "./dist/otp-input.d.cts",
+        "default": "./dist/otp-input.cjs"
+      }
+    },
     "./time-input": {
       "import": {
         "types": "./dist/time-input.d.ts",

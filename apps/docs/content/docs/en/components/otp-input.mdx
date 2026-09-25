@@ -1,0 +1,67 @@
+---
+title: OtpInput
+description: A segmented numeric field for one-time verification codes.
+---
+
+# OtpInput
+
+Use OtpInput when a person enters a short numeric verification code, such as a two-factor challenge.
+Each digit has its own box; the complete value is available through `onChange` and, when `name` is set,
+through one hidden form input.
+
+## Examples
+
+<Example id="basic" title="Six-digit verification code">
+  Typing advances to the next box. Pasting a whole code distributes its digits, including when the
+  paste contains spaces or dashes.
+</Example>
+
+<Example id="error" title="Invalid or expired code">
+  `error` replaces `hint`, marks the digits invalid, and gives the group a linked message.
+</Example>
+
+## Accessibility
+
+- The visible label names the group; every digit announces its position. Set `digitLabel` to translate
+  the word “Digit”.
+- The first field has `autocomplete="one-time-code"`; all fields use numeric input mode. The entire
+  autofilled code can be entered into the first field and is split across the boxes.
+- Left and right arrows move between digits. Home and End jump to the first and last digit. Backspace
+  deletes the current digit or moves back when empty. Tab follows the normal input order.
+- `error` is attached via `aria-describedby` and marks each digit with `aria-invalid`.
+
+## API and code
+
+<StackTabs>
+  <StackPanel stack="react">
+    <StackApi stack="react" />
+  </StackPanel>
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+```html
+<div class="lyra-field" x-data="lyraOtpInput({ length: 6 })" x-modelable="code">
+  <span id="code-label" class="lyra-label">Verification code</span>
+  <div class="lyra-otp" role="group" aria-labelledby="code-label">
+    <template x-for="index in positions" :key="index">
+      <input
+        class="lyra-input lyra-otp__digit"
+        type="text"
+        :data-index="index"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        :autocomplete="index === 0 ? 'one-time-code' : 'off'"
+        x-bind="digit"
+      />
+    </template>
+  </div>
+  <input type="hidden" name="code" x-bind:value="code" />
+</div>
+```
+
+Serve the label and optional error text with the HTML. Set `invalid: true`, `aria-describedby` on the
+`role="group"`, and a visible error with that id when validation fails. Listen for `lyra:change`
+from the component root or bind `code` with `x-model`.
+
+  </StackPanel>
+</StackTabs>
