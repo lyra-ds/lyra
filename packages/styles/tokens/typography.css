@@ -32,6 +32,10 @@
   --tracking-heading: -0.02em;
   --tracking-normal: 0;
   --tracking-caps: 0.08em;
+  --overline-transform: uppercase;
+
+  /* initial activates each label's existing tracking fallback (0.08em, 0.06em or 0.04em). */
+  --overline-tracking: initial;
 
   --display-font: var(--weight-extrabold) var(--text-5xl) / var(--leading-tight) var(--font-display);
   --h1-font: var(--weight-bold) var(--text-3xl) / var(--leading-snug) var(--font-display);

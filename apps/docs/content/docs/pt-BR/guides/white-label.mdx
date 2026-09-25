@@ -46,6 +46,25 @@ a camada de derivação e, sem a cor-base, todo o grupo de acento resolve para n
 primários perdem o preenchimento. Para mostrar o visual padrão do Lyra (por exemplo, uma opção
 "default" em um seletor de marcas), remova o atributo em vez de definir uma marca vazia.
 
+## Use caixa de frase nos rótulos
+
+Rótulos em estilo overline usam caixa alta e seu espaçamento original por padrão. Para uma marca
+ou localidade que usa caixa de frase, adicione os tokens tipográficos opcionais no mesmo escopo.
+Eles afetam cabeçalhos de tabela, grupos da barra lateral e de menus, rótulos de calendário e
+outros rótulos overline:
+
+```css
+html[data-brand='harbor'] {
+  --brand: #0d9488;
+  --overline-transform: none;
+  --overline-tracking: normal;
+}
+```
+
+`--overline-transform: none` preserva a caixa escrita no HTML; escreva os rótulos em caixa de
+frase (por exemplo, `Status da entrega`). Esses tokens não fazem parte dos quatro tokens base
+da marca nem são derivados automaticamente de `--brand`.
+
 ## Escolha o escopo
 
 Coloque `data-brand` em `<html>` quando o aplicativo inteiro pertencer a uma marca. Todos os

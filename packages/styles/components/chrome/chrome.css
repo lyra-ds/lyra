@@ -133,8 +133,8 @@
 .lyra-toc { min-width: 0; }
 .lyra-toc__title {
   font: var(--overline-font);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  letter-spacing: var(--overline-tracking, var(--tracking-caps));
+  text-transform: var(--overline-transform);
   color: var(--text-secondary);
 }
 .lyra-toc__list {
@@ -250,8 +250,8 @@
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
+  text-transform: var(--overline-transform);
+  letter-spacing: var(--overline-tracking, var(--tracking-caps));
 }
 .lyra-code__copy {
   font-family: var(--font-sans);

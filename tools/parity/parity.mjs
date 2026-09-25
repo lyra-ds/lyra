@@ -372,6 +372,31 @@ const ON_DANGER_ADDITION = {
   selectors: [':root', '[data-theme="dark"]'],
 };
 
+// #265 adds an opt-out for uppercase overline labels. `initial` makes the
+// letter-spacing fallback active, preserving the handoff's three distinct values.
+// Every approved component declaration is pinned to its file, selector, property,
+// canonical value and replacement; unrelated casing/tracking drift still fails.
+const OVERLINE_TOKEN_ADDITIONS = new Map([
+  ['--overline-transform', 'uppercase'],
+  ['--overline-tracking', 'initial'],
+]);
+const OVERLINE_LABELS = [
+  ['components/data/data.css', '.lyra-table th', 'var(--tracking-caps)'],
+  ['components/data/data.css', '.lyra-diff__overline', 'var(--tracking-caps)'],
+  ['components/navigation/navigation.css', '.lyra-menu__label', 'var(--tracking-caps)'],
+  ['components/navigation/navigation.css', '.lyra-cmdk__group-label', 'var(--tracking-caps)'],
+  ['components/navigation/navigation.css', '.lyra-wssw__pop-label', 'var(--tracking-caps)'],
+  ['components/navigation/navigation.css', '.lyra-sbgroup__label', 'var(--tracking-caps)'],
+  ['components/files/files.css', '.lyra-fm__head', 'var(--tracking-caps)'],
+  ['components/chrome/chrome.css', '.lyra-toc__title', 'var(--tracking-caps)'],
+  ['components/chrome/chrome.css', '.lyra-code__lang', 'var(--tracking-caps)'],
+  ['components/layout/layout.css', '.lyra-pageheader__eyebrow', 'var(--tracking-caps)'],
+  ['components/forms/forms.css', '.lyra-combobox__group', '0.06em'],
+  ['components/forms/forms.css', '.lyra-cal__wd', '0.04em'],
+  ['components/scheduling/scheduling.css', '.lyra-sched__copy-title', '0.04em'],
+  ['components/scheduling/scheduling.css', '.lyra-calview__head-cell', '0.04em'],
+];
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -1032,6 +1057,13 @@ function tokenCheck(baseline) {
       ) {
         continue;
       }
+      if (
+        OVERLINE_TOKEN_ADDITIONS.has(name) &&
+        pVals.length === 1 &&
+        pVals[0] === OVERLINE_TOKEN_ADDITIONS.get(name)
+      ) {
+        continue;
+      }
       fail(
         `Token ${name}: present in package but not in canonical handoff — handoff/ is canonical`,
       );
@@ -1063,6 +1095,20 @@ function isAllowedDivergence(relPath, hd, pd) {
 
   if (APPROVED_TOKEN_DIVERGENCES.some(matchesRecord)) return true;
   if (APPROVED_DECLARATION_DIVERGENCES.some(matchesRecord)) return true;
+  if (
+    OVERLINE_LABELS.some(
+      ([file, selector, tracking]) =>
+        relPath === file &&
+        hd.blockPath.at(-1) === selector &&
+        ((hd.prop === 'text-transform' &&
+          hd.val === 'uppercase' &&
+          pd.val === 'var(--overline-transform)') ||
+          (hd.prop === 'letter-spacing' &&
+            hd.val === tracking &&
+            pd.val === `var(--overline-tracking, ${tracking})`)),
+    )
+  )
+    return true;
 
   const overlay = OVERLAY_ENTRANCE_DIVERGENCE.get(relPath);
   return (
@@ -1075,6 +1121,14 @@ function isAllowedDivergence(relPath, hd, pd) {
 }
 
 function isAllowedPackageAddition(relPath, decl) {
+  if (
+    relPath === 'tokens/typography.css' &&
+    decl.blockPath.length === 1 &&
+    decl.blockPath[0] === ':root' &&
+    decl.val === OVERLINE_TOKEN_ADDITIONS.get(decl.prop)
+  ) {
+    return true;
+  }
   if (
     relPath === ON_DANGER_ADDITION.file &&
     decl.prop === ON_DANGER_ADDITION.property &&

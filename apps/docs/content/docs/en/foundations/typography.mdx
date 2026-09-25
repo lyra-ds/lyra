@@ -44,6 +44,23 @@ relaxed leading for long-form reading. Pair each role with `--text-primary`, `--
   weight and color. That lets the same hierarchy adapt with the theme.
 </Example>
 
+## Overline labels
+
+`--overline-transform` defaults to `uppercase`. `--overline-tracking` defaults to `initial`,
+which keeps each label's existing spacing: `--tracking-caps` (0.08em) for most labels, 0.06em
+for combobox groups, and 0.04em for calendar and scheduling labels. These tokens control table
+headers, sidebar and menu group labels, pageheader eyebrows, code language labels, and other
+overline-style metadata. The table sort button inherits its header's casing and spacing.
+
+For sentence case, set both tokens on your application or brand scope:
+
+```css
+[data-brand='harbor'] {
+  --overline-transform: none;
+  --overline-tracking: normal;
+}
+```
+
 ## Mono
 
 `--font-mono` is JetBrains Mono, reserved for code, token names and technical data. The
