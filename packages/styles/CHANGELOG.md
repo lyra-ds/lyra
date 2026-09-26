@@ -1,5 +1,45 @@
 # @lyra-ds/styles
 
+## 1.1.0
+
+### Minor Changes
+
+- [#272](https://github.com/lyra-ds/lyra/pull/272) [`8c19a10`](https://github.com/lyra-ds/lyra/commit/8c19a10eb6b2ea8da25925aeb14df5e54935bd1f) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix checkbox, radio and switch non-text contrast (lyra-ds/lyra#264). The check mark is now drawn with a CSS mask filled by `--on-accent` instead of a hardcoded white SVG, and the radio ring uses `--on-accent`. Unchecked checkbox/radio borders and the switch track use `--border-input`, which is now darker in both themes (light `#7C8CA3`, dark `#707AB8`) so it reaches 3:1 on the raised and sunken surfaces.
+  
+  Visible token change: `--border-input` is darker in both themes, so the border of every field that uses it (inputs, selects, textareas and the other form controls, not only checkbox/radio/switch) is now darker to meet 3:1.
+  
+  Visible token change: `--border-input` is darker in both themes, so the border of every field that uses it (inputs, selects, textareas and other form controls, not only checkbox/radio/switch) is now darker to meet 3:1.
+
+- [#280](https://github.com/lyra-ds/lyra/pull/280) [`c11b8fe`](https://github.com/lyra-ds/lyra/commit/c11b8fe66120996efec807b49e19e1399fd9cb58) Thanks [@franciscpd](https://github.com/franciscpd)! - Add an `--on-danger` token (default `#FFFFFF`, light and dark) and use it for the text of `.lyra-btn--danger` instead of a hardcoded `#fff`, so brands with a light `--danger` can set an accessible label colour. Fixes lyra-ds/lyra#263.
+
+- [#288](https://github.com/lyra-ds/lyra/pull/288) [`961bdc9`](https://github.com/lyra-ds/lyra/commit/961bdc95f6ee674b383e2383ef7dbd2ec275b6cf) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `--overline-transform` and `--overline-tracking` tokens so themes can use sentence-case overline labels while retaining the existing uppercase and tracking defaults. Fixes lyra-ds/lyra#265.
+
+- [#273](https://github.com/lyra-ds/lyra/pull/273) [`965083c`](https://github.com/lyra-ds/lyra/commit/965083c0d364ecef65e2da6ff33621447d9741e9) Thanks [@franciscpd](https://github.com/franciscpd)! - Add a page-level Shell banner, an optional keyboard skip link, and a non-landmark sidebar wrapper while preserving existing topbar and scroll modes.
+
+- [#278](https://github.com/lyra-ds/lyra/pull/278) [`4ff43c8`](https://github.com/lyra-ds/lyra/commit/4ff43c8e2ac1c60bfafc6ee7b7c17e7bb9c63cb2) Thanks [@franciscpd](https://github.com/franciscpd)! - Add a segmented numeric one-time-code input with paste, keyboard, form, and accessible error support across React, styles, and Alpine.
+
+### Patch Changes
+
+- [#268](https://github.com/lyra-ds/lyra/pull/268) [`a65247a`](https://github.com/lyra-ds/lyra/commit/a65247a1eb6b0d33d666321d0fddd8ca044eea5e) Thanks [@franciscpd](https://github.com/franciscpd)! - Make `Brand`'s `mark` optional (lyra-ds/lyra#188). Without it, Brand draws an initial-letter mark from the wordmark text (or `aria-label` for a mark-only brand) styled by the new `.lyra-brand__mark--initial` class, so copy-pasted bare snippets no longer break. Explicit `mark`/`markDark` behave as before.
+
+- [#275](https://github.com/lyra-ds/lyra/pull/275) [`0bafedb`](https://github.com/lyra-ds/lyra/commit/0bafedb2a5a98adb6b2b09c314019e1097aa06d4) Thanks [@franciscpd](https://github.com/franciscpd)! - Add accessible DataTable captions, scoped column and row headers, named keyboard-focusable scroll regions, and loading announcements. Provide matching Alpine bindings for server-rendered table markup and visible scroll focus styles.
+
+- [#281](https://github.com/lyra-ds/lyra/pull/281) [`ec9cbd3`](https://github.com/lyra-ds/lyra/commit/ec9cbd3e078cff1406d2b1654b407a71b5ca47d8) Thanks [@franciscpd](https://github.com/franciscpd)! - Render AppSidebar, BottomNav, and Breadcrumb destinations as native or composed router links while preserving button actions. Default labels stay in English; consumers translate them through `labels` or `aria-label`. Fix hover styling for navigation links in `navigation.css`.
+
+- [#287](https://github.com/lyra-ds/lyra/pull/287) [`51d153c`](https://github.com/lyra-ds/lyra/commit/51d153cad8bc6c2f08d195000da49f3b7c33266d) Thanks [@franciscpd](https://github.com/franciscpd)! - Stop `SlotPicker` overflowing narrow viewports (lyra-ds/lyra#97). The row now wraps so the slot column sits under the calendar, the calendar shrinks to its container, and the slot column's 232px minimum is capped to the container width. Desktop layout and 44px slot targets are unchanged.
+
+- [#277](https://github.com/lyra-ds/lyra/pull/277) [`4fc4512`](https://github.com/lyra-ds/lyra/commit/4fc451242d52a057e0f95a3f8d2256b9774d6b55) Thanks [@franciscpd](https://github.com/franciscpd)! - Meet the 44px target size on fine pointers too: the Drawer close button gains an invisible 44px hit area (its 28px visual is unchanged), and the CodeBlock copy button and SegmentedControl options now have `min-height: 44px` on every pointer instead of only coarse pointers or narrow viewports.
+
+- [#286](https://github.com/lyra-ds/lyra/pull/286) [`6d85939`](https://github.com/lyra-ds/lyra/commit/6d859392d11dddaaaf20f3c30d6589b176576df7) Thanks [@franciscpd](https://github.com/franciscpd)! - Document `lyra-tzpicker` as a selection hook with no styling of its own (lyra-ds/lyra#96): a comment in the scheduling stylesheet and a "Styling hook" section on the TimeZonePicker docs page (en and pt-BR). No CSS rule or class behavior changes.
+
+- [#279](https://github.com/lyra-ds/lyra/pull/279) [`726c4a7`](https://github.com/lyra-ds/lyra/commit/726c4a7cf2f54f33608a228e9806c3edab93fddd) Thanks [@franciscpd](https://github.com/franciscpd)! - Add translatable WorkspaceSwitcher labels and native workspace links in a labelled disclosure, with matching Alpine bindings and link styling.
+  
+  Migration: the recommended markup is a labelled `role="group"` popover (`aria-labelledby`) with `aria-current="true"` marking the selected workspace and plain buttons or links using `data-id`. Existing Alpine markup keeps working: `aria-selected="true"` (used only when no option has `aria-current`), `role="option"` and `role="listbox"` lookups are deprecated and will be removed in a future major, and button options still never submit an enclosing form.
+  
+  ## Migration
+  
+  `@lyra-ds/react` changes the WorkspaceSwitcher semantics from `listbox`/`option`/`aria-selected` to a disclosure with buttons or links and `aria-current`; internal ids change from `-listbox` to `-popover`. Consumers that locate items or the panel by `role="option"`, `role="listbox"` or `aria-selected` (tests, CSS, scripts) must switch to `.lyra-wssw__item[data-id]` and `.lyra-wssw__pop`, and read the selected item from `aria-current`. In Alpine the legacy markup is still accepted, but deprecated.
+
 ## 1.0.3
 
 ### Patch Changes

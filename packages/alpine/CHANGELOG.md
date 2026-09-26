@@ -1,5 +1,27 @@
 # @lyra-ds/alpine
 
+## 1.1.0
+
+### Minor Changes
+
+- [#275](https://github.com/lyra-ds/lyra/pull/275) [`0bafedb`](https://github.com/lyra-ds/lyra/commit/0bafedb2a5a98adb6b2b09c314019e1097aa06d4) Thanks [@franciscpd](https://github.com/franciscpd)! - Add accessible DataTable captions, scoped column and row headers, named keyboard-focusable scroll regions, and loading announcements. Provide matching Alpine bindings for server-rendered table markup and visible scroll focus styles.
+
+- [#274](https://github.com/lyra-ds/lyra/pull/274) [`cb29fd0`](https://github.com/lyra-ds/lyra/commit/cb29fd0927dbc38eef5b79aeff60febb3f81c462) Thanks [@franciscpd](https://github.com/franciscpd)! - Announce complete DateRangePicker selections through a configurable, translatable accessible description while the visible label stays the field name.
+
+- [#278](https://github.com/lyra-ds/lyra/pull/278) [`4ff43c8`](https://github.com/lyra-ds/lyra/commit/4ff43c8e2ac1c60bfafc6ee7b7c17e7bb9c63cb2) Thanks [@franciscpd](https://github.com/franciscpd)! - Add a segmented numeric one-time-code input with paste, keyboard, form, and accessible error support across React, styles, and Alpine.
+
+- [#279](https://github.com/lyra-ds/lyra/pull/279) [`726c4a7`](https://github.com/lyra-ds/lyra/commit/726c4a7cf2f54f33608a228e9806c3edab93fddd) Thanks [@franciscpd](https://github.com/franciscpd)! - Add translatable WorkspaceSwitcher labels and native workspace links in a labelled disclosure, with matching Alpine bindings and link styling.
+  
+  Migration: the recommended markup is a labelled `role="group"` popover (`aria-labelledby`) with `aria-current="true"` marking the selected workspace and plain buttons or links using `data-id`. Existing Alpine markup keeps working: `aria-selected="true"` (used only when no option has `aria-current`), `role="option"` and `role="listbox"` lookups are deprecated and will be removed in a future major, and button options still never submit an enclosing form.
+  
+  ## Migration
+  
+  `@lyra-ds/react` changes the WorkspaceSwitcher semantics from `listbox`/`option`/`aria-selected` to a disclosure with buttons or links and `aria-current`; internal ids change from `-listbox` to `-popover`. Consumers that locate items or the panel by `role="option"`, `role="listbox"` or `aria-selected` (tests, CSS, scripts) must switch to `.lyra-wssw__item[data-id]` and `.lyra-wssw__pop`, and read the selected item from `aria-current`. In Alpine the legacy markup is still accepted, but deprecated.
+
+### Patch Changes
+
+- [#276](https://github.com/lyra-ds/lyra/pull/276) [`a0c5d3e`](https://github.com/lyra-ds/lyra/commit/a0c5d3ee887dfe96e0c2d8b4a881a358c95f9067) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix toasts not being announced by screen readers ([#257](https://github.com/lyra-ds/lyra/issues/257)). `lyraToastStack()` now exposes `politeToasts` and `assertiveToasts` getters (alongside `toasts`); served markup renders them in two persistent `data-lyra-toast-region` regions (`aria-live="polite"` and `"assertive"`) inside a non-live `.lyra-toast-stack`, and toast rows drop their own `role="status"`. Danger toasts are announced assertively.
+
 ## 1.0.0
 
 ### Major Changes
