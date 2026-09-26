@@ -844,3 +844,6 @@
 /* Links (a.lyra-wssw__item) must look like the button items: no link color or underline. */
 .lyra-wssw__item { color: inherit; text-decoration: none; }
 .lyra-wssw__item:hover { text-decoration: none; }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): linked items retain button styling on hover. */
+.lyra-bottomnav a.lyra-bottomnav__item:hover { text-decoration: none; }

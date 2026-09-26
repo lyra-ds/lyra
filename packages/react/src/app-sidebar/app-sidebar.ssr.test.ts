@@ -41,4 +41,36 @@ describe('AppSidebar — SSR', () => {
     expect(html).toContain('title="Guides"');
     expect(html).toContain('aria-label="Guides"');
   });
+
+  it('renders data destinations as links and preserves button-only items', () => {
+    const html = renderToString(
+      createElement(AppSidebar, {
+        collapsed: true,
+        labels: { collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' },
+        collapsible: true,
+        groups: [
+          {
+            items: [
+              {
+                id: 'home',
+                label: 'Início',
+                href: '/inicio',
+                active: true,
+                target: '_blank',
+                rel: 'noopener',
+              },
+              { id: 'action', label: 'Ação', onSelect: () => {} },
+              { id: 'router', label: 'Rotas', asChild: createElement('a', { href: '/rotas' }) },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('href="/inicio"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain('href="/rotas"');
+    expect(html).toContain('<button type="button"');
+    expect(html).toContain('Expandir barra lateral');
+  });
 });

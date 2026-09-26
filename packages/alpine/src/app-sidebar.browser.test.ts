@@ -34,7 +34,7 @@ function sidebarMarkup({
         <div class="lyra-sbgroup" x-data="lyraSidebarGroup()" x-bind="root">
           <div class="lyra-sbgroup__label">Workspace</div>
           <div class="lyra-sbgroup__items">
-            <a class="lyra-sbgroup__item lyra-sbgroup__item--active" href="/overview" aria-current="page" title="Overview" aria-label="Overview"><span aria-hidden="true">O</span><span class="lyra-sbgroup__item-label">Overview</span></a>
+            <a class="lyra-sbgroup__item lyra-sbgroup__item--active" href="/overview" target="_blank" rel="noopener" aria-current="page" title="Overview" aria-label="Overview"><span aria-hidden="true">O</span><span class="lyra-sbgroup__item-label">Overview</span></a>
             <a class="lyra-sbgroup__item" href="/settings" title="Settings" aria-label="Settings"><span aria-hidden="true">S</span><span class="lyra-sbgroup__item-label">Settings</span></a>
           </div>
         </div>
@@ -164,6 +164,20 @@ describe('lyraAppSidebar', () => {
     await flush();
     expect(toggle(customHost).getAttribute('aria-label')).toBe('Restore navigation');
     expect(toggle(customHost).title).toBe('Restore navigation');
+  });
+
+  it('keeps served destinations as links and uses consumer-supplied toggle labels', async () => {
+    const host = mountAppSidebar({
+      labels: { collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' },
+    });
+    await flush();
+    const current = host.querySelector<HTMLAnchorElement>('a[href="/overview"]')!;
+    expect(current.getAttribute('aria-current')).toBe('page');
+    expect(current.getAttribute('target')).toBe('_blank');
+    expect(toggle(host).getAttribute('aria-label')).toBe('Recolher barra lateral');
+    await userEvent.click(toggle(host));
+    await flush();
+    expect(toggle(host).getAttribute('aria-label')).toBe('Expandir barra lateral');
   });
 
   it('dispatches the new collapsed state in a bubbling collapse event', async () => {

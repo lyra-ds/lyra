@@ -1,12 +1,12 @@
 ---
 title: AppSidebar
-description: An application navigation rail with composed links or convenient button-based groups.
+description: An application navigation rail with composed links or data-driven groups with real destinations.
 ---
 
 # AppSidebar
 
 AppSidebar keeps an application's destinations in view. Choose its `children` door when links must
-keep their router behavior; choose `groups` for a quick, button-based selection interface.
+keep their router behavior; `groups` supports links, router links and button actions.
 
 ## Examples
 
@@ -16,8 +16,8 @@ keep their router behavior; choose `groups` for a quick, button-based selection 
 </Example>
 
 <Example id="groups" title="Convenience groups" layout="block">
-  `groups` turns each item into a button and reports its `id` through `onSelect`. Its `label` is a
-  string on purpose, so the rail can always name the button and show a native tooltip.
+  `groups` renders an anchor when an item has `href`, composes a router link with `asChild`, and
+  keeps a button when neither is supplied. Its string `label` names the icon rail item.
 </Example>
 
 ## When to use
@@ -60,17 +60,35 @@ continues to size ordinary sidebar content and page-scroll Shell rails.
 
 - AppSidebar renders a native `<nav>`. Pass `aria-label` through to it when the page has more than
   one navigation landmark.
-- In `groups` mode, items are native buttons; an active item receives `aria-current="page"`. An
-  item callback runs before the sidebar-level `onSelect(id, item)` callback.
+- In `groups` mode, `href` items are native links, `asChild` items preserve the router link, and
+  action-only items remain buttons. The active item receives `aria-current="page"`. The item
+  callback runs before `onSelect(id, item)`. Use `target="_blank"` for native new-tab links.
 - In composition mode, children remain their original elements. Use real anchors for routes; when
   rail mode is active, link descendants get a `title` and `aria-label` from an explicit label, title,
   or their text content.
-- The collapse control is a native button whose accessible name and tooltip come from `labels`. In
+- The collapse control is a native button whose accessible name and tooltip come from `labels`
+  (English by default). In
   rail mode, group labels, item text and badges are visually hidden, while the control and item names
   remain available.
 - A WorkspaceSwitcher in the brand slot becomes a compact avatar trigger in rail mode. Its workspace
   name remains available to assistive technology; its popover keeps a usable width and stays within a
   narrow viewport.
+
+### React Router and Next.js destinations
+
+```tsx
+// React Router: the router owns client-side navigation.
+<AppSidebar groups={[{ items: [{ id: 'reports', label: 'Reports', active: true,
+  asChild: <Link to="/reports" /> }] }]} />
+
+// Next.js: the same item contract accepts Next Link.
+<AppSidebar groups={[{ items: [{ id: 'billing', label: 'Billing',
+  asChild: <Link href="/billing" /> }] }]} />
+```
+
+A plain route needs only `href: '/reports'`. Set `target: '_blank'` and
+`rel: 'noopener noreferrer'` for a new tab. `asChild` replaces the child link's content with
+the item's label and icon; do not put a second label inside the Link.
 
 ## API and code
 

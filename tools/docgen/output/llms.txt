@@ -1286,8 +1286,8 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   /** Optional brand content placed above the navigation groups. */
   brand?: ReactNode;
   /**
-   * Convenience data mode. Each group is composed through {@link SidebarGroup} and renders its
-   * items as buttons.
+   * Convenience data mode. Each group is composed through {@link SidebarGroup}; destinations
+   * render as links, while items without destinations remain buttons.
   */
   groups?: AppSidebarGroup[];
   /** Optional utility links or user content separated below the navigation groups. */
@@ -1311,7 +1311,7 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   labels?: AppSidebarLabels;
   /**
    * Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve
-   * their original element type and routing behavior instead of using data-mode buttons.
+   * their original element type and routing behavior.
   */
   children?: ReactNode;
 }

@@ -1,6 +1,7 @@
-import { forwardRef } from 'react';
-import type { HTMLAttributes, ReactNode } from 'react';
+import { cloneElement, forwardRef } from 'react';
+import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
 import { cx } from '../internal/cx';
+import { Slot } from '../internal/slot';
 
 /** An item rendered by {@link BottomNav}. */
 export interface BottomNavItem {
@@ -14,6 +15,14 @@ export interface BottomNavItem {
   active?: boolean;
   /** Called before the navigation-level selection callback when this item is selected. */
   onClick?: () => void;
+  /** Native destination. Items without a destination remain buttons. */
+  href?: string;
+  /** Native link target, for example `_blank`. */
+  target?: string;
+  /** Native link relationship. */
+  rel?: string;
+  /** Router link element that receives the item's content, classes and active state. */
+  asChild?: ReactElement;
 }
 
 /** Props for {@link BottomNav}. */
@@ -31,21 +40,39 @@ export const BottomNav = /*#__PURE__*/ forwardRef<HTMLElement, BottomNavProps>(f
 ) {
   return (
     <nav {...rest} ref={ref} className={cx('lyra-bottomnav', className)}>
-      {items.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          className={cx('lyra-bottomnav__item', item.active && 'lyra-bottomnav__item--active')}
-          aria-current={item.active ? 'page' : undefined}
-          onClick={() => {
+      {items.map((item) => {
+        const content = (
+          <>
+            <span className="lyra-bottomnav__icon">{item.icon}</span>
+            <span className="lyra-bottomnav__label">{item.label}</span>
+          </>
+        );
+        const props = {
+          className: cx('lyra-bottomnav__item', item.active && 'lyra-bottomnav__item--active'),
+          'aria-current': item.active ? ('page' as const) : undefined,
+          onClick: () => {
             item.onClick?.();
             onSelect?.(item.id, item);
-          }}
-        >
-          <span className="lyra-bottomnav__icon">{item.icon}</span>
-          <span className="lyra-bottomnav__label">{item.label}</span>
-        </button>
-      ))}
+          },
+        };
+        if (item.asChild)
+          return (
+            <Slot key={item.id} {...props}>
+              {cloneElement(item.asChild, undefined, content)}
+            </Slot>
+          );
+        if (item.href !== undefined)
+          return (
+            <a key={item.id} {...props} href={item.href} target={item.target} rel={item.rel}>
+              {content}
+            </a>
+          );
+        return (
+          <button key={item.id} {...props} type="button">
+            {content}
+          </button>
+        );
+      })}
     </nav>
   );
 });

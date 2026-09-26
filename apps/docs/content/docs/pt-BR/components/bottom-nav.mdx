@@ -33,14 +33,29 @@ Prefira outro componente quando:
 
 ## Acessibilidade
 
-- BottomNav renderiza um `<nav>` nativo com botões nativos. O rótulo visível de cada botão faz parte
+- BottomNav renderiza um `<nav>` nativo com links para destinos e botões para ações. O rótulo visível de cada item faz parte
   de seu nome acessível; forneça ícone e rótulo que descrevam o mesmo destino.
-- `active` adiciona `aria-current="page"` ao botão do item atual. Mantenha esse estado sincronizado
+- `active` adiciona `aria-current="page"` ao item atual. Mantenha esse estado sincronizado
   com a visualização exibida pela aplicação.
 - O `onClick` de um item roda antes do `onSelect(id, item)` do nível de navegação. Use um dos
-  callbacks para atualizar routing ou o estado da visualização; o componente não navega por si só.
+  callbacks para atualizar a visualização. `href` navega com link nativo; `asChild` usa o router.
 - O componente não dá um nome acessível ao landmark de navegação. Passe `aria-label` quando houver
   mais de um landmark de navegação na página.
+
+### Links de router
+
+```tsx
+// React Router
+<BottomNav items={[{ id: 'inicio', icon: homeIcon, label: 'Início', active: true,
+  asChild: <Link to="/inicio" /> }]} />
+
+// Next.js
+<BottomNav items={[{ id: 'conta', icon: accountIcon, label: 'Conta',
+  asChild: <Link href="/conta" /> }]} />
+```
+
+Use `href` para links nativos. `target: '_blank'` com `rel: 'noopener noreferrer'`
+permite abrir em outra aba. Itens somente com `onClick` continuam botões.
 
 ## API e código
 
@@ -50,22 +65,18 @@ Prefira outro componente quando:
   </StackPanel>
 
   <StackPanel stack="html">
-Use botões para o modelo de seleção do componente e marque o destino atual:
+Use âncoras para destinos e marque a página atual:
 
 ```html
 <nav class="lyra-bottomnav" aria-label="Navegação principal">
-  <button
-    class="lyra-bottomnav__item lyra-bottomnav__item--active"
-    type="button"
-    aria-current="page"
-  >
+  <a class="lyra-bottomnav__item lyra-bottomnav__item--active" href="/inicio" aria-current="page">
     <span class="lyra-bottomnav__icon" aria-hidden="true">⌂</span>
     <span class="lyra-bottomnav__label">Início</span>
-  </button>
-  <button class="lyra-bottomnav__item" type="button">
+  </a>
+  <a class="lyra-bottomnav__item" href="/atividade">
     <span class="lyra-bottomnav__icon" aria-hidden="true">◔</span>
     <span class="lyra-bottomnav__label">Atividade</span>
-  </button>
+  </a>
 </nav>
 ```
 

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ComponentProps } from 'react';
 import { cleanup, render } from 'vitest-browser-react';
 import { page, userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
@@ -22,6 +23,14 @@ const groups = [
     ],
   },
 ];
+
+function RouterLink({ to, children, ...props }: ComponentProps<'a'> & { to: string }) {
+  return (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  );
+}
 
 function setTheme(theme: 'light' | 'dark'): void {
   document.documentElement.toggleAttribute('data-theme', theme === 'dark');
@@ -272,6 +281,56 @@ describe('AppSidebar', () => {
     const link = screen.getByRole('link', { name: 'Guides' });
     await expect.element(link).toBeInTheDocument();
     await expect.element(link).toHaveAttribute('href', '/guides');
+  });
+
+  it('renders data links with native new-tab behavior and composes router links', async () => {
+    const selected = vi.fn();
+    const screen = await render(
+      <AppSidebar
+        collapsed
+        labels={{ collapse: 'Recolher barra lateral', expand: 'Expandir barra lateral' }}
+        collapsible
+        onSelect={selected}
+        groups={[
+          {
+            items: [
+              {
+                id: 'home',
+                label: 'Início',
+                href: '/inicio',
+                active: true,
+                target: '_blank',
+                rel: 'noopener',
+              },
+              { id: 'router', label: 'Rotas', asChild: <RouterLink to="/rotas" target="_blank" /> },
+              { id: 'action', label: 'Ação' },
+            ],
+          },
+        ]}
+      />,
+    );
+    const native = screen.getByRole('link', { name: 'Início' });
+    await expect.element(native).toHaveAttribute('href', '/inicio');
+    await expect.element(native).toHaveAttribute('aria-current', 'page');
+    await expect.element(native).toHaveAttribute('target', '_blank');
+    await expect
+      .element(screen.getByRole('link', { name: 'Rotas' }))
+      .toHaveAttribute('href', '/rotas');
+    await expect.element(screen.getByRole('button', { name: 'Ação' })).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole('button', { name: 'Expandir barra lateral' }))
+      .toBeInTheDocument();
+    // A real click on a target="_blank" link opens a tab and steals focus from
+    // the test page, which breaks later focus assertions in Firefox.
+    const cancelNavigation = (event: Event): void => event.preventDefault();
+    document.addEventListener('click', cancelNavigation);
+    try {
+      await userEvent.click(native);
+    } finally {
+      document.removeEventListener('click', cancelNavigation);
+    }
+    expect(selected).toHaveBeenCalledWith('home', expect.objectContaining({ id: 'home' }));
+    await expectNoAxeViolations(screen.container);
   });
 
   it('keeps composed links named and tooltip-backed in the icon rail', async () => {

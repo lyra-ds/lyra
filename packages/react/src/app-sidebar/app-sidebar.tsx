@@ -3,7 +3,7 @@ import type { CSSProperties, HTMLAttributes, ReactElement, ReactNode } from 'rea
 import { cx } from '../internal/cx';
 import { useControllableState } from '../internal/use-controllable-state';
 import { SidebarGroup } from '../sidebar-group';
-import type { SidebarGroupItem } from '../sidebar-group';
+import { Slot } from '../internal/slot';
 
 type AppSidebarStyle = CSSProperties & {
   '--appsidebar-width'?: string;
@@ -69,6 +69,14 @@ export interface AppSidebarGroupItem {
   active?: boolean;
   /** Called before the sidebar-level selection callback when this item is selected. */
   onSelect?: () => void;
+  /** Native destination. Items without a destination remain buttons. */
+  href?: string;
+  /** Native link target, for example `_blank`. */
+  target?: string;
+  /** Native link relationship. */
+  rel?: string;
+  /** A router link element that receives the item's content, classes and active state. */
+  asChild?: ReactElement;
 }
 
 /** A data-driven section rendered by {@link AppSidebar}. */
@@ -92,8 +100,8 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   /** Optional brand content placed above the navigation groups. */
   brand?: ReactNode;
   /**
-   * Convenience data mode. Each group is composed through {@link SidebarGroup} and renders its
-   * items as buttons.
+   * Convenience data mode. Each group is composed through {@link SidebarGroup}; destinations
+   * render as links, while items without destinations remain buttons.
    */
   groups?: AppSidebarGroup[];
   /** Optional utility links or user content separated below the navigation groups. */
@@ -117,14 +125,14 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   labels?: AppSidebarLabels;
   /**
    * Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve
-   * their original element type and routing behavior instead of using data-mode buttons.
+   * their original element type and routing behavior.
    */
   children?: ReactNode;
 }
 
 /**
  * An application navigation sidebar with brand, grouped navigation, and footer slots. Use
- * `groups` for button-based data navigation, or compose `SidebarGroup` children to retain links.
+ * `groups` for data navigation, or compose `SidebarGroup` children to retain custom markup.
  */
 export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>(
   function AppSidebar(
@@ -173,14 +181,51 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
             <SidebarGroup
               key={index}
               label={isCollapsed ? undefined : (group.heading as string | undefined)}
-              items={
-                group.items.map((item) => ({
-                  ...item,
-                  title: isCollapsed && typeof item.label === 'string' ? item.label : undefined,
-                })) as SidebarGroupItem[]
-              }
-              onSelect={(id, item) => onSelect?.(id, item as AppSidebarGroupItem)}
-            />
+            >
+              {group.items.map((item) => {
+                const content = (
+                  <>
+                    {item.icon && <span className="lyra-sbgroup__item-icon">{item.icon}</span>}
+                    <span className="lyra-sbgroup__item-label">{item.label}</span>
+                    {item.badge != null && (
+                      <span className="lyra-sbgroup__item-badge">{item.badge}</span>
+                    )}
+                  </>
+                );
+                const props = {
+                  className: cx('lyra-sbgroup__item', item.active && 'lyra-sbgroup__item--active'),
+                  'aria-current': item.active ? ('page' as const) : undefined,
+                  title: isCollapsed ? item.label : undefined,
+                  onClick: () => {
+                    item.onSelect?.();
+                    onSelect?.(item.id, item);
+                  },
+                };
+                if (item.asChild)
+                  return (
+                    <Slot key={item.id} {...props}>
+                      {cloneElement(item.asChild, undefined, content)}
+                    </Slot>
+                  );
+                if (item.href !== undefined)
+                  return (
+                    <a
+                      key={item.id}
+                      {...props}
+                      href={item.href}
+                      target={item.target}
+                      rel={item.rel}
+                    >
+                      {content}
+                    </a>
+                  );
+                return (
+                  <button key={item.id} {...props} type="button">
+                    {content}
+                  </button>
+                );
+              })}
+            </SidebarGroup>
           ))}
           {isCollapsed ? addRailLinkLabels(children) : children}
         </div>

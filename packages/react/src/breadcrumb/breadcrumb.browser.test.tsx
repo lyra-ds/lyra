@@ -30,4 +30,27 @@ describe('Breadcrumb', () => {
     );
     expect(container.querySelector('nav')!.getAttribute('aria-label')).toBe('Documentation');
   });
+  it('renders router and new-tab links with a consumer-supplied landmark name', async () => {
+    const screen = await render(
+      <Breadcrumb
+        aria-label="Navegação estrutural"
+        items={[
+          { label: 'Início', href: '/', target: '_blank' },
+          { label: 'Projetos', asChild: <a href="/projetos">Projetos</a> },
+          { label: 'Atual', href: '/atual' },
+        ]}
+      />,
+    );
+    await expect
+      .element(screen.getByRole('navigation', { name: 'Navegação estrutural' }))
+      .toBeInTheDocument();
+    await expect
+      .element(screen.getByRole('link', { name: 'Início' }))
+      .toHaveAttribute('target', '_blank');
+    await expect
+      .element(screen.getByRole('link', { name: 'Projetos' }))
+      .toHaveAttribute('href', '/projetos');
+    expect(screen.container.querySelectorAll('a')).toHaveLength(2);
+    expect(screen.container.querySelector('[aria-current="page"]')?.textContent).toBe('Atual');
+  });
 });

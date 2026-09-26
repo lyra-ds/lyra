@@ -587,6 +587,8 @@ const ADDITIVE_EXTENSIONS = {
       'lyra-sbgroup__item--active',
       'lyra-sbgroup__label',
       'lyra-sbgroup__label--btn',
+      // Linked BottomNav destinations must not inherit the global anchor hover underline.
+      'lyra-bottomnav__item',
       'lyra-tab',
       // Contrast repairs on Tabs (muted on sunken; accent-as-text in dark) and the stepper's own
       // horizontal scroll, which keeps a three-step flow from scrolling the whole page on a phone.
