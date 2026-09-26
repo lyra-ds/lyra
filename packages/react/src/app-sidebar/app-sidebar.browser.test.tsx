@@ -320,7 +320,15 @@ describe('AppSidebar', () => {
     await expect
       .element(screen.getByRole('button', { name: 'Expandir barra lateral' }))
       .toBeInTheDocument();
-    await userEvent.click(native);
+    // A real click on a target="_blank" link opens a tab and steals focus from
+    // the test page, which breaks later focus assertions in Firefox.
+    const cancelNavigation = (event: Event): void => event.preventDefault();
+    document.addEventListener('click', cancelNavigation);
+    try {
+      await userEvent.click(native);
+    } finally {
+      document.removeEventListener('click', cancelNavigation);
+    }
     expect(selected).toHaveBeenCalledWith('home', expect.objectContaining({ id: 'home' }));
     await expectNoAxeViolations(screen.container);
   });
