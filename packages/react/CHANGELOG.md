@@ -1,5 +1,41 @@
 # @lyra-ds/react
 
+## 1.1.0
+
+### Minor Changes
+
+- [#275](https://github.com/lyra-ds/lyra/pull/275) [`0bafedb`](https://github.com/lyra-ds/lyra/commit/0bafedb2a5a98adb6b2b09c314019e1097aa06d4) Thanks [@franciscpd](https://github.com/franciscpd)! - Add accessible DataTable captions, scoped column and row headers, named keyboard-focusable scroll regions, and loading announcements. Provide matching Alpine bindings for server-rendered table markup and visible scroll focus styles.
+
+- [#281](https://github.com/lyra-ds/lyra/pull/281) [`ec9cbd3`](https://github.com/lyra-ds/lyra/commit/ec9cbd3e078cff1406d2b1654b407a71b5ca47d8) Thanks [@franciscpd](https://github.com/franciscpd)! - Render AppSidebar, BottomNav, and Breadcrumb destinations as native or composed router links while preserving button actions. Default labels stay in English; consumers translate them through `labels` or `aria-label`. Fix hover styling for navigation links in `navigation.css`.
+
+- [#273](https://github.com/lyra-ds/lyra/pull/273) [`965083c`](https://github.com/lyra-ds/lyra/commit/965083c0d364ecef65e2da6ff33621447d9741e9) Thanks [@franciscpd](https://github.com/franciscpd)! - Add a page-level Shell banner, an optional keyboard skip link, and a non-landmark sidebar wrapper while preserving existing topbar and scroll modes.
+
+- [#274](https://github.com/lyra-ds/lyra/pull/274) [`cb29fd0`](https://github.com/lyra-ds/lyra/commit/cb29fd0927dbc38eef5b79aeff60febb3f81c462) Thanks [@franciscpd](https://github.com/franciscpd)! - Announce complete DateRangePicker selections through a configurable, translatable accessible description while the visible label stays the field name.
+
+- [#278](https://github.com/lyra-ds/lyra/pull/278) [`4ff43c8`](https://github.com/lyra-ds/lyra/commit/4ff43c8e2ac1c60bfafc6ee7b7c17e7bb9c63cb2) Thanks [@franciscpd](https://github.com/franciscpd)! - Add a segmented numeric one-time-code input with paste, keyboard, form, and accessible error support across React, styles, and Alpine.
+
+- [#279](https://github.com/lyra-ds/lyra/pull/279) [`726c4a7`](https://github.com/lyra-ds/lyra/commit/726c4a7cf2f54f33608a228e9806c3edab93fddd) Thanks [@franciscpd](https://github.com/franciscpd)! - Add translatable WorkspaceSwitcher labels and native workspace links in a labelled disclosure, with matching Alpine bindings and link styling.
+  
+  Migration: the recommended markup is a labelled `role="group"` popover (`aria-labelledby`) with `aria-current="true"` marking the selected workspace and plain buttons or links using `data-id`. Existing Alpine markup keeps working: `aria-selected="true"` (used only when no option has `aria-current`), `role="option"` and `role="listbox"` lookups are deprecated and will be removed in a future major, and button options still never submit an enclosing form.
+  
+  ## Migration
+  
+  `@lyra-ds/react` changes the WorkspaceSwitcher semantics from `listbox`/`option`/`aria-selected` to a disclosure with buttons or links and `aria-current`; internal ids change from `-listbox` to `-popover`. Consumers that locate items or the panel by `role="option"`, `role="listbox"` or `aria-selected` (tests, CSS, scripts) must switch to `.lyra-wssw__item[data-id]` and `.lyra-wssw__pop`, and read the selected item from `aria-current`. In Alpine the legacy markup is still accepted, but deprecated.
+
+### Patch Changes
+
+- [#268](https://github.com/lyra-ds/lyra/pull/268) [`a65247a`](https://github.com/lyra-ds/lyra/commit/a65247a1eb6b0d33d666321d0fddd8ca044eea5e) Thanks [@franciscpd](https://github.com/franciscpd)! - Make `Brand`'s `mark` optional (lyra-ds/lyra#188). Without it, Brand draws an initial-letter mark from the wordmark text (or `aria-label` for a mark-only brand) styled by the new `.lyra-brand__mark--initial` class, so copy-pasted bare snippets no longer break. Explicit `mark`/`markDark` behave as before.
+
+- [#266](https://github.com/lyra-ds/lyra/pull/266) [`324214e`](https://github.com/lyra-ds/lyra/commit/324214ee949f92bd13d47aeaa923328b2664dce0) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix `Container` `max` emitting invalid CSS (`--container-max: smpx`) for size keywords. `max` now accepts `sm`, `md`, `lg` and `xl` (mapped to 640, 768, 1024 and 1280px) as well as numbers and numeric strings in pixels; unrecognised values are ignored instead of collapsing `max-width` to `none`. Fixes lyra-ds/lyra#187.
+
+- [#285](https://github.com/lyra-ds/lyra/pull/285) [`2c671c4`](https://github.com/lyra-ds/lyra/commit/2c671c4d3b50b95f9d3f6f90cf0d6f48d970620a) Thanks [@franciscpd](https://github.com/franciscpd)! - Strengthen FileManager browser assertions so missing controls fail the test.
+
+- [#284](https://github.com/lyra-ds/lyra/pull/284) [`3cd9aa0`](https://github.com/lyra-ds/lyra/commit/3cd9aa0afd2fe0cd846dee6731ca9c9acf128fa0) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the standalone Size Limit budget for `OtpInput` (1.2 kB).
+
+- [#267](https://github.com/lyra-ds/lyra/pull/267) [`699d3b1`](https://github.com/lyra-ds/lyra/commit/699d3b162d56f1517b3bbec44404549d33ecff6f) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix toasts not being announced by screen readers ([#257](https://github.com/lyra-ds/lyra/issues/257)). `ToastStack` is now a persistent `aria-live="polite"` region and `Toast` drops its own `role="status"` when rendered inside it (it stays on a standalone `Toast`). `ToastProvider` mounts persistent polite and assertive regions before any toast, so error toasts are announced assertively.
+
+- [#269](https://github.com/lyra-ds/lyra/pull/269) [`58adac7`](https://github.com/lyra-ds/lyra/commit/58adac7966fea0d22b03a0b7195115136b01c6e1) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix `ToastProvider` ignoring new toasts under React StrictMode after its effect cleanup runs. Reset the unmounted flag on effect setup so the provider accepts notifications after the development-only effect replay. Fixes lyra-ds/lyra#256.
+
 ## 1.0.2
 
 ### Patch Changes
