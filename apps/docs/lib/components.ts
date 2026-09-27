@@ -652,8 +652,8 @@ const manifest: ComponentEntry[] = [
     name: 'CalendarView',
     group: 'data',
     stability: 'beta',
-    stacks: ['react', 'html'],
-    absence: { alpine: 'absenceAlpineCalendarView', blade: 'absenceBladeCalendarView' },
+    stacks: ['react', 'alpine'],
+    absence: { blade: 'absenceBladeCalendarView' },
   },
   {
     slug: 'toast-stack',

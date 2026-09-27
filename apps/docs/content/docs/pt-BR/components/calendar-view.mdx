@@ -54,8 +54,10 @@ Prefira outro componente quando:
     <StackApi stack="react" />
   </StackPanel>
 
-  <StackPanel stack="html">
-Sem React, calcule a posição local dos eventos e controle navegação de visualização, posição do popover e criação de slots:
+  <StackPanel stack="alpine">
+    <StackApi stack="alpine" />
+
+HTML canônico sem runtime de comportamento (forneça o posicionamento de eventos e as interações):
 
 ```html
 <div class="lyra-calview">
@@ -72,6 +74,175 @@ Sem React, calcule a posição local dos eventos e controle navegação de visua
         10:00–11:00 Aguardando aprovação
       </button>
     </div>
+  </div>
+</div>
+```
+
+`lyraCalendarView` anima o HTML servido. Passe `events`, `availability` por dia da semana,
+`startHour`, `endHour`, `weekStartsOn`, `slotStep`, `locale` e `labels` nas opções. `view`
+(`day`, `week` ou `month`) e `date` (ISO local) são estados editáveis. `defaultView` e
+`defaultDate` definem o estado inicial. Use `x-modelable="date"` na raiz para controlar a
+data externamente; um escopo Alpine aninhado pode ligar `view` com `x-modelable="view"`.
+Mudanças externas dos modelos não disparam eventos de interação.
+
+Os eventos na raiz carregam os mesmos valores dos callbacks React: `lyra:view-change`
+leva a visualização, `lyra:change` leva `YYYY-MM-DD` local, `lyra:event-open` leva o objeto
+do evento e `lyra:slot-create` leva um `Date` local ajustado a `slotStep`. Ações da toolbar
+e conteúdo do popover são markup da aplicação. O popover é posicionado pelo chip e fecha
+com pointerdown fora, Escape ou resize. Inclua `.lyra-calview__pop` quando precisar dele.
+
+```html
+<div
+  class="lyra-calview"
+  x-data="lyraCalendarView({
+  defaultDate: '2026-08-12', locale: 'pt-BR', events: calendarEvents,
+  availability: { 3: [{ start: '08:00', end: '17:00' }] }
+})"
+  x-modelable="date"
+  x-model="selectedDate"
+  @lyra:event-open="showEvent($event.detail)"
+  @lyra:slot-create="createAt($event.detail)"
+>
+  <div class="lyra-calview__toolbar">
+    <button
+      class="lyra-calview__nav"
+      type="button"
+      :aria-label="label('previous')"
+      @click="navigate(-1)"
+    >
+      ‹
+    </button>
+    <button
+      class="lyra-calview__nav"
+      type="button"
+      :aria-label="label('today')"
+      @click="setDate(new Date())"
+    >
+      ●
+    </button>
+    <button
+      class="lyra-calview__nav"
+      type="button"
+      :aria-label="label('next')"
+      @click="navigate(1)"
+    >
+      ›
+    </button>
+    <span class="lyra-calview__title" x-text="title()"></span>
+    <span class="lyra-calview__seg" role="group" :aria-label="label('view')">
+      <button
+        type="button"
+        :aria-pressed="view === 'day'"
+        @click="setView('day')"
+        x-text="label('day')"
+      ></button>
+      <button
+        type="button"
+        :aria-pressed="view === 'week'"
+        @click="setView('week')"
+        x-text="label('week')"
+      ></button>
+      <button
+        type="button"
+        :aria-pressed="view === 'month'"
+        @click="setView('month')"
+        x-text="label('month')"
+      ></button>
+    </span>
+    <!-- Place application toolbar actions here. -->
+  </div>
+  <div x-show="view !== 'month'">
+    <div class="lyra-calview__head" :style="gridStyle()">
+      <span></span>
+      <template x-for="day in days()" :key="day.key"
+        ><span class="lyra-calview__head-cell" :class="dayClass(day)"
+          ><span x-text="weekdayLabel(day)"></span
+          ><strong x-text="day.date.getDate()"></strong></span
+      ></template>
+    </div>
+    <div class="lyra-calview__scroll" tabindex="0" aria-label="Horas do calendário">
+      <div class="lyra-calview__grid" :style="gridStyle()">
+        <div class="lyra-calview__ruler" :style="{ height: gridHeight() + 'px' }">
+          <template x-for="hour in hours()" :key="hour"
+            ><span
+              class="lyra-calview__hour"
+              :style="hourStyle(hour)"
+              x-text="String(hour).padStart(2, '0') + ':00'"
+            ></span
+          ></template>
+        </div>
+        <template x-for="day in days()" :key="day.key"
+          ><div
+            class="lyra-calview__col"
+            :style="{ height: gridHeight() + 'px', backgroundSize: '100% 48px' }"
+            @click="createSlot($event, day)"
+          >
+            <template x-for="(window, index) in day.windows" :key="index"
+              ><span class="lyra-calview__avail" :style="availabilityStyle(window)"></span
+            ></template>
+            <span
+              class="lyra-calview__now"
+              x-show="nowStyle(day)"
+              :style="nowStyle(day) || {}"
+            ></span>
+            <template x-for="item in day.events" :key="item.id"
+              ><button
+                class="lyra-calview__evt"
+                :class="{ ['lyra-calview__evt--' + item.kind]: true }"
+                :style="eventStyle(item)"
+                type="button"
+                :aria-label="eventLabel(item)"
+                @click="openEvent($event, item)"
+              >
+                <span
+                  class="lyra-calview__evt-time"
+                  x-text="time(item.startDate) + '–' + time(item.endDate)"
+                ></span>
+                <span
+                  class="lyra-calview__evt-title"
+                  x-show="parseFloat(eventStyle(item).height) >= 34"
+                  x-text="item.title"
+                ></span></button
+            ></template></div
+        ></template>
+      </div>
+      <div
+        class="lyra-calview__pop"
+        role="dialog"
+        :aria-label="popover?.event.title"
+        x-show="popover"
+        :style="popover ? { top: popover.top + 'px', left: popover.left + 'px' } : {}"
+      >
+        <!-- Render popover?.event with application markup. -->
+        <button type="button" @click="closePopover()">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <div class="lyra-calview__mgrid" x-show="view === 'month'">
+    <template x-for="(name, index) in weekdays()" :key="index"
+      ><span class="lyra-calview__head-cell" x-text="name"></span
+    ></template>
+    <template x-for="day in days()" :key="day.key"
+      ><button
+        class="lyra-calview__mcell"
+        type="button"
+        :class="monthClass(day)"
+        @click="selectMonthDay(day)"
+      >
+        <span class="lyra-calview__mday" x-text="day.date.getDate()"></span>
+        <template x-for="item in monthEvents(day)" :key="item.id"
+          ><span
+            class="lyra-calview__mevt"
+            :class="{ ['lyra-calview__evt--' + item.kind]: true }"
+            x-text="time(item.startDate) + ' ' + item.title"
+          ></span
+        ></template>
+        <span
+          class="lyra-calview__more"
+          x-show="monthMore(day)"
+          x-text="'+' + monthMore(day)"
+        ></span></button
+    ></template>
   </div>
 </div>
 ```

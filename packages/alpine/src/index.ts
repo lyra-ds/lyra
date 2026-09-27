@@ -41,6 +41,8 @@ import { lyraTheme } from './theme';
 import { lyraToastStack, lyraToasts } from './toasts';
 import { lyraCalendar } from './calendar';
 import type { LyraCalendarOptions } from './calendar';
+import { lyraCalendarView } from './calendar-view';
+import type { LyraCalendarViewOptions } from './calendar-view';
 import { lyraDatePicker } from './date-picker';
 import type { LyraDatePickerOptions } from './date-picker';
 import { lyraDateRangePicker } from './date-range-picker';
@@ -61,6 +63,13 @@ import { lyraWeeklyScheduleEditor } from './weekly-schedule-editor';
 import type { LyraWeeklyScheduleEditorOptions } from './weekly-schedule-editor';
 
 export { TIME_ZONE_PICKER_ZONES } from './time-zone-picker';
+export type {
+  LyraCalendarViewOptions,
+  LyraCalendarViewEvent,
+  LyraCalendarViewAvailability,
+  LyraCalendarViewLabels,
+  LyraCalendarViewKind,
+} from './calendar-view';
 export type {
   LyraTimeZonePickerData,
   LyraTimeZonePickerLabels,
@@ -298,6 +307,14 @@ export default function lyra(alpine: LyraAlpine): void {
     'lyraCalendar',
     (...args) =>
       lyraCalendar((args[0] ?? {}) as LyraCalendarOptions) as unknown as Record<string, unknown>,
+  );
+  alpine.data(
+    'lyraCalendarView',
+    (...args) =>
+      lyraCalendarView((args[0] ?? {}) as LyraCalendarViewOptions) as unknown as Record<
+        string,
+        unknown
+      >,
   );
   alpine.data(
     'lyraDatePicker',
