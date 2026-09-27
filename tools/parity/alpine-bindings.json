@@ -1,0 +1,9 @@
+[
+  {
+    "component": "CreateWorkspaceDialog",
+    "reactSource": "packages/react/src/create-workspace-dialog/create-workspace-dialog.tsx",
+    "alpineBinding": "lyraCreateWorkspaceDialog",
+    "alpineSource": "packages/alpine/src/create-workspace-dialog.ts",
+    "docsSlug": "create-workspace-dialog"
+  }
+]

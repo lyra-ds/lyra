@@ -1,6 +1,8 @@
 import { lyraDropdown } from './dropdown';
 import type { LyraDropdownOptions } from './dropdown';
 import { lyraDialog } from './dialog';
+import { lyraCreateWorkspaceDialog } from './create-workspace-dialog';
+import type { LyraCreateWorkspaceDialogOptions } from './create-workspace-dialog';
 import type { LyraDialogOptions } from './dialog';
 import { lyraDrawer } from './drawer';
 import type { LyraDrawerOptions } from './drawer';
@@ -115,6 +117,15 @@ export type { LyraCookieBannerOptions } from './cookie-banner';
 export type { LyraDatePickerOptions } from './date-picker';
 export type { LyraDateRangePickerOptions } from './date-range-picker';
 export type { LyraDialogOptions } from './dialog';
+export { lyraCreateWorkspaceDialog } from './create-workspace-dialog';
+export type {
+  LyraCreateWorkspaceDialogOptions,
+  LyraCreateWorkspaceDialogData,
+  LyraCreateWorkspaceDetail,
+  LyraCreateWorkspaceFieldErrors,
+  LyraCreateWorkspaceMessages,
+  LyraCreateWorkspacePhase,
+} from './create-workspace-dialog';
 export type { LyraDrawerOptions } from './drawer';
 export type { LyraDropdownOptions } from './dropdown';
 export type { LyraFileManagerOptions } from './file-manager';
@@ -178,6 +189,13 @@ export default function lyra(alpine: LyraAlpine): void {
   alpine.store('theme', lyraTheme());
   alpine.store('lyraToasts', lyraToasts());
   alpine.data('lyraToastStack', () => lyraToastStack() as unknown as Record<string, unknown>);
+  alpine.data(
+    'lyraCreateWorkspaceDialog',
+    (...args) =>
+      lyraCreateWorkspaceDialog(
+        (args[0] ?? {}) as LyraCreateWorkspaceDialogOptions,
+      ) as unknown as Record<string, unknown>,
+  );
   alpine.data(
     'lyraDialog',
     (...args) =>
