@@ -132,6 +132,75 @@
     ]
   },
   {
+    "binding": "lyraCalendarView",
+    "kind": "data",
+    "slug": "calendar-view",
+    "optionsType": "LyraCalendarViewOptions",
+    "description": "Options for `x-data=\"lyraCalendarView(...)\"`. `view` and `date` are also writable Alpine state.",
+    "props": [
+      {
+        "name": "defaultView",
+        "type": "View",
+        "optional": true,
+        "description": "Initial view, default `week`. Can be synchronized with `x-modelable=\"view\"`."
+      },
+      {
+        "name": "defaultDate",
+        "type": "string | Date",
+        "optional": true,
+        "description": "Initial local anchor, default today. Can be synchronized with `x-modelable=\"date\"`."
+      },
+      {
+        "name": "events",
+        "type": "LyraCalendarViewEvent[]",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "availability",
+        "type": "Record<number, LyraCalendarViewAvailability[]>",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "startHour",
+        "type": "number",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "endHour",
+        "type": "number",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "slotStep",
+        "type": "number",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "locale",
+        "type": "string",
+        "optional": true,
+        "description": ""
+      },
+      {
+        "name": "labels",
+        "type": "LyraCalendarViewLabels",
+        "optional": true,
+        "description": ""
+      }
+    ]
+  },
+  {
     "binding": "lyraCodeBlock",
     "kind": "data",
     "slug": "code-block",

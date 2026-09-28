@@ -39,6 +39,20 @@ Documented as `calendar`. Mount with `x-data="lyraCalendar({ … })"`.
 - `weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6` — First weekday, where `0` is Sunday and `6` is Saturday. Default: `0`.
 - `locale?: string` — BCP 47 locale used for labels and names. Default: `"en-US"`.
 - `labels?: LyraCalendarLabels` — Translatable labels merged over English defaults.
+### lyraCalendarView
+
+Documented as `calendar-view`. Mount with `x-data="lyraCalendarView({ … })"`.
+
+- `defaultView?: View` — Initial view, default `week`. Can be synchronized with `x-modelable="view"`.
+- `defaultDate?: string | Date` — Initial local anchor, default today. Can be synchronized with `x-modelable="date"`.
+- `events?: LyraCalendarViewEvent[]`
+- `availability?: Record<number, LyraCalendarViewAvailability[]>`
+- `startHour?: number`
+- `endHour?: number`
+- `weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6`
+- `slotStep?: number`
+- `locale?: string`
+- `labels?: LyraCalendarViewLabels`
 ### lyraCodeBlock
 
 Documented as `code-block`. Mount with `x-data="lyraCodeBlock({ … })"`.
