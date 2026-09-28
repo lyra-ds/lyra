@@ -12,9 +12,9 @@ import type {
 Alpine.plugin(lyra);
 const hosts: HTMLElement[] = [];
 
-function mount() {
+function mount(rootId = '') {
   const host = document.createElement('div');
-  host.innerHTML = `<div x-data="lyraCreateWorkspaceDialog({ returnFocusTo: () => document.querySelector('[data-test=trigger]') })">
+  host.innerHTML = `<div id="${rootId}" x-data="lyraCreateWorkspaceDialog({ returnFocusTo: () => document.querySelector('[data-test=trigger]') })">
     <button type="button" data-test="trigger" @click="open = true">Open</button>
     <div class="lyra-dialog-overlay" x-bind="overlay" style="display: none">
       <div class="lyra-dialog" x-bind="panel">
@@ -178,5 +178,45 @@ describe('lyraCreateWorkspaceDialog', () => {
     await userEvent.click(f.host.querySelector<HTMLButtonElement>('.lyra-dialog__close')!);
     await tick();
     expect(document.activeElement).toBe(f.trigger);
+  });
+
+  it('cancels a pending operation when visibility is changed externally or the root is destroyed', async () => {
+    const f = mount();
+    const cancels: string[] = [];
+    f.root.addEventListener('lyra:create-workspace:cancel', (e) =>
+      cancels.push((e as CustomEvent).detail.operationId),
+    );
+    await open(f);
+    await userEvent.type(f.name, 'Acme');
+    await submit(f);
+    const firstId = f.data.operationId!;
+    f.data.open = false;
+    await tick();
+    expect(cancels).toEqual([firstId]);
+    f.data.accept(firstId);
+    await open(f);
+    await userEvent.type(f.name, 'Acme');
+    await submit(f);
+    const secondId = f.data.operationId!;
+    Alpine.destroyTree(f.host);
+    expect(cancels).toEqual([firstId, secondId]);
+  });
+
+  it('does not reuse operation IDs across remounts with the same root ID', async () => {
+    const first = mount('workspace-dialog');
+    await open(first);
+    await userEvent.type(first.name, 'Acme');
+    await submit(first);
+    const oldId = first.data.operationId!;
+    Alpine.destroyTree(first.host);
+    first.host.remove();
+
+    const second = mount('workspace-dialog');
+    await open(second);
+    await userEvent.type(second.name, 'Acme');
+    await submit(second);
+    expect(second.data.operationId).not.toBe(oldId);
+    second.data.accept(oldId);
+    expect(second.data.phase).toBe('submitting');
   });
 });

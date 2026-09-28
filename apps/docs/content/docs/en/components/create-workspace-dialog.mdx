@@ -159,6 +159,8 @@ Closing during submit emits `lyra:create-workspace:cancel` with `{ operationId }
 a matching `reject` shows the error. A stale acknowledgement is ignored. An abort signal is a
 request to stop work, not proof that persistence rolled back. Closing outside a pending request
 returns focus to the trigger through `lyraDialog`.
+Setting `open = false` externally or removing the component also emits the cancellation event for
+an active request; its later acknowledgement is ignored.
 
 ```html
 <div

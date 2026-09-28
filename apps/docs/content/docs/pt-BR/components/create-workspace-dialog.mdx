@@ -158,6 +158,8 @@ Fechar durante o envio emite `lyra:create-workspace:cancel` com `{ operationId }
 em `canceling`. Cancele a requisição e chame `cancel(operationId)` após ela terminar. `accept`
 fecha; `reject` exibe o erro. Respostas antigas são ignoradas. Abortar não garante que os dados
 já gravados tenham sido revertidos. O fechamento devolve o foco ao gatilho via `lyraDialog`.
+Definir `open = false` externamente ou desmontar o componente também emite o evento de
+cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
 
 ```html
 <div

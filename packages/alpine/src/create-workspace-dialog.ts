@@ -116,6 +116,13 @@ export function lyraCreateWorkspaceDialog(
     state.operationId = null;
     closeRequested = false;
   };
+  const invalidateOperation = (state: State) => {
+    const operationId = state.operationId;
+    const cancellationRequested = state.phase === 'canceling';
+    state.operationId = null;
+    if (operationId !== null && !cancellationRequested)
+      emit(state.$el, 'lyra:create-workspace:cancel', { operationId });
+  };
   const onName = function (this: State, event: Event) {
     if (this.pending) return;
     this.name = (event.target as HTMLInputElement).value;
@@ -163,7 +170,7 @@ export function lyraCreateWorkspaceDialog(
       this.$watch('open', (open) => {
         if (open && !wasOpen) reset(this);
         if (!open && wasOpen) {
-          this.operationId = null;
+          invalidateOperation(this);
           this.phase = 'editing';
           this.fieldErrors = {};
           this.operationError = '';
@@ -173,7 +180,7 @@ export function lyraCreateWorkspaceDialog(
       });
     },
     destroy(this: State) {
-      this.operationId = null;
+      invalidateOperation(this);
       dialog.destroy.call(this);
     },
     focusInitial(this: State) {
@@ -197,7 +204,7 @@ export function lyraCreateWorkspaceDialog(
       this.fieldErrors = {};
       this.operationError = '';
       this.phase = 'submitting';
-      this.operationId = `${this.$el.id || `lyra-wscreate-${instance}`}-${++sequence}`;
+      this.operationId = `${this.$el.id || 'lyra-wscreate'}-operation-${instance}-${++sequence}`;
       emit(this.$el, 'lyra:create-workspace', {
         operationId: this.operationId,
         name,
