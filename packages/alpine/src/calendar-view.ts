@@ -203,7 +203,7 @@ export function lyraCalendarView({
       return labels[key];
     },
     setView(view) {
-      if (!['day', 'week', 'month'].includes(view) || this.view === view) return;
+      if (!['day', 'week', 'month'].includes(view)) return;
       this.view = view;
       this.closePopover();
       this.$dispatch('lyra:view-change', view);
@@ -212,7 +212,6 @@ export function lyraCalendarView({
       const date = normalizeDay(value);
       if (!date) return;
       const next = isoFrom(date);
-      if (this.date === next) return;
       this.date = next;
       this.closePopover();
       this.$dispatch('lyra:change', next);

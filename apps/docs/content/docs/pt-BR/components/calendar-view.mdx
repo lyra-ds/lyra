@@ -96,7 +96,16 @@ com pointerdown fora, Escape ou resize. Inclua `.lyra-calview__pop` quando preci
   class="lyra-calview"
   x-data="lyraCalendarView({
   defaultDate: '2026-08-12', locale: 'pt-BR', events: calendarEvents,
-  availability: { 3: [{ start: '08:00', end: '17:00' }] }
+  availability: { 3: [{ start: '08:00', end: '17:00' }] },
+  labels: {
+    previous: 'Período anterior',
+    today: 'Hoje',
+    next: 'Próximo período',
+    view: 'Visualização do calendário',
+    day: 'Dia',
+    week: 'Semana',
+    month: 'Mês',
+  }
 })"
   x-modelable="date"
   x-model="selectedDate"

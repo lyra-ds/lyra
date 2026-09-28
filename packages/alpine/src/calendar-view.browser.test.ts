@@ -1,8 +1,20 @@
 import '@lyra-ds/styles/styles.css';
 import Alpine from 'alpinejs';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
+import ptBrCalendarViewDocs from '../../../apps/docs/content/docs/pt-BR/components/calendar-view.mdx?raw';
+import { isoFrom } from './internal/date-utils';
 import { expectNoAxeViolations } from './internal/test-axe';
 import lyra from './index';
+
+function ptBrExampleMarkup(): string {
+  const blocks = [...ptBrCalendarViewDocs.matchAll(/```html\n([\s\S]*?)```/g)].map(
+    (match) => match[1]!,
+  );
+  const interactive = blocks[1];
+  if (!interactive) throw new Error('pt-BR calendar-view interactive example not found');
+  return interactive;
+}
 
 Alpine.plugin(lyra);
 const hosts: HTMLElement[] = [];
@@ -117,6 +129,73 @@ describe('lyraCalendarView', () => {
     expect(host.querySelector('[aria-pressed="true"]')?.textContent).toBe('Dia');
   });
 
+  it('emits lyra:view-change and closes the popover when the active view is reselected, by click and keyboard', async () => {
+    const host = mount(
+      `{ defaultDate: '2026-08-12', defaultView: 'day',
+      events: [{ id: 1, title: 'Visit', start: '2026-08-12T08:30:00', end: '2026-08-12T09:00:00' }] }`,
+    );
+    const changes: unknown[] = [];
+    host.addEventListener('lyra:view-change', (event) =>
+      changes.push((event as CustomEvent).detail),
+    );
+    await flush();
+    const dayButton = host.querySelectorAll('.lyra-calview__seg button')[0] as HTMLButtonElement;
+    const chip = host.querySelector<HTMLElement>('.lyra-calview__evt')!;
+    const pop = host.querySelector<HTMLElement>('.lyra-calview__pop')!;
+
+    chip.click();
+    await flush();
+    expect(pop.style.display).not.toBe('none');
+    dayButton.click();
+    await flush();
+    expect(changes).toContain('day');
+    expect(pop.style.display).toBe('none');
+
+    chip.click();
+    await flush();
+    expect(pop.style.display).not.toBe('none');
+    changes.length = 0;
+    dayButton.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    expect(changes).toContain('day');
+    expect(pop.style.display).toBe('none');
+  });
+
+  it('emits lyra:change and closes the popover when Today is pressed on the current date', async () => {
+    const today = new Date();
+    const isoToday = isoFrom(today);
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const host = mount(
+      `{ defaultDate: '${isoToday}', defaultView: 'day', startHour: 0, endHour: 23,
+      events: [{ id: 1, title: 'Visit', start: '${isoToday}T${pad(today.getHours())}:00:00', end: '${isoToday}T${pad(today.getHours())}:30:00' }] }`,
+    );
+    const changes: unknown[] = [];
+    host.addEventListener('lyra:change', (event) => changes.push((event as CustomEvent).detail));
+    await flush();
+    const todayButton = host.querySelector('[aria-label="Today"]') as HTMLButtonElement;
+    const chip = host.querySelector<HTMLElement>('.lyra-calview__evt')!;
+    const pop = host.querySelector<HTMLElement>('.lyra-calview__pop')!;
+
+    chip.click();
+    await flush();
+    expect(pop.style.display).not.toBe('none');
+    todayButton.click();
+    await flush();
+    expect(changes).toContain(isoToday);
+    expect(pop.style.display).toBe('none');
+
+    chip.click();
+    await flush();
+    expect(pop.style.display).not.toBe('none');
+    changes.length = 0;
+    todayButton.focus();
+    await userEvent.keyboard('{Enter}');
+    await flush();
+    expect(changes).toContain(isoToday);
+    expect(pop.style.display).toBe('none');
+  });
+
   it('places events by minute, availability, snapped slots and anchored popovers', async () => {
     const host =
       mount(`{ defaultDate: '2026-08-12', defaultView: 'day', startHour: 7, endHour: 10, slotStep: 15,
@@ -172,5 +251,41 @@ describe('lyraCalendarView', () => {
     const host = mount("{ defaultDate: '2026-08-12', defaultView: 'day' }");
     await flush();
     await expectNoAxeViolations(host);
+  });
+
+  it('renders the real pt-BR docs example with translated labels and accessible names', async () => {
+    const host = document.createElement('div');
+    host.innerHTML = `<div x-data="{
+      calendarEvents: [{ id: 1, title: 'Sessão', start: '2026-08-12T10:00:00', end: '2026-08-12T11:00:00' }],
+      selectedDate: '2026-08-12',
+      showEvent() {},
+      createAt() {},
+    }">${ptBrExampleMarkup()}</div>`;
+    document.body.appendChild(host);
+    Alpine.initTree(host);
+    hosts.push(host);
+    await flush();
+
+    expect(host.querySelector('.lyra-calview__title')?.textContent).toContain('ago. de 2026');
+    expect(host.querySelector('[aria-label="Período anterior"]')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Hoje"]')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Próximo período"]')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Visualização do calendário"]')).not.toBeNull();
+
+    const segButtons = host.querySelectorAll('.lyra-calview__seg button');
+    expect(Array.from(segButtons).map((button) => button.textContent)).toEqual([
+      'Dia',
+      'Semana',
+      'Mês',
+    ]);
+    expect(host.querySelector('[aria-pressed="true"]')?.textContent).toBe('Semana');
+
+    const chip = host.querySelector<HTMLElement>('.lyra-calview__evt')!;
+    expect(chip.getAttribute('aria-label')).not.toBeNull();
+    chip.click();
+    await flush();
+    const pop = host.querySelector<HTMLElement>('.lyra-calview__pop')!;
+    expect(pop.style.display).not.toBe('none');
+    expect(pop.querySelector('button')?.textContent).toBe('Fechar');
   });
 });
