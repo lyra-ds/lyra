@@ -131,17 +131,23 @@ export function lyraCreateWorkspaceDialog(
     this.operationError = '';
     if (this.phase === 'error') this.phase = 'editing';
   };
+  // React re-renders a controlled input synchronously on every keystroke, so its DOM
+  // value is always the slugified string — the next keystroke's raw value is read off
+  // that normalized DOM, not off whatever the browser inserted. Alpine's `:value`
+  // binding only touches the DOM when the reactive value CHANGES (e.g. slugify("acme!")
+  // === "acme", already stored, so the binding is a no-op and the field keeps showing
+  // the un-normalized "acme!"). Writing target.value directly, every input, forces the
+  // same "DOM always mirrors the slugified value" invariant React gets for free.
   const onSlug = function (this: State, event: Event) {
     if (this.pending) return;
     this.touchedSlug = true;
-    this.slug = slugify((event.target as HTMLInputElement).value);
+    const target = event.target as HTMLInputElement;
+    this.slug = slugify(target.value);
+    target.value = this.slug;
     this.fieldErrors = { ...this.fieldErrors, slug: undefined };
     this.operationError = '';
     if (this.phase === 'error') this.phase = 'editing';
   };
-  // slugify(target.value) can equal the already-stored slug (a discarded trailing
-  // separator, e.g. "acme!" -> "acme"): Alpine then skips reapplying :value, so the
-  // field keeps showing the un-normalized text until it settles.
   const onSlugBlur = function (this: State, event: Event) {
     (event.target as HTMLInputElement).value = this.slug;
   };

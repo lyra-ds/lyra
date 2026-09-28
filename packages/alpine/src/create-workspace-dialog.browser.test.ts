@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import lyra from './index';
 import { expectNoAxeViolations } from './internal/test-axe';
+import {
+  SLUG_SEQUENCES,
+  simulateNativePaste,
+} from '../../../tools/create-workspace-dialog/slug-sequences';
 import type {
   LyraCreateWorkspaceDialogData,
   LyraCreateWorkspaceDetail,
@@ -82,10 +86,15 @@ describe('lyraCreateWorkspaceDialog', () => {
     expect(f.slug.value).toBe('acao-global');
     expect(f.host.querySelector('.lyra-avatar span')?.textContent).toBe('AG');
     await userEvent.clear(f.slug);
+    // Typed character-by-character (not filled), the DOM is reset to the slugified
+    // value after every keystroke — mirroring React's controlled input — so the space
+    // in "my|url" is a trailing separator at the instant it lands and is discarded
+    // before "u" arrives. This is NOT slugify("my url"); see
+    // tools/create-workspace-dialog/slug-sequences.ts (sequence "my-url-keyed").
     await userEvent.type(f.slug, 'my url');
     await userEvent.type(f.name, ' Team');
     await tick();
-    expect(f.slug.value).toBe('my-url');
+    expect(f.slug.value).toBe('myurl');
   });
 
   it('validates and focuses the first invalid field', async () => {
@@ -252,17 +261,50 @@ describe('lyraCreateWorkspaceDialog', () => {
     expect(f.submitButton.className).toContain('lyra-btn--loading');
   });
 
-  it('resyncs the slug input DOM value on blur when normalization discarded trailing characters', async () => {
+  it('resyncs the slug input DOM value on every keystroke, not just on blur', async () => {
     const f = mount();
     await open(f);
     await userEvent.type(f.name, 'Acme');
     f.slug.focus();
     await userEvent.type(f.slug, '!');
     await tick();
+    // A discarded trailing separator must disappear immediately — matching React's
+    // controlled re-render — not linger until blur (DF-CWD-SLUG regression).
     expect(f.data.slug).toBe('acme');
-    expect(f.slug.value).toBe('acme!');
+    expect(f.slug.value).toBe('acme');
     await userEvent.click(f.name);
     await tick();
     expect(f.slug.value).toBe('acme');
+  });
+
+  // DF-CWD-SLUG — matches the React reference model keystroke-for-keystroke. See each
+  // sequence's `description` in tools/create-workspace-dialog/slug-sequences.ts (kept
+  // out of the test title — filenames derived from long titles overflow macOS path
+  // limits for the Playwright trace/screenshot artifacts).
+  describe('DF-CWD-SLUG slug sequences', () => {
+    for (const sequence of SLUG_SEQUENCES) {
+      it(sequence.id, async () => {
+        const f = mount();
+        await open(f);
+        f.slug.focus();
+        for (const [index, step] of sequence.steps.entries()) {
+          if (step.type === 'key') {
+            await userEvent.type(f.slug, step.char);
+          } else {
+            simulateNativePaste(f.slug, step.text);
+          }
+          await tick();
+          expect(f.slug.value).toBe(sequence.expectedDisplayed[index]);
+          expect(f.data.slug).toBe(sequence.expectedDisplayed[index]);
+        }
+        await userEvent.type(f.name, 'Acme');
+        const requests: LyraCreateWorkspaceDetail[] = [];
+        f.root.addEventListener('lyra:create-workspace', (e) =>
+          requests.push((e as CustomEvent).detail),
+        );
+        await submit(f);
+        expect(requests[0]?.slug).toBe(sequence.expectedFinal);
+      });
+    }
   });
 });

@@ -5,6 +5,10 @@ import { userEvent } from 'vitest/browser';
 import { expectNoAxeViolations } from '../internal/test-axe';
 import '@lyra-ds/styles/styles.css';
 import { CreateWorkspaceDialog, type CreateWorkspaceRequest } from './index';
+import {
+  SLUG_SEQUENCES,
+  simulateNativePaste,
+} from '../../../../tools/create-workspace-dialog/slug-sequences';
 
 afterEach(async () => {
   await cleanup();
@@ -332,5 +336,39 @@ describe('CreateWorkspaceDialog', () => {
     await unmount();
     expect(onCreate).toHaveBeenCalledOnce();
     expect(request!.signal.aborted).toBe(true);
+  });
+
+  // DF-CWD-SLUG — reference model: React's controlled slug input reproduced by
+  // tools/create-workspace-dialog/slug-sequences.ts. See each sequence's `description`
+  // for the scenario (kept out of the test title — filenames derived from long
+  // titles overflow macOS path limits for the Playwright trace/screenshot artifacts).
+  describe('DF-CWD-SLUG slug sequences', () => {
+    for (const sequence of SLUG_SEQUENCES) {
+      it(sequence.id, async () => {
+        let request: CreateWorkspaceRequest | undefined;
+        const onCreate = vi.fn((nextRequest: CreateWorkspaceRequest) => {
+          request = nextRequest;
+          return { operationId: nextRequest.operationId, status: 'accepted' as const };
+        });
+        await render(<CreateWorkspaceDialog open onCreate={onCreate} onClose={() => {}} />);
+        const slug = document.querySelector<HTMLInputElement>('.lyra-wscreate__slug-input')!;
+        const name = document.querySelector<HTMLInputElement>('.lyra-input')!;
+        slug.focus();
+        for (const [index, step] of sequence.steps.entries()) {
+          if (step.type === 'key') {
+            await userEvent.type(slug, step.char);
+          } else {
+            simulateNativePaste(slug, step.text);
+          }
+          await vi.waitFor(() => expect(slug.value).toBe(sequence.expectedDisplayed[index]));
+        }
+        await userEvent.type(name, 'Acme');
+        const submit = Array.from(
+          document.querySelectorAll<HTMLButtonElement>('.lyra-dialog__footer button'),
+        ).find((button) => button.textContent?.includes('Create workspace'))!;
+        await userEvent.click(submit);
+        expect(request?.data.slug).toBe(sequence.expectedFinal);
+      });
+    }
   });
 });
