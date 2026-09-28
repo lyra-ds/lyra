@@ -139,6 +139,12 @@ export function lyraCreateWorkspaceDialog(
     this.operationError = '';
     if (this.phase === 'error') this.phase = 'editing';
   };
+  // slugify(target.value) can equal the already-stored slug (a discarded trailing
+  // separator, e.g. "acme!" -> "acme"): Alpine then skips reapplying :value, so the
+  // field keeps showing the un-normalized text until it settles.
+  const onSlugBlur = function (this: State, event: Event) {
+    (event.target as HTMLInputElement).value = this.slug;
+  };
 
   const state = {
     ...dialog,
@@ -200,6 +206,10 @@ export function lyraCreateWorkspaceDialog(
         this.phase = 'error';
         focus(this, errors.name ? '[data-lyra-wscreate-name]' : '[data-lyra-wscreate-slug]');
         return;
+      }
+      const form = this.$el.querySelector('form');
+      if (!form || !form.contains(document.activeElement)) {
+        this.$el.querySelector<HTMLElement>('[data-lyra-wscreate-name]')?.focus();
       }
       this.fieldErrors = {};
       this.operationError = '';
@@ -299,6 +309,7 @@ export function lyraCreateWorkspaceDialog(
     },
     slugInput: {
       ['@input']: onSlug,
+      ['@blur']: onSlugBlur,
       [':value'](this: State) {
         return this.slug;
       },
@@ -323,6 +334,12 @@ export function lyraCreateWorkspaceDialog(
       type: 'submit',
       [':disabled'](this: State) {
         return this.pending || this.phase === 'accepted';
+      },
+      [':aria-busy'](this: State) {
+        return this.pending ? 'true' : null;
+      },
+      [':class'](this: State) {
+        return { 'lyra-btn--loading': this.pending };
       },
     },
     cancelButton: {

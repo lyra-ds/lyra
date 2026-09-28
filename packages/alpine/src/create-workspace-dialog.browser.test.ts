@@ -31,7 +31,7 @@ function mount(rootId = '') {
             <input class="lyra-wscreate__slug-input" id="ws-slug" data-lyra-wscreate-slug x-bind="slugInput"></span>
             <span class="lyra-hint lyra-hint--error" x-show="fieldErrors.slug" x-text="fieldErrors.slug"></span></div>
         </form></div>
-        <div class="lyra-dialog__footer"><button x-bind="cancelButton">Cancel</button><button form="test-ws-form" x-bind="createButton">Create workspace</button></div>
+        <div class="lyra-dialog__footer"><button x-bind="cancelButton">Cancel</button><button form="test-ws-form" x-bind="createButton"><span class="lyra-btn__spinner" aria-hidden="true" x-show="pending"></span>Create workspace</button></div>
       </div>
     </div>
   </div>`;
@@ -44,7 +44,8 @@ function mount(rootId = '') {
   const name = host.querySelector<HTMLInputElement>('[data-lyra-wscreate-name]')!;
   const slug = host.querySelector<HTMLInputElement>('[data-lyra-wscreate-slug]')!;
   const form = host.querySelector<HTMLFormElement>('form')!;
-  return { host, root, data, trigger, name, slug, form };
+  const submitButton = host.querySelector<HTMLButtonElement>('[form="test-ws-form"]')!;
+  return { host, root, data, trigger, name, slug, form, submitButton };
 }
 
 const tick = () => Alpine.nextTick();
@@ -218,5 +219,50 @@ describe('lyraCreateWorkspaceDialog', () => {
     expect(second.data.operationId).not.toBe(oldId);
     second.data.accept(oldId);
     expect(second.data.phase).toBe('submitting');
+  });
+
+  it('moves focus into the panel on a real submit-button click so Escape still cancels', async () => {
+    const f = mount();
+    await open(f);
+    await userEvent.type(f.name, 'Acme');
+    await userEvent.click(f.submitButton);
+    await tick();
+    expect(f.data.phase).toBe('submitting');
+    expect(document.activeElement).toBe(f.name);
+    await userEvent.keyboard('{Escape}');
+    await tick();
+    expect(f.data.phase).toBe('canceling');
+  });
+
+  it('shows the loading spinner and aria-busy on the submit button while submitting and canceling', async () => {
+    const f = mount();
+    await open(f);
+    await userEvent.type(f.name, 'Acme');
+    await userEvent.click(f.submitButton);
+    await tick();
+    expect(f.submitButton.getAttribute('aria-busy')).toBe('true');
+    expect(f.submitButton.className).toContain('lyra-btn--loading');
+    await expect
+      .poll(() => getComputedStyle(f.submitButton.querySelector('.lyra-btn__spinner')!).display)
+      .not.toBe('none');
+    await userEvent.keyboard('{Escape}');
+    await tick();
+    expect(f.data.phase).toBe('canceling');
+    expect(f.submitButton.getAttribute('aria-busy')).toBe('true');
+    expect(f.submitButton.className).toContain('lyra-btn--loading');
+  });
+
+  it('resyncs the slug input DOM value on blur when normalization discarded trailing characters', async () => {
+    const f = mount();
+    await open(f);
+    await userEvent.type(f.name, 'Acme');
+    f.slug.focus();
+    await userEvent.type(f.slug, '!');
+    await tick();
+    expect(f.data.slug).toBe('acme');
+    expect(f.slug.value).toBe('acme!');
+    await userEvent.click(f.name);
+    await tick();
+    expect(f.slug.value).toBe('acme');
   });
 });

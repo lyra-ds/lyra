@@ -163,7 +163,13 @@ cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
 
 ```html
 <div
-  x-data="lyraCreateWorkspaceDialog()"
+  x-data="lyraCreateWorkspaceDialog({
+    messages: {
+      nameRequired: 'Informe o nome do workspace.',
+      slugRequired: 'Informe a URL do workspace.',
+      createFailed: 'Não foi possível criar o workspace. Tente novamente.',
+    },
+  })"
   @lyra:create-workspace="
     const { operationId, name, slug } = $event.detail;
     criarWorkspace({ name, slug }).then(
@@ -178,10 +184,15 @@ cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
     <div class="lyra-dialog" x-bind="panel">
       <div class="lyra-dialog__header">
         <h2 class="lyra-dialog__title" x-bind="title">Criar workspace</h2>
-        <button class="lyra-dialog__close" x-bind="close" aria-label="Fechar">×</button>
+        <button class="lyra-dialog__close" x-bind="{ ...close, 'aria-label': 'Fechar' }">×</button>
       </div>
       <div class="lyra-dialog__body">
-        <form id="workspace-create-form" class="lyra-wscreate" x-bind="form">
+        <form
+          id="workspace-create-form"
+          class="lyra-wscreate"
+          aria-label="Criar workspace"
+          x-bind="form"
+        >
           <div class="lyra-wscreate__preview">
             <span class="lyra-avatar lyra-avatar--lg lyra-avatar--square">
               <span aria-hidden="true" x-bind="avatar"></span>
@@ -199,6 +210,7 @@ cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
             <input
               class="lyra-input"
               id="workspace-name"
+              placeholder="Acme Inc"
               data-lyra-wscreate-name
               x-bind="nameInput"
               :aria-describedby="fieldErrors.name ? 'workspace-name-error' : null"
@@ -217,6 +229,7 @@ cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
               <input
                 class="lyra-wscreate__slug-input"
                 id="workspace-slug"
+                placeholder="acme-inc"
                 data-lyra-wscreate-slug
                 x-bind="slugInput"
                 :aria-describedby="fieldErrors.slug ? 'workspace-slug-error' : null"
@@ -228,6 +241,9 @@ cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
               x-show="fieldErrors.slug"
               x-text="fieldErrors.slug"
             ></span>
+            <span class="lyra-hint" x-show="!fieldErrors.slug">
+              Letras minúsculas, números e hifens.
+            </span>
           </div>
         </form>
       </div>
@@ -240,6 +256,7 @@ cancelamento para uma requisição ativa; uma resposta posterior é ignorada.
           form="workspace-create-form"
           x-bind="createButton"
         >
+          <span class="lyra-btn__spinner" aria-hidden="true" x-show="pending"></span>
           Criar workspace
         </button>
       </div>

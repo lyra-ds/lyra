@@ -182,7 +182,12 @@ an active request; its later acknowledgement is ignored.
         <button class="lyra-dialog__close" x-bind="close" aria-label="Close">×</button>
       </div>
       <div class="lyra-dialog__body">
-        <form id="workspace-create-form" class="lyra-wscreate" x-bind="form">
+        <form
+          id="workspace-create-form"
+          class="lyra-wscreate"
+          aria-label="Create workspace"
+          x-bind="form"
+        >
           <div class="lyra-wscreate__preview">
             <span class="lyra-avatar lyra-avatar--lg lyra-avatar--square">
               <span aria-hidden="true" x-bind="avatar"></span>
@@ -200,6 +205,7 @@ an active request; its later acknowledgement is ignored.
             <input
               class="lyra-input"
               id="workspace-name"
+              placeholder="Acme Inc"
               data-lyra-wscreate-name
               x-bind="nameInput"
               :aria-describedby="fieldErrors.name ? 'workspace-name-error' : null"
@@ -218,6 +224,7 @@ an active request; its later acknowledgement is ignored.
               <input
                 class="lyra-wscreate__slug-input"
                 id="workspace-slug"
+                placeholder="acme-inc"
                 data-lyra-wscreate-slug
                 x-bind="slugInput"
                 :aria-describedby="fieldErrors.slug ? 'workspace-slug-error' : null"
@@ -229,6 +236,9 @@ an active request; its later acknowledgement is ignored.
               x-show="fieldErrors.slug"
               x-text="fieldErrors.slug"
             ></span>
+            <span class="lyra-hint" x-show="!fieldErrors.slug">
+              Lowercase letters, numbers, and hyphens.
+            </span>
           </div>
         </form>
       </div>
@@ -239,6 +249,7 @@ an active request; its later acknowledgement is ignored.
           form="workspace-create-form"
           x-bind="createButton"
         >
+          <span class="lyra-btn__spinner" aria-hidden="true" x-show="pending"></span>
           Create workspace
         </button>
       </div>
