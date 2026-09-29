@@ -1,5 +1,13 @@
 # @lyra-ds/alpine
 
+## 1.2.0
+
+### Minor Changes
+
+- [#290](https://github.com/lyra-ds/lyra/pull/290) [`9a9fb07`](https://github.com/lyra-ds/lyra/commit/9a9fb07a813974ca37e7e9a85bc40f296b7797b8) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `lyraCalendarView` with local day, week, and month scheduling, translated controls, availability and event placement, snapped slot creation, and anchored event popovers over served markup.
+
+- [#291](https://github.com/lyra-ds/lyra/pull/291) [`96424a4`](https://github.com/lyra-ds/lyra/commit/96424a43dcd7a3ebd167892c0e17b2ea5e4458c7) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the controlled `lyraCreateWorkspaceDialog` Alpine binding with operation acknowledgements, cancellation, validation, and Dialog focus behavior.
+
 ## 1.1.0
 
 ### Minor Changes
