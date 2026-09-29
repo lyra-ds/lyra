@@ -1402,6 +1402,30 @@ function importGuard() {
 }
 
 // ---------------------------------------------------------------------------
+// Composed Alpine counterparts registered alongside the CSS parity inventory.
+// ---------------------------------------------------------------------------
+
+function alpineBindingCheck() {
+  const entries = JSON.parse(read(join(__dirname, 'alpine-bindings.json')));
+  const plugin = read(join(REPO, 'packages/alpine/src/index.ts'));
+  const manifest = read(join(REPO, 'apps/docs/lib/components.ts'));
+  for (const entry of entries) {
+    if (!existsSync(join(REPO, entry.reactSource)))
+      fail(`Missing React source ${entry.reactSource}`);
+    if (!existsSync(join(REPO, entry.alpineSource)))
+      fail(`Missing Alpine source ${entry.alpineSource}`);
+    if (!plugin.includes(`alpine.data(\n    '${entry.alpineBinding}'`)) {
+      fail(`Alpine binding ${entry.alpineBinding} is not registered in the plugin`);
+    }
+    const start = manifest.indexOf(`slug: '${entry.docsSlug}'`);
+    const manifestEntry = start < 0 ? '' : manifest.slice(start, manifest.indexOf('},', start));
+    if (!manifestEntry.includes("'alpine'")) {
+      fail(`Docs manifest ${entry.docsSlug} does not advertise Alpine`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
 
@@ -1419,6 +1443,7 @@ const classCount = classCheck(BASELINE);
 urlGuard();
 importGuard();
 stylesEntryOrderCheck(BASELINE);
+alpineBindingCheck();
 
 if (errors.length) {
   console.error(

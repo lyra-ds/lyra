@@ -362,6 +362,27 @@
     ]
   },
   {
+    "binding": "lyraCreateWorkspaceDialog",
+    "kind": "data",
+    "slug": "create-workspace-dialog",
+    "optionsType": "LyraCreateWorkspaceDialogOptions",
+    "description": "",
+    "props": [
+      {
+        "name": "slugPrefix",
+        "type": "string",
+        "optional": true,
+        "description": "Text before the editable slug. Default `lyra.dev/`."
+      },
+      {
+        "name": "messages",
+        "type": "Partial<LyraCreateWorkspaceMessages>",
+        "optional": true,
+        "description": "Validation and error copy."
+      }
+    ]
+  },
+  {
     "binding": "lyraDataTable",
     "kind": "data",
     "slug": "data-table",

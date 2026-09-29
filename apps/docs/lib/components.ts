@@ -477,7 +477,7 @@ const manifest: ComponentEntry[] = [
     name: 'CreateWorkspaceDialog',
     group: 'overlay',
     stability: 'beta',
-    stacks: ['react', 'html'],
+    stacks: ['react', 'alpine'],
   },
   {
     slug: 'radio-group',

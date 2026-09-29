@@ -26,10 +26,13 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/react/weekly-schedule-editor': { configuredLimit: '18.7 kB', bytes: 18700 },
   '@lyra-ds/react/tabs': { configuredLimit: '1.6 kB', bytes: 1600 },
   '@lyra-ds/react/breadcrumb': { configuredLimit: '600 B', bytes: 600 },
-  '@lyra-ds/alpine': { configuredLimit: '26.1 kB', bytes: 26100 },
+  '@lyra-ds/alpine': { configuredLimit: '27.2 kB', bytes: 27200 },
 };
 
-const STANDALONE_EXCEPTIONS = {};
+const STANDALONE_EXCEPTIONS = {
+  // CalendarView + CreateWorkspaceDialog bindings added for React parity (lyra#290, lyra#291); approved by maintainer 2026-09-29.
+  '@lyra-ds/alpine': 3600,
+};
 const SCENARIO_EXCEPTIONS = {};
 // Complex-or-composition entries keep the 3000-byte migration ceiling; every other entry is simple (1500).
 const COMPLEX_STANDALONE = new Set([

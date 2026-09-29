@@ -91,6 +91,12 @@ Documented as `command-palette`. Mount with `x-data="lyraCommandPalette({ … })
 Documented as `cookie-banner`. Mount with `x-data="lyraCookieBanner({ … })"`.
 
 - `storageKey?: string`
+### lyraCreateWorkspaceDialog
+
+Documented as `create-workspace-dialog`. Mount with `x-data="lyraCreateWorkspaceDialog({ … })"`.
+
+- `slugPrefix?: string` — Text before the editable slug. Default `lyra.dev/`.
+- `messages?: Partial<LyraCreateWorkspaceMessages>` — Validation and error copy.
 ### lyraDataTable
 
 Documented as `data-table`. Mount with `x-data="lyraDataTable({ … })"`.
