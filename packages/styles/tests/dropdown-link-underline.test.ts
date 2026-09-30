@@ -4,14 +4,21 @@ import '../styles.css';
 
 /**
  * `.lyra-menu__item` renders as an `<a>` when an item carries `href` (Dropdown, and any
- * framework binding sharing the class). The base link reset (`a { text-decoration: none }`)
- * covers the resting state, but `a:hover { text-decoration: underline }` outranks a bare
- * `.lyra-menu__item` on hover ("a:hover" pseudo-class beats a plain class), so the item
- * regained an underline the moment the pointer landed on it. `.lyra-wssw__item:hover` already
- * states the override; `.lyra-menu__item:hover` needs the same explicit reset.
+ * framework binding sharing the class). The base link reset (`a { text-decoration: none }`,
+ * specificity 0-0-1) used to be outranked on hover by `a:hover { text-decoration: underline }`
+ * (0-1-1), which also beats a plain component/app class (0-1-0) — forcing every component to add
+ * its own `:hover { text-decoration: none }` escape hatch. The root rule now reads
+ * `a:where(:hover) { text-decoration: underline }`: `:where()` zeroes out `:hover`'s own
+ * contribution, so the rule's specificity is `a`'s alone (0-0-1) — a source-order tie with the
+ * plain `a` reset it sits right after (so it still wins on hover for a bare link), while any real
+ * class selector (0-1-0 or higher) still outranks it and wins without needing a `:hover` override.
+ * `.lyra-wssw__item:hover` and `.lyra-menu__item:hover` keep their explicit resets for
+ * defense-in-depth, but the tests below prove the root cause is gone: a consumer class with no
+ * `:hover` rule at all (the starter-laravel-demo shape) now stays underline-free.
  */
 
 let root: HTMLElement;
+let appStyle: HTMLStyleElement;
 
 beforeAll(() => {
   document.body.innerHTML = `
@@ -19,8 +26,19 @@ beforeAll(() => {
       <div class="lyra-menu" role="menu">
         <a class="lyra-menu__item" role="menuitem" href="#" data-probe="menu-link">Open in browser</a>
       </div>
+      <a href="#" data-probe="bare-link">Bare link</a>
+      <a class="app-menu-item" href="#" data-probe="app-link">App link</a>
+      <p class="lyra-prose">
+        <a href="#" data-probe="prose-link">Prose link</a>
+      </p>
     </div>`;
   root = document.getElementById('dropdown-link-underline-root')!;
+
+  // Simulates an app-level rule with NO :hover override — e.g. starter-laravel-demo's
+  // `.user-menu__item { text-decoration: none }` before 204e8ac added the hover reset.
+  appStyle = document.createElement('style');
+  appStyle.textContent = '.app-menu-item { text-decoration: none; }';
+  document.head.appendChild(appStyle);
 });
 
 const el = (probe: string): HTMLElement =>
@@ -37,5 +55,33 @@ describe('.lyra-menu__item link', () => {
     await userEvent.hover(el('menu-link'));
 
     await settle(() => decoration('menu-link')).toBe('none');
+  });
+});
+
+describe('bare <a> with no class', () => {
+  it('underlines on hover', async () => {
+    expect(decoration('bare-link')).toBe('none');
+
+    await userEvent.hover(el('bare-link'));
+
+    await settle(() => decoration('bare-link')).toBe('underline');
+  });
+});
+
+describe('app class with text-decoration:none and no :hover rule', () => {
+  it('stays underline-free on hover (starter-laravel-demo shape)', async () => {
+    expect(decoration('app-link')).toBe('none');
+
+    await userEvent.hover(el('app-link'));
+
+    await settle(() => decoration('app-link')).toBe('none');
+  });
+});
+
+describe('.lyra-prose a', () => {
+  it('stays underlined on hover', async () => {
+    await userEvent.hover(el('prose-link'));
+
+    await settle(() => decoration('prose-link')).toBe('underline');
   });
 });
