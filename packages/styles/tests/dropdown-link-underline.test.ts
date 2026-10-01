@@ -3,8 +3,8 @@ import { userEvent } from 'vitest/browser';
 import '../styles.css';
 
 /**
- * `.lyra-menu__item` renders as an `<a>` when an item carries `href` (Dropdown, and any
- * framework binding sharing the class). The base link reset (`a { text-decoration: none }`,
+ * Blade Dropdown and plain HTML can render `<a class="lyra-menu__item">` links; React Dropdown
+ * renders buttons. The base link reset (`a { text-decoration: none }`,
  * specificity 0-0-1) used to be outranked on hover by `a:hover { text-decoration: underline }`
  * (0-1-1), which also beats a plain component/app class (0-1-0) — forcing every component to add
  * its own `:hover { text-decoration: none }` escape hatch. The root rule now reads
@@ -12,9 +12,10 @@ import '../styles.css';
  * contribution, so the rule's specificity is `a`'s alone (0-0-1) — a source-order tie with the
  * plain `a` reset it sits right after (so it still wins on hover for a bare link), while any real
  * class selector (0-1-0 or higher) still outranks it and wins without needing a `:hover` override.
- * `.lyra-wssw__item:hover` and `.lyra-menu__item:hover` keep their explicit resets for
- * defense-in-depth, but the tests below prove the root cause is gone: a consumer class with no
- * `:hover` rule at all (the starter-laravel-demo shape) now stays underline-free.
+ * `.lyra-menu__item:hover` needs its explicit reset because the menu item has no resting
+ * `text-decoration` declaration; `.lyra-wssw__item:hover` retains its reset. The tests below
+ * also prove a consumer class with no `:hover` rule at all (the starter-laravel-demo shape)
+ * now stays underline-free.
  */
 
 let root: HTMLElement;
