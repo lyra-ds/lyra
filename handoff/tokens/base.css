@@ -21,7 +21,7 @@ a {
   color: var(--text-link);
   text-decoration: none;
 }
-a:hover { text-decoration: underline; }
+a:where(:hover) { text-decoration: underline; }
 
 code, pre {
   font-family: var(--font-mono);

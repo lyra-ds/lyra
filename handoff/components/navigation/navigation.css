@@ -120,7 +120,7 @@
   white-space: nowrap;
   transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
 }
-.lyra-menu__item:hover { background: var(--surface-sunken); color: var(--text-primary); }
+.lyra-menu__item:hover { background: var(--surface-sunken); color: var(--text-primary); text-decoration: none; }
 .lyra-menu__item--danger { color: var(--danger-text); }
 .lyra-menu__item--danger:hover { background: var(--danger-soft); color: var(--danger-text); }
 .lyra-menu__sep { height: 1px; background: var(--border-default); margin: var(--space-1) calc(-1 * var(--space-1)); border: 0; }
