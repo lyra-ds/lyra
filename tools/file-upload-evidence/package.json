@@ -20,7 +20,7 @@
     "fflate": "0.8.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "unicode-case-folding": "1.1.1"
+    "unicode-case-folding": "1.1.2"
   },
   "devDependencies": {
     "@types/alpinejs": "3.13.11",
