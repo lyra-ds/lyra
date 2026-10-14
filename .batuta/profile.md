@@ -1,5 +1,15 @@
 # Batuta profile — lyra-ds
 
+## Current conducting context — 2026-10-14
+
+Core/Alpine V1 and subsequent releases are published. Earlier V1 queues and
+references to removed stabilization checkouts below are historical; do not
+restart them. Suspended experimental branches, evidence and resource restrictions
+remain preserved. The maintainer authorized this session to refresh Batuta,
+complete the pending Styles/Blade releases, align the Laravel starters, then
+address the current issues. Publication of later releases still requires a user
+instruction; this setup is not blanket publication authorization.
+
 ## Test-fixture dependency exception — maintainer authorization, 2026-09-11
 
 The maintainer explicitly authorized @types/node24.13.3 only in
@@ -76,6 +86,7 @@ Build: pnpm build
 Install: pnpm install --frozen-lockfile
 Execution: sequential
 Worktree: medium+
+Worktree-home: cache
 Template: templates/react.md
 
 React styling uses `.lyra-*` classes from the styles package. Keep the existing
@@ -305,37 +316,38 @@ user archives it when desired.
 
 ## Project map
 
-Refreshed on 2026-09-06 against the Wave 2 branch, with a read-only
-OpenCode / `opencode/glm-5.3-flash` scout and controller path/source checks.
+Refreshed on 2026-10-14 from the current main checkout. The controller completed
+this bounded sweep after the configured OpenCode scouts returned provider 402 errors.
 
 The pnpm workspace covers `packages/*`, `apps/*`, and `tools/*`.
-`package.json` holds orchestration scripts; `.nvmrc` pins the Node toolchain.
-`packages/styles/styles.css` imports the CSS tokens and component groups.
-Its `tests/` directory contains style browser tests; styles need no build.
-`packages/react/src/` holds per-component entries, browser tests, and internals.
-`packages/react/tsdown.config.ts` maps exports to separate ESM/CJS entries.
-`packages/react/scripts/use-client.mjs` prepends the client directive after build.
-`packages/alpine/src/index.ts` registers the Alpine plugin and component modules.
-Alpine browser tests sit alongside sources; its tsdown build emits ESM.
-`apps/docs` is the Next.js documentation app with Fumadocs and localized content.
-`apps/site` is the separate Next.js landing app; both consume workspace packages.
-Each app's `next.config.ts` controls its production static export.
-`tools/overlay-foundation-evaluation/` owns contracts, candidates, fixtures,
-runners, manifests, and the modal/Wave 2 evaluation scripts.
-`tools/docgen/` generates React, Alpine, and Blade documentation artifacts.
-`tools/blade-api/` validates the imported external Blade API snapshot.
-`tools/parity/` compares CSS with the versioned handoff baseline.
-`tools/icon-registry/` generates the React icon registry; do not edit it by hand.
-`tools/pack-smoke/`, `tools/smoke/`, and `tools/react-compat/` check consumers.
-`tools/dist-scan/` and `tools/bundle-baseline/` inspect published build outputs.
-Security and phase/release policy checks live in their named `tools/` directories.
-`docs/superpowers/plans/` and `specs/` hold the approved development contracts.
-`WORK.md` and `.batuta/plan-*.md` record current coordination and resume state.
-`.planning/` and historical handoffs preserve earlier decisions and evidence.
-`.github/workflows/ci.yml` defines the complete lint/typecheck/test/build gates.
-Regenerate docgen output and the icon registry through their owning tools.
-Do not hand-edit dist, app build output, lockfiles, or immutable evaluation data.
-Change handoff/baseline files only within an explicitly scoped baseline update.
+`package.json` owns orchestration; `.nvmrc` and the package-manager field pin tools.
+`packages/styles/styles.css` imports tokens and component CSS groups.
+`packages/styles/components/` holds CSS-first component appearance.
+`packages/styles/tests/` holds CSS browser and unit regressions.
+`packages/react/src/` holds component entries, browser tests, SSR tests and internals.
+`packages/react/tsdown.config.ts` owns separate ESM/CJS entries.
+`packages/react/scripts/use-client.mjs` adds the built client directive.
+`packages/alpine/src/index.ts` registers the plugin and public component modules.
+Alpine tests are colocated with source; its tsdown build emits ESM and declarations.
+`apps/docs/` owns Next.js documentation, localized MDX and live React examples.
+`apps/site/` owns the separate Next.js landing application.
+Both apps consume workspace packages and own their Next.js configuration.
+`tools/docgen/` generates React, Alpine and Blade documentation artifacts.
+`tools/blade-api/` checks the imported API snapshot from the Blade repository.
+`tools/parity/` compares CSS against the versioned handoff baseline.
+`tools/icon-registry/` generates the curated icon registry.
+`tools/phase1/` checks the browser matrix and its evidence configuration.
+`tools/pack-smoke/`, `tools/smoke/` and `tools/react-compat/` exercise consumers.
+`tools/security/`, `tools/release-policy/` and `tools/v1-release/` own policy gates.
+`tools/bundle-baseline/` and `tools/dist-scan/` inspect published artifact contracts.
+`tools/overlay-foundation-evaluation/` preserves suspended experiments and evidence.
+`.github/workflows/ci.yml` defines the required verification sequence.
+`.github/workflows/release.yml` owns Changesets versioning and OIDC publication.
+`WORK.md` records current tasks; `.batuta/` owns coordination and historical plans.
+`.planning/` and `docs/superpowers/` remain historical source references.
+Regenerate documentation and icons only through their owning tools.
+Do not hand-edit dist, app output, lockfiles or immutable experiment evidence.
+Change handoff and baseline files only within an explicitly scoped update.
 
 ## PR automation — post-incident 0.2.0 rules (2026-08-03)
 
@@ -352,3 +364,11 @@ Change handoff/baseline files only within an explicitly scoped baseline update.
 - **Landing stats track every inventory change** (components, tokens, classes):
   re-derive and update the pin in the SAME commit; the gate is full `pnpm run
 test` with exit code — tail/grep filters hid failures twice.
+
+## Conventions
+
+- Follow AGENTS.md, .claude/CLAUDE.md and docs/review-rules.md; retain CSS-first public contracts.
+- Use the repository-pinned Node and pnpm versions; introduce no unapproved dependencies.
+- Write project documentation in English and preserve both public documentation locales.
+- Preserve immutable evidence and suspended experiments; do not alter Colima or other projects.
+- Use feature branches and verified PRs; publication follows the maintainer’s explicit instruction.
