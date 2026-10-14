@@ -111,7 +111,7 @@ function hasBrowserDiagnosticsUpload(job) {
 
   return (
     /^        if: failure\(\)\s*$/m.test(diagnostics) &&
-    /^        uses: actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a(?:\s+#.*)?\s*$/m.test(
+    /^        uses: actions\/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9(?:\s+#.*)?\s*$/m.test(
       diagnostics,
     ) &&
     /^          name: browser-diagnostics-\$\{\{ github\.run_id \}\}\s*$/m.test(diagnostics) &&
