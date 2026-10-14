@@ -6,8 +6,8 @@ Core/Alpine V1 and subsequent releases are published. Earlier V1 queues and
 references to removed stabilization checkouts below are historical; do not
 restart them. Suspended experimental branches, evidence and resource restrictions
 remain preserved. The maintainer authorized this session to refresh Batuta,
-complete the pending Styles/Blade releases, align the Laravel starters, then
-address the current issues. Publication of later releases still requires a user
+initialize the six starters, integrate the approved setup and starter PRs after
+checks, then address the current issues. Styles1.1.1 and Blade1.0.0 are published. Publication of later releases still requires a user
 instruction; this setup is not blanket publication authorization.
 
 ## Test-fixture dependency exception — maintainer authorization, 2026-09-11
@@ -28,8 +28,8 @@ Blade repository, imported snapshot or Blade examples in this phase. Preserve
 existing cross-stack checks and report incompatibility honestly; this direction
 is not permission to disable checks or claim Blade compatibility.
 
-Current execution plan: `.batuta/plans/v1-completion.md` in
-`../lyra-v1-stabilization`. Next: Task28 DataTable semantic row-action diagnosis
+Historical execution plan (2026-09-10): `.batuta/plans/v1-completion.md` in
+`../lyra-v1-stabilization`. Then next: Task28 DataTable semantic row-action diagnosis
 and bounded contract, then remaining modal/Popover ownership, measured size
 resolution and exact final core/Alpine artifact qualification. Existing no-new-
 dependency, no-Colima/resource/service, experimental-isolation and remote/release
@@ -51,7 +51,7 @@ boundaries below still apply.
 Retain the existing Lyra implementation for V1. Comparative foundation research
 is suspended and is not a release prerequisite. Preserve experimental branches
 and raw evidence without integrating the unmerged composed experiment or
-resuming its diagnostics. The active stabilization plan is
+resuming its diagnostics. The historical stabilization plan (2026-09-08) was
 `.batuta/plans/v1-incumbent-stabilization.md` in the sibling
 `lyra-v1-stabilization` checkout, branch `feat/v1-incumbent-stabilization`.
 Prior experimental execution approvals no longer authorize those runs.
@@ -137,7 +137,7 @@ Two traps those gates concealed:
 **Kimi hangs on a brief passed through a temporary file (2026-08-04).** Two
 `opencode run … "Follow the instructions in $tmpfile"` invocations hung without
 output (5min+ each); the inline probe answered in seconds and the SAME content
-pasted inline into the argument completed in one clean round. The current low/research model is `opencode/glm-5.3-flash`; pass its brief
+pasted inline into the argument completed in one clean round. The former low/research model (2026-09-06) was `opencode/glm-5.3-flash`; pass its brief
 inline as verified during the September 6 review and CI correction.
 
 Lessons from the Phase 6b lots, each with the evidence that produced it.
