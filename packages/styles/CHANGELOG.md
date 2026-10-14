@@ -1,5 +1,11 @@
 # @lyra-ds/styles
 
+## 1.1.1
+
+### Patch Changes
+
+- [#294](https://github.com/lyra-ds/lyra/pull/294) [`2609e48`](https://github.com/lyra-ds/lyra/commit/2609e4812a2acf3e1eaa71c71ce12e53387e245b) Thanks [@franciscpd](https://github.com/franciscpd)! - Fix the global `a:hover { text-decoration: underline }` rule outranking component and app classes on hover. The rule now reads `a:where(:hover) { text-decoration: underline }`, tying the resting `a { text-decoration: none }` rule's specificity instead of beating any class selector, so a consumer's own `.some-class { text-decoration: none }` wins on hover without needing its own `:hover` override. The `.lyra-menu__item:hover` reset fixes menu links, whose resting class does not declare `text-decoration`; the existing `.lyra-wssw__item:hover`, breadcrumb, and footer link resets remain.
+
 ## 1.1.0
 
 ### Minor Changes
