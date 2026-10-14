@@ -1,3 +1,23 @@
+# Current work — release and maintenance, 2026-10-14
+
+Core/Alpine V1 is published. Earlier V1 queues below are historical records.
+Suspended experiments and immutable evidence remain preserved.
+
+## In progress — current cycle
+
+- [ ] PR #299 action updates: validator repair verified locally; remote checks pending.
+- [ ] Batuta configuration proposals: awaiting the maintainer's routing choice.
+- [ ] Align the Laravel starters with the published Blade/Alpine/Styles tuple.
+
+## Done — current cycle
+
+- [x] Styles 1.1.1 published from PR #297, commit ddf3711; release workflow and npm verified.
+- [x] CI validators follow the approved action pins → codex/gpt-5.6-terra,
+  one retry; independent read-only verification 3/3 DONE with no findings.
+  Trail: `.batuta/runs/2026-10-14-ci-action-pins.md`.
+
+## Historical work log
+
 # Current work — V1 incumbent stabilization
 
 ## Popover RTL alignment repaired — 2026-09-15

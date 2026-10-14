@@ -64,7 +64,7 @@ const validWorkflow = `jobs:
       - run: pnpm run test:browsers
       - name: Upload browser diagnostics
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: browser-diagnostics-\${{ github.run_id }}
           path: |
@@ -511,6 +511,25 @@ test('requires CI browser diagnostics to upload only after a failure', () => {
   });
 
   assert.deepEqual(errors, ['CI job "test" must upload browser diagnostics only on failure.']);
+});
+
+test('requires the approved digest-pinned browser diagnostics uploader', () => {
+  for (const actionReference of [
+    'actions/upload-artifact@v7',
+    'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a',
+  ]) {
+    const errors = validateBrowserMatrix({
+      compose: validCompose,
+      scripts: validScripts,
+      configs: validConfigs,
+      workflow: validWorkflow.replace(
+        'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9',
+        actionReference,
+      ),
+    });
+
+    assert.deepEqual(errors, ['CI job "test" must upload browser diagnostics only on failure.']);
+  }
 });
 
 test('requires each config to operationally use the browser instances', () => {
