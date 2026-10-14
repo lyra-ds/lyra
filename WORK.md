@@ -13,8 +13,8 @@ Suspended experiments and immutable evidence remain preserved.
 
 - [x] Styles 1.1.1 published from PR #297, commit ddf3711; release workflow and npm verified.
 - [x] CI validators follow the approved action pins → codex/gpt-5.6-terra,
-  one retry; independent read-only verification 3/3 DONE with no findings.
-  Trail: `.batuta/runs/2026-10-14-ci-action-pins.md`.
+      one retry; independent read-only verification 3/3 DONE with no findings.
+      Trail: `.batuta/runs/2026-10-14-ci-action-pins.md`.
 
 ## Historical work log
 
