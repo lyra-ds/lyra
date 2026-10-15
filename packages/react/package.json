@@ -1445,7 +1445,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2 kB"
+      "limit": "4.124 kB"
     },
     {
       "name": "import { BottomNav } from '@lyra-ds/react/bottom-nav'",

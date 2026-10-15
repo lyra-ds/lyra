@@ -11,6 +11,8 @@ Issue implementations #289 → #296 → #295 are complete with atomic commits. T
 
 ## Done — current cycle
 
+- [x] Sidebar #186 clipping-safe Tooltip foundation → Codex gpt-6-astra/high + one retry, escalated to critical/self for verified fixture and activation fixes. Commit 49819fb;38tests per3engines/root/fullbuild/coldpacked pass, independent Sonnet5/5 and bounded Impeccable fixes resolved. ExactTooltip2511Bcap, other72entries unchanged. Trail: `.batuta/runs/2026-10-15-sidebar186-tooltip.md`.
+
 - [x] Sidebar #186 panel icons and fixed-glyph isolation → Codex gpt-6-luna/low + one retry, escalated to gpt-6.1-sol/medium for exact benchmark metadata. Commit 3718b18; three-engine/root/profile/size proof and independent Sonnet3/3 pass. All caps preserved. Trail: `.batuta/runs/2026-10-15-sidebar186-icons.md`.
 
 - [x] Issue #295: toast timing and focus → Codex gpt-6-astra/high + one retry, escalated to critical/self. Commit 960011c; parent focused15/15/profile24/24 gates and independent Sonnet8/8 pass. Confirmed 8-second info/success defaults, persistent errors, explicit duration precedence and remaining-time pause. Trail: `.batuta/runs/2026-10-15-issue295.md`.

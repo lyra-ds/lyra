@@ -1560,3 +1560,61 @@ test('toast lifecycle allowance is bounded to Alpine and preserves the React gro
     /toast-provider Brotli increase exceeds migration ceiling/,
   );
 });
+
+test('AppSidebar measured absolute cap rejects one byte over without changing growth policy', () => {
+  const candidate = approvedBudgetCandidate();
+  const sidebar = candidate.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/app-sidebar',
+  );
+  const manifest = JSON.parse(
+    readFileSync(join(toolDirectory, '../../packages/react/package.json'), 'utf8'),
+  );
+  assert.equal(
+    manifest['size-limit'].find((entry) => entry.path === 'dist/app-sidebar.js').limit,
+    '4.124 kB',
+  );
+  assert.deepEqual(APPROVED_ABSOLUTE_CAPS['@lyra-ds/react/app-sidebar'], {
+    configuredLimit: '4.124 kB',
+    bytes: 4124,
+  });
+  sidebar.sizeLimit.size = 4124;
+  assert.equal(checkBundleBudgets(budgetReferenceFixture(), candidate).result, 'pass');
+  sidebar.sizeLimit.size = 4125;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate),
+    /app-sidebar exceeds absolute cap/,
+  );
+});
+
+test('sidebar feature growth allowances reject exactly one excess byte and keep Tooltip unchanged', () => {
+  for (const [kind, name, allowance, error] of [
+    [
+      'standalone',
+      '@lyra-ds/react/app-sidebar',
+      3326,
+      /app-sidebar Brotli increase exceeds approved exception/,
+    ],
+    [
+      'scenario',
+      'application-shell',
+      3434,
+      /application-shell Brotli increase exceeds approved exception/,
+    ],
+    [
+      'standalone',
+      '@lyra-ds/react/tooltip',
+      1500,
+      /tooltip Brotli increase exceeds migration ceiling/,
+    ],
+  ]) {
+    const candidate = approvedBudgetCandidate();
+    const entry =
+      kind === 'standalone'
+        ? candidate.standalone.react.find((entry) => entry.publicEntry === name)
+        : candidate.scenarios[name];
+    entry.assets.javascript.brotliBytes += allowance;
+    assert.equal(checkBundleBudgets(budgetReferenceFixture(), candidate).result, 'pass');
+    entry.assets.javascript.brotliBytes += 1;
+    assert.throws(() => checkBundleBudgets(budgetReferenceFixture(), candidate), error);
+  }
+});

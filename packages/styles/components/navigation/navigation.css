@@ -865,3 +865,102 @@
   min-width: 44px;
   min-height: max(44px, var(--control-md));
 }
+
+/* Sidebar controls: exact additive contract, registered in parity. */
+@scope (.lyra-appsidebar) to (.lyra-appsidebar) {
+  :scope {
+    background: var(--appsidebar-background, var(--surface-card));
+    color: var(--appsidebar-foreground, inherit);
+    border-right-color: var(--appsidebar-border, var(--border-default));
+  }
+  .lyra-appsidebar__footer {
+    border-top-color: var(--appsidebar-border, var(--border-default));
+  }
+  .lyra-sbgroup__item {
+    color: var(--appsidebar-foreground, var(--text-secondary));
+  }
+  .lyra-sbgroup__item-icon {
+    color: var(--appsidebar-foreground, var(--text-muted));
+  }
+  .lyra-sbgroup__item:hover {
+    background: var(--appsidebar-accent, var(--surface-sunken));
+  }
+  .lyra-sbgroup__item--active, .lyra-sbgroup__item--active:hover {
+    background: var(--appsidebar-accent, var(--accent-soft));
+    color: var(--appsidebar-accent-foreground, var(--accent-soft-text));
+  }
+  .lyra-sbgroup__item--active .lyra-sbgroup__item-icon {
+    color: var(--appsidebar-primary, var(--accent));
+  }
+  .lyra-sbgroup__item--active .lyra-sbgroup__item-badge {
+    background: var(--appsidebar-primary-foreground, var(--surface-card));
+    color: var(--appsidebar-primary, var(--accent));
+  }
+  .lyra-appsidebar__user-name {
+    color: var(--appsidebar-foreground, var(--text-primary));
+  }
+  .lyra-appsidebar__user-role {
+    color: var(--appsidebar-foreground, var(--text-muted));
+  }
+  .lyra-appsidebar__toggle {
+    border-color: var(--appsidebar-border, var(--border-default));
+    color: var(--appsidebar-foreground, var(--text-muted));
+  }
+  .lyra-appsidebar__toggle:hover {
+    background: var(--appsidebar-accent, var(--surface-sunken));
+    color: var(--appsidebar-accent-foreground, var(--text-primary));
+  }
+  :scope :focus-visible {
+    outline-color: var(--appsidebar-ring, revert);
+  }
+  .lyra-appsidebar__toggle:focus-visible {
+    box-shadow: 0 0 0 3px var(--appsidebar-ring, var(--focus-ring));
+  }
+  .lyra-appsidebar__hint {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+  }
+  :scope.lyra-appsidebar--compact .lyra-sbgroup__item {
+    font-size: var(--text-sm);
+    min-height: 32px;
+    padding-block: var(--space-1);
+  }
+  :scope.lyra-appsidebar--compact .lyra-sbgroup__item-icon {
+    flex-shrink: 0;
+  }
+  :scope.lyra-appsidebar--compact .lyra-sbgroup__item-label {
+    min-width: 0;
+  }
+  :scope.lyra-appsidebar--compact .lyra-sbgroup__item-badge {
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (pointer: coarse), (any-pointer: coarse) {
+    :scope.lyra-appsidebar--compact .lyra-sbgroup__item {
+      min-height: 44px;
+    }
+  }
+  @media (forced-colors: active) {
+    :scope :focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+  }
+}
+.lyra-appsidebar-trigger {
+  min-width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.lyra-appsidebar-trigger:focus-visible {
+  box-shadow: 0 0 0 3px var(--appsidebar-ring, var(--focus-ring));
+}
+@media (forced-colors: active) {
+  .lyra-appsidebar-trigger:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

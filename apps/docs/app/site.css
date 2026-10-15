@@ -315,3 +315,30 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
 }
+
+/* Embedded application-shell example; component appearance stays in Lyra Styles. */
+.lw-appsidebar-demo {
+  --appsidebar-background: var(--surface-card);
+  --appsidebar-accent: var(--accent-soft);
+  --appsidebar-accent-foreground: var(--accent-soft-text);
+  --appsidebar-ring: var(--focus-ring);
+  --appsidebar-width-mobile: 18rem;
+
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+.lw-appsidebar-demo > .lyra-shell {
+  height: 32rem;
+}
+.lw-appsidebar-demo__content {
+  padding: var(--space-5);
+  max-width: 65ch;
+}
+.lw-appsidebar-demo__content h3 {
+  margin-top: 0;
+}
+.lw-appsidebar-demo__content p {
+  margin-block: var(--space-4);
+}

@@ -237,3 +237,6 @@ export type {
 
 export { ThemeProvider, useTheme } from './theme-provider';
 export type { ThemeApi, ThemeProviderProps, Theme, ResolvedTheme } from './theme-provider';
+
+export { AppSidebarTrigger, AppSidebarOffcanvas } from './app-sidebar';
+export type { AppSidebarTriggerProps, AppSidebarOffcanvasProps } from './app-sidebar';

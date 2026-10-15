@@ -72,12 +72,11 @@ export async function ComponentPage({ locale, slug }: { locale: Locale; slug: st
   if (!entry) throw new Error(`Unknown component "${slug}".`);
 
   /**
-   * O MDX escreve `<StackApi stack="alpine" />` sem repetir slug e nome: quem sabe de que
-   * componente a página trata é esta função, e passar isso adiante em cada página seria
-   * uma chance a mais de o MDX e o manifesto divergirem.
+   * API tables default to the page's manifest owner. MDX can name a companion component
+   * explicitly while retaining the owning page's slug and stack contracts.
    */
-  function Api({ stack }: { stack: DocStack }) {
-    return <StackApi slug={slug} stack={stack} name={entry!.name} />;
+  function Api({ stack, name = entry!.name }: { stack: DocStack; name?: string }) {
+    return <StackApi slug={slug} stack={stack} name={name} />;
   }
 
   function Tabs({ children }: { children: ReactNode }) {
