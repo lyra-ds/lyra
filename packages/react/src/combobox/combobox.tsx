@@ -1,6 +1,6 @@
 import { Fragment, forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
-import { Icon } from '../icon';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { cx } from '../internal/cx';
 import { useControllableState } from '../internal/use-controllable-state';
 import { useFlipPlacement } from '../internal/use-flip-placement';
@@ -225,7 +225,12 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
               placeholder
             )}
           </span>
-          <Icon name="chevrons-up-down" size={15} color="var(--text-faint)" />
+          <ChevronsUpDown
+            size={15}
+            color="var(--text-faint)"
+            className="lyra-icon"
+            aria-hidden="true"
+          />
         </button>
         {open && (
           <div
@@ -236,7 +241,12 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
             )}
           >
             <div className="lyra-combobox__search">
-              <Icon name="search" size={15} color="var(--text-faint)" />
+              <Search
+                size={15}
+                color="var(--text-faint)"
+                className="lyra-icon"
+                aria-hidden="true"
+              />
               <input
                 ref={searchRef}
                 id={searchId}
@@ -290,7 +300,12 @@ export const Combobox = /*#__PURE__*/ forwardRef<HTMLButtonElement, ComboboxProp
                       <span className="lyra-combobox__trailing">{option.trailing}</span>
                     )}
                     {option.value === current && (
-                      <Icon name="check" size={15} color="var(--accent)" />
+                      <Check
+                        size={15}
+                        color="var(--accent)"
+                        className="lyra-icon"
+                        aria-hidden="true"
+                      />
                     )}
                   </button>
                 </Fragment>

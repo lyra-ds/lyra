@@ -11,10 +11,9 @@ com links ou ações.
 
 ## Exemplos
 
-<Example id="composition" title="Links compostos e trilho de ícones" layout="block">
-  Passe filhos SidebarGroup quando a aplicação for dona do routing. Ao recolher, a barra vira um
-  trilho de 64px e fornece tooltips nativos e nomes acessíveis a seus descendentes de link a partir
-  do texto.
+<Example id="composition" title="Responsive application shell" layout="block">
+  A rich workspace header, stationary account footer and scrolling navigation share a Shell with a
+  native topbar trigger. Try the icon rail, compact density, keyboard shortcut and mobile offcanvas.
 </Example>
 
 <Example id="groups" title="Grupos convenientes" layout="block">
@@ -93,11 +92,120 @@ Para um link nativo, use `href: '/relatorios'`. Para nova aba, acrescente
 `target: '_blank'` e `rel: 'noopener noreferrer'`. `asChild` substitui o conteúdo do Link
 pelo ícone e rótulo do item. Os rótulos padrão do controle são em inglês; passe `labels` para traduzi-los, como nos exemplos acima.
 
+## Controlled React shell
+
+The example uses `Shell mainAs="div"` because this documentation page already owns the main
+landmark. The topbar's `AppSidebarTrigger` controls an existing nav by id. Desktop collapse and
+mobile opening are independent application state; the package does not choose breakpoints or
+persist preferences. The initial server render is desktop, then a local media query reconciles
+below 768px. Only one application navigation is active. Moving between viewports closes mobile
+navigation, preserves the desktop rail preference and reconciles focus to the visible trigger.
+
+`AppSidebarTrigger` always renders a native `type="button"`, forwards its button ref, and provides
+`aria-controls` and `aria-expanded`. Its default label is “Toggle sidebar”, variant is `ghost`, and
+size is `md`; every size retains a 44px target. A consumer click handler runs first and may cancel
+with `preventDefault()`. Disabled triggers do not request changes.
+
+```tsx
+<AppSidebarTrigger
+  controls="workspace-navigation"
+  collapsed={desktopCollapsed}
+  onCollapsedChange={setDesktopCollapsed}
+  hotkey
+/>
+<AppSidebar id="workspace-navigation" collapsed={desktopCollapsed} />
+```
+
+The optional shortcut is Cmd/Ctrl+B. It ignores editable fields, composing input, repeats,
+Alt/Shift and canceled events. Duplicate triggers for one id share one logical owner. The deepest
+eligible navigation or trigger containing the event target wins; outside those scopes, only one
+unambiguous owner can act. Background modal content cannot toggle. Focus inside navigation being
+collapsed returns to its eligible trigger; focus in application content stays in place.
+
+### Offcanvas navigation
+
+`AppSidebarOffcanvas` adapts Drawer at the logical start edge, including RTL. It keeps Drawer's
+modal focus trap, inert background, scroll lock, Escape/backdrop dismissal, initial focus,
+return focus and exit presence. Its ref points to the outer panel; the child's ref still points
+to the native nav. The required `title` names the dialog, and `closeLabel` defaults to “Close”.
+A controlled open panel remains shortcut-eligible from inside even while its external trigger
+is inert. Closed navigation is absent, and an exiting panel is inert.
+
+```tsx
+<AppSidebarTrigger
+  controls="workspace-panel"
+  collapsed={!mobileOpen}
+  onCollapsedChange={(collapsed) => setMobileOpen(!collapsed)}
+  hotkey
+/>
+<AppSidebarOffcanvas
+  id="workspace-panel"
+  title="Application navigation"
+  open={mobileOpen}
+  onClose={() => setMobileOpen(false)}
+  returnFocusTo={() => triggerRef.current}
+>
+  <AppSidebar aria-label="Application navigation" />
+</AppSidebarOffcanvas>
+```
+
+The host omits `Shell.sidebar` in mobile mode so no empty rail remains. Links keep their real
+hrefs and router handlers. The example explicitly closes on accepted, unmodified navigation;
+Offcanvas never intercepts routes. Desktop modal navigation can use the same adapter.
+
+### Rail hints and density
+
+`railTooltips` defaults to `false`. Opt in to shared clipping-safe Tooltip hints for collapsed
+data items. Their accessible names, active state, hrefs and router refs remain available. A child
+handler's `preventDefault()` also cancels the sidebar selection callback. Expanded items and the
+legacy default retain their current presentation.
+
+Compose `<Tooltip tip="Projects" escapeClipping>` explicitly around custom links or opaque router
+components. In rail mode AppSidebar preserves their accessible names without adding a duplicate
+native title. Tooltip hints do not move focus and can be dismissed with Escape.
+
+`density="compact"` is local: rows use `--text-sm` and a 32px minimum on fine-only pointers, with
+44px targets on coarse or hybrid devices. The default SidebarGroup rhythm remains 36px.
+The example's “Compact rows” control lets you compare both densities.
+
+### Scoped customization
+
+Set aliases on the owning AppSidebar, or on the Offcanvas panel for its header and child sidebar.
+For a portal to retain an application scope, supply a `container` inside that scope, as this
+example does. These aliases introduce no global token values and do not style an independent
+SidebarGroup. Existing theme, brand and direction scopes continue to apply.
+
+| Alias                             | Owning treatment and unchanged fallback                                                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--appsidebar-background`         | Nav and offcanvas surface: `--surface-card`                                                                                                |
+| `--appsidebar-foreground`         | Item text: `--text-secondary`; icons, role and toggle: `--text-muted`; user name and panel title: `--text-primary`; nav otherwise inherits |
+| `--appsidebar-primary`            | Active icon and active badge ink: `--accent`                                                                                               |
+| `--appsidebar-primary-foreground` | Active badge surface: `--surface-card`                                                                                                     |
+| `--appsidebar-accent`             | Active row: `--accent-soft`; idle row/toggle hover: `--surface-sunken`                                                                     |
+| `--appsidebar-accent-foreground`  | Active row: `--accent-soft-text`; toggle hover ink: `--text-primary`                                                                       |
+| `--appsidebar-border`             | Nav, footer and panel separators: `--border-default`                                                                                       |
+| `--appsidebar-ring`               | Focus color; shadow controls fall back to `--focus-ring`, native outlines retain their default                                             |
+| `--appsidebar-width-mobile`       | Offcanvas width: `18rem`, capped to the actual visual viewport width                                                                       |
+
+Keep the existing `--appsidebar-width` contract (260px expanded, 64px rail), the global
+`--sidebar-width` token and custom inline width precedence outside Offcanvas. Inside the adapter,
+AppSidebar fills the panel even when its desktop `width` is explicit. The panel follows its owner
+document's visual viewport width, height and start-edge offsets during zoom, resize and scrolling.
+The mobile width alias still chooses the preferred width; the visible viewport caps it.
+
+These companions and state rules are React capabilities, exported from both `@lyra-ds/react`
+and the existing `@lyra-ds/react/app-sidebar` entry. Canonical HTML, Alpine and Blade producers
+are unchanged; their tabs below describe their existing contracts, not the React adapter.
+
 ## API e código
 
 <StackTabs>
   <StackPanel stack="react">
     <StackApi stack="react" />
+    <h3>AppSidebarTrigger</h3>
+    <StackApi stack="react" name="AppSidebarTrigger" />
+    <h3>AppSidebarOffcanvas</h3>
+    <StackApi stack="react" name="AppSidebarOffcanvas" />
   </StackPanel>
 
   <StackPanel stack="alpine">

@@ -1309,7 +1309,13 @@
         "name": "placement",
         "type": "TooltipPlacement",
         "optional": true,
-        "description": "Side of the target to draw the tip on. Default `\"top\"`. The tip flips to the opposite side on\nits own when the chosen one would be clipped by the viewport, so this is a preference."
+        "description": "Side of the target to draw the tip on. Default `\"top\"`. The tip flips to the opposite side on\nits own when the chosen one would be clipped by the viewport, so this is a preference.\nClipping escape can use another side or limit the hint's height to keep the target reachable."
+      },
+      {
+        "name": "escapeClipping",
+        "type": "boolean",
+        "optional": true,
+        "description": "Escape overflow and scroll clipping while keeping the hint inside the visual viewport. Default `false`."
       }
     ]
   },
@@ -2740,6 +2746,18 @@
         "description": "Called after an item-level callback in data mode."
       },
       {
+        "name": "railTooltips",
+        "type": "boolean",
+        "optional": true,
+        "description": "Show clipping-safe hints for collapsed data items. Default `false`. Compose Tooltip explicitly for custom children."
+      },
+      {
+        "name": "density",
+        "type": "'default' | 'compact'",
+        "optional": true,
+        "description": "Local row density. Compact uses 32px fine-pointer rows and retains 44px coarse targets. Default `\"default\"`."
+      },
+      {
         "name": "labels",
         "type": "AppSidebarLabels",
         "optional": true,
@@ -2750,6 +2768,120 @@
         "type": "ReactNode",
         "optional": true,
         "description": "Composition mode. Pass {@link SidebarGroup} children (including link children) to preserve\ntheir original element type and routing behavior."
+      }
+    ]
+  },
+  {
+    "name": "AppSidebarOffcanvas",
+    "category": "Navigation",
+    "extends": "Omit<DrawerProps, 'children' | 'footer' | 'onClose'>",
+    "description": "Props for {@link AppSidebarOffcanvas}. Mobile width uses `--appsidebar-width-mobile` with an\n18rem fallback, capped to the owner document's visual viewport. Panel height and start position\nfollow live viewport size and offsets during zoom, resize and scrolling.",
+    "signature": "export declare function AppSidebarOffcanvas(props: AppSidebarOffcanvasProps): JSX.Element;",
+    "props": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "optional": false,
+        "description": "Controls visibility. Closed navigation is absent; the exiting panel is inert."
+      },
+      {
+        "name": "title",
+        "type": "ReactNode",
+        "optional": false,
+        "description": "Heading rendered in the existing Drawer header and used as the dialog name."
+      },
+      {
+        "name": "closeLabel",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name for the close button. Default `\"Close\"`."
+      },
+      {
+        "name": "container",
+        "type": "HTMLElement",
+        "optional": true,
+        "description": "Portal host. Defaults to `document.body`; use a scoped host to retain local tokens."
+      },
+      {
+        "name": "initialFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the initial focus target inside the panel on each accepted opening."
+      },
+      {
+        "name": "returnFocusTo",
+        "type": "() => HTMLElement | null",
+        "optional": true,
+        "description": "Resolves the current eligible focus destination after an accepted close."
+      },
+      {
+        "name": "onClose",
+        "type": "() => void",
+        "optional": false,
+        "description": "Requests closure; the application owns `open`."
+      },
+      {
+        "name": "children",
+        "type": "ReactElement",
+        "optional": false,
+        "description": "One AppSidebar element, filling the panel regardless of its desktop width, retaining its native nav and ref."
+      }
+    ]
+  },
+  {
+    "name": "AppSidebarTrigger",
+    "category": "Navigation",
+    "extends": "Omit<IconButtonProps, 'label' | 'children'>",
+    "description": "Props for {@link AppSidebarTrigger}.",
+    "signature": "export declare function AppSidebarTrigger(props: AppSidebarTriggerProps): JSX.Element;",
+    "props": [
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "optional": false,
+        "description": "Application-owned state: `true` means the controlled sidebar is collapsed or closed."
+      },
+      {
+        "name": "onCollapsedChange",
+        "type": "(collapsed: boolean) => void",
+        "optional": false,
+        "description": "Requests the next state without keeping an internal mirror."
+      },
+      {
+        "name": "controls",
+        "type": "string",
+        "optional": false,
+        "description": "Id of the controlled navigation or offcanvas panel."
+      },
+      {
+        "name": "hotkey",
+        "type": "boolean",
+        "optional": true,
+        "description": "Opt into document-scoped Cmd/Ctrl+B ownership. Default `false`."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name and native tooltip. Default `\"Toggle sidebar\"`."
+      },
+      {
+        "name": "variant",
+        "type": "IconButtonProps['variant']",
+        "optional": true,
+        "description": "Visual variant. Default `\"ghost\"`."
+      },
+      {
+        "name": "size",
+        "type": "IconButtonProps['size']",
+        "optional": true,
+        "description": "Glyph sizing preset. Default `\"md\"`; the target is at least 44px for every size."
+      },
+      {
+        "name": "children",
+        "type": "ReactNode",
+        "optional": true,
+        "description": "Optional glyph; defaults to an inline panel-left icon."
       }
     ]
   },

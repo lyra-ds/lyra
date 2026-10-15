@@ -938,7 +938,7 @@
       "limit": "800 B"
     },
     {
-      "name": "import { Icon } from '@lyra-ds/react/icon' (79-icon registry, lucide measured)",
+      "name": "import { Icon } from '@lyra-ds/react/icon' (81 curated names, Lucide measured)",
       "path": "dist/icon.js",
       "import": "{ Icon }",
       "ignore": [
@@ -1335,7 +1335,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2.1 kB"
+      "limit": "2.511 kB"
     },
     {
       "name": "import { Select } from '@lyra-ds/react/select'",
@@ -1368,7 +1368,7 @@
       "limit": "3 kB"
     },
     {
-      "name": "Combobox (curated icon registry)",
+      "name": "Combobox (three fixed chrome glyphs)",
       "path": "dist/combobox.js",
       "import": "{ Combobox }",
       "ignore": [
@@ -1445,7 +1445,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2 kB"
+      "limit": "4.124 kB"
     },
     {
       "name": "import { BottomNav } from '@lyra-ds/react/bottom-nav'",

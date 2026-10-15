@@ -410,6 +410,440 @@ const OVERLINE_LABELS = [
   ['components/scheduling/scheduling.css', '.lyra-calview__head-cell', '0.04em'],
 ];
 
+// Clipping escape is an exact additive contract, never a broad Tooltip class allowance.
+const TOOLTIP_ESCAPE_ADDITIONS = [
+  [['.lyra-tooltip--escape::after'], { content: 'none' }],
+  [
+    ['.lyra-tooltip__surface'],
+    {
+      position: 'fixed',
+      inset: 'auto',
+      margin: '0',
+      'box-sizing': 'border-box',
+      width: 'max-content',
+      overflow: 'auto',
+      'overscroll-behavior': 'contain',
+      background: 'var(--slate-900)',
+      color: '#fff',
+      'font-family': 'var(--font-sans)',
+      'font-size': 'var(--text-xs)',
+      'font-weight': 'var(--weight-medium)',
+      'line-height': '1.4',
+      padding: '5px 10px',
+      border: '0',
+      'border-radius': 'var(--radius-sm)',
+      'white-space': 'normal',
+      'overflow-wrap': 'anywhere',
+      'text-align': 'start',
+      'pointer-events': 'auto',
+    },
+  ],
+  [
+    ['@scope ([data-theme="dark"]) to ([data-theme="light"])', '.lyra-tooltip__surface'],
+    {
+      background: 'var(--night-700)',
+      border: '1px solid var(--border-strong)',
+    },
+  ],
+  [['.lyra-tooltip__surface::backdrop'], { 'pointer-events': 'none' }],
+  [
+    ['@media (forced-colors: active)', '.lyra-tooltip--escape .lyra-tooltip__surface'],
+    {
+      background: 'Canvas',
+      color: 'CanvasText',
+      border: '1px solid CanvasText',
+    },
+  ],
+];
+const TOOLTIP_ESCAPE_CLASSES = new Set(['.lyra-tooltip--escape', '.lyra-tooltip__surface']);
+
+// Sidebar controls pin every new selector, ancestry, property and value.
+const SIDEBAR_CONTROL_ADDITIONS = {
+  'components/navigation/navigation.css': [
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', ':scope'],
+      {
+        background: 'var(--appsidebar-background, var(--surface-card))',
+        color: 'var(--appsidebar-foreground, inherit)',
+        'border-right-color': 'var(--appsidebar-border, var(--border-default))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__footer'],
+      {
+        'border-top-color': 'var(--appsidebar-border, var(--border-default))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-sbgroup__item'],
+      {
+        color: 'var(--appsidebar-foreground, var(--text-secondary))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-sbgroup__item-icon'],
+      {
+        color: 'var(--appsidebar-foreground, var(--text-muted))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-sbgroup__item:hover'],
+      {
+        background: 'var(--appsidebar-accent, var(--surface-sunken))',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        '.lyra-sbgroup__item--active, .lyra-sbgroup__item--active:hover',
+      ],
+      {
+        background: 'var(--appsidebar-accent, var(--accent-soft))',
+        color: 'var(--appsidebar-accent-foreground, var(--accent-soft-text))',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        '.lyra-sbgroup__item--active .lyra-sbgroup__item-icon',
+      ],
+      {
+        color: 'var(--appsidebar-primary, var(--accent))',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        '.lyra-sbgroup__item--active .lyra-sbgroup__item-badge',
+      ],
+      {
+        background: 'var(--appsidebar-primary-foreground, var(--surface-card))',
+        color: 'var(--appsidebar-primary, var(--accent))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__user-name'],
+      {
+        color: 'var(--appsidebar-foreground, var(--text-primary))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__user-role'],
+      {
+        color: 'var(--appsidebar-foreground, var(--text-muted))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__toggle'],
+      {
+        'border-color': 'var(--appsidebar-border, var(--border-default))',
+        color: 'var(--appsidebar-foreground, var(--text-muted))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__toggle:hover'],
+      {
+        background: 'var(--appsidebar-accent, var(--surface-sunken))',
+        color: 'var(--appsidebar-accent-foreground, var(--text-primary))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', ':scope :focus-visible'],
+      {
+        'outline-color': 'var(--appsidebar-ring, revert)',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__toggle:focus-visible'],
+      {
+        'box-shadow': '0 0 0 3px var(--appsidebar-ring, var(--focus-ring))',
+      },
+    ],
+    [
+      ['@scope (.lyra-appsidebar) to (.lyra-appsidebar)', '.lyra-appsidebar__hint'],
+      {
+        display: 'flex',
+        width: '100%',
+        'min-width': '0',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        ':scope.lyra-appsidebar--compact .lyra-sbgroup__item',
+      ],
+      {
+        'font-size': 'var(--text-sm)',
+        'min-height': '32px',
+        'padding-block': 'var(--space-1)',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        ':scope.lyra-appsidebar--compact .lyra-sbgroup__item-icon',
+      ],
+      {
+        'flex-shrink': '0',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        ':scope.lyra-appsidebar--compact .lyra-sbgroup__item-label',
+      ],
+      {
+        'min-width': '0',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        ':scope.lyra-appsidebar--compact .lyra-sbgroup__item-badge',
+      ],
+      {
+        'max-width': '45%',
+        overflow: 'hidden',
+        'text-overflow': 'ellipsis',
+        'white-space': 'nowrap',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        '@media (pointer: coarse), (any-pointer: coarse)',
+        ':scope.lyra-appsidebar--compact .lyra-sbgroup__item',
+      ],
+      {
+        'min-height': '44px',
+      },
+    ],
+    [
+      [
+        '@scope (.lyra-appsidebar) to (.lyra-appsidebar)',
+        '@media (forced-colors: active)',
+        ':scope :focus-visible',
+      ],
+      {
+        outline: '2px solid Highlight',
+        'outline-offset': '2px',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-trigger'],
+      {
+        'min-width': '44px',
+        'min-height': '44px',
+        'flex-shrink': '0',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-trigger:focus-visible'],
+      {
+        'box-shadow': '0 0 0 3px var(--appsidebar-ring, var(--focus-ring))',
+      },
+    ],
+    [
+      ['@media (forced-colors: active)', '.lyra-appsidebar-trigger:focus-visible'],
+      {
+        outline: '2px solid Highlight',
+        'outline-offset': '2px',
+      },
+    ],
+  ],
+  'components/feedback/feedback.css': [
+    [['.lyra-drawer-overlay:has(> .lyra-appsidebar-offcanvas:dir(rtl))'], { direction: 'rtl' }],
+    [
+      ['.lyra-drawer-overlay:has(> .lyra-appsidebar-offcanvas)'],
+      {
+        'justify-content': 'flex-start',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas'],
+      {
+        position: 'absolute',
+        top: 'var(--lyra-appsidebar-viewport-top, 0)',
+        left: 'var(--lyra-appsidebar-viewport-left, 0)',
+        height: 'var(--lyra-appsidebar-viewport-height, 100dvh)',
+        width: 'var(--appsidebar-width-mobile, 18rem)',
+        'max-width': 'var(--lyra-appsidebar-viewport-width, 100dvw)',
+        'min-width': '0',
+        'border-left': '0',
+        'border-inline-end': '1px solid var(--appsidebar-border, var(--border-default))',
+        background: 'var(--appsidebar-background, var(--surface-card))',
+        color: 'var(--appsidebar-foreground, var(--text-primary))',
+        'animation-name': 'lyra-appsidebar-in',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas:dir(rtl)'],
+      {
+        left: 'auto',
+        right:
+          'calc(100% - var(--lyra-appsidebar-viewport-left, 0px) - var(--lyra-appsidebar-viewport-width, 100dvw))',
+        'animation-name': 'lyra-appsidebar-in-rtl',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas.lyra-drawer--closing'],
+      {
+        'animation-name': 'lyra-appsidebar-out',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas.lyra-drawer--closing:dir(rtl)'],
+      {
+        'animation-name': 'lyra-appsidebar-out-rtl',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas > .lyra-drawer__header'],
+      {
+        flex: 'none',
+        'min-width': '0',
+        'border-bottom-color': 'var(--appsidebar-border, var(--border-default))',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas .lyra-drawer__title'],
+      {
+        'min-width': '0',
+        'overflow-wrap': 'anywhere',
+        color: 'var(--appsidebar-foreground, var(--text-primary))',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas .lyra-drawer__close'],
+      {
+        'min-width': '44px',
+        'min-height': '44px',
+        'flex-shrink': '0',
+        color: 'var(--appsidebar-foreground, var(--text-muted))',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas .lyra-drawer__close:focus-visible'],
+      {
+        'box-shadow': '0 0 0 3px var(--appsidebar-ring, var(--focus-ring))',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas > .lyra-drawer__body'],
+      {
+        padding: '0',
+        display: 'flex',
+        'flex-direction': 'column',
+        'min-height': '0',
+        overflow: 'visible',
+        color: 'inherit',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas > .lyra-drawer__body > .lyra-appsidebar'],
+      {
+        width: '100%',
+        'min-width': '100%',
+        'max-width': '100%',
+        'min-height': '0',
+        flex: '1',
+        border: '0',
+      },
+    ],
+    [
+      [
+        '.lyra-appsidebar-offcanvas .lyra-appsidebar__brand, .lyra-appsidebar-offcanvas .lyra-appsidebar__footer',
+      ],
+      {
+        flex: 'none',
+      },
+    ],
+    [
+      ['.lyra-appsidebar-offcanvas .lyra-wssw__pop'],
+      {
+        'max-width':
+          'min(220px, calc(var(--lyra-appsidebar-viewport-width, 100dvw) - var(--space-6)))',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-in', 'from'],
+      {
+        transform: 'translateX(-100%)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-in', 'to'],
+      {
+        transform: 'translateX(0)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-out', 'from'],
+      {
+        transform: 'translateX(0)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-out', 'to'],
+      {
+        transform: 'translateX(-100%)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-in-rtl', 'from'],
+      {
+        transform: 'translateX(100%)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-in-rtl', 'to'],
+      {
+        transform: 'translateX(0)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-out-rtl', 'from'],
+      {
+        transform: 'translateX(0)',
+      },
+    ],
+    [
+      ['@keyframes lyra-appsidebar-out-rtl', 'to'],
+      {
+        transform: 'translateX(100%)',
+      },
+    ],
+    [
+      ['@media (prefers-reduced-motion: reduce)', '.lyra-appsidebar-offcanvas'],
+      {
+        'animation-duration': '0s',
+      },
+    ],
+    [
+      ['@media (forced-colors: active)', '.lyra-appsidebar-offcanvas'],
+      {
+        'border-inline-end-color': 'CanvasText',
+      },
+    ],
+    [
+      [
+        '@media (forced-colors: active)',
+        '.lyra-appsidebar-offcanvas .lyra-drawer__close:focus-visible',
+      ],
+      {
+        outline: '2px solid Highlight',
+        'outline-offset': '2px',
+      },
+    ],
+  ],
+};
+const SIDEBAR_CONTROL_CLASSES = new Set([
+  '.lyra-appsidebar--compact',
+  '.lyra-appsidebar__hint',
+  '.lyra-appsidebar-trigger',
+  '.lyra-appsidebar-offcanvas',
+]);
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -687,6 +1121,33 @@ const ADDITIVE_CLASS_SELECTORS = new Set(
  * allowlist and still fails.
  */
 function isAdditiveExtension(relPath, decl) {
+  if (
+    decl.blockPath.some(
+      (block) =>
+        block === '@scope (.lyra-appsidebar) to (.lyra-appsidebar)' ||
+        /\.lyra-appsidebar-(?:trigger|offcanvas)(?![a-zA-Z0-9_-])/.test(block) ||
+        /^@keyframes lyra-appsidebar-/.test(block),
+    )
+  ) {
+    return (SIDEBAR_CONTROL_ADDITIONS[relPath] ?? []).some(
+      ([path, declarations]) =>
+        JSON.stringify(path) === JSON.stringify(decl.blockPath) &&
+        declarations[decl.prop] === decl.val,
+    );
+  }
+
+  if (
+    relPath === 'components/feedback/feedback.css' &&
+    decl.blockPath.some((block) =>
+      /\.lyra-tooltip(?:--escape|__surface)(?![a-zA-Z0-9_-])/.test(block),
+    )
+  ) {
+    return TOOLTIP_ESCAPE_ADDITIONS.some(
+      ([path, declarations]) =>
+        JSON.stringify(path) === JSON.stringify(decl.blockPath) &&
+        declarations[decl.prop] === decl.val,
+    );
+  }
   const ext = ADDITIVE_EXTENSIONS[relPath];
   if (!ext) return false;
   const root = decl.blockPath[0] || '';
@@ -1186,6 +1647,20 @@ function diffFile(relPath) {
   }
   const h = parse(read(hPath));
   const p = parse(read(pPath));
+  for (const [path, declarations] of SIDEBAR_CONTROL_ADDITIONS[relPath] ?? []) {
+    for (const [property, value] of Object.entries(declarations)) {
+      const matches = p.filter(
+        (decl) =>
+          JSON.stringify(decl.blockPath) === JSON.stringify(path) &&
+          decl.prop === property &&
+          decl.val === value,
+      );
+      if (matches.length !== 1)
+        fail(
+          `Sidebar control declaration missing or duplicated in ${relPath}: ${path.join(' > ')} ${property}: ${value}`,
+        );
+    }
+  }
   let hIndex = 0;
   let pIndex = 0;
   while (hIndex < h.length || pIndex < p.length) {
@@ -1267,6 +1742,7 @@ function classCheck(baseline) {
     if (!pkg.has(c)) fail(`Class ${c}: missing from package components — handoff/ is canonical`);
   }
   for (const c of pkg) {
+    if (TOOLTIP_ESCAPE_CLASSES.has(c) || SIDEBAR_CONTROL_CLASSES.has(c)) continue;
     if (ADDITIVE_CLASS_SELECTORS.has(c)) continue; // documented additive extension (D-18/D-19)
     if (!handoff.has(c))
       fail(`Class ${c}: present in package but not in canonical handoff — handoff/ is canonical`);

@@ -20,7 +20,8 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/react/dropdown': { configuredLimit: '2.44 kB', bytes: 2440 },
   '@lyra-ds/react/combobox': { configuredLimit: '8.678 kB', bytes: 8678 },
   '@lyra-ds/react/time-zone-picker': { configuredLimit: '10.219 kB', bytes: 10219 },
-  '@lyra-ds/react/tooltip': { configuredLimit: '2.1 kB', bytes: 2100 },
+  '@lyra-ds/react/app-sidebar': { configuredLimit: '4.124 kB', bytes: 4124 },
+  '@lyra-ds/react/tooltip': { configuredLimit: '2.511 kB', bytes: 2511 },
   '@lyra-ds/react/command-palette': { configuredLimit: '13.6 kB', bytes: 13600 },
   '@lyra-ds/react/recurrence-selector': { configuredLimit: '11 kB', bytes: 11000 },
   '@lyra-ds/react/weekly-schedule-editor': { configuredLimit: '18.7 kB', bytes: 18700 },
@@ -33,13 +34,18 @@ export const APPROVED_ABSOLUTE_CAPS = {
 };
 
 const STANDALONE_EXCEPTIONS = {
+  // issue186: parent-measured rail Tooltip growth against the frozen reference.
+  '@lyra-ds/react/app-sidebar': 3326,
   // CalendarView + CreateWorkspaceDialog bindings added for React parity (lyra#290, lyra#291); approved by maintainer 2026-09-29.
   // issue295 (2026-10-15): timer/renderer claims, focus reconciliation and public-queue dismissal.
   // Allow 4409 B over the frozen 26329 B reference for the Alpine default export with alpinejs
   // external. Enforced by pnpm baseline:bundles --check-budgets; other growth ceilings are unchanged.
   '@lyra-ds/alpine': 4409,
 };
-const SCENARIO_EXCEPTIONS = {};
+const SCENARIO_EXCEPTIONS = {
+  // issue186: parent-measured application shell with the current sidebar and dependencies.
+  'application-shell': 3434,
+};
 // Complex-or-composition entries keep the 3000-byte migration ceiling; every other entry is simple (1500).
 const COMPLEX_STANDALONE = new Set([
   '@lyra-ds/react/drawer',
@@ -288,6 +294,10 @@ function verifySizeLimit(reference, candidate, publicEntry) {
 }
 
 function expectedImport(reference, publicEntry) {
+  if (publicEntry === '@lyra-ds/react/icon') {
+    return "import { Icon } from '@lyra-ds/react/icon' (81 curated names, Lucide measured)";
+  }
+  if (publicEntry === '@lyra-ds/react/combobox') return 'Combobox (three fixed chrome glyphs)';
   return publicEntry === '@lyra-ds/react/tabs' ? TABS_IMPORT : reference.name;
 }
 

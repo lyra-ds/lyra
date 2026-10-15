@@ -672,8 +672,11 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
   /**
    * Side of the target to draw the tip on. Default `"top"`. The tip flips to the opposite side on
    * its own when the chosen one would be clipped by the viewport, so this is a preference.
+   * Clipping escape can use another side or limit the hint's height to keep the target reachable.
   */
   placement?: TooltipPlacement;
+  /** Escape overflow and scroll clipping while keeping the hint inside the visual viewport. Default `false`. */
+  escapeClipping?: boolean;
 }
 export declare function Tooltip(props: TooltipProps): JSX.Element;
 ```
@@ -1307,6 +1310,10 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   onCollapsedChange?: (collapsed: boolean) => void;
   /** Called after an item-level callback in data mode. */
   onSelect?: (id: string, item: AppSidebarGroupItem) => void;
+  /** Show clipping-safe hints for collapsed data items. Default `false`. Compose Tooltip explicitly for custom children. */
+  railTooltips?: boolean;
+  /** Local row density. Compact uses 32px fine-pointer rows and retains 44px coarse targets. Default `"default"`. */
+  density?: 'default' | 'compact';
   /** Localized labels for the collapse control. */
   labels?: AppSidebarLabels;
   /**
@@ -1316,6 +1323,58 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   children?: ReactNode;
 }
 export declare function AppSidebar(props: AppSidebarProps): JSX.Element;
+```
+
+### AppSidebarOffcanvas
+```ts
+/**
+ * Props for {@link AppSidebarOffcanvas}. Mobile width uses `--appsidebar-width-mobile` with an
+ * 18rem fallback, capped to the owner document's visual viewport. Panel height and start position
+ * follow live viewport size and offsets during zoom, resize and scrolling.
+*/
+export interface AppSidebarOffcanvasProps extends Omit<DrawerProps, 'children' | 'footer' | 'onClose'> {
+  /** Controls visibility. Closed navigation is absent; the exiting panel is inert. */
+  open: boolean;
+  /** Heading rendered in the existing Drawer header and used as the dialog name. */
+  title: ReactNode;
+  /** Accessible name for the close button. Default `"Close"`. */
+  closeLabel?: string;
+  /** Portal host. Defaults to `document.body`; use a scoped host to retain local tokens. */
+  container?: HTMLElement;
+  /** Resolves the initial focus target inside the panel on each accepted opening. */
+  initialFocusTo?: () => HTMLElement | null;
+  /** Resolves the current eligible focus destination after an accepted close. */
+  returnFocusTo?: () => HTMLElement | null;
+  /** Requests closure; the application owns `open`. */
+  onClose: () => void;
+  /** One AppSidebar element, filling the panel regardless of its desktop width, retaining its native nav and ref. */
+  children: ReactElement;
+}
+export declare function AppSidebarOffcanvas(props: AppSidebarOffcanvasProps): JSX.Element;
+```
+
+### AppSidebarTrigger
+```ts
+/** Props for {@link AppSidebarTrigger}. */
+export interface AppSidebarTriggerProps extends Omit<IconButtonProps, 'label' | 'children'> {
+  /** Application-owned state: `true` means the controlled sidebar is collapsed or closed. */
+  collapsed: boolean;
+  /** Requests the next state without keeping an internal mirror. */
+  onCollapsedChange: (collapsed: boolean) => void;
+  /** Id of the controlled navigation or offcanvas panel. */
+  controls: string;
+  /** Opt into document-scoped Cmd/Ctrl+B ownership. Default `false`. */
+  hotkey?: boolean;
+  /** Accessible name and native tooltip. Default `"Toggle sidebar"`. */
+  label?: string;
+  /** Visual variant. Default `"ghost"`. */
+  variant?: IconButtonProps['variant'];
+  /** Glyph sizing preset. Default `"md"`; the target is at least 44px for every size. */
+  size?: IconButtonProps['size'];
+  /** Optional glyph; defaults to an inline panel-left icon. */
+  children?: ReactNode;
+}
+export declare function AppSidebarTrigger(props: AppSidebarTriggerProps): JSX.Element;
 ```
 
 ### BottomNav

@@ -1,9 +1,10 @@
 import { Children, cloneElement, forwardRef, isValidElement } from 'react';
-import type { CSSProperties, HTMLAttributes, ReactElement, ReactNode } from 'react';
+import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
 import { cx } from '../internal/cx';
 import { useControllableState } from '../internal/use-controllable-state';
 import { SidebarGroup } from '../sidebar-group';
 import { Slot } from '../internal/slot';
+import { Tooltip } from '../tooltip';
 
 type AppSidebarStyle = CSSProperties & {
   '--appsidebar-width'?: string;
@@ -13,6 +14,7 @@ type RailChildProps = {
   children?: ReactNode;
   href?: unknown;
   title?: string;
+  tip?: string;
   'aria-label'?: string;
 };
 
@@ -28,12 +30,15 @@ function textFromChildren(children: ReactNode): string {
   return text.trim();
 }
 
-function addRailLinkLabels(children: ReactNode): ReactNode {
+function addRailLinkLabels(children: ReactNode, hinted = false): ReactNode {
   return Children.map(children, (child) => {
     if (!isValidElement(child)) return child;
 
     const element = child as ReactElement<RailChildProps>;
-    const nestedChildren = addRailLinkLabels(element.props.children);
+    const nestedChildren = addRailLinkLabels(
+      element.props.children,
+      hinted || element.type === Tooltip || typeof element.props.tip === 'string',
+    );
     const label =
       element.props['aria-label'] ??
       element.props.title ??
@@ -44,7 +49,7 @@ function addRailLinkLabels(children: ReactNode): ReactNode {
       children: nestedChildren,
       ...(isLink && label
         ? {
-            title: element.props.title ?? label,
+            title: hinted ? undefined : (element.props.title ?? label),
             'aria-label': element.props['aria-label'] ?? label,
           }
         : {}),
@@ -121,6 +126,10 @@ export interface AppSidebarProps extends Omit<HTMLAttributes<HTMLElement>, 'onSe
   onCollapsedChange?: (collapsed: boolean) => void;
   /** Called after an item-level callback in data mode. */
   onSelect?: (id: string, item: AppSidebarGroupItem) => void;
+  /** Show clipping-safe hints for collapsed data items. Default `false`. Compose Tooltip explicitly for custom children. */
+  railTooltips?: boolean;
+  /** Local row density. Compact uses 32px fine-pointer rows and retains 44px coarse targets. Default `"default"`. */
+  density?: 'default' | 'compact';
   /** Localized labels for the collapse control. */
   labels?: AppSidebarLabels;
   /**
@@ -147,6 +156,8 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
       onCollapsedChange,
       onSelect,
       labels,
+      railTooltips = false,
+      density = 'default',
       className,
       style,
       children,
@@ -162,6 +173,7 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
     const controlLabel = isCollapsed
       ? (labels?.expand ?? 'Expand sidebar')
       : (labels?.collapse ?? 'Collapse sidebar');
+    const showRailTooltips = isCollapsed && railTooltips;
     const sidebarStyle: AppSidebarStyle = {
       '--appsidebar-width': `${isCollapsed ? 64 : width}px`,
       width: 'var(--appsidebar-width)',
@@ -172,7 +184,12 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
       <nav
         {...rest}
         ref={ref}
-        className={cx('lyra-appsidebar', isCollapsed && 'lyra-appsidebar--rail', className)}
+        className={cx(
+          'lyra-appsidebar',
+          isCollapsed && 'lyra-appsidebar--rail',
+          density === 'compact' && 'lyra-appsidebar--compact',
+          className,
+        )}
         style={sidebarStyle}
       >
         {brand != null && <div className="lyra-appsidebar__brand">{brand}</div>}
@@ -195,34 +212,43 @@ export const AppSidebar = /*#__PURE__*/ forwardRef<HTMLElement, AppSidebarProps>
                 const props = {
                   className: cx('lyra-sbgroup__item', item.active && 'lyra-sbgroup__item--active'),
                   'aria-current': item.active ? ('page' as const) : undefined,
-                  title: isCollapsed ? item.label : undefined,
-                  onClick: () => {
+                  title: isCollapsed && !railTooltips ? item.label : undefined,
+                  'aria-label': isCollapsed ? item.label : undefined,
+                  onClick: (event: MouseEvent<HTMLElement>) => {
+                    if (showRailTooltips && event.defaultPrevented) return;
                     item.onSelect?.();
                     onSelect?.(item.id, item);
                   },
                 };
-                if (item.asChild)
-                  return (
-                    <Slot key={item.id} {...props}>
-                      {cloneElement(item.asChild, undefined, content)}
-                    </Slot>
-                  );
-                if (item.href !== undefined)
-                  return (
-                    <a
-                      key={item.id}
-                      {...props}
-                      href={item.href}
-                      target={item.target}
-                      rel={item.rel}
-                    >
-                      {content}
-                    </a>
-                  );
-                return (
-                  <button key={item.id} {...props} type="button">
+                const target = item.asChild ? (
+                  <Slot {...props}>
+                    {cloneElement(
+                      item.asChild as ReactElement<RailChildProps>,
+                      showRailTooltips ? { title: undefined } : undefined,
+                      content,
+                    )}
+                  </Slot>
+                ) : item.href !== undefined ? (
+                  <a {...props} href={item.href} target={item.target} rel={item.rel}>
+                    {content}
+                  </a>
+                ) : (
+                  <button {...props} type="button">
                     {content}
                   </button>
+                );
+                return showRailTooltips ? (
+                  <Tooltip
+                    key={item.id}
+                    tip={item.label}
+                    placement="right"
+                    escapeClipping
+                    className="lyra-appsidebar__hint"
+                  >
+                    {target}
+                  </Tooltip>
+                ) : (
+                  cloneElement(target, { key: item.id })
                 );
               })}
             </SidebarGroup>

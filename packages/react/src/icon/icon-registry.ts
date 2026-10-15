@@ -1,7 +1,7 @@
 // GENERATED FILE — DO NOT EDIT BY HAND.
 // Source of truth: the four-pass scan of handoff/components/** + handoff/ui_kits/**.
 // Regenerate: `node tools/icon-registry/generate.mjs`  (drift-guarded by `--check`).
-// RCT-05: curated, tree-shakable, no-CDN icon surface (78 lucide-react imports + 1 vendored).
+// RCT-05: curated, tree-shakable, no-CDN icon surface (80 lucide-react imports + 1 vendored).
 
 import {
   Archive,
@@ -60,6 +60,8 @@ import {
   Moon,
   Music,
   Package,
+  PanelLeft,
+  PanelRight,
   Pencil,
   Plus,
   Rocket,
@@ -151,6 +153,8 @@ export const iconRegistry = {
   'moon': Moon,
   'music': Music,
   'package': Package,
+  'panel-left': PanelLeft,
+  'panel-right': PanelRight,
   'pencil': Pencil,
   'plus': Plus,
   'rocket': Rocket,

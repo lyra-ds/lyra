@@ -9,7 +9,7 @@ export function AppSidebarGroups() {
   return (
     <>
       <AppSidebar
-        aria-label="Workspace"
+        aria-label="Workspace action example"
         brand={<strong>Acme</strong>}
         groups={[
           {

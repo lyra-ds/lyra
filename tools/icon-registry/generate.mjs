@@ -6,7 +6,7 @@
  * surface. It derives the COMPLETE handoff icon inventory (literal AND dynamic uses)
  * by a FOUR-pass, dynamic-use-aware scan of handoff/components/** + handoff/ui_kits/**
  * (.jsx/.html/.tsx/.ts), then emits the committed module
- * packages/react/src/icon/icon-registry.ts: 78 static PascalCase lucide-react named
+ * packages/react/src/icon/icon-registry.ts: 80 static PascalCase lucide-react named
  * imports + one vendored `github` icon (createLucideIcon, brand icons were removed in
  * lucide 1.0) + the `IconName` literal union (D-04). Same pattern as tools/parity —
  * generated + committed + CI drift-guarded (D-01/D-02).
@@ -70,11 +70,11 @@ const REACT_PKG = join(REPO, 'packages', 'react');
 const OUT_FILE = join(REACT_PKG, 'src', 'icon', 'icon-registry.ts');
 const FIXTURES = join(__dirname, 'fixtures');
 
-const EXPECTED_ICONS = 79; // 78 lucide-resolvable + 1 vendored (github) — +9 from the v1.1/v1.2 handoff delta (2026-08-03)
+const EXPECTED_ICONS = 81; // 80 lucide-resolvable + 1 vendored (github) — +9 from the v1.1/v1.2 handoff delta (2026-08-03)
 
 // The planning-time approved canonical inventory (03-03 objective). The four-pass scan
 // must reproduce this EXACT set; deltas (added/missing) are reported by name. `github`
-// is vendored (removed from lucide 1.0); the other 78 are lucide-react 1.25.0 exports.
+// is vendored (removed from lucide 1.0); the other 80 are lucide-react exports.
 const CANONICAL_INVENTORY = [
   'archive',
   'arrow-left',
@@ -133,6 +133,8 @@ const CANONICAL_INVENTORY = [
   'moon',
   'music',
   'package',
+  'panel-left',
+  'panel-right',
   'pencil',
   'plus',
   'rocket',
@@ -434,11 +436,11 @@ function emit(sortedNames) {
     '// Regenerate: `node tools/icon-registry/generate.mjs`  (drift-guarded by `--check`).',
   );
   lines.push(
-    '// RCT-05: curated, tree-shakable, no-CDN icon surface (78 lucide-react imports + 1 vendored).',
+    '// RCT-05: curated, tree-shakable, no-CDN icon surface (80 lucide-react imports + 1 vendored).',
   );
   lines.push('');
 
-  // Named lucide-react imports (78), sorted, then the custom-icon factory + type.
+  // Named lucide-react imports (80), sorted, then the custom-icon factory + type.
   lines.push('import {');
   for (const n of lucideNames) lines.push(`  ${toPascal(n)},`);
   lines.push('  createLucideIcon,');
@@ -492,7 +494,7 @@ function deriveCanonicalSet() {
   }
   if (derived.length !== EXPECTED_ICONS) {
     fail(
-      `Icon count boundary: derived ${derived.length} unique names, expected ${EXPECTED_ICONS} (78 lucide + 1 vendored github)`,
+      `Icon count boundary: derived ${derived.length} unique names, expected ${EXPECTED_ICONS} (80 lucide + 1 vendored github)`,
     );
   }
   if (!derivedSet.has(VENDORED_GITHUB.name)) {
@@ -642,7 +644,7 @@ if (mode === '--self-test') {
   if (!errors.length) {
     writeFileSync(OUT_FILE, emit(sorted), 'utf8');
     console.log(
-      `icon-registry: wrote ${relOf(REPO, OUT_FILE)} — ${sorted.length} icons (69 lucide + vendored github).`,
+      `icon-registry: wrote ${relOf(REPO, OUT_FILE)} — ${sorted.length} icons (80 lucide + vendored github).`,
     );
   }
 }

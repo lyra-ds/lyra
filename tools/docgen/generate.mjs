@@ -216,7 +216,7 @@ function extractComponents() {
   // catching a stale or partial dist (which yields FEWER), so it is maintained by hand: bump it in
   // the same commit that adds a component, and the mismatch message tells you the number it
   // actually found.
-  const EXPECTED_COMPONENTS = 82;
+  const EXPECTED_COMPONENTS = 84;
   if (components.length !== EXPECTED_COMPONENTS) {
     throw new Error(
       `Expected exactly ${EXPECTED_COMPONENTS} exported component Props interfaces from packages/react/dist; extracted ${components.length}. Rebuild @lyra-ds/react or fix the declaration exports.`,
