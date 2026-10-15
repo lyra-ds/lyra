@@ -847,3 +847,13 @@
 
 /* Additive extension (parity ADDITIVE_EXTENSIONS): linked items retain button styling on hover. */
 .lyra-bottomnav a.lyra-bottomnav__item:hover { text-decoration: none; }
+
+/* Additive extension: disabled commands keep their appearance through hover and active states. */
+.lyra-menu__item:disabled,
+.lyra-menu__item[aria-disabled="true"] {
+  color: var(--text-secondary);
+  background: transparent;
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -26,7 +26,7 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/react/weekly-schedule-editor': { configuredLimit: '18.7 kB', bytes: 18700 },
   '@lyra-ds/react/tabs': { configuredLimit: '1.6 kB', bytes: 1600 },
   '@lyra-ds/react/breadcrumb': { configuredLimit: '600 B', bytes: 600 },
-  '@lyra-ds/alpine': { configuredLimit: '27.2 kB', bytes: 27200 },
+  '@lyra-ds/alpine': { configuredLimit: '27.3 kB', bytes: 27300 },
 };
 
 const STANDALONE_EXCEPTIONS = {

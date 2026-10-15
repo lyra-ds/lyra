@@ -53,6 +53,15 @@ interface LyraDropdownMagics {
 
 type LyraDropdownState = LyraDropdownData & LyraDropdownMagics;
 
+function blockDisabledActivation(event: MouseEvent | KeyboardEvent): void {
+  if ('key' in event && event.key !== 'Enter' && event.key !== ' ') return;
+  const command = (event.target as Element).closest('[role="menuitem"]');
+  if (command?.matches(':disabled, [aria-disabled="true"]')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+}
+
 let nextDropdownId = 0;
 
 /** An APG menu button with real focus roving across its commands. */
@@ -109,7 +118,7 @@ export function lyraDropdown({
 
     commandItems() {
       return Array.from(
-        this.menuElement()?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+        this.menuElement()?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
       );
     },
 
@@ -207,7 +216,15 @@ export function lyraDropdown({
 
     handleTriggerKeyDown(event) {
       if (event.defaultPrevented) return;
-      if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+      if (
+        this.open &&
+        (event.key === 'Escape' ||
+          event.key === 'Tab' ||
+          ((event.key === 'Enter' || event.key === ' ') && this.commandItems().length === 0))
+      ) {
+        if (event.key !== 'Tab') event.preventDefault();
+        this.closeMenu();
+      } else if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
         event.preventDefault();
         this.openMenu(0);
       } else if (event.key === 'ArrowUp') {
@@ -298,6 +315,9 @@ export function lyraDropdown({
 
     menu: {
       role: 'menu',
+      // Capture before consumer item handlers and native link/button activation.
+      ['@click.capture']: blockDisabledActivation,
+      ['@keydown.capture']: blockDisabledActivation,
       [':id']() {
         return this.menuId;
       },

@@ -5,11 +5,14 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## In progress — current cycle
 
-- [ ] PR #299 action updates: validator repair verified locally; remote checks pending.
-- [ ] Batuta configuration proposals: awaiting the maintainer's routing choice.
-- [ ] Align the Laravel starters with the published Blade/Alpine/Styles tuple.
+- [ ] Correct monorepo issues in order #289 → #296 → #295. Each verified issue receives an atomic commit; final PR CI covers the combined branch.
+- [ ] Toast timing policy confirmed: 8-second info/success defaults, persistent danger notifications, explicit duration precedence, and remaining-time pause on hover/focus. No publication authorized.
 
 ## Done — current cycle
+
+- [x] PR #299 integrated as 2ee316e after all seven checks passed.
+- [x] Batuta refresh and starter setup integrated: monorepo #300 (b4ec152), Blade #66, and six starter PRs; independent review and all required checks passed.
+- [x] Both Laravel starters aligned with the published Blade/Alpine/Styles tuple and integrated after PHP8.3/8.4 checks.
 
 - [x] Styles 1.1.1 published from PR #297, commit ddf3711; release workflow and npm verified.
 - [x] CI validators follow the approved action pins → codex/gpt-5.6-terra,

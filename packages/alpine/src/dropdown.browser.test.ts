@@ -110,6 +110,23 @@ function mountTypeaheadDropdown(): HTMLElement {
   return host;
 }
 
+function mountDisabledDropdown(commands: string): HTMLElement {
+  const host = document.createElement('div');
+  host.innerHTML = `
+    <form x-data="{ actions: 0, keys: 0, submissions: 0 }" @submit.prevent="submissions++">
+      <div x-data="lyraDropdown()" class="lyra-dropdown">
+        <button type="button" x-bind="trigger">Actions</button>
+        <div class="lyra-menu" role="menu" x-bind="menu">${commands}</div>
+      </div>
+      <output x-text="actions + ':' + keys + ':' + submissions"></output>
+    </form>
+  `;
+  document.body.appendChild(host);
+  Alpine.initTree(host);
+  mountedHosts.push(host);
+  return host;
+}
+
 afterEach(() => {
   for (const host of mountedHosts.splice(0)) {
     Alpine.destroyTree(host);
@@ -118,6 +135,168 @@ afterEach(() => {
 });
 
 describe('lyraDropdown', () => {
+  it('skips native-disabled commands at every position while retaining ARIA-disabled focus', async () => {
+    const host = mountDisabledDropdown(`
+      <button disabled x-bind="item">Add first</button>
+      <button x-bind="item">Edit</button>
+      <button disabled x-bind="item">Add middle</button>
+      <button aria-disabled="true" x-bind="item">Add unavailable</button>
+      <button x-bind="item">Archive</button>
+      <button disabled x-bind="item">Add last</button>
+    `);
+    const commands = menu(host).querySelectorAll<HTMLElement>('[role="menuitem"]');
+    trigger(host).focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await flush();
+    expect(document.activeElement).toBe(commands[1]);
+    for (const [key, index] of [
+      ['{ArrowDown}', 3],
+      ['{ArrowDown}', 4],
+      ['{ArrowDown}', 1],
+      ['{ArrowUp}', 4],
+      ['{Home}', 1],
+      ['{End}', 4],
+      ['a', 3],
+      ['a', 4],
+      ['a', 3],
+    ] as const) {
+      await userEvent.keyboard(key);
+      expect(document.activeElement).toBe(commands[index]);
+      expect(trigger(host).getAttribute('aria-expanded')).toBe('true');
+    }
+    await userEvent.keyboard('{Escape}{ArrowUp}');
+    await flush();
+    expect(document.activeElement).toBe(commands[4]);
+  });
+
+  it('keeps all-native-disabled menus stable across opening keys and reopening', async () => {
+    const host = mountDisabledDropdown('<button disabled x-bind="item">Unavailable</button>');
+    const control = trigger(host);
+    control.focus();
+    for (const key of ['{ArrowDown}', '{ArrowUp}', '{Enter}', ' ']) {
+      await userEvent.keyboard(key);
+      await flush();
+      expect(document.activeElement).toBe(control);
+      expect(control.getAttribute('aria-expanded')).toBe('true');
+      await userEvent.keyboard('{Home}{End}a{ArrowDown}{ArrowUp}');
+      await flush();
+      expect(document.activeElement).toBe(control);
+      expect(control.getAttribute('aria-expanded')).toBe('true');
+      await userEvent.keyboard('{Escape}');
+      await flush();
+      expect(control.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(control);
+    }
+  });
+
+  it.each(['{Enter}', ' '])(
+    'toggles an all-native-disabled menu from its trigger with %s',
+    async (key) => {
+      const host = mountDisabledDropdown('<button disabled x-bind="item">Unavailable</button>');
+      const control = trigger(host);
+      control.focus();
+      for (const open of [true, false, true, false]) {
+        await userEvent.keyboard(key);
+        await flush();
+        expect(control.getAttribute('aria-expanded')).toBe(String(open));
+        expect(document.activeElement).toBe(control);
+      }
+    },
+  );
+
+  it.each(['{Tab}', '{Shift>}{Tab}{/Shift}'])(
+    'closes an all-native-disabled menu and preserves native focus navigation with %s',
+    async (key) => {
+      const host = mountDisabledDropdown('<button disabled x-bind="item">Unavailable</button>');
+      // Text inputs remain native Tab destinations under macOS WebKit's default policy.
+      const before = document.createElement('input');
+      before.setAttribute('aria-label', 'Before menu');
+      const after = document.createElement('input');
+      after.setAttribute('aria-label', 'After menu');
+      host.prepend(before);
+      host.append(after);
+      const tabEvents: KeyboardEvent[] = [];
+      host.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') tabEvents.push(event);
+      });
+      const control = trigger(host);
+      for (let attempt = 0; attempt < 2; attempt++) {
+        control.focus();
+        await userEvent.keyboard('{ArrowDown}');
+        await flush();
+        expect(control.getAttribute('aria-expanded')).toBe('true');
+        expect(document.activeElement).toBe(control);
+        await userEvent.keyboard(key);
+        await flush();
+        expect(tabEvents).toHaveLength(attempt + 1);
+        expect(tabEvents[attempt].defaultPrevented).toBe(false);
+        expect(control.getAttribute('aria-expanded')).toBe('false');
+        expect(document.activeElement).toBe(key === '{Tab}' ? after : before);
+      }
+    },
+  );
+
+  it.each(['button', 'a'])(
+    'blocks ARIA-disabled %s activation before consumer handlers and defaults',
+    async (tag) => {
+      const host = mountDisabledDropdown(`
+      <${tag} ${tag === 'a' ? 'href="#disabled-command"' : 'type="submit"'}
+        aria-disabled="true" role="menuitem" class="lyra-menu__item"
+        @click="actions++; $el.closest('form').requestSubmit()"
+        @keydown.enter="keys++" @keydown.space="keys++" x-bind="item">
+        <span>Unavailable</span>
+      </${tag}>
+      <button @click="actions++" x-bind="item">Enabled</button>
+    `);
+      const locationBefore = window.location.href;
+      await userEvent.click(trigger(host));
+      await flush();
+      const command = menu(host).querySelector<HTMLElement>('[aria-disabled="true"]');
+      const child = command?.querySelector('span');
+      const output = host.querySelector('output');
+      if (!command || !child || !output) throw new Error('Expected disabled command fixture');
+      await userEvent.click(child, { force: true });
+      command.focus();
+      await userEvent.keyboard('{Enter} ');
+      await flush();
+      expect(output.textContent).toBe('0:0:0');
+      expect(window.location.href).toBe(locationBefore);
+      expect(trigger(host).getAttribute('aria-expanded')).toBe('true');
+      expect(document.activeElement).toBe(command);
+      await userEvent.keyboard('{Escape}{Enter}');
+      await flush();
+      await userEvent.keyboard('{End}{Enter}');
+      await flush();
+      expect(output.textContent).toBe('1:0:0');
+      expect(trigger(host).getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(trigger(host));
+    },
+  );
+
+  it('blocks native-disabled served command events before consumer actions', async () => {
+    const host = mountDisabledDropdown(`
+      <button disabled type="submit" @click="actions++" @keydown.enter="keys++"
+        @keydown.space="keys++" x-bind="item"><span>Unavailable</span></button>
+    `);
+    await userEvent.click(trigger(host));
+    await flush();
+    const command = menu(host).querySelector('button');
+    if (!command) throw new Error('Expected native-disabled command');
+    await userEvent.click(command, { force: true });
+    // Native disabled controls cannot receive keyboard focus; dispatched events also cover
+    // consumer-dispatched activation on the real Alpine bindings.
+    for (const event of [
+      new MouseEvent('click', { bubbles: true, cancelable: true }),
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+      new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }),
+    ]) {
+      expect(command.dispatchEvent(event)).toBe(false);
+    }
+    await flush();
+    expect(host.querySelector('output')?.textContent).toBe('0:0:0');
+    expect(trigger(host).getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('opens and closes from its trigger while preserving the menu item danger class', async () => {
     const host = mountDropdown();
     const control = trigger(host);

@@ -74,6 +74,16 @@ A estrutura abaixo é o HTML puro: ela vem inteira no markup servido e fica iner
 bootar. Acrescentar o `x-data` e os três nomes de `x-bind` é toda a diferença entre um menu estático
 e um menu que funciona.
 
+In Alpine menus, native `disabled` commands are skipped by ArrowUp, ArrowDown, Home, End and
+label typeahead, including when opening from the trigger. Use `aria-disabled="true"` when an
+unavailable command should remain keyboard discoverable: it stays in the focus order and typeahead.
+Both forms prevent click, Enter and Space activation before item action handlers run; they do not
+follow links, submit forms or close the menu. A menu with only native-disabled commands stays open
+with focus on its trigger. From that trigger, Escape closes the menu, Enter or Space toggles it,
+and Tab closes it while continuing native focus navigation. Escape and Tab retain their usual
+behavior on focusable commands. Shared Lyra CSS supplies the disabled appearance, including a
+neutral transform while pressed; no Dropdown option is needed.
+
 ```html
 <div class="lyra-dropdown" x-data="lyraDropdown({ align: 'end' })">
   <span
@@ -91,6 +101,19 @@ e um menu que funciona.
     <button class="lyra-menu__item" type="button" role="menuitem" x-bind="item">
       Renomear projeto
     </button>
+    <button class="lyra-menu__item" type="button" role="menuitem" x-bind="item" disabled>
+      Export unavailable
+    </button>
+    <a
+      class="lyra-menu__item"
+      role="menuitem"
+      href="/project/settings"
+      aria-disabled="true"
+      x-bind="item"
+      @click="$dispatch('project-settings')"
+    >
+      Settings unavailable
+    </a>
     <hr class="lyra-menu__sep" />
     <button
       class="lyra-menu__item lyra-menu__item--danger"
