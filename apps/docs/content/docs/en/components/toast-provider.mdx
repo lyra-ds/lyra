@@ -34,12 +34,36 @@ Reach for something else when:
 
 ## Accessibility
 
-- ToastProvider composes Toast, whose messages are polite `role="status"` live regions. A brief toast
-  can be missed, so it must not be the only place for important information.
+- ToastProvider announces info/success through a persistent polite region and danger through a
+  persistent assertive region, both additions-only. Composed rows have no individual role. Never
+  use a toast as the only place for important information.
 - Each queued toast receives a close button whose accessible name comes from `closeLabel`, defaulting
   to "Close notification". Provide localized copy when needed.
 - The provider's ToastStack is fixed at the bottom-right of the viewport. Keep messages brief and do
   not let the stack become a substitute for persistent status.
+
+## Timing and dismissal
+
+React `ToastProvider` and the Alpine toast store resolve duration when a notification is queued:
+per-toast `duration` overrides explicit provider/store configuration, which overrides the implicit
+tone policy. Info and success default to **8000 ms**; danger, including `error()`, defaults to
+**persistent**. `0` always means persistent. Explicit global `8000` also makes danger expire.
+Changing configuration affects new notifications only.
+
+Pointer hover and focus inside a row independently pause its remaining time. The countdown resumes
+only after both leave; moving between descendants does not restart it. Give action-bearing React
+messages an explicit `{ duration: 0 }`; the provider does not inspect their content.
+
+Dismissing a focused row returns focus to its enqueue-time opener if that element is still eligible.
+Removed, disabled, hidden or inert openers, and openers inside a toast stack, use the same persistent
+stack instead. This named region (a landmark) remains focusable and visibly outlined even when empty.
+Unfocused dismissals do not move focus, and deliberate action focus moves are preserved. The region adds no
+live announcement; polite and assertive regions announce additions only.
+
+**Migration:** set `duration={4000}` on React `ToastProvider` or assign
+`Alpine.store('lyraToasts').duration = 4000` to restore the previous default delay for all tones.
+Per-toast overrides still take precedence. These timing changes apply to React and Alpine; the
+imported Blade API below is unchanged.
 
 ## API and code
 
@@ -49,6 +73,14 @@ Reach for something else when:
 <PropTable name="ToastProvider" />
 
 ### useToast
+
+Retained methods read the latest committed provider configuration. After real provider unmount,
+notification methods return numeric ids without adding state or timers, and `dismiss` does nothing.
+During SSR, notification methods return numeric ids without adding state or timers.
+A fresh provider starts empty. StrictMode replay preserves remaining time and interaction pauses.
+The owned region defaults to the accessible name "Notifications". Set `aria-label` to localize it
+or give coexisting providers distinct names, for example `<ToastProvider aria-label="Project notifications">`.
+The two live examples above use different region names so they remain distinguishable on the same page.
 
 Call `useToast` only below a ToastProvider; outside one, the hook throws. It returns `toast`, `success`,
 `error` and `info`, each of which queues a message and returns a provider-local numeric id. Call

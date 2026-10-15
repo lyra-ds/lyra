@@ -1113,7 +1113,7 @@
         "name": "duration",
         "type": "number",
         "optional": false,
-        "description": "Default auto-dismiss delay in milliseconds. Default: `4000`."
+        "description": "Reads `8000` initially; every assignment explicitly overrides tone defaults for new notifications. Otherwise danger persists and info/success last `8000` ms. Interaction pauses remaining time."
       },
       {
         "name": "closeLabel",

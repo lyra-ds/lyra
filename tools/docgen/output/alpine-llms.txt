@@ -274,7 +274,7 @@ Documented as `time-zone-picker`. Mount with `x-data="lyraTimeZonePicker({ … }
 Documented as `toast`. Global store, read as `$store.lyraToasts`.
 
 - `items: QueuedToast[]` — The current queue, in the order notifications were added.
-- `duration: number` — Default auto-dismiss delay in milliseconds. Default: `4000`.
+- `duration: number` — Reads `8000` initially; every assignment explicitly overrides tone defaults for new notifications. Otherwise danger persists and info/success last `8000` ms. Interaction pauses remaining time.
 - `closeLabel: string` — Accessible name passed to every toast close button. Default: `"Close notification"`.
 - `init: (): void` — Registers the singleton's browser-only Livewire event bridge.
 - `toast: (message: string, options?: LyraToastOptions): number` — Queues a notification and returns its store-local identifier.

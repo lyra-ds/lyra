@@ -10,7 +10,7 @@ function ToastButton() {
 
 export function ToastProviderBasic() {
   return (
-    <ToastProvider>
+    <ToastProvider aria-label="Project confirmations">
       <ToastButton />
     </ToastProvider>
   );

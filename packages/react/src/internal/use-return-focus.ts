@@ -36,7 +36,7 @@ function isProgrammaticallyFocusable(target: HTMLElement): boolean {
   return details?.localName === 'details' && details.querySelector(':scope > summary') === target;
 }
 
-function isEligibleReturnFocusTarget(
+export function isEligibleReturnFocusTarget(
   target: HTMLElement | null,
   ownerDocument: Document,
   panel: HTMLElement | null,

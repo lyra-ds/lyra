@@ -33,13 +33,37 @@ Reach for something else when:
 
 ## Accessibility
 
-- Toast renders `role="status"`, a polite live region: it is announced at the next pause, not the
-  instant it appears. Never put the only copy of important information in one.
+- Standalone React Toast uses `role="status"`. Inside ToastStack it has no individual role; the
+  persistent region owns announcements. ToastProvider separates polite info/success from assertive
+  danger. Never put the only copy of important information in a toast.
 - `ToastStack` is `position: fixed` at the bottom-right of the viewport. It sits over whatever is
   there, so keep toasts short and few.
 - The close button appears only with `onClose`. Its accessible name defaults to the English string
   "Close notification"; pass `closeLabel` to translate it for a localized product.
 - `tone` colors the icon only. The words must say whether something succeeded or failed.
+
+## Timing and dismissal
+
+React `ToastProvider` and the Alpine toast store resolve duration when a notification is queued:
+per-toast `duration` overrides explicit provider/store configuration, which overrides the implicit
+tone policy. Info and success default to **8000 ms**; danger, including `error()`, defaults to
+**persistent**. `0` always means persistent. Explicit global `8000` also makes danger expire.
+Changing configuration affects new notifications only.
+
+Pointer hover and focus inside a row independently pause its remaining time. The countdown resumes
+only after both leave; moving between descendants does not restart it. Give action-bearing React
+messages an explicit `{ duration: 0 }`; the provider does not inspect their content.
+
+Dismissing a focused row returns focus to its enqueue-time opener if that element is still eligible.
+Removed, disabled, hidden or inert openers, and openers inside a toast stack, use the same persistent
+stack instead. This named region (a landmark) remains focusable and visibly outlined even when empty.
+Unfocused dismissals do not move focus, and deliberate action focus moves are preserved. The region adds no
+live announcement; polite and assertive regions announce additions only.
+
+**Migration:** set `duration={4000}` on React `ToastProvider` or assign
+`Alpine.store('lyraToasts').duration = 4000` to restore the previous default delay for all tones.
+Per-toast overrides still take precedence. These timing changes apply to React and Alpine; the
+imported Blade API below is unchanged.
 
 ## API and code
 

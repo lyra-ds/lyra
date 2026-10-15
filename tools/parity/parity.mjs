@@ -372,6 +372,19 @@ const ON_DANGER_ADDITION = {
   selectors: [':root', '[data-theme="dark"]'],
 };
 
+// #295: pin the owned notification fallback's focus treatment without allowing other stack changes.
+const TOAST_FOCUS_ADDITION = {
+  file: 'components/feedback/feedback.css',
+  selector: ".lyra-toast-stack[role='region'][tabindex='-1']:focus",
+  declarations: new Map([
+    ['min-width', 'min(280px, calc(100vw - 2 * var(--space-6)))'],
+    ['min-height', '44px'],
+    ['border-radius', 'var(--radius-md)'],
+    ['outline', '2px solid var(--text-primary)'],
+    ['outline-offset', '2px'],
+  ]),
+};
+
 // #265 adds an opt-out for uppercase overline labels. `initial` makes the
 // letter-spacing fallback active, preserving the handoff's three distinct values.
 // Every approved component declaration is pinned to its file, selector, property,
@@ -1129,6 +1142,14 @@ function isAllowedDivergence(relPath, hd, pd) {
 }
 
 function isAllowedPackageAddition(relPath, decl) {
+  if (
+    relPath === TOAST_FOCUS_ADDITION.file &&
+    decl.blockPath.length === 1 &&
+    decl.blockPath[0] === TOAST_FOCUS_ADDITION.selector &&
+    decl.val === TOAST_FOCUS_ADDITION.declarations.get(decl.prop)
+  ) {
+    return true;
+  }
   if (
     relPath === 'tokens/typography.css' &&
     decl.blockPath.length === 1 &&

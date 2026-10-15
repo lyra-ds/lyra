@@ -9,9 +9,9 @@ ToastStack is the region a page mounts once to render whatever the toast queue h
 placement, stacking order and dismissal; it does not decide _when_ a toast appears — that is the
 store's job, and any code with access to the store can push one.
 
-React has no component with this name: there, the same region is rendered by `ToastProvider`. The
-split exists because Alpine has no provider shape — a store plus a mount point does the same work
-with fewer moving parts.
+React also exports a presentational `ToastStack` primitive with a forwarded root ref and a default
+polite live region. `ToastProvider` composes it with separate announcement regions and owns timers
+and focus behavior. This page documents the Alpine mount point and preserves its supported tabs.
 
 ## When to use
 
@@ -23,8 +23,8 @@ Reach for something else when:
 - **The message belongs to a specific field or form** — use Alert, which stays in the flow next to
   what it describes and does not disappear on a timer.
 - **The message needs an answer before anything else happens** — use Dialog, which blocks.
-- **The page has nothing to announce yet** — an empty stack renders nothing, so there is no state to
-  design for.
+- **The page has nothing to announce yet** — keep the empty stack mounted as the dismissal focus
+  fallback; its focused state remains visible.
 
 ## Accessibility
 
@@ -34,7 +34,39 @@ Reach for something else when:
   often not spoken.
 - Dismissal is reachable by keyboard on every toast — a timer is a convenience, never the only way
   out.
-- Toasts stack in queue order, so the reading order matches the visual order.
+- Polite rows render before assertive rows, preserving queue order within each group.
+
+## Timing and dismissal
+
+React `ToastProvider` and the Alpine toast store resolve duration when a notification is queued:
+per-toast `duration` overrides explicit provider/store configuration, which overrides the implicit
+tone policy. Info and success default to **8000 ms**; danger, including `error()`, defaults to
+**persistent**. `0` always means persistent. Explicit global `8000` also makes danger expire.
+Changing configuration affects new notifications only.
+
+Pointer hover and focus inside a row independently pause its remaining time. The countdown resumes
+only after both leave; moving between descendants does not restart it. Give action-bearing React
+messages an explicit `{ duration: 0 }`; the provider does not inspect their content.
+
+Dismissing a focused row returns focus to its enqueue-time opener if that element is still eligible.
+Removed, disabled, hidden or inert openers, and openers inside a toast stack, use the same persistent
+stack instead. This named region (a landmark) remains focusable and visibly outlined even when empty.
+Unfocused dismissals do not move focus, and deliberate action focus moves are preserved. The region adds no
+live announcement; polite and assertive regions announce additions only.
+
+**Migration:** set `duration={4000}` on React `ToastProvider` or assign
+`Alpine.store('lyraToasts').duration = 4000` to restore the previous default delay for all tones.
+Per-toast overrides still take precedence. These timing changes apply to React and Alpine; the
+imported Blade API below is unchanged.
+
+Alpine timers belong to the store and continue without a mounted stack. Destroying a renderer
+releases only its own interaction claims; remounting does not reset lifetimes. The singleton
+`lyra:toast` bridge forwards once to the latest registered store and messages remain plain text.
+Reading `duration` initially returns `8000` without configuring it; any assignment, including
+`8000`, makes it explicit. Existing markup needs no new row binding. The stack supplies
+`tabindex="-1"`, `role="region"` and "Notifications" when no accessible label is authored; provide
+`aria-label` or `aria-labelledby` on the stack to localize it. Give coexisting stacks distinct
+accessible names. React `ToastProvider` accepts `aria-label` for its owned notification region.
 
 ## API and code
 

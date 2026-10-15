@@ -1445,3 +1445,49 @@ test('changed Lyra tarballs install independently of the external lock', () => {
     rmSync(fixture, { recursive: true, force: true });
   }
 });
+
+test('toast lifetime caps stay synchronized and reject excess bytes', () => {
+  for (const [key, entryName, configuredLimit, bytes] of [
+    ['react', '@lyra-ds/react/toast-provider', '2.093 kB', 2093],
+    ['alpine', '@lyra-ds/alpine', '27.895 kB', 27895],
+  ]) {
+    const manifest = JSON.parse(
+      readFileSync(join(toolDirectory, '../../packages', key, 'package.json'), 'utf8'),
+    );
+    const entry = manifest['size-limit'].find(
+      (entry) => key === 'alpine' || entry.path === 'dist/toast-provider.js',
+    );
+    assert.equal(entry.limit, configuredLimit);
+    assert.deepEqual(APPROVED_ABSOLUTE_CAPS[entryName], { configuredLimit, bytes });
+    const candidate = approvedBudgetCandidate();
+    candidate.standalone[key].find((entry) => entry.publicEntry === entryName).sizeLimit.size =
+      bytes + 1;
+    assert.throws(
+      () => checkBundleBudgets(budgetReferenceFixture(), candidate),
+      /exceeds absolute cap/,
+    );
+  }
+});
+
+test('toast lifecycle allowance is bounded to Alpine and preserves the React growth ceiling', () => {
+  const candidate = approvedBudgetCandidate();
+  const alpine = candidate.standalone.alpine.find(
+    (entry) => entry.publicEntry === '@lyra-ds/alpine',
+  );
+  alpine.assets.javascript.brotliBytes += 4409;
+  assert.doesNotThrow(() => checkBundleBudgets(budgetReferenceFixture(), candidate));
+  alpine.assets.javascript.brotliBytes += 1;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), candidate),
+    /alpine Brotli increase exceeds approved exception/,
+  );
+
+  const reactCandidate = approvedBudgetCandidate();
+  reactCandidate.standalone.react.find(
+    (entry) => entry.publicEntry === '@lyra-ds/react/toast-provider',
+  ).assets.javascript.brotliBytes += 1501;
+  assert.throws(
+    () => checkBundleBudgets(budgetReferenceFixture(), reactCandidate),
+    /toast-provider Brotli increase exceeds migration ceiling/,
+  );
+});

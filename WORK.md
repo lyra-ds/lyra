@@ -10,6 +10,8 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## Done — current cycle
 
+- [x] Issue #296: CommandPalette all-pointer targets → Codex gpt-6.1-sol/medium, one subpixel-test retry, no escalation. Commit a54f705; five-profile Styles/three-engine React/profile gates pass; independent Sonnet4/4. Trail: `.batuta/runs/2026-10-15-issue296.md`.
+
 - [x] Issue #289: disabled Alpine dropdown commands → Codex gpt-6.1-sol/medium + retry, escalated to gpt-6-astra/high + native Tab fixture retry; gpt-6-luna/low ledger helper. Commit 894bc5c; parent three-engine/profile/package gates and independent Sonnet6/6 pass. Trail: `.batuta/runs/2026-10-15-issue289.md`.
 
 - [x] PR #299 integrated as 2ee316e after all seven checks passed.

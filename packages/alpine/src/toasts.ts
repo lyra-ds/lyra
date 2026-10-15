@@ -1,3 +1,5 @@
+import { isEligibleReturnFocusTarget } from './internal/return-focus';
+
 /** A visual tone supported by a queued notification. */
 export type ToastTone = 'info' | 'success' | 'danger';
 
@@ -5,7 +7,7 @@ export type ToastTone = 'info' | 'success' | 'danger';
 export interface LyraToastOptions {
   /** Visual tone and its default icon. Default: `"info"`. */
   tone?: ToastTone;
-  /** Auto-dismiss delay in milliseconds. `0` disables auto-dismiss for this notification. */
+  /** Overrides the configured or tone-based delay. `0` disables auto-dismiss for this notification. */
   duration?: number;
 }
 
@@ -23,7 +25,7 @@ export interface QueuedToast {
 export interface LyraToastsStore {
   /** The current queue, in the order notifications were added. */
   items: QueuedToast[];
-  /** Default auto-dismiss delay in milliseconds. Default: `4000`. */
+  /** Reads `8000` initially; every assignment explicitly overrides tone defaults for new notifications. Otherwise danger persists and info/success last `8000` ms. Interaction pauses remaining time. */
   duration: number;
   /** Accessible name passed to every toast close button. Default: `"Close notification"`. */
   closeLabel: string;
@@ -66,6 +68,26 @@ interface LyraToastStackMagics {
 
 type LyraToastStackState = LyraToastStackData & LyraToastStackMagics;
 
+interface ToastLifetime {
+  remaining: number;
+  deadline: number;
+  timer?: ReturnType<typeof setTimeout>;
+  claims: Set<symbol>;
+  opener: Element | null;
+}
+
+interface RendererOwnership {
+  roots: Set<HTMLElement>;
+  claim(id: number, reason: symbol, paused: boolean): void;
+  release(reason: symbol): void;
+}
+
+const ownership = new WeakMap<LyraToastsStore, RendererOwnership>();
+
+function rowId(row: Element): number {
+  return Number(row.querySelector<HTMLElement>('[data-toast-id]')?.dataset.toastId);
+}
+
 let nextId = 0;
 let activeToastStore: LyraToastsStore | undefined;
 let toastListenerInstalled = false;
@@ -86,13 +108,57 @@ let toastListenerInstalled = false;
  * takes over the bridge rather than adding another listener.
  */
 export function lyraToasts(): LyraToastsStore {
-  const timers = new Map<number, ReturnType<typeof setTimeout>>();
+  const records = new Map<number, ToastLifetime>();
+  const roots = new Set<HTMLElement>();
+  let configuredDuration: number | undefined;
+
+  function stop(record: ToastLifetime) {
+    if (record.timer === undefined) return;
+    clearTimeout(record.timer);
+    record.timer = undefined;
+    record.remaining = Math.max(0, record.deadline - Date.now());
+  }
+
+  function schedule(id: number, record: ToastLifetime) {
+    if (record.timer !== undefined || record.claims.size || record.remaining < 0) return;
+    record.deadline = Date.now() + record.remaining;
+    const timer = setTimeout(() => {
+      if (records.get(id) === record && record.timer === timer) store.dismiss(id);
+    }, record.remaining);
+    record.timer = timer;
+  }
+
+  const owner: RendererOwnership = {
+    roots,
+    claim(id, reason, paused) {
+      const record = records.get(id);
+      if (!record || record.claims.has(reason) === paused) return;
+      if (paused) {
+        stop(record);
+        record.claims.add(reason);
+      } else {
+        record.claims.delete(reason);
+        schedule(id, record);
+      }
+    },
+    release(reason) {
+      for (const [id] of records) owner.claim(id, reason, false);
+    },
+  };
+  let store: LyraToastsStore;
   const state: LyraToastsStore & ThisType<LyraToastsStore> = {
     items: [],
-    duration: 4000,
+    get duration() {
+      return configuredDuration ?? 8000;
+    },
+    set duration(value: number) {
+      configuredDuration = value;
+    },
     closeLabel: 'Close notification',
 
     init() {
+      store = this;
+      ownership.set(this, owner);
       activeToastStore = this;
       if (toastListenerInstalled) return;
       toastListenerInstalled = true;
@@ -117,12 +183,16 @@ export function lyraToasts(): LyraToastsStore {
       };
       this.items = [...this.items, toast];
 
-      const timeout = options.duration ?? this.duration;
-      if (timeout > 0)
-        timers.set(
-          id,
-          setTimeout(() => this.dismiss(id), timeout),
-        );
+      const timeout =
+        options.duration ?? configuredDuration ?? (toast.tone === 'danger' ? 0 : 8000);
+      const record: ToastLifetime = {
+        remaining: timeout > 0 ? timeout : -1,
+        deadline: 0,
+        claims: new Set(),
+        opener: typeof document === 'undefined' ? null : document.activeElement,
+      };
+      records.set(id, record);
+      schedule(id, record);
       return id;
     },
 
@@ -139,14 +209,30 @@ export function lyraToasts(): LyraToastsStore {
     },
 
     dismiss(id) {
-      const timer = timers.get(id);
-      if (timer !== undefined) {
-        clearTimeout(timer);
-        timers.delete(id);
+      const record = records.get(id);
+      if (!record && !this.items.some((toast) => toast.id === id)) return;
+      records.delete(id);
+      if (record) stop(record);
+      for (const root of roots) {
+        const doc = root.ownerDocument;
+        const row = doc.activeElement?.closest('.lyra-toast');
+        if (!row || !root.contains(row) || rowId(row) !== id) continue;
+        const opener = record?.opener ?? null;
+        if (
+          !opener?.closest('.lyra-toast-stack') &&
+          isEligibleReturnFocusTarget(opener, doc, root, null)
+        ) {
+          opener.focus({ preventScroll: true });
+          if (doc.activeElement === opener) break;
+        }
+        root.focus({ preventScroll: true });
+        break;
       }
       this.items = this.items.filter((toast) => toast.id !== id);
     },
   };
+  store = state;
+  ownership.set(state, owner);
 
   return state;
 }
@@ -207,7 +293,65 @@ export function lyraToasts(): LyraToastsStore {
  * Rich content remains possible through a statically served toast outside this queue.
  */
 export function lyraToastStack(): LyraToastStackData {
-  const state: LyraToastStackData & ThisType<LyraToastStackState> = {
+  let cleanup: (() => void) | undefined;
+  const state: LyraToastStackData & {
+    init(): void;
+    destroy(): void;
+  } & ThisType<LyraToastStackState> = {
+    init() {
+      const root = this.$el;
+      const owner = ownership.get(this.$store.lyraToasts);
+      if (!owner) return;
+      root.tabIndex = -1;
+      root.setAttribute('role', 'region');
+      if (!root.hasAttribute('aria-label') && !root.hasAttribute('aria-labelledby'))
+        root.setAttribute('aria-label', 'Notifications');
+      owner.roots.add(root);
+      const pointer = Symbol();
+      const focus = Symbol();
+      let focusedId: number | undefined;
+      const observer = new MutationObserver(() => {
+        const row = root.ownerDocument.activeElement?.closest('.lyra-toast');
+        if (focusedId !== undefined && (!row || !root.contains(row) || rowId(row) !== focusedId)) {
+          owner.claim(focusedId, focus, false);
+          focusedId = undefined;
+        }
+      });
+      observer.observe(root, { subtree: true, childList: true, attributes: true });
+      const interaction = (event: Event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const row = target.closest('.lyra-toast');
+        if (!row || !root.contains(row)) return;
+        const related =
+          event instanceof FocusEvent || event instanceof MouseEvent ? event.relatedTarget : null;
+        if (related instanceof Node && row.contains(related)) return;
+        const reason = event.type.startsWith('pointer') ? pointer : focus;
+        const id = rowId(row);
+        const entering = event.type === 'pointerover' || event.type === 'focusin';
+        if (reason === focus) {
+          if (entering) {
+            if (focusedId !== undefined && focusedId !== id) owner.claim(focusedId, focus, false);
+            focusedId = id;
+          } else if (focusedId === id) focusedId = undefined;
+        }
+        owner.claim(id, reason, entering);
+      };
+      const events = ['pointerover', 'pointerout', 'focusin', 'focusout'];
+      for (const event of events) root.addEventListener(event, interaction);
+      cleanup = () => {
+        observer.disconnect();
+        for (const event of events) root.removeEventListener(event, interaction);
+        owner.roots.delete(root);
+        owner.release(pointer);
+        owner.release(focus);
+      };
+    },
+
+    destroy() {
+      cleanup?.();
+      cleanup = undefined;
+    },
     get toasts() {
       return this.$store.lyraToasts.items;
     },

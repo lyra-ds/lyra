@@ -1475,7 +1475,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "1.5 kB"
+      "limit": "2.093 kB"
     },
     {
       "name": "import { CookieBanner } from '@lyra-ds/react/cookie-banner'",
