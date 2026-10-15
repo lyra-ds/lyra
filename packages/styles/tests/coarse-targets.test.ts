@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { server } from 'vitest/browser';
 import '../styles.css';
+// Coarse and hybrid browser instances include only this file; run the shared palette suite too.
+import './command-palette-targets.test';
 
 type Target = {
   name: string;
@@ -15,8 +17,6 @@ const targets: Target[] = [
   { name: 'table selection checkbox', selector: '[data-probe="table-check"]', fixedHeight: 18 },
   { name: 'Drawer close button', selector: '[data-probe="drawer-close"]', fixedHeight: 28 },
   { name: 'menu item', selector: '[data-probe="menu-item"]' },
-  { name: 'command item', selector: '[data-probe="command-item"]' },
-  { name: 'command search input', selector: '[data-probe="command-search"]', fixedHeight: 32 },
   { name: 'input', selector: '[data-probe="input"]', fixedHeight: 40 },
   { name: 'workspace slug input', selector: '[data-probe="slug-input"]' },
 ];
@@ -42,7 +42,7 @@ beforeAll(async () => {
       <div class="lyra-segmented" role="radiogroup"><button class="lyra-segmented__option" data-probe="segmented-en">EN</button><button class="lyra-segmented__option" data-probe="segmented-pt">PT</button></div>
       <div class="lyra-menu"><button class="lyra-menu__item" data-probe="menu-item">A</button></div>
       <div class="lyra-cmdk">
-        <label class="lyra-cmdk__search"><input data-probe="command-search" value="A" /></label>
+        <div class="lyra-cmdk__search"><input data-probe="command-search" value="A" /></div>
         <button class="lyra-cmdk__item" data-probe="command-item">A</button>
       </div>
       <input class="lyra-input" data-probe="input" value="A" />
@@ -82,6 +82,14 @@ const configuredPointerProfile = (): PointerProfile => {
 };
 
 describe('coarse-pointer target sizes', () => {
+  it('keeps actual CommandPalette controls at 44px on every pointer profile', () => {
+    for (const selector of ['[data-probe="command-item"]', '[data-probe="command-search"]']) {
+      const { width, height } = box({ name: 'CommandPalette control', selector });
+      expect(width).toBeGreaterThanOrEqual(44);
+      expect(height).toBeGreaterThanOrEqual(44);
+    }
+  });
+
   it('reports the exact real pointer media profile configured for this instance', () => {
     const profile = configuredPointerProfile();
 

@@ -10,6 +10,8 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## Done — current cycle
 
+- [x] Issue #289: disabled Alpine dropdown commands → Codex gpt-6.1-sol/medium + retry, escalated to gpt-6-astra/high + native Tab fixture retry; gpt-6-luna/low ledger helper. Commit 894bc5c; parent three-engine/profile/package gates and independent Sonnet6/6 pass. Trail: `.batuta/runs/2026-10-15-issue289.md`.
+
 - [x] PR #299 integrated as 2ee316e after all seven checks passed.
 - [x] Batuta refresh and starter setup integrated: monorepo #300 (b4ec152), Blade #66, and six starter PRs; independent review and all required checks passed.
 - [x] Both Laravel starters aligned with the published Blade/Alpine/Styles tuple and integrated after PHP8.3/8.4 checks.

@@ -857,3 +857,11 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* Additive extension (parity ADDITIVE_EXTENSIONS): the search row is not an interactive
+   label, so the input itself needs the all-pointer floor and room to shrink on narrow panels. */
+.lyra-cmdk__search input,
+.lyra-cmdk__item {
+  min-width: 44px;
+  min-height: max(44px, var(--control-md));
+}

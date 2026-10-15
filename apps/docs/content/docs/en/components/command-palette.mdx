@@ -118,6 +118,11 @@ Reach for something else when:
 
 ## Accessibility
 
+- In inline and modal mode, the actual search input and command items have a 44px minimum target
+  in both dimensions for fine, coarse and hybrid pointers, without brand configuration. Their
+  minimum height uses `max(44px, var(--control-md))`; set the existing `--control-md` sizing token
+  on the palette or an ancestor (for example, `--control-md: 56px`) to raise it. Smaller values
+  keep the 44px floor.
 - The search input is a `role="combobox"` with `aria-expanded`, `aria-controls`,
   `aria-autocomplete="list"` and `aria-activedescendant`. Results are `role="option"` in a
   `role="listbox"`; labelled groups use `role="group"`.
