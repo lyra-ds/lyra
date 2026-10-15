@@ -5,11 +5,13 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## In progress — current cycle
 
-- [ ] Complete sidebar #186 with compatible native controls, offcanvas and accessible rail hints; release/publication and suspended Wave2 remain separate.
+Sidebar #186 implementation is complete in the integration branch. PR checks and merge are recorded in `.batuta/runs/2026-10-15-sidebar186-delivery.md`. Release/publication, downstream Blade adoption and suspended Wave2 remain separate.
 
 Issue implementations #289 → #296 → #295 are complete with atomic commits. The combined PR delivery trail records required CI and integration separately; publication remains a separate maintainer action.
 
 ## Done — current cycle
+
+- [x] Sidebar #186 native controls and responsive composition → Codex gpt-6-astra/high + one retry, escalated to critical/self for default router callback compatibility. Commit c2fb5b5; 242 integration tests per browser, 72 packed React18/19 native cases, root/build/size/cold gates and independent Sonnet6/6 pass; both scoped UI corrections resolved. Trail: `.batuta/runs/2026-10-15-sidebar186-controls.md`.
 
 - [x] Sidebar #186 clipping-safe Tooltip foundation → Codex gpt-6-astra/high + one retry, escalated to critical/self for verified fixture and activation fixes. Commit 49819fb;38tests per3engines/root/fullbuild/coldpacked pass, independent Sonnet5/5 and bounded Impeccable fixes resolved. ExactTooltip2511Bcap, other72entries unchanged. Trail: `.batuta/runs/2026-10-15-sidebar186-tooltip.md`.
 
