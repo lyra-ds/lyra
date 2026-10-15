@@ -5,10 +5,11 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## In progress — current cycle
 
-- [ ] Correct monorepo issues in order #289 → #296 → #295. Each verified issue receives an atomic commit; final PR CI covers the combined branch.
-- [ ] Toast timing policy confirmed: 8-second info/success defaults, persistent danger notifications, explicit duration precedence, and remaining-time pause on hover/focus. No publication authorized.
+Issue implementations #289 → #296 → #295 are complete with atomic commits. The combined PR delivery trail records required CI and integration separately; publication remains a separate maintainer action.
 
 ## Done — current cycle
+
+- [x] Issue #295: toast timing and focus → Codex gpt-6-astra/high + one retry, escalated to critical/self. Commit 960011c; parent focused15/15/profile24/24 gates and independent Sonnet8/8 pass. Confirmed 8-second info/success defaults, persistent errors, explicit duration precedence and remaining-time pause. Trail: `.batuta/runs/2026-10-15-issue295.md`.
 
 - [x] Issue #296: CommandPalette all-pointer targets → Codex gpt-6.1-sol/medium, one subpixel-test retry, no escalation. Commit a54f705; five-profile Styles/three-engine React/profile gates pass; independent Sonnet4/4. Trail: `.batuta/runs/2026-10-15-issue296.md`.
 
