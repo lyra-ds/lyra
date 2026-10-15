@@ -24,11 +24,21 @@ afterEach(async () => {
   setTheme('light');
 });
 
-// --- Registry smoke: all 79 icons render, light + dark, zero axe violations ------------------
+// --- Registry smoke: all 81 icons render, light + dark, zero axe violations ------------------
 
 describe('Icon — registry smoke (light + dark)', () => {
-  it('the curated registry holds exactly 79 icons', () => {
-    expect(NAMES.length).toBe(79);
+  it('the curated registry holds exactly 81 icons', () => {
+    expect(NAMES.length).toBe(81);
+  });
+
+  it('renders the panel-left and panel-right icons from lucide-react', async () => {
+    const { container } = await render(
+      <>
+        <Icon name="panel-left" />
+        <Icon name="panel-right" />
+      </>,
+    );
+    expect(container.querySelectorAll('svg.lyra-icon')).toHaveLength(2);
   });
 
   for (const theme of THEMES) {

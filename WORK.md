@@ -5,6 +5,8 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## In progress — current cycle
 
+- [ ] Complete sidebar #186 with compatible native controls, offcanvas and accessible rail hints; release/publication and suspended Wave2 remain separate.
+
 Issue implementations #289 → #296 → #295 are complete with atomic commits. The combined PR delivery trail records required CI and integration separately; publication remains a separate maintainer action.
 
 ## Done — current cycle
