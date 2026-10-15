@@ -26,12 +26,18 @@ export const APPROVED_ABSOLUTE_CAPS = {
   '@lyra-ds/react/weekly-schedule-editor': { configuredLimit: '18.7 kB', bytes: 18700 },
   '@lyra-ds/react/tabs': { configuredLimit: '1.6 kB', bytes: 1600 },
   '@lyra-ds/react/breadcrumb': { configuredLimit: '600 B', bytes: 600 },
-  '@lyra-ds/alpine': { configuredLimit: '27.2 kB', bytes: 27200 },
+  // issue295 (2026-10-15): remaining-time ownership, focus reconciliation and region naming.
+  // Pinned Size Limit measures 2093 B for ToastProvider and 27895 B for whole Alpine.
+  '@lyra-ds/react/toast-provider': { configuredLimit: '2.093 kB', bytes: 2093 },
+  '@lyra-ds/alpine': { configuredLimit: '27.895 kB', bytes: 27895 },
 };
 
 const STANDALONE_EXCEPTIONS = {
   // CalendarView + CreateWorkspaceDialog bindings added for React parity (lyra#290, lyra#291); approved by maintainer 2026-09-29.
-  '@lyra-ds/alpine': 3600,
+  // issue295 (2026-10-15): timer/renderer claims, focus reconciliation and public-queue dismissal.
+  // Allow 4409 B over the frozen 26329 B reference for the Alpine default export with alpinejs
+  // external. Enforced by pnpm baseline:bundles --check-budgets; other growth ceilings are unchanged.
+  '@lyra-ds/alpine': 4409,
 };
 const SCENARIO_EXCEPTIONS = {};
 // Complex-or-composition entries keep the 3000-byte migration ceiling; every other entry is simple (1500).

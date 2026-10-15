@@ -33,7 +33,7 @@ function asOwnerDocumentHTMLElement(
   return HTMLElementConstructor && target instanceof HTMLElementConstructor ? target : null;
 }
 
-function isEligibleReturnFocusTarget(
+export function isEligibleReturnFocusTarget(
   target: Element | null,
   ownerDocument: Document,
   panel: HTMLElement | null,

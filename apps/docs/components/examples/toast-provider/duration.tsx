@@ -3,12 +3,22 @@
 import { Button, ToastProvider, useToast } from '@lyra-ds/react';
 
 function PersistentToastButton() {
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
 
   return (
     <Button
       variant="secondary"
-      onClick={() => toast('This reminder stays until dismissed', { duration: 0 })}
+      onClick={() => {
+        const id = toast(
+          <>
+            Review this reminder when ready.{' '}
+            <Button variant="secondary" onClick={() => dismiss(id)}>
+              Done
+            </Button>
+          </>,
+          { duration: 0 },
+        );
+      }}
     >
       Add reminder
     </Button>
@@ -17,7 +27,7 @@ function PersistentToastButton() {
 
 export function ToastProviderDuration() {
   return (
-    <ToastProvider duration={6000}>
+    <ToastProvider duration={6000} aria-label="Persistent reminders">
       <PersistentToastButton />
     </ToastProvider>
   );

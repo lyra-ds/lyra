@@ -654,3 +654,12 @@
     min-height: 44px;
   }
 }
+
+/* The owned dismissal fallback remains perceivable after its last row disappears. */
+.lyra-toast-stack[role='region'][tabindex='-1']:focus {
+  min-width: min(280px, calc(100vw - 2 * var(--space-6)));
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}

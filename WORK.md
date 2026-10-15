@@ -5,11 +5,19 @@ Suspended experiments and immutable evidence remain preserved.
 
 ## In progress — current cycle
 
-- [ ] PR #299 action updates: validator repair verified locally; remote checks pending.
-- [ ] Batuta configuration proposals: awaiting the maintainer's routing choice.
-- [ ] Align the Laravel starters with the published Blade/Alpine/Styles tuple.
+Issue implementations #289 → #296 → #295 are complete with atomic commits. The combined PR delivery trail records required CI and integration separately; publication remains a separate maintainer action.
 
 ## Done — current cycle
+
+- [x] Issue #295: toast timing and focus → Codex gpt-6-astra/high + one retry, escalated to critical/self. Commit 960011c; parent focused15/15/profile24/24 gates and independent Sonnet8/8 pass. Confirmed 8-second info/success defaults, persistent errors, explicit duration precedence and remaining-time pause. Trail: `.batuta/runs/2026-10-15-issue295.md`.
+
+- [x] Issue #296: CommandPalette all-pointer targets → Codex gpt-6.1-sol/medium, one subpixel-test retry, no escalation. Commit a54f705; five-profile Styles/three-engine React/profile gates pass; independent Sonnet4/4. Trail: `.batuta/runs/2026-10-15-issue296.md`.
+
+- [x] Issue #289: disabled Alpine dropdown commands → Codex gpt-6.1-sol/medium + retry, escalated to gpt-6-astra/high + native Tab fixture retry; gpt-6-luna/low ledger helper. Commit 894bc5c; parent three-engine/profile/package gates and independent Sonnet6/6 pass. Trail: `.batuta/runs/2026-10-15-issue289.md`.
+
+- [x] PR #299 integrated as 2ee316e after all seven checks passed.
+- [x] Batuta refresh and starter setup integrated: monorepo #300 (b4ec152), Blade #66, and six starter PRs; independent review and all required checks passed.
+- [x] Both Laravel starters aligned with the published Blade/Alpine/Styles tuple and integrated after PHP8.3/8.4 checks.
 
 - [x] Styles 1.1.1 published from PR #297, commit ddf3711; release workflow and npm verified.
 - [x] CI validators follow the approved action pins → codex/gpt-5.6-terra,

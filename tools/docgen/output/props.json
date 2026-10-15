@@ -3853,7 +3853,13 @@
         "name": "duration",
         "type": "number",
         "optional": true,
-        "description": "Default auto-dismiss delay in milliseconds. `0` disables auto-dismiss. Default: `4000`."
+        "description": "Explicit delay for new notifications, overriding tone defaults. Omitted: info/success `8000`, danger `0`. Interaction pauses remaining time; `0` persists."
+      },
+      {
+        "name": "'aria-label'",
+        "type": "string",
+        "optional": true,
+        "description": "Accessible name of the owned notification region. Use distinct names for coexisting providers. Default: `\"Notifications\"`."
       },
       {
         "name": "closeLabel",
