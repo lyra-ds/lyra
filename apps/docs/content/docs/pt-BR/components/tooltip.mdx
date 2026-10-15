@@ -20,6 +20,12 @@ texto visível — um tooltip é o lugar mais frágil para pôr qualquer coisa q
   tooltip nunca pode ser o único lugar onde o nome de um controle existe.
 </Example>
 
+<Example id="overflow" title="Inside scrolling navigation">
+  Set `escapeClipping` to keep a hint visible beyond an overflow or scroll container. Try the icons,
+  scroll the rail, and switch its scoped theme or direction. The hint stays within the visual
+  viewport.
+</Example>
+
 ## Quando usar
 
 Use Tooltip para esclarecer brevemente um controle cujo propósito já é comunicado pelo próprio nome ou
@@ -28,18 +34,21 @@ Use Tooltip para esclarecer brevemente um controle cujo propósito já é comuni
 Procure outra coisa quando:
 
 - **O texto é o nome do controle** — use o `label` do `IconButton`, ou um rótulo visível.
-- **O conteúdo é longo, ou tem link ou botão** — a bolha é desenhada em CSS e não comporta conteúdo
-  interativo. Use Dialog ou texto inline.
+- **The content is long, or contains a link or a button** — tooltips are brief, non-interactive hints. Use Dialog or inline copy.
 - **A informação importa no toque** — ali não existe hover, e um tooltip que só abre no foco é fácil
   de nunca ver.
 
 ## Acessibilidade
 
-- A bolha visível é desenhada em CSS a partir de um atributo `data-tip`, então não existe nó no DOM
-  com esse texto — ele não é selecionável nem alcançável pelo ponteiro. Um `<span role="tooltip">`
-  oculto à parte carrega as mesmas palavras, e o componente funde um `aria-describedby` no seu filho
-  para a tecnologia assistiva lê-las.
-- É por isso que `tip` é uma string simples, e não um nó.
+- By default, CSS draws the visible bubble from `data-tip`; a separate hidden
+  `<span role="tooltip">` supplies the accessible description. The open React bubble accepts pointer
+  hits, so moving from the target onto the hint keeps it open during the existing leave grace.
+- With `escapeClipping={true}`, a real, non-focusable `<span role="tooltip">` enters the browser's
+  top layer. It remains inside the wrapper in the DOM, preserving scoped theme, brand tokens, fonts
+  and direction, including changes while open. It wraps long labels and clamps its bounds to the
+  visual viewport. Both modes merge `aria-describedby` with your child's existing description.
+- The clipping-safe mode can use another side or a shorter scrolling hint to keep its target reachable.
+- `tip` remains a plain string: neither mode supports interactive content or moves focus into the hint.
 - Abre no hover **e** no foco. `Escape` dispensa sem mover o ponteiro — é exatamente o que a WCAG
   1.4.13 pede de conteúdo mostrado no hover, e o listener fica no documento, porque uma dica aberta
   por hover nunca tem foco dentro dela para receber a tecla.
@@ -59,6 +68,13 @@ Procure outra coisa quando:
 <StackTabs>
   <StackPanel stack="react">
     <StackApi stack="react" />
+
+`escapeClipping` is opt-in and defaults to `false`. The default keeps the existing CSS-drawn markup
+and behavior; the public ref still targets the wrapper span in both modes. Use the opt-in for scroll
+or overflow ancestors: a higher z-index alone cannot escape their clipping. Opening and closing use
+the same delays, hover transit, focus handling and Escape arbitration. This is a React capability;
+canonical HTML, Alpine and Blade contracts are unchanged.
+
   </StackPanel>
 
   <StackPanel stack="alpine">

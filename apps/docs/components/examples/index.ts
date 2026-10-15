@@ -75,6 +75,7 @@ import { ProgressTones } from './progress/tones';
 import { SpinnerSizes } from './spinner/sizes';
 import { SpinnerInContext } from './spinner/in-context';
 import { TooltipButton } from './tooltip/button';
+import { TooltipOverflow } from './tooltip/overflow';
 import { TooltipIconButton } from './tooltip/icon-button';
 import { CookieBannerDefaultCopy } from './cookie-banner/default-copy';
 import { CookieBannerCustomCopy } from './cookie-banner/custom-copy';
@@ -521,6 +522,7 @@ export const examples: Record<string, Record<string, ComponentType>> = {
     'in-context': SpinnerInContext,
   },
   tooltip: {
+    overflow: TooltipOverflow,
     button: TooltipButton,
     'icon-button': TooltipIconButton,
   },

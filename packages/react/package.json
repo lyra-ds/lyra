@@ -1335,7 +1335,7 @@
         "react",
         "react-dom"
       ],
-      "limit": "2.1 kB"
+      "limit": "2.511 kB"
     },
     {
       "name": "import { Select } from '@lyra-ds/react/select'",

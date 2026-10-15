@@ -1309,7 +1309,13 @@
         "name": "placement",
         "type": "TooltipPlacement",
         "optional": true,
-        "description": "Side of the target to draw the tip on. Default `\"top\"`. The tip flips to the opposite side on\nits own when the chosen one would be clipped by the viewport, so this is a preference."
+        "description": "Side of the target to draw the tip on. Default `\"top\"`. The tip flips to the opposite side on\nits own when the chosen one would be clipped by the viewport, so this is a preference.\nClipping escape can use another side or limit the hint's height to keep the target reachable."
+      },
+      {
+        "name": "escapeClipping",
+        "type": "boolean",
+        "optional": true,
+        "description": "Escape overflow and scroll clipping while keeping the hint inside the visual viewport. Default `false`."
       }
     ]
   },

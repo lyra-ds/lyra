@@ -291,3 +291,27 @@
   font: var(--caption-font);
   margin-block: var(--space-2) 0;
 }
+
+.lw-tooltip-overflow-demo {
+  width: 100%;
+  padding: var(--space-4);
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+.lw-tooltip-overflow-demo__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.lw-tooltip-overflow-demo__clip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 80px;
+  height: 160px;
+  overflow: auto;
+  padding-block: var(--space-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}

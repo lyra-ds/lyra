@@ -327,6 +327,15 @@ function approvedBudgetCandidate() {
   candidate.environment.fixture.sourceSha256 = APPROVED_FIXTURE_SOURCE_SHA256;
   for (const entries of Object.values(candidate.standalone)) {
     for (const entry of entries) {
+      if (entry.publicEntry === '@lyra-ds/react/icon') {
+        entry.name =
+          "import { Icon } from '@lyra-ds/react/icon' (81 curated names, Lucide measured)";
+        entry.sizeLimit.name = entry.name;
+      }
+      if (entry.publicEntry === '@lyra-ds/react/combobox') {
+        entry.name = 'Combobox (three fixed chrome glyphs)';
+        entry.sizeLimit.name = entry.name;
+      }
       const cap = APPROVED_ABSOLUTE_CAPS[entry.publicEntry];
       if (cap) {
         entry.configuredLimit = cap.configuredLimit;
@@ -446,9 +455,23 @@ test('native budget check rejects migration and absolute-cap breaches without tr
   );
 
   const overCap = approvedBudgetCandidate();
-  overCap.standalone.react.find(
+  const tooltip = overCap.standalone.react.find(
     (entry) => entry.publicEntry === '@lyra-ds/react/tooltip',
-  ).sizeLimit.size = 2101;
+  );
+  const manifest = JSON.parse(
+    readFileSync(join(toolDirectory, '../../packages/react/package.json'), 'utf8'),
+  );
+  assert.equal(
+    manifest['size-limit'].find((entry) => entry.path === 'dist/tooltip.js').limit,
+    '2.511 kB',
+  );
+  assert.deepEqual(APPROVED_ABSOLUTE_CAPS['@lyra-ds/react/tooltip'], {
+    configuredLimit: '2.511 kB',
+    bytes: 2511,
+  });
+  tooltip.sizeLimit.size = 2511;
+  assert.equal(checkBundleBudgets(budgetReferenceFixture(), overCap).result, 'pass');
+  tooltip.sizeLimit.size = 2512;
   assert.throws(
     () => checkBundleBudgets(budgetReferenceFixture(), overCap),
     /tooltip exceeds absolute cap/,
@@ -530,6 +553,52 @@ test('native budget check rejects unapproved import, protocol, and configured-ca
     () => checkBundleBudgets(budgetReferenceFixture(), capChanged),
     /unapproved Size Limit cap/,
   );
+});
+
+test('native budget check accepts only the exact current Icon and Combobox descriptions', () => {
+  const manifest = JSON.parse(
+    readFileSync(join(toolDirectory, '../../packages/react/package.json'), 'utf8'),
+  );
+  const candidate = approvedBudgetCandidate();
+  for (const [publicEntry, path, name] of [
+    [
+      '@lyra-ds/react/icon',
+      'dist/icon.js',
+      "import { Icon } from '@lyra-ds/react/icon' (81 curated names, Lucide measured)",
+    ],
+    ['@lyra-ds/react/combobox', 'dist/combobox.js', 'Combobox (three fixed chrome glyphs)'],
+  ]) {
+    assert.equal(manifest['size-limit'].find((entry) => entry.path === path).name, name);
+    const entry = candidate.standalone.react.find((entry) => entry.publicEntry === publicEntry);
+    assert.equal(entry.name, name);
+    assert.equal(entry.sizeLimit.name, name);
+  }
+  assert.equal(checkBundleBudgets(budgetReferenceFixture(), candidate).result, 'pass');
+});
+
+test('native budget check rejects arbitrary descriptions even when Size Limit names agree', () => {
+  for (const [publicEntry, name] of [
+    ['@lyra-ds/react/icon', 'Icon (arbitrary label)'],
+    [
+      '@lyra-ds/react/icon',
+      "import { Icon } from '@lyra-ds/react/icon' (82 curated names, Lucide measured)",
+    ],
+    [
+      '@lyra-ds/react/icon',
+      "import { OtherIcon } from '@lyra-ds/react/icon' (81 curated names, Lucide measured)",
+    ],
+    ['@lyra-ds/react/combobox', 'Combobox (arbitrary label)'],
+    ['@lyra-ds/react/combobox', 'Combobox (four fixed chrome glyphs)'],
+    ['@lyra-ds/react/button', 'Combobox (three fixed chrome glyphs)'],
+  ]) {
+    const candidate = approvedBudgetCandidate();
+    const entry = candidate.standalone.react.find((entry) => entry.publicEntry === publicEntry);
+    entry.name = name;
+    entry.sizeLimit.name = name;
+    assert.throws(() => checkBundleBudgets(budgetReferenceFixture(), candidate), {
+      message: `bundle budget check: unapproved import change for ${publicEntry}`,
+    });
+  }
 });
 
 function fileUploadBaselineFixture({

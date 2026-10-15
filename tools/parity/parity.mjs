@@ -410,6 +410,53 @@ const OVERLINE_LABELS = [
   ['components/scheduling/scheduling.css', '.lyra-calview__head-cell', '0.04em'],
 ];
 
+// Clipping escape is an exact additive contract, never a broad Tooltip class allowance.
+const TOOLTIP_ESCAPE_ADDITIONS = [
+  [['.lyra-tooltip--escape::after'], { content: 'none' }],
+  [
+    ['.lyra-tooltip__surface'],
+    {
+      position: 'fixed',
+      inset: 'auto',
+      margin: '0',
+      'box-sizing': 'border-box',
+      width: 'max-content',
+      overflow: 'auto',
+      'overscroll-behavior': 'contain',
+      background: 'var(--slate-900)',
+      color: '#fff',
+      'font-family': 'var(--font-sans)',
+      'font-size': 'var(--text-xs)',
+      'font-weight': 'var(--weight-medium)',
+      'line-height': '1.4',
+      padding: '5px 10px',
+      border: '0',
+      'border-radius': 'var(--radius-sm)',
+      'white-space': 'normal',
+      'overflow-wrap': 'anywhere',
+      'text-align': 'start',
+      'pointer-events': 'auto',
+    },
+  ],
+  [
+    ['@scope ([data-theme="dark"]) to ([data-theme="light"])', '.lyra-tooltip__surface'],
+    {
+      background: 'var(--night-700)',
+      border: '1px solid var(--border-strong)',
+    },
+  ],
+  [['.lyra-tooltip__surface::backdrop'], { 'pointer-events': 'none' }],
+  [
+    ['@media (forced-colors: active)', '.lyra-tooltip--escape .lyra-tooltip__surface'],
+    {
+      background: 'Canvas',
+      color: 'CanvasText',
+      border: '1px solid CanvasText',
+    },
+  ],
+];
+const TOOLTIP_ESCAPE_CLASSES = new Set(['.lyra-tooltip--escape', '.lyra-tooltip__surface']);
+
 // Documented additive extensions (D-18/D-19): the Dialog pilot's exit-animation and
 // close-button visuals live in the CSS package but have NO handoff counterpart, because
 // the prototype borrowed .lyra-tag__remove + an inline 28px override (D-19) and had no
@@ -687,6 +734,18 @@ const ADDITIVE_CLASS_SELECTORS = new Set(
  * allowlist and still fails.
  */
 function isAdditiveExtension(relPath, decl) {
+  if (
+    relPath === 'components/feedback/feedback.css' &&
+    decl.blockPath.some((block) =>
+      /\.lyra-tooltip(?:--escape|__surface)(?![a-zA-Z0-9_-])/.test(block),
+    )
+  ) {
+    return TOOLTIP_ESCAPE_ADDITIONS.some(
+      ([path, declarations]) =>
+        JSON.stringify(path) === JSON.stringify(decl.blockPath) &&
+        declarations[decl.prop] === decl.val,
+    );
+  }
   const ext = ADDITIVE_EXTENSIONS[relPath];
   if (!ext) return false;
   const root = decl.blockPath[0] || '';
@@ -1267,6 +1326,7 @@ function classCheck(baseline) {
     if (!pkg.has(c)) fail(`Class ${c}: missing from package components — handoff/ is canonical`);
   }
   for (const c of pkg) {
+    if (TOOLTIP_ESCAPE_CLASSES.has(c)) continue;
     if (ADDITIVE_CLASS_SELECTORS.has(c)) continue; // documented additive extension (D-18/D-19)
     if (!handoff.has(c))
       fail(`Class ${c}: present in package but not in canonical handoff — handoff/ is canonical`);

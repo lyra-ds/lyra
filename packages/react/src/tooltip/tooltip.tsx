@@ -29,15 +29,18 @@ export interface TooltipProps extends HTMLAttributes<HTMLSpanElement> {
   /**
    * Side of the target to draw the tip on. Default `"top"`. The tip flips to the opposite side on
    * its own when the chosen one would be clipped by the viewport, so this is a preference.
+   * Clipping escape can use another side or limit the hint's height to keep the target reachable.
    */
   placement?: TooltipPlacement;
+  /** Escape overflow and scroll clipping while keeping the hint inside the visual viewport. Default `false`. */
+  escapeClipping?: boolean;
 }
 
 /**
  * A hover- and focus-triggered tooltip.
  *
- * The shipped stylesheet owns visual presentation through `data-tip`; the hidden DOM node gives
- * assistive technologies a real `role="tooltip"` target without duplicating visible text.
+ * The stylesheet draws the default bubble through `data-tip`, with a hidden accessible description.
+ * Clipping escape uses a visible top-layer descendant styled by the same shared stylesheet.
  */
 export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(function Tooltip(
   {
@@ -46,6 +49,7 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
     id,
     className,
     placement = 'top',
+    escapeClipping = false,
     onMouseEnter,
     onMouseLeave,
     onFocus,
@@ -72,7 +76,13 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
   const targetRef = useRef<Element | null>(null);
   const tipRef = useRef(tip);
   tipRef.current = tip;
-  const resolvedPlacement = useTooltipPlacement(open, placement, rootRef);
+  const surfaceRef = useRef<HTMLSpanElement | null>(null);
+  const resolvedPlacement = useTooltipPlacement(
+    open,
+    placement,
+    rootRef,
+    escapeClipping ? surfaceRef : undefined,
+  );
 
   const clearOpenTimer = useCallback((): void => {
     if (openTimerRef.current !== undefined) {
@@ -224,6 +234,7 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
       id={rootId}
       className={cx(
         'lyra-tooltip',
+        escapeClipping && 'lyra-tooltip--escape',
         resolvedPlacement !== 'top' && `lyra-tooltip--${resolvedPlacement}`,
         className,
       )}
@@ -270,9 +281,22 @@ export const Tooltip = /*#__PURE__*/ forwardRef<HTMLSpanElement, TooltipProps>(f
       }}
     >
       {target}
-      <span id={tooltipId} role="tooltip" hidden>
-        {tip}
-      </span>
+      {escapeClipping && open ? (
+        <span
+          ref={surfaceRef}
+          id={tooltipId}
+          role="tooltip"
+          popover="manual"
+          tabIndex={-1}
+          className="lyra-tooltip__surface"
+        >
+          {tip}
+        </span>
+      ) : (
+        <span id={tooltipId} role="tooltip" hidden>
+          {tip}
+        </span>
+      )}
     </span>
   );
 });
