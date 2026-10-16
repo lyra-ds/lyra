@@ -1,5 +1,32 @@
 # @lyra-ds/alpine
 
+## 2.0.0
+
+### Major Changes
+
+- [#301](https://github.com/lyra-ds/lyra/pull/301) [`960011c`](https://github.com/lyra-ds/lyra/commit/960011c17bb5e4969e43fe8130754bb10fed1938) Thanks [@franciscpd](https://github.com/franciscpd)! - Change implicit toast duration to 8000 ms for info/success and persistent for danger/error.
+  Per-toast durations override explicit global configuration, including 0 and explicit global 8000.
+  Only newly queued notifications use configuration changes; retained React methods read committed
+  configuration. Pointer and focus interaction independently pause remaining time. Use an explicit
+  `duration: 0` for action-bearing React messages.
+  
+  Dismissal of a focused row restores its eligible opener or its persistent named notification region
+  (a landmark), including after the last row disappears. The fallback has a CSS focus indicator.
+  React `ToastProvider` accepts the standard optional `aria-label` to name coexisting notification
+  regions distinctly; the default name remains "Notifications". Existing Alpine
+  markup remains supported without an additional row binding. Announcement regions and standalone
+  Toast/ToastStack contracts are preserved. React teardown invalidates retained calls and SSR calls create no state or timers. Alpine store
+  timers continue without a renderer and renderer teardown releases only its own pause claims.
+  
+  Migration: set React `<ToastProvider duration={4000}>` or assign
+  `Alpine.store('lyraToasts').duration = 4000` to retain the previous delay for every tone. Explicit
+  per-toast durations still take precedence. Coordinate these React/Alpine releases with the Styles
+  focus fallback update; imported Blade contracts are unchanged and compatibility is not asserted.
+
+### Patch Changes
+
+- [#301](https://github.com/lyra-ds/lyra/pull/301) [`894bc5c`](https://github.com/lyra-ds/lyra/commit/894bc5cfc764970b878caf0c9e08166e0b08f7f9) Thanks [@franciscpd](https://github.com/franciscpd)! - Prevent disabled Alpine dropdown commands from activating consumer actions, following links, submitting forms or closing the menu. Skip native-disabled commands during keyboard navigation and typeahead while keeping ARIA-disabled commands keyboard discoverable. Add shared disabled menu item styling in light and dark themes. Keep all-native-disabled menus keyboard closable from their trigger and prevent disabled press transforms.
+
 ## 1.2.0
 
 ### Minor Changes
