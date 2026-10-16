@@ -1,5 +1,40 @@
 # @lyra-ds/react
 
+## 2.0.0
+
+### Major Changes
+
+- [#301](https://github.com/lyra-ds/lyra/pull/301) [`960011c`](https://github.com/lyra-ds/lyra/commit/960011c17bb5e4969e43fe8130754bb10fed1938) Thanks [@franciscpd](https://github.com/franciscpd)! - Change implicit toast duration to 8000 ms for info/success and persistent for danger/error.
+  Per-toast durations override explicit global configuration, including 0 and explicit global 8000.
+  Only newly queued notifications use configuration changes; retained React methods read committed
+  configuration. Pointer and focus interaction independently pause remaining time. Use an explicit
+  `duration: 0` for action-bearing React messages.
+  
+  Dismissal of a focused row restores its eligible opener or its persistent named notification region
+  (a landmark), including after the last row disappears. The fallback has a CSS focus indicator.
+  React `ToastProvider` accepts the standard optional `aria-label` to name coexisting notification
+  regions distinctly; the default name remains "Notifications". Existing Alpine
+  markup remains supported without an additional row binding. Announcement regions and standalone
+  Toast/ToastStack contracts are preserved. React teardown invalidates retained calls and SSR calls create no state or timers. Alpine store
+  timers continue without a renderer and renderer teardown releases only its own pause claims.
+  
+  Migration: set React `<ToastProvider duration={4000}>` or assign
+  `Alpine.store('lyraToasts').duration = 4000` to retain the previous delay for every tone. Explicit
+  per-toast durations still take precedence. Coordinate these React/Alpine releases with the Styles
+  focus fallback update; imported Blade contracts are unchanged and compatibility is not asserted.
+
+### Minor Changes
+
+- [#303](https://github.com/lyra-ds/lyra/pull/303) [`3718b18`](https://github.com/lyra-ds/lyra/commit/3718b18e954a3dd244b0836bd9cffee3e8633227) Thanks [@franciscpd](https://github.com/franciscpd)! - Add `panel-left` and `panel-right` to the curated `IconName` registry. Isolate Combobox's fixed chrome glyphs from the full registry to keep composed entries within their existing size budgets.
+
+- [#303](https://github.com/lyra-ds/lyra/pull/303) [`c2fb5b5`](https://github.com/lyra-ds/lyra/commit/c2fb5b537f6f49c14f1963bab2daf11ba4bb1cf9) Thanks [@franciscpd](https://github.com/franciscpd)! - Add controlled AppSidebarTrigger and Drawer-backed AppSidebarOffcanvas companions on the existing
+  app-sidebar entry. Preserve existing AppSidebar defaults while adding opt-in clipping-safe rail
+  hints, local compact density and scoped sidebar color and mobile-width aliases. The first-party
+  application-shell example demonstrates independent desktop/mobile state, native navigation and
+  breakpoint focus reconciliation. Existing HTML, Alpine and Blade producer contracts are unchanged.
+
+- [#303](https://github.com/lyra-ds/lyra/pull/303) [`49819fb`](https://github.com/lyra-ds/lyra/commit/49819fba1f71848665a71ee69e4aba30a9e2abd0) Thanks [@franciscpd](https://github.com/franciscpd)! - Add the opt-in `Tooltip` prop `escapeClipping` for hover and focus hints inside scrolling or clipped containers. The visible hint escapes clipping through the native top layer, retains scoped styling, and wraps and positions within the visual viewport. Existing timing, Escape ownership, accessible descriptions and wrapper refs are preserved; the default CSS-drawn mode is unchanged. Use the React and Styles updates together for this new mode. HTML, Alpine and Blade contracts are unchanged.
+
 ## 1.1.0
 
 ### Minor Changes
