@@ -10,26 +10,32 @@ own public surface requires; an unchanged package keeps its version. When a shar
 state, or behavior contract changes, the affected packages still release in one documented window
 with a shared compatibility and migration record.
 
-## Release target
+## Coordinated versions
 
-The pending patch changeset produces the release-facing versions below. Package manifests remain at
-their previously published versions until release automation applies that changeset.
+The coordinated release pairs `@lyra-ds/styles` **1.2.0**, `@lyra-ds/react` **2.0.0**,
+and `@lyra-ds/alpine` **2.0.0**. Update all three packages together when using both adapters;
+otherwise update Styles and the adapter you use together.
 
-| Package           | Release version | Peers                                  |
+| Package           | Release version | Peers (unchanged)                      |
 | ----------------- | --------------- | -------------------------------------- |
-| `@lyra-ds/styles` | 1.0.2           | none                                   |
-| `@lyra-ds/react`  | 1.0.2           | `react >=18 <20`, `react-dom >=18 <20` |
-| `@lyra-ds/alpine` | 1.0.0           | `alpinejs >=3.13 <4`                   |
+| `@lyra-ds/styles` | 1.2.0           | none                                   |
+| `@lyra-ds/react`  | 2.0.0           | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/alpine` | 2.0.0           | `alpinejs >=3.13 <4`                   |
+
+Compatibility qualification and registry availability are separate facts. Check the npm registry
+for availability of each exact package version; this guide records tested compatibility.
 
 ## Tested compatibility
 
-| Styles range | React range | Alpine range | Status                          |
-| ------------ | ----------- | ------------ | ------------------------------- |
-| `=1.0.2`     | `=1.0.2`    | `=1.0.0`     | Qualified for the 1.0.2 release |
+| Styles range | React range | Alpine range | Status                                           |
+| ------------ | ----------- | ------------ | ------------------------------------------------ |
+| `=1.2.0`     | `=2.0.0`    | `=2.0.0`     | Tested coordinated tuple                         |
+| `=1.0.2`     | `=1.0.2`    | `=1.0.0`     | Historical tuple qualified for the 1.0.2 release |
 
-These exact ranges are deliberately narrow: they record combinations the project has tested, not
-every combination an npm resolver can install. A later package release expands or replaces the row
-only after the shared contract has been verified.
+These exact ranges record tested combinations, not every combination an npm resolver can install.
+The coordinated tuple was checked with the full Chromium, Firefox, and WebKit workspace browser
+suites, packed React/Styles consumers with React **18.3.1** and **19.2.8**, and cold consumer bundles
+for all three packages. This does not qualify every version allowed by the peer ranges.
 
 ## Reading the matrix
 
@@ -42,17 +48,51 @@ only after the shared contract has been verified.
 
 ## Lyra v1.0 suite
 
-The Lyra v1.0 suite release target is the qualified Styles `1.0.2`, React `1.0.2`, and Alpine `1.0.0`
-tuple above. Later package releases expand or replace the tested row only after the shared contract
-has been verified.
+The historical Lyra v1.0 suite used the qualified Styles `1.0.2`, React `1.0.2`, and Alpine `1.0.0`
+tuple above. It remains a historical compatibility record, separate from the coordinated
+Styles `1.2.0`, React `2.0.0`, and Alpine `2.0.0` tuple. Independent package versions do not imply compatibility with arbitrary older companions.
+
+## Coordinated migration
+
+### Toast timing and focus
+
+React `2.0.0` and Alpine `2.0.0` change the implicit toast policy: info/success last **8000 ms**,
+while danger, including `error()`, stays until dismissed. Duration is resolved when each notification
+is queued: per-toast `duration` overrides explicit provider/store configuration, which overrides
+the implicit tone policy. **`0` always means persistent**, including as a per-toast override.
+
+To restore the previous **4000 ms** delay for every tone, set `duration={4000}` on React
+`ToastProvider` or assign `Alpine.store('lyraToasts').duration = 4000`. Per-toast overrides still win.
+An explicit global `8000` makes every tone, including danger/error, expire after 8000 ms unless a
+per-toast override applies. Configuration changes affect **newly queued notifications only**;
+existing notifications retain their resolved durations.
+
+Pointer hover and focus inside a row independently pause its remaining time. The countdown resumes
+only when both leave; moving between descendants does not restart it. Give action-bearing React
+messages an explicit `{ duration: 0 }`; the provider does not inspect their content.
+
+Dismissing a focused row returns focus to its enqueue-time opener if it is still eligible. Removed,
+disabled, hidden or inert openers, and openers inside a toast stack, fall back to the persistent named
+notification region (a landmark). The region remains focusable and visibly outlined even after the
+last toast disappears. Unfocused dismissals do not move focus, and deliberate action focus moves
+are preserved. The fallback region adds no live announcement; polite and assertive regions announce
+additions only.
+
+Use Styles `1.2.0` with these adapter releases for the CSS focus fallback. See
+[Toast timing and dismissal](../components/toast#timing-and-dismissal) for the component guidance.
+
+### Sidebar and clipping APIs
+
+The new React `AppSidebarTrigger`, `AppSidebarOffcanvas`, opt-in sidebar rail hints and compact
+density, and `Tooltip` `escapeClipping` mode require the Styles `1.2.0` companion. Use the coordinated
+tuple above; this record does not qualify these APIs or the toast focus fallback with older Styles.
 
 ## Blade compatibility
 
-The current downstream release is `lyra-ds/blade` v0.10.0, a separately released Composer package
-with independent SemVer. It does not block the Lyra v1.0 suite, and compatibility with Styles and
-Alpine must come from the
-[Blade compatibility matrix](https://github.com/lyra-ds/blade#compatibility), not from the npm tuple
-above.
+`lyra-ds/blade` is an independently versioned and released downstream Composer package. Its support
+boundary comes from the [Blade compatibility matrix](https://github.com/lyra-ds/blade#compatibility).
+The npm tuple and migration above do not qualify Blade compatibility. Blade does not block the
+historical Lyra v1.0 suite.
 
 ## Fonts
 

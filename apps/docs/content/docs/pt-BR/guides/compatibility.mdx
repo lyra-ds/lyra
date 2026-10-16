@@ -1,66 +1,106 @@
 ---
-title: Compatibilidade
-description: Quais versões de pacote andam juntas, e quais peers cada uma espera.
+title: Compatibility
+description: Which package versions belong together, and which peers each one expects.
 ---
 
-# Compatibilidade
+# Compatibility
 
-Styles, React e Alpine são publicados com SemVer independente. Cada pacote recebe apenas o bump que
-sua própria superfície pública exige; um pacote sem mudanças mantém a versão. Quando um contrato
-compartilhado de CSS, markup, estado ou comportamento muda, os pacotes afetados ainda são publicados
-em uma mesma janela documentada, com um registro conjunto de compatibilidade e migração.
+Styles, React, and Alpine release with independent SemVer. Each package receives only the bump its
+own public surface requires; an unchanged package keeps its version. When a shared CSS, markup,
+state, or behavior contract changes, the affected packages still release in one documented window
+with a shared compatibility and migration record.
 
-## Alvo da versão
+## Coordinated versions
 
-O changeset patch pendente produz as versões da publicação abaixo. Os manifests dos pacotes mantêm
-as versões publicadas anteriormente até que a automação de release aplique esse changeset.
+The coordinated release pairs `@lyra-ds/styles` **1.2.0**, `@lyra-ds/react` **2.0.0**,
+and `@lyra-ds/alpine` **2.0.0**. Update all three packages together when using both adapters;
+otherwise update Styles and the adapter you use together.
 
-| Pacote            | Versão da publicação | Peers                                  |
-| ----------------- | -------------------- | -------------------------------------- |
-| `@lyra-ds/styles` | 1.0.2                | nenhum                                 |
-| `@lyra-ds/react`  | 1.0.2                | `react >=18 <20`, `react-dom >=18 <20` |
-| `@lyra-ds/alpine` | 1.0.0                | `alpinejs >=3.13 <4`                   |
+| Package           | Release version | Peers (unchanged)                      |
+| ----------------- | --------------- | -------------------------------------- |
+| `@lyra-ds/styles` | 1.2.0           | none                                   |
+| `@lyra-ds/react`  | 2.0.0           | `react >=18 <20`, `react-dom >=18 <20` |
+| `@lyra-ds/alpine` | 2.0.0           | `alpinejs >=3.13 <4`                   |
 
-## Compatibilidade testada
+Compatibility qualification and registry availability are separate facts. Check the npm registry
+for availability of each exact package version; this guide records tested compatibility.
 
-| Faixa do Styles | Faixa do React | Faixa do Alpine | Status                                   |
-| --------------- | -------------- | --------------- | ---------------------------------------- |
-| `=1.0.2`        | `=1.0.2`       | `=1.0.0`        | Qualificadas para a versão 1.0.2 do Lyra |
+## Tested compatibility
 
-Essas faixas exatas são intencionalmente estreitas: elas registram combinações testadas pelo
-projeto, não toda combinação que um resolvedor npm consegue instalar. Uma versão posterior de um
-pacote só amplia ou substitui a linha depois da verificação do contrato compartilhado.
+| Styles range | React range | Alpine range | Status                                           |
+| ------------ | ----------- | ------------ | ------------------------------------------------ |
+| `=1.2.0`     | `=2.0.0`    | `=2.0.0`     | Tested coordinated tuple                         |
+| `=1.0.2`     | `=1.0.2`    | `=1.0.0`     | Historical tuple qualified for the 1.0.2 release |
 
-## Como ler a matriz
+These exact ranges record tested combinations, not every combination an npm resolver can install.
+The coordinated tuple was checked with the full Chromium, Firefox, and WebKit workspace browser
+suites, packed React/Styles consumers with React **18.3.1** and **19.2.8**, and cold consumer bundles
+for all three packages. This does not qualify every version allowed by the peer ranges.
 
-- **Styles é o contrato visual compartilhado.** React e Alpine emitem suas classes `.lyra-*`; use
-  uma linha testada em vez de presumir que números de versão iguais são compatíveis.
-- **React e Alpine não dependem um do outro.** Instale apenas o adaptador usado pelo seu aplicativo,
-  ou ambos quando superfícies diferentes precisarem deles.
-- **Releases de contrato compartilhado são coordenados, não forçados.** Cada pacote afetado recebe
-  seu próprio bump na mesma janela; pacotes não afetados mantêm suas versões.
+## Reading the matrix
 
-## Suíte Lyra v1.0
+- **Styles is the shared visual contract.** React and Alpine emit its `.lyra-*` classes, so use a
+  tested row instead of assuming matching version numbers are compatible.
+- **React and Alpine do not depend on each other.** Install only the adapter your application uses,
+  or both when separate surfaces need them.
+- **Shared-contract releases are coordinated, not forced.** Every affected package receives its own
+  bump in the same release window; unaffected packages retain their versions.
 
-O alvo da suíte Lyra v1.0 é a tupla qualificada Styles `1.0.2`, React `1.0.2` e Alpine `1.0.0` acima.
-Lançamentos posteriores de pacote só ampliam ou substituem a linha testada depois que o contrato
-compartilhado for verificado.
+## Lyra v1.0 suite
 
-## Compatibilidade do Blade
+The historical Lyra v1.0 suite used the qualified Styles `1.0.2`, React `1.0.2`, and Alpine `1.0.0`
+tuple above. It remains a historical compatibility record, separate from the coordinated
+Styles `1.2.0`, React `2.0.0`, and Alpine `2.0.0` tuple. Independent package versions do not imply compatibility with arbitrary older companions.
 
-A versão downstream atual é `lyra-ds/blade` v0.10.0, um pacote Composer publicado separadamente e
-com SemVer independente. Ela não bloqueia a suíte Lyra v1.0, e a compatibilidade com Styles e Alpine
-deve vir da
-[matriz de compatibilidade do Blade](https://github.com/lyra-ds/blade#compatibility), não da tupla npm
-acima.
+## Coordinated migration
 
-## Fontes
+### Toast timing and focus
 
-Plus Jakarta Sans e JetBrains Mono são peers de todo o sistema, nunca embutidas:
+React `2.0.0` and Alpine `2.0.0` change the implicit toast policy: info/success last **8000 ms**,
+while danger, including `error()`, stays until dismissed. Duration is resolved when each notification
+is queued: per-toast `duration` overrides explicit provider/store configuration, which overrides
+the implicit tone policy. **`0` always means persistent**, including as a per-toast override.
+
+To restore the previous **4000 ms** delay for every tone, set `duration={4000}` on React
+`ToastProvider` or assign `Alpine.store('lyraToasts').duration = 4000`. Per-toast overrides still win.
+An explicit global `8000` makes every tone, including danger/error, expire after 8000 ms unless a
+per-toast override applies. Configuration changes affect **newly queued notifications only**;
+existing notifications retain their resolved durations.
+
+Pointer hover and focus inside a row independently pause its remaining time. The countdown resumes
+only when both leave; moving between descendants does not restart it. Give action-bearing React
+messages an explicit `{ duration: 0 }`; the provider does not inspect their content.
+
+Dismissing a focused row returns focus to its enqueue-time opener if it is still eligible. Removed,
+disabled, hidden or inert openers, and openers inside a toast stack, fall back to the persistent named
+notification region (a landmark). The region remains focusable and visibly outlined even after the
+last toast disappears. Unfocused dismissals do not move focus, and deliberate action focus moves
+are preserved. The fallback region adds no live announcement; polite and assertive regions announce
+additions only.
+
+Use Styles `1.2.0` with these adapter releases for the CSS focus fallback. See
+[Toast timing and dismissal](../components/toast#timing-and-dismissal) for the component guidance.
+
+### Sidebar and clipping APIs
+
+The new React `AppSidebarTrigger`, `AppSidebarOffcanvas`, opt-in sidebar rail hints and compact
+density, and `Tooltip` `escapeClipping` mode require the Styles `1.2.0` companion. Use the coordinated
+tuple above; this record does not qualify these APIs or the toast focus fallback with older Styles.
+
+## Blade compatibility
+
+`lyra-ds/blade` is an independently versioned and released downstream Composer package. Its support
+boundary comes from the [Blade compatibility matrix](https://github.com/lyra-ds/blade#compatibility).
+The npm tuple and migration above do not qualify Blade compatibility. Blade does not block the
+historical Lyra v1.0 suite.
+
+## Fonts
+
+Plus Jakarta Sans and JetBrains Mono are peers of the whole system, never bundled:
 
 ```bash
 npm i @fontsource/plus-jakarta-sans @fontsource/jetbrains-mono
 ```
 
-Instalá-las você mesmo é o que permite controlar como elas carregam — auto-hospedadas, com subset,
-com preload ou trocadas pela fonte da sua marca via `--brand-font`.
+Installing them yourself is what lets you control how they load — self-hosted, subset, preloaded or
+swapped for your own brand face through `--brand-font`.

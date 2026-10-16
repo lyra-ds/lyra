@@ -44,6 +44,11 @@ Reach for something else when:
 
 ## Timing and dismissal
 
+This policy applies to the coordinated Styles `1.2.0`, React `2.0.0`, and Alpine `2.0.0` versions.
+Use the Styles companion for the CSS focus fallback; see the
+[shared compatibility and migration record](../guides/compatibility) for the tested tuple and
+migration guidance.
+
 React `ToastProvider` and the Alpine toast store resolve duration when a notification is queued:
 per-toast `duration` overrides explicit provider/store configuration, which overrides the implicit
 tone policy. Info and success default to **8000 ms**; danger, including `error()`, defaults to
