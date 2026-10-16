@@ -34,7 +34,9 @@ considered unstable.
 > therefore a **project convention, not something the tooling enforces**. When a
 > change is breaking during `0.x`, file a **`minor`** changeset (not `major`). See
 > [CONTRIBUTING.md](./CONTRIBUTING.md) for the changeset workflow. `major`
-> changesets are **reserved for the deliberate 1.0 release**.
+> changesets are **reserved for the deliberate 1.0 release only while that individual
+> package is below 1.0.0**. After 1.0, use `major` for incompatible public-contract
+> changes as described below.
 
 ## Post-1.0 SemVer
 
@@ -81,7 +83,8 @@ release:
 The following are **not** covered by this policy and may change in any release
 without a breaking bump:
 
-- Internal DOM structure of components.
+- Undocumented internal DOM structure of components. Documented or stable public
+  markup, DOM and ref-target contracts remain covered by the post-1.0 rules above.
 - Undocumented CSS classes.
 - The file layout inside each package's `dist/`.
 

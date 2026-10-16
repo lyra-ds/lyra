@@ -1,48 +1,53 @@
 ---
 title: Toast
-description: Uma confirmação curta que aparece sobre a interface e sai, empilhada no canto inferior direito.
+description: A short confirmation that appears over the interface and leaves, stacked bottom-right.
 ---
 
 # Toast
 
-Toast confirma que algo aconteceu, longe de onde aconteceu. Decida se a pessoa vai precisar da
-mensagem depois de seguir adiante — se não, diga inline e poupe a interrupção.
+Toast confirms that something happened, away from where it happened. Decide whether the person needs
+the message after they have moved on — if not, say it inline instead and spare the interruption.
 
-## Exemplos
+## Examples
 
-<Example id="basic" title="Um toast sozinho" layout="plain">
-  O botão de fechar só existe quando você passa `onClose`. Um toast sem ele precisa sumir sozinho;
-  um toast com ele ainda não pode ser necessário fechar para a interface fazer sentido.
+<Example id="basic" title="A single toast" layout="plain">
+  The close button exists only when you pass `onClose`. A toast without one must disappear on its
+  own; a toast with one must still not depend on being closed for the interface to make sense.
 </Example>
 
-<Example id="in-a-stack" title="Dentro de um ToastStack" layout="row">
-  `ToastStack` é o container fixo no canto inferior direito, e é ele que impede vários toasts de se
-  cobrirem. Aperte o botão mais de uma vez para vê-los enfileirar.
+<Example id="in-a-stack" title="Inside a ToastStack" layout="row">
+  `ToastStack` is the fixed bottom-right container, and it is what keeps several toasts from
+  covering each other. Press the button more than once to see them queue.
 </Example>
 
-## Quando usar
+## When to use
 
-Use Toast para uma confirmação breve e não bloqueante de algo que a pessoa acabou de fazer, quando ela
-não precisa agir sobre isso.
+Use Toast for a brief, non-blocking confirmation of something the person just did, when they do not
+need to act on it.
 
-Procure outra coisa quando:
+Reach for something else when:
 
-- **A mensagem é sobre conteúdo da página** — use Alert, que fica ao lado dele.
-- **Algo precisa de decisão antes de continuar** — use Dialog. Um toast pode passar despercebido.
-- **A mensagem carrega informação que alguém vai precisar depois** — um toast que sai leva junto.
+- **The message is about content on the page** — use Alert, which stays next to it.
+- **Something needs a decision before continuing** — use Dialog. A toast can be missed entirely.
+- **The message carries information someone will need later** — a toast that leaves takes it with it.
 
-## Acessibilidade
+## Accessibility
 
 - Standalone React Toast uses `role="status"`. Inside ToastStack it has no individual role; the
   persistent region owns announcements. ToastProvider separates polite info/success from assertive
   danger. Never put the only copy of important information in a toast.
-- `ToastStack` é `position: fixed` no canto inferior direito da viewport. Ele fica por cima do que
-  estiver ali, então mantenha os toasts curtos e poucos.
-- O botão de fechar só aparece com `onClose`, e o nome acessível dele tem como padrão a string em inglês
-  "Close notification"; passe `closeLabel` para traduzi-lo em um produto localizado.
-- `tone` colore apenas o ícone. As palavras precisam dizer se algo deu certo ou errado.
+- `ToastStack` is `position: fixed` at the bottom-right of the viewport. It sits over whatever is
+  there, so keep toasts short and few.
+- The close button appears only with `onClose`. Its accessible name defaults to the English string
+  "Close notification"; pass `closeLabel` to translate it for a localized product.
+- `tone` colors the icon only. The words must say whether something succeeded or failed.
 
 ## Timing and dismissal
+
+This policy applies to the coordinated Styles `1.2.0`, React `2.0.0`, and Alpine `2.0.0` versions.
+Use the Styles companion for the CSS focus fallback; see the
+[shared compatibility and migration record](../guides/compatibility) for the tested tuple and
+migration guidance.
 
 React `ToastProvider` and the Alpine toast store resolve duration when a notification is queued:
 per-toast `duration` overrides explicit provider/store configuration, which overrides the implicit
@@ -65,7 +70,7 @@ live announcement; polite and assertive regions announce additions only.
 Per-toast overrides still take precedence. These timing changes apply to React and Alpine; the
 imported Blade API below is unchanged.
 
-## API e código
+## API and code
 
 <StackTabs>
   <StackPanel stack="react">
@@ -75,13 +80,13 @@ imported Blade API below is unchanged.
   <StackPanel stack="alpine">
     <StackApi stack="alpine" />
 
-A pilha posiciona; o toast é um cartão escuro simples:
+The stack positions; the toast is a plain dark card:
 
 ```html
 <div class="lyra-toast-stack">
   <div class="lyra-toast" role="status">
     <span class="lyra-toast__icon lyra-toast__icon--success"></span>
-    <span>Projeto arquivado</span>
+    <span>Project archived</span>
     <button class="lyra-toast__close" type="button" aria-label="Close notification">×</button>
   </div>
 </div>
