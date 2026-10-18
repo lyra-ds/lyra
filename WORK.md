@@ -12,6 +12,23 @@ list `lyra-workspace-organization-20261018`. Earlier unchecked tasks and resume
 instructions below are historical records, not a current queue. Their original
 text remains intact. Comparative/composed experiments remain suspended.
 
+## Historical working log — retained verbatim
+
+The following original committed log is historical. Its in-progress headings
+and resume notes do not describe current activity. Its complete text is retained;
+pre-sync local additions remain in the separate recovery archive.
+
+# Current work — release and maintenance, 2026-10-14
+
+Core/Alpine V1 is published. Earlier V1 queues below are historical records.
+Suspended experiments and immutable evidence remain preserved.
+
+## In progress — current cycle
+
+Sidebar #186 implementation is complete in the integration branch. PR checks and merge are recorded in `.batuta/runs/2026-10-15-sidebar186-delivery.md`. Release/publication, downstream Blade adoption and suspended Wave2 remain separate.
+
+Issue implementations #289 → #296 → #295 are complete with atomic commits. The combined PR delivery trail records required CI and integration separately; publication remains a separate maintainer action.
+
 ## Done — current cycle
 
 - [x] Sidebar #186 native controls and responsive composition → Codex gpt-6-astra/high + one retry, escalated to critical/self for default router callback compatibility. Commit c2fb5b5; 242 integration tests per browser, 72 packed React18/19 native cases, root/build/size/cold gates and independent Sonnet6/6 pass; both scoped UI corrections resolved. Trail: `.batuta/runs/2026-10-15-sidebar186-controls.md`.
