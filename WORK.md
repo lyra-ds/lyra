@@ -1,3 +1,23 @@
+# Current work — workspace organization, 2026-10-18
+
+## Current status
+
+The approved product delivery and downstream adoption cycle is complete:
+Styles 1.2.0, React 2.0.0, Alpine 2.0.0, Blade compatibility and all six
+starters. See [.batuta/current-state.md](.batuta/current-state.md) for delivery
+references and the disposition of historical plans.
+
+The workspace organization is tracked separately in the canonical work-state
+list `lyra-workspace-organization-20261018`. Earlier unchecked tasks and resume
+instructions below are historical records, not a current queue. Their original
+text remains intact. Comparative/composed experiments remain suspended.
+
+## Historical working log — retained verbatim
+
+The following original committed log is historical. Its in-progress headings
+and resume notes do not describe current activity. Its complete text is retained;
+pre-sync local additions remain in the separate recovery archive.
+
 # Current work — release and maintenance, 2026-10-14
 
 Core/Alpine V1 is published. Earlier V1 queues below are historical records.
@@ -888,3 +908,7 @@ remote or publication action is authorized.
 - [x] Reconciled historical issues #212–#218 already delivered by PR #219 (9d214bf): Codex gpt-6.1-sol/medium read-only audit, no research retry; independent Claude Sonnet 7/7 after one read-context retry. All seven issues closed, zero monorepo issues remain open. Exact source/manifest continuity and retained historical review copies checked; unavailable original raw diagnostics and mutation receipts were not recertified. No new product commit or comparative run. Trail: `.batuta/runs/2026-10-15-open-issues.md`.
 
 - [x] Coordinated release documentation for Styles1.2.0/React2.0.0/Alpine2.0.0 → Codex gpt-6.1-sol/medium, one wording retry, no escalation; atomic 06ef9cb. Five-file scoped docs, locale/link checks, parent lint/build/typecheck/test and independent Sonnet4/4 passed. Exact PR302 candidate cold packed bundle gate passed unchanged limits. Trail: `.batuta/runs/2026-10-16-release302-docs.md`; publication verification follows in the delivery trail.
+
+## Organization record — 2026-10-18
+
+- [x] Reconciled current entry points with delivered work and preserved historical plans. Conductor/critical state organization; Codex gpt-6.1-sol/medium read-only research, first attempt; independent Claude Sonnet review 5/5 after one bounded follow-up. Commit 2a6d3ad; parent scope, links, routing stamps and 17 historical-record hashes passed. Ecosystem preservation archived 14 complete worktree folders with dirty work and refs retained. No product or release change. Trail: `.batuta/runs/2026-10-18-workspace-organization.md`.

@@ -1,14 +1,15 @@
 # Batuta profile — lyra-ds
 
-## Current conducting context — 2026-10-14
+## Current conducting context — 2026-10-18
 
-Core/Alpine V1 and subsequent releases are published. Earlier V1 queues and
-references to removed stabilization checkouts below are historical; do not
-restart them. Suspended experimental branches, evidence and resource restrictions
-remain preserved. The maintainer authorized this session to refresh Batuta,
-initialize the six starters, integrate the approved setup and starter PRs after
-checks, then address the current issues. Styles1.1.1 and Blade1.0.0 are published. Publication of later releases still requires a user
-instruction; this setup is not blanket publication authorization.
+Styles 1.2.0, React 2.0.0 and Alpine 2.0.0 are published. Blade compatibility
+and all six starter adoptions are delivered. The current delivery summary
+and disposition of historical plans are in [current-state.md](current-state.md).
+No historical V1 queue or transit handoff carries an active implementation task.
+Earlier execution instructions below are historical; their closed contracts and
+resource restrictions remain applicable. Comparative/composed experiments stay
+suspended, and their evidence is neither rewritten nor newly qualified.
+This organization does not authorize another publication or experimental run.
 
 ## Test-fixture dependency exception — maintainer authorization, 2026-09-11
 
