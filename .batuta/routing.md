@@ -1,6 +1,6 @@
 # Routing — lyra-ds
 
-<!-- inputs: profile.md@sha256:613c170ef143 -->
+<!-- inputs: profile.md@sha256:1254e8495ffe -->
 
 Confirmed by the maintainer on 2026-10-14 after full installed-adapter inventory. OpenCode's Zen
 models are catalogued but live GLM/DeepSeek calls returned insufficient-funds

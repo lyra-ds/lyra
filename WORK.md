@@ -1,13 +1,16 @@
-# Current work — release and maintenance, 2026-10-14
+# Current work — workspace organization, 2026-10-18
 
-Core/Alpine V1 is published. Earlier V1 queues below are historical records.
-Suspended experiments and immutable evidence remain preserved.
+## Current status
 
-## In progress — current cycle
+The approved product delivery and downstream adoption cycle is complete:
+Styles 1.2.0, React 2.0.0, Alpine 2.0.0, Blade compatibility and all six
+starters. See [.batuta/current-state.md](.batuta/current-state.md) for delivery
+references and the disposition of historical plans.
 
-Sidebar #186 implementation is complete in the integration branch. PR checks and merge are recorded in `.batuta/runs/2026-10-15-sidebar186-delivery.md`. Release/publication, downstream Blade adoption and suspended Wave2 remain separate.
-
-Issue implementations #289 → #296 → #295 are complete with atomic commits. The combined PR delivery trail records required CI and integration separately; publication remains a separate maintainer action.
+The workspace organization is tracked separately in the canonical work-state
+list `lyra-workspace-organization-20261018`. Earlier unchecked tasks and resume
+instructions below are historical records, not a current queue. Their original
+text remains intact. Comparative/composed experiments remain suspended.
 
 ## Done — current cycle
 
