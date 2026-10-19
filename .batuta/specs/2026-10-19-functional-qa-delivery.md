@@ -1,7 +1,7 @@
 # Functional QA delivery contract
 
 The maintainer approved a short public-product QA round, reproducible issues,
-and small compatible corrections. The actual product fixes are306 and 307.
+and small compatible corrections. The actual product fixes are #306 and #307.
 Observation 308 was invalidated after effective-area hit testing and is not a
 third product correction or a deferred task. No version bump/publication.
 
@@ -10,8 +10,7 @@ third product correction or a deferred task. No version bump/publication.
 1. Sidebar navigation focus reaches the eligible desktop controlling trigger
    before either transition, while main-content focus, modal ownership,
    cancellation/eligibility and optional defaults remain intact. Four focused
-   regressions prove red-before/green-after; native sidebar suites108 passes
-   and SSR 7 passes are retained with the original persona replay.
+   regressions prove red-before/green-after; native sidebar suites: 108 passes and 7 SSR passes are retained with the original persona replay.
 2. Only ToastProvider docs previews use normal-flow notification layout;
    independent state, readable messages, close/Done/focus, copied examples,
    library default fixed positioning and 320px layout remain correct. The
