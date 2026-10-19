@@ -59,7 +59,13 @@ export async function ComponentPage({ locale, slug }: { locale: Locale; slug: st
         title={title}
         layout={layout}
         mirrorTheme={mirrorTheme}
-        preview={createElement(Live)}
+        preview={
+          slug === 'toast-provider' ? (
+            <div className="lw-example-toast-provider">{createElement(Live)}</div>
+          ) : (
+            createElement(Live)
+          )
+        }
         source={sources[id]}
         documentSrc={isolatedDocument ? `/example-preview/${slug}/${id}` : undefined}
       >
