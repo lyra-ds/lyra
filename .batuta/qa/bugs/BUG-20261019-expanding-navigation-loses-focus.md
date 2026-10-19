@@ -2,7 +2,7 @@
 
 - id: BUG-20261019-expanding-navigation-loses-focus
 - title: Expanding the icon rail loses the focused navigation link
-- status: open
+- status: fixed
 - impact: Friction
 - severity: Medium
 - priority: P2
@@ -39,8 +39,27 @@
 
 ## Root cause and fix governance
 
-Not yet investigated. Session has ended; no product edit or fix claim.
+The published composition replaces Tooltip/span ancestors while changing mode;
+the shared requestSidebarChange helper previously protected only collapse.
+The accepted bounded policy reconciles navigation focus to its eligible desktop
+trigger before either toggle. The governed contract is
+../../specs/2026-10-19-sidebar306-focus.md. Main-content focus, modal ownership,
+trigger eligibility and hotkey arbitration are preserved.
 
 ## Fix evidence
 
-No fix commit or regression proof yet.
+- fix_commit: 8ebbfe099e13d1e8e753c6b941d886aa48aa8048
+- regression_proof: packages/react/src/app-sidebar/controls.browser.test.tsx,
+  four returns-rail-focus cases. The conductor ran all four against the unfixed
+  helper and observed focus assertion failures; the same four passed with the
+  repair. Full sidebar browser neighbors: 36/36 in each Chromium, Firefox and
+  WebKit (108 passes); SSR 7/7; React build, typecheck, ESLint and formatting passed.
+- Public persona replay: pending on the combined repaired build. The lifecycle
+  remains fixed, not verified, until that walk succeeds.
+
+### 2026-10-19 — fixed
+
+Commit 8ebbfe099e13d1e8e753c6b941d886aa48aa8048; core source correction only in the shared helper, with focused
+regressions, both locale paragraphs and a React patch changeset. Independent
+review and repaired-build persona replay remain pending. The initial production
+failure and report are retained unchanged.

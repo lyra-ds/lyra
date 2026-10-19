@@ -912,3 +912,14 @@ remote or publication action is authorized.
 ## Organization record — 2026-10-18
 
 - [x] Reconciled current entry points with delivered work and preserved historical plans. Conductor/critical state organization; Codex gpt-6.1-sol/medium read-only research, first attempt; independent Claude Sonnet review 5/5 after one bounded follow-up. Commit 2a6d3ad; parent scope, links, routing stamps and 17 historical-record hashes passed. Ecosystem preservation archived 14 complete worktree folders with dirty work and refs retained. No product or release change. Trail: `.batuta/runs/2026-10-18-workspace-organization.md`.
+
+## Functional QA — 2026-10-19
+
+- [x] Completed the initial public-product walk → conductor using Batuta QA,
+  commits 1f909c0/493b943. Four sessions, five passing scenarios and two Friction
+  findings; issues #306/#307. Raw evidence retained in the functional-QA archive.
+
+- [x] Fix #306 desktop sidebar expansion focus → codex/gpt-6.1-sol (medium,
+  CLI; one unavailable nested launch, no code retry or escalation), commit
+  8ebbfe0. Four regressions proved red/green; 108 native browser and 7 SSR
+  checks passed. Final delivery review/public replay follow in the QA report.
