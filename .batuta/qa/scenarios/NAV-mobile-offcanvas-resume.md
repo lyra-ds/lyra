@@ -11,8 +11,8 @@ bug_ids:
 fix_status:
 retest_status:
 fix_commits:
-evidence: evidence/2026-10-19-functional-46349ec7-1f2a-456b-923b-f7add5041f93/mobile-offcanvas-open-320.json
-last_report: reports/2026-10-19-functional-46349ec7-1f2a-456b-923b-f7add5041f93.md
+evidence: evidence/2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180/mobile-modal-ownership-after-fix.json
+last_report: reports/2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180.md
 overlaps:
 ---
 

@@ -8,7 +8,7 @@
 - Spec sketch: load the real component page and CSS, activate Publish project
   and Add reminder, independently inspect both named regions, use ordinary
   pointer clicks on each close control, and verify dismissal does not remove
-  the other provider's message. Also confirm the standalone example retains
+  the other provider's message. Also confirm the existing public Toast invitation stack retains
   fixed placement. A source selector assertion is not proof of reachability.
 - Status: proposed. The bounded current visual correction uses retained
   before/after persona replay; it does not introduce another test harness.

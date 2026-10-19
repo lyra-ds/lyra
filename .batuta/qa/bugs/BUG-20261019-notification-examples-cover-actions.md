@@ -2,7 +2,7 @@
 
 - id: BUG-20261019-notification-examples-cover-actions
 - title: The persistent reminder covers the confirmation's close control
-- status: open
+- status: verified
 - impact: Friction
 - severity: Medium
 - priority: P2
@@ -40,9 +40,32 @@
 
 ## Root cause and fix governance
 
-Public evidence identifies a same-anchor presentation collision. Source-level
-ownership is not yet investigated. No product edit or fix claim.
+Both independent providers correctly use the same library viewport anchor.
+The documentation inserted them in the same ordinary preview document without
+separating their layout. The governed correction wraps only ToastProvider
+previews in docs-owned markup and scopes normal-flow CSS there. Package CSS,
+original consumer examples and provider state/timing remain unchanged.
 
 ## Fix evidence
 
-No fix commit or regression proof yet.
+- fix_commit: 68b2e22ef2ff6edf5ee2eea67e7ac7af75ccfbb0
+- regression_proof: documented visual replay in 2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180.md.
+  Before: original public page and one clean retry block the confirmation Close
+  control. After: both normal pointer dismissals and independent region rereads
+  pass on the real static export. Existing Node assertions cannot establish
+  pointer hit testing; the visual replay exception is bounded by the linked
+  automation-backlog/notification-preview-reachability.md intent.
+- Adjacent proof: real public Toast invitation stack retains fixed placement;
+  Popover open/Escape/focus passes. Native coarse-pointer320px replay follows.
+
+### 2026-10-19 — fixed
+
+Commit 68b2e22ef2ff6edf5ee2eea67e7ac7af75ccfbb0; four docs-owned files only. Full parent pnpm test,
+formatting and docs ESLint passed on identical source candidate95d2831.
+
+### 2026-10-19 — verified on repaired candidate
+
+Integrating developer; CH-readable-notifications; 2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180.md;
+both independent Close actions, Done/focus, hover/focus pauses and remaining
+expiry passed. Original evidence remains retained. Hosted production reread is
+still a delivery step after CI and deployment, not an already performed claim.

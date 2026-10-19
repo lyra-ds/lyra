@@ -1,7 +1,7 @@
 ---
 id: J-read-notification
 name: Read and dismiss a notification
-personas: Integrating developer
+personas: Integrating developer; Mobile teammate
 entry_points: https://docs.lyra-ds.dev/en/components/toast-provider
 crosses: public documentation; component previews
 ---

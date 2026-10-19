@@ -2,7 +2,7 @@
 
 - id: BUG-20261019-expanding-navigation-loses-focus
 - title: Expanding the icon rail loses the focused navigation link
-- status: fixed
+- status: verified
 - impact: Friction
 - severity: Medium
 - priority: P2
@@ -63,3 +63,11 @@ Commit 8ebbfe099e13d1e8e753c6b941d886aa48aa8048; core source correction only in 
 regressions, both locale paragraphs and a React patch changeset. Independent
 review and repaired-build persona replay remain pending. The initial production
 failure and report are retained unchanged.
+
+### 2026-10-19 — verified on repaired candidate
+
+Keyboard navigator; CH-keyboard-workspace; 2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180.md;
+nav-expansion-focus-repaired.json and destination/revisit captures in the new
+run evidence directory. The original public journey passed on the real static
+export of candidate95d2831. Hosted production reread remains a delivery step,
+not an already performed claim.
