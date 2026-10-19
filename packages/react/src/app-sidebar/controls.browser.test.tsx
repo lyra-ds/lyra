@@ -86,6 +86,58 @@ describe('native sidebar controls', () => {
       .toHaveAttribute('aria-expanded', 'true');
   });
 
+  it.each([
+    { mode: 'composed links', railTooltips: false },
+    { mode: 'composed links', railTooltips: true },
+    { mode: 'data items', railTooltips: false },
+    { mode: 'data items', railTooltips: true },
+  ])(
+    'returns rail focus to the controlling trigger on expansion and collapse for $mode with railTooltips=$railTooltips',
+    async ({ mode, railTooltips }) => {
+      function Example() {
+        const [collapsed, setCollapsed] = useState(true);
+        return (
+          <>
+            <AppSidebarTrigger
+              controls="rail-navigation"
+              collapsed={collapsed}
+              onCollapsedChange={setCollapsed}
+              hotkey
+            />
+            <AppSidebar
+              id="rail-navigation"
+              collapsed={collapsed}
+              railTooltips={railTooltips}
+              groups={
+                mode === 'data items'
+                  ? [{ items: [{ id: 'projects', label: 'Projects' }] }]
+                  : undefined
+              }
+            >
+              {mode === 'composed links' && <a href="/projects">Projects</a>}
+            </AppSidebar>
+          </>
+        );
+      }
+      const screen = await render(<Example />);
+      const trigger = screen.getByRole('button', { name: 'Toggle sidebar' });
+      const item = screen.getByRole(mode === 'composed links' ? 'link' : 'button', {
+        name: 'Projects',
+      });
+      await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+      item.element().focus();
+      await expect.element(item).toHaveFocus();
+      await userEvent.keyboard('{Control>}b{/Control}');
+      await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+      await expect.element(trigger).toHaveFocus();
+      item.element().focus();
+      await expect.element(item).toHaveFocus();
+      await userEvent.keyboard('{Control>}b{/Control}');
+      await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+      await expect.element(trigger).toHaveFocus();
+    },
+  );
+
   it('ignores modifiers, repeats, IME, editable ancestry, cancellation and disabled owners', async () => {
     const change = vi.fn();
     const screen = await render(
@@ -133,6 +185,30 @@ describe('native sidebar controls', () => {
     expect(key(document.body).defaultPrevented).toBe(false);
     expect(change).not.toHaveBeenCalled();
   });
+
+  it.each(['hidden', 'inert'] as const)(
+    'ignores a rail expansion hotkey when the controlling trigger has a %s ancestor',
+    async (guard) => {
+      const change = vi.fn();
+      const screen = await render(
+        <>
+          <div hidden={guard === 'hidden'} inert={guard === 'inert'}>
+            <AppSidebarTrigger controls="nav" collapsed hotkey onCollapsedChange={change} />
+          </div>
+          <AppSidebar
+            id="nav"
+            collapsed
+            groups={[{ items: [{ id: 'projects', label: 'Projects' }] }]}
+          />
+        </>,
+      );
+      const item = screen.getByRole('button', { name: 'Projects' });
+      item.element().focus();
+      expect(key(item.element()).defaultPrevented).toBe(false);
+      expect(change).not.toHaveBeenCalled();
+      await expect.element(item).toHaveFocus();
+    },
+  );
 
   it('deduplicates logical owners, selects deepest scopes and declines sibling ambiguity', async () => {
     const outer = vi.fn();
