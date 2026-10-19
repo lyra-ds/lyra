@@ -4,7 +4,7 @@ area: MSG
 title: Use notification previews on a narrow touch screen
 persona: Mobile teammate
 journey: J-read-notification
-expected: Both preview messages remain readable and dismissible by touch at320px without horizontal document overflow
+expected: Both preview messages remain readable and dismissible by touch at 320px without horizontal document overflow
 entry_points: https://docs.lyra-ds.dev/en/components/toast-provider
 qa_status: pass
 bug_ids:

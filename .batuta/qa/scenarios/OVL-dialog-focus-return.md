@@ -11,7 +11,7 @@ bug_ids:
 fix_status:
 retest_status:
 fix_commits:
-evidence: evidence/2026-10-19-functional-46349ec7-1f2a-456b-923b-f7add5041f93/overlay-dropdown-tab-exit.json
+evidence: evidence/2026-10-19-functional-46349ec7-1f2a-456b-923b-f7add5041f93/overlay-dialog-close-return.json
 last_report: reports/2026-10-19-functional-46349ec7-1f2a-456b-923b-f7add5041f93.md
 overlaps:
 ---

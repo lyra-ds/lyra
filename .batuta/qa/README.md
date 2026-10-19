@@ -50,3 +50,16 @@ the historical link. They do not create deferred repairs or open product work.
   verified fixes, adjacent mobile/overlay checks, and the invalid measurement
   disposition. Its bounded readiness and instrument exclusions govern these
   journeys; live PR checks govern integration.
+
+## Evidence recovery
+
+Raw evidence is intentionally outside Git, as required by this QA method.
+The initial and replay reports name their separate canonical recovery archives
+under `/Volumes/Home/francisross/Projects/.archives/lyra/2026-10-19-functional-qa/`.
+Each archive contains `evidence/<dated-run-id>/` and `evidence-sha256.json`.
+Restore that evidence directory below this QA root to resolve scenario paths;
+verify each file against the adjacent SHA-256 manifest before using it as proof.
+A fresh clone has the reports and reproduction steps, but cannot validate raw
+file links until those retained artifacts are restored. Link checks here cover
+both committed records and the maintainer's restored evidence, not a claim that
+ignored evidence is present in every clone. The generated CSV is disposable.

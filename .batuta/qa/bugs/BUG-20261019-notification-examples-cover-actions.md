@@ -56,12 +56,13 @@ original consumer examples and provider state/timing remain unchanged.
   pointer hit testing; the visual replay exception is bounded by the linked
   automation-backlog/notification-preview-reachability.md intent.
 - Adjacent proof: real public Toast invitation stack retains fixed placement;
-  Popover open/Escape/focus passes. Native coarse-pointer320px replay follows.
+  Popover open/Escape/focus passes. Coarse-pointer replay at 320/375px and effective-area taps passed in the
+  same dated replay report.
 
 ### 2026-10-19 — fixed
 
 Commit 68b2e22ef2ff6edf5ee2eea67e7ac7af75ccfbb0; four docs-owned files only. Full parent pnpm test,
-formatting and docs ESLint passed on identical source candidate95d2831.
+formatting and docs ESLint passed on identical source candidate 95d2831.
 
 ### 2026-10-19 — verified on repaired candidate
 

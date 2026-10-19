@@ -54,14 +54,15 @@ trigger eligibility and hotkey arbitration are preserved.
   helper and observed focus assertion failures; the same four passed with the
   repair. Full sidebar browser neighbors: 36/36 in each Chromium, Firefox and
   WebKit (108 passes); SSR 7/7; React build, typecheck, ESLint and formatting passed.
-- Public persona replay: pending on the combined repaired build. The lifecycle
-  remains fixed, not verified, until that walk succeeds.
+- Public persona replay: passed on the real static export of candidate 95d2831,
+  with the current report linked below. Hosted production confirmation follows
+  deployment, separately from this completed local candidate verification.
 
 ### 2026-10-19 — fixed
 
 Commit 8ebbfe099e13d1e8e753c6b941d886aa48aa8048; core source correction only in the shared helper, with focused
-regressions, both locale paragraphs and a React patch changeset. Independent
-review and repaired-build persona replay remain pending. The initial production
+regressions, both locale paragraphs and a React patch changeset. At that fixed
+checkpoint, independent review and repaired-build persona replay were pending. The initial production
 failure and report are retained unchanged.
 
 ### 2026-10-19 — verified on repaired candidate
@@ -69,5 +70,5 @@ failure and report are retained unchanged.
 Keyboard navigator; CH-keyboard-workspace; 2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180.md;
 nav-expansion-focus-repaired.json and destination/revisit captures in the new
 run evidence directory. The original public journey passed on the real static
-export of candidate95d2831. Hosted production reread remains a delivery step,
+export of candidate 95d2831. Hosted production reread remains a delivery step,
 not an already performed claim.

@@ -1,8 +1,8 @@
 # Functional QA delivery contract
 
 The maintainer approved a short public-product QA round, reproducible issues,
-and small compatible corrections. The actual product fixes are306 and307.
-Observation308 was invalidated after effective-area hit testing and is not a
+and small compatible corrections. The actual product fixes are306 and 307.
+Observation 308 was invalidated after effective-area hit testing and is not a
 third product correction or a deferred task. No version bump/publication.
 
 ## Acceptance criteria
@@ -11,10 +11,10 @@ third product correction or a deferred task. No version bump/publication.
    before either transition, while main-content focus, modal ownership,
    cancellation/eligibility and optional defaults remain intact. Four focused
    regressions prove red-before/green-after; native sidebar suites108 passes
-   and SSR7 passes are retained with the original persona replay.
+   and SSR 7 passes are retained with the original persona replay.
 2. Only ToastProvider docs previews use normal-flow notification layout;
    independent state, readable messages, close/Done/focus, copied examples,
-   library default fixed positioning and320px layout remain correct. The
+   library default fixed positioning and 320px layout remain correct. The
    existing public Toast invitation example is the unwrapped default canary.
    Public visual replay and its automation intent replace a new test harness.
 3. The living QA tree links personas, flows, immutable charters, current
@@ -27,7 +27,7 @@ third product correction or a deferred task. No version bump/publication.
    additionally adds two .gitignore paths for generated evidence and index. Manifests,
    dependencies, exports, styles package, CI, services and experiments do not
    change. Parent full pnpm test and recursive typecheck passed on source
-   candidate95d2831, product-identical to the delivery branch. Local lint and
+   candidate 95d2831, product-identical to the delivery branch. Local lint and
    QA link/status checks must pass; remote required PR checks gate merge.
 
 ## Bounded sidebar contract (verbatim)

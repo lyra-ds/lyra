@@ -12,12 +12,12 @@
 - charter: CH-mobile-notification-controls
 - scenarios: none (invalid observation; historical association MSG-mobile-preview-controls)
 - reproduction: Open the actual ToastProvider component page in a touch-emulated
-  coarse-pointer Chromium context at320×812. Publish project and Add reminder.
+  coarse-pointer Chromium context at 320×812. Publish project and Add reminder.
   Read the rendered Close notification button bounds; compare Done.
 - expected: The close control provides a usable coarse-pointer target consistent
-  with the44px targets of adjacent actions, while fine-pointer geometry remains
+  with the 44px targets of adjacent actions, while fine-pointer geometry remains
   unchanged.
-- observed: Both Close controls measured about11.8×19px; Done measured70.3×44px.
+- observed: Both Close controls measured about 11.8×19px; Done measured70.3×44px.
   Exact-center automated taps succeed, but the target is unusually small for a
   finger. This is a reachability/friction finding, not a lost notification.
 - evidence: evidence/2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180/toast-coarse-320-both-examples.png;
@@ -40,7 +40,7 @@
 
 The original evaluation measured only the visible button box. Existing additive
 CSS already creates a pointer-active ::after with inset:-12px, yielding about
-35.8×43px without enlarging the12×19 glyph. The existing comment bounds that
+35.8×43px without enlarging the 12×19 glyph. The existing comment bounds that
 extension to avoid intercepting adjacent message taps. Production and repaired
 preview hit testing resolves all four points10px outside the glyph to the close
 button, and ordinary touch at each point dismisses the notification. The first
@@ -56,7 +56,7 @@ replay validates the existing effective hit area; it is not a repaired behavior.
 
 ### 2026-10-19 — re-found on hosted production
 
-One clean coarse-pointer320px production retry measured the same11.8×19px Close
+One clean coarse-pointer 320px production retry measured the same 11.8×19px Close
 control and normal tap dismissal succeeded. This confirms a pre-existing shared
 sizing issue, not a regression introduced by the docs preview wrapper. Evidence:
 toast-close-original-production-coarse.* and events.json in the current replay
