@@ -1,5 +1,13 @@
 # @lyra-ds/react
 
+## 2.0.1
+
+### Patch Changes
+
+- [#309](https://github.com/lyra-ds/lyra/pull/309) [`599f6fb`](https://github.com/lyra-ds/lyra/commit/599f6fb553366e131cbf58ba3b0598e0c1e44c07) Thanks [@franciscpd](https://github.com/franciscpd)! - Return focus from desktop sidebar navigation to its eligible controlling trigger before
+  expansion as well as collapse, preventing focus loss when a focused rail item is replaced.
+  Preserve application-content focus and offcanvas modal focus ownership.
+
 ## 2.0.0
 
 ### Major Changes
