@@ -68,3 +68,11 @@ It records verified Git bundles, preserved branches/working-state commits,
 original state hashes and complete historical worktree folders. Agent/app
 state remains in place. This organization changes no package, public API,
 dependency, CI workflow, runtime behavior or release version.
+
+## Functional QA — 2026-10-19
+
+The new bounded public-product walks and two compatible corrections are recorded
+in [the living QA tree](qa/README.md). Its dated reports preserve original
+failures, repaired-build evidence, and the invalid touch-measurement observation.
+The corrections add one React patch changeset; this work does not publish it.
+Historical experiments remain suspended. Live PR checks govern integration.

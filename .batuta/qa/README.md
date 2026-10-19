@@ -37,3 +37,16 @@ baseline; add backlog entries only for demonstrated gaps.
 Issue fixes, releases, starter adoption, and workspace organization were
 completed before this round; see ../current-state.md. Suspended comparative
 experiments are outside scope and must remain suspended.
+
+Invalid observations retain their original history in the bug registry, but
+are removed from the scenario's active bug_ids; the scenario body preserves
+the historical link. They do not create deferred repairs or open product work.
+
+## Latest round
+
+- [Initial observations](reports/2026-10-19-functional-46349ec7-1f2a-456b-923b-f7add5041f93.md) retain the two
+  original failures.
+- [Repaired-build replay](reports/2026-10-19-fixes-5e4ed134-2a4c-4cdd-9b1a-9c06df56a180.md) records both
+  verified fixes, adjacent mobile/overlay checks, and the invalid measurement
+  disposition. Its bounded readiness and instrument exclusions govern these
+  journeys; live PR checks govern integration.

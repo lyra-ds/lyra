@@ -916,10 +916,20 @@ remote or publication action is authorized.
 ## Functional QA — 2026-10-19
 
 - [x] Completed the initial public-product walk → conductor using Batuta QA,
-  commits 1f909c0/493b943. Four sessions, five passing scenarios and two Friction
-  findings; issues #306/#307. Raw evidence retained in the functional-QA archive.
+      commits 1f909c0/493b943. Four sessions, five passing scenarios and two Friction
+      findings; issues #306/#307. Raw evidence retained in the functional-QA archive.
 
 - [x] Fix #306 desktop sidebar expansion focus → codex/gpt-6.1-sol (medium,
-  CLI; one unavailable nested launch, no code retry or escalation), commit
-  8ebbfe0. Four regressions proved red/green; 108 native browser and 7 SSR
-  checks passed. Final delivery review/public replay follow in the QA report.
+      CLI; one unavailable nested launch, no code retry or escalation), commit
+      8ebbfe0. Four regressions proved red/green; 108 native browser and 7 SSR
+      checks passed. Final delivery review/public replay follow in the QA report.
+
+- [x] Fix #307 coexisting ToastProvider preview presentation →
+      codex/gpt-6.1-sol (medium, CLI;0 code retries, no escalation), commit68b2e22.
+      Parent full pnpm test/typecheck, docs lint/format, independent dismissals,
+      hover/focus timing, narrow layout and real public canaries passed on identical
+      source. Trail: `.batuta/runs/2026-10-19-toast307.md`.
+- [x] Disposition #308 → codex/gpt-6-luna (low, read-only;1 format retry,
+      no escalation), source guard unchanged. Existing pseudo-element target
+      verified by eight edge taps; glyph-only measurement invalid, issue closed.
+      No product change or deferred repair. Final delivery review/CI follow.

@@ -43,7 +43,7 @@ server framework, source-mirroring test or CI change for this bounded repair.
   at fixed 1200px width; a fixed toast contributes no layout height, so merely
   toggling its isolation flag does not provide a suitable bounded correction.
 - Contained: only this page's two preview wrappers receive the override; the
-  standalone consumer and adjacent example are runnable public canaries.
+  existing public Toast invitation and adjacent Popover are runnable canaries.
 - Unambiguous: both available example actions must remain reachable; their
   state/timer semantics and actual library defaults remain unchanged.
 
