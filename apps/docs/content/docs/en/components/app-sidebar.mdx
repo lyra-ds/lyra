@@ -117,8 +117,9 @@ with `preventDefault()`. Disabled triggers do not request changes.
 The optional shortcut is Cmd/Ctrl+B. It ignores editable fields, composing input, repeats,
 Alt/Shift and canceled events. Duplicate triggers for one id share one logical owner. The deepest
 eligible navigation or trigger containing the event target wins; outside those scopes, only one
-unambiguous owner can act. Background modal content cannot toggle. Focus inside navigation being
-collapsed returns to its eligible trigger; focus in application content stays in place.
+unambiguous owner can act. Background modal content cannot toggle. Focus inside desktop navigation
+returns to its eligible controlling trigger before either expansion or collapse; focus in
+application content stays in place. Offcanvas navigation retains its modal focus ownership.
 
 ### Offcanvas navigation
 

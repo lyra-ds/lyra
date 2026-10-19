@@ -117,6 +117,34 @@
   align-items: start;
   gap: var(--space-4);
 }
+/* Coexisting provider demos keep notifications in their own preview's layout flow. */
+.lw-example-toast-provider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+.lw-example-toast-provider .lyra-toast-stack {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.lw-example-toast-provider .lyra-toast {
+  min-width: 0;
+  max-width: 100%;
+}
+.lw-example-toast-provider .lyra-toast > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lw-example-toast-provider .lyra-toast__icon,
+.lw-example-toast-provider .lyra-toast__close {
+  flex-shrink: 0;
+}
 /* For components that are themselves a surface, the Card stage would nest two borders of the same
    material. Drop the chrome and let the example be the only surface on screen. */
 .lw-example__stage--plain {

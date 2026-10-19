@@ -28,3 +28,7 @@ packages/*/.artifacts/browser/
 # They are debug scratch, never deliverables — two slipped into #183 because a stray `rm`
 # ran from another directory and `-f` swallowed the miss.
 /*.png
+
+.batuta/qa/state.csv
+
+.batuta/qa/evidence/

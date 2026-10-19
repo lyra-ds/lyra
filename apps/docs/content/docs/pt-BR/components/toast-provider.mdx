@@ -11,6 +11,10 @@ use Toast e ToastStack diretamente quando esse estado de apresentação já for 
 
 ## Exemplos
 
+On this page, notifications appear in normal flow inside their own preview so both independent
+providers remain readable and their controls stay reachable. This positioning is documentation-only:
+the copied examples and the library default still use a stack fixed to the bottom-right of the viewport.
+
 <Example id="basic" title="Enviar uma confirmação">
   Envolva a parte da aplicação que precisa de notificações e então chame `success` em um
   descendente. O provider fornece ícone, controle de fechar e pilha fixa para cada toast

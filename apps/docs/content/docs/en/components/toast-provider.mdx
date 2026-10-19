@@ -11,6 +11,10 @@ Toast and ToastStack directly when you already own that presentation state.
 
 ## Examples
 
+On this page, notifications appear in normal flow inside their own preview so both independent
+providers remain readable and their controls stay reachable. This positioning is documentation-only:
+the copied examples and the library default still use a stack fixed to the bottom-right of the viewport.
+
 <Example id="basic" title="Send a confirmation">
   Wrap the part of the application that needs notifications, then call `success` from a descendant.
   The provider supplies the icon, close control and fixed stack for each queued toast.

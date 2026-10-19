@@ -51,7 +51,6 @@ export function requestSidebarChange(owner: Owner): void {
   const { trigger, controls, collapsed, change } = owner;
   const panel = trigger.ownerDocument.getElementById(controls);
   if (
-    !collapsed &&
     panel?.contains(trigger.ownerDocument.activeElement) &&
     !panel.matches('[role="dialog"]') &&
     visible(trigger) &&
